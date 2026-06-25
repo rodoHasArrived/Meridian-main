@@ -1,8 +1,11 @@
-import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck, Upload } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
@@ -21,8 +24,19 @@ import {
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
   type EvidenceStatusTone,
+  type EvidenceVaultDocumentDetailViewModel,
+  type EvidenceVaultDocumentIndexPanelViewModel,
+  type EvidenceVaultDocumentIndexRowViewModel,
   type EvidenceVaultRequestListIndexPanelViewModel
 } from "@/screens/evidence-workbench-screen.view-model";
+import type {
+  EvidenceDocumentClassification,
+  EvidenceDocumentIntakeSourceKind,
+  EvidenceDocumentLinkKind,
+  EvidenceDocumentReviewStatus,
+  EvidenceExtractionStatus,
+  EvidenceVaultIntakeRequest
+} from "@/types";
 
 const badgeVariant: Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline"> = {
   success: "success",
@@ -168,7 +182,9 @@ export function EvidenceWorkbenchScreen() {
         </Card>
       ) : null}
 
+      <EvidenceDocumentIntakePanel vm={vm} />
       <EvidenceVaultRequestListPanel panel={vm.requestListPanel} />
+      <EvidenceVaultDocumentPanel panel={vm.documentPanel} />
 
       {vm.hasPacket && vm.packet ? (
         <>
@@ -724,6 +740,591 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
   );
 }
 
+const documentClassifications: EvidenceDocumentClassification[] = [
+  "Statement",
+  "Invoice",
+  "CapitalNotice",
+  "CustodianFile",
+  "BankEvidence",
+  "ValuationSupport",
+  "Agreement",
+  "TaxSupport",
+  "AuditRequestSupport"
+];
+
+const extractionStatuses: EvidenceExtractionStatus[] = ["NotExtracted", "Extracted", "NeedsReview", "Accepted", "Rejected"];
+const reviewStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Accepted", "Rejected"];
+const intakeSourceKinds: EvidenceDocumentIntakeSourceKind[] = ["UploadedContent", "LocalFile", "ImportedFileReference"];
+const linkKinds: EvidenceDocumentLinkKind[] = [
+  "Period",
+  "Portfolio",
+  "Account",
+  "Instrument",
+  "Journal",
+  "ReconciliationCase",
+  "ReportLine",
+  "CloseTask"
+];
+
+function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidenceWorkbenchViewModel> }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [sourceKind, setSourceKind] = useState<EvidenceDocumentIntakeSourceKind>("UploadedContent");
+  const [sourcePath, setSourcePath] = useState("");
+  const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankEvidence");
+  const [sourceChannel, setSourceChannel] = useState("upload");
+  const [actor, setActor] = useState("");
+  const [tenantId, setTenantId] = useState("");
+  const [scope, setScope] = useState("");
+  const [sourceSystem, setSourceSystem] = useState("");
+  const [sourceReference, setSourceReference] = useState("");
+  const [extractionStatus, setExtractionStatus] = useState<EvidenceExtractionStatus>("NotExtracted");
+  const [reviewStatus, setReviewStatus] = useState<EvidenceDocumentReviewStatus>("Unreviewed");
+  const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>("CloseTask");
+  const [objectId, setObjectId] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const selectedSubject = vm.selectedSubjectKind && vm.selectedSubjectId
+    ? `${vm.selectedSubjectKind}/${vm.selectedSubjectId}`
+    : "No subject selected";
+  const isUpload = sourceKind === "UploadedContent";
+  const hasRequiredSource = isUpload ? Boolean(file) : sourcePath.trim().length > 0;
+  const disabledReason = vm.intakeCommand.disabledReason ?? (
+    hasRequiredSource
+      ? null
+      : isUpload
+        ? "Choose a document file before retaining it."
+        : "Enter a local or imported file path before retaining it."
+  );
+  const submitDisabled = vm.intakeCommand.disabled || !hasRequiredSource;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!vm.selectedSubjectKind || !vm.selectedSubjectId || !hasRequiredSource) {
+      setFormError(isUpload
+        ? "Select an evidence subject and choose a document file before retaining it."
+        : "Select an evidence subject and enter a local or imported file path before retaining it.");
+      return;
+    }
+
+    setFormError(null);
+    try {
+      const contentBase64 = isUpload && file ? await readFileAsBase64(file) : null;
+      const retainedFileName = isUpload && file ? file.name : fileNameFromPath(sourcePath);
+      const sourceReferenceValue = sourceReference.trim() || (isUpload ? retainedFileName : sourcePath.trim());
+      const request: EvidenceVaultIntakeRequest = {
+        subjectKind: vm.selectedSubjectKind,
+        subjectId: vm.selectedSubjectId,
+        intakeChannel: sourceChannel.trim() || defaultIntakeChannel(sourceKind),
+        fileName: retainedFileName,
+        contentBase64,
+        contentType: isUpload && file ? file.type || "application/octet-stream" : null,
+        sourceSystem: sourceSystem.trim() || null,
+        sourceReference: sourceReferenceValue,
+        receivedBy: actor.trim() || null,
+        classification,
+        actor: actor.trim() || null,
+        tenantId: tenantId.trim() || null,
+        scope: scope.trim() || null,
+        extractionStatus,
+        reviewerState: {
+          status: reviewStatus,
+          reviewer: actor.trim() || null,
+          reviewedAt: reviewStatus === "Unreviewed" ? null : new Date().toISOString(),
+          notes: reviewStatus === "Unreviewed" ? null : "Manual Evidence Workbench intake."
+        },
+        objectLinks: objectId.trim()
+          ? [
+              {
+                linkKind,
+                objectId: objectId.trim(),
+                label: objectId.trim(),
+                relationship: "supports"
+              }
+            ]
+          : [],
+        intakeSource: {
+          sourceKind,
+          path: isUpload ? null : sourcePath.trim(),
+          displayName: retainedFileName
+        }
+      };
+      await vm.intakeDocument(request);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Could not read the selected document file.");
+    }
+  };
+
+  return (
+    <Card className="panel-surface" role="region" aria-label="Evidence document intake">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" aria-hidden="true" />
+              Document intake
+            </CardTitle>
+            <CardDescription>
+              Retain an uploaded document against the selected evidence subject without mutating accounting authority.
+            </CardDescription>
+          </div>
+          <Badge variant={vm.hasSelection ? "outline" : "warning"}>{selectedSubject}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <form className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" onSubmit={handleSubmit}>
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source kind
+                <Select
+                  aria-label="Document source kind"
+                  value={sourceKind}
+                  onChange={(event) => {
+                    const nextKind = event.currentTarget.value as EvidenceDocumentIntakeSourceKind;
+                    setSourceKind(nextKind);
+                    if (["upload", "local-file", "imported-file-reference"].includes(sourceChannel.trim().toLowerCase())) {
+                      setSourceChannel(defaultIntakeChannel(nextKind));
+                    }
+                    setFormError(null);
+                  }}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {intakeSourceKinds.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              {isUpload ? (
+                <label key="uploaded-content-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
+                  Document file
+                  <Input
+                    key="uploaded-content-file"
+                    type="file"
+                    aria-label="Document file"
+                    disabled={vm.intakeCommand.busy}
+                    onChange={(event) => {
+                      setFile(event.currentTarget.files?.[0] ?? null);
+                      setFormError(null);
+                    }}
+                  />
+                </label>
+              ) : (
+                <label key="file-reference-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
+                  Source file path
+                  <Input
+                    key="file-reference-path"
+                    aria-label="Source file path"
+                    value={sourcePath}
+                    onChange={(event) => {
+                      setSourcePath(event.currentTarget.value);
+                      setFormError(null);
+                    }}
+                    disabled={vm.intakeCommand.busy}
+                    placeholder="D:\\imports\\statement.csv"
+                  />
+                </label>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Classification
+                <Select
+                  aria-label="Document classification"
+                  value={classification}
+                  onChange={(event) => setClassification(event.currentTarget.value as EvidenceDocumentClassification)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {documentClassifications.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source channel
+                <Input
+                  aria-label="Source channel"
+                  value={sourceChannel}
+                  onChange={(event) => setSourceChannel(event.currentTarget.value)}
+                  disabled={vm.intakeCommand.busy}
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Extraction status
+                <Select
+                  aria-label="Extraction status"
+                  value={extractionStatus}
+                  onChange={(event) => setExtractionStatus(event.currentTarget.value as EvidenceExtractionStatus)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {extractionStatuses.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Reviewer state
+                <Select
+                  aria-label="Reviewer state"
+                  value={reviewStatus}
+                  onChange={(event) => setReviewStatus(event.currentTarget.value as EvidenceDocumentReviewStatus)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {reviewStatuses.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Actor
+                <Input aria-label="Actor" value={actor} onChange={(event) => setActor(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Tenant
+                <Input aria-label="Tenant" value={tenantId} onChange={(event) => setTenantId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Scope
+                <Input aria-label="Scope" value={scope} onChange={(event) => setScope(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source system
+                <Input aria-label="Source system" value={sourceSystem} onChange={(event) => setSourceSystem(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Source reference
+                <Input aria-label="Source reference" value={sourceReference} onChange={(event) => setSourceReference(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Link kind
+                <Select
+                  aria-label="Linked object kind"
+                  value={linkKind}
+                  onChange={(event) => setLinkKind(event.currentTarget.value as EvidenceDocumentLinkKind)}
+                  disabled={vm.intakeCommand.busy}
+                >
+                  {linkKinds.map((value) => (
+                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Linked object id
+                <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="submit"
+                busy={vm.intakeCommand.busy}
+                busyLabel={vm.intakeCommand.busyLabel}
+                disabled={submitDisabled}
+                disabledReason={disabledReason}
+                aria-label={vm.intakeCommand.ariaLabel}
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                {vm.intakeCommand.label}
+              </Button>
+              {isUpload && file ? <span className="break-all font-mono text-xs text-muted-foreground">{file.name}</span> : null}
+              {!isUpload && sourcePath.trim() ? <span className="break-all font-mono text-xs text-muted-foreground">{sourcePath.trim()}</span> : null}
+            </div>
+          </div>
+        </form>
+        {formError ? (
+          <p role="alert" className="mt-3 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {formError}
+          </p>
+        ) : null}
+        {vm.intakeResultLabel ? (
+          <p role="status" className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+            {vm.intakeResultLabel}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvidenceVaultDocumentPanel({ panel }: { panel: EvidenceVaultDocumentIndexPanelViewModel }) {
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(panel.rows[0]?.id ?? null);
+  const selectedDocument = panel.rows.find((document) => document.id === selectedDocumentId) ?? panel.rows[0] ?? null;
+
+  return (
+    <Card className="panel-surface" role="region" aria-label={panel.title}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" aria-hidden="true" />
+              {panel.title}
+            </CardTitle>
+            <CardDescription>{panel.description}</CardDescription>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Badge variant="outline">{panel.scopeLabel}</Badge>
+            <Badge variant={panel.hasRows ? "warning" : "success"}>{panel.summaryLabel}</Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {panel.hasRows ? (
+          <>
+            <ul className="grid gap-3 xl:grid-cols-2" aria-label="Evidence Vault document queue">
+              {panel.rows.map((document) => (
+                <EvidenceVaultDocumentQueueItem
+                  key={document.id}
+                  document={document}
+                  selected={selectedDocument?.id === document.id}
+                  onSelect={() => setSelectedDocumentId(document.id)}
+                />
+              ))}
+            </ul>
+            {selectedDocument ? <EvidenceVaultDocumentDetailPanel detail={selectedDocument.detail} /> : null}
+          </>
+        ) : (
+          <div
+            role="status"
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-4 py-4 text-sm text-muted-foreground"
+          >
+            <div className="font-semibold text-foreground">{panel.emptyTitle}</div>
+            <p className="mt-1 max-w-2xl leading-6">{panel.emptyDetail}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvidenceVaultDocumentQueueItem({
+  document,
+  selected,
+  onSelect
+}: {
+  document: EvidenceVaultDocumentIndexRowViewModel;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <li
+      aria-label={document.ariaLabel}
+      className={cn(
+        "rounded-md border bg-secondary/25 px-3 py-3 text-sm",
+        selected ? "border-primary/60 shadow-sm" : "border-border/70"
+      )}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+            <span className="break-all">{document.fileName}</span>
+            <Badge variant={badgeVariant[document.extractionTone]}>{document.extractionLabel}</Badge>
+            <Badge variant={badgeVariant[document.reviewTone]}>{document.reviewLabel}</Badge>
+          </div>
+          <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{document.classificationLabel}</div>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            type="button"
+            variant={selected ? "default" : "outline"}
+            size="sm"
+            aria-pressed={selected}
+            aria-controls={document.detail.id}
+            onClick={onSelect}
+          >
+            <FileText className="h-4 w-4" aria-hidden="true" />
+            Review details
+          </Button>
+          {document.manifestHref && document.manifestLabel && document.manifestAriaLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <a
+                href={document.manifestHref}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={document.manifestAriaLabel}
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                {document.manifestLabel}
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+          {document.sourceLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+          {document.actorLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+          {document.tenantScopeLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+          {document.openRequestCountLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono sm:col-span-2">
+          {document.objectLinksLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+          {document.subjectLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+          {document.vaultLabel}
+        </span>
+        <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono sm:col-span-2">
+          {document.hashLabel}
+        </span>
+      </div>
+      <div className="mt-3 text-xs text-muted-foreground">{document.receivedLabel}</div>
+    </li>
+  );
+}
+
+function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      className="mt-4 rounded-md border border-border/80 bg-background/40 px-4 py-4"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Document review</div>
+          <h3 className="mt-1 break-all text-base font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Badge variant={badgeVariant[detail.statusTone]}>{detail.statusLabel}</Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!detail.canAccept || detail.reviewBusy}
+            onClick={() => void detail.acceptReview()}
+          >
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            {detail.reviewBusy ? "Saving" : "Accept"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!detail.canReject || detail.reviewBusy}
+            onClick={() => void detail.rejectReview()}
+          >
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+            {detail.reviewBusy ? "Saving" : "Reject"}
+          </Button>
+          {detail.manifestHref && detail.manifestLabel && detail.manifestAriaLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <a href={detail.manifestHref} target="_blank" rel="noreferrer" aria-label={detail.manifestAriaLabel}>
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                {detail.manifestLabel}
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <dl className="mt-4 grid gap-2 text-xs md:grid-cols-2 xl:grid-cols-3">
+        {detail.fields.map((field) => (
+          <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2">
+            <dt className="font-semibold text-muted-foreground">{field.label}</dt>
+            <dd className="mt-1 break-all font-mono text-foreground">{field.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="mt-4 grid gap-4 xl:grid-cols-3">
+        <EvidenceVaultDocumentObjectLinks detail={detail} />
+        <EvidenceVaultDocumentAuditTrail detail={detail} />
+        <EvidenceVaultDocumentSupportRequests detail={detail} />
+      </div>
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentObjectLinks({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Linked operational objects" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Linked objects</h4>
+      {detail.objectLinkRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Linked operational objects">
+          {detail.objectLinkRows.map((link) => (
+            <li key={link.id} aria-label={link.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="font-semibold text-foreground">{link.kindLabel}</div>
+              <div className="mt-1 break-all font-mono">{link.objectLabel}</div>
+              <div className="mt-1 text-muted-foreground">{link.relationshipLabel}</div>
+              {link.href && link.linkLabel && link.linkAriaLabel ? (
+                <Button asChild variant="ghost" size="sm" className="mt-2 px-0">
+                  <a href={link.href} aria-label={link.linkAriaLabel}>{link.linkLabel}</a>
+                </Button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.objectLinkEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentAuditTrail({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Document audit trail" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Audit trail</h4>
+      {detail.auditRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Document audit events">
+          {detail.auditRows.map((audit) => (
+            <li key={audit.id} aria-label={audit.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="font-semibold text-foreground">{audit.actionLabel}</div>
+              <div className="mt-1 text-muted-foreground">{audit.recordedLabel}</div>
+              <div className="mt-1 break-all font-mono">{audit.actorLabel}</div>
+              <p className="mt-1 leading-5">{audit.summary}</p>
+              <div className="mt-1 break-all font-mono text-muted-foreground">{audit.correlationLabel}</div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.auditEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentSupportRequests({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Linked support requests" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Support requests</h4>
+      {detail.supportRequestRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Linked support requests">
+          {detail.supportRequestRows.map((request) => (
+            <li key={request.id} aria-label={request.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-foreground">{request.requestKindLabel}</span>
+                <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+              </div>
+              <div className="mt-1 break-all font-mono">{request.evidenceLabel}</div>
+              <p className="mt-1 leading-5">{request.summary}</p>
+              <div className="mt-1 break-all font-mono text-muted-foreground">{request.workItemLabel}</div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.supportRequestEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
 function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestListIndexPanelViewModel }) {
   return (
     <Card className="panel-surface" role="region" aria-label={panel.title}>
@@ -1062,4 +1663,45 @@ function buttonVariantForAction(tone: EvidencePacketActionTone) {
     return "destructive";
   }
   return "outline";
+}
+
+function formatDocumentOption(value: string) {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ");
+}
+
+function defaultIntakeChannel(sourceKind: EvidenceDocumentIntakeSourceKind) {
+  switch (sourceKind) {
+    case "LocalFile":
+      return "local-file";
+    case "ImportedFileReference":
+      return "imported-file-reference";
+    default:
+      return "upload";
+  }
+}
+
+function fileNameFromPath(path: string) {
+  const segments = path.trim().split(/[\\/]/).filter(Boolean);
+  return segments.at(-1) || "document.bin";
+}
+
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read the selected document file."));
+    reader.onload = () => {
+      const value = reader.result;
+      if (typeof value !== "string") {
+        reject(new Error("Could not read the selected document file."));
+        return;
+      }
+
+      const marker = "base64,";
+      const markerIndex = value.indexOf(marker);
+      resolve(markerIndex >= 0 ? value.slice(markerIndex + marker.length) : value);
+    };
+    reader.readAsDataURL(file);
+  });
 }

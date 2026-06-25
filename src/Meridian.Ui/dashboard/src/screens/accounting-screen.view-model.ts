@@ -1191,6 +1191,8 @@ export interface ReferenceDataEndpointRowViewModel extends ReferenceDataEndpoint
   rowId: string;
   familyLabel: string;
   methodLabel: string;
+  accessLabel: string;
+  displaySummary: string;
   statusLabel: string;
   statusBadgeVariant: "success" | "warning" | "outline" | "danger";
   countLabel: string;
@@ -3041,7 +3043,7 @@ const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> 
       currency: "USD",
       postingStatus: "Posted",
       auditReference: "fixture/security-master/cash-flow/sec-1/cpn-2026-05",
-      note: "Fixture coupon row used by browser workbench tests."
+      note: "Validation coupon row used by browser workbench checks."
     },
     {
       eventId: "sched-sec-1-principal-2026-11",
@@ -3061,7 +3063,7 @@ const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> 
       currency: "USD",
       postingStatus: "Pending",
       auditReference: "fixture/security-master/cash-flow/sec-1/principal-2026-11",
-      note: "Fixture amortization row keeps schedule selection deterministic."
+      note: "Validation amortization row keeps schedule selection consistent."
     }
   ]
 };
@@ -4651,7 +4653,7 @@ export function useAccountingConfigurationViewModel(
       });
       setTenantAdministrationProfile(saved);
       setTenantAdministrationDraft(buildAccountingTenantAdministrationProfileDraft(saved));
-      setSandboxProofMessage("Implementation sandbox proof retained; readiness refreshed from fixture and ledger-book validation evidence.");
+      setSandboxProofMessage("Implementation sandbox proof retained; readiness refreshed from validation and ledger-book evidence.");
       await refresh();
     } catch (err) {
       setSandboxProofError(describeApiError(err, "Implementation sandbox proof save failed."));
@@ -7586,7 +7588,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "implementation-sandbox",
       label: "Sandbox proof",
-      description: "Implementation fixture, migration rehearsal, import, rule, close, and report validation is retained.",
+      description: "Implementation validation, migration rehearsal, import, rule, close, and report evidence is retained.",
       checked: draft?.implementationSandboxConfigured ?? false
     }
   ];
@@ -9923,13 +9925,13 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
   if (!workbench) {
     return {
       title: "Capital Account Workbench",
-      description: "Investor-level capital account evidence, allocation rules, statement lineage, and audit drill-throughs load from the shared private-capital workbench endpoint.",
+      description: "Investor-level capital account evidence, allocation rules, statement lineage, and audit drill-throughs load from Meridian private-capital workbench data.",
       statusLabel: "Not loaded",
       statusTone: "default",
-      statusReason: "The shared capital-account workbench endpoint has not returned a projection yet.",
+      statusReason: "Capital-account workbench data has not loaded yet.",
       projectedAtLabel: "Not loaded",
       workbenchRouteLabel: "No workbench route",
-      emptyText: "No capital-account workbench projection has loaded yet.",
+      emptyText: "No capital-account workbench data has loaded yet.",
       summaryCards: [
         { id: "investor-accounts", label: "Investor accounts", value: "0", detail: "No investor account rows loaded", tone: "default" },
         { id: "allocation-rules", label: "Allocation rules", value: "0", detail: "No allocation evidence checks loaded", tone: "default" },
@@ -9949,7 +9951,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
 
   return {
     title: "Capital Account Workbench",
-    description: "Investor-level capital account evidence, allocation rules, statement and restatement lineage, and audit drill-throughs from the shared private-capital workbench endpoint.",
+    description: "Investor-level capital account evidence, allocation rules, statement and restatement lineage, and audit drill-throughs from Meridian private-capital workbench data.",
     statusLabel: workbench.statusLabel,
     statusTone: capitalAccountWorkbenchStatusTone(workbench.statusLabel),
     statusReason: workbench.statusReason,
@@ -10212,7 +10214,7 @@ function buildManualJournalPrivateCapitalActivityView(
   if (!activity) {
     return {
       title: "Private-capital activity",
-      statusLabel: "No projection",
+      statusLabel: "No activity loaded",
       projectedAtLabel: "Not loaded",
       emptyText: "No private-capital fund events are retained in the manual JE workbench yet.",
       summaryCards: [
@@ -10221,8 +10223,8 @@ function buildManualJournalPrivateCapitalActivityView(
         { id: "ledger-impacts", label: "Ledger impacts", value: "0", detail: "No GL impact rows", tone: "default" },
         { id: "report-outputs", label: "Report outputs", value: "0", detail: "No package candidates", tone: "default" },
         { id: "payment-intents", label: "Payment intents", value: "0", detail: "No pre-execution cash workflow", tone: "default" },
-        { id: "net-activity", label: "Net activity", value: "$0", detail: "No projected balance movement", tone: "default" },
-        { id: "projection-issues", label: "Projection issues", value: "0", detail: "No projection warnings", tone: "success" }
+        { id: "net-activity", label: "Net activity", value: "$0", detail: "No balance movement", tone: "default" },
+        { id: "projection-issues", label: "Data quality issues", value: "0", detail: "No workbench warnings", tone: "success" }
       ],
       fundEvents: [],
       capitalAccounts: [],
@@ -10334,9 +10336,9 @@ function buildManualJournalPrivateCapitalActivityView(
       },
       {
         id: "projection-issues",
-        label: "Projection issues",
+        label: "Data quality issues",
         value: validationIssues.length.toLocaleString(),
-        detail: validationIssues.length > 0 ? "Context needs review" : "Projection context complete",
+        detail: validationIssues.length > 0 ? "Context needs review" : "Workbench context complete",
         tone: validationIssues.length > 0 ? "warning" : "success"
       }
     ],
@@ -11616,12 +11618,12 @@ export function useAccountingReconciliationViewModel(
       const statusText = !hasSelection
         ? "Select a reconciliation run before previewing accounting transaction impact."
         : transactionLabBusy
-          ? "Requesting Transaction Lab preview from the shared endpoint."
+          ? "Requesting Transaction Lab preview from Meridian accounting services."
           : hasError
             ? transactionLabError?.summary ?? "Transaction Lab preview failed."
             : hasPreview
-              ? `Preview ${transactionLabPreview?.previewId ?? ""} loaded from shared endpoint calculations.`
-              : "Ready to preview accounting impact through the shared Transaction Lab endpoint.";
+              ? `Preview ${transactionLabPreview?.previewId ?? ""} loaded from Meridian accounting calculations.`
+              : "Ready to preview accounting impact through Transaction Lab.";
 
       const impactRows = transactionLabPreview?.trialBalanceImpact.map((row, index) => ({
         id: `${row.accountName}-${index}`,
@@ -11922,12 +11924,12 @@ export function buildReconciliationStatementRunsViewState({
 
   return {
     title: "Statement runs",
-    description: "Broker and custodian statement imports stay anchored to shared reconciliation endpoint data; React only presents counts supplied by the catalog/read-model seam.",
+    description: "Broker and custodian statement imports stay anchored to Meridian reconciliation data; the screen presents service-supplied match, break, and case counts.",
     tableLabel: "Accounting statement runs",
     tableCaption: "Statement run list with broker or custodian, account, period, status, validation issue count, match count, break count, case count, and imported timestamp.",
     detailPanelId,
     emptyText: "No broker or custodian statement runs are available for this accounting period.",
-    loadingText: loading ? "Loading statement runs from the reconciliation endpoint." : null,
+    loadingText: loading ? "Loading statement runs from Meridian reconciliation data." : null,
     errorText: error?.summary ?? null,
     errorDetails: error?.details ?? [],
     recoveryActionLabel: "Retry statement runs",
@@ -12052,7 +12054,7 @@ function buildStatementRunRow(
     controlsId: detailPanelId,
     ariaLabel: `Statement run ${run.runId}. ${status}. ${validationIssueCount} validation issues, ${matchCount} matches, ${breakCount} breaks, ${caseCount} cases. Imported ${importedAtLabel}.`,
     selectAriaLabel: `Inspect statement run ${run.runId}`,
-    unavailableReason: missing.length > 0 ? `${missing.join(", ")} not provided by statement run payload.` : null
+    unavailableReason: missing.length > 0 ? `${missing.join(", ")} not provided by statement run data.` : null
   };
 }
 
@@ -12071,13 +12073,13 @@ function buildReconciliationRunDetailTabs(run: StatementRunSummary | null): Reco
   const matchCount = run ? run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches : 0;
   const openExceptionCount = run?.openExceptionCount ?? 0;
   const tabs: Array<{ id: ReconciliationRunDetailTabId; label: string; badgeLabel: string | null; description: string }> = [
-    { id: "overview", label: "Overview", badgeLabel: run?.status ?? null, description: "Statement source, account coverage, import timing, and endpoint-supplied reconciliation posture." },
+    { id: "overview", label: "Overview", badgeLabel: run?.status ?? null, description: "Statement source, account coverage, import timing, and reconciliation status." },
     { id: "validation", label: "Validation", badgeLabel: run ? String(run.validationIssueCount ?? openExceptionCount) : null, description: "Validation issues reported by the shared statement reconciliation run." },
     { id: "positions", label: "Positions", badgeLabel: run ? String(run.positionMatches) : null, description: "Position match totals supplied by the reconciliation service." },
     { id: "cash", label: "Cash", badgeLabel: run ? String(run.cashMatches) : null, description: "Cash match totals supplied by the reconciliation service." },
     { id: "transactions", label: "Transactions", badgeLabel: run ? String(run.transactionMatches) : null, description: "Transaction match totals supplied by the reconciliation service." },
     { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework read models; no case-state logic runs in React." },
-    { id: "evidence", label: "Evidence", badgeLabel: run ? String(matchCount) : null, description: "Evidence packet and imported statement references available through shared endpoint clients." }
+    { id: "evidence", label: "Evidence", badgeLabel: run ? String(matchCount) : null, description: "Evidence packet and imported statement references available for review." }
   ];
 
   return tabs.map((tab) => ({
@@ -12908,7 +12910,7 @@ export function buildAccountingCashFlowViewState(
     return {
       eyebrow: "Cash Flow",
       title: "Cash-flow evidence loading",
-      description: `${contextLabel} is waiting for the shared accounting cash-flow payload.`,
+      description: `${contextLabel} is waiting for shared accounting cash-flow data.`,
       routePath,
       statusLabel: "Pending",
       statusTone: "warning",
@@ -13085,7 +13087,7 @@ export function buildAccountingWorkflowLaunchViewState({
       href: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
       metricLabel: "Setup",
       metricValue: "Shared",
-      statusLabel: "Endpoint-backed",
+      statusLabel: "Connected",
       tone: "default",
       workstream
     }),
@@ -13584,7 +13586,7 @@ function buildAccountingCloseReportPackageViewState({
 
   return {
     title: "Close and report package certification",
-    description: "Shared close-plan, period-lock, materiality, late-adjustment, financial statement, investor statement, realized gain/loss, NAV, and restatement state from the ledger endpoints.",
+    description: "Close plan, period lock, materiality, late-adjustment, financial statement, investor statement, realized gain/loss, NAV, and restatement status from Meridian ledger services.",
     ariaLabel: "Accounting close and report package certification cockpit",
     statusLabel,
     statusTone,
@@ -13917,7 +13919,7 @@ function buildAccountingCloseWorkflowSteps({
         ? "Shared checklist tasks have not loaded."
         : openTaskCount === 0
           ? "All loaded checklist tasks report retained sign-off posture."
-          : "Retain the next ready checklist task decision through the shared close-management endpoint.",
+          : "Retain the next ready checklist task decision through close management.",
       evidenceLabel: tasks.length === 0
         ? "No checklist rows"
         : `${tasks.filter((task) => task.statusTone === "success").length}/${tasks.length} task rows ready`,
@@ -15343,7 +15345,7 @@ export function buildCloseCommandCenterViewState({
       id: "period",
       label: "Period status",
       value: readinessLabel,
-      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using bootstrap close posture until workflow detail loads.",
+      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using workspace close status until workflow detail loads.",
       tone: statusTone,
       href: workflow ? WORKSTATION_ROUTE_CATALOG.accountingApprovals : null
     },
@@ -15913,7 +15915,7 @@ function buildAccountingReportingBackendLink(id: string, label: string, href: st
     id,
     label,
     href,
-    ariaLabel: `Open GET ${href} for ${label}`
+    ariaLabel: `Open ${label} service reference`
   };
 }
 
@@ -16376,7 +16378,7 @@ function buildTrialBalanceDetail(
     ledgerLinesTitle: "Ledger lines for selected account",
     ledgerLinesDescription: firstJournalEntryId
       ? `Journal support linked to ${line.accountLabel} for ${runLabel}.`
-      : `Account-level ledger inquiry for ${line.accountLabel}; journal-entry ids appear when the ledger payload includes posting references.`,
+      : `Account-level ledger inquiry for ${line.accountLabel}; journal-entry ids appear when ledger data includes posting references.`,
     ledgerLines: buildLedgerLineRows(line, sourceJournalEntryIds, sourceEventIds, approvalDrillThroughHref),
     ledgerLinesEmptyText: "No ledger line support is attached to this account row yet.",
     supportingDocumentsTitle: "Supporting documentation",
@@ -17518,14 +17520,14 @@ export function buildReferenceDataWorkbenchViewState({
     securityId,
     title: "Multi-asset reference data",
     description: securityId
-      ? `Endpoint-backed coverage for ${displaySecurityId} across bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, CDs, and EDGAR.`
-      : "Select a security to inspect multi-asset reference data endpoint coverage.",
+      ? `Reference data coverage for ${displaySecurityId} across bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, CDs, and EDGAR.`
+      : "Select a security to inspect multi-asset reference data coverage.",
     metrics: [
       {
         id: "routes",
         label: "Mapped routes",
         value: routeCount > 0 ? routeCount.toLocaleString() : "Pending",
-        detail: routeCount > 0 ? `${formatCount(routeCount, "reference endpoint")} catalogued for this selection.` : "Select a security to build endpoint probes.",
+        detail: routeCount > 0 ? `${formatCount(routeCount, "reference data source")} catalogued for this selection.` : "Select a security to build reference data checks.",
         tone: routeCount > 0 ? "default" : "warning"
       },
       {
@@ -17539,27 +17541,27 @@ export function buildReferenceDataWorkbenchViewState({
         id: "review",
         label: "Needs review",
         value: reviewCount.toLocaleString(),
-        detail: reviewCount > 0 ? `${formatCount(reviewCount, "endpoint")} returned empty, missing, blocked, or error status.` : "No probed endpoint is flagged for review.",
+        detail: reviewCount > 0 ? `${formatCount(reviewCount, "data source")} returned empty, missing, blocked, or error status.` : "No checked data source is flagged for review.",
         tone: reviewCount > 0 ? "warning" : "success"
       },
       {
         id: "deferred",
         label: "Deferred mutations",
         value: deferredCount.toLocaleString(),
-        detail: deferredCount > 0 ? `${formatCount(deferredCount, "mutation endpoint")} catalogued without invocation.` : "No mutation endpoint is present in the catalog.",
+        detail: deferredCount > 0 ? `${formatCount(deferredCount, "write-capable source")} catalogued without invocation.` : "No write-capable source is present in the catalog.",
         tone: deferredCount > 0 ? "warning" : "default"
       }
     ],
     rows,
     selectedRowId: effectiveSelectedRowId,
     selectedDetail: selectedRow ? buildReferenceDataEndpointDetailViewState(selectedRow, coverage) : null,
-    tableLabel: `Reference data endpoint coverage for ${displaySecurityId}`,
-    tableCaption: `Read-only probe status for mapped reference data endpoints backing ${displaySecurityId}.`,
+    tableLabel: `Reference data source coverage for ${displaySecurityId}`,
+    tableCaption: `Read-only status for mapped reference data sources backing ${displaySecurityId}.`,
     detailPanelId: "reference-data-endpoint-detail",
-    emptyText: securityId ? "No reference endpoint rows are available for this security." : "Select a security to load reference endpoint coverage.",
-    detailEmptyTitle: "No endpoint selected",
-    detailEmptyText: "Select an endpoint row to inspect request details, response preview, and error evidence.",
-    detailEmptyAriaLabel: `Reference data endpoint detail for ${displaySecurityId}`,
+    emptyText: securityId ? "No reference data source rows are available for this security." : "Select a security to load reference data source coverage.",
+    detailEmptyTitle: "No data source selected",
+    detailEmptyText: "Select a data source row to inspect coverage detail, response summary, and error evidence.",
+    detailEmptyAriaLabel: `Reference data source detail for ${displaySecurityId}`,
     loadingText: loading ? "Loading multi-asset reference data coverage..." : null,
     errorText,
     errorDetails: normalizedError?.details ?? [],
@@ -17569,7 +17571,7 @@ export function buildReferenceDataWorkbenchViewState({
       : loading
         ? `Loading multi-asset reference data coverage for ${displaySecurityId}.`
         : rows.length > 0
-          ? `${formatCount(rows.length, "reference endpoint")} loaded for ${displaySecurityId}; ${formatCount(readyCount, "endpoint")} ready.`
+          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${formatCount(readyCount, "source")} ready.`
           : ""
   };
 }
@@ -17584,18 +17586,22 @@ function buildReferenceDataEndpointRows(
     const countLabel = endpoint.responseCount === null ? "-" : formatCount(endpoint.responseCount, "record");
     const latencyLabel = endpoint.durationMs === null ? "-" : `${endpoint.durationMs} ms`;
     const statusLabel = referenceDataStatusLabel(endpoint.status);
+    const accessLabel = endpoint.mutation ? "Write-capable" : "Read-only";
+    const displaySummary = formatFinanceFacingSourceSummary(endpoint.responseSummary, endpoint.errorSummary);
 
     return {
       ...endpoint,
       rowId,
       familyLabel: endpoint.family,
       methodLabel: endpoint.method,
+      accessLabel,
+      displaySummary,
       statusLabel,
       statusBadgeVariant,
       countLabel,
       latencyLabel,
-      ariaLabel: `${endpoint.family} ${endpoint.label}, ${endpoint.method} ${endpoint.path}, ${statusLabel}. ${endpoint.responseSummary}`,
-      selectAriaLabel: `Inspect ${endpoint.label} reference endpoint`,
+      ariaLabel: `${endpoint.family} ${endpoint.label}, ${statusLabel}. ${displaySummary}`,
+      selectAriaLabel: `Inspect ${endpoint.label} reference data source`,
       detailPanelId: "reference-data-endpoint-detail",
       isExpanded: rowId === selectedRowId
     };
@@ -17610,18 +17616,18 @@ function buildReferenceDataEndpointDetailViewState(
     id: row.detailPanelId,
     eyebrow: row.familyLabel,
     title: row.label,
-    subtitle: `${row.methodLabel} ${row.path}`,
-    description: row.errorSummary ?? row.responseSummary,
-    ariaLabel: `${row.label} reference data endpoint detail`,
+    subtitle: `Reference data source: ${row.familyLabel}`,
+    description: row.errorSummary ?? row.displaySummary,
+    ariaLabel: `${row.label} reference data source detail`,
     statusLabel: row.statusLabel,
     statusBadgeVariant: row.statusBadgeVariant,
     fields: [
       { label: "Family", value: row.familyLabel },
-      { label: "Method", value: row.methodLabel, tone: row.mutation ? "warning" : "default" },
-      { label: "Endpoint", value: row.path },
-      { label: "Request", value: row.requestLabel },
+      { label: "Access", value: row.accessLabel, tone: row.mutation ? "warning" : "default" },
+      { label: "Source family", value: row.familyLabel },
+      { label: "Review scope", value: formatFinanceFacingSourceSummary(row.requestLabel) },
       { label: "Status", value: row.statusLabel, tone: referenceDataStatusTone(row.status) },
-      { label: "Payload", value: row.countLabel },
+      { label: "Records", value: row.countLabel },
       { label: "Latency", value: row.latencyLabel },
       { label: "Catalogued", value: coverage?.requestedAtUtc ? formatDateTimeLabel(coverage.requestedAtUtc) : "-" }
     ],
@@ -17629,6 +17635,20 @@ function buildReferenceDataEndpointDetailViewState(
     errorSummary: row.errorSummary,
     errorDetails: row.errorDetails
   };
+}
+
+function formatFinanceFacingSourceSummary(summary: string, errorSummary?: string | null): string {
+  const source = errorSummary?.trim() || summary.trim();
+  const normalized = source
+    .replace(/\b(GET|POST|PUT|PATCH|DELETE)\b\s+/gi, "")
+    .replace(/\bendpoint\b/gi, "source")
+    .replace(/\bpayload\b/gi, "record set")
+    .replace(/\bDTO\b/g, "record")
+    .replace(/\bbackend\b/gi, "service")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return normalized || "Reference data source status is available for review.";
 }
 
 function referenceDataStatusLabel(status: ReferenceDataEndpointProbeResult["status"]): string {

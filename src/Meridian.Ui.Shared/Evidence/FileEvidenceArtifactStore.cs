@@ -41,6 +41,16 @@ public interface IEvidenceArtifactStore
     Task<IReadOnlyList<EvidenceVaultRequestListEntryDto>> ListRequestListsAsync(
         EvidenceVaultRequestListQueryDto query,
         CancellationToken ct = default);
+
+    Task<IReadOnlyList<EvidenceVaultDocumentEntryDto>> ListDocumentsAsync(
+        EvidenceVaultDocumentQueryDto query,
+        CancellationToken ct = default);
+
+    Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
+        string vaultId,
+        string documentId,
+        EvidenceVaultDocumentReviewRequestDto request,
+        CancellationToken ct = default);
 }
 
 public sealed record EvidenceManifestFile(
@@ -115,7 +125,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
         var supportRequests = BuildSupportRequests(packet);
         var requestLists = BuildRequestLists(packet.Subject, supportRequests);
-        var manifest = new EvidenceManifestDto(
+        var manifest = new RetainedEvidenceManifestDto(
             SchemaVersion: 1,
             ExportedAt: generatedAt,
             RequestedBy: request.RequestedBy,
@@ -150,7 +160,17 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         {
             Artifacts = retainedArtifacts,
             RequestLists = requestLists,
-            SupportRequests = supportRequests
+            SupportRequests = supportRequests,
+            Documents = ResolveArtifactDocuments(retainedArtifacts).ToArray(),
+            ManifestSnapshot = BuildManifestSnapshot(
+                vaultId,
+                packet.Subject.SubjectKind,
+                packet.Subject.SubjectId,
+                generatedAt,
+                contentHash,
+                ResolveArtifactDocuments(retainedArtifacts),
+                supportRequests,
+                requestLists)
         };
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
@@ -196,24 +216,9 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 nameof(request));
         }
 
-        var content = DecodeBase64(request.ContentBase64);
-        if (content.LongLength == 0)
-        {
-            throw new ArgumentException("Evidence vault intake content must not be empty.", nameof(request));
-        }
-
-        if (content.LongLength > MaxRetainedArtifactBytes)
-        {
-            throw new ArgumentException("Evidence vault intake content exceeds the 100 MB vault artifact limit.", nameof(request));
-        }
-
-        var contentHash = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-        if (!string.IsNullOrWhiteSpace(request.ExpectedContentHashSha256) &&
-            !string.Equals(NormalizeHash(request.ExpectedContentHashSha256), contentHash, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException("Evidence vault intake content hash does not match the expected SHA-256 hash.", nameof(request));
-        }
-
+        var intakeContent = await ResolveIntakeContentAsync(request, ct).ConfigureAwait(false);
+        var content = intakeContent.Content;
+        var contentHash = intakeContent.ContentHashSha256;
         var capturedAt = DateTimeOffset.UtcNow;
         var vaultId = BuildIntakeVaultId(subjectKind, subjectId, fileName, contentHash, capturedAt);
         var manifestFileName = $"{capturedAt:yyyyMMddTHHmmssfffZ}-intake-manifest.json";
@@ -231,10 +236,20 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SourceSystem: NormalizeOptional(request.SourceSystem),
             ReceivedAt: capturedAt,
             ReceivedBy: NormalizeOptional(request.ReceivedBy),
-            SourceReference: NormalizeOptional(request.SourceReference),
+            SourceReference: FirstNonEmpty(request.SourceReference, intakeContent.SourceReference),
             ReceiptHash: contentHash);
         var extractedFields = request.ExtractedFields?.ToArray() ?? [];
         var artifactId = $"intake:{vaultId}";
+        var document = BuildEvidenceDocument(
+            request,
+            vaultId,
+            artifactId,
+            fileName,
+            contentHash,
+            capturedAt,
+            manifestRoute,
+            FirstNonEmpty(request.SourceReference, intakeContent.SourceReference),
+            extractedFields);
         var artifact = new EvidenceVaultArtifactDto(
             ArtifactId: artifactId,
             Kind: "vault-intake",
@@ -242,13 +257,14 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             ContentHashSha256: contentHash,
             SizeBytes: content.LongLength,
             RetainedAt: capturedAt,
-            SourcePath: null,
-            SourceRoute: NormalizeOptional(request.SourceReference),
+            SourcePath: intakeContent.SourcePath,
+            SourceRoute: FirstNonEmpty(request.SourceReference, intakeContent.SourceReference),
             CanonicalSubjectKind: subjectKind,
             CanonicalSubjectId: subjectId)
         {
             Capture = capture,
-            ExtractedFields = extractedFields
+            ExtractedFields = extractedFields,
+            Document = document
         };
         var subject = new EvidenceSubjectDto(
             SubjectId: subjectId,
@@ -308,7 +324,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Warnings: []);
         var supportRequests = BuildSupportRequests(intakePacket);
         var requestLists = BuildRequestLists(subject, supportRequests);
-        var manifest = new EvidenceManifestDto(
+        var manifest = new RetainedEvidenceManifestDto(
             SchemaVersion: 1,
             ExportedAt: capturedAt,
             RequestedBy: request.ReceivedBy,
@@ -341,7 +357,17 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         {
             Artifacts = [artifact],
             RequestLists = requestLists,
-            SupportRequests = supportRequests
+            SupportRequests = supportRequests,
+            Documents = [document],
+            ManifestSnapshot = BuildManifestSnapshot(
+                vaultId,
+                subjectKind,
+                subjectId,
+                capturedAt,
+                manifestHash,
+                [document],
+                supportRequests,
+                requestLists)
         };
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
@@ -368,7 +394,10 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             CapturedAt: capturedAt,
             Capture: capture,
             ExtractedFields: extractedFields,
-            VaultIdentity: vaultIdentity);
+            VaultIdentity: vaultIdentity)
+        {
+            Document = document
+        };
     }
 
     public Task<EvidenceManifestFile?> TryOpenManifestAsync(
@@ -543,6 +572,146 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             .ToArray();
     }
 
+    public async Task<IReadOnlyList<EvidenceVaultDocumentEntryDto>> ListDocumentsAsync(
+        EvidenceVaultDocumentQueryDto query,
+        CancellationToken ct = default)
+    {
+        query ??= new EvidenceVaultDocumentQueryDto();
+        var vaultDir = Path.Combine(_rootDirectory, "_vault");
+        if (!Directory.Exists(vaultDir))
+        {
+            return [];
+        }
+
+        var matches = new List<EvidenceVaultDocumentEntryDto>();
+        foreach (var indexPath in Directory.EnumerateFiles(vaultDir, "*.json"))
+        {
+            ct.ThrowIfCancellationRequested();
+            var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
+            if (identity is null || !MatchesDocumentIdentity(query, identity))
+            {
+                continue;
+            }
+
+            foreach (var document in ResolveIdentityDocuments(identity))
+            {
+                if (!MatchesDocument(query, document))
+                {
+                    continue;
+                }
+
+                matches.Add(new EvidenceVaultDocumentEntryDto(
+                    Document: document,
+                    VaultId: identity.VaultId,
+                    SubjectKind: identity.SubjectKind,
+                    SubjectId: identity.SubjectId,
+                    ManifestRoute: identity.ManifestRoute,
+                    RetainedAt: identity.RetainedAt,
+                    StorageKind: identity.StorageKind,
+                    OpenRequestCount: identity.SupportRequests.Count(static request =>
+                        string.Equals(request.Status, "Open", StringComparison.OrdinalIgnoreCase)),
+                    SupportRequests: identity.SupportRequests));
+            }
+        }
+
+        var maxResults = Math.Clamp(query.MaxResults ?? 250, 1, 500);
+        return matches
+            .OrderBy(static entry => DocumentReviewRank(entry.Document.ReviewerState.Status))
+            .ThenBy(static entry => DocumentExtractionRank(entry.Document.ExtractionStatus))
+            .ThenByDescending(static entry => entry.Document.ReceivedAt)
+            .ThenBy(static entry => entry.Document.FileName, StringComparer.OrdinalIgnoreCase)
+            .Take(maxResults)
+            .ToArray();
+    }
+
+    public async Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
+        string vaultId,
+        string documentId,
+        EvidenceVaultDocumentReviewRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var safeVaultId = ValidateVaultId(vaultId);
+        if (safeVaultId is null)
+        {
+            throw new ArgumentException("Evidence vault id is invalid.", nameof(vaultId));
+        }
+
+        var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
+        var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
+        var reviewedAt = DateTimeOffset.UtcNow;
+        var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
+        var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
+        if (identity is null)
+        {
+            return null;
+        }
+
+        var document = ResolveIdentityDocuments(identity)
+            .FirstOrDefault(item => string.Equals(item.DocumentId, normalizedDocumentId, StringComparison.OrdinalIgnoreCase));
+        if (document is null)
+        {
+            return null;
+        }
+
+        var extractionStatus = request.ExtractionStatus ?? ResolveReviewedExtractionStatus(document.ExtractionStatus, request.Status);
+        var reviewState = new EvidenceDocumentReviewStateDto(
+            request.Status,
+            reviewer,
+            reviewedAt,
+            NormalizeOptional(request.Notes));
+        var auditEvent = new EvidenceDocumentAuditEventDto(
+            reviewedAt,
+            reviewer,
+            "DocumentReviewRecorded",
+            $"Document review state set to {request.Status}.",
+            NormalizeOptional(request.CorrelationId));
+        var reviewedDocument = document with
+        {
+            ExtractionStatus = extractionStatus,
+            ReviewerState = reviewState,
+            AuditTrail = document.AuditTrail
+                .Concat([auditEvent])
+                .OrderBy(static item => item.RecordedAt)
+                .ThenBy(static item => item.Action, StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+        };
+
+        var reviewedIdentity = ReplaceIdentityDocument(identity, reviewedDocument);
+        var manifestPath = ResolveVaultManifestPath(identity, safeVaultId);
+        if (manifestPath is not null)
+        {
+            var manifest = await TryReadRetainedManifestAsync(manifestPath, ct).ConfigureAwait(false);
+            if (manifest is not null)
+            {
+                var reviewedManifest = manifest with
+                {
+                    VaultIdentity = reviewedIdentity
+                };
+                await AtomicFileWriter
+                    .WriteAsync(manifestPath, JsonSerializer.Serialize(reviewedManifest, _jsonOptions), ct)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        await WriteVaultIndexAsync(reviewedIdentity, ct).ConfigureAwait(false);
+
+        var entry = new EvidenceVaultDocumentEntryDto(
+            reviewedDocument,
+            reviewedIdentity.VaultId,
+            reviewedIdentity.SubjectKind,
+            reviewedIdentity.SubjectId,
+            reviewedIdentity.ManifestRoute,
+            reviewedIdentity.RetainedAt,
+            reviewedIdentity.StorageKind,
+            reviewedIdentity.SupportRequests.Count(static supportRequest =>
+                string.Equals(supportRequest.Status, "Open", StringComparison.OrdinalIgnoreCase)),
+            reviewedIdentity.SupportRequests);
+        return new EvidenceVaultDocumentReviewResponseDto(entry, auditEvent);
+    }
+
     private static bool MatchesLookup(EvidenceVaultLookupRequestDto request, EvidenceSubjectLinkageDto? linkage, EvidenceVaultIdentityDto identity)
     {
         if (!string.IsNullOrWhiteSpace(request.EvidenceSubject) && !EvidenceSubjectMatches(request.EvidenceSubject, linkage, identity))
@@ -577,6 +746,189 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
         return true;
     }
+
+    private static IEnumerable<EvidenceDocumentDto> ResolveIdentityDocuments(EvidenceVaultIdentityDto identity)
+    {
+        foreach (var document in identity.Documents)
+        {
+            yield return document;
+        }
+
+        if (identity.Documents.Count > 0)
+        {
+            yield break;
+        }
+
+        foreach (var artifact in identity.Artifacts)
+        {
+            if (artifact.Document is not null)
+            {
+                yield return artifact.Document;
+            }
+        }
+    }
+
+    private static EvidenceVaultIdentityDto ReplaceIdentityDocument(
+        EvidenceVaultIdentityDto identity,
+        EvidenceDocumentDto reviewedDocument)
+    {
+        var documents = ResolveIdentityDocuments(identity)
+            .Select(document => string.Equals(document.DocumentId, reviewedDocument.DocumentId, StringComparison.OrdinalIgnoreCase)
+                ? reviewedDocument
+                : document)
+            .DistinctBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var artifacts = identity.Artifacts
+            .Select(artifact => artifact.Document is not null &&
+                                string.Equals(artifact.Document.DocumentId, reviewedDocument.DocumentId, StringComparison.OrdinalIgnoreCase)
+                ? artifact with { Document = reviewedDocument }
+                : artifact)
+            .ToArray();
+
+        return identity with
+        {
+            Artifacts = artifacts,
+            Documents = documents,
+            ManifestSnapshot = identity.ManifestSnapshot is null
+                ? null
+                : ReplaceManifestDocument(identity.ManifestSnapshot, reviewedDocument)
+        };
+    }
+
+    private static EvidenceManifestDto ReplaceManifestDocument(
+        EvidenceManifestDto manifest,
+        EvidenceDocumentDto reviewedDocument)
+    {
+        var documents = manifest.Documents
+            .Select(document => string.Equals(document.DocumentId, reviewedDocument.DocumentId, StringComparison.OrdinalIgnoreCase)
+                ? reviewedDocument
+                : document)
+            .DistinctBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var objectLinks = documents
+            .SelectMany(static document => document.ObjectLinks)
+            .GroupBy(
+                static link => $"{link.LinkKind}|{link.ObjectId}|{link.Route}|{link.Relationship}",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static link => link.LinkKind)
+            .ThenBy(static link => link.ObjectId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return manifest with
+        {
+            Documents = documents,
+            ObjectLinks = objectLinks
+        };
+    }
+
+    private static EvidenceExtractionStatusDto ResolveReviewedExtractionStatus(
+        EvidenceExtractionStatusDto currentStatus,
+        EvidenceDocumentReviewStatusDto reviewStatus)
+        => reviewStatus switch
+        {
+            EvidenceDocumentReviewStatusDto.Accepted => EvidenceExtractionStatusDto.Accepted,
+            EvidenceDocumentReviewStatusDto.Rejected => EvidenceExtractionStatusDto.Rejected,
+            EvidenceDocumentReviewStatusDto.NeedsReview => EvidenceExtractionStatusDto.NeedsReview,
+            _ => currentStatus
+        };
+
+    private static IEnumerable<EvidenceDocumentDto> ResolveArtifactDocuments(IEnumerable<EvidenceVaultArtifactDto> artifacts)
+    {
+        foreach (var artifact in artifacts)
+        {
+            if (artifact.Document is not null)
+            {
+                yield return artifact.Document;
+            }
+        }
+    }
+
+    private static bool MatchesDocumentIdentity(
+        EvidenceVaultDocumentQueryDto query,
+        EvidenceVaultIdentityDto identity)
+    {
+        if (!string.IsNullOrWhiteSpace(query.SubjectKind) &&
+            !string.Equals(query.SubjectKind, identity.SubjectKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.SubjectId) &&
+            !string.Equals(query.SubjectId, identity.SubjectId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool MatchesDocument(EvidenceVaultDocumentQueryDto query, EvidenceDocumentDto document)
+    {
+        if (query.Classification.HasValue && document.Classification != query.Classification.Value)
+        {
+            return false;
+        }
+
+        if (query.ExtractionStatus.HasValue && document.ExtractionStatus != query.ExtractionStatus.Value)
+        {
+            return false;
+        }
+
+        if (query.ReviewStatus.HasValue && document.ReviewerState.Status != query.ReviewStatus.Value)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.TenantId) &&
+            !string.Equals(query.TenantId, document.TenantId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Scope) &&
+            !string.Equals(query.Scope, document.Scope, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (query.LinkKind.HasValue &&
+            !document.ObjectLinks.Any(link => link.LinkKind == query.LinkKind.Value))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.ObjectId) &&
+            !document.ObjectLinks.Any(link => string.Equals(link.ObjectId, query.ObjectId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int DocumentReviewRank(EvidenceDocumentReviewStatusDto status)
+        => status switch
+        {
+            EvidenceDocumentReviewStatusDto.NeedsReview => 0,
+            EvidenceDocumentReviewStatusDto.Unreviewed => 1,
+            EvidenceDocumentReviewStatusDto.Rejected => 2,
+            EvidenceDocumentReviewStatusDto.Accepted => 3,
+            _ => 4
+        };
+
+    private static int DocumentExtractionRank(EvidenceExtractionStatusDto status)
+        => status switch
+        {
+            EvidenceExtractionStatusDto.NeedsReview => 0,
+            EvidenceExtractionStatusDto.NotExtracted => 1,
+            EvidenceExtractionStatusDto.Extracted => 2,
+            EvidenceExtractionStatusDto.Rejected => 3,
+            EvidenceExtractionStatusDto.Accepted => 4,
+            _ => 5
+        };
 
     private static bool MatchesRequestListIdentity(
         EvidenceVaultRequestListQueryDto query,
@@ -730,8 +1082,61 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private async Task<EvidenceSubjectLinkageDto?> TryReadLinkageAsync(string manifestPath, CancellationToken ct)
     {
         await using var stream = File.OpenRead(manifestPath);
-        var manifest = await JsonSerializer.DeserializeAsync<EvidenceManifestDto>(stream, _jsonOptions, ct).ConfigureAwait(false);
+        var manifest = await JsonSerializer.DeserializeAsync<RetainedEvidenceManifestDto>(stream, _jsonOptions, ct).ConfigureAwait(false);
         return manifest?.Linkage;
+    }
+
+    private static EvidenceManifestDto BuildManifestSnapshot(
+        string manifestId,
+        string packageKind,
+        string packageId,
+        DateTimeOffset frozenAt,
+        string contentHashSha256,
+        IEnumerable<EvidenceDocumentDto> documents,
+        IReadOnlyList<EvidenceSupportRequestDto> supportRequests,
+        IReadOnlyList<EvidenceRequestListDto> requestLists)
+    {
+        var documentSnapshots = documents
+            .OrderBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var requestSnapshots = supportRequests
+            .Select(request =>
+            {
+                var target = requestLists.FirstOrDefault(list =>
+                    list.RequestIds.Contains(request.RequestId, StringComparer.OrdinalIgnoreCase));
+                return new EvidenceRequestDto(
+                    RequestId: request.RequestId,
+                    RequestKind: request.RequestKind,
+                    Severity: request.Severity,
+                    Status: request.Status,
+                    Summary: request.Summary,
+                    TargetKind: target?.TargetKind,
+                    TargetId: target?.TargetId,
+                    BlockedOutput: request.BlockedOutput);
+            })
+            .OrderBy(static request => SeverityRank(request.Severity))
+            .ThenBy(static request => request.RequestKind, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static request => request.RequestId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var objectLinks = documentSnapshots
+            .SelectMany(static document => document.ObjectLinks)
+            .GroupBy(
+                static link => $"{link.LinkKind}|{link.ObjectId}|{link.Route}|{link.Relationship}",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static link => link.LinkKind)
+            .ThenBy(static link => link.ObjectId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new EvidenceManifestDto(
+            ManifestId: manifestId,
+            FrozenAt: frozenAt,
+            PackageKind: packageKind,
+            PackageId: packageId,
+            ContentHashSha256: contentHashSha256,
+            Documents: documentSnapshots,
+            Requests: requestSnapshots,
+            ObjectLinks: objectLinks);
     }
 
     private static IReadOnlyList<EvidenceSupportRequestDto> BuildSupportRequests(EvidencePacketDto packet)
@@ -1096,7 +1501,94 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static byte[] DecodeBase64(string contentBase64)
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
+
+    private static async Task<IntakeContent> ResolveIntakeContentAsync(
+        EvidenceVaultIntakeRequestDto request,
+        CancellationToken ct)
+    {
+        var source = request.IntakeSource;
+        var sourceKind = source?.SourceKind ?? EvidenceDocumentIntakeSourceKindDto.UploadedContent;
+        var expectedHash = FirstNonEmpty(request.ExpectedContentHashSha256, source?.ExpectedContentHashSha256);
+        IntakeContent content = sourceKind switch
+        {
+            EvidenceDocumentIntakeSourceKindDto.UploadedContent => new(
+                DecodeBase64(request.ContentBase64),
+                SourcePath: null,
+                SourceReference: FirstNonEmpty(source?.Uri, source?.Path, source?.DisplayName)),
+            EvidenceDocumentIntakeSourceKindDto.LocalFile => await ReadLocalIntakeFileAsync(source, ct).ConfigureAwait(false),
+            EvidenceDocumentIntakeSourceKindDto.ImportedFileReference => await ReadImportedIntakeFileAsync(source, ct).ConfigureAwait(false),
+            _ => throw new ArgumentException($"Evidence vault intake source kind '{sourceKind}' is not supported.", nameof(request))
+        };
+
+        if (content.Content.LongLength == 0)
+        {
+            throw new ArgumentException("Evidence vault intake content must not be empty.", nameof(request));
+        }
+
+        if (content.Content.LongLength > MaxRetainedArtifactBytes)
+        {
+            throw new ArgumentException("Evidence vault intake content exceeds the 100 MB vault artifact limit.", nameof(request));
+        }
+
+        var contentHash = Convert.ToHexString(SHA256.HashData(content.Content)).ToLowerInvariant();
+        if (!string.IsNullOrWhiteSpace(expectedHash) &&
+            !string.Equals(NormalizeHash(expectedHash), contentHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Evidence vault intake content hash does not match the expected SHA-256 hash.", nameof(request));
+        }
+
+        return content with { ContentHashSha256 = contentHash };
+    }
+
+    private static async Task<IntakeContent> ReadLocalIntakeFileAsync(
+        EvidenceDocumentIntakeSourceDto? source,
+        CancellationToken ct)
+    {
+        if (source is null || string.IsNullOrWhiteSpace(source.Path))
+        {
+            throw new ArgumentException("Evidence vault local-file intake requires an intakeSource.path value.");
+        }
+
+        var fullPath = Path.GetFullPath(source.Path.Trim());
+        var file = new FileInfo(fullPath);
+        if (!file.Exists)
+        {
+            throw new ArgumentException($"Evidence vault local-file intake source '{fullPath}' does not exist.");
+        }
+
+        if ((file.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+        {
+            throw new ArgumentException("Evidence vault local-file intake source must be a file, not a directory.");
+        }
+
+        if (file.Length > MaxRetainedArtifactBytes)
+        {
+            throw new ArgumentException("Evidence vault local-file intake source exceeds the 100 MB vault artifact limit.");
+        }
+
+        var content = await File.ReadAllBytesAsync(fullPath, ct).ConfigureAwait(false);
+        return new IntakeContent(
+            content,
+            SourcePath: fullPath,
+            SourceReference: FirstNonEmpty(source.Uri, source.DisplayName, fullPath));
+    }
+
+    private static Task<IntakeContent> ReadImportedIntakeFileAsync(
+        EvidenceDocumentIntakeSourceDto? source,
+        CancellationToken ct)
+    {
+        if (source is null || string.IsNullOrWhiteSpace(source.Path))
+        {
+            throw new ArgumentException("Evidence vault imported-file intake requires an intakeSource.path value.");
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return ReadLocalIntakeFileAsync(source, ct);
+    }
+
+    private static byte[] DecodeBase64(string? contentBase64)
     {
         if (string.IsNullOrWhiteSpace(contentBase64))
         {
@@ -1111,6 +1603,14 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         {
             throw new ArgumentException("Evidence vault intake content must be valid base64.", nameof(contentBase64), ex);
         }
+    }
+
+    private sealed record IntakeContent(
+        byte[] Content,
+        string? SourcePath,
+        string? SourceReference)
+    {
+        public string ContentHashSha256 { get; init; } = string.Empty;
     }
 
     private static string BuildIntakeVaultId(
@@ -1151,6 +1651,125 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             field.ValidationStatus is EvidenceStatusDto.ReviewRequired or EvidenceStatusDto.Stale or EvidenceStatusDto.Unknown)
             ? EvidenceStatusDto.ReviewRequired
             : EvidenceStatusDto.Ready;
+    }
+
+    private static EvidenceDocumentDto BuildEvidenceDocument(
+        EvidenceVaultIntakeRequestDto request,
+        string vaultId,
+        string artifactId,
+        string fileName,
+        string contentHash,
+        DateTimeOffset capturedAt,
+        string manifestRoute,
+        string? sourceReference,
+        IReadOnlyCollection<EvidenceArtifactExtractionFieldDto> extractedFields)
+    {
+        var actor = FirstNonEmpty(request.Actor, request.ReceivedBy);
+        var extractionStatus = request.ExtractionStatus ?? ResolveDocumentExtractionStatus(extractedFields);
+        var reviewerState = request.ReviewerState ?? BuildDefaultReviewerState(extractionStatus);
+        var objectLinks = BuildDocumentObjectLinks(request).ToArray();
+        var auditTrail = new[]
+        {
+            new EvidenceDocumentAuditEventDto(
+                RecordedAt: capturedAt,
+                Actor: actor ?? "system",
+                Action: "DocumentIntakeRetained",
+                Summary: $"Retained {request.Classification} document '{fileName}' through {request.IntakeChannel} intake.",
+                CorrelationId: vaultId)
+        };
+
+        return new EvidenceDocumentDto(
+            DocumentId: $"doc:{vaultId}",
+            FileName: fileName,
+            Classification: request.Classification,
+            SourceHashSha256: contentHash,
+            ReceivedAt: capturedAt,
+            SourceChannel: request.IntakeChannel,
+            Actor: actor,
+            TenantId: NormalizeOptional(request.TenantId),
+            Scope: NormalizeOptional(request.Scope),
+            ExtractionStatus: extractionStatus,
+            ObjectLinks: objectLinks,
+            ReviewerState: reviewerState,
+            AuditTrail: auditTrail)
+        {
+            ContentType = NormalizeOptional(request.ContentType),
+            SourceSystem = NormalizeOptional(request.SourceSystem),
+            SourceReference = NormalizeOptional(sourceReference),
+            VaultId = vaultId,
+            ArtifactId = artifactId,
+            ManifestRoute = manifestRoute,
+            ExtractorId = NormalizeOptional(request.ExtractorId)
+        };
+    }
+
+    private static EvidenceExtractionStatusDto ResolveDocumentExtractionStatus(
+        IReadOnlyCollection<EvidenceArtifactExtractionFieldDto> extractedFields)
+    {
+        if (extractedFields.Count == 0)
+        {
+            return EvidenceExtractionStatusDto.NotExtracted;
+        }
+
+        if (extractedFields.Any(static field =>
+                field.ValidationStatus is EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing or EvidenceStatusDto.ReviewRequired or EvidenceStatusDto.Stale or EvidenceStatusDto.Unknown))
+        {
+            return EvidenceExtractionStatusDto.NeedsReview;
+        }
+
+        return EvidenceExtractionStatusDto.Extracted;
+    }
+
+    private static EvidenceDocumentReviewStateDto BuildDefaultReviewerState(
+        EvidenceExtractionStatusDto extractionStatus)
+        => extractionStatus switch
+        {
+            EvidenceExtractionStatusDto.Accepted => new(EvidenceDocumentReviewStatusDto.Accepted),
+            EvidenceExtractionStatusDto.Rejected => new(EvidenceDocumentReviewStatusDto.Rejected),
+            EvidenceExtractionStatusDto.NeedsReview => new(EvidenceDocumentReviewStatusDto.NeedsReview),
+            _ => new(EvidenceDocumentReviewStatusDto.Unreviewed)
+        };
+
+    private static IEnumerable<EvidenceDocumentLinkDto> BuildDocumentObjectLinks(
+        EvidenceVaultIntakeRequestDto request)
+    {
+        foreach (var link in request.ObjectLinks ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(link.ObjectId))
+            {
+                yield return link;
+            }
+        }
+
+        if (request.Linkage is null)
+        {
+            yield break;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Linkage.PeriodId))
+        {
+            yield return new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Period, request.Linkage.PeriodId!, Relationship: "supports-period");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Linkage.ReconciliationCaseId))
+        {
+            yield return new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.ReconciliationCase, request.Linkage.ReconciliationCaseId!, Relationship: "supports-reconciliation-case");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Linkage.AccountingRecordId))
+        {
+            yield return new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Journal, request.Linkage.AccountingRecordId!, Relationship: "supports-accounting-record");
+        }
+
+        if (string.Equals(request.SubjectKind, "account", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Account, request.SubjectId, Relationship: "evidence-subject");
+        }
+
+        if (string.Equals(request.SubjectKind, "instrument", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Instrument, request.SubjectId, Relationship: "evidence-subject");
+        }
     }
 
     private static int ResolveIntakeScore(EvidenceStatusDto status)
@@ -1324,6 +1943,35 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         catch (JsonException ex)
         {
             _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
+            return null;
+        }
+    }
+
+    private async Task<RetainedEvidenceManifestDto?> TryReadRetainedManifestAsync(
+        string manifestPath,
+        CancellationToken ct)
+    {
+        if (!File.Exists(manifestPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            await using var stream = new FileStream(
+                manifestPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 16 * 1024,
+                useAsync: true);
+            return await JsonSerializer
+                .DeserializeAsync<RetainedEvidenceManifestDto>(stream, _jsonOptions, ct)
+                .ConfigureAwait(false);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be deserialized.", manifestPath);
             return null;
         }
     }
@@ -1615,7 +2263,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         ? StringComparison.OrdinalIgnoreCase
         : StringComparison.Ordinal;
 
-    private sealed record EvidenceManifestDto(
+    private sealed record RetainedEvidenceManifestDto(
         int SchemaVersion,
         DateTimeOffset ExportedAt,
         string? RequestedBy,

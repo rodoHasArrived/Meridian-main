@@ -1236,7 +1236,20 @@ public sealed class OperationsContinuityWorkflow
             .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var hash = ComputeClosePackageEvidenceHash(packageId, request.ReportPackId, manifestId, evidence, approvals);
+        var documentSnapshots = NormalizeDocumentSnapshots(request.DocumentSnapshots);
+        var manifestSnapshot = NormalizeManifestSnapshot(request.ManifestSnapshot);
+        var retainedEvidence = evidence
+            .Concat(BuildDocumentEvidenceLinks(documentSnapshots))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var hash = ComputeClosePackageEvidenceHash(
+            packageId,
+            request.ReportPackId,
+            manifestId,
+            retainedEvidence,
+            approvals,
+            documentSnapshots,
+            manifestSnapshot);
 
         return new OperationsClosePackagePublicationDto(
             packageId,
@@ -1247,8 +1260,10 @@ public sealed class OperationsContinuityWorkflow
             now,
             request.Actor.Trim(),
             request.Rationale.Trim(),
-            evidence,
-            approvals);
+            retainedEvidence,
+            approvals,
+            documentSnapshots,
+            manifestSnapshot);
     }
 
     private static string ComputeClosePackageEvidenceHash(
@@ -1256,7 +1271,9 @@ public sealed class OperationsContinuityWorkflow
         string reportPackId,
         string manifestId,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
-        IReadOnlyList<OperationsChecklistControlApprovalDto> approvals)
+        IReadOnlyList<OperationsChecklistControlApprovalDto> approvals,
+        IReadOnlyList<EvidenceDocumentDto> documentSnapshots,
+        EvidenceManifestDto? manifestSnapshot)
     {
         var builder = new StringBuilder()
             .Append(packageId).Append('|')
@@ -1271,6 +1288,38 @@ public sealed class OperationsContinuityWorkflow
                 .Append(link.Route?.Trim() ?? string.Empty);
         }
 
+        foreach (var document in documentSnapshots.OrderBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase))
+        {
+            builder.Append("|document:")
+                .Append(document.DocumentId.Trim()).Append(':')
+                .Append(document.SourceHashSha256.Trim()).Append(':')
+                .Append(document.Classification).Append(':')
+                .Append(document.ExtractionStatus).Append(':')
+                .Append(document.ReviewerState.Status).Append(':')
+                .Append(document.ReceivedAt.UtcDateTime.ToString("O")).Append(':')
+                .Append(document.ManifestRoute?.Trim() ?? string.Empty);
+
+            foreach (var link in document.ObjectLinks
+                         .Where(static link => !string.IsNullOrWhiteSpace(link.ObjectId))
+                         .OrderBy(static link => link.LinkKind)
+                         .ThenBy(static link => link.ObjectId, StringComparer.OrdinalIgnoreCase))
+            {
+                builder.Append(':')
+                    .Append(link.LinkKind).Append('=')
+                    .Append(link.ObjectId.Trim());
+            }
+        }
+
+        if (manifestSnapshot is not null)
+        {
+            builder.Append("|manifest:")
+                .Append(manifestSnapshot.ManifestId.Trim()).Append(':')
+                .Append(manifestSnapshot.PackageKind.Trim()).Append(':')
+                .Append(manifestSnapshot.PackageId.Trim()).Append(':')
+                .Append(manifestSnapshot.ContentHashSha256.Trim()).Append(':')
+                .Append(manifestSnapshot.FrozenAt.UtcDateTime.ToString("O"));
+        }
+
         foreach (var approval in approvals.OrderBy(static item => item.TaskId, StringComparer.OrdinalIgnoreCase)
                      .ThenBy(static item => item.ApprovedBy, StringComparer.OrdinalIgnoreCase))
         {
@@ -1281,6 +1330,58 @@ public sealed class OperationsContinuityWorkflow
         }
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
+
+    private static IReadOnlyList<EvidenceDocumentDto> NormalizeDocumentSnapshots(
+        IReadOnlyList<EvidenceDocumentDto> documentSnapshots) =>
+        documentSnapshots
+            .Where(static document =>
+                !string.IsNullOrWhiteSpace(document.DocumentId) &&
+                !string.IsNullOrWhiteSpace(document.SourceHashSha256))
+            .DistinctBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static document => document.DocumentId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static EvidenceManifestDto? NormalizeManifestSnapshot(EvidenceManifestDto? manifestSnapshot)
+    {
+        if (manifestSnapshot is null ||
+            string.IsNullOrWhiteSpace(manifestSnapshot.ManifestId) ||
+            string.IsNullOrWhiteSpace(manifestSnapshot.PackageKind) ||
+            string.IsNullOrWhiteSpace(manifestSnapshot.PackageId) ||
+            string.IsNullOrWhiteSpace(manifestSnapshot.ContentHashSha256))
+        {
+            return null;
+        }
+
+        return manifestSnapshot with
+        {
+            Documents = NormalizeDocumentSnapshots(manifestSnapshot.Documents),
+            Requests = manifestSnapshot.Requests
+                .Where(static request => !string.IsNullOrWhiteSpace(request.RequestId))
+                .DistinctBy(static request => request.RequestId, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static request => request.RequestId, StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ObjectLinks = manifestSnapshot.ObjectLinks
+                .Where(static link => !string.IsNullOrWhiteSpace(link.ObjectId))
+                .DistinctBy(static link => $"{link.LinkKind}:{link.ObjectId}", StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static link => link.LinkKind)
+                .ThenBy(static link => link.ObjectId, StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+        };
+    }
+
+    private static IEnumerable<OperationsEvidenceLinkDto> BuildDocumentEvidenceLinks(
+        IReadOnlyList<EvidenceDocumentDto> documentSnapshots)
+    {
+        foreach (var document in documentSnapshots)
+        {
+            yield return new OperationsEvidenceLinkDto(
+                document.DocumentId.Trim(),
+                $"Vault document: {document.FileName.Trim()}",
+                document.ManifestRoute ?? document.SourceReference,
+                document.SourceChannel,
+                document.ReceivedAt);
+        }
     }
 
     private static string NormalizeClosePackageValue(string? value, string fallback) =>

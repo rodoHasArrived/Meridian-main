@@ -267,6 +267,25 @@ vi.mock("@/lib/api", async () => {
     }),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
+    getFinancialOperationsCommandCenter: vi.fn().mockResolvedValue({
+      generatedAtUtc: "2026-06-01T12:00:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      fundAccountId: "fund-alpha",
+      periodId: "2026-05",
+      status: "ReviewRequired",
+      isReadyToComplete: false,
+      summary: "Financial Operations command center is ready for workflow review.",
+      activeItemCount: 1,
+      blockedItemCount: 0,
+      reviewItemCount: 1,
+      metrics: [],
+      queueRows: [],
+      activeWorkflow: null,
+      closeCalendar: null,
+      privateCapitalCloseCockpit: null,
+      closeSupportDecision: null
+    }),
     approveOperationsContinuityWorkflow: vi.fn(),
     rejectOperationsContinuityWorkflow: vi.fn(),
     getSecurityInstrumentPassport: vi.fn().mockResolvedValue(null),
@@ -3769,7 +3788,7 @@ describe("AccountingScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Calibration API offline");
-    expect(alert).toHaveTextContent("Endpoint returned 503 for /api/reconciliation/calibration-summary.");
+    expect(alert).toHaveTextContent("Meridian service returned 503. Open diagnostics for technical details.");
     expect(alert).toHaveTextContent("Provider unavailable");
     const retry = screen.getByRole("button", { name: "Retry calibration summary load" });
 
@@ -3813,7 +3832,7 @@ describe("AccountingScreen", () => {
     expect(table).toHaveTextContent("24");
     expect(screen.getByRole("tab", { name: /Overview tab for statement run run-42/ })).toBeEnabled();
     expect(screen.getByRole("tab", { name: /Breaks & Cases tab for statement run run-42/ })).toHaveTextContent("2");
-    expect(screen.getByText(/Matching, tolerance, validation, and case-state decisions remain in the shared reconciliation services/)).toBeInTheDocument();
+    expect(screen.getByText(/Matching, tolerance, validation, and case-state decisions remain in reconciliation services/)).toBeInTheDocument();
   });
 
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {
@@ -3931,7 +3950,7 @@ describe("AccountingScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Fund account is required.");
-    expect(alert).toHaveTextContent("Endpoint returned 422 for /api/workstation/runs/run-42/trial-balance.");
+    expect(alert).toHaveTextContent("Meridian service returned 422. Open diagnostics for technical details.");
     expect(alert).toHaveTextContent("Validation failed");
     expect(alert).toHaveTextContent("Fund account: Select a fund account before loading accounting evidence.");
   });
@@ -4151,7 +4170,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Collector")).toBeInTheDocument();
   });
 
-  it("renders multi-asset reference data endpoint coverage after selecting a security", async () => {
+  it("renders multi-asset reference data source coverage after selecting a security", async () => {
     const user = userEvent.setup();
 
     await renderAccountingScreen(data, "/accounting/security-master");
@@ -4167,7 +4186,7 @@ describe("AccountingScreen", () => {
     }));
 
     const table = screen.getByRole("table", {
-      name: /Reference data endpoint coverage for 22222222-2222-2222-2222-222222222222/
+      name: /Reference data source coverage for 22222222-2222-2222-2222-222222222222/
     });
     expect(within(table).getByText("Bond reference")).toBeInTheDocument();
     expect(within(table).getByText("Option chain import")).toBeInTheDocument();
@@ -4452,7 +4471,7 @@ describe("AccountingScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Conflict API offline");
-    expect(within(alert).getByText("Endpoint returned 503 for /api/workstation/security-master/conflicts.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     const retry = screen.getByRole("button", { name: "Retry loading Security Master identifier conflicts" });
     expect(retry).toHaveTextContent("Retry conflicts");
 
@@ -4489,7 +4508,7 @@ describe("AccountingScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Resolution requires a newer conflict snapshot.");
-    expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/security-master/conflicts/conflict-1/resolve.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("resolution: Choose a resolution that matches the active provider record.")).toBeInTheDocument();
   });
 
@@ -4651,7 +4670,7 @@ describe("AccountingScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Break action failed: Ledger write rejected");
-    expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/reconciliation/break-queue/run-42:cash/resolve.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
   });
 });

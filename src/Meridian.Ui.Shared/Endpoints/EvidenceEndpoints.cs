@@ -182,6 +182,26 @@ public static class EvidenceEndpoints
 
             try
             {
+                var extractor = context.RequestServices.GetService<IEvidenceDocumentExtractor>();
+                if (extractor is not null)
+                {
+                    var extraction = await extractor.ExtractAsync(
+                        new EvidenceDocumentExtractionRequestDto(
+                            request.FileName,
+                            request.ContentType,
+                            request.IntakeChannel,
+                            request.SourceSystem,
+                            ResolveIntakeSourceReference(request),
+                            request.ExtractedFields ?? []),
+                        context.RequestAborted).ConfigureAwait(false);
+                    request = request with
+                    {
+                        ExtractedFields = extraction.Fields,
+                        ExtractionStatus = request.ExtractionStatus ?? extraction.Status,
+                        ExtractorId = request.ExtractorId ?? extraction.ExtractorId
+                    };
+                }
+
                 var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
                 var result = await store
                     .WriteIntakeArtifactAsync(request, context.RequestAborted)
@@ -261,6 +281,100 @@ public static class EvidenceEndpoints
         .Produces<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(200)
         .Produces<EvidenceEndpointErrorDto>(400);
 
+        group.MapGet("/vault/documents", async (
+            string? classification,
+            string? extractionStatus,
+            string? reviewStatus,
+            string? linkKind,
+            string? objectId,
+            string? subjectKind,
+            string? subjectId,
+            string? tenantId,
+            string? scope,
+            int? maxResults,
+            HttpContext context) =>
+        {
+            if (maxResults.HasValue && maxResults.Value <= 0)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-document-query",
+                    "Evidence vault document query maxResults must be greater than zero."));
+            }
+
+            var classificationResult = ParseQueryEnum<EvidenceDocumentClassificationDto>(classification, "classification");
+            var extractionStatusResult = ParseQueryEnum<EvidenceExtractionStatusDto>(extractionStatus, "extractionStatus");
+            var reviewStatusResult = ParseQueryEnum<EvidenceDocumentReviewStatusDto>(reviewStatus, "reviewStatus");
+            var linkKindResult = ParseQueryEnum<EvidenceDocumentLinkKindDto>(linkKind, "linkKind");
+            var parseError = classificationResult.Error ?? extractionStatusResult.Error ?? reviewStatusResult.Error ?? linkKindResult.Error;
+            if (parseError is not null)
+            {
+                return Results.BadRequest(parseError);
+            }
+
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var result = await store.ListDocumentsAsync(
+                new EvidenceVaultDocumentQueryDto(
+                    Classification: classificationResult.Value,
+                    ExtractionStatus: extractionStatusResult.Value,
+                    ReviewStatus: reviewStatusResult.Value,
+                    LinkKind: linkKindResult.Value,
+                    ObjectId: objectId,
+                    SubjectKind: subjectKind,
+                    SubjectId: subjectId,
+                    TenantId: tenantId,
+                    Scope: scope,
+                    MaxResults: maxResults),
+                context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ListWorkstationEvidenceVaultDocuments")
+        .Produces<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(200)
+        .Produces<EvidenceEndpointErrorDto>(400);
+
+        group.MapPost("/vault/{vaultId}/documents/{documentId}/review", async (
+            string vaultId,
+            string documentId,
+            EvidenceVaultDocumentReviewRequestDto? request,
+            HttpContext context) =>
+        {
+            if (request is null)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-document-review",
+                    "Evidence vault document review request body must be a valid JSON object.",
+                    vaultId: vaultId,
+                    fileName: documentId));
+            }
+
+            try
+            {
+                var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+                var result = await store
+                    .ReviewDocumentAsync(vaultId, documentId, request, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(Error(
+                        "evidence-vault-document-not-found",
+                        $"Evidence vault document '{vaultId}/{documentId}' was not found.",
+                        vaultId: vaultId,
+                        fileName: documentId))
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-document-review",
+                    ex.Message,
+                    vaultId: vaultId,
+                    fileName: documentId));
+            }
+        })
+        .WithName("ReviewWorkstationEvidenceVaultDocument")
+        .Produces<EvidenceVaultDocumentReviewResponseDto>(200)
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         return app;
     }
 
@@ -273,6 +387,16 @@ public static class EvidenceEndpoints
            || !string.IsNullOrWhiteSpace(request.AccountingRecordId)
            || !string.IsNullOrWhiteSpace(request.ReportPackDeliveryAttemptId)
            || !string.IsNullOrWhiteSpace(request.ReportPackDeliveryPackageId);
+
+    private static string? ResolveIntakeSourceReference(EvidenceVaultIntakeRequestDto request)
+        => FirstNonEmpty(
+            request.SourceReference,
+            request.IntakeSource?.Uri,
+            request.IntakeSource?.Path,
+            request.IntakeSource?.DisplayName);
+
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
     private static async Task<IResult> ResolvePacketAsync(
         string subjectKind,
@@ -325,6 +449,23 @@ public static class EvidenceEndpoints
         string? fileName = null,
         string? vaultId = null)
         => new(code, message, subjectKind, subjectId, fileName, vaultId);
+
+    private static (T? Value, EvidenceEndpointErrorDto? Error) ParseQueryEnum<T>(
+        string? value,
+        string parameterName)
+        where T : struct, Enum
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return (null, null);
+        }
+
+        return Enum.TryParse<T>(value.Trim(), ignoreCase: true, out var parsed)
+            ? (parsed, null)
+            : (null, Error(
+                "invalid-evidence-vault-document-query",
+                $"Evidence vault document query parameter '{parameterName}' has an unsupported value '{value}'."));
+    }
 
     private static async Task<(EvidencePacketExportRequest Request, IResult? Error)> ReadExportRequestAsync(
         HttpContext context,

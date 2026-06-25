@@ -4981,6 +4981,7 @@ Meridian-main
 │   │   ├── Evidence
 │   │   │   ├── EvidenceContribution.cs
 │   │   │   ├── EvidenceContributors.cs
+│   │   │   ├── EvidenceDocumentExtraction.cs
 │   │   │   ├── EvidenceGraphService.cs
 │   │   │   ├── EvidencePacketValidationService.cs
 │   │   │   ├── EvidenceProofChainBuilder.cs
@@ -5809,6 +5810,7 @@ Meridian-main
 │   │   │   ├── Layout
 │   │   │   │   └── WorkstationLayoutControls.cs
 │   │   │   ├── Models
+│   │   │   │   ├── EvidenceVaultPresentationModels.cs
 │   │   │   │   └── WorkstationPresentationModels.cs
 │   │   │   ├── Primitives
 │   │   │   │   └── WorkstationPrimitiveControls.cs
@@ -6980,6 +6982,7 @@ Meridian-main
 │   │   │   ├── WorkstationPageSmokeTests.cs
 │   │   │   └── WorkstationPrimitiveControlsTests.cs
 │   │   ├── Workstation
+│   │   │   ├── EvidenceVaultPresentationModelsTests.cs
 │   │   │   ├── TableViewModelTests.cs
 │   │   │   └── WorkstationPresentationModelsTests.cs
 │   │   ├── GlobalUsings.cs
@@ -7074,8 +7077,7 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   ├── shared-pattern-suggest.ps1
-│   │   └── test-gap-scan.ps1
+│   │   └── shared-pattern-suggest.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

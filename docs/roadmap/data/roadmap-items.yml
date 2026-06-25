@@ -368,10 +368,6 @@ items:
       - DIA-BROWSER-WORKSTATION
     evidence:
       - type: source
-        path: src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs
-      - type: source
-        path: src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs
-      - type: source
         path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs
       - type: source
         path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs
@@ -379,10 +375,6 @@ items:
         path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs
       - type: source
         path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs
-      - type: source
-        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts
-      - type: source
-        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx
       - type: source
         path: src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts
       - type: source
@@ -392,27 +384,17 @@ items:
       - type: source
         path: src/Meridian.Wpf/Views/FundLedgerPage.xaml
       - type: source
-        path: src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs
-      - type: source
         path: src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
-      - type: source
-        path: src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs
-      - type: source
-        path: src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs
       - type: source
         path: src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs
       - type: source
         path: src/Meridian.Wpf/Views/DirectLendingPage.xaml
-      - type: test
-        path: tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs
       - type: test
         path: tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs
       - type: test
         path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
       - type: test
         path: tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs
-      - type: test
-        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts
       - type: test
         path: src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx
       - type: test
@@ -421,10 +403,6 @@ items:
         path: tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
       - type: test
         path: tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs
-      - type: test
-        path: tests/Meridian.Tests/Application/DirectLending/PostgresDirectLendingCommandServiceTests.cs
-      - type: test
-        path: tests/Meridian.Tests/Application/DirectLending/DirectLendingOutboxDispatcherTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs
     last_reviewed: 2026-06-24
@@ -437,35 +415,22 @@ items:
     workspace:
       - Strategy
     owner_lane: Strategy Analytics
-    status: done
+    status: planned
     health: green
     priority: medium
-    evidence_posture: complete
-    current_summary: Closed 2026-06-23. Backtest Studio remains limited to an evidence loop: accepted runs can carry operator-facing acceptance criteria, retained evidence references, accounting-record links, approval references, paper-validation lineage, and governed-report references into the shared strategy-run record, and completion preserves those links. Broader Backtesting Studio UX remains deferred unless it strengthens the W1-W5 operational record baseline.
+    evidence_posture: planned_evidence
+    current_summary: Backtesting Studio remains planned. Strategy work should link research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting when those links are relevant, without treating prior baselines or named productization targets as development ceilings.
     exit_criteria:
-      - Backtest result evidence links to strategy lineage through retained `StrategyRunEntry` fields.
-      - Operator-facing acceptance criteria are persisted with the backtest run.
-      - Source READMEs explain module ownership and focused test lanes.
-      - Scope remains limited to evidence linkage and paper-validation support; no broad Studio UX is promoted by this item.
+      - Backtest result evidence links to strategy lineage.
+      - Operator-facing acceptance criteria are checklist-backed.
+      - Source READMEs explain module ownership and test lanes.
+      - Scope remains limited to evidence linkage and paper-validation support unless a later roadmap change promotes broader Studio scope.
     source_modules:
-      - SRC-BACKTESTING
-      - SRC-STRATEGIES
+      - SRC-APP
+      - SRC-CONTRACTS
     diagrams:
       - DIA-ASSURANCE-LOOP
-    evidence:
-      - type: source
-        path: src/Meridian.Backtesting/BacktestStudioContracts.cs
-      - type: source
-        path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-      - type: source
-        path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
-      - type: test
-        path: tests/Meridian.Tests/Application/Backtesting/BacktestStudioRunOrchestratorTests.cs
-      - type: docs
-        path: src/Meridian.Backtesting/README.md
-      - type: docs
-        path: src/Meridian.Strategies/README.md
-    last_reviewed: 2026-06-23
+    last_reviewed: 2026-06-04
 
   - id: W7-LIVE-001
     title: Live-readiness governance
@@ -476,37 +441,21 @@ items:
       - Trading
       - Settings
     owner_lane: Accounting and Ledger
-    status: done
+    status: planned
     health: green
     priority: medium
-    evidence_posture: complete
-    current_summary: Closed 2026-06-23. Live-readiness governance is evidence-gated, not live-execution productization: Paper -> Live promotion requires the W1-W5 operational record baseline, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed reporting evidence, governance sign-off, exception-handling posture, rollback or kill-switch posture, audit-retention evidence, and an active `AllowLivePromotion` override. Host and execution surfaces remain paper-first by default.
+    evidence_posture: planned_evidence
+    current_summary: Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
     exit_criteria:
-      - Live action surfaces remain paper-first unless live-readiness acceptance gates and execution controls are green.
+      - Live action surfaces remain paper-first until acceptance gates are green.
       - Credential and provider checks stay secret-safe and read-only by default.
-      - Governance sign-off, exception handling, rollback or kill-switch posture, and audit retention are linked before any live-readiness claim.
-      - This item strengthens operational evidence and approval posture without adding broker execution surface area.
+      - Governance sign-off is linked before any live-readiness claim.
+      - Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
     source_modules:
       - SRC-HOST
-      - SRC-EXECUTION
-      - SRC-STRATEGIES
+      - SRC-APP
+      - SRC-CONTRACTS
       - SRC-UI-DASHBOARD
     diagrams:
       - DIA-ASSURANCE-LOOP
-      - DIA-PAPER-SESSION-REPLAY
-    evidence:
-      - type: source
-        path: src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs
-      - type: source
-        path: src/Meridian.Strategies/Services/PromotionService.cs
-      - type: source
-        path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      - type: docs
-        path: src/Meridian/README.md
-      - type: test
-        path: tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs
-      - type: test
-        path: tests/Meridian.Tests/Strategies/PromotionServiceTests.cs
-      - type: test
-        path: tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs
-    last_reviewed: 2026-06-23
+    last_reviewed: 2026-06-04

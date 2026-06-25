@@ -3,7 +3,10 @@ import {
   exportEvidenceManifest,
   getEvidencePacket,
   getEvidenceSubjects,
+  intakeEvidenceVaultDocument,
+  listEvidenceVaultDocuments,
   listEvidenceVaultRequestLists,
+  reviewEvidenceVaultDocument,
   validateEvidencePacket
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -30,6 +33,12 @@ import type {
   EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
+  EvidenceVaultDocumentEntry,
+  EvidenceVaultDocumentQuery,
+  EvidenceVaultDocumentReviewRequest,
+  EvidenceVaultDocumentReviewResponse,
+  EvidenceVaultIntakeRequest,
+  EvidenceVaultIntakeResponse,
   EvidenceVaultRequestListEntry,
   EvidenceVaultRequestListQuery,
   WorkflowAction
@@ -40,7 +49,10 @@ export interface EvidenceWorkbenchServices {
   getPacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacket>;
   validatePacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidenceCompleteness>;
   exportManifest: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacketExportResponse>;
+  intakeDocument?: (request: EvidenceVaultIntakeRequest, options?: ApiRequestOptions) => Promise<EvidenceVaultIntakeResponse>;
   listRequestLists?: (query: EvidenceVaultRequestListQuery, options?: ApiRequestOptions) => Promise<EvidenceVaultRequestListEntry[]>;
+  listDocuments?: (query: EvidenceVaultDocumentQuery, options?: ApiRequestOptions) => Promise<EvidenceVaultDocumentEntry[]>;
+  reviewDocument?: (vaultId: string, documentId: string, request: EvidenceVaultDocumentReviewRequest, options?: ApiRequestOptions) => Promise<EvidenceVaultDocumentReviewResponse>;
 }
 
 export interface EvidenceNodeGroupViewModel {
@@ -348,6 +360,86 @@ export interface EvidenceVaultRequestListIndexRowViewModel extends EvidenceVault
   supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
 }
 
+export interface EvidenceVaultDocumentIndexPanelViewModel {
+  title: string;
+  description: string;
+  summaryLabel: string;
+  scopeLabel: string;
+  hasRows: boolean;
+  rows: EvidenceVaultDocumentIndexRowViewModel[];
+  emptyTitle: string;
+  emptyDetail: string;
+}
+
+export interface EvidenceVaultDocumentIndexRowViewModel {
+  id: string;
+  fileName: string;
+  classificationLabel: string;
+  extractionLabel: string;
+  extractionTone: EvidenceStatusTone;
+  reviewLabel: string;
+  reviewTone: EvidenceStatusTone;
+  sourceLabel: string;
+  actorLabel: string;
+  tenantScopeLabel: string;
+  hashLabel: string;
+  subjectLabel: string;
+  vaultLabel: string;
+  receivedLabel: string;
+  objectLinksLabel: string;
+  openRequestCountLabel: string;
+  manifestHref: string | null;
+  manifestLabel: string | null;
+  manifestAriaLabel: string | null;
+  ariaLabel: string;
+  detail: EvidenceVaultDocumentDetailViewModel;
+}
+
+export interface EvidenceVaultDocumentDetailViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  fields: EvidenceLineageDetailFieldViewModel[];
+  objectLinkRows: EvidenceVaultDocumentObjectLinkRowViewModel[];
+  auditRows: EvidenceVaultDocumentAuditRowViewModel[];
+  supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
+  manifestHref: string | null;
+  manifestLabel: string | null;
+  manifestAriaLabel: string | null;
+  canAccept: boolean;
+  canReject: boolean;
+  reviewBusy: boolean;
+  acceptReview: () => Promise<void>;
+  rejectReview: () => Promise<void>;
+  objectLinkEmptyText: string;
+  auditEmptyText: string;
+  supportRequestEmptyText: string;
+}
+
+export interface EvidenceVaultDocumentObjectLinkRowViewModel {
+  id: string;
+  kindLabel: string;
+  objectLabel: string;
+  relationshipLabel: string;
+  href: string | null;
+  linkLabel: string | null;
+  linkAriaLabel: string | null;
+  ariaLabel: string;
+}
+
+export interface EvidenceVaultDocumentAuditRowViewModel {
+  id: string;
+  actionLabel: string;
+  actorLabel: string;
+  recordedLabel: string;
+  summary: string;
+  correlationLabel: string;
+  ariaLabel: string;
+}
+
 export interface EvidenceWorkbenchViewModel {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
@@ -379,6 +471,7 @@ export interface EvidenceWorkbenchViewModel {
   assurancePanel: EvidenceAssurancePanelViewModel;
   proofChainPanel: EvidenceProofChainPanelViewModel;
   requestListPanel: EvidenceVaultRequestListIndexPanelViewModel;
+  documentPanel: EvidenceVaultDocumentIndexPanelViewModel;
   lineagePanel: EvidenceLineagePanelViewModel;
   nodeGroups: EvidenceNodeGroupViewModel[];
   hasPacketActions: boolean;
@@ -395,14 +488,19 @@ export interface EvidenceWorkbenchViewModel {
   reloadCommand: EvidenceWorkbenchCommandState;
   validateCommand: EvidenceWorkbenchCommandState;
   exportCommand: EvidenceWorkbenchCommandState;
+  intakeCommand: EvidenceWorkbenchCommandState;
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
   exportResultDetail: EvidenceExportResultViewModel | null;
+  intakeBusy: boolean;
+  intakeResult: EvidenceVaultIntakeResponse | null;
+  intakeResultLabel: string | null;
   validateBusy: boolean;
   validationResult: EvidenceCompleteness | null;
   openSubjectHref: (subject: EvidenceSubject) => string;
   reloadEvidence: () => void;
   exportManifest: () => Promise<void>;
+  intakeDocument: (request: EvidenceVaultIntakeRequest) => Promise<void>;
   validatePacket: () => Promise<void>;
 }
 
@@ -413,7 +511,10 @@ const defaultServices: EvidenceWorkbenchServices = {
   getPacket: getEvidencePacket,
   validatePacket: validateEvidencePacket,
   exportManifest: (subjectKind, subjectId, options) => exportEvidenceManifest(subjectKind, subjectId, { includeWarnings: true }, options),
-  listRequestLists: listEvidenceVaultRequestLists
+  intakeDocument: intakeEvidenceVaultDocument,
+  listRequestLists: listEvidenceVaultRequestLists,
+  listDocuments: listEvidenceVaultDocuments,
+  reviewDocument: reviewEvidenceVaultDocument
 };
 
 const noopReloadEvidence = () => {};
@@ -430,6 +531,17 @@ function buildEvidenceVaultRequestListQuery(
   };
 }
 
+function buildEvidenceVaultDocumentQuery(
+  subjectKind: string | null,
+  subjectId: string | null
+): EvidenceVaultDocumentQuery {
+  return {
+    subjectKind: subjectKind || null,
+    subjectId: subjectId || null,
+    maxResults: subjectKind && subjectId ? 25 : 10
+  };
+}
+
 export function useEvidenceWorkbenchViewModel(
   search: string,
   services: EvidenceWorkbenchServices = defaultServices
@@ -440,10 +552,14 @@ export function useEvidenceWorkbenchViewModel(
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
   const [requestLists, setRequestLists] = useState<EvidenceVaultRequestListEntry[]>([]);
+  const [documents, setDocuments] = useState<EvidenceVaultDocumentEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
   const [exportResult, setExportResult] = useState<EvidencePacketExportResponse | null>(null);
+  const [intakeBusy, setIntakeBusy] = useState(false);
+  const [reviewBusyDocumentId, setReviewBusyDocumentId] = useState<string | null>(null);
+  const [intakeResult, setIntakeResult] = useState<EvidenceVaultIntakeResponse | null>(null);
   const [validateBusy, setValidateBusy] = useState(false);
   const [validationResult, setValidationResult] = useState<EvidenceCompleteness | null>(null);
   const [reloadRevision, setReloadRevision] = useState(0);
@@ -451,43 +567,59 @@ export function useEvidenceWorkbenchViewModel(
   const requestRevisionRef = useRef(0);
   const validateCommandRevisionRef = useRef(0);
   const exportCommandRevisionRef = useRef(0);
+  const intakeCommandRevisionRef = useRef(0);
+  const reviewCommandRevisionRef = useRef(0);
   const loadAbortRef = useRef<AbortController | null>(null);
   const validateAbortRef = useRef<AbortController | null>(null);
   const exportAbortRef = useRef<AbortController | null>(null);
+  const intakeAbortRef = useRef<AbortController | null>(null);
+  const reviewAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     loadAbortRef.current?.abort();
     validateAbortRef.current?.abort();
     exportAbortRef.current?.abort();
+    intakeAbortRef.current?.abort();
+    reviewAbortRef.current?.abort();
     const revision = requestRevisionRef.current + 1;
     requestRevisionRef.current = revision;
     validateCommandRevisionRef.current += 1;
     exportCommandRevisionRef.current += 1;
+    intakeCommandRevisionRef.current += 1;
+    reviewCommandRevisionRef.current += 1;
     const controller = new AbortController();
     loadAbortRef.current = controller;
     setLoading(true);
     setError(null);
     setPacket(null);
     setRequestLists([]);
+    setDocuments([]);
     setExportResult(null);
     setValidationResult(null);
     setExportBusy(false);
+    setIntakeBusy(false);
+    setReviewBusyDocumentId(null);
     setValidateBusy(false);
 
     const load = async () => {
       try {
         const requestListQuery = buildEvidenceVaultRequestListQuery(selectedSubjectKind, selectedSubjectId);
+        const documentQuery = buildEvidenceVaultDocumentQuery(selectedSubjectKind, selectedSubjectId);
         const listRequestLists: NonNullable<EvidenceWorkbenchServices["listRequestLists"]> =
           services.listRequestLists ?? (() => Promise.resolve([]));
-        const [subjectList, requestListEntries] = await Promise.all([
+        const listDocuments: NonNullable<EvidenceWorkbenchServices["listDocuments"]> =
+          services.listDocuments ?? (() => Promise.resolve([]));
+        const [subjectList, requestListEntries, documentEntries] = await Promise.all([
           services.getSubjects({ signal: controller.signal }),
-          listRequestLists(requestListQuery, { signal: controller.signal })
+          listRequestLists(requestListQuery, { signal: controller.signal }),
+          listDocuments(documentQuery, { signal: controller.signal })
         ]);
         if (requestRevisionRef.current !== revision) {
           return;
         }
         setSubjects(subjectList);
         setRequestLists(requestListEntries);
+        setDocuments(documentEntries);
 
         if (selectedSubjectKind && selectedSubjectId) {
           const nextPacket = await services.getPacket(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
@@ -516,9 +648,13 @@ export function useEvidenceWorkbenchViewModel(
       controller.abort();
       validateAbortRef.current?.abort();
       exportAbortRef.current?.abort();
+      intakeAbortRef.current?.abort();
+      reviewAbortRef.current?.abort();
       requestRevisionRef.current += 1;
       validateCommandRevisionRef.current += 1;
       exportCommandRevisionRef.current += 1;
+      intakeCommandRevisionRef.current += 1;
+      reviewCommandRevisionRef.current += 1;
     };
   }, [reloadRevision, selectedSubjectId, selectedSubjectKind, services]);
 
@@ -588,6 +724,91 @@ export function useEvidenceWorkbenchViewModel(
     }
   };
 
+  const intakeDocumentCommand = async (request: EvidenceVaultIntakeRequest) => {
+    if (!selectedSubjectKind || !selectedSubjectId || !services.intakeDocument) {
+      return;
+    }
+
+    const revision = requestRevisionRef.current;
+    const intakeRevision = intakeCommandRevisionRef.current + 1;
+    intakeCommandRevisionRef.current = intakeRevision;
+    intakeAbortRef.current?.abort();
+    const controller = new AbortController();
+    intakeAbortRef.current = controller;
+    setIntakeBusy(true);
+    setError(null);
+    setIntakeResult(null);
+    try {
+      const result = await services.intakeDocument(request, { signal: controller.signal });
+      if (requestRevisionRef.current === revision && intakeCommandRevisionRef.current === intakeRevision) {
+        setIntakeResult(result);
+        setReloadRevision((current) => current + 1);
+      }
+    } catch (intakeError) {
+      if (requestRevisionRef.current === revision && intakeCommandRevisionRef.current === intakeRevision && !isAbortError(intakeError)) {
+        setError(buildEvidenceWorkbenchError(intakeError, "Evidence document intake failed."));
+      }
+    } finally {
+      if (intakeAbortRef.current === controller) {
+        intakeAbortRef.current = null;
+      }
+      if (requestRevisionRef.current === revision && intakeCommandRevisionRef.current === intakeRevision) {
+        setIntakeBusy(false);
+      }
+    }
+  };
+
+  const reviewDocumentCommand = async (
+    vaultId: string,
+    documentId: string,
+    status: EvidenceVaultDocumentReviewRequest["status"]
+  ) => {
+    if (!services.reviewDocument) {
+      return;
+    }
+
+    const revision = requestRevisionRef.current;
+    const reviewRevision = reviewCommandRevisionRef.current + 1;
+    reviewCommandRevisionRef.current = reviewRevision;
+    reviewAbortRef.current?.abort();
+    const controller = new AbortController();
+    reviewAbortRef.current = controller;
+    setReviewBusyDocumentId(`${vaultId}:${documentId}`);
+    setError(null);
+    try {
+      const result = await services.reviewDocument(
+        vaultId,
+        documentId,
+        {
+          status,
+          reviewer: "evidence-workbench-operator",
+          notes: status === "Accepted"
+            ? "Evidence Workbench operator accepted this retained document."
+            : "Evidence Workbench operator rejected this retained document.",
+          correlationId: `evidence-workbench:${vaultId}:${documentId}:${status}`
+        },
+        { signal: controller.signal }
+      );
+      if (requestRevisionRef.current === revision && reviewCommandRevisionRef.current === reviewRevision) {
+        setDocuments((current) => current.map((entry) =>
+          entry.vaultId === vaultId && entry.document.documentId === documentId ? result.entry : entry
+        ));
+        setReloadRevision((current) => current + 1);
+      }
+    } catch (reviewError) {
+      if (requestRevisionRef.current === revision && reviewCommandRevisionRef.current === reviewRevision && !isAbortError(reviewError)) {
+        setError(buildEvidenceWorkbenchError(reviewError, "Evidence document review failed."));
+      }
+    } finally {
+      if (reviewAbortRef.current === controller) {
+        reviewAbortRef.current = null;
+      }
+      if (requestRevisionRef.current === revision && reviewCommandRevisionRef.current === reviewRevision) {
+        setReviewBusyDocumentId(null);
+      }
+    }
+  };
+
   const reloadEvidence = () => {
     if (loading) {
       return;
@@ -605,12 +826,18 @@ export function useEvidenceWorkbenchViewModel(
     subjects,
     packet,
     requestLists,
+    documents,
     exportBusy,
     exportResult,
+    intakeBusy,
+    reviewBusyDocumentId,
+    intakeResult,
     validateBusy,
     validationResult,
     reloadEvidence,
     exportManifest: exportCommand,
+    intakeDocument: intakeDocumentCommand,
+    reviewDocument: reviewDocumentCommand,
     validatePacket: validateCommand
   });
 }
@@ -624,12 +851,18 @@ export function buildEvidenceWorkbenchViewModel(input: {
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
   requestLists?: EvidenceVaultRequestListEntry[];
+  documents?: EvidenceVaultDocumentEntry[];
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
+  intakeBusy?: boolean;
+  reviewBusyDocumentId?: string | null;
+  intakeResult?: EvidenceVaultIntakeResponse | null;
   validateBusy: boolean;
   validationResult: EvidenceCompleteness | null;
   reloadEvidence?: () => void;
   exportManifest: () => Promise<void>;
+  intakeDocument?: (request: EvidenceVaultIntakeRequest) => Promise<void>;
+  reviewDocument?: (vaultId: string, documentId: string, status: EvidenceVaultDocumentReviewRequest["status"]) => Promise<void>;
   validatePacket: () => Promise<void>;
 }): EvidenceWorkbenchViewModel {
   const operatingScope = input.operatingScope ?? buildOperatingScopeFromSearch("");
@@ -653,6 +886,14 @@ export function buildEvidenceWorkbenchViewModel(input: {
     "export",
     subjectLabel,
     buildActionCommand("export", subjectLabel, input.exportBusy, input.validateBusy, input.packet !== null)
+  );
+  const intakeCommand = buildIntakeCommand(
+    subjectLabel,
+    hasSelection,
+    Boolean(input.intakeDocument),
+    input.exportBusy,
+    input.validateBusy,
+    Boolean(input.intakeBusy)
   );
   const packetActions = buildEvidencePacketActions({
     actions: input.packet?.actions ?? [],
@@ -705,6 +946,14 @@ export function buildEvidenceWorkbenchViewModel(input: {
       input.selectedSubjectKind,
       input.selectedSubjectId
     ),
+    documentPanel: buildEvidenceVaultDocumentIndexPanel(
+      input.documents ?? [],
+      hasSelection,
+      input.selectedSubjectKind,
+      input.selectedSubjectId,
+      input.reviewBusyDocumentId ?? null,
+      input.reviewDocument
+    ),
     lineagePanel: buildEvidenceLineagePanel(input.packet?.edges ?? [], input.packet?.subject ?? null),
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
     hasPacketActions: packetActions.length > 0,
@@ -721,15 +970,20 @@ export function buildEvidenceWorkbenchViewModel(input: {
     reloadCommand,
     validateCommand,
     exportCommand,
+    intakeCommand,
     exportBusy: input.exportBusy,
     exportResult: input.exportResult,
     exportResultDetail: buildExportResultViewModel(input.exportResult),
+    intakeBusy: Boolean(input.intakeBusy),
+    intakeResult: input.intakeResult ?? null,
+    intakeResultLabel: buildIntakeResultLabel(input.intakeResult ?? null),
     validateBusy: input.validateBusy,
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
       appendOperatingScopeToRoute(evidenceWorkbenchPath(subject.subjectKind, subject.subjectId), operatingScope),
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
+    intakeDocument: input.intakeDocument ?? (() => Promise.resolve()),
     validatePacket: input.validatePacket
   };
 }
@@ -817,6 +1071,211 @@ function buildVaultRequestListIndexRow(entry: EvidenceVaultRequestListEntry): Ev
     supportRequestRows,
     ariaLabel: `${base.ariaLabel}. ${openRequestCountLabel}; vault ${entry.vaultId}; subject ${entry.subjectKind}/${entry.subjectId}`
   };
+}
+
+function buildEvidenceVaultDocumentIndexPanel(
+  entries: EvidenceVaultDocumentEntry[],
+  hasSelection: boolean,
+  selectedSubjectKind: string | null,
+  selectedSubjectId: string | null,
+  reviewBusyDocumentId: string | null = null,
+  reviewDocument?: (vaultId: string, documentId: string, status: EvidenceVaultDocumentReviewRequest["status"]) => Promise<void>
+): EvidenceVaultDocumentIndexPanelViewModel {
+  const rows = entries.map((entry) => buildVaultDocumentIndexRow(entry, reviewBusyDocumentId, reviewDocument));
+  const scopeLabel = hasSelection && selectedSubjectKind && selectedSubjectId
+    ? `${formatKind(selectedSubjectKind)} ${selectedSubjectId}`
+    : "All evidence subjects";
+  const reviewCount = rows.filter((row) => row.reviewTone !== "success").length;
+  const summaryLabel = rows.length === 0
+    ? "No documents"
+    : reviewCount === 0
+      ? `${rows.length} ${rows.length === 1 ? "document" : "documents"} ready`
+      : `${reviewCount} need review`;
+
+  return {
+    title: "Evidence Vault documents",
+    description: "Uploaded and imported files retained by the shared vault with source hash, extraction status, reviewer state, and linked operational objects.",
+    summaryLabel,
+    scopeLabel,
+    hasRows: rows.length > 0,
+    rows,
+    emptyTitle: hasSelection ? "No retained documents for this subject" : "No retained documents returned",
+    emptyDetail: hasSelection
+      ? "Uploaded and imported documents linked to the selected subject will appear here after intake."
+      : "Retained statements, invoices, notices, custodian files, bank evidence, valuation support, agreements, tax support, and audit request support will appear here after intake."
+  };
+}
+
+function buildVaultDocumentIndexRow(
+  entry: EvidenceVaultDocumentEntry,
+  reviewBusyDocumentId: string | null = null,
+  reviewDocument?: (vaultId: string, documentId: string, status: EvidenceVaultDocumentReviewRequest["status"]) => Promise<void>
+): EvidenceVaultDocumentIndexRowViewModel {
+  const document = entry.document;
+  const reviewKey = `${entry.vaultId}:${document.documentId}`;
+  const reviewBusy = reviewBusyDocumentId === reviewKey;
+  const manifestHref = normalizeManifestRoute(entry.manifestRoute || document.manifestRoute || "");
+  const classificationLabel = formatKind(document.classification);
+  const extractionLabel = formatKind(document.extractionStatus);
+  const extractionTone = mapDocumentExtractionTone(document.extractionStatus);
+  const reviewLabel = formatKind(document.reviewerState.status);
+  const reviewTone = mapDocumentReviewTone(document.reviewerState.status);
+  const sourceParts = [formatKind(document.sourceChannel), document.sourceSystem, document.sourceReference]
+    .filter((part): part is string => Boolean(part));
+  const tenantScopeLabel = [document.tenantId, document.scope]
+    .filter((part): part is string => Boolean(part))
+    .join(" / ") || "No tenant scope";
+  const objectLinksLabel = document.objectLinks.length === 0
+    ? "No linked objects"
+    : document.objectLinks
+        .map((link) => `${formatKind(link.linkKind)} ${link.objectId}`)
+        .join("; ");
+  const openRequestCountLabel = entry.openRequestCount === 1
+    ? "1 open request"
+    : `${entry.openRequestCount} open requests`;
+  const auditRows = document.auditTrail.map((audit, index) => buildVaultDocumentAuditRow(document.documentId, audit, index));
+  const objectLinkRows = document.objectLinks.map((link, index) => buildVaultDocumentObjectLinkRow(document.documentId, link, index));
+  const supportRequestRows = (entry.supportRequests ?? []).map(buildVaultSupportRequestRow);
+  const detailFields: EvidenceLineageDetailFieldViewModel[] = [
+    { label: "Document id", value: document.documentId },
+    { label: "Classification", value: classificationLabel },
+    { label: "Extraction", value: extractionLabel },
+    { label: "Reviewer state", value: reviewLabel },
+    { label: "Reviewer", value: document.reviewerState.reviewer || "No reviewer" },
+    { label: "Reviewed at", value: document.reviewerState.reviewedAt ? formatDate(document.reviewerState.reviewedAt) : "Not reviewed" },
+    { label: "Reviewer notes", value: document.reviewerState.notes || "No reviewer notes" },
+    { label: "Source hash", value: document.sourceHashSha256 },
+    { label: "Received", value: formatDate(document.receivedAt) },
+    { label: "Source channel", value: formatKind(document.sourceChannel) },
+    { label: "Source system", value: document.sourceSystem || "No source system" },
+    { label: "Source reference", value: document.sourceReference || "No source reference" },
+    { label: "Actor", value: document.actor || "No actor" },
+    { label: "Tenant/scope", value: tenantScopeLabel },
+    { label: "Vault", value: entry.vaultId },
+    { label: "Subject", value: `${formatKind(entry.subjectKind)} ${entry.subjectId}` },
+    { label: "Artifact", value: document.artifactId || "No artifact id" },
+    { label: "Storage", value: formatKind(entry.storageKind) },
+    { label: "Retained", value: formatDate(entry.retainedAt) },
+    { label: "Extractor", value: document.extractorId || "No extractor" },
+    { label: "Open requests", value: openRequestCountLabel }
+  ];
+  const detail: EvidenceVaultDocumentDetailViewModel = {
+    id: `${entry.vaultId}:${document.documentId}:detail`,
+    title: document.fileName,
+    subtitle: `${classificationLabel} retained for ${formatKind(entry.subjectKind)} ${entry.subjectId}`,
+    ariaLabel: `Selected Evidence Vault document: ${document.fileName}`,
+    statusLabel: `${extractionLabel} / ${reviewLabel}`,
+    statusTone: reviewTone === "success" && extractionTone === "success" ? "success" : reviewTone === "danger" || extractionTone === "danger" ? "danger" : "warning",
+    fields: detailFields,
+    objectLinkRows,
+    auditRows,
+    supportRequestRows,
+    manifestHref,
+    manifestLabel: manifestHref ? "Open manifest" : null,
+    manifestAriaLabel: manifestHref ? `Open retained manifest for selected document ${document.fileName}` : null,
+    canAccept: Boolean(reviewDocument) && document.reviewerState.status !== "Accepted",
+    canReject: Boolean(reviewDocument) && document.reviewerState.status !== "Rejected",
+    reviewBusy,
+    acceptReview: () => reviewDocument?.(entry.vaultId, document.documentId, "Accepted") ?? Promise.resolve(),
+    rejectReview: () => reviewDocument?.(entry.vaultId, document.documentId, "Rejected") ?? Promise.resolve(),
+    objectLinkEmptyText: "No linked operational objects were retained for this document.",
+    auditEmptyText: "No document audit events were returned for this retained document.",
+    supportRequestEmptyText: "No open support requests are currently linked to this document."
+  };
+
+  return {
+    id: `${entry.vaultId}:${document.documentId}`,
+    fileName: document.fileName,
+    classificationLabel,
+    extractionLabel,
+    extractionTone,
+    reviewLabel,
+    reviewTone,
+    sourceLabel: sourceParts.length === 0 ? "Unknown source" : sourceParts.join(" / "),
+    actorLabel: document.actor || "No actor",
+    tenantScopeLabel,
+    hashLabel: document.sourceHashSha256,
+    subjectLabel: `${formatKind(entry.subjectKind)} ${entry.subjectId}`,
+    vaultLabel: entry.vaultId,
+    receivedLabel: `Received ${formatDate(document.receivedAt)}`,
+    objectLinksLabel,
+    openRequestCountLabel,
+    manifestHref,
+    manifestLabel: manifestHref ? "Open manifest" : null,
+    manifestAriaLabel: manifestHref ? `Open retained manifest for document ${document.fileName}` : null,
+    ariaLabel: `${document.fileName}, ${classificationLabel}, ${extractionLabel}, ${reviewLabel}. ${objectLinksLabel}. Vault ${entry.vaultId}.`,
+    detail
+  };
+}
+
+function buildVaultDocumentObjectLinkRow(
+  documentId: string,
+  link: EvidenceVaultDocumentEntry["document"]["objectLinks"][number],
+  index: number
+): EvidenceVaultDocumentObjectLinkRowViewModel {
+  const kindLabel = formatKind(link.linkKind);
+  const objectLabel = link.label || link.objectId;
+  const relationshipLabel = link.relationship || "supports";
+  const href = normalizeLocalWorkstationRoute(link.route || "");
+  return {
+    id: `${documentId}:object-link:${index}:${link.linkKind}:${link.objectId}`,
+    kindLabel,
+    objectLabel,
+    relationshipLabel,
+    href,
+    linkLabel: href ? "Open object" : null,
+    linkAriaLabel: href ? `Open linked ${kindLabel} ${objectLabel}` : null,
+    ariaLabel: `${kindLabel} ${objectLabel}; ${relationshipLabel}`
+  };
+}
+
+function buildVaultDocumentAuditRow(
+  documentId: string,
+  audit: EvidenceVaultDocumentEntry["document"]["auditTrail"][number],
+  index: number
+): EvidenceVaultDocumentAuditRowViewModel {
+  const actionLabel = formatKind(audit.action);
+  const actorLabel = audit.actor || "Unknown actor";
+  const recordedLabel = formatDate(audit.recordedAt);
+  const correlationLabel = audit.correlationId || "No correlation id";
+  return {
+    id: `${documentId}:audit:${index}:${audit.action}:${audit.recordedAt}`,
+    actionLabel,
+    actorLabel,
+    recordedLabel,
+    summary: audit.summary,
+    correlationLabel,
+    ariaLabel: `${actionLabel} by ${actorLabel} at ${recordedLabel}. ${audit.summary}`
+  };
+}
+
+function mapDocumentExtractionTone(status: string): EvidenceStatusTone {
+  switch (status) {
+    case "Accepted":
+    case "Extracted":
+      return "success";
+    case "NeedsReview":
+    case "NotExtracted":
+      return "warning";
+    case "Rejected":
+      return "danger";
+    default:
+      return "muted";
+  }
+}
+
+function mapDocumentReviewTone(status: string): EvidenceStatusTone {
+  switch (status) {
+    case "Accepted":
+      return "success";
+    case "NeedsReview":
+    case "Unreviewed":
+      return "warning";
+    case "Rejected":
+      return "danger";
+    default:
+      return "muted";
+  }
 }
 
 export function buildEvidenceAssurancePanel(
@@ -1254,6 +1713,35 @@ function buildReloadCommand(
   };
 }
 
+function buildIntakeCommand(
+  subjectLabel: string,
+  hasSelection: boolean,
+  hasIntakeService: boolean,
+  exportBusy: boolean,
+  validateBusy: boolean,
+  intakeBusy: boolean
+): EvidenceWorkbenchCommandState {
+  return {
+    commandLabel: "Retain document",
+    label: intakeBusy ? "Retaining" : "Retain document",
+    ariaLabel: `Retain document for ${subjectLabel}`,
+    busy: intakeBusy,
+    busyLabel: "Retaining",
+    disabled: intakeBusy || exportBusy || validateBusy || !hasSelection || !hasIntakeService,
+    disabledReason: intakeBusy
+      ? "Document intake is already running."
+      : exportBusy
+        ? "Evidence export is already running."
+        : validateBusy
+          ? "Evidence validation is already running."
+          : !hasSelection
+            ? "Select an evidence subject before retaining a document."
+            : hasIntakeService
+              ? null
+              : "Document intake service is not available."
+  };
+}
+
 function buildPrimaryActionCommand(
   control: "validate" | "export",
   subjectLabel: string,
@@ -1265,6 +1753,15 @@ function buildPrimaryActionCommand(
       ? `Validate selected evidence packet for ${subjectLabel}`
       : `Export selected evidence manifest for ${subjectLabel}`
   };
+}
+
+function buildIntakeResultLabel(result: EvidenceVaultIntakeResponse | null): string | null {
+  if (!result) {
+    return null;
+  }
+
+  const sizeLabel = `${result.sizeBytes.toLocaleString()} bytes`;
+  return `Retained ${result.fileName} as ${result.intakeId}; ${sizeLabel}; ${result.contentHashSha256}.`;
 }
 
 function buildExportResultViewModel(result: EvidencePacketExportResponse | null): EvidenceExportResultViewModel | null {

@@ -1,4 +1,4 @@
-import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -7,7 +7,10 @@ import {
   exportEvidenceManifest,
   getEvidencePacket,
   getEvidenceSubjects,
+  intakeEvidenceVaultDocument,
+  listEvidenceVaultDocuments,
   listEvidenceVaultRequestLists,
+  reviewEvidenceVaultDocument,
   validateEvidencePacket
 } from "@/lib/api";
 import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
@@ -27,6 +30,9 @@ import type {
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceSubject,
+  EvidenceVaultDocumentEntry,
+  EvidenceVaultIntakeResponse,
+  EvidenceVaultDocumentReviewResponse,
   EvidenceVaultRequestListEntry,
   WorkflowAction
 } from "@/types";
@@ -36,12 +42,18 @@ vi.mock("@/lib/api", () => ({
   getEvidencePacket: vi.fn(),
   validateEvidencePacket: vi.fn(),
   exportEvidenceManifest: vi.fn(),
-  listEvidenceVaultRequestLists: vi.fn()
+  intakeEvidenceVaultDocument: vi.fn(),
+  listEvidenceVaultDocuments: vi.fn(),
+  listEvidenceVaultRequestLists: vi.fn(),
+  reviewEvidenceVaultDocument: vi.fn()
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([]);
+  vi.mocked(listEvidenceVaultDocuments).mockResolvedValue([]);
+  vi.mocked(intakeEvidenceVaultDocument).mockResolvedValue(defaultIntakeResponse);
+  vi.mocked(reviewEvidenceVaultDocument).mockResolvedValue(defaultReviewResponse);
 });
 
 afterEach(() => {
@@ -240,6 +252,152 @@ const vaultRequestListEntry: EvidenceVaultRequestListEntry = {
       blockedOutput: "report-pack/close-2026-05"
     }
   ]
+};
+
+const vaultDocumentEntry: EvidenceVaultDocumentEntry = {
+  document: {
+    documentId: "doc:ev-request-list-demo",
+    fileName: "operating-bank-statement.csv",
+    classification: "BankEvidence",
+    sourceHashSha256: "d".repeat(64),
+    receivedAt: "2026-05-09T13:00:00Z",
+    sourceChannel: "upload",
+    actor: "fund-controller",
+    tenantId: "tenant-alpha",
+    scope: "fund-alpha",
+    extractionStatus: "NeedsReview",
+    objectLinks: [
+      {
+        linkKind: "CloseTask",
+        objectId: "close-task:cash-support",
+        label: "Cash support",
+        route: "/workstation/accounting/close/tasks/cash-support",
+        relationship: "blocks-close-readiness"
+      }
+    ],
+    reviewerState: {
+      status: "NeedsReview",
+      reviewer: "fund-controller",
+      reviewedAt: null,
+      notes: "Statement amount needs review."
+    },
+    auditTrail: [
+      {
+        recordedAt: "2026-05-09T13:00:00Z",
+        actor: "fund-controller",
+        action: "DocumentIntakeRetained",
+        summary: "Retained BankEvidence document.",
+        correlationId: "ev-request-list-demo"
+      }
+    ],
+    contentType: "text/csv",
+    sourceSystem: "operator-upload",
+    sourceReference: "file://operating-bank-statement.csv",
+    vaultId: "ev-request-list-demo",
+    artifactId: "artifact-bank-statement",
+    manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
+    extractorId: "manual-metadata-v1"
+  },
+  vaultId: "ev-request-list-demo",
+  subjectKind: subject.subjectKind,
+  subjectId: subject.subjectId,
+  manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
+  retainedAt: "2026-05-09T13:00:00Z",
+  storageKind: "file-bundle",
+  openRequestCount: 2,
+  supportRequests: vaultRequestListEntry.supportRequests
+};
+
+const acceptedVaultDocumentEntry: EvidenceVaultDocumentEntry = {
+  ...vaultDocumentEntry,
+  document: {
+    ...vaultDocumentEntry.document,
+    extractionStatus: "Accepted",
+    reviewerState: {
+      status: "Accepted",
+      reviewer: "evidence-workbench-operator",
+      reviewedAt: "2026-05-09T13:10:00Z",
+      notes: "Evidence Workbench operator accepted this retained document."
+    },
+    auditTrail: [
+      ...vaultDocumentEntry.document.auditTrail,
+      {
+        recordedAt: "2026-05-09T13:10:00Z",
+        actor: "evidence-workbench-operator",
+        action: "DocumentReviewRecorded",
+        summary: "Document review state set to Accepted.",
+        correlationId: "evidence-workbench:ev-request-list-demo:doc:ev-request-list-demo:Accepted"
+      }
+    ]
+  }
+};
+
+const defaultReviewResponse: EvidenceVaultDocumentReviewResponse = {
+  entry: acceptedVaultDocumentEntry,
+  auditEvent: acceptedVaultDocumentEntry.document.auditTrail[1]
+};
+
+const defaultIntakeResponse: EvidenceVaultIntakeResponse = {
+  intakeId: "intake:ev-uploaded-close-document",
+  subjectKind: subject.subjectKind,
+  subjectId: subject.subjectId,
+  intakeChannel: "upload",
+  fileName: "close-bank-evidence.csv",
+  relativePath: "workstation/evidence/_vault/ev-uploaded-close-document/artifacts/close-bank-evidence.csv",
+  contentHashSha256: "e".repeat(64),
+  sizeBytes: 4,
+  capturedAt: "2026-05-09T13:05:00Z",
+  capture: {
+    captureChannel: "upload",
+    sourceSystem: "operator-upload",
+    receivedAt: "2026-05-09T13:05:00Z",
+    receivedBy: "fund-controller",
+    sourceReference: "close-bank-evidence.csv",
+    receiptHash: "e".repeat(64)
+  },
+  extractedFields: [],
+  vaultIdentity: {
+    vaultId: "ev-uploaded-close-document",
+    subjectKind: subject.subjectKind,
+    subjectId: subject.subjectId,
+    manifestPath: "workstation/evidence/_vault/ev-uploaded-close-document/intake-manifest.json",
+    manifestRoute: "/workstation/evidence/_vault/ev-uploaded-close-document/intake-manifest.json",
+    retainedAt: "2026-05-09T13:05:00Z",
+    contentHashSha256: "f".repeat(64),
+    schemaVersion: 1,
+    storageKind: "file-bundle",
+    artifacts: [],
+    supportRequests: [],
+    documents: [],
+    manifestSnapshot: null
+  },
+  document: {
+    documentId: "doc:ev-uploaded-close-document",
+    fileName: "close-bank-evidence.csv",
+    classification: "BankEvidence",
+    sourceHashSha256: "e".repeat(64),
+    receivedAt: "2026-05-09T13:05:00Z",
+    sourceChannel: "upload",
+    actor: "fund-controller",
+    tenantId: "tenant-alpha",
+    scope: "fund-alpha",
+    extractionStatus: "NeedsReview",
+    objectLinks: [
+      {
+        linkKind: "CloseTask",
+        objectId: "close-task:cash-support",
+        label: "close-task:cash-support",
+        relationship: "supports"
+      }
+    ],
+    reviewerState: {
+      status: "NeedsReview",
+      reviewer: "fund-controller",
+      reviewedAt: "2026-05-09T13:05:00Z",
+      notes: "Manual Evidence Workbench intake."
+    },
+    auditTrail: []
+  }
 };
 
 const evidenceActions: WorkflowAction[] = [
@@ -1362,6 +1520,7 @@ describe("EvidenceWorkbenchScreen", () => {
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
     vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([vaultRequestListEntry]);
+    vi.mocked(listEvidenceVaultDocuments).mockResolvedValue([vaultDocumentEntry]);
     vi.mocked(validateEvidencePacket).mockResolvedValue(validation);
     vi.mocked(exportEvidenceManifest).mockResolvedValue(exportResponse);
     const user = userEvent.setup();
@@ -1378,6 +1537,14 @@ describe("EvidenceWorkbenchScreen", () => {
       },
       expect.objectContaining({ signal: expect.any(Object) })
     );
+    expect(listEvidenceVaultDocuments).toHaveBeenCalledWith(
+      {
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        maxResults: 25
+      },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
     const requestListPanel = screen.getByRole("region", { name: "Evidence Vault request lists" });
     expect(requestListPanel).toHaveTextContent("1 open request list");
     expect(requestListPanel).toHaveTextContent("Strategy Run run-1");
@@ -1389,6 +1556,96 @@ describe("EvidenceWorkbenchScreen", () => {
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"
     );
+    const documentPanel = screen.getByRole("region", { name: "Evidence Vault documents" });
+    expect(documentPanel).toHaveTextContent("1 need review");
+    expect(documentPanel).toHaveTextContent("operating-bank-statement.csv");
+    expect(documentPanel).toHaveTextContent("Bank Evidence");
+    expect(documentPanel).toHaveTextContent("Close Task close-task:cash-support");
+    expect(documentPanel).toHaveTextContent("fund-controller");
+    expect(documentPanel).toHaveTextContent("tenant-alpha / fund-alpha");
+    expect(screen.getByRole("link", { name: /open retained manifest for document operating-bank-statement.csv/i })).toHaveAttribute(
+      "href",
+      "/workstation/evidence/strategy-run/run-1/manifest.json"
+    );
+    const selectedDocument = screen.getByRole("region", {
+      name: "Selected Evidence Vault document: operating-bank-statement.csv"
+    });
+    expect(selectedDocument).toHaveTextContent("Statement amount needs review.");
+    expect(selectedDocument).toHaveTextContent("Document Intake Retained");
+    expect(selectedDocument).toHaveTextContent("manual-metadata-v1");
+    expect(selectedDocument).toHaveTextContent("Cash support");
+    expect(selectedDocument).toHaveTextContent("blocks-close-readiness");
+    expect(selectedDocument).toHaveTextContent("Audit support package is missing.");
+    expect(screen.getByRole("link", { name: /open linked close task cash support/i })).toHaveAttribute(
+      "href",
+      "/accounting/close/tasks/cash-support"
+    );
+    vi.mocked(listEvidenceVaultDocuments).mockResolvedValue([acceptedVaultDocumentEntry]);
+    await user.click(within(selectedDocument).getByRole("button", { name: "Accept" }));
+    await waitFor(() => expect(reviewEvidenceVaultDocument).toHaveBeenCalledTimes(1));
+    expect(reviewEvidenceVaultDocument).toHaveBeenCalledWith(
+      "ev-request-list-demo",
+      "doc:ev-request-list-demo",
+      expect.objectContaining({
+        status: "Accepted",
+        reviewer: "evidence-workbench-operator"
+      }),
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    await waitFor(() => expect(screen.getByRole("region", {
+      name: "Selected Evidence Vault document: operating-bank-statement.csv"
+    })).toHaveTextContent("Document Review Recorded"));
+    expect(screen.getByRole("region", { name: "Evidence document intake" })).toHaveTextContent("strategy-run/run-1");
+    const file = new File(["cash"], "close-bank-evidence.csv", { type: "text/csv" });
+    await user.upload(screen.getByLabelText("Document file"), file);
+    await user.selectOptions(screen.getByLabelText("Document classification"), "BankEvidence");
+    await user.selectOptions(screen.getByLabelText("Extraction status"), "NeedsReview");
+    await user.selectOptions(screen.getByLabelText("Reviewer state"), "NeedsReview");
+    await user.type(screen.getByLabelText("Actor"), "fund-controller");
+    await user.type(screen.getByLabelText("Tenant"), "tenant-alpha");
+    await user.type(screen.getByLabelText("Scope"), "fund-alpha");
+    await user.type(screen.getByLabelText("Source system"), "operator-upload");
+    await user.type(screen.getByLabelText("Source reference"), "close-bank-evidence.csv");
+    await user.selectOptions(screen.getByLabelText("Linked object kind"), "CloseTask");
+    await user.type(screen.getByLabelText("Linked object id"), "close-task:cash-support");
+    await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
+    await waitFor(() => expect(intakeEvidenceVaultDocument).toHaveBeenCalledTimes(1));
+    expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        intakeChannel: "upload",
+        fileName: "close-bank-evidence.csv",
+        contentBase64: "Y2FzaA==",
+        contentType: "text/csv",
+        sourceSystem: "operator-upload",
+        sourceReference: "close-bank-evidence.csv",
+        receivedBy: "fund-controller",
+        classification: "BankEvidence",
+        actor: "fund-controller",
+        tenantId: "tenant-alpha",
+        scope: "fund-alpha",
+        extractionStatus: "NeedsReview",
+        reviewerState: expect.objectContaining({
+          status: "NeedsReview",
+          reviewer: "fund-controller"
+        }),
+        objectLinks: [
+          expect.objectContaining({
+            linkKind: "CloseTask",
+            objectId: "close-task:cash-support",
+            relationship: "supports"
+          })
+        ],
+        intakeSource: expect.objectContaining({
+          sourceKind: "UploadedContent",
+          displayName: "close-bank-evidence.csv"
+        })
+      }),
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    expect(await screen.findByText(/Retained close-bank-evidence.csv as intake:ev-uploaded-close-document/i)).toBeInTheDocument();
+    await waitFor(() => expect(listEvidenceVaultDocuments).toHaveBeenCalledTimes(3));
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Operational Evidence Graph" })).toHaveTextContent(
       "4/9 layers, 44% coverage"
@@ -1436,7 +1693,7 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
     expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact, 1 request list, 1 support request")).toBeInTheDocument();
     expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
-    expect(screen.getByText("File Bundle")).toBeInTheDocument();
+    expect(screen.getAllByText("File Bundle").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
@@ -1456,6 +1713,54 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"
+    );
+  });
+
+  it.each([
+    ["LocalFile", "local-file", "D:\\imports\\custodian-statement.csv", "CustodianFile"],
+    ["ImportedFileReference", "imported-file-reference", "D:\\imports\\portal\\capital-notice.pdf", "CapitalNotice"]
+  ] as const)("submits %s document references through the shared intake contract", async (sourceKind, intakeChannel, sourcePath, classification) => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    const user = userEvent.setup();
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+
+    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Document source kind"), sourceKind);
+    await user.type(screen.getByLabelText("Source file path"), sourcePath);
+    await user.selectOptions(screen.getByLabelText("Document classification"), classification);
+    await user.type(screen.getByLabelText("Actor"), "fund-controller");
+    await user.type(screen.getByLabelText("Linked object id"), "close-task:cash-support");
+    await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
+
+    const fileName = sourcePath.split("\\").at(-1);
+    await waitFor(() => expect(intakeEvidenceVaultDocument).toHaveBeenCalledTimes(1));
+    expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        intakeChannel,
+        fileName,
+        contentBase64: null,
+        contentType: null,
+        sourceReference: sourcePath,
+        receivedBy: "fund-controller",
+        classification,
+        actor: "fund-controller",
+        intakeSource: expect.objectContaining({
+          sourceKind,
+          path: sourcePath,
+          displayName: fileName
+        }),
+        objectLinks: [
+          expect.objectContaining({
+            linkKind: "CloseTask",
+            objectId: "close-task:cash-support"
+          })
+        ]
+      }),
+      expect.objectContaining({ signal: expect.any(Object) })
     );
   });
 
@@ -1581,7 +1886,7 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Evidence API unavailable");
-    expect(screen.getByText("Endpoint returned 503 for /api/workstation/evidence/subjects.")).toBeInTheDocument();
+    expect(screen.getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(screen.queryByText("No evidence subjects returned")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /retry loading evidence subjects/i }));
@@ -1638,7 +1943,7 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("One or more validation errors occurred.");
-    expect(screen.getByText("Endpoint returned 422 for /api/workstation/evidence/strategy-run/run-1/export-manifest.")).toBeInTheDocument();
+    expect(screen.getByText("Meridian service returned 422. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(screen.getByText("includeWarnings: Manifest-only export must keep warnings enabled.")).toBeInTheDocument();
   });
 });

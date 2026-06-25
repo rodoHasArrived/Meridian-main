@@ -1306,13 +1306,20 @@ the contract-owned type names.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. Copied vault
-artifacts also preserve optional capture channel/source details and extracted fields with
-confidence, reviewer state, expected value, validation status, and linked record identity so
-retained document evidence can prove how upload/email/API/portal/SFTP intake was reviewed against
-expected records. `/api/workstation/evidence/vault/intake` is the shared API intake route for that
-same vault model: it accepts bounded base64 document payloads, validates optional SHA-256
-expectations, stores the artifact under `_vault`, writes a searchable manifest and vault identity,
-and returns the retained artifact hash, capture metadata, extraction fields, and manifest route.
+artifacts also preserve optional capture channel/source details, first-class document metadata, and
+extracted fields with confidence, reviewer state, expected value, validation status, and linked
+record identity so retained document evidence can prove how upload/email/API/portal/SFTP intake was
+reviewed against expected records. `/api/workstation/evidence/vault/intake` is the shared API
+intake route for that same vault model: it accepts bounded base64 document payloads, validates
+optional SHA-256 expectations, stores the artifact under `_vault`, writes a searchable manifest and
+vault identity, and returns the retained artifact hash, capture metadata, document classification,
+source channel, actor, tenant/scope, object links, extraction status, reviewer state, audit trail,
+extraction fields, and manifest route.
+`/api/workstation/evidence/vault/documents` is the read-only document queue over the same vault
+identity index. It filters by document classification, extraction status, reviewer state, subject,
+tenant/scope, and linked period/portfolio/account/instrument/journal/reconciliation/report/close
+objects, returning the retained document plus vault id, manifest route, storage kind, and open
+support-request count for browser and WPF surfaces.
 The vault write boundary rejects every retained artifact reference, copied or
 route-only, that omits canonical subject linkage, lacks an addressable path/route, or uses
 unsupported subject kinds, so retained statement/report/approval/screenshot artifacts cannot become
@@ -1323,9 +1330,12 @@ packet completeness: missing and stale evidence, blocking work items, and unreso
 issues are written into both the retained manifest and `_vault` identity index with target kind,
 target id, highest severity, evidence kinds, and blocked outputs. This gives close, audit, tax,
 report-package, and operator review workflows a durable request-list surface without rebuilding it
-in browser or WPF clients. `/api/workstation/evidence/vault/request-lists` lists those frozen
-request-list groups from retained vault identities with request-list, target, status, subject, and
-limit filters, returning vault/manifest metadata beside the matching support request rows.
+in browser or WPF clients. The same write path now also materializes
+`EvidenceVaultIdentityDto.ManifestSnapshot`, a public package-level snapshot with package kind/id,
+content hash, retained document snapshots, support request snapshots, and linked operational
+objects. `/api/workstation/evidence/vault/request-lists` lists those frozen request-list groups
+from retained vault identities with request-list, target, status, subject, and limit filters,
+returning vault/manifest metadata beside the matching support request rows.
 Retained vault bundles are also first-class Evidence Workbench subjects through the
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
@@ -1500,10 +1510,14 @@ delivery-packet, publication manifest, line provenance, approval chain, branding
 lineage, reporting-run source, and audit-history nodes into the same packet, graph, validation,
 vault lookup, and manifest-export endpoints used by the browser and WPF surfaces.
 Direct Evidence Vault intake now also promotes non-ready extraction fields into the same frozen
-support-request and request-list index used by manifest export. Uploaded documents that arrive with
-missing, blocked, stale, or review-required extracted fields retain the file bytes, capture metadata,
-field review posture, support requests, and close/audit/tax/report-package/event request-list
-grouping in the vault identity, so operators can follow up without interpreting raw intake manifests.
+support-request and request-list index used by manifest export. Uploaded documents and
+local/imported file references retain copied file bytes, capture metadata, source path or route
+reference, document classification, object links, reviewer state, field review posture, support
+requests, and close/audit/tax/report-package/event request-list grouping in the vault identity, so
+operators can follow up without interpreting raw intake manifests. Extraction is routed through
+`IEvidenceDocumentExtractor`; the default `ManualEvidenceDocumentExtractor` normalizes
+operator-supplied deterministic metadata and fixture/demo/sample intake metadata, leaving OCR or LLM
+output behind the same contract for a later implementation.
 Statement reconciliation mutation endpoints trust the authenticated workstation session actor for
 statement-run intake and reconcile commands. Client-supplied `ImportedBy` or reconcile actor values
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the

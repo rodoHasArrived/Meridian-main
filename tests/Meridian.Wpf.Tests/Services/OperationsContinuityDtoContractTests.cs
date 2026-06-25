@@ -427,4 +427,179 @@ public sealed class OperationsContinuityDtoContractTests
         actualLookup.Should().NotBeNull();
         actualLookup!.AccountingRecordId.Should().Be("workflow-2026-05");
     }
+
+    [Fact]
+    public void EvidenceVaultDocumentQueueContracts_ShouldRoundTripForDesktopReadModels()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        var document = new EvidenceDocumentDto(
+            DocumentId: "doc:ev-close-2026-05",
+            FileName: "operating-bank-statement.csv",
+            Classification: EvidenceDocumentClassificationDto.BankEvidence,
+            SourceHashSha256: new string('a', 64),
+            ReceivedAt: DateTimeOffset.Parse("2026-05-09T13:00:00Z"),
+            SourceChannel: "upload",
+            Actor: "fund-controller",
+            TenantId: "tenant-alpha",
+            Scope: "fund-alpha",
+            ExtractionStatus: EvidenceExtractionStatusDto.NeedsReview,
+            ObjectLinks:
+            [
+                new EvidenceDocumentLinkDto(
+                    EvidenceDocumentLinkKindDto.CloseTask,
+                    "close-task:cash-support",
+                    "Cash support",
+                    "/workstation/accounting/close/tasks/cash-support",
+                    "blocks-close-readiness")
+            ],
+            ReviewerState: new EvidenceDocumentReviewStateDto(
+                EvidenceDocumentReviewStatusDto.NeedsReview,
+                "fund-controller",
+                null,
+                "Statement amount needs review."),
+            AuditTrail:
+            [
+                new EvidenceDocumentAuditEventDto(
+                    DateTimeOffset.Parse("2026-05-09T13:00:00Z"),
+                    "fund-controller",
+                    "DocumentIntakeRetained",
+                    "Retained BankEvidence document.",
+                    "ev-close-2026-05")
+            ])
+        {
+            ManifestRoute = "/workstation/evidence/_vault/ev-close-2026-05/manifest.json",
+            ExtractorId = "manual-metadata-v1"
+        };
+        var entry = new EvidenceVaultDocumentEntryDto(
+            Document: document,
+            VaultId: "ev-close-2026-05",
+            SubjectKind: "accounting-record",
+            SubjectId: "workflow-2026-05",
+            ManifestRoute: "/workstation/evidence/_vault/ev-close-2026-05/manifest.json",
+            RetainedAt: DateTimeOffset.Parse("2026-05-09T13:00:00Z"),
+            StorageKind: "file-bundle",
+            OpenRequestCount: 1,
+            SupportRequests: []);
+        var query = new EvidenceVaultDocumentQueryDto(
+            Classification: EvidenceDocumentClassificationDto.BankEvidence,
+            ReviewStatus: EvidenceDocumentReviewStatusDto.NeedsReview,
+            LinkKind: EvidenceDocumentLinkKindDto.CloseTask,
+            ObjectId: "close-task:cash-support",
+            SubjectKind: "accounting-record",
+            SubjectId: "workflow-2026-05",
+            TenantId: "tenant-alpha",
+            Scope: "fund-alpha");
+        var intakeSource = new EvidenceDocumentIntakeSourceDto(
+            EvidenceDocumentIntakeSourceKindDto.LocalFile,
+            Path: @"D:\imports\operating-bank-statement.csv",
+            Uri: "file://imports/operating-bank-statement.csv",
+            DisplayName: "Operating bank statement",
+            ExpectedContentHashSha256: new string('a', 64));
+        var manifestSnapshot = new EvidenceManifestDto(
+            ManifestId: "ev-close-2026-05",
+            FrozenAt: DateTimeOffset.Parse("2026-05-09T13:01:00Z"),
+            PackageKind: "accounting-record",
+            PackageId: "workflow-2026-05",
+            ContentHashSha256: new string('c', 64),
+            Documents: [document],
+            Requests:
+            [
+                new EvidenceRequestDto(
+                    RequestId: "support-request:validationissue:operating-bank-statement",
+                    RequestKind: "ValidationIssue",
+                    Severity: EvidenceValidationSeverityDto.Warning,
+                    Status: "Open",
+                    Summary: "Statement amount needs review.",
+                    TargetKind: "close",
+                    TargetId: "workflow-2026-05",
+                    BlockedOutput: null)
+            ],
+            ObjectLinks: document.ObjectLinks);
+        var vaultIdentity = new EvidenceVaultIdentityDto(
+            VaultId: "ev-close-2026-05",
+            SubjectKind: "accounting-record",
+            SubjectId: "workflow-2026-05",
+            ManifestPath: "workstation/evidence/_vault/ev-close-2026-05/manifest.json",
+            ManifestRoute: "/workstation/evidence/_vault/ev-close-2026-05/manifest.json",
+            RetainedAt: DateTimeOffset.Parse("2026-05-09T13:01:00Z"),
+            ContentHashSha256: manifestSnapshot.ContentHashSha256,
+            SchemaVersion: 1,
+            StorageKind: "file-bundle")
+        {
+            Documents = [document],
+            ManifestSnapshot = manifestSnapshot
+        };
+        var closePackage = new OperationsClosePackagePublicationDto(
+            ClosePackageId: "close-package-2026-05",
+            ReportPackId: "report-pack-2026-05",
+            RetainedManifestId: "manifest-2026-05",
+            RetainedManifestRoute: "/workstation/accounting/operations-continuity/workflow-2026-05/close-package/manifest",
+            EvidenceHash: new string('b', 64),
+            PublishedAtUtc: DateTimeOffset.Parse("2026-05-09T16:00:00Z"),
+            PublishedBy: "fund-controller",
+            SignOffRationale: "Close package retained with vault evidence.",
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    document.DocumentId,
+                    "Vault document: operating-bank-statement.csv",
+                    document.ManifestRoute,
+                    document.SourceChannel,
+                    document.ReceivedAt)
+            ],
+            ChecklistControlApprovals: [],
+            DocumentSnapshots: [document],
+            ManifestSnapshot: manifestSnapshot);
+
+        var entryJson = JsonSerializer.Serialize(entry, options);
+        var queryJson = JsonSerializer.Serialize(query, options);
+        var intakeSourceJson = JsonSerializer.Serialize(intakeSource, options);
+        var vaultIdentityJson = JsonSerializer.Serialize(vaultIdentity, options);
+        var closePackageJson = JsonSerializer.Serialize(closePackage, options);
+        var actualEntry = JsonSerializer.Deserialize<EvidenceVaultDocumentEntryDto>(entryJson, options);
+        var actualQuery = JsonSerializer.Deserialize<EvidenceVaultDocumentQueryDto>(queryJson, options);
+        var actualIntakeSource = JsonSerializer.Deserialize<EvidenceDocumentIntakeSourceDto>(intakeSourceJson, options);
+        var actualVaultIdentity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(vaultIdentityJson, options);
+        var actualClosePackage = JsonSerializer.Deserialize<OperationsClosePackagePublicationDto>(closePackageJson, options);
+
+        entryJson.Should().Contain("\"classification\":\"BankEvidence\"");
+        entryJson.Should().Contain("\"linkKind\":\"CloseTask\"");
+        queryJson.Should().Contain("\"reviewStatus\":\"NeedsReview\"");
+        intakeSourceJson.Should().Contain("\"sourceKind\":\"LocalFile\"");
+        vaultIdentityJson.Should().Contain("\"manifestSnapshot\"");
+        vaultIdentityJson.Should().Contain("\"packageKind\":\"accounting-record\"");
+        closePackageJson.Should().Contain("\"documentSnapshots\"");
+        closePackageJson.Should().Contain("\"manifestSnapshot\"");
+        actualEntry.Should().NotBeNull();
+        actualEntry!.Document.ObjectLinks.Should().ContainSingle(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.CloseTask &&
+            link.ObjectId == "close-task:cash-support");
+        actualEntry.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.NeedsReview);
+        actualQuery.Should().NotBeNull();
+        actualQuery!.TenantId.Should().Be("tenant-alpha");
+        actualQuery.LinkKind.Should().Be(EvidenceDocumentLinkKindDto.CloseTask);
+        actualIntakeSource.Should().NotBeNull();
+        actualIntakeSource!.SourceKind.Should().Be(EvidenceDocumentIntakeSourceKindDto.LocalFile);
+        actualIntakeSource.Uri.Should().Be("file://imports/operating-bank-statement.csv");
+        actualVaultIdentity.Should().NotBeNull();
+        actualVaultIdentity!.ManifestSnapshot.Should().NotBeNull();
+        actualVaultIdentity.ManifestSnapshot!.Documents.Should().ContainSingle(snapshot =>
+            snapshot.DocumentId == document.DocumentId);
+        actualVaultIdentity.ManifestSnapshot.Requests.Should().ContainSingle(request =>
+            request.TargetKind == "close" &&
+            request.TargetId == "workflow-2026-05");
+        actualClosePackage.Should().NotBeNull();
+        actualClosePackage!.DocumentSnapshots.Should().ContainSingle(snapshot =>
+            snapshot.DocumentId == document.DocumentId &&
+            snapshot.SourceHashSha256 == document.SourceHashSha256);
+        actualClosePackage.ManifestSnapshot.Should().NotBeNull();
+        actualClosePackage.ManifestSnapshot!.ManifestId.Should().Be(manifestSnapshot.ManifestId);
+        actualClosePackage.ManifestSnapshot.Documents.Should().ContainSingle(snapshot =>
+            snapshot.DocumentId == document.DocumentId);
+    }
 }

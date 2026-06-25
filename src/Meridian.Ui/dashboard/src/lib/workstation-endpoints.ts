@@ -80,7 +80,9 @@ export const WORKSTATION_API_ENDPOINTS = {
   runSweeps: "/api/workstation/runs/sweeps",
   evidenceSubjects: UI_API_ROUTES.WorkstationEvidenceSubjects,
   evidenceVaultSearch: "/api/workstation/evidence/vault/search",
+  evidenceVaultIntake: "/api/workstation/evidence/vault/intake",
   evidenceVaultRequestLists: "/api/workstation/evidence/vault/request-lists",
+  evidenceVaultDocuments: "/api/workstation/evidence/vault/documents",
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
@@ -129,6 +131,10 @@ export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
   runReviewPacket: UI_API_ROUTES.RunsReviewPacket,
   runReconciliation: UI_API_ROUTES.RunsReconciliation
 } as const;
+
+export function evidenceVaultDocumentReviewEndpoint(vaultId: string, documentId: string): string {
+  return `/api/workstation/evidence/vault/${encodeURIComponent(vaultId)}/documents/${encodeURIComponent(documentId)}/review`;
+}
 
 export const EXECUTION_API_ENDPOINTS = {
   ordersSubmit: UI_API_ROUTES.ExecutionOrderSubmit,

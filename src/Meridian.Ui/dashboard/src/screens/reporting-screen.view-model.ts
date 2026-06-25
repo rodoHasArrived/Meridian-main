@@ -314,7 +314,7 @@ export interface ReportingRunLinkRow {
   method: string;
   source: string;
   isBrowserNavigable: boolean;
-  interactionLabel: "Open" | "Reference";
+  interactionLabel: "Open service" | "Service reference";
   ariaLabel: string;
 }
 
@@ -327,7 +327,7 @@ export interface ReportingRunActionRow {
   isEnabled: boolean;
   disabledReason: string | null;
   isBrowserNavigable: boolean;
-  interactionLabel: "Open" | "Reference";
+  interactionLabel: "Open service" | "Service reference";
   ariaLabel: string;
 }
 
@@ -424,7 +424,7 @@ export interface ReportingWorkflowBackendLink {
   href: string;
   ariaLabel: string;
   isBrowserNavigable: boolean;
-  interactionLabel: "Open" | "Reference";
+  interactionLabel: "Open service" | "Service reference";
 }
 
 export interface ReportingRestatementChangedLineRow {
@@ -865,7 +865,7 @@ export function useReportingScreenViewModel(
     statusBadgeLabel: selectedProfileData ? "Selected" : "Waiting",
     statusBadgeVariant: selectedProfileData ? "default" : "outline",
     nextAction: selectedProfileData
-      ? `POST ${EXPORT_API_ENDPOINTS.analysis} · GET ${exportPreviewEndpoint(selectedProfileData.id)}`
+      ? `${selectedProfileData.name} is ready for preview and reviewed export analysis.`
       : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
     selectedProfile: detail,
     packTargets,
@@ -1677,10 +1677,10 @@ function buildRunLinkRows(run: ReportingRunStatusProjection): ReportingRunLinkRo
       method: link.method,
       source: link.source,
       isBrowserNavigable: link.isBrowserNavigable,
-      interactionLabel: link.isBrowserNavigable ? "Open" : "Reference",
+      interactionLabel: link.isBrowserNavigable ? "Open service" : "Service reference",
       ariaLabel: link.isBrowserNavigable
-        ? `${link.method} ${link.href} for ${link.label}`
-        : `Reference-only ${link.method} ${link.href} for ${link.label}`
+        ? `Open ${link.label} service reference`
+        : `${link.label} service reference retained for diagnostics`
     }));
   }
 
@@ -1692,10 +1692,10 @@ function buildRunLinkRows(run: ReportingRunStatusProjection): ReportingRunLinkRo
     method: "GET",
     source: run.family,
     isBrowserNavigable: artifact.startsWith("/"),
-    interactionLabel: artifact.startsWith("/") ? "Open" : "Reference",
+    interactionLabel: artifact.startsWith("/") ? "Open service" : "Service reference",
     ariaLabel: artifact.startsWith("/")
-      ? `GET ${artifact} for ${artifactLabel(artifact)}`
-      : `Reference-only artifact ${artifact}`
+      ? `Open ${artifactLabel(artifact)} service reference`
+      : `${artifactLabel(artifact)} service reference retained for diagnostics`
   }));
 }
 
@@ -1709,9 +1709,9 @@ function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActi
     isEnabled: action.isEnabled,
     disabledReason: action.disabledReason,
     isBrowserNavigable: action.isBrowserNavigable,
-    interactionLabel: action.isBrowserNavigable ? "Open" : "Reference",
+    interactionLabel: action.isBrowserNavigable ? "Open service" : "Service reference",
     ariaLabel: action.isEnabled
-      ? `${action.method} ${action.href} for ${action.label}`
+      ? `${action.label} service reference retained for diagnostics`
       : `${action.label} unavailable${action.disabledReason ? `: ${action.disabledReason}` : ""}`
   }));
 }
@@ -2155,7 +2155,7 @@ function buildWorkflowTaskPanel({
     hasActions: selectedProfileActions.length > 0,
     actionsEmptyText: "Select a report-pack profile before previewing or running export analysis.",
     actionsEmptyAriaLabel: "No selected report-pack export actions",
-    backendLinksLabel: "Report-pack export service links",
+    backendLinksLabel: "Report-pack export service references",
     backendPanelId: REPORT_PACK_PROFILE_BACKEND_ID,
     publicationReview: buildPublicationReviewPanel(reporting.workflowRecords ?? []),
     restatementReview: buildRestatementReviewPanel(reporting.workflowRecords ?? []),
@@ -2261,10 +2261,10 @@ function buildWorkflowBackendLink({
     label,
     href,
     isBrowserNavigable,
-    interactionLabel: isBrowserNavigable ? "Open" : "Reference",
+    interactionLabel: isBrowserNavigable ? "Open service" : "Service reference",
     ariaLabel: isBrowserNavigable
-      ? `${method} ${href} for ${label}`
-      : `Reference-only ${method} ${href} for ${label}`
+      ? `Open ${label} service reference`
+      : `${label} service reference retained for diagnostics`
   };
 }
 
@@ -2403,7 +2403,7 @@ function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingPr
   const missingLabel = missing.length === 1
     ? missing[0]
     : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
-  return `${profile.name} export requires ${missingLabel} evidence before running a governed POST export. Preview remains available.`;
+  return `${profile.name} export requires ${missingLabel} evidence before running governed export analysis. Preview remains available.`;
 }
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {
@@ -2442,7 +2442,7 @@ export function buildExportStatusResult(
 }
 
 export function buildExportStatusFailure(profileName: string, error: unknown): ReportingExportStatusState {
-  const fallback = `${profileName} export failed without backend detail.`;
+  const fallback = `${profileName} export failed without service detail.`;
   const detail = describeApiError(error, fallback);
 
   return {

@@ -98,12 +98,12 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
   if (hasRawTechnicalBody(error)) {
     return {
       summary: summarizeTechnicalApiError(error, fallback),
-      details: [`Meridian returned ${error.status}. Open diagnostics for the technical response.`]
+      details: [buildDiagnosticsDetail(error.status)]
     };
   }
 
   const summary = summarizeApiError(error, fallback);
-  const details: string[] = [`Endpoint returned ${error.status} for ${error.path}.`];
+  const details: string[] = [buildDiagnosticsDetail(error.status)];
 
   if (error.title && error.detail && error.title !== error.detail) {
     details.push(error.title);
@@ -129,6 +129,10 @@ export function describeApiError(error: unknown, fallback: string): ApiErrorDisp
     summary,
     details
   };
+}
+
+function buildDiagnosticsDetail(status: number): string {
+  return `Meridian service returned ${status}. Open diagnostics for technical details.`;
 }
 
 function summarizeApiError(error: ApiError, fallback: string): string {
