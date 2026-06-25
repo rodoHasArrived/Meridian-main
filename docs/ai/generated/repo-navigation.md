@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-07T13:10:24Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-25T09:57:48Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 54 |
-| `src/Meridian.Application/README.md` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 50 |
-| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 6 |
-| `src/Meridian.DataIntegration/README.md` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 6 |
-| `src/Meridian.Domain/README.md` | Domain, Ledger, and F# | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 4 |
-| `src/Meridian.Identity/Meridian.Identity.csproj` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 3 |
-| `src/Meridian.Identity/README.md` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 3 |
-| `src/Meridian.Application/Composition/Features/EtlFeatureRegistration.cs` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 2 |
-| `src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 2 |
-| `src/Meridian.DataIntegration/Etl/EtlAbstractions.cs` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 2 |
-| `src/Meridian.Application/Pipeline/IngestionJobService.cs` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 1 |
-| `src/Meridian.DataIntegration/Etl/EtlServices.cs` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 1 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 15 |
-| `src/Meridian.Core/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
-| `src/Meridian.Platform/README.md` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 147 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `2dc164612` (2026-06-25T02:55:51-07:00) | 105 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 79 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `2dc164612` (2026-06-25T02:55:51-07:00) | 75 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 62 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 57 |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 30 |
+| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 25 |
+| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 21 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs` | Unmapped | `2dc164612` (2026-06-25T02:55:51-07:00) | 7 |
+| `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs` | Host and Composition | `2dc164612` (2026-06-25T02:55:51-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/package.json` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 5 |
+| `src/Meridian.Ui/dashboard/package-lock.json` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 4 |
+| `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs` | Host and Composition | `2dc164612` (2026-06-25T02:55:51-07:00) | 3 |
+| `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 3 |
 
