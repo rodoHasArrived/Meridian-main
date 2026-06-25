@@ -64,6 +64,42 @@ public sealed class SecurityMasterInstrumentPassportTests
         passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
             section.SectionId == "ledger-classification" &&
             section.Summary.Contains("Equity", StringComparison.OrdinalIgnoreCase));
+        passport.OperationsWorkbench.Should().NotBeNull();
+        passport.OperationsWorkbench!.Panels.Select(panel => panel.PanelId).Should().Contain(
+            [
+                "identity",
+                "provider-evidence",
+                "terms",
+                "operations-readiness",
+                "handoff"
+            ]);
+        passport.OperationsWorkbench.Readiness.Select(readiness => readiness.ReadinessId).Should().Contain(
+            [
+                "valuation",
+                "reconciliation",
+                "ledger",
+                "close",
+                "report"
+            ]);
+        passport.OperationsWorkbench.Panels.Should().Contain(panel =>
+            panel.PanelId == "identity" &&
+            panel.Items.Any(item => item.ItemId == "primary-identifier" && item.Value == "AAPL"));
+        passport.OperationsWorkbench.Panels.Should().Contain(panel =>
+            panel.PanelId == "provider-evidence" &&
+            panel.Items.Any(item =>
+                item.ItemId.StartsWith("source-record-", StringComparison.Ordinal) &&
+                item.Detail.Contains("Source record", StringComparison.OrdinalIgnoreCase) &&
+                item.Detail.Contains("as of", StringComparison.OrdinalIgnoreCase) &&
+                item.Detail.Contains("updated by", StringComparison.OrdinalIgnoreCase) &&
+                item.Route!.StartsWith("/workstation/accounting/security-master#source", StringComparison.Ordinal)));
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "ledger" &&
+            readiness.Summary.Contains("ledger", StringComparison.OrdinalIgnoreCase));
+        passport.OperationsWorkbench.Handoffs.Should().OnlyContain(handoff =>
+            !string.IsNullOrWhiteSpace(handoff.Owner) &&
+            !string.IsNullOrWhiteSpace(handoff.BlockerReason) &&
+            handoff.ImpactedOutputs.Count > 0 &&
+            !string.IsNullOrWhiteSpace(handoff.Route));
     }
 
     [Fact]
@@ -114,6 +150,54 @@ public sealed class SecurityMasterInstrumentPassportTests
             summary.Contains("identifier", StringComparison.OrdinalIgnoreCase) ||
             summary.Contains("conflict", StringComparison.OrdinalIgnoreCase));
         providerConfidence.ConfidenceReason.Should().Contain("open identifier conflict");
+        passport.OperationsWorkbench!.Panels.Should().Contain(panel =>
+            panel.PanelId == "provider-evidence" &&
+            panel.Items.Any(item =>
+                item.ItemId.StartsWith("provider-conflict-", StringComparison.Ordinal) &&
+                item.Value.Contains("AAPL.O", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task GetInstrumentPassportAsync_SurfacesConflictingTermsInOperationsWorkbench()
+    {
+        var securityId = Guid.Parse("9B4F28C7-489F-4D0F-A0F9-BD3300665688");
+        var conflictId = Guid.Parse("6872AFA1-4E1A-46B7-9482-4E2F7D7437D4");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var service = CreateService(
+            queryService,
+            new StubSecurityMasterConflictService(
+            [
+                new SecurityMasterConflict(
+                    conflictId,
+                    securityId,
+                    "EconomicTermsMismatch",
+                    "EconomicDefinition.MaturityDate",
+                    "fund-admin",
+                    "2031-06-15",
+                    "custodian",
+                    "2031-09-15",
+                    DateTimeOffset.UtcNow.AddMinutes(-7),
+                    "Open")
+            ]));
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: null);
+
+        passport!.OperationsWorkbench.Should().NotBeNull();
+        var termsPanel = passport.OperationsWorkbench!.Panels.Should().ContainSingle(panel => panel.PanelId == "terms").Subject;
+        termsPanel.Status.Should().Be("Review");
+        termsPanel.Items.Should().Contain(item =>
+            item.ItemId.StartsWith("terms-conflict-", StringComparison.Ordinal) &&
+            item.Label == "EconomicDefinition.MaturityDate" &&
+            item.Value.Contains("2031-06-15", StringComparison.OrdinalIgnoreCase) &&
+            item.Value.Contains("2031-09-15", StringComparison.OrdinalIgnoreCase) &&
+            item.Route == $"/workstation/accounting/security-master#conflict-{conflictId:D}");
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "reconciliation" &&
+            readiness.Status == "Review" &&
+            readiness.NextAction.Contains("maturity", StringComparison.OrdinalIgnoreCase));
+        passport.OperationsWorkbench.Handoffs.Should().Contain(handoff =>
+            handoff.LinkedCases.Contains(conflictId.ToString("D")) &&
+            handoff.Route!.Contains(conflictId.ToString("D"), StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

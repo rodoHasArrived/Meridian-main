@@ -386,7 +386,49 @@ public sealed record InstrumentPassportOperationsHandoffDto(
     string Title,
     string Detail,
     string Status,
-    bool IsEnabled);
+    bool IsEnabled)
+{
+    public string? Owner { get; init; }
+    public string? BlockerReason { get; init; }
+    public IReadOnlyList<string> ImpactedOutputs { get; init; } = [];
+    public IReadOnlyList<string> LinkedCases { get; init; } = [];
+    public string? Route { get; init; }
+}
+
+public sealed record InstrumentPassportOperationsWorkbenchDto(
+    string Status,
+    string Summary,
+    IReadOnlyList<InstrumentPassportOperationsWorkbenchPanelDto> Panels,
+    IReadOnlyList<InstrumentPassportOperationsReadinessDto> Readiness,
+    IReadOnlyList<InstrumentPassportOperationsHandoffDto> Handoffs);
+
+public sealed record InstrumentPassportOperationsWorkbenchPanelDto(
+    string PanelId,
+    string Title,
+    string Status,
+    string Summary,
+    IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> Items);
+
+public sealed record InstrumentPassportOperationsWorkbenchItemDto(
+    string ItemId,
+    string Label,
+    string Value,
+    string Status,
+    string Detail,
+    int EvidenceCount,
+    int BlockingIssueCount,
+    string? Route = null);
+
+public sealed record InstrumentPassportOperationsReadinessDto(
+    string ReadinessId,
+    string Label,
+    string Status,
+    bool IsReady,
+    string Summary,
+    int EvidenceCount,
+    int BlockingIssueCount,
+    string NextAction,
+    string? Route = null);
 
 public sealed record SecurityMasterOperatingModelDto(
     Guid SecurityId,
@@ -466,6 +508,7 @@ public sealed record InstrumentPassportDto(
     public IReadOnlyList<InstrumentPassportProviderConfidenceDto> ProviderConfidence { get; init; } = [];
     public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }
     public SecurityMasterOperatingModelDto? OperatingModel { get; init; }
+    public InstrumentPassportOperationsWorkbenchDto? OperationsWorkbench { get; init; }
 }
 
 public sealed record InstrumentPassportPricingDto(

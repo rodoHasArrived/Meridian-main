@@ -2434,6 +2434,37 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 $"{enabledHandoffs} enabled / {workbench.OperationsHandoffs.Count} total handoff(s)."));
         }
 
+        if (passport.OperationsWorkbench is { } operationsWorkbench)
+        {
+            fields.Add(new SecurityMasterPresentationField("Operations workbench", $"{operationsWorkbench.Status}: {operationsWorkbench.Summary}"));
+            foreach (var readiness in operationsWorkbench.Readiness)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    readiness.Label,
+                    $"{readiness.Status}: {readiness.Summary} Evidence {readiness.EvidenceCount}; blockers {readiness.BlockingIssueCount}; next action {readiness.NextAction}"));
+            }
+
+            foreach (var panel in operationsWorkbench.Panels)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    panel.Title,
+                    $"{panel.Status}: {panel.Summary} {panel.Items.Count} item(s)."));
+            }
+
+            foreach (var handoff in operationsWorkbench.Handoffs)
+            {
+                var impactedOutputs = handoff.ImpactedOutputs.Count == 0
+                    ? "Security Master"
+                    : string.Join(", ", handoff.ImpactedOutputs);
+                var linkedCases = handoff.LinkedCases.Count == 0
+                    ? "none"
+                    : string.Join(", ", handoff.LinkedCases);
+                fields.Add(new SecurityMasterPresentationField(
+                    $"Handoff: {handoff.Title}",
+                    $"{handoff.Status}: owner {SecurityMasterTextHelpers.FirstNonEmpty(handoff.Owner, "Security Master steward")}; blocker {SecurityMasterTextHelpers.FirstNonEmpty(handoff.BlockerReason, handoff.Detail)}; outputs {impactedOutputs}; linked cases {linkedCases}; route {SecurityMasterTextHelpers.FirstNonEmpty(handoff.Route, handoff.Target)}"));
+            }
+        }
+
         ReplaceCollection(InstrumentPassportFields, fields);
     }
     private void RebuildFilteredConflicts()

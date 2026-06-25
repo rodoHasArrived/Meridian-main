@@ -886,6 +886,19 @@ public sealed class SecurityMasterViewModelTests
             viewModel.InstrumentPassportFields.Should().Contain(field =>
                 field.Label == "Operations handoff" &&
                 field.Value.Contains("enabled", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Operations workbench" &&
+                field.Value.Contains("downstream portfolio", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Ledger-ready" &&
+                field.Value.Contains("Evidence", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Terms" &&
+                field.Value.Contains("item", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Handoff: Retain Security Master context" &&
+                field.Value.Contains("owner Security Master steward", StringComparison.OrdinalIgnoreCase) &&
+                field.Value.Contains("outputs Ledger, Close", StringComparison.OrdinalIgnoreCase));
         });
     }
 
@@ -1492,6 +1505,81 @@ public sealed class SecurityMasterViewModelTests
                         Detail: "Continue close review from the selected passport.",
                         Status: "Available",
                         IsEnabled: true)
+                    {
+                        Owner = "Security Master steward",
+                        BlockerReason = "Continue close review from the selected passport.",
+                        ImpactedOutputs = ["Ledger", "Close"],
+                        LinkedCases = [],
+                        Route = "/workstation/accounting/security-master"
+                    }
+                ]),
+            OperationsWorkbench = new InstrumentPassportOperationsWorkbenchDto(
+                Status: "Ready",
+                Summary: "Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use.",
+                Panels:
+                [
+                    new InstrumentPassportOperationsWorkbenchPanelDto(
+                        PanelId: "identity",
+                        Title: "Identity",
+                        Status: "Ready",
+                        Summary: "Identity panel has retained evidence and no blocking issue.",
+                        Items:
+                        [
+                            new InstrumentPassportOperationsWorkbenchItemDto(
+                                ItemId: "primary-identifier",
+                                Label: "Ticker",
+                                Value: "AAPL",
+                                Status: "Ready",
+                                Detail: "Primary identifiers are aligned.",
+                                EvidenceCount: 1,
+                                BlockingIssueCount: 0)
+                        ]),
+                    new InstrumentPassportOperationsWorkbenchPanelDto(
+                        PanelId: "terms",
+                        Title: "Terms",
+                        Status: "Ready",
+                        Summary: "Terms panel has retained evidence and no blocking issue.",
+                        Items:
+                        [
+                            new InstrumentPassportOperationsWorkbenchItemDto(
+                                ItemId: "economics",
+                                Label: "Economics",
+                                Value: "Trading parameters are active.",
+                                Status: "Ready",
+                                Detail: "Instrument economics are retained.",
+                                EvidenceCount: 1,
+                                BlockingIssueCount: 0)
+                        ])
+                ],
+                Readiness:
+                [
+                    new InstrumentPassportOperationsReadinessDto(
+                        ReadinessId: "ledger",
+                        Label: "Ledger-ready",
+                        Status: "Ready",
+                        IsReady: true,
+                        Summary: "Ledger classification is retained.",
+                        EvidenceCount: 2,
+                        BlockingIssueCount: 0,
+                        NextAction: "No blocker.",
+                        Route: "FINOPS")
+                ],
+                Handoffs:
+                [
+                    new InstrumentPassportOperationsHandoffDto(
+                        HandoffId: "handoff-1",
+                        Target: "FINOPS",
+                        Title: "Retain Security Master context",
+                        Detail: "Continue close review from the selected passport.",
+                        Status: "Available",
+                        IsEnabled: true)
+                    {
+                        Owner = "Security Master steward",
+                        BlockerReason = "Continue close review from the selected passport.",
+                        ImpactedOutputs = ["Ledger", "Close"],
+                        LinkedCases = [],
+                        Route = "/workstation/accounting/security-master"
+                    }
                 ])
         };
 

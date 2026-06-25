@@ -313,6 +313,103 @@ const instrumentPassport: InstrumentPassport = {
       }
     ]
   },
+  operationsWorkbench: {
+    status: "Ready",
+    summary: "Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use.",
+    panels: [
+      {
+        panelId: "identity",
+        title: "Identity",
+        status: "Ready",
+        summary: "Identity panel has 3 retained evidence item(s) and no blocking issue.",
+        items: [
+          {
+            itemId: "primary-identifier",
+            label: "Ticker",
+            value: "AAPL",
+            status: "Ready",
+            detail: "Primary identifiers are aligned.",
+            evidenceCount: 1,
+            blockingIssueCount: 0
+          }
+        ]
+      },
+      {
+        panelId: "provider-evidence",
+        title: "Provider evidence",
+        status: "Ready",
+        summary: "Provider evidence panel has retained source records and no blocking issue.",
+        items: [
+          {
+            itemId: "source-record-1",
+            label: "golden-edm",
+            value: "EconomicDefinition: AAPL",
+            status: "Ready",
+            detail: "Source record edm-aapl; as of 2026-05-28 00:00 UTC; updated by steward; primary source.",
+            evidenceCount: 1,
+            blockingIssueCount: 0,
+            route: "/workstation/accounting/security-master#source-1"
+          }
+        ]
+      },
+      {
+        panelId: "terms",
+        title: "Terms",
+        status: "Ready",
+        summary: "Terms panel has retained economics, schedule, and obligation evidence.",
+        items: [
+          {
+            itemId: "economics",
+            label: "Economics",
+            value: "Trading parameters are active.",
+            status: "Ready",
+            detail: "2 corporate action obligation event(s) retained on the passport.",
+            evidenceCount: 3,
+            blockingIssueCount: 0
+          }
+        ]
+      }
+    ],
+    readiness: [
+      {
+        readinessId: "ledger",
+        label: "Ledger-ready",
+        status: "Ready",
+        isReady: true,
+        summary: "1 ledger line",
+        evidenceCount: 2,
+        blockingIssueCount: 0,
+        nextAction: "No blocker.",
+        route: "/workstation/accounting/ledger"
+      },
+      {
+        readinessId: "close",
+        label: "Close-ready",
+        status: "Ready",
+        isReady: true,
+        summary: "Used by accounting and trading workflows.",
+        evidenceCount: 3,
+        blockingIssueCount: 0,
+        nextAction: "No blocker.",
+        route: "/workstation/accounting/security-master"
+      }
+    ],
+    handoffs: [
+      {
+        handoffId: "handoff-1",
+        target: "FINOPS",
+        title: "Retain Security Master context",
+        detail: "Continue close review from the selected passport.",
+        status: "Available",
+        isEnabled: true,
+        owner: "Security Master steward",
+        blockerReason: "Continue close review from the selected passport.",
+        impactedOutputs: ["Ledger", "Close"],
+        linkedCases: [],
+        route: "/workstation/accounting/security-master"
+      }
+    ]
+  },
   operatingModel: {
     securityId: "sec-1",
     clientId: null,
@@ -8400,7 +8497,47 @@ describe("accounting-screen view model", () => {
         value: "Ready: 1 active provider evidence row retained on the passport. Evidence 2; blockers 0.",
         tone: "success"
       },
-      { label: "Operations handoff", value: "1 enabled / 1 total handoff(s).", tone: "success" }
+      { label: "Operations handoff", value: "1 enabled / 1 total handoff(s).", tone: "success" },
+      {
+        label: "Operations workbench",
+        value: "Ready: Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use.",
+        tone: "success"
+      }
+    ]));
+    expect(view.operationsReadiness).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        readinessId: "ledger",
+        label: "Ledger-ready",
+        statusBadgeVariant: "success",
+        evidenceLabel: "2 evidence",
+        blockerLabel: "0 blockers",
+        route: "/accounting/ledger"
+      })
+    ]));
+    expect(view.operationsPanels).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        panelId: "identity",
+        statusBadgeVariant: "success",
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            itemId: "primary-identifier",
+            evidenceLabel: "1 evidence",
+            blockerLabel: "0 blockers"
+          })
+        ])
+      }),
+      expect.objectContaining({
+        panelId: "provider-evidence",
+        statusBadgeVariant: "success",
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            itemId: "source-record-1",
+            route: "/accounting/security-master#source-1",
+            evidenceLabel: "1 evidence",
+            blockerLabel: "0 blockers"
+          })
+        ])
+      })
     ]));
     expect(view.providerRows).toEqual(expect.arrayContaining([
       expect.objectContaining({

@@ -216,7 +216,7 @@ the feature capability gate. The Security Master page projects the workstation t
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
 
-The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, and downstream usage evidence in parity with the browser Accounting workstream.
+The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, downstream usage, operations-readiness, and handoff evidence in parity with the browser Accounting workstream.
 The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
 statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
 panel is read-only over imported position/remittance batches; preview, validation, evidence
