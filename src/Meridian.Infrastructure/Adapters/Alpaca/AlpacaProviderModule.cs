@@ -56,6 +56,11 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         var keyId = GetKeyId() ?? envCreds.KeyId;
         var secretKey = GetSecretKey() ?? envCreds.SecretKey;
 
+        // Settings resolution: context overrides AlpacaOptions defaults.
+        var feed = GetSetting("feed") ?? "iex";
+        var useSandbox = bool.TryParse(GetSetting("useSandbox"), out var sbVal) && sbVal;
+        var subscribeQuotes = bool.TryParse(GetSetting("subscribeQuotes"), out var sqVal) && sqVal;
+
         // ----------------------------------------------------------------
         // Historical backfill provider
         // ----------------------------------------------------------------
@@ -82,7 +87,10 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         {
             var streamingOptions = new AlpacaOptions(
                 KeyId: keyId,
-                SecretKey: secretKey);
+                SecretKey: secretKey,
+                Feed: feed,
+                UseSandbox: useSandbox,
+                SubscribeQuotes: subscribeQuotes);
 
             services.AddSingleton<AlpacaMarketDataClient>(sp =>
             {
@@ -105,7 +113,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
             // Prefer context-resolved credentials; fall back to a registered AlpacaOptions or empty
             var brokerageOptions = !string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey)
-                ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey)
+                ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes)
                 : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger);
