@@ -1,4 +1,4 @@
-namespace Meridian.Ui.Services.Services.ProviderSetup;
+namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Status of a configured provider module — returned by the module setup API.

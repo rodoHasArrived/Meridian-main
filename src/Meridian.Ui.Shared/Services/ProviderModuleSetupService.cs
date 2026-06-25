@@ -2,8 +2,6 @@ using System.Reflection;
 using Meridian.Core.Config;
 using Meridian.Core.Contracts;
 using Meridian.Infrastructure.Adapters.Core;
-using Meridian.Ui.Services.Contracts;
-using Meridian.Ui.Services.Services.ProviderSetup;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;

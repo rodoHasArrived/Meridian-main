@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Ui.Services.Contracts;
-using Meridian.Ui.Services.Services.ProviderSetup;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -55,8 +54,8 @@ public static class ProviderModuleEndpoints
 
             var result = await setupService.UpsertModuleAsync(request, ct).ConfigureAwait(false);
             return result.Success
-                ? Results.Ok(new { moduleId = request.ModuleId })
-                : Results.BadRequest(new { error = result.Error });
+                ? Results.Json(result, jsonOptions)
+                : Results.BadRequest(result);
         })
         .WithName("UpsertProviderModule")
         .WithDescription("Creates or updates a provider module configuration. Credentials are stored server-side and never returned.")
@@ -79,8 +78,8 @@ public static class ProviderModuleEndpoints
             var effectiveRequest = request with { ModuleId = moduleId };
             var result = await setupService.UpsertModuleAsync(effectiveRequest, ct).ConfigureAwait(false);
             return result.Success
-                ? Results.Ok(new { moduleId })
-                : Results.BadRequest(new { error = result.Error });
+                ? Results.Json(result, jsonOptions)
+                : Results.BadRequest(result);
         })
         .WithName("UpdateProviderModule")
         .WithDescription("Updates an existing provider module configuration by ID.")
@@ -124,8 +123,8 @@ public static class ProviderModuleEndpoints
 
             var result = await setupService.SetEnabledAsync(moduleId, request.Enabled, ct).ConfigureAwait(false);
             return result.Success
-                ? Results.Ok(new { moduleId, enabled = request.Enabled })
-                : Results.BadRequest(new { error = result.Error });
+                ? Results.Json(result, jsonOptions)
+                : Results.BadRequest(result);
         })
         .WithName("SetProviderModuleEnabled")
         .WithDescription("Enables or disables a provider module. Applied live without restart; also persisted to config.")

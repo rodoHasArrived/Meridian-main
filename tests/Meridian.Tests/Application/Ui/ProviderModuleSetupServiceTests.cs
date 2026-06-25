@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.UI;
 using Meridian.Core.Contracts;
-using Meridian.Ui.Services.Services.ProviderSetup;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 

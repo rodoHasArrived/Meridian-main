@@ -1,6 +1,4 @@
-using Meridian.Ui.Services.Services.ProviderSetup;
-
-namespace Meridian.Ui.Services.Contracts;
+namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and connectivity test.

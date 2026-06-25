@@ -51,41 +51,38 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
     /// <inheritdoc/>
     public override void Register(IServiceCollection services, DataSourceRegistry registry)
     {
+        // Credential resolution for all providers: context (ProviderModules config) → env vars.
+        var envCreds = AlpacaCredentialEnvironment.Resolve();
+        var keyId = GetKeyId() ?? envCreds.KeyId;
+        var secretKey = GetSecretKey() ?? envCreds.SecretKey;
+
         // ----------------------------------------------------------------
         // Historical backfill provider
-        // Credentials prefer context (from ProviderModules config) then fall
-        // back to env vars. Provider self-reports as unavailable via
-        // IsAvailableAsync when neither source provides credentials.
         // ----------------------------------------------------------------
         services.AddSingleton<AlpacaHistoricalDataProvider>(_ =>
-            new AlpacaHistoricalDataProvider());
+            new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey));
 
         services.AddSingleton<IHistoricalDataProvider>(sp =>
             sp.GetRequiredService<AlpacaHistoricalDataProvider>());
 
         // ----------------------------------------------------------------
-        // Symbol search provider — also prefers context over env vars.
+        // Symbol search provider
         // ----------------------------------------------------------------
         services.AddSingleton<AlpacaSymbolSearchProviderRefactored>(_ =>
-            new AlpacaSymbolSearchProviderRefactored());
+            new AlpacaSymbolSearchProviderRefactored(keyId: keyId, secretKey: secretKey));
 
         services.AddSingleton<ISymbolSearchProvider>(sp =>
             sp.GetRequiredService<AlpacaSymbolSearchProviderRefactored>());
 
         // ----------------------------------------------------------------
         // Streaming market data client
-        // Credential resolution: context (ProviderModules config) → env vars.
         // AlpacaMarketDataClient requires non-empty credentials in its ctor.
         // ----------------------------------------------------------------
-        var envCreds = AlpacaCredentialEnvironment.Resolve();
-        var streamingKeyId = GetKeyId() ?? envCreds.KeyId;
-        var streamingSecretKey = GetSecretKey() ?? envCreds.SecretKey;
-
-        if (!string.IsNullOrWhiteSpace(streamingKeyId) && !string.IsNullOrWhiteSpace(streamingSecretKey))
+        if (!string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey))
         {
             var streamingOptions = new AlpacaOptions(
-                KeyId: streamingKeyId,
-                SecretKey: streamingSecretKey);
+                KeyId: keyId,
+                SecretKey: secretKey);
 
             services.AddSingleton<AlpacaMarketDataClient>(sp =>
             {

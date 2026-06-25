@@ -1,6 +1,5 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Core.Contracts;
-using Meridian.Ui.Services.Contracts;
 using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Audit.Compliance;
