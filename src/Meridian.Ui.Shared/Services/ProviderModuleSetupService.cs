@@ -112,6 +112,11 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (string.IsNullOrWhiteSpace(request.ModuleId))
             return ProviderModuleSetupResult.Fail("ModuleId is required");
 
+        // Capture pre-mutation state so we can roll back the config entry if the subsequent
+        // credential write fails (keeps config and credential store in sync).
+        var preMutationCfg = _configStore.Load();
+        preMutationCfg.ProviderModules?.Modules?.TryGetValue(request.ModuleId, out var preExistingSettings);
+
         // Save config first; only persist credentials if config write succeeds,
         // so a failed config save never leaves orphaned credentials on disk.
         var result = await MutateConfigAsync(cfg =>
@@ -149,7 +154,17 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                 else
                     merged[key] = value;
             }
-            await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
+            try
+            {
+                await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, "Credential save failed for {ModuleId}; attempting config rollback",
+                    request.ModuleId.Replace('\n', ' ').Replace('\r', ' '));
+                await RollbackModuleConfigAsync(request.ModuleId, preExistingSettings).ConfigureAwait(false);
+                return ProviderModuleSetupResult.Fail("Failed to save credentials; the configuration change was rolled back.");
+            }
         }
 
         return result;
@@ -228,7 +243,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         // Merge env-var-mapped credentials and saved settings from config,
         // matching the same resolution as BuildModuleContexts at startup.
         var cfgForModule = _configStore.Load();
-        cfgForModule.ProviderModules?.Modules?.TryGetValue(moduleId, out var moduleCfg);
+        ProviderModuleSettings? moduleCfg = null;
+        cfgForModule.ProviderModules?.Modules?.TryGetValue(moduleId, out moduleCfg);
         var merged = new Dictionary<string, string?>(storedCreds, StringComparer.OrdinalIgnoreCase);
         if (moduleCfg?.Credentials is { } envMap)
         {
@@ -291,6 +307,31 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     // ------------------------------------------------------------------
     // Private helpers
     // ------------------------------------------------------------------
+
+    private async Task RollbackModuleConfigAsync(string moduleId, ProviderModuleSettings? preExistingSettings)
+    {
+        try
+        {
+            await MutateConfigAsync(cfg =>
+            {
+                var modules = cfg.ProviderModules?.Modules is not null
+                    ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
+                    : new Dictionary<string, ProviderModuleSettings>(StringComparer.OrdinalIgnoreCase);
+
+                if (preExistingSettings is null)
+                    modules.Remove(moduleId);
+                else
+                    modules[moduleId] = preExistingSettings;
+
+                return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
+            }, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception rollbackEx)
+        {
+            _logger.LogError(rollbackEx, "Config rollback failed for {ModuleId}; state may be inconsistent",
+                moduleId.Replace('\n', ' ').Replace('\r', ' '));
+        }
+    }
 
     private async Task<ProviderModuleSetupResult> MutateConfigAsync(
         Func<AppConfig, AppConfig> mutate,
