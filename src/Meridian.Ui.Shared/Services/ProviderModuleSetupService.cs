@@ -129,10 +129,10 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             var settings = new ProviderModuleSettings(
                 Enabled: request.Enabled,
                 Priority: request.Priority,
-                Credentials: existingSettings?.Credentials,
+                Credentials: preExistingSettings?.Credentials,
                 Settings: request.Settings is { Count: > 0 }
                     ? new Dictionary<string, string?>(request.Settings, StringComparer.OrdinalIgnoreCase)
-                    : existingSettings?.Settings);
+                    : preExistingSettings?.Settings);
 
             modules[request.ModuleId] = settings;
 
