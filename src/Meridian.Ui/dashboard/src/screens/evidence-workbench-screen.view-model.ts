@@ -30,9 +30,12 @@ import type {
   EvidencePacketExportResponse,
   EvidenceProofChain,
   EvidenceRequestList,
+  EvidenceRequestListKindCode,
   EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
+  EvidenceDocumentClassification,
+  EvidenceDocumentReviewStatus,
   EvidenceVaultDocumentEntry,
   EvidenceVaultDocumentQuery,
   EvidenceVaultDocumentReviewRequest,
@@ -286,6 +289,7 @@ export interface EvidenceExportResultViewModel {
   routeAriaLabel: string | null;
   vaultIdLabel: string | null;
   storageKindLabel: string | null;
+  manifestPackageFamilyLabel: string | null;
   artifactSummaryLabel: string | null;
   artifactRows: EvidenceVaultArtifactRowViewModel[];
   requestListSummaryLabel: string | null;
@@ -311,6 +315,7 @@ export interface EvidenceVaultArtifactRowViewModel {
 export interface EvidenceVaultRequestListRowViewModel {
   id: string;
   requestListKindLabel: string;
+  requestListFamilyLabel: string;
   targetLabel: string;
   highestSeverityLabel: string;
   highestSeverityTone: EvidenceStatusTone;
@@ -404,6 +409,7 @@ export interface EvidenceVaultDocumentDetailViewModel {
   statusTone: EvidenceStatusTone;
   fields: EvidenceLineageDetailFieldViewModel[];
   objectLinkRows: EvidenceVaultDocumentObjectLinkRowViewModel[];
+  reviewFieldRows: EvidenceVaultDocumentReviewFieldRowViewModel[];
   auditRows: EvidenceVaultDocumentAuditRowViewModel[];
   supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
   manifestHref: string | null;
@@ -417,6 +423,20 @@ export interface EvidenceVaultDocumentDetailViewModel {
   objectLinkEmptyText: string;
   auditEmptyText: string;
   supportRequestEmptyText: string;
+  reviewFieldEmptyText: string;
+}
+
+export interface EvidenceVaultDocumentReviewFieldRowViewModel {
+  id: string;
+  fieldLabel: string;
+  valueLabel: string;
+  expectedLabel: string;
+  confidenceLabel: string;
+  reviewStateLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  linkedRecordLabel: string;
+  ariaLabel: string;
 }
 
 export interface EvidenceVaultDocumentObjectLinkRowViewModel {
@@ -470,6 +490,7 @@ export interface EvidenceWorkbenchViewModel {
   generatedLabel: string;
   assurancePanel: EvidenceAssurancePanelViewModel;
   proofChainPanel: EvidenceProofChainPanelViewModel;
+  queueFilters: EvidenceWorkbenchQueueFiltersViewModel;
   requestListPanel: EvidenceVaultRequestListIndexPanelViewModel;
   documentPanel: EvidenceVaultDocumentIndexPanelViewModel;
   lineagePanel: EvidenceLineagePanelViewModel;
@@ -504,6 +525,12 @@ export interface EvidenceWorkbenchViewModel {
   validatePacket: () => Promise<void>;
 }
 
+export interface EvidenceWorkbenchQueueFiltersViewModel {
+  requestListFamily: EvidenceRequestListKindCode | null;
+  documentClassification: EvidenceDocumentClassification | null;
+  documentReviewStatus: EvidenceDocumentReviewStatus | null;
+}
+
 export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";
 
 const defaultServices: EvidenceWorkbenchServices = {
@@ -521,25 +548,72 @@ const noopReloadEvidence = () => {};
 
 function buildEvidenceVaultRequestListQuery(
   subjectKind: string | null,
-  subjectId: string | null
+  subjectId: string | null,
+  requestListFamily: EvidenceRequestListKindCode | null
 ): EvidenceVaultRequestListQuery {
-  return {
+  return stripNullishQueryValues({
     subjectKind: subjectKind || null,
     subjectId: subjectId || null,
+    requestListKindCode: requestListFamily,
     status: "Open",
     maxResults: subjectKind && subjectId ? 25 : 10
-  };
+  });
 }
 
 function buildEvidenceVaultDocumentQuery(
   subjectKind: string | null,
-  subjectId: string | null
+  subjectId: string | null,
+  documentClassification: EvidenceDocumentClassification | null,
+  documentReviewStatus: EvidenceDocumentReviewStatus | null
 ): EvidenceVaultDocumentQuery {
-  return {
+  return stripNullishQueryValues({
     subjectKind: subjectKind || null,
     subjectId: subjectId || null,
+    classification: documentClassification,
+    reviewStatus: documentReviewStatus,
     maxResults: subjectKind && subjectId ? 25 : 10
-  };
+  });
+}
+
+function stripNullishQueryValues<T extends Record<string, unknown>>(query: T): T {
+  return Object.fromEntries(
+    Object.entries(query).filter(([, value]) => value !== null && value !== undefined)
+  ) as T;
+}
+
+const requestListFamilyFilters: readonly EvidenceRequestListKindCode[] = ["Close", "Audit", "Tax", "ReportPackage", "OperationalEvent"];
+const documentClassificationFilters: readonly EvidenceDocumentClassification[] = [
+  "BankStatement",
+  "AdminPackage",
+  "Statement",
+  "Invoice",
+  "CapitalNotice",
+  "CustodianFile",
+  "BankEvidence",
+  "ValuationSupport",
+  "Agreement",
+  "TaxSupport",
+  "AuditRequestSupport",
+  "TaxAuditSupport"
+];
+const documentReviewStatusFilters: readonly EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Accepted", "Rejected"];
+
+function normalizeRequestListFamilyFilter(value: string | null): EvidenceRequestListKindCode | null {
+  return requestListFamilyFilters.includes(value as EvidenceRequestListKindCode)
+    ? value as EvidenceRequestListKindCode
+    : null;
+}
+
+function normalizeDocumentClassificationFilter(value: string | null): EvidenceDocumentClassification | null {
+  return documentClassificationFilters.includes(value as EvidenceDocumentClassification)
+    ? value as EvidenceDocumentClassification
+    : null;
+}
+
+function normalizeDocumentReviewStatusFilter(value: string | null): EvidenceDocumentReviewStatus | null {
+  return documentReviewStatusFilters.includes(value as EvidenceDocumentReviewStatus)
+    ? value as EvidenceDocumentReviewStatus
+    : null;
 }
 
 export function useEvidenceWorkbenchViewModel(
@@ -549,6 +623,9 @@ export function useEvidenceWorkbenchViewModel(
   const params = useMemo(() => new URLSearchParams(search), [search]);
   const selectedSubjectKind = params.get("subjectKind");
   const selectedSubjectId = params.get("subjectId");
+  const requestListFamily = normalizeRequestListFamilyFilter(params.get("requestListFamily"));
+  const documentClassification = normalizeDocumentClassificationFilter(params.get("documentClassification"));
+  const documentReviewStatus = normalizeDocumentReviewStatusFilter(params.get("documentReviewStatus"));
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
   const [requestLists, setRequestLists] = useState<EvidenceVaultRequestListEntry[]>([]);
@@ -603,8 +680,8 @@ export function useEvidenceWorkbenchViewModel(
 
     const load = async () => {
       try {
-        const requestListQuery = buildEvidenceVaultRequestListQuery(selectedSubjectKind, selectedSubjectId);
-        const documentQuery = buildEvidenceVaultDocumentQuery(selectedSubjectKind, selectedSubjectId);
+        const requestListQuery = buildEvidenceVaultRequestListQuery(selectedSubjectKind, selectedSubjectId, requestListFamily);
+        const documentQuery = buildEvidenceVaultDocumentQuery(selectedSubjectKind, selectedSubjectId, documentClassification, documentReviewStatus);
         const listRequestLists: NonNullable<EvidenceWorkbenchServices["listRequestLists"]> =
           services.listRequestLists ?? (() => Promise.resolve([]));
         const listDocuments: NonNullable<EvidenceWorkbenchServices["listDocuments"]> =
@@ -656,7 +733,7 @@ export function useEvidenceWorkbenchViewModel(
       intakeCommandRevisionRef.current += 1;
       reviewCommandRevisionRef.current += 1;
     };
-  }, [reloadRevision, selectedSubjectId, selectedSubjectKind, services]);
+  }, [documentClassification, documentReviewStatus, reloadRevision, requestListFamily, selectedSubjectId, selectedSubjectKind, services]);
 
   const exportCommand = async () => {
     if (!selectedSubjectKind || !selectedSubjectId) {
@@ -776,6 +853,13 @@ export function useEvidenceWorkbenchViewModel(
     setReviewBusyDocumentId(`${vaultId}:${documentId}`);
     setError(null);
     try {
+      const retainedDocument = documents.find((entry) =>
+        entry.vaultId === vaultId && entry.document.documentId === documentId
+      )?.document;
+      const confirmedAt = new Date().toISOString();
+      const confirmedFields = status === "Accepted" && retainedDocument
+        ? buildDocumentReviewConfirmedFields(retainedDocument, "evidence-workbench-operator", confirmedAt)
+        : [];
       const result = await services.reviewDocument(
         vaultId,
         documentId,
@@ -785,7 +869,8 @@ export function useEvidenceWorkbenchViewModel(
           notes: status === "Accepted"
             ? "Evidence Workbench operator accepted this retained document."
             : "Evidence Workbench operator rejected this retained document.",
-          correlationId: `evidence-workbench:${vaultId}:${documentId}:${status}`
+          correlationId: `evidence-workbench:${vaultId}:${documentId}:${status}`,
+          confirmedFields
         },
         { signal: controller.signal }
       );
@@ -827,6 +912,11 @@ export function useEvidenceWorkbenchViewModel(
     packet,
     requestLists,
     documents,
+    queueFilters: {
+      requestListFamily,
+      documentClassification,
+      documentReviewStatus
+    },
     exportBusy,
     exportResult,
     intakeBusy,
@@ -852,6 +942,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
   packet: EvidencePacket | null;
   requestLists?: EvidenceVaultRequestListEntry[];
   documents?: EvidenceVaultDocumentEntry[];
+  queueFilters?: EvidenceWorkbenchQueueFiltersViewModel;
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
   intakeBusy?: boolean;
@@ -940,6 +1031,11 @@ export function buildEvidenceWorkbenchViewModel(input: {
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
     assurancePanel: buildEvidenceAssurancePanel(completeness),
     proofChainPanel: buildEvidenceProofChainPanel(input.packet?.proofChain ?? null),
+    queueFilters: input.queueFilters ?? {
+      requestListFamily: null,
+      documentClassification: null,
+      documentReviewStatus: null
+    },
     requestListPanel: buildEvidenceVaultRequestListIndexPanel(
       input.requestLists ?? [],
       hasSelection,
@@ -1120,7 +1216,10 @@ function buildVaultDocumentIndexRow(
   const extractionTone = mapDocumentExtractionTone(document.extractionStatus);
   const reviewLabel = formatKind(document.reviewerState.status);
   const reviewTone = mapDocumentReviewTone(document.reviewerState.status);
-  const sourceParts = [formatKind(document.sourceChannel), document.sourceSystem, document.sourceReference]
+  const channelLabel = document.channelKind && document.channelKind !== "Unknown"
+    ? formatKind(document.channelKind)
+    : formatKind(document.sourceChannel);
+  const sourceParts = [channelLabel, document.sourceSystem, document.sourceReference]
     .filter((part): part is string => Boolean(part));
   const tenantScopeLabel = [document.tenantId, document.scope]
     .filter((part): part is string => Boolean(part))
@@ -1135,7 +1234,19 @@ function buildVaultDocumentIndexRow(
     : `${entry.openRequestCount} open requests`;
   const auditRows = document.auditTrail.map((audit, index) => buildVaultDocumentAuditRow(document.documentId, audit, index));
   const objectLinkRows = document.objectLinks.map((link, index) => buildVaultDocumentObjectLinkRow(document.documentId, link, index));
+  const reviewFieldRows = (document.extractedFields ?? []).map((field, index) => buildVaultDocumentReviewFieldRow(document.documentId, field, index));
   const supportRequestRows = (entry.supportRequests ?? []).map(buildVaultSupportRequestRow);
+  const confirmedFieldCount = document.reviewerState.confirmedFields?.length ?? 0;
+  const confirmedFieldLabel = confirmedFieldCount === 0
+    ? "No human-confirmed fields"
+    : confirmedFieldCount === 1
+      ? "1 human-confirmed field"
+      : `${confirmedFieldCount} human-confirmed fields`;
+  const authorityLabel = formatEvidenceDocumentAuthority(document.authority);
+  const sourceRecord = document.sourceRecord;
+  const sourceRecordLabel = sourceRecord
+    ? `${formatKind(sourceRecord.sourceChannel)} receipt ${sourceRecord.receiptHash || sourceRecord.sourceHashSha256}`
+    : "No source record";
   const detailFields: EvidenceLineageDetailFieldViewModel[] = [
     { label: "Document id", value: document.documentId },
     { label: "Classification", value: classificationLabel },
@@ -1144,9 +1255,16 @@ function buildVaultDocumentIndexRow(
     { label: "Reviewer", value: document.reviewerState.reviewer || "No reviewer" },
     { label: "Reviewed at", value: document.reviewerState.reviewedAt ? formatDate(document.reviewerState.reviewedAt) : "Not reviewed" },
     { label: "Reviewer notes", value: document.reviewerState.notes || "No reviewer notes" },
+    { label: "Confirmed fields", value: confirmedFieldLabel },
+    { label: "Authority", value: authorityLabel },
+    { label: "Source record", value: sourceRecordLabel },
+    { label: "Source record received", value: sourceRecord?.receivedAt ? formatDate(sourceRecord.receivedAt) : "No source record timestamp" },
+    { label: "Source record actor", value: sourceRecord?.actor || "No source record actor" },
+    { label: "Source record tenant/scope", value: [sourceRecord?.tenantId, sourceRecord?.scope].filter((part): part is string => Boolean(part)).join(" / ") || "No source record tenant scope" },
     { label: "Source hash", value: document.sourceHashSha256 },
     { label: "Received", value: formatDate(document.receivedAt) },
     { label: "Source channel", value: formatKind(document.sourceChannel) },
+    { label: "Channel kind", value: channelLabel },
     { label: "Source system", value: document.sourceSystem || "No source system" },
     { label: "Source reference", value: document.sourceReference || "No source reference" },
     { label: "Actor", value: document.actor || "No actor" },
@@ -1168,6 +1286,7 @@ function buildVaultDocumentIndexRow(
     statusTone: reviewTone === "success" && extractionTone === "success" ? "success" : reviewTone === "danger" || extractionTone === "danger" ? "danger" : "warning",
     fields: detailFields,
     objectLinkRows,
+    reviewFieldRows,
     auditRows,
     supportRequestRows,
     manifestHref,
@@ -1179,6 +1298,7 @@ function buildVaultDocumentIndexRow(
     acceptReview: () => reviewDocument?.(entry.vaultId, document.documentId, "Accepted") ?? Promise.resolve(),
     rejectReview: () => reviewDocument?.(entry.vaultId, document.documentId, "Rejected") ?? Promise.resolve(),
     objectLinkEmptyText: "No linked operational objects were retained for this document.",
+    reviewFieldEmptyText: "No extracted fields were retained for human confirmation.",
     auditEmptyText: "No document audit events were returned for this retained document.",
     supportRequestEmptyText: "No open support requests are currently linked to this document."
   };
@@ -1205,6 +1325,69 @@ function buildVaultDocumentIndexRow(
     manifestAriaLabel: manifestHref ? `Open retained manifest for document ${document.fileName}` : null,
     ariaLabel: `${document.fileName}, ${classificationLabel}, ${extractionLabel}, ${reviewLabel}. ${objectLinksLabel}. Vault ${entry.vaultId}.`,
     detail
+  };
+}
+
+function buildDocumentReviewConfirmedFields(
+  document: EvidenceVaultDocumentEntry["document"],
+  confirmedBy: string,
+  confirmedAt: string
+) {
+  const extractedFields = (document.extractedFields ?? [])
+    .filter((field) => field.extractedValue !== null && field.extractedValue !== undefined && field.extractedValue.trim().length > 0)
+    .map((field) => ({
+      fieldName: field.fieldName,
+      confirmedValue: field.extractedValue?.trim() ?? "",
+      confirmedBy,
+      confirmedAt,
+      sourceFieldName: field.fieldName,
+      notes: [
+        `Confirmed retained extracted field ${field.fieldName}.`,
+        field.validationMessage
+      ].filter(Boolean).join(" ")
+    }));
+
+  return [
+    ...extractedFields,
+    {
+      fieldName: "sourceHashSha256",
+      confirmedValue: document.sourceHashSha256,
+      confirmedBy,
+      confirmedAt,
+      sourceFieldName: "sourceHashSha256",
+      notes: `Confirmed immutable retained document hash for ${document.fileName}.`
+    }
+  ];
+}
+
+function buildVaultDocumentReviewFieldRow(
+  documentId: string,
+  field: NonNullable<EvidenceVaultDocumentEntry["document"]["extractedFields"]>[number],
+  index: number
+): EvidenceVaultDocumentReviewFieldRowViewModel {
+  const fieldLabel = formatKind(field.fieldName);
+  const valueLabel = field.extractedValue || "No extracted value";
+  const expectedLabel = field.expectedValue || "No expected value";
+  const confidenceLabel = field.confidenceScore === null || field.confidenceScore === undefined
+    ? "No confidence score"
+    : `${Math.round(field.confidenceScore * 100)}% confidence`;
+  const reviewStateLabel = formatKind(field.reviewState || "Unreviewed");
+  const statusLabel = formatKind(field.validationStatus);
+  const statusTone = mapStatusTone(field.validationStatus);
+  const linkedRecordLabel = [field.linkedRecordKind, field.linkedRecordId]
+    .filter((part): part is string => Boolean(part))
+    .join(" / ") || "No linked record";
+  return {
+    id: `${documentId}:review-field:${index}:${field.fieldName}`,
+    fieldLabel,
+    valueLabel,
+    expectedLabel,
+    confidenceLabel,
+    reviewStateLabel,
+    statusLabel,
+    statusTone,
+    linkedRecordLabel,
+    ariaLabel: `${fieldLabel}: extracted ${valueLabel}; expected ${expectedLabel}; ${statusLabel}; ${reviewStateLabel}; ${linkedRecordLabel}`
   };
 }
 
@@ -1778,8 +1961,10 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
   const requestListLabel = requestListRows.length === 1 ? "1 request list" : `${requestListRows.length} request lists`;
   const supportRequestRows = (result.vaultIdentity?.supportRequests ?? []).map(buildVaultSupportRequestRow);
   const supportRequestLabel = supportRequestRows.length === 1 ? "1 support request" : `${supportRequestRows.length} support requests`;
+  const manifestPackageFamilyLabel = formatManifestPackageFamily(result.vaultIdentity?.manifestSnapshot ?? null);
   const vaultSummaryParts = result.vaultIdentity
     ? [
+        ...(manifestPackageFamilyLabel ? [manifestPackageFamilyLabel] : []),
         artifactLabel,
         ...(requestListRows.length > 0 ? [requestListLabel] : []),
         ...(supportRequestRows.length > 0 ? [supportRequestLabel] : [])
@@ -1794,6 +1979,7 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
     routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null,
     vaultIdLabel: result.vaultIdentity?.vaultId ?? null,
     storageKindLabel: result.vaultIdentity ? formatKind(result.vaultIdentity.storageKind) : null,
+    manifestPackageFamilyLabel,
     artifactSummaryLabel: result.vaultIdentity ? artifactLabel : null,
     artifactRows,
     requestListSummaryLabel: result.vaultIdentity ? requestListLabel : null,
@@ -1821,6 +2007,21 @@ function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportRespons
     retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
     ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}, ${captureLabel}, ${extractionLabel}`
   };
+}
+
+function formatManifestPackageFamily(
+  manifest: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["manifestSnapshot"] | null | undefined
+): string | null {
+  if (!manifest) {
+    return null;
+  }
+
+  if (manifest.packageKindCode && manifest.packageKindCode !== "Unknown") {
+    return formatKind(manifest.packageKindCode);
+  }
+
+  const packageKind = manifest.packageKind ? formatKind(manifest.packageKind) : "Evidence Package";
+  return manifest.packageId ? `${packageKind} ${manifest.packageId}` : packageKind;
 }
 
 function formatVaultArtifactCapture(
@@ -1851,6 +2052,9 @@ function formatVaultArtifactExtraction(
 
 function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVaultRequestListRowViewModel {
   const requestListKindLabel = formatKind(requestList.requestListKind);
+  const requestListFamilyLabel = requestList.requestListKindCode && requestList.requestListKindCode !== "Unknown"
+    ? `${formatKind(requestList.requestListKindCode)} family`
+    : "Evidence family";
   const targetLabel = `${formatKind(requestList.targetKind)} ${requestList.targetId}`;
   const highestSeverityLabel = formatKind(requestList.highestSeverity.toLowerCase());
   const requestCountLabel = requestList.requestCount === 1 ? "1 support request" : `${requestList.requestCount} support requests`;
@@ -1863,6 +2067,7 @@ function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVau
   return {
     id: requestList.requestListId,
     requestListKindLabel,
+    requestListFamilyLabel,
     targetLabel,
     highestSeverityLabel,
     highestSeverityTone: mapValidationSeverityTone(requestList.highestSeverity),
@@ -1871,7 +2076,7 @@ function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVau
     evidenceKindsLabel,
     blockedOutputsLabel,
     summary: requestList.summary,
-    ariaLabel: `${requestListKindLabel} for ${targetLabel}, ${highestSeverityLabel}, ${requestList.status}. ${requestList.summary}`
+    ariaLabel: `${requestListKindLabel} ${requestListFamilyLabel} for ${targetLabel}, ${highestSeverityLabel}, ${requestList.status}. ${requestList.summary}`
   };
 }
 
@@ -1973,6 +2178,35 @@ function formatKind(kind: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatEvidenceDocumentAuthority(
+  authority: EvidenceVaultDocumentEntry["document"]["authority"] | null | undefined
+) {
+  if (!authority) {
+    return "Support, block, suggest, and link only";
+  }
+
+  const allowed = [
+    authority.canSupport ? "support" : null,
+    authority.canBlock ? "block" : null,
+    authority.canSuggest ? "suggest" : null,
+    authority.canLink ? "link" : null
+  ].filter((value): value is string => Boolean(value));
+  const prohibited = [
+    authority.canApprove ? null : "approve",
+    authority.canPost ? null : "post",
+    authority.canCertify ? null : "certify",
+    authority.canRelease ? null : "release"
+  ].filter((value): value is string => Boolean(value));
+
+  if (allowed.length === 0 && prohibited.length === 0) {
+    return authority.boundary;
+  }
+
+  const allowedLabel = allowed.length === 0 ? "no authority actions" : allowed.join(", ");
+  const prohibitedLabel = prohibited.length === 0 ? "none" : prohibited.join(", ");
+  return `${allowedLabel}; cannot ${prohibitedLabel}`;
 }
 
 function formatPageTag(value: string) {

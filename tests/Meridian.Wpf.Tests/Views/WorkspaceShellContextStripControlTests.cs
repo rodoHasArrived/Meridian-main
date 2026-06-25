@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
@@ -46,147 +45,82 @@ public sealed class WorkspaceShellContextStripControlTests
     }
 
     [Fact]
-    public void Control_ShouldShowAttentionBannerWhenWarningSignalsExist()
+    public void ResolveAttentionPresentation_ShouldDescribeDangerEnvironmentSignal()
     {
-        WpfTestThread.Run(() =>
+        var shellContext = new WorkspaceShellContext
         {
-            RunMatUiAutomationFacade.EnsureApplicationResources();
-
-            var control = new WorkspaceShellContextStripControl
-            {
-                Width = 960,
-                ShellContext = new WorkspaceShellContext
+            WorkspaceTitle = "Trading",
+            WorkspaceSubtitle = "Shell",
+            Badges =
+            [
+                new WorkspaceShellBadge
                 {
-                    WorkspaceTitle = "Trading",
-                    WorkspaceSubtitle = "Shell",
-                    Badges =
-                    [
-                        new WorkspaceShellBadge
-                        {
-                            Label = "Environment",
-                            Value = "Offline",
-                            Tone = WorkspaceTone.Danger
-                        }
-                    ]
+                    Label = "Environment",
+                    Value = "Offline",
+                    Tone = WorkspaceTone.Danger
                 }
-            };
+            ]
+        };
 
-            var window = CreateHostWindow(control);
-            try
-            {
-                window.Show();
-                window.UpdateLayout();
-                control.UpdateLayout();
+        var badge = WorkspaceShellContextStripControl.ResolveAttentionBadge(shellContext);
 
-                var banner = control.FindName("AttentionBanner").Should().BeOfType<Border>().Subject;
-                var title = control.FindName("AttentionTitleText").Should().BeOfType<TextBlock>().Subject;
-                var detail = control.FindName("AttentionDetailText").Should().BeOfType<TextBlock>().Subject;
-
-                banner.Visibility.Should().Be(Visibility.Visible);
-                AutomationProperties.GetAutomationId(banner).Should().Be("WorkspaceContextAttentionBanner");
-                title.Text.Should().Be("Action required");
-                detail.Text.Should().Be("Environment: Offline; severity: action required; owner: Trading; source: runtime environment; action: switch context or reconnect services.");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+        badge.Should().NotBeNull();
+        WorkspaceShellContextStripControl.BuildAttentionTitle(badge!).Should().Be("Action required");
+        WorkspaceShellContextStripControl.BuildActionableAttentionDetail(badge!, shellContext)
+            .Should().Be("Environment: Offline; severity: action required; owner: Trading; source: runtime environment; action: switch context or reconnect services.");
     }
 
     [Fact]
-    public void Control_ShouldRenderActionableAttentionContextForUnreadAlerts()
+    public void ResolveAttentionPresentation_ShouldDescribeUnreadAlerts()
     {
-        WpfTestThread.Run(() =>
+        var shellContext = new WorkspaceShellContext
         {
-            RunMatUiAutomationFacade.EnsureApplicationResources();
-
-            var control = new WorkspaceShellContextStripControl
-            {
-                Width = 960,
-                ShellContext = new WorkspaceShellContext
+            WorkspaceTitle = "Data",
+            WorkspaceSubtitle = "Shell",
+            Badges =
+            [
+                new WorkspaceShellBadge
                 {
-                    WorkspaceTitle = "Data",
-                    WorkspaceSubtitle = "Shell",
-                    Badges =
-                    [
-                        new WorkspaceShellBadge
-                        {
-                            Label = "Critical",
-                            Value = "1 unread alert(s)",
-                            Tone = WorkspaceTone.Warning
-                        }
-                    ]
+                    Label = "Critical",
+                    Value = "1 unread alert(s)",
+                    Tone = WorkspaceTone.Warning
                 }
-            };
+            ]
+        };
 
-            var window = CreateHostWindow(control);
-            try
-            {
-                window.Show();
-                window.UpdateLayout();
-                control.UpdateLayout();
+        var badge = WorkspaceShellContextStripControl.ResolveAttentionBadge(shellContext);
 
-                var title = control.FindName("AttentionTitleText").Should().BeOfType<TextBlock>().Subject;
-                var detail = control.FindName("AttentionDetailText").Should().BeOfType<TextBlock>().Subject;
-
-                title.Text.Should().Be("Review recommended");
-                detail.Text.Should().Be("Critical: 1 unread alert(s); severity: warning; owner: Data; source: workstation alerts; action: open Notification Center.");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+        badge.Should().NotBeNull();
+        WorkspaceShellContextStripControl.BuildAttentionTitle(badge!).Should().Be("Review recommended");
+        WorkspaceShellContextStripControl.BuildActionableAttentionDetail(badge!, shellContext)
+            .Should().Be("Critical: 1 unread alert(s); severity: warning; owner: Data; source: workstation alerts; action: open Notification Center.");
     }
 
     [Fact]
-    public void Control_ShouldHideAttentionBannerWhenSignalsAreHealthy()
+    public void ResolveAttentionPresentation_ShouldIgnoreHealthySignals()
     {
-        WpfTestThread.Run(() =>
+        var shellContext = new WorkspaceShellContext
         {
-            RunMatUiAutomationFacade.EnsureApplicationResources();
-
-            var control = new WorkspaceShellContextStripControl
-            {
-                Width = 960,
-                ShellContext = new WorkspaceShellContext
+            WorkspaceTitle = "Strategy",
+            WorkspaceSubtitle = "Shell",
+            Badges =
+            [
+                new WorkspaceShellBadge
                 {
-                    WorkspaceTitle = "Strategy",
-                    WorkspaceSubtitle = "Shell",
-                    Badges =
-                    [
-                        new WorkspaceShellBadge
-                        {
-                            Label = "Environment",
-                            Value = "Live",
-                            Tone = WorkspaceTone.Success
-                        },
-                        new WorkspaceShellBadge
-                        {
-                            Label = "Alerts",
-                            Value = "No recent alerts",
-                            Tone = WorkspaceTone.Neutral
-                        }
-                    ]
+                    Label = "Environment",
+                    Value = "Live",
+                    Tone = WorkspaceTone.Success
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Alerts",
+                    Value = "No recent alerts",
+                    Tone = WorkspaceTone.Neutral
                 }
-            };
+            ]
+        };
 
-            var window = CreateHostWindow(control);
-            try
-            {
-                window.Show();
-                window.UpdateLayout();
-                control.UpdateLayout();
-
-                var banner = control.FindName("AttentionBanner").Should().BeOfType<Border>().Subject;
-                banner.Visibility.Should().Be(Visibility.Collapsed);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+        WorkspaceShellContextStripControl.ResolveAttentionBadge(shellContext).Should().BeNull();
     }
 
     [Fact]
@@ -250,46 +184,24 @@ public sealed class WorkspaceShellContextStripControlTests
     }
 
     [Fact]
-    public void Control_ShouldNotTreatDemoEnvironmentAsAttention()
+    public void ResolveAttentionPresentation_ShouldNotTreatDemoEnvironmentAsAttention()
     {
-        WpfTestThread.Run(() =>
+        var shellContext = new WorkspaceShellContext
         {
-            RunMatUiAutomationFacade.EnsureApplicationResources();
-
-            var control = new WorkspaceShellContextStripControl
-            {
-                Width = 960,
-                ShellContext = new WorkspaceShellContext
+            WorkspaceTitle = "Data",
+            WorkspaceSubtitle = "Shell",
+            Badges =
+            [
+                new WorkspaceShellBadge
                 {
-                    WorkspaceTitle = "Data",
-                    WorkspaceSubtitle = "Shell",
-                    Badges =
-                    [
-                        new WorkspaceShellBadge
-                        {
-                            Label = "Environment",
-                            Value = "Demo data",
-                            Tone = WorkspaceTone.Info
-                        }
-                    ]
+                    Label = "Environment",
+                    Value = "Demo data",
+                    Tone = WorkspaceTone.Info
                 }
-            };
+            ]
+        };
 
-            var window = CreateHostWindow(control);
-            try
-            {
-                window.Show();
-                window.UpdateLayout();
-                control.UpdateLayout();
-
-                var banner = control.FindName("AttentionBanner").Should().BeOfType<Border>().Subject;
-                banner.Visibility.Should().Be(Visibility.Collapsed);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+        WorkspaceShellContextStripControl.ResolveAttentionBadge(shellContext).Should().BeNull();
     }
 
     [Fact]

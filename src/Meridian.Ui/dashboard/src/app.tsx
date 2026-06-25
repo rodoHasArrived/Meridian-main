@@ -382,6 +382,7 @@ function AppShell() {
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
+                  <Route path="/accounting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
@@ -394,6 +395,7 @@ function AppShell() {
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />
                   <Route path="/data/watchlist" element={<WatchlistScreen />} />
                   <Route path="/data/alerts" element={<PriceAlertsScreen />} />
+                  <Route path="/data/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={(

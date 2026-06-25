@@ -2,13 +2,20 @@ using System.Collections.Concurrent;
 
 namespace Meridian.Ui.Services;
 
+public interface IOrderBookLiveDataSubscriptionClient
+{
+    Task SubscribeAsync(SubscribeRequest request, CancellationToken ct = default);
+
+    Task UnsubscribeAsync(string symbol, CancellationToken ct = default);
+}
+
 /// <summary>
 /// Service for live order book visualization.
 /// Provides real-time L2 depth data processing and visualization helpers.
 /// </summary>
 public sealed class OrderBookVisualizationService : IDisposable
 {
-    private readonly LiveDataService _liveDataService;
+    private readonly IOrderBookLiveDataSubscriptionClient _subscriptionClient;
     private readonly ConcurrentDictionary<string, OrderBookState> _orderBooks = new();
     private readonly ConcurrentDictionary<string, List<OrderBookHistorySnapshot>> _snapshotHistory = new();
     private readonly Timer _aggregationTimer;
@@ -18,8 +25,13 @@ public sealed class OrderBookVisualizationService : IDisposable
     public event EventHandler<TradeEventArgs>? TradeReceived;
 
     public OrderBookVisualizationService()
+        : this(new LiveDataOrderBookSubscriptionClient(LiveDataService.Instance))
     {
-        _liveDataService = LiveDataService.Instance;
+    }
+
+    public OrderBookVisualizationService(IOrderBookLiveDataSubscriptionClient subscriptionClient)
+    {
+        _subscriptionClient = subscriptionClient ?? throw new ArgumentNullException(nameof(subscriptionClient));
         _aggregationTimer = new Timer(AggregateSnapshots, null, 1000, 1000);
     }
 
@@ -40,7 +52,7 @@ public sealed class OrderBookVisualizationService : IDisposable
             SubscribeDepth = true,
             DepthLevels = depthLevels
         };
-        await _liveDataService.SubscribeAsync(request, ct);
+        await _subscriptionClient.SubscribeAsync(request, ct);
     }
 
     /// <summary>
@@ -50,7 +62,7 @@ public sealed class OrderBookVisualizationService : IDisposable
     {
         _orderBooks.TryRemove(symbol, out _);
         _snapshotHistory.TryRemove(symbol, out _);
-        await _liveDataService.UnsubscribeAsync(symbol, ct);
+        await _subscriptionClient.UnsubscribeAsync(symbol, ct);
     }
 
     /// <summary>
@@ -366,6 +378,20 @@ public sealed class OrderBookVisualizationService : IDisposable
     public void Dispose()
     {
         _aggregationTimer.Dispose();
+    }
+
+    private sealed class LiveDataOrderBookSubscriptionClient(LiveDataService liveDataService)
+        : IOrderBookLiveDataSubscriptionClient
+    {
+        public async Task SubscribeAsync(SubscribeRequest request, CancellationToken ct = default)
+        {
+            await liveDataService.SubscribeAsync(request, ct);
+        }
+
+        public async Task UnsubscribeAsync(string symbol, CancellationToken ct = default)
+        {
+            await liveDataService.UnsubscribeAsync(symbol, ct);
+        }
     }
 }
 

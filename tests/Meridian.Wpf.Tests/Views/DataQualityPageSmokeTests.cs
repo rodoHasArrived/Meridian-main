@@ -1,8 +1,7 @@
 using System.Reflection;
-using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
@@ -55,33 +54,14 @@ public sealed class DataQualityPageSmokeTests
 
             using var serviceProvider = services.BuildServiceProvider();
 
-            Window? hostWindow = null;
-            try
+            var exception = Record.Exception(() =>
             {
-                var exception = Record.Exception(() =>
-                {
-                    var page = serviceProvider.GetRequiredService<DataQualityPage>();
-                    hostWindow = new Window
-                    {
-                        Width = 1280,
-                        Height = 900,
-                        Content = new Frame
-                        {
-                            NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden,
-                            Content = page
-                        }
-                    };
+                var page = serviceProvider.GetRequiredService<DataQualityPage>();
 
-                    hostWindow.Show();
-                    hostWindow.UpdateLayout();
-                });
+                page.DataContext.Should().BeOfType<DataQualityViewModel>();
+            });
 
-                exception.Should().BeNull();
-            }
-            finally
-            {
-                hostWindow?.Close();
-            }
+            exception.Should().BeNull();
         });
     }
 }

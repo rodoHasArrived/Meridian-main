@@ -392,10 +392,10 @@ describe("command palette view model", () => {
       description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15."
     });
     expect(model.items.find((item) => item.id === "preset:preset-1")).toMatchObject({
-      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+      route: "/accounting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(model.items.find((item) => item.id === "workflow:evidence-review:open-evidence")).toMatchObject({
-      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+      route: "/accounting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
   });
 
@@ -704,8 +704,8 @@ describe("command palette view model", () => {
       kind: "workflow",
       description: "Research to Paper Review: Open the reusable evidence packet.",
       ariaLabel: "Open Evidence Packet, Research to Paper Review",
-      route: "/reporting/evidence",
-      routeLabel: "/reporting/evidence"
+      route: "/accounting/evidence",
+      routeLabel: "/accounting/evidence"
     });
   });
 

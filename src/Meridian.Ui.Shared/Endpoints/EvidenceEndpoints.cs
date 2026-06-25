@@ -249,6 +249,7 @@ public static class EvidenceEndpoints
 
         group.MapGet("/vault/request-lists", async (
             string? requestListKind,
+            string? requestListKindCode,
             string? targetKind,
             string? targetId,
             string? status,
@@ -264,10 +265,17 @@ public static class EvidenceEndpoints
                     "Evidence vault request-list query maxResults must be greater than zero."));
             }
 
+            var requestListKindCodeResult = ParseQueryEnum<EvidenceRequestListKindDto>(requestListKindCode, "requestListKindCode");
+            if (requestListKindCodeResult.Error is not null)
+            {
+                return Results.BadRequest(requestListKindCodeResult.Error);
+            }
+
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var result = await store.ListRequestListsAsync(
                 new EvidenceVaultRequestListQueryDto(
                     RequestListKind: requestListKind,
+                    RequestListKindCode: requestListKindCodeResult.Value,
                     TargetKind: targetKind,
                     TargetId: targetId,
                     Status: status,
@@ -283,6 +291,8 @@ public static class EvidenceEndpoints
 
         group.MapGet("/vault/documents", async (
             string? classification,
+            string? channelKind,
+            string? intakeChannelKind,
             string? extractionStatus,
             string? reviewStatus,
             string? linkKind,
@@ -302,10 +312,11 @@ public static class EvidenceEndpoints
             }
 
             var classificationResult = ParseQueryEnum<EvidenceDocumentClassificationDto>(classification, "classification");
+            var channelKindResult = ParseQueryEnum<EvidenceDocumentIntakeChannelDto>(FirstNonEmpty(channelKind, intakeChannelKind), "channelKind");
             var extractionStatusResult = ParseQueryEnum<EvidenceExtractionStatusDto>(extractionStatus, "extractionStatus");
             var reviewStatusResult = ParseQueryEnum<EvidenceDocumentReviewStatusDto>(reviewStatus, "reviewStatus");
             var linkKindResult = ParseQueryEnum<EvidenceDocumentLinkKindDto>(linkKind, "linkKind");
-            var parseError = classificationResult.Error ?? extractionStatusResult.Error ?? reviewStatusResult.Error ?? linkKindResult.Error;
+            var parseError = classificationResult.Error ?? channelKindResult.Error ?? extractionStatusResult.Error ?? reviewStatusResult.Error ?? linkKindResult.Error;
             if (parseError is not null)
             {
                 return Results.BadRequest(parseError);
@@ -315,6 +326,7 @@ public static class EvidenceEndpoints
             var result = await store.ListDocumentsAsync(
                 new EvidenceVaultDocumentQueryDto(
                     Classification: classificationResult.Value,
+                    ChannelKind: channelKindResult.Value,
                     ExtractionStatus: extractionStatusResult.Value,
                     ReviewStatus: reviewStatusResult.Value,
                     LinkKind: linkKindResult.Value,

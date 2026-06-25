@@ -19,13 +19,83 @@ from pathlib import Path
 from typing import Sequence
 
 DEFAULT_TEST_PROJECTS = [
-    ("core", "tests/Meridian.Tests/Meridian.Tests.csproj"),
-    ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj"),
-    ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj"),
-    ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj"),
-    ("directlending", "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj"),
-    ("fundstructure", "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj"),
-    ("quantscript", "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj"),
+    ("core-application", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Application"),
+    (
+        "core-ui-workstation-endpoints",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "FullyQualifiedName~Meridian.Tests.Ui.WorkstationEndpointsTests",
+    ),
+    (
+        "core-ui-other",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        "FullyQualifiedName~Meridian.Tests.Ui&FullyQualifiedName!~Meridian.Tests.Ui.WorkstationEndpointsTests",
+    ),
+    ("core-infrastructure", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Infrastructure"),
+    ("core-storage", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.Storage"),
+    ("core-data", "tests/Meridian.Tests/Meridian.Tests.csproj", "FullyQualifiedName~Meridian.Tests.DataIntegration"),
+    (
+        "core-execution-strategy",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        (
+            "FullyQualifiedName~Meridian.Tests.Execution|FullyQualifiedName~Meridian.Tests.Strategies|"
+            "FullyQualifiedName~Meridian.Tests.Backfill|FullyQualifiedName~Meridian.Tests.SecurityMaster"
+        ),
+    ),
+    (
+        "core-market-instruments",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        (
+            "FullyQualifiedName~Meridian.Tests.Integration|FullyQualifiedName~Meridian.Tests.PortfolioRecords|"
+            "FullyQualifiedName~Meridian.Tests.Credentials|FullyQualifiedName~Meridian.Tests.Commodities|"
+            "FullyQualifiedName~Meridian.Tests.CertificatesOfDeposit|FullyQualifiedName~Meridian.Tests.CryptoCurrency|"
+            "FullyQualifiedName~Meridian.Tests.Deposits|FullyQualifiedName~Meridian.Tests.MoneyMarketFunds|"
+            "FullyQualifiedName~Meridian.Tests.Entities|FullyQualifiedName~Meridian.Tests.Futures|"
+            "FullyQualifiedName~Meridian.Tests.Options|FullyQualifiedName~Meridian.Tests.Equity|"
+            "FullyQualifiedName~Meridian.Tests.FixedIncome|FullyQualifiedName~Meridian.Tests.FxSpot"
+        ),
+    ),
+    (
+        "core-platform-domain-root",
+        "tests/Meridian.Tests/Meridian.Tests.csproj",
+        (
+            "FullyQualifiedName~Meridian.Tests.Pipeline|FullyQualifiedName~Meridian.Tests.Platform|"
+            "FullyQualifiedName~Meridian.Tests.ProviderSdk|FullyQualifiedName~Meridian.Tests.Providers|"
+            "FullyQualifiedName~Meridian.Tests.Monitoring|FullyQualifiedName~Meridian.Tests.FinancialOperations|"
+            "FullyQualifiedName~Meridian.Tests.Ledger|FullyQualifiedName~Meridian.Tests.Core|"
+            "FullyQualifiedName~Meridian.Tests.Domain|FullyQualifiedName~Meridian.Tests.Models|"
+            "FullyQualifiedName~Meridian.Tests.Reconciliation|FullyQualifiedName~Meridian.Tests.Treasury|"
+            "FullyQualifiedName~Meridian.Tests.Instruments|FullyQualifiedName~Meridian.Tests.Contracts|"
+            "FullyQualifiedName~Meridian.Tests.Risk|FullyQualifiedName~Meridian.Tests.Config|"
+            "FullyQualifiedName~Meridian.Tests.Architecture|FullyQualifiedName~Meridian.Tests.Workflow|"
+            "FullyQualifiedName~Meridian.Tests.Services|FullyQualifiedName~Meridian.Tests.Derivatives|"
+            "FullyQualifiedName~Meridian.Tests.Indicators|FullyQualifiedName~Meridian.Tests.AssetOperations|"
+            "FullyQualifiedName~Meridian.Tests.ReferenceData|FullyQualifiedName~Meridian.Tests.Identity|"
+            "FullyQualifiedName~Meridian.Tests.Wpf|FullyQualifiedName~Meridian.Tests.Compliance|"
+            "FullyQualifiedName~Meridian.Tests.Serialization|FullyQualifiedName~Meridian.Tests.TradingCalendarTests|"
+            "FullyQualifiedName~Meridian.Tests.CronExpressionParserTests|FullyQualifiedName~Meridian.Tests.SymbolSearch|"
+            "FullyQualifiedName~Meridian.Tests.OrderEventPayloadTests|FullyQualifiedName~Meridian.Tests.MarketDepthCollectorTests|"
+            "FullyQualifiedName~Meridian.Tests.CliModeResolverTests|FullyQualifiedName~Meridian.Tests.OptionContractSpecTests|"
+            "FullyQualifiedName~Meridian.Tests.L3OrderBookCollectorTests|FullyQualifiedName~Meridian.Tests.OptionQuoteTests|"
+            "FullyQualifiedName~Meridian.Tests.GreeksSnapshotTests|FullyQualifiedName~Meridian.Tests.TradeDataCollectorTests|"
+            "FullyQualifiedName~Meridian.Tests.OptionTradeTests|FullyQualifiedName~Meridian.Tests.OptionChainSnapshotTests|"
+            "FullyQualifiedName~Meridian.Tests.GracefulShutdownTests|FullyQualifiedName~Meridian.Tests.OpenInterestUpdateTests|"
+            "FullyQualifiedName~Meridian.Tests.LiveDataAccessTests|FullyQualifiedName~Meridian.Tests.FilePermissionsServiceTests|"
+            "FullyQualifiedName~Meridian.Tests.TradeModelTests|FullyQualifiedName~Meridian.Tests.BboQuotePayloadTests|"
+            "FullyQualifiedName~Meridian.Tests.OrderBookLevelTests|FullyQualifiedName~Meridian.Tests.AlpacaQuoteRoutingTests|"
+            "FullyQualifiedName~Meridian.Tests.PrometheusMetricsTests|FullyQualifiedName~Meridian.Tests.SessionStatsCollectorTests|"
+            "FullyQualifiedName~Meridian.Tests.QuoteCollectorTests|FullyQualifiedName~Meridian.Tests.StatementReconciliationServiceTests|"
+            "FullyQualifiedName~Meridian.Tests.WebSocketResiliencePolicyTests|FullyQualifiedName~Meridian.Tests.CompositePublisherTests|"
+            "FullyQualifiedName~Meridian.Tests.ConnectionRetryIntegrationTests|FullyQualifiedName~Meridian.Tests.FilePermissionsDiagnosticTests|"
+            "FullyQualifiedName~Meridian.Tests.WebSocketHeartbeatTests|FullyQualifiedName~Meridian.Tests.PrometheusMetricsUpdaterTests|"
+            "FullyQualifiedName~Meridian.Tests.ExponentialBackoffTests|FullyQualifiedName~Meridian.Tests.CircuitBreakerTests"
+        ),
+    ),
+    ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
+    ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),
+    ("backtesting", "tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj", None),
+    ("directlending", "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj", None),
+    ("fundstructure", "tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj", None),
+    ("quantscript", "tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj", None),
 ]
 
 
@@ -33,6 +103,7 @@ DEFAULT_TEST_PROJECTS = [
 class TestProject:
     name: str
     path: str
+    filter_expression: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,7 +154,7 @@ def parse_args() -> argparse.Namespace:
 
 def parse_project_entries(entries: Sequence[str]) -> list[TestProject]:
     if not entries:
-        return [TestProject(name=name, path=path) for name, path in DEFAULT_TEST_PROJECTS]
+        return [TestProject(name=name, path=path, filter_expression=filter_expression) for name, path, filter_expression in DEFAULT_TEST_PROJECTS]
 
     projects: list[TestProject] = []
     for entry in entries:
@@ -98,6 +169,14 @@ def parse_project_entries(entries: Sequence[str]) -> list[TestProject]:
     return projects
 
 
+def combine_filters(base_filter: str, project_filter: str | None) -> str:
+    if not project_filter:
+        return base_filter
+    if not base_filter:
+        return project_filter
+    return f"({base_filter})&({project_filter})"
+
+
 def build_dotnet_test_command(
     project: TestProject,
     *,
@@ -105,6 +184,7 @@ def build_dotnet_test_command(
     test_filter: str,
     results_dir: Path,
 ) -> list[str]:
+    combined_filter = combine_filters(test_filter, project.filter_expression)
     return [
         "dotnet",
         "test",
@@ -112,14 +192,63 @@ def build_dotnet_test_command(
         "-c",
         configuration,
         "--no-restore",
+        "--no-build",
         "--filter",
-        test_filter,
+        combined_filter,
         "--logger",
         f"trx;LogFilePrefix={project.name}",
         "--results-directory",
         str(results_dir),
         "/p:EnableWindowsTargeting=true",
     ]
+
+
+def build_dotnet_build_command(
+    project: TestProject,
+    *,
+    configuration: str,
+) -> list[str]:
+    return [
+        "dotnet",
+        "build",
+        project.path,
+        "-c",
+        configuration,
+        "--no-restore",
+        "/p:EnableWindowsTargeting=true",
+    ]
+
+
+def get_unique_build_projects(projects: Sequence[TestProject]) -> list[TestProject]:
+    seen_paths: set[str] = set()
+    unique_projects: list[TestProject] = []
+    for project in projects:
+        if project.path in seen_paths:
+            continue
+        seen_paths.add(project.path)
+        unique_projects.append(project)
+    return unique_projects
+
+
+def run_builds(
+    projects: Sequence[TestProject],
+    *,
+    configuration: str,
+    dry_run: bool,
+) -> list[TestResult]:
+    results: list[TestResult] = []
+    for project in get_unique_build_projects(projects):
+        command = build_dotnet_build_command(project, configuration=configuration)
+        print(f"::group::dotnet build {project.path}", flush=True)
+        print(" ".join(command), flush=True)
+        if dry_run:
+            exit_code = 0
+        else:
+            completed = subprocess.run(command, check=False)
+            exit_code = completed.returncode
+        print(f"::endgroup::", flush=True)
+        results.append(TestResult(f"build:{project.name}", project.path, exit_code, command))
+    return results
 
 
 def run_tests(
@@ -189,6 +318,19 @@ def main() -> int:
 
     results_dir = Path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
+
+    build_results = run_builds(
+        projects,
+        configuration=args.configuration,
+        dry_run=args.dry_run,
+    )
+    build_failures = [result for result in build_results if result.exit_code != 0]
+    if build_failures:
+        write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
+        print("Failing .NET test project builds:", file=sys.stderr)
+        for result in build_failures:
+            print(f"- {result.name}: {result.path} exited {result.exit_code}", file=sys.stderr)
+        return 1
 
     results = run_tests(
         projects,

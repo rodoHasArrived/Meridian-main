@@ -92,7 +92,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 AutomationProperties.GetAutomationId(emptyState).Should().Be("EmptyStateTest");
@@ -189,7 +189,7 @@ public sealed class ApplicationPrimitiveControlsTests
             };
             var host = new StackPanel { Children = { alert, evidence } };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 AutomationProperties.GetAutomationId(alert).Should().Be("InlineAlertTest");
@@ -267,7 +267,7 @@ public sealed class ApplicationPrimitiveControlsTests
             };
             var host = new StackPanel { Children = { header, filters, freshness } };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 AutomationProperties.GetAutomationId(header).Should().Be("SectionHeaderTest");
@@ -340,7 +340,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 Get<Button>(emptyWithoutCommand, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
@@ -386,7 +386,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 Get<Border>(alert, "IconContainer").Visibility.Should().Be(Visibility.Collapsed);
@@ -434,7 +434,7 @@ public sealed class ApplicationPrimitiveControlsTests
                 }
             };
 
-            var window = Show(host);
+            var window = Render(host);
             try
             {
                 Get<ToneBadge>(header, "Badge").Visibility.Should().Be(Visibility.Collapsed);
@@ -466,7 +466,7 @@ public sealed class ApplicationPrimitiveControlsTests
             };
             control.Click += (_, _) => clickCount++;
 
-            var window = Show(control);
+            var window = Render(control);
             try
             {
                 Get<Button>(control, "InternalButton").RaiseEvent(
@@ -515,19 +515,19 @@ public sealed class ApplicationPrimitiveControlsTests
         return null;
     }
 
-    private static Window Show(FrameworkElement element)
+    private static RenderedElement Render(FrameworkElement element)
     {
-        var window = new Window
-        {
-            Width = 900,
-            Height = 700,
-            Content = element
-        };
-
-        window.Show();
-        window.UpdateLayout();
+        element.Measure(new Size(900, 700));
+        element.Arrange(new Rect(0, 0, 900, 700));
         element.UpdateLayout();
-        return window;
+        return new RenderedElement();
+    }
+
+    private sealed class RenderedElement
+    {
+        public void Close()
+        {
+        }
     }
 
     private sealed class TestCommand : ICommand

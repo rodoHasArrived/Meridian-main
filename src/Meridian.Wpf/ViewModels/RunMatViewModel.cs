@@ -12,8 +12,10 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class RunMatViewModel : BindableBase, IDisposable
 {
     private readonly RunMatService _runMatService;
+    private readonly TimeProvider _timeProvider;
     private CancellationTokenSource? _runCts;
     private bool _hasRunAttempt;
+    private int _scratchSequence;
 
     public ObservableCollection<RunMatScriptDocument> Scripts { get; } = [];
     public ObservableCollection<RunMatOutputLine> OutputLines { get; } = [];
@@ -135,9 +137,10 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     public IRelayCommand NewScriptCommand { get; }
     public IRelayCommand StopRunCommand { get; }
 
-    public RunMatViewModel(RunMatService runMatService)
+    public RunMatViewModel(RunMatService runMatService, TimeProvider? timeProvider = null)
     {
         _runMatService = runMatService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         InitializeCommand = new AsyncRelayCommand(InitializeAsync);
         RefreshScriptsCommand = new AsyncRelayCommand(RefreshScriptsAsync);
         SaveScriptCommand = new AsyncRelayCommand(SaveCurrentScriptAsync);
@@ -264,7 +267,9 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     private void NewScript()
     {
         SelectedScript = null;
-        ScriptName = $"scratch_{DateTime.Now:HHmmss}.m";
+        var timestamp = _timeProvider.GetLocalNow();
+        var sequence = Interlocked.Increment(ref _scratchSequence);
+        ScriptName = $"scratch_{timestamp:HHmmssfff}_{sequence:D2}.m";
         ScriptSource = """
         x = linspace(0, 4*pi, 400);
         y = sin(x) .* exp(-x / 12);

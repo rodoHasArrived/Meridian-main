@@ -25,9 +25,10 @@ public sealed class EtlCommandsTests
     [Fact]
     public void TryBuildDefinition_WithoutSourceKind_ReturnsFalse()
     {
-        var result = EtlCommands.TryBuildDefinition(
-            ["--etl-import", "--etl-source-path", "input"],
-            out _);
+        var result = CommandTestConsole.CaptureError(() =>
+            EtlCommands.TryBuildDefinition(
+                ["--etl-import", "--etl-source-path", "input"],
+                out _));
 
         result.Should().BeFalse();
     }
@@ -35,9 +36,10 @@ public sealed class EtlCommandsTests
     [Fact]
     public void TryBuildDefinition_WithoutSourcePath_ReturnsFalse()
     {
-        var result = EtlCommands.TryBuildDefinition(
-            ["--etl-import", "--etl-source-kind", "local"],
-            out _);
+        var result = CommandTestConsole.CaptureError(() =>
+            EtlCommands.TryBuildDefinition(
+                ["--etl-import", "--etl-source-kind", "local"],
+                out _));
 
         result.Should().BeFalse();
     }

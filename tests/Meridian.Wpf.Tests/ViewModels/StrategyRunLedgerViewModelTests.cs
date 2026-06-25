@@ -31,7 +31,7 @@ public sealed class StrategyRunLedgerViewModelTests
             var viewModel = new StrategyRunLedgerViewModel(workspaceService, navigation);
 
             viewModel.Parameter = "run-ledger-security-id";
-            await Task.Delay(150);
+            await viewModel.CurrentLoadTask;
 
             viewModel.SelectedTrialBalanceLine = viewModel.TrialBalance.Single(line => line.Symbol == "AAPL");
             viewModel.TrialBalanceTable.Rows.Should().BeSameAs(viewModel.TrialBalance);
@@ -70,7 +70,7 @@ public sealed class StrategyRunLedgerViewModelTests
             var viewModel = new StrategyRunLedgerViewModel(workspaceService, navigation);
 
             viewModel.Parameter = "run-ledger-symbol";
-            await Task.Delay(150);
+            await viewModel.CurrentLoadTask;
 
             viewModel.SelectedTrialBalanceLine = viewModel.TrialBalance.Single(line => line.Symbol == "TSLA");
             viewModel.OpenSelectedSecurityCommand.Execute(null);
@@ -100,7 +100,7 @@ public sealed class StrategyRunLedgerViewModelTests
             var viewModel = new StrategyRunLedgerViewModel(workspaceService, navigation);
 
             viewModel.Parameter = "run-ledger-no-security";
-            await Task.Delay(150);
+            await viewModel.CurrentLoadTask;
 
             viewModel.SelectedTrialBalanceLine = viewModel.TrialBalance.First(line => string.IsNullOrWhiteSpace(line.Symbol));
 

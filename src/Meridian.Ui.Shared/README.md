@@ -1307,14 +1307,14 @@ The file-backed Evidence Vault now stores more than manifest retention: retained
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. Copied vault
 artifacts also preserve optional capture channel/source details, typed channel kind for upload,
-email, SFTP, API, portal-download, local-file, and imported-file adapter seams, first-class document metadata, and
+email, SFTP, API, portal-download, local-file, and imported-file adapter seams, first-class document metadata, immutable source-record receipts, and
 extracted fields with confidence, reviewer state, expected value, validation status, and linked
 record identity so retained document evidence can prove how upload/email/API/portal/SFTP intake was
 reviewed against expected records. `/api/workstation/evidence/vault/intake` is the shared API
 intake route for that same vault model: it accepts bounded base64 document payloads, validates
 optional SHA-256 expectations, stores the artifact under `_vault`, writes a searchable manifest and
 vault identity, and returns the retained artifact hash, capture metadata, document classification,
-source channel, typed channel kind, actor, tenant/scope, object links, extraction status, reviewer state, audit trail,
+source channel, typed channel kind, actor, tenant/scope, immutable source record, object links, extraction status, reviewer state, audit trail,
 extraction fields, support-only authority flags, and manifest route.
 Accepted intake reviewer state and accepted `/api/workstation/evidence/vault/{vaultId}/documents/{documentId}/review`
 requests fail closed unless they carry at least one human-confirmed field row, so an operator review
@@ -1323,7 +1323,9 @@ can support accounting-grade evidence without granting approval, posting, certif
 identity index. It filters by document classification, extraction status, reviewer state, subject,
 tenant/scope, typed channel kind, and linked period/portfolio/account/instrument/journal/reconciliation/report/close
 objects, returning the retained document plus vault id, manifest route, storage kind, and open
-support-request count for browser and WPF surfaces.
+support-request count for browser and WPF surfaces. Retained document snapshots include extracted
+field rows so review surfaces can display and confirm the same field-level evidence that the vault
+manifest freezes.
 The vault write boundary rejects every retained artifact reference, copied or
 route-only, that omits canonical subject linkage, lacks an addressable path/route, or uses
 unsupported subject kinds, so retained statement/report/approval/screenshot artifacts cannot become
@@ -1332,12 +1334,14 @@ server-owned instead of client-local.
 Manifest export also freezes grouped request lists and the underlying support request rows from
 packet completeness: missing and stale evidence, blocking work items, and unresolved validation
 issues are written into both the retained manifest and `_vault` identity index with target kind,
-target id, highest severity, evidence kinds, and blocked outputs. This gives close, audit, tax,
-report-package, and operator review workflows a durable request-list surface without rebuilding it
+target id, typed close/audit/tax/report-package/operational-event family, highest severity,
+evidence kinds, and blocked outputs. This gives close, audit, tax, report-package, and operator
+review workflows a durable request-list surface without rebuilding it
 in browser or WPF clients. The same write path now also materializes
 `EvidenceVaultIdentityDto.ManifestSnapshot`, a public package-level snapshot with package kind/id,
-content hash, retained document snapshots, support request snapshots, and linked operational
-objects. `/api/workstation/evidence/vault/request-lists` lists those frozen request-list groups
+typed package family for close binders, audit packets, report support packages, tax support packages,
+and event support packages, content hash, retained document snapshots, support request snapshots,
+and linked operational objects. `/api/workstation/evidence/vault/request-lists` lists those frozen request-list groups
 from retained vault identities with request-list, target, status, subject, and limit filters,
 returning vault/manifest metadata beside the matching support request rows.
 Retained vault bundles are also first-class Evidence Workbench subjects through the
@@ -1519,12 +1523,15 @@ vault lookup, and manifest-export endpoints used by the browser and WPF surfaces
 Direct Evidence Vault intake now also promotes non-ready extraction fields into the same frozen
 support-request and request-list index used by manifest export. Uploaded documents and
 local/imported file references retain copied file bytes, capture metadata, source path or route
-reference, document classification, typed channel kind, object links, reviewer state, field review posture, support
+reference, document classification, typed channel kind, immutable source-record receipt, object links, reviewer state, field review posture, support
 requests, and close/audit/tax/report-package/event request-list grouping in the vault identity, so
 operators can follow up without interpreting raw intake manifests. Extraction is routed through
 `IEvidenceDocumentExtractor`; the default `ManualEvidenceDocumentExtractor` normalizes
 operator-supplied deterministic metadata and fixture/demo/sample intake metadata, leaving OCR or LLM
 output behind the same contract for a later implementation.
+Email, SFTP, API, and portal-download source kinds are adapter seams in v1: callers must supply
+the bytes to retain while the vault records the typed source, URI/path, channel kind, source record,
+and hash for the later adapter implementation to replace.
 Statement reconciliation mutation endpoints trust the authenticated workstation session actor for
 statement-run intake and reconcile commands. Client-supplied `ImportedBy` or reconcile actor values
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the
