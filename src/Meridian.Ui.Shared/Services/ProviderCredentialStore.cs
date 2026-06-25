@@ -127,7 +127,9 @@ public sealed class ProviderCredentialStore : IProviderCredentialStore
         {
             try
             {
-                using (File.Open(_filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
+                using (File.Open(_filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                }
                 File.SetUnixFileMode(_filePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
             }
             catch (Exception)
