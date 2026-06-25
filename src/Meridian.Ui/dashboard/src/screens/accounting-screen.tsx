@@ -1553,6 +1553,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
+  const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
+  const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
+  const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
   const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const identity = securityMaster.identityView;
