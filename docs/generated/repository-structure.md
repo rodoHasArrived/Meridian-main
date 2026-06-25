@@ -4009,6 +4009,7 @@ Meridian-main
 │   │   │   ├── DiagnosticBundleService.cs
 │   │   │   ├── ErrorRingBuffer.cs
 │   │   │   ├── ErrorTracker.cs
+│   │   │   ├── PipelineDiagnosticsProjection.cs
 │   │   │   ├── ShutdownDiagnosticsService.cs
 │   │   │   ├── ShutdownLifecycleTypes.cs
 │   │   │   └── SystemHealthChecker.cs
@@ -6425,6 +6426,7 @@ Meridian-main
 │   │   │   ├── Diagnostics
 │   │   │   │   ├── DiagnosticBundleServiceTests.cs
 │   │   │   │   ├── ErrorRingBufferTests.cs
+│   │   │   │   ├── PipelineDiagnosticsProjectionTests.cs
 │   │   │   │   └── SystemHealthCheckerTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── AlertDispatcherTests.cs
@@ -7072,7 +7074,8 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   └── shared-pattern-suggest.ps1
+│   │   ├── shared-pattern-suggest.ps1
+│   │   └── test-gap-scan.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json
