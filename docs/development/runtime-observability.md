@@ -144,6 +144,11 @@ Use the `eventPipeline` block for current queue depth, peak queue depth, utiliza
 flush age. It also reports recovered, rejected, and deduplicated counts plus whether WAL,
 validation, and deduplication are enabled for the live pipeline. Use the `marketDataMetrics` block
 for aggregate published/dropped counts, events/sec, message-type counters, and latency summaries.
+Use the `eventPipelineHealth` block for the support-facing interpretation of those counters:
+`Healthy`, `Warning`, `Degraded`, `Critical`, `Unknown`, or `Unavailable`, plus a safe
+`FailureReason`, `RecoveryAction`, consumer-lag count, queue mode, and flush age. This summary is
+computed only when diagnostics are requested and must remain counts/timings/status text rather than
+raw event payloads.
 When the dual-path trade/quote fast path is registered, use the `eventPipelineHotPath` block for
 ring-buffer depth plus hot-path published, consumed, fallback, and dropped counts so operators can
 distinguish slow-path backpressure from hot-path saturation without enabling verbose logging.
@@ -182,7 +187,8 @@ When `IEventMetrics` is registered, `metrics.json` and `runtime-summary.json` mu
 same aggregate event counters used by `/api/diagnostics/metrics` so support bundles can explain
 pipeline throughput without requiring a live repro.
 The summary includes published, dropped, rejected, trade, quote, depth-update, historical-bar,
-events/sec, type-specific rate, latency-sample, latency, GC, and heap counters. These are aggregate
+events/sec, type-specific rate, latency-sample, latency, GC, heap counters, and the
+`eventPipelineHealth` interpretation when pipeline statistics are registered. These are aggregate
 diagnostic values only and must not include raw event payloads, account identifiers, provider
 responses, portfolio values, or order details.
 When `ErrorTracker` is registered, `recent-errors.json` and the `runtime-summary.json` `errors`

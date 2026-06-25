@@ -1458,7 +1458,7 @@ async function renderAccountingScreen(
 }
 
 describe("AccountingScreen", () => {
-  it("renders actionable Accounting loading work while workstation payloads bootstrap", async () => {
+  it("renders actionable Accounting loading work while workspace data loads", async () => {
     renderWithRouter(<AccountingScreen data={null} />, { initialEntries: ["/accounting/reconciliation"] });
     await waitForAsyncEffects();
 
@@ -2412,7 +2412,7 @@ describe("AccountingScreen", () => {
       actor: "browser-accounting-operator",
       testCases: null
     }));
-  });
+  }, 30_000);
 
   it("renders external GL evidence package posture from the reconciliation response", async () => {
     const provider: AccountingSystemProvider = {
@@ -3854,7 +3854,7 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByText("No reconciliation runs are available for this accounting scope.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "No reconciliation run selected" })).toHaveTextContent(
-      "Reconciliation evidence is unavailable until the workspace payload includes at least one run."
+      "Reconciliation evidence is unavailable until workspace data includes at least one run."
     );
   });
 

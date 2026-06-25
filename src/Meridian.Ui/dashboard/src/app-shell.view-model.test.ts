@@ -73,13 +73,13 @@ describe("app shell view model", () => {
     expect(state.canRenderRoutes).toBe(false);
     expect(state.workflowContinuity).toMatchObject({
       operatorFocusSummary: "Loading cross-workspace operator posture.",
-      operatorFocusEmptyText: "Ranked focus actions will appear after workstation payloads load.",
+      operatorFocusEmptyText: "Ranked focus actions will appear after workspace data loads.",
       operatorFocusItems: [],
       evidenceTimelineSummary: "Loading cross-workspace evidence timeline.",
-      evidenceTimelineEmptyText: "Recent audit and workflow events will appear after workstation payloads load.",
+      evidenceTimelineEmptyText: "Recent audit and workflow events will appear after workspace data loads.",
       evidenceTimelineItems: [],
       linkedContextSummary: "Loading linked operating context.",
-      linkedContextEmptyText: "Portfolio-aware context links will appear after workstation payloads load.",
+      linkedContextEmptyText: "Portfolio-aware context links will appear after workspace data loads.",
       linkedContextItems: []
     });
     expect(state.workflowContinuity.disclosure).toMatchObject({
@@ -97,9 +97,9 @@ describe("app shell view model", () => {
       detailId: "workstation-shell-status-loading-detail",
       tone: "loading",
       role: "status",
-      title: "Booting workstation shell",
-      detail: "Loading session state, operator workspaces, and the initial workstation evidence slices.",
-      itemListLabel: "Workspace bootstrap status",
+      title: "Preparing workspace",
+      detail: "Loading session state, operator workspaces, and the initial evidence views.",
+      itemListLabel: "Workspace data loading status",
       actionLabel: null,
       items: [
         {
@@ -109,7 +109,7 @@ describe("app shell view model", () => {
         },
         {
           key: "workspace-payloads",
-          label: "Workspace payloads",
+          label: "Workspace data",
           detail: "Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
         },
         {
@@ -189,9 +189,9 @@ describe("app shell view model", () => {
         {
           id: "source",
           label: "Source",
-          value: "Demo fixtures",
+          value: "Demo data",
           tone: "pending",
-          detail: "No-host fixture payloads are visible; do not treat this as live operational readiness.",
+          detail: "Demo data is visible; confirm live source status before making operating decisions.",
           href: "/settings#backend-capability-coverage",
           actionLabel: "Open diagnostics"
         },
@@ -283,7 +283,7 @@ describe("app shell view model", () => {
       actionLabel: "Review readiness"
     });
     expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
-      value: "Partial host",
+      value: "Limited data",
       tone: "review",
       href: "/settings#backend-capability-coverage",
       actionLabel: "Open diagnostics"
@@ -1158,13 +1158,13 @@ describe("app shell view model", () => {
       detailId: "workstation-shell-status-degraded-detail",
       tone: "warning",
       role: "status",
-      title: "Workstation bootstrap is partially degraded",
-      actionLabel: "Retry failed slices",
-      actionAriaLabel: "Retry failed workstation slices",
+      title: "Some workspace data is unavailable",
+      actionLabel: "Retry failed areas",
+      actionAriaLabel: "Retry failed workspace areas",
       secondaryActionLabel: "Review diagnostics",
-      secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
+      secondaryActionAriaLabel: "Review Settings diagnostics for failed workspace areas",
       secondaryActionHref: "/settings#backend-capability-coverage",
-      itemListLabel: "Failed workstation slices"
+      itemListLabel: "Workspace data issues"
     });
     expect(state.statusPanel?.items).toEqual([
       {
@@ -1201,11 +1201,34 @@ describe("app shell view model", () => {
       tone: "danger",
       role: "alert",
       ariaLive: "assertive",
-      title: "Workstation bootstrap failed",
+      title: "Workspace data unavailable",
       detail: "Network offline",
-      actionLabel: "Retry bootstrap",
-      actionAriaLabel: "Retry workstation bootstrap",
-      itemListLabel: "Bootstrap failure details"
+      actionLabel: "Retry workspace data",
+      actionAriaLabel: "Retry workspace data",
+      itemListLabel: "Workspace data issues"
+    });
+  });
+
+  it("hides raw technical response bodies in failed workspace copy", () => {
+    const rawBody = "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>";
+    const state = buildAppShellViewState({
+      pathname: "/reporting",
+      loading: false,
+      error: rawBody,
+      workspaceErrors: {
+        reporting: rawBody
+      },
+      payload: emptyPayload
+    });
+
+    expect(state.statusPanel).toMatchObject({
+      title: "Workspace data unavailable",
+      detail: "Meridian could not load workspace data. Try again or open diagnostics."
+    });
+    expect(state.statusPanel?.items[0]).toMatchObject({
+      label: "Reporting",
+      detail: "Workspace data unavailable. Try again or open diagnostics.",
+      ariaLabel: "Reporting: Workspace data unavailable. Try again or open diagnostics."
     });
   });
 
@@ -1219,10 +1242,10 @@ describe("app shell view model", () => {
       role: "status",
       ariaLive: "polite",
       title: "Demo data",
-      detail: "Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
+      detail: "Showing demo data because live Meridian data is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
       workflowLabel: "Evidence path",
       retryLabel: "Retrying live data",
-      retryAriaLabel: "Retrying Meridian API host and live workstation data",
+      retryAriaLabel: "Retrying live Meridian workspace data",
       retryDisabled: true,
       retryBusy: true
     });
@@ -1247,8 +1270,8 @@ describe("app shell view model", () => {
     expect(state.canRenderRoutes).toBe(true);
     expect(state.statusPanel).toMatchObject({
       tone: "warning",
-      title: "Workstation bootstrap is partially degraded",
-      detail: "1 workstation slice failed to load. Available routes remain open while that slice recovers."
+      title: "Some workspace data is unavailable",
+      detail: "1 workspace area did not load. Available routes remain open while that area recovers."
     });
     expect(state.statusPanel?.items).toEqual([
       {

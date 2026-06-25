@@ -240,6 +240,53 @@ describe("useWorkstationData", () => {
     expect(result.current.overview).toEqual({ marker: "overview" });
   });
 
+  it("translates raw HTML 404 workspace failures before publishing shell errors", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 0, {
+        activeWorkspace: "reporting",
+        commandCount: 1,
+        displayName: "Ops session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
+      resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        0,
+        { marker: "portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
+      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
+      rejectRequest("reporting", 0, createApiErrorFromResponseBody(
+        "/api/workstation/reporting",
+        404,
+        "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>"
+      ));
+      resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("reporting-html-404"));
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, { generatedAt: "2026-01-01T00:00:00Z", presets: [] });
+      await flushAsync();
+    });
+
+    expect(result.current.workspaceErrors.reporting).toBe("The requested Meridian data is unavailable.");
+    expect(result.current.error).toBe("The requested Meridian data is unavailable.");
+    expect(result.current.error).not.toContain("<!DOCTYPE");
+    expect(result.current.error).not.toContain("File not found");
+  });
+
   it("keeps the active StrictMode refresh live after the dev remount cycle", async () => {
     const { result } = renderHook(() => useWorkstationData(), { wrapper: StrictModeWrapper });
 

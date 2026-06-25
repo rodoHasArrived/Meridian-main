@@ -832,7 +832,7 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
   {
     value: "stooq",
     label: "Stooq",
-    description: "Credential-free daily historical fallback with conservative rate limits.",
+    description: "Credential-free daily historical backup source with conservative rate limits.",
     badge: "No key"
   },
   {
@@ -849,7 +849,7 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
   },
   {
     value: "composite",
-    label: "Composite fallback",
+    label: "Composite backup",
     description: "Let Meridian rotate across configured historical providers.",
     badge: "Auto"
   }
@@ -1850,8 +1850,8 @@ export function buildDataLoadingState(
       : "Waiting for provider posture, market data health, and export evidence.",
     statusLabel: "Bootstrap pending",
     detail: backfillFocus
-      ? "Queued and review-required jobs will appear here as soon as the workstation payload is available."
-      : "Provider health, data-quality handoffs, and export readiness will appear when the workstation payload is available.",
+      ? "Queued and review-required jobs will appear here as soon as workspace data is available."
+      : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
     regionLabel: backfillFocus ? "Data backfill loading state" : "Data workspace loading state",
     role: "status",
     ariaLive: "polite",
@@ -2273,7 +2273,7 @@ export function buildProviderSection(
     rows,
     hasRows: records.length > 0,
     tableLabel: "Provider health",
-    description: "Provider trust, credential, routing, fallback, and verification posture for downstream workflows.",
+    description: "Provider trust, credential, routing, backup source, and verification status for downstream workflows.",
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     selectedRowId,
     selectedDetail,
@@ -2912,11 +2912,11 @@ function buildProviderOverviewFields(
     { id: "last-error", label: "Last error", value: connection?.lastError ?? "None reported" },
     {
       id: "fallback",
-      label: "Fallback",
+      label: "Backup source",
       value: connection?.fallbackActive
-        ? "Fallback active"
+        ? "Backup source active"
         : workspaceRouting && workspaceRouting.fallbackRouteCount > 0
-          ? `${workspaceRouting.fallbackRouteCount} fallback route${workspaceRouting.fallbackRouteCount === 1 ? "" : "s"}`
+          ? `${workspaceRouting.fallbackRouteCount} backup route${workspaceRouting.fallbackRouteCount === 1 ? "" : "s"}`
           : providerRoutingFallbackLabel(record.bindings)
     },
     { id: "workflows", label: "Affected workflows", value: row.affectedWorkflowsText },
@@ -3249,7 +3249,7 @@ function providerGateImpactText(
 
 function providerRoutingFallbackLabel(bindings: ProviderRoutingBinding[]): string {
   const count = bindings.reduce((total, binding) => total + binding.failoverConnectionIds.length, 0);
-  return count > 0 ? `${count} fallback route${count === 1 ? "" : "s"}` : "No fallback active";
+  return count > 0 ? `${count} backup route${count === 1 ? "" : "s"}` : "No backup source active";
 }
 
 function providerRoutingEnvironmentLabel(connection: ProviderRoutingConnection | null): string {
@@ -4680,14 +4680,14 @@ export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): Prov
     {
       id: "normalize-data",
       label: "Normalize Data",
-      description: "Map source payloads into Meridian contracts and canonical workflow fields.",
+      description: "Map source data into Meridian contracts and canonical workflow fields.",
       status: "pending",
       statusLabel: "Pending"
     },
     {
       id: "store-data",
       label: "Store Data",
-      description: "Persist lineage-backed records, evidence, and provider-routing posture.",
+      description: "Persist lineage-backed records, evidence, and provider-routing status.",
       status: "pending",
       statusLabel: "Pending"
     },
@@ -4752,7 +4752,7 @@ export function buildProviderSetupSuccessMetadata(result: ProviderSetupResult | 
   return {
     rows,
     warnings,
-    metadataAriaLabel: "Provider setup routing and credential posture",
+    metadataAriaLabel: "Provider setup routing and credential status",
     warningsAriaLabel: "Provider setup warnings"
   };
 }

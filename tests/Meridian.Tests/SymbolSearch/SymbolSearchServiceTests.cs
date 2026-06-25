@@ -150,6 +150,29 @@ public class SymbolSearchServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SearchAsync_NormalizesWinningLowercaseResultSymbol()
+    {
+        var provider = new Mock<ISymbolSearchProvider>();
+        provider.Setup(p => p.Name).Returns("finnhub");
+        provider.Setup(p => p.Priority).Returns(1);
+        provider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        provider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", "finnhub", 100)
+            ]);
+
+        _service = new SymbolSearchService(
+            [provider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().ContainSingle();
+        result.Results[0].Symbol.Should().Be("MSFT");
+    }
+
+    [Fact]
     public async Task SearchAsync_WithSpecificProvider_QueriesOnlyThatProvider()
     {
         // Arrange
