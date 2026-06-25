@@ -125,7 +125,10 @@ public sealed class RiskEndpointsTests
         var app = builder.Build();
         app.Use((context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "risk-operator";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageOrders;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "risk-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "risk-test-tenant";
             return next();
         });
         app.MapRiskEndpoints(JsonOptions());

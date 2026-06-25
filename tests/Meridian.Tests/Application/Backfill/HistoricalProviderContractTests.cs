@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Stooq;
@@ -142,17 +143,17 @@ public class HistoricalProviderContractTests
     }
 
     [Fact]
-    public async Task YahooFinance_WithHttpError_ThrowsInvalidOperationException()
+    public async Task YahooFinance_WithHttp404_ReturnsEmpty()
     {
         // Arrange
         var httpClient = CreateMockHttpClient("Not Found", HttpStatusCode.NotFound);
         using var provider = new YahooFinanceHistoricalDataProvider(httpClient);
 
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => provider.GetDailyBarsAsync("INVALID", null, null));
+        // Act
+        var bars = await provider.GetDailyBarsAsync("INVALID", null, null);
 
-        ex.Message.Should().Contain("404");
+        // Assert
+        bars.Should().BeEmpty();
     }
 
     [Fact]
@@ -380,15 +381,17 @@ public class HistoricalProviderContractTests
     }
 
     [Fact]
-    public async Task Stooq_WithHttpError_ThrowsInvalidOperationException()
+    public async Task Stooq_WithHttpError_ThrowsDataProviderException()
     {
         // Arrange
         var httpClient = CreateMockHttpClient("Error", HttpStatusCode.InternalServerError);
         var provider = new StooqHistoricalDataProvider(httpClient);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        var ex = await Assert.ThrowsAsync<DataProviderException>(
             () => provider.GetDailyBarsAsync("SPY", null, null));
+
+        ex.Message.Should().Contain("500");
     }
 
     [Fact]
