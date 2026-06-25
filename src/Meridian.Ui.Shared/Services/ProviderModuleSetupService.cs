@@ -144,25 +144,25 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
         if (request.CredentialValues is { Count: > 0 } creds)
         {
-            var existing = await _credentialStore.GetCredentialsAsync(request.ModuleId, ct).ConfigureAwait(false);
-            var merged = new Dictionary<string, string>(existing, StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in creds)
-            {
-                if (string.IsNullOrEmpty(value))
-                    merged.Remove(key);
-                else
-                    merged[key] = value;
-            }
             try
             {
+                var existing = await _credentialStore.GetCredentialsAsync(request.ModuleId, ct).ConfigureAwait(false);
+                var merged = new Dictionary<string, string>(existing, StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, value) in creds)
+                {
+                    if (string.IsNullOrEmpty(value))
+                        merged.Remove(key);
+                    else
+                        merged[key] = value;
+                }
                 await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogError(ex, "Credential save failed for {ModuleId}; attempting config rollback",
+                _logger.LogError(ex, "Credential operation failed for {ModuleId}; attempting config rollback",
                     request.ModuleId.Replace('\n', ' ').Replace('\r', ' '));
                 await RollbackModuleConfigAsync(request.ModuleId, preExistingSettings).ConfigureAwait(false);
-                return ProviderModuleSetupResult.Fail("Failed to save credentials; the configuration change was rolled back.");
+                return ProviderModuleSetupResult.Fail("Failed to read or save credentials; the configuration change was rolled back.");
             }
         }
 
