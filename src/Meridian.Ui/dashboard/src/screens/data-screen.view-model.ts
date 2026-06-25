@@ -1848,7 +1848,7 @@ export function buildDataLoadingState(
     description: backfillFocus
       ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
       : "Waiting for provider posture, market data health, and export evidence.",
-    statusLabel: "Bootstrap pending",
+    statusLabel: "Workspace data pending",
     detail: backfillFocus
       ? "Queued and review-required jobs will appear here as soon as workspace data is available."
       : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",

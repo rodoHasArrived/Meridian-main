@@ -4966,7 +4966,7 @@ describe("ReportingScreen", () => {
     expect(gatedExcelExport).toBeDisabled();
     expect(gatedExcelExport).toHaveAttribute(
       "title",
-      "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
+      "Excel export requires loader automation evidence before running governed export analysis. Preview remains available."
     );
     expect(within(task).getByLabelText("Excel export analysis is gated by missing evidence")).toHaveTextContent("Gated");
     expect(within(task).getByRole("link", { name: "Open Report-pack catalog service reference" })).toHaveAttribute(

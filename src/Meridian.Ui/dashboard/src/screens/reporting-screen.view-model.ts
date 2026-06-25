@@ -865,7 +865,7 @@ export function useReportingScreenViewModel(
     statusBadgeLabel: selectedProfileData ? "Selected" : "Waiting",
     statusBadgeVariant: selectedProfileData ? "default" : "outline",
     nextAction: selectedProfileData
-      ? `POST ${EXPORT_API_ENDPOINTS.analysis} · GET ${exportPreviewEndpoint(selectedProfileData.id)}`
+      ? `${selectedProfileData.name} is ready for preview and reviewed export analysis.`
       : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
     selectedProfile: detail,
     packTargets,
@@ -2403,7 +2403,7 @@ function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingPr
   const missingLabel = missing.length === 1
     ? missing[0]
     : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
-  return `${profile.name} export requires ${missingLabel} evidence before running a governed POST export. Preview remains available.`;
+  return `${profile.name} export requires ${missingLabel} evidence before running governed export analysis. Preview remains available.`;
 }
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {

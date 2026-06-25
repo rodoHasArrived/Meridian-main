@@ -4881,7 +4881,7 @@ describe("accounting-screen view model", () => {
       ])
     }));
     expect(result.current.tenantAdministrationProfile.sandboxStatusText)
-      .toBe("Implementation sandbox proof retained; readiness refreshed from fixture and ledger-book validation evidence.");
+      .toBe("Implementation sandbox proof retained; readiness refreshed from validation and ledger-book evidence.");
 
     act(() => {
       result.current.tenantAdministrationProfile.updateControl("operator-surface", true);

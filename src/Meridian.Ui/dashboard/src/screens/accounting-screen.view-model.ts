@@ -3041,7 +3041,7 @@ const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> 
       currency: "USD",
       postingStatus: "Posted",
       auditReference: "fixture/security-master/cash-flow/sec-1/cpn-2026-05",
-      note: "Fixture coupon row used by browser workbench tests."
+      note: "Validation coupon row used by browser workbench checks."
     },
     {
       eventId: "sched-sec-1-principal-2026-11",
@@ -3061,7 +3061,7 @@ const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> 
       currency: "USD",
       postingStatus: "Pending",
       auditReference: "fixture/security-master/cash-flow/sec-1/principal-2026-11",
-      note: "Fixture amortization row keeps schedule selection deterministic."
+      note: "Validation amortization row keeps schedule selection consistent."
     }
   ]
 };
@@ -4651,7 +4651,7 @@ export function useAccountingConfigurationViewModel(
       });
       setTenantAdministrationProfile(saved);
       setTenantAdministrationDraft(buildAccountingTenantAdministrationProfileDraft(saved));
-      setSandboxProofMessage("Implementation sandbox proof retained; readiness refreshed from fixture and ledger-book validation evidence.");
+      setSandboxProofMessage("Implementation sandbox proof retained; readiness refreshed from validation and ledger-book evidence.");
       await refresh();
     } catch (err) {
       setSandboxProofError(describeApiError(err, "Implementation sandbox proof save failed."));
@@ -7586,7 +7586,7 @@ function buildAccountingTenantAdministrationProfileControls(
     {
       id: "implementation-sandbox",
       label: "Sandbox proof",
-      description: "Implementation fixture, migration rehearsal, import, rule, close, and report validation is retained.",
+      description: "Implementation validation, migration rehearsal, import, rule, close, and report evidence is retained.",
       checked: draft?.implementationSandboxConfigured ?? false
     }
   ];
