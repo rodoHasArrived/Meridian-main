@@ -5,6 +5,7 @@ using System.Text.Json;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
 using Meridian.Core.Diagnostics;
 using Meridian.Platform.Diagnostics;
 using Serilog;
@@ -24,6 +25,7 @@ public sealed class DiagnosticBundleService
     private readonly Func<ErrorQueryResult>? _recentErrorsProvider;
     private readonly Func<ShutdownSequenceDiagnosticSnapshot>? _shutdownDiagnosticsProvider;
     private readonly Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? _providerConnectionDiagnosticsProvider;
+    private readonly Func<PipelineStatistics>? _pipelineStatisticsProvider;
 
     public DiagnosticBundleService(
         string dataRoot,
@@ -31,7 +33,8 @@ public sealed class DiagnosticBundleService
         Func<AppConfig>? configProvider = null,
         Func<ErrorQueryResult>? recentErrorsProvider = null,
         Func<ShutdownSequenceDiagnosticSnapshot>? shutdownDiagnosticsProvider = null,
-        Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? providerConnectionDiagnosticsProvider = null)
+        Func<IReadOnlyCollection<ProviderConnectionDiagnosticSnapshot>>? providerConnectionDiagnosticsProvider = null,
+        Func<PipelineStatistics>? pipelineStatisticsProvider = null)
     {
         _dataRoot = dataRoot;
         _metricsProvider = metricsProvider;
@@ -39,6 +42,7 @@ public sealed class DiagnosticBundleService
         _recentErrorsProvider = recentErrorsProvider;
         _shutdownDiagnosticsProvider = shutdownDiagnosticsProvider;
         _providerConnectionDiagnosticsProvider = providerConnectionDiagnosticsProvider;
+        _pipelineStatisticsProvider = pipelineStatisticsProvider;
     }
 
     /// <summary>
@@ -239,6 +243,7 @@ public sealed class DiagnosticBundleService
         var recentErrors = TryCollectRecentErrors();
         var shutdownDiagnostics = TryCollectShutdownDiagnostics();
         var providerConnectionDiagnostics = TryCollectProviderConnectionDiagnostics();
+        var pipelineStatistics = TryCollectPipelineStatistics();
         var metricsSummary = metrics is { } snapshot
             ? new
             {
@@ -340,6 +345,9 @@ public sealed class DiagnosticBundleService
                 gen2Collections = GC.CollectionCount(2)
             },
             metrics = metricsSummary,
+            eventPipelineHealth = pipelineStatistics.HasValue
+                ? PipelineDiagnosticsProjection.FromStatistics(pipelineStatistics.Value)
+                : PipelineDiagnosticsProjection.Unavailable(),
             errors = errorsSummary,
             providerConnections = SanitizeProviderConnectionDiagnostics(providerConnectionDiagnostics),
             shutdown = SanitizeShutdownDiagnostics(shutdownDiagnostics)
@@ -815,6 +823,25 @@ public sealed class DiagnosticBundleService
             _log.Warning(
                 ex,
                 "Failed to collect provider connection diagnostics for {OperationName}; continuing diagnostic bundle generation without provider connection status",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
+    private PipelineStatistics? TryCollectPipelineStatistics()
+    {
+        if (_pipelineStatisticsProvider is null)
+            return null;
+
+        try
+        {
+            return _pipelineStatisticsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect pipeline statistics for {OperationName}; continuing diagnostic bundle generation without pipeline health",
                 "diagnostic-bundle.generate");
             return null;
         }

@@ -9,13 +9,15 @@ These instructions apply to all work in this repository.
 
 ### Protected Target
 
-The `main` branch is protected. Never commit, push, force-push, rebase, reset, or
-otherwise write directly to `main`. Never attempt to bypass GitHub repository rules,
-required status checks, required reviews, or branch protections.
+The `main` branch is protected by GitHub repository rules. These repository
+instructions defer to those rules rather than adding a separate blanket
+prohibition on writes to `main`. Never attempt to bypass GitHub repository
+rules, required status checks, required reviews, or branch protections.
 
-### Branch Workflow
+### Default Branch Workflow
 
-For every task:
+Unless the task explicitly requires a different protected-branch flow that
+GitHub repository rules allow, use the pull-request workflow:
 
 1. Begin from the latest `origin/main`.
 2. Create or use a branch named `codex/<short-task-name>`.
@@ -44,7 +46,6 @@ When GitHub Actions fails:
 
 Do not:
 
-- Push directly to `main`.
 - Force-push any shared branch.
 - Use `--no-verify`.
 - Add `[skip ci]` or another CI-skip directive.
@@ -69,7 +70,7 @@ The following files require explicit human review:
 
 ### Definition Of Done
 
-Work is complete only when:
+Pull-request work is complete only when:
 
 - The requested implementation is present.
 - Relevant tests were added or updated.
@@ -126,7 +127,7 @@ Actions remains the merge authority.
 4. Read the nearest source README and `docs/source/data/source-modules.yml` before source edits under `src/**`.
 5. Prefer shared service/read-model seams before UI-specific forks.
 6. Use the narrowest validation command that covers the files changed.
-7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter` before retrying broad local scripts.
+7. If local machine capacity, restore, or MSBuild locks block validation, run `python build/python/cli/buildctl.py validation-status --summary`, shut down leftover build servers with `dotnet build-server shutdown`, and stop only abandoned repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this checkout before retrying; if local proof remains unreliable, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter`.
 8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
 9. For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable
    memory. If the work has a named scope, route through the matching

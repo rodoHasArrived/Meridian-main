@@ -42,6 +42,11 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
 - For source-facing guidance changes, verify the referenced source path, README, command, or script
   exists before documenting it as current.
+- After timed-out generation, build, or test attempts, run
+  `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+  shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+  `VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+  validation.
 - Prefer targeted edits over broad rewrites. Do not reformat generated, archived, or unrelated
   Codex assets.
 - For multi-lane AI work, route coordination and handoff format through

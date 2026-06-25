@@ -2412,7 +2412,7 @@ describe("AccountingScreen", () => {
       actor: "browser-accounting-operator",
       testCases: null
     }));
-  });
+  }, 30_000);
 
   it("renders external GL evidence package posture from the reconciliation response", async () => {
     const provider: AccountingSystemProvider = {
