@@ -642,7 +642,7 @@ describe("useReportingScreenViewModel", () => {
       hasActions: true
     });
     expect(result.current.workflowTaskPanel?.actions.map((action) => action.label)).toEqual([
-      "Preview payload",
+      "Preview export",
       "Run export"
     ]);
     expect(result.current.workflowTaskPanel?.actions.map((action) => action.describedById)).toEqual([
@@ -941,7 +941,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.actions[0]).toMatchObject({
       id: "preview",
       href: "/api/export/preview?profile=csv",
-      ariaLabel: "Preview CSV export payload"
+      ariaLabel: "Preview CSV export"
     });
   });
 
@@ -1010,12 +1010,12 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile?.readinessSummary).toContain("Data dictionary is present");
     expect(result.current.selectedProfile?.actions[0]).toMatchObject({
       id: "preview",
-      label: "Preview payload",
+      label: "Preview export",
       href: "/api/export/preview?profile=excel",
-      ariaLabel: "Preview Excel export payload",
+      ariaLabel: "Preview Excel export",
       describedById: "reporting-action-excel-preview-profile-detail-status",
-      statusText: "Opens the current export payload preview in a new browser tab.",
-      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusText: "Opens the current export preview in a new browser tab.",
+      descriptionText: "Opens the current export preview in a new browser tab.",
       statusBadgeLabel: "GET",
       statusBadgeAriaLabel: "Excel export preview uses GET",
       statusBadgeVariant: "outline",

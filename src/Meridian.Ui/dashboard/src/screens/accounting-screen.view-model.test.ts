@@ -5691,7 +5691,8 @@ describe("accounting-screen view model", () => {
     };
 
     const noRules = renderHook(() => useAccountingConfigurationViewModel(noRuleServices));
-    await waitFor(() => expect(noRules.result.current.rules).toHaveLength(0));
+    await waitFor(() => expect(noRules.result.current.loading).toBe(false));
+    expect(noRules.result.current.rules).toHaveLength(0);
 
     await act(async () => {
       await noRules.result.current.duplicateSelectedRule();
@@ -7177,10 +7178,10 @@ describe("accounting-screen view model", () => {
       titleId: "accounting-workspace-loading-title",
       detailId: "accounting-workspace-loading-detail",
       title: "Loading Accounting",
-      detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload.",
+      detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from workspace data.",
       routeLabel: "/accounting/reconciliation",
       workstreamLabel: "Reconciliation",
-      statusItemsLabel: "Accounting payloads loading"
+      statusItemsLabel: "Accounting workspace data loading"
     });
     expect(buildAccountingLoadingViewState("/accounting/reconciliation").statusItems.map((item) => item.id)).toEqual([
       "ledger-reconciliation",
@@ -7198,7 +7199,7 @@ describe("accounting-screen view model", () => {
       titleId: "reporting-workspace-loading-title",
       detailId: "reporting-workspace-loading-detail",
       title: "Loading Reporting",
-      detail: "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload.",
+      detail: "Waiting for report-pack, governed export, and approval summaries from workspace data.",
       workstreamLabel: "Reporting"
     });
   });
@@ -7219,7 +7220,7 @@ describe("accounting-screen view model", () => {
 
     expect(state).toMatchObject({
       title: cashFlow.summary,
-      description: "Reporting packet context at /reporting reuses the shared accounting/reporting cash-flow summary payload.",
+      description: "Reporting packet context at /reporting reuses the shared accounting/reporting cash-flow summary data.",
       statusLabel: "Variance review",
       statusTone: "danger",
       ariaLabel: "Cash-flow evidence for Reporting packet context at /reporting",
@@ -7233,7 +7234,7 @@ describe("accounting-screen view model", () => {
     expect(state.statusAnnouncement).toBe("Variance review: Cash-flow coverage is available for 4 runs; 2 runs need variance review.");
   });
 
-  it("derives pending cash-flow state when the bootstrap payload is unavailable", () => {
+  it("derives pending cash-flow state when workspace data is unavailable", () => {
     const state = buildAccountingCashFlowViewState(null, "/accounting", "ledger");
 
     expect(state).toMatchObject({
@@ -9086,9 +9087,9 @@ describe("accounting-screen view model", () => {
     expect(state.backendLinks).toEqual([
       {
         id: "preview",
-        label: "Preview report payload",
+        label: "Preview report",
         href: "/api/export/preview",
-        ariaLabel: "Open GET /api/export/preview for Preview report payload"
+        ariaLabel: "Open GET /api/export/preview for Preview report"
       },
       {
         id: "formats",
