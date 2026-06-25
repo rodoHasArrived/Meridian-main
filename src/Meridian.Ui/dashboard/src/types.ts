@@ -2167,11 +2167,31 @@ export type EvidenceDocumentClassification =
   | "ValuationSupport"
   | "Agreement"
   | "TaxSupport"
-  | "AuditRequestSupport";
+  | "AuditRequestSupport"
+  | "BankStatement"
+  | "AdminPackage"
+  | "TaxAuditSupport";
 
-export type EvidenceExtractionStatus = "NotExtracted" | "Extracted" | "NeedsReview" | "Accepted" | "Rejected";
+export type EvidenceExtractionStatus = "NotExtracted" | "Extracted" | "NeedsReview" | "Accepted" | "Rejected" | "Pending";
 
-export type EvidenceDocumentIntakeSourceKind = "UploadedContent" | "LocalFile" | "ImportedFileReference";
+export type EvidenceDocumentIntakeChannel =
+  | "Unknown"
+  | "Upload"
+  | "Email"
+  | "Sftp"
+  | "Api"
+  | "PortalDownload"
+  | "LocalFile"
+  | "ImportedFileReference";
+
+export type EvidenceDocumentIntakeSourceKind =
+  | "UploadedContent"
+  | "LocalFile"
+  | "ImportedFileReference"
+  | "Email"
+  | "Sftp"
+  | "Api"
+  | "PortalDownload";
 
 export type EvidenceDocumentLinkKind =
   | "Unknown"
@@ -2182,7 +2202,8 @@ export type EvidenceDocumentLinkKind =
   | "Journal"
   | "ReconciliationCase"
   | "ReportLine"
-  | "CloseTask";
+  | "CloseTask"
+  | "Fund";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -2199,6 +2220,16 @@ export interface EvidenceDocumentReviewState {
   reviewer?: string | null;
   reviewedAt?: string | null;
   notes?: string | null;
+  confirmedFields?: EvidenceDocumentConfirmedField[];
+}
+
+export interface EvidenceDocumentConfirmedField {
+  fieldName: string;
+  confirmedValue: string;
+  confirmedBy: string;
+  confirmedAt: string;
+  sourceFieldName?: string | null;
+  notes?: string | null;
 }
 
 export interface EvidenceDocumentAuditEvent {
@@ -2207,6 +2238,31 @@ export interface EvidenceDocumentAuditEvent {
   action: string;
   summary: string;
   correlationId?: string | null;
+}
+
+export interface EvidenceDocumentAuthority {
+  canSupport: boolean;
+  canBlock: boolean;
+  canSuggest: boolean;
+  canLink: boolean;
+  canApprove: boolean;
+  canPost: boolean;
+  canCertify: boolean;
+  canRelease: boolean;
+  boundary: string;
+}
+
+export interface EvidenceDocumentSourceRecord {
+  sourceHashSha256: string;
+  receivedAt: string;
+  sourceChannel: string;
+  channelKind?: EvidenceDocumentIntakeChannel | null;
+  actor?: string | null;
+  tenantId?: string | null;
+  scope?: string | null;
+  sourceSystem?: string | null;
+  sourceReference?: string | null;
+  receiptHash?: string | null;
 }
 
 export interface EvidenceDocumentIntakeSource {
@@ -2238,6 +2294,10 @@ export interface EvidenceDocument {
   artifactId?: string | null;
   manifestRoute?: string | null;
   extractorId?: string | null;
+  channelKind?: EvidenceDocumentIntakeChannel | null;
+  sourceRecord?: EvidenceDocumentSourceRecord | null;
+  extractedFields?: EvidenceArtifactExtractionField[];
+  authority?: EvidenceDocumentAuthority | null;
 }
 
 export interface EvidenceVaultIntakeRequest {
@@ -2259,6 +2319,7 @@ export interface EvidenceVaultIntakeRequest {
   tenantId?: string | null;
   scope?: string | null;
   extractionStatus?: EvidenceExtractionStatus | null;
+  intakeChannelKind?: EvidenceDocumentIntakeChannel | null;
   extractorId?: string | null;
   reviewerState?: EvidenceDocumentReviewState | null;
   objectLinks?: EvidenceDocumentLink[];
@@ -2305,6 +2366,15 @@ export interface EvidenceRequest {
   blockedOutput?: string | null;
 }
 
+export type EvidenceManifestPackageKindCode =
+  | "Unknown"
+  | "EvidencePacket"
+  | "CloseBinder"
+  | "AuditPacket"
+  | "ReportSupportPackage"
+  | "TaxSupportPackage"
+  | "OperationalEventSupportPackage";
+
 export interface EvidenceManifest {
   manifestId: string;
   frozenAt: string;
@@ -2314,7 +2384,17 @@ export interface EvidenceManifest {
   documents: EvidenceDocument[];
   requests: EvidenceRequest[];
   objectLinks: EvidenceDocumentLink[];
+  packageKindCode?: EvidenceManifestPackageKindCode | null;
 }
+
+export type EvidenceRequestListKindCode =
+  | "Unknown"
+  | "Evidence"
+  | "Close"
+  | "Audit"
+  | "Tax"
+  | "ReportPackage"
+  | "OperationalEvent";
 
 export interface EvidenceRequestList {
   requestListId: string;
@@ -2328,10 +2408,12 @@ export interface EvidenceRequestList {
   evidenceKinds: string[];
   blockedOutputs: string[];
   summary: string;
+  requestListKindCode?: EvidenceRequestListKindCode | null;
 }
 
 export interface EvidenceVaultRequestListQuery {
   requestListKind?: string | null;
+  requestListKindCode?: EvidenceRequestListKindCode | null;
   targetKind?: string | null;
   targetId?: string | null;
   status?: string | null;
@@ -2352,6 +2434,7 @@ export interface EvidenceVaultRequestListEntry extends EvidenceRequestList {
 
 export interface EvidenceVaultDocumentQuery {
   classification?: EvidenceDocumentClassification | null;
+  channelKind?: EvidenceDocumentIntakeChannel | null;
   extractionStatus?: EvidenceExtractionStatus | null;
   reviewStatus?: EvidenceDocumentReviewStatus | null;
   linkKind?: EvidenceDocumentLinkKind | null;
@@ -2381,6 +2464,7 @@ export interface EvidenceVaultDocumentReviewRequest {
   notes?: string | null;
   extractionStatus?: EvidenceExtractionStatus | null;
   correlationId?: string | null;
+  confirmedFields?: EvidenceDocumentConfirmedField[];
 }
 
 export interface EvidenceVaultDocumentReviewResponse {

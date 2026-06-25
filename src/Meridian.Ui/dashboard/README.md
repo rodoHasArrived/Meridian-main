@@ -86,9 +86,13 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+The request-list queue renders typed close, audit, tax, report-package, and operational-event family
+badges beside each frozen support list so operators can distinguish close binder blockers from audit
+or report-support package gaps without parsing manifest JSON.
 Selecting a retained document opens a read-only review panel with reviewer notes, source metadata,
-human-confirmed field counts, authority boundary, object links, audit events, support-request
-context, and manifest access without introducing browser-owned approval or accounting mutation.
+immutable source-record receipt, extracted fields for human confirmation, human-confirmed field
+counts, authority boundary, object links, audit events, support-request context, and manifest access
+without introducing browser-owned approval or accounting mutation.
 Operators can also retain an uploaded document, local-file path, or imported-file reference from
 the selected evidence subject, classify it, record actor and tenant/scope metadata, set extraction
 and reviewer state, and attach one linked operational object before the shared vault intake
@@ -98,15 +102,22 @@ close, reconciliation, journal, report, instrument, and portfolio object targets
 review out of first-pass intake because accepted evidence must pass through the shared review
 endpoint with human-confirmed fields.
 When an operator accepts a retained document from the browser, the shared review endpoint receives
-a human-confirmed source-hash field so accepted evidence is not represented by a status-only
-transition; the retained document authority still cannot approve, post, certify, or release.
+human-confirmed extracted fields plus the immutable source-hash field so accepted evidence is not
+represented by a status-only transition; the retained document authority still cannot approve,
+post, certify, or release.
 The TypeScript contract also mirrors `EvidenceDocumentIntakeChannelDto` and
 `EvidenceDocumentIntakeSourceDto` so uploaded, email, SFTP, API, portal-download, local-file, and
-imported-file reference intake use the same shared channel/source vocabulary when browser controls
-submit documents.
+imported-file reference intake use the same shared channel/source vocabulary. Browser intake keeps
+email, SFTP, API, and portal-download as upload-backed adapter seams in v1: operators retain the
+document bytes and typed source URI now, while later connector implementations can fetch from those
+channels without changing the retained source-record shape.
 The TypeScript vault identity mirror includes the public `manifestSnapshot` so browser close,
 report, audit, and tax package views can inspect frozen package documents, support requests, object
-links, and content hash without parsing retained manifest JSON.
+links, typed request-list family, typed frozen package family, and content hash without parsing
+retained manifest JSON.
+Manifest export results surface that typed frozen package family directly, so operators can tell
+whether the retained package is a close binder, audit packet, report support package, tax support
+package, or operational-event support package before opening the manifest file.
 The browser DTO mirror also preserves `documentSnapshots` on Operations Continuity close-package
 requests and publications so close binder documents can be frozen by Financial Operations instead
 of recomputed in React.

@@ -115,6 +115,12 @@ public abstract class BackendServiceManagerBase
     /// <summary>Checks the health endpoint. Returns true if healthy.</summary>
     protected abstract Task<bool> IsHealthyAsync(CancellationToken ct);
 
+    /// <summary>Maximum time startup waits for the backend health endpoint to report ready.</summary>
+    protected virtual TimeSpan StartupHealthTimeout => TimeSpan.FromSeconds(15);
+
+    /// <summary>Delay between startup health probes.</summary>
+    protected virtual TimeSpan StartupHealthPollInterval => TimeSpan.FromMilliseconds(400);
+
     /// <summary>Logs an info message.</summary>
     protected abstract void LogInfo(string message, params (string key, string value)[] properties);
 
@@ -223,7 +229,7 @@ public abstract class BackendServiceManagerBase
 
             await File.WriteAllTextAsync(_runtimeFilePath, JsonSerializer.Serialize(runtimeInfo, SerializerOptions), ct);
 
-            var becameHealthy = await WaitForHealthyAsync(TimeSpan.FromSeconds(15), ct);
+            var becameHealthy = await WaitForHealthyAsync(StartupHealthTimeout, StartupHealthPollInterval, ct);
             var message = becameHealthy
                 ? "Backend service started and passed health checks."
                 : "Backend process started, but health checks are still warming up.";
@@ -338,14 +344,20 @@ public abstract class BackendServiceManagerBase
         };
     }
 
-    private async Task<bool> WaitForHealthyAsync(TimeSpan timeout, CancellationToken ct)
+    private async Task<bool> WaitForHealthyAsync(TimeSpan timeout, TimeSpan pollInterval, CancellationToken ct)
     {
+        if (await IsHealthyAsync(ct))
+            return true;
+
+        if (timeout <= TimeSpan.Zero || pollInterval <= TimeSpan.Zero)
+            return false;
+
         var start = DateTime.UtcNow;
         while (DateTime.UtcNow - start < timeout)
         {
+            await Task.Delay(pollInterval, ct);
             if (await IsHealthyAsync(ct))
                 return true;
-            await Task.Delay(400, ct);
         }
         return false;
     }

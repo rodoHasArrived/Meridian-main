@@ -19,7 +19,15 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertEqual(
             [project.name for project in projects],
             [
-                "core",
+                "core-application",
+                "core-ui-workstation-endpoints",
+                "core-ui-other",
+                "core-infrastructure",
+                "core-storage",
+                "core-data",
+                "core-execution-strategy",
+                "core-market-instruments",
+                "core-platform-domain-root",
                 "fsharp",
                 "ui",
                 "backtesting",
@@ -28,6 +36,8 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "quantscript",
             ],
         )
+        self.assertTrue(projects[0].filter_expression)
+        self.assertIsNone(projects[-1].filter_expression)
 
     def test_build_dotnet_test_command_uses_ci_filter_and_trx_prefix(self):
         project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
@@ -42,9 +52,59 @@ class RunDotnetCiTestsTests(unittest.TestCase):
 
         self.assertEqual(command[:4], ["dotnet", "test", "tests/Meridian.Tests/Meridian.Tests.csproj", "-c"])
         self.assertIn("--no-restore", command)
+        self.assertIn("--no-build", command)
         self.assertIn("Category!=Integration&Category!=Performance", command)
         self.assertIn("trx;LogFilePrefix=core", command)
         self.assertIn("/p:EnableWindowsTargeting=true", command)
+
+    def test_build_dotnet_build_command_uses_no_restore_and_windows_targeting(self):
+        project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
+
+        command = MODULE.build_dotnet_build_command(project, configuration="Release")
+
+        self.assertEqual(command[:4], ["dotnet", "build", "tests/Meridian.Tests/Meridian.Tests.csproj", "-c"])
+        self.assertIn("--no-restore", command)
+        self.assertIn("/p:EnableWindowsTargeting=true", command)
+
+    def test_unique_build_projects_deduplicates_sharded_project_paths(self):
+        projects = MODULE.parse_project_entries([])
+
+        unique_projects = MODULE.get_unique_build_projects(projects)
+
+        self.assertEqual(
+            [project.path for project in unique_projects].count("tests/Meridian.Tests/Meridian.Tests.csproj"),
+            1,
+        )
+        self.assertLess(len(unique_projects), len(projects))
+
+    def test_build_dotnet_test_command_combines_project_filter(self):
+        project = MODULE.TestProject(
+            "core-application",
+            "tests/Meridian.Tests/Meridian.Tests.csproj",
+            "FullyQualifiedName~Meridian.Tests.Application",
+        )
+        results_dir = Path("artifacts/test-results/dotnet")
+
+        command = MODULE.build_dotnet_test_command(
+            project,
+            configuration="Release",
+            test_filter="Category!=Integration&Category!=Performance",
+            results_dir=results_dir,
+        )
+
+        self.assertIn(
+            "(Category!=Integration&Category!=Performance)&(FullyQualifiedName~Meridian.Tests.Application)",
+            command,
+        )
+        self.assertIn("trx;LogFilePrefix=core-application", command)
+
+    def test_project_override_does_not_apply_default_shards(self):
+        projects = MODULE.parse_project_entries(["custom=tests/Custom.Tests/Custom.Tests.csproj"])
+
+        self.assertEqual(len(projects), 1)
+        self.assertEqual(projects[0].name, "custom")
+        self.assertEqual(projects[0].path, "tests/Custom.Tests/Custom.Tests.csproj")
+        self.assertIsNone(projects[0].filter_expression)
 
     def test_write_summaries_records_all_project_statuses(self):
         with self.subTest("summary output"):

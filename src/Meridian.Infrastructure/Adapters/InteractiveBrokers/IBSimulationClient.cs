@@ -29,6 +29,8 @@ public sealed class IBSimulationClient : IMarketDataClient
     private readonly ConcurrentDictionary<int, (string Symbol, SymbolConfig Config)> _tradeSubs = new();
     private readonly Timer? _tickTimer;
     private readonly IMarketEventPublisher _publisher;
+    private readonly TimeSpan _autoTickDueTime;
+    private readonly TimeSpan _autoTickPeriod;
     private readonly Random _rng = new();
     private int _nextTickerId = 10_000;
     private bool _connected;
@@ -50,9 +52,15 @@ public sealed class IBSimulationClient : IMarketDataClient
         ["DIA"] = 390m
     };
 
-    public IBSimulationClient(IMarketEventPublisher publisher, bool enableAutoTicks = true)
+    public IBSimulationClient(
+        IMarketEventPublisher publisher,
+        bool enableAutoTicks = true,
+        TimeSpan? autoTickDueTime = null,
+        TimeSpan? autoTickPeriod = null)
     {
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
+        _autoTickDueTime = autoTickDueTime ?? TimeSpan.FromSeconds(1);
+        _autoTickPeriod = autoTickPeriod ?? TimeSpan.FromSeconds(1);
 
         if (enableAutoTicks)
         {
@@ -102,7 +110,7 @@ public sealed class IBSimulationClient : IMarketDataClient
     {
         _connected = true;
         _log.Information("[IB-SIM] Connected in simulation mode. Generating synthetic market data for subscribed symbols");
-        _tickTimer?.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        _tickTimer?.Change(_autoTickDueTime, _autoTickPeriod);
         return Task.CompletedTask;
     }
 

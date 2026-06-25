@@ -18,7 +18,8 @@ public class SimulationCommandsTests
     public async Task Execute_Fails_WhenSymbolsMissing()
     {
         var cmd = new SimulationCommands(new FakeOrchestrator());
-        var result = await cmd.ExecuteAsync(["--simulate-execution"]);
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(["--simulate-execution"]));
         result.Error.Should().Be(ErrorCode.RequiredFieldMissing);
     }
 

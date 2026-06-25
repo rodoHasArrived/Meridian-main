@@ -44,13 +44,14 @@ public sealed class StatementImportCommandsTests
     {
         var command = new StatementImportCommands(new StubBrokerStatementService(), new StubStatementRunWorkflowService(), Logger.None);
 
-        var result = await command.ExecuteAsync(
-            [
-                "--statement-validate",
-                "--statement-broker", "samplebroker",
-                "--statement-source-path", "statement.csv",
-                "--statement-date", "not-a-date"
-            ]);
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => command.ExecuteAsync(
+                [
+                    "--statement-validate",
+                    "--statement-broker", "samplebroker",
+                    "--statement-source-path", "statement.csv",
+                    "--statement-date", "not-a-date"
+                ]));
 
         result.Error.Should().Be(ErrorCode.ValidationFailed);
     }

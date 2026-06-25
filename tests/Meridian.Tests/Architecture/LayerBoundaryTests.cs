@@ -34,8 +34,7 @@ public sealed class LayerBoundaryTests
             typeof(Meridian.Domain.Events.MarketEvent).Assembly,
             // Application
             typeof(Meridian.FinancialOperations.Reconciliation.StatementReconciliationService).Assembly,
-            // UI shared/services
-            typeof(Meridian.Ui.Shared.Services.ProviderLedgerReconciliationService).Assembly,
+            // UI services
             typeof(Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService).Assembly,
             // Infrastructure (adapters, providers, resilience)
             typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly)
@@ -206,14 +205,15 @@ public sealed class LayerBoundaryTests
     [Fact]
     public void ReconciliationContext_ShouldNot_DependOn_UiShared_Or_UiServices()
     {
-        var rule = Types()
-            .That().ResideInNamespaceMatching(@"^Meridian\.Application\.Reconciliation\.")
-            .Should().NotDependOnAny(
-                Types().That().ResideInNamespaceMatching(@"^Meridian\.Ui\.(Shared|Services)\."))
-            .Because("Reconciliation context ownership must stay in Application and expose contracts to UI layers rather than depend on UI implementations.")
-            .WithoutRequiringPositiveResults();
+        var reconciliationAssembly = typeof(Meridian.FinancialOperations.Reconciliation.StatementReconciliationContextAdapter).Assembly;
 
-        rule.Check(Architecture);
+        var forbiddenReferences = reconciliationAssembly
+            .GetReferencedAssemblies()
+            .Where(reference => reference.Name is "Meridian.Ui.Shared" or "Meridian.Ui.Services")
+            .Select(reference => reference.Name)
+            .ToArray();
+
+        Assert.Empty(forbiddenReferences);
     }
 
     private static void AssertProviderLocalNamesAreInternal(string providerNamespace, params string[] suffixes)

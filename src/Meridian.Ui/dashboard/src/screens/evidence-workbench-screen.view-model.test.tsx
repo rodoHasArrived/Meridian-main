@@ -208,6 +208,7 @@ const completeness: EvidenceCompleteness = {
 const vaultRequestListEntry: EvidenceVaultRequestListEntry = {
   requestListId: "request-list:auditrequestlist:audit:close-2026-05",
   requestListKind: "AuditRequestList",
+  requestListKindCode: "Audit",
   targetKind: "audit",
   targetId: "close-2026-05",
   highestSeverity: "Critical",
@@ -262,10 +263,35 @@ const vaultDocumentEntry: EvidenceVaultDocumentEntry = {
     sourceHashSha256: "d".repeat(64),
     receivedAt: "2026-05-09T13:00:00Z",
     sourceChannel: "upload",
+    sourceRecord: {
+      sourceHashSha256: "d".repeat(64),
+      receivedAt: "2026-05-09T13:00:00Z",
+      sourceChannel: "upload",
+      channelKind: "Upload",
+      actor: "fund-controller",
+      tenantId: "tenant-alpha",
+      scope: "fund-alpha",
+      sourceSystem: "operator-upload",
+      sourceReference: "file://operating-bank-statement.csv",
+      receiptHash: "d".repeat(64)
+    },
     actor: "fund-controller",
     tenantId: "tenant-alpha",
     scope: "fund-alpha",
     extractionStatus: "NeedsReview",
+    extractedFields: [
+      {
+        fieldName: "endingCash",
+        extractedValue: "1250000.00",
+        expectedValue: "1250000.00",
+        confidenceScore: 0.98,
+        reviewState: "NeedsReview",
+        validationStatus: "ReviewRequired",
+        validationMessage: "Controller must confirm the bank ending cash.",
+        linkedRecordKind: "close-task",
+        linkedRecordId: "close-task:cash-support"
+      }
+    ],
     objectLinks: [
       {
         linkKind: "CloseTask",
@@ -296,7 +322,18 @@ const vaultDocumentEntry: EvidenceVaultDocumentEntry = {
     vaultId: "ev-request-list-demo",
     artifactId: "artifact-bank-statement",
     manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
-    extractorId: "manual-metadata-v1"
+    extractorId: "manual-metadata-v1",
+    authority: {
+      canSupport: true,
+      canBlock: true,
+      canSuggest: true,
+      canLink: true,
+      canApprove: false,
+      canPost: false,
+      canCertify: false,
+      canRelease: false,
+      boundary: "Evidence documents can support, block, suggest, and link; they cannot approve, post, certify, or release."
+    }
   },
   vaultId: "ev-request-list-demo",
   subjectKind: subject.subjectKind,
@@ -1188,6 +1225,45 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.scoreLabel).toBe("80% complete");
   });
 
+  it("applies route queue filters to Evidence Vault request-list and document indexes", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+
+    const { result } = renderHook(
+      () => useEvidenceWorkbenchViewModel(
+        "?subjectKind=strategy-run&subjectId=run-1&requestListFamily=Audit&documentClassification=BankEvidence&documentReviewStatus=NeedsReview"
+      )
+    );
+
+    await waitFor(() => expect(result.current.hasPacket).toBe(true));
+
+    expect(result.current.queueFilters).toMatchObject({
+      requestListFamily: "Audit",
+      documentClassification: "BankEvidence",
+      documentReviewStatus: "NeedsReview"
+    });
+    expect(listEvidenceVaultRequestLists).toHaveBeenCalledWith(
+      {
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        requestListKindCode: "Audit",
+        status: "Open",
+        maxResults: 25
+      },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    expect(listEvidenceVaultDocuments).toHaveBeenCalledWith(
+      {
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        classification: "BankEvidence",
+        reviewStatus: "NeedsReview",
+        maxResults: 25
+      },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+  });
+
   it("keeps only the newest same-subject validation and export command results", async () => {
     const firstValidation = createDeferred<EvidenceCompleteness>();
     const secondValidation = createDeferred<EvidenceCompleteness>();
@@ -1356,7 +1432,18 @@ describe("Evidence Workbench view model", () => {
               workItemId: "audit-request:close-2026-05",
               blockedOutput: "report-pack/close-2026-05"
             }
-          ]
+          ],
+          manifestSnapshot: {
+            manifestId: "manifest-close-2026-05-audit",
+            frozenAt: "2026-05-09T12:36:00Z",
+            packageKind: "report-pack",
+            packageId: "close-2026-05",
+            contentHashSha256: "f".repeat(64),
+            documents: [],
+            requests: [],
+            objectLinks: [],
+            packageKindCode: "AuditPacket"
+          }
         }
       });
       await secondExport.promise;
@@ -1365,12 +1452,13 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.exportResultDetail).toMatchObject({
       title: "Manifest retained",
       manifestPath: "fresh-manifest.json",
-      summaryLabel: "3 nodes, 1 warning, 1 retained artifact, 1 request list, 2 support requests",
+      summaryLabel: "3 nodes, 1 warning, Audit Packet, 1 retained artifact, 1 request list, 2 support requests",
       routeHref: "/workstation/evidence/fresh-manifest.json",
       routeLabel: "Open manifest",
       routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json",
       vaultIdLabel: "ev-1234567890abcdef12345678",
       storageKindLabel: "File Bundle",
+      manifestPackageFamilyLabel: "Audit Packet",
       artifactSummaryLabel: "1 retained artifact",
       artifactRows: [
         expect.objectContaining({
@@ -1514,7 +1602,18 @@ describe("EvidenceWorkbenchScreen", () => {
             workItemId: "audit-request:close-2026-05",
             blockedOutput: "report-pack/close-2026-05"
           }
-        ]
+        ],
+        manifestSnapshot: {
+          manifestId: "manifest-close-2026-05-audit",
+          frozenAt: "2026-05-09T12:35:00Z",
+          packageKind: "report-pack",
+          packageId: "close-2026-05",
+          contentHashSha256: "0".repeat(64),
+          documents: [],
+          requests: [],
+          objectLinks: [],
+          packageKindCode: "AuditPacket"
+        }
       }
     };
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
@@ -1546,9 +1645,15 @@ describe("EvidenceWorkbenchScreen", () => {
       expect.objectContaining({ signal: expect.any(Object) })
     );
     const requestListPanel = screen.getByRole("region", { name: "Evidence Vault request lists" });
+    const queueFilterPanel = screen.getByRole("region", { name: "Evidence Vault queue filters" });
+    expect(queueFilterPanel).toHaveTextContent("Queue filters");
+    expect(screen.getByLabelText("Request list family filter")).toBeInTheDocument();
+    expect(screen.getByLabelText("Document classification filter")).toBeInTheDocument();
+    expect(screen.getByLabelText("Document review status filter")).toBeInTheDocument();
     expect(requestListPanel).toHaveTextContent("1 open request list");
     expect(requestListPanel).toHaveTextContent("Strategy Run run-1");
     expect(requestListPanel).toHaveTextContent("Audit close-2026-05");
+    expect(requestListPanel).toHaveTextContent("Audit family");
     expect(requestListPanel).toHaveTextContent("2 open requests");
     expect(requestListPanel).toHaveTextContent("ev-request-list-demo");
     expect(requestListPanel).toHaveTextContent("Audit support package is missing.");
@@ -1573,6 +1678,13 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(selectedDocument).toHaveTextContent("Statement amount needs review.");
     expect(selectedDocument).toHaveTextContent("Document Intake Retained");
     expect(selectedDocument).toHaveTextContent("manual-metadata-v1");
+    expect(selectedDocument).toHaveTextContent("support, block, suggest, link; cannot approve, post, certify, release");
+    expect(selectedDocument).toHaveTextContent(`Upload receipt ${"d".repeat(64)}`);
+    expect(selectedDocument).toHaveTextContent("Source record actor");
+    expect(selectedDocument).toHaveTextContent("Review fields");
+    expect(selectedDocument).toHaveTextContent("Ending Cash");
+    expect(selectedDocument).toHaveTextContent("Extracted: 1250000.00");
+    expect(selectedDocument).toHaveTextContent("98% confidence");
     expect(selectedDocument).toHaveTextContent("Cash support");
     expect(selectedDocument).toHaveTextContent("blocks-close-readiness");
     expect(selectedDocument).toHaveTextContent("Audit support package is missing.");
@@ -1588,7 +1700,19 @@ describe("EvidenceWorkbenchScreen", () => {
       "doc:ev-request-list-demo",
       expect.objectContaining({
         status: "Accepted",
-        reviewer: "evidence-workbench-operator"
+        reviewer: "evidence-workbench-operator",
+        confirmedFields: expect.arrayContaining([
+          expect.objectContaining({
+            fieldName: "endingCash",
+            confirmedValue: "1250000.00",
+            sourceFieldName: "endingCash"
+          }),
+          expect.objectContaining({
+            fieldName: "sourceHashSha256",
+            confirmedValue: "d".repeat(64),
+            sourceFieldName: "sourceHashSha256"
+          })
+        ])
       }),
       expect.objectContaining({ signal: expect.any(Object) })
     );
@@ -1598,16 +1722,28 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(screen.getByRole("region", { name: "Evidence document intake" })).toHaveTextContent("strategy-run/run-1");
     const file = new File(["cash"], "close-bank-evidence.csv", { type: "text/csv" });
     await user.upload(screen.getByLabelText("Document file"), file);
-    await user.selectOptions(screen.getByLabelText("Document classification"), "BankEvidence");
-    await user.selectOptions(screen.getByLabelText("Extraction status"), "NeedsReview");
+    const classificationSelect = screen.getByRole("combobox", { name: /^Document classification$/ });
+    expect(within(classificationSelect).getByRole("option", { name: "Bank Statement" })).toBeInTheDocument();
+    expect(within(classificationSelect).getByRole("option", { name: "Admin Package" })).toBeInTheDocument();
+    expect(within(classificationSelect).getByRole("option", { name: "Tax Audit Support" })).toBeInTheDocument();
+    const extractionStatusSelect = screen.getByRole("combobox", { name: "Extraction status" });
+    expect(within(extractionStatusSelect).getByRole("option", { name: "Pending" })).toBeInTheDocument();
+    expect(within(extractionStatusSelect).queryByRole("option", { name: "Accepted" })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Email" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Sftp" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Api" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Portal Download" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Fund" })).toBeInTheDocument();
+    await user.selectOptions(classificationSelect, "BankStatement");
+    await user.selectOptions(screen.getByLabelText("Extraction status"), "Pending");
     await user.selectOptions(screen.getByLabelText("Reviewer state"), "NeedsReview");
     await user.type(screen.getByLabelText("Actor"), "fund-controller");
     await user.type(screen.getByLabelText("Tenant"), "tenant-alpha");
     await user.type(screen.getByLabelText("Scope"), "fund-alpha");
     await user.type(screen.getByLabelText("Source system"), "operator-upload");
     await user.type(screen.getByLabelText("Source reference"), "close-bank-evidence.csv");
-    await user.selectOptions(screen.getByLabelText("Linked object kind"), "CloseTask");
-    await user.type(screen.getByLabelText("Linked object id"), "close-task:cash-support");
+    await user.selectOptions(screen.getByLabelText("Linked object kind"), "Fund");
+    await user.type(screen.getByLabelText("Linked object id"), "fund-alpha");
     await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
     await waitFor(() => expect(intakeEvidenceVaultDocument).toHaveBeenCalledTimes(1));
     expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(
@@ -1621,19 +1757,20 @@ describe("EvidenceWorkbenchScreen", () => {
         sourceSystem: "operator-upload",
         sourceReference: "close-bank-evidence.csv",
         receivedBy: "fund-controller",
-        classification: "BankEvidence",
+        classification: "BankStatement",
         actor: "fund-controller",
         tenantId: "tenant-alpha",
         scope: "fund-alpha",
-        extractionStatus: "NeedsReview",
+        extractionStatus: "Pending",
+        intakeChannelKind: "Upload",
         reviewerState: expect.objectContaining({
           status: "NeedsReview",
           reviewer: "fund-controller"
         }),
         objectLinks: [
           expect.objectContaining({
-            linkKind: "CloseTask",
-            objectId: "close-task:cash-support",
+            linkKind: "Fund",
+            objectId: "fund-alpha",
             relationship: "supports"
           })
         ],
@@ -1691,9 +1828,10 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
-    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact, 1 request list, 1 support request")).toBeInTheDocument();
+    expect(screen.getByText("3 nodes, 1 warning, Audit Packet, 1 retained artifact, 1 request list, 1 support request")).toBeInTheDocument();
     expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
     expect(screen.getAllByText("File Bundle").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Audit Packet").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
@@ -1703,6 +1841,7 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(screen.getByRole("list", { name: "Evidence vault request lists" })).toBeInTheDocument();
     expect(screen.getAllByText("Audit Request List").length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText("Audit close-2026-05").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Audit family").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("audit/close-2026-05 has 1 frozen request; 1 open request remains.")).toBeInTheDocument();
     expect(screen.getAllByText("Audit History").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Evidence vault support requests" })).toBeInTheDocument();
@@ -1717,9 +1856,9 @@ describe("EvidenceWorkbenchScreen", () => {
   });
 
   it.each([
-    ["LocalFile", "local-file", "D:\\imports\\custodian-statement.csv", "CustodianFile"],
-    ["ImportedFileReference", "imported-file-reference", "D:\\imports\\portal\\capital-notice.pdf", "CapitalNotice"]
-  ] as const)("submits %s document references through the shared intake contract", async (sourceKind, intakeChannel, sourcePath, classification) => {
+    ["LocalFile", "local-file", "LocalFile", "D:\\imports\\custodian-statement.csv", "CustodianFile"],
+    ["ImportedFileReference", "imported-file-reference", "ImportedFileReference", "D:\\imports\\portal\\capital-notice.pdf", "CapitalNotice"]
+  ] as const)("submits %s document references through the shared intake contract", async (sourceKind, intakeChannel, intakeChannelKind, sourcePath, classification) => {
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
     const user = userEvent.setup();
@@ -1729,7 +1868,7 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText("Document source kind"), sourceKind);
     await user.type(screen.getByLabelText("Source file path"), sourcePath);
-    await user.selectOptions(screen.getByLabelText("Document classification"), classification);
+    await user.selectOptions(screen.getByRole("combobox", { name: /^Document classification$/ }), classification);
     await user.type(screen.getByLabelText("Actor"), "fund-controller");
     await user.type(screen.getByLabelText("Linked object id"), "close-task:cash-support");
     await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
@@ -1748,6 +1887,7 @@ describe("EvidenceWorkbenchScreen", () => {
         receivedBy: "fund-controller",
         classification,
         actor: "fund-controller",
+        intakeChannelKind,
         intakeSource: expect.objectContaining({
           sourceKind,
           path: sourcePath,
@@ -1757,6 +1897,57 @@ describe("EvidenceWorkbenchScreen", () => {
           expect.objectContaining({
             linkKind: "CloseTask",
             objectId: "close-task:cash-support"
+          })
+        ]
+      }),
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+  });
+
+  it("submits adapter-seam source metadata with uploaded bytes instead of fetching the remote source", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    const user = userEvent.setup();
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+
+    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Document source kind"), "PortalDownload");
+    const file = new File(["portal"], "admin-package.csv", { type: "text/csv" });
+    await user.upload(screen.getByLabelText("Document file"), file);
+    await user.selectOptions(screen.getByRole("combobox", { name: /^Document classification$/ }), "AdminPackage");
+    await user.type(screen.getByLabelText("Source system"), "fund-admin-portal");
+    await user.type(screen.getByLabelText("Source reference"), "portal://fund-admin/fund-alpha/admin-package-202606");
+    await user.type(screen.getByLabelText("Actor"), "fund-admin-operator");
+    await user.type(screen.getByLabelText("Linked object id"), "fund-alpha");
+    await user.selectOptions(screen.getByLabelText("Linked object kind"), "Fund");
+    await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
+
+    await waitFor(() => expect(intakeEvidenceVaultDocument).toHaveBeenCalledTimes(1));
+    expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        intakeChannel: "portal-download",
+        fileName: "admin-package.csv",
+        contentBase64: "cG9ydGFs",
+        contentType: "text/csv",
+        sourceSystem: "fund-admin-portal",
+        sourceReference: "portal://fund-admin/fund-alpha/admin-package-202606",
+        receivedBy: "fund-admin-operator",
+        classification: "AdminPackage",
+        actor: "fund-admin-operator",
+        intakeChannelKind: "PortalDownload",
+        intakeSource: expect.objectContaining({
+          sourceKind: "PortalDownload",
+          path: null,
+          uri: "portal://fund-admin/fund-alpha/admin-package-202606",
+          displayName: "admin-package.csv"
+        }),
+        objectLinks: [
+          expect.objectContaining({
+            linkKind: "Fund",
+            objectId: "fund-alpha"
           })
         ]
       }),
