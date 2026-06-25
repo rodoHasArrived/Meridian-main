@@ -205,7 +205,7 @@ describe("WatchlistScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/collector offline/i);
-    expect(within(alert).getByText("Endpoint returned 503 for /api/data/quotes-snapshot?symbols=MSFT,AAPL.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Service unavailable")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open provider setup from watchlist live-quotes/i })).toHaveAttribute(
       "href",
@@ -306,7 +306,7 @@ describe("WatchlistScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Starter pack request could not reach the configured provider.");
-    expect(within(alert).getByText("Endpoint returned 503 for /api/symbols/bulk.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Provider offline")).toBeInTheDocument();
     expect(within(alert).getByText("provider: Reconnect provider credentials before retrying the starter pack.")).toBeInTheDocument();
     expect(screen.getByLabelText("Add symbol")).toHaveAttribute("aria-invalid", "true");
@@ -347,7 +347,7 @@ describe("WatchlistScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("MSFT cannot be removed while reconciliation is still pending.");
-    expect(within(alert).getByText("Endpoint returned 409 for /api/symbols/MSFT.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Watchlist removal blocked")).toBeInTheDocument();
     expect(within(alert).getByText("symbol: Resolve the pending reconciliation break before removing this symbol.")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();

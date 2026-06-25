@@ -105,7 +105,7 @@ describe("RiskControlPanel", () => {
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("The proposed threshold conflicts with the active governance policy.")).toBeInTheDocument();
-    expect(within(alert).getByText("Endpoint returned 409 for /api/risk/rules/DrawdownCircuitBreaker/config.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Risk configuration rejected")).toBeInTheDocument();
     expect(within(alert).getByText("maxDrawdownPercent: Lower the threshold or obtain approval before retrying.")).toBeInTheDocument();
   });

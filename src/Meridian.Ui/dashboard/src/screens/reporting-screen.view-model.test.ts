@@ -374,14 +374,14 @@ describe("useReportingScreenViewModel", () => {
         expect.objectContaining({
           kind: "evidence",
           label: "Evidence bundle",
-          interactionLabel: "Open",
-          ariaLabel: "GET /api/fund-structure/report-packs/report-1/evidence-bundle for Evidence bundle"
+          interactionLabel: "Open service",
+          ariaLabel: "Open Evidence bundle service reference"
         }),
         expect.objectContaining({
           kind: "audit",
           label: "Approval audit trail",
-          interactionLabel: "Reference",
-          ariaLabel: "Reference-only GET reporting-run://investor-monthly-statement-20260501/audit for Approval audit trail"
+          interactionLabel: "Service reference",
+          ariaLabel: "Approval audit trail service reference retained for diagnostics"
         })
       ],
       nextActions: [
@@ -389,8 +389,8 @@ describe("useReportingScreenViewModel", () => {
           kind: "approval",
           label: "Approve reporting run",
           method: "POST",
-          interactionLabel: "Reference",
-          ariaLabel: "POST reporting-run://investor-monthly-statement-20260501/approval/approve for Approve reporting run"
+          interactionLabel: "Service reference",
+          ariaLabel: "Approve reporting run service reference retained for diagnostics"
         })
       ]
     });
@@ -690,18 +690,18 @@ describe("useReportingScreenViewModel", () => {
       "/api/export/analysis"
     ]);
     expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.interactionLabel)).toEqual([
-      "Open",
-      "Reference",
-      "Open",
-      "Reference"
+      "Open service",
+      "Service reference",
+      "Open service",
+      "Service reference"
     ]);
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "evidence-bundle")).toMatchObject({
       isBrowserNavigable: false,
-      ariaLabel: "Reference-only GET /api/fund-structure/report-packs/{reportId}/evidence-bundle for Evidence bundle route"
+      ariaLabel: "Evidence bundle route service reference retained for diagnostics"
     });
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-run")).toMatchObject({
       isBrowserNavigable: false,
-      ariaLabel: "Reference-only POST /api/export/analysis for Excel export analysis"
+      ariaLabel: "Excel export analysis service reference retained for diagnostics"
     });
   });
 
@@ -735,8 +735,8 @@ describe("useReportingScreenViewModel", () => {
       label: "Evidence bundle export",
       href: `/api/fund-structure/report-packs/${reportId}/evidence-bundle`,
       isBrowserNavigable: true,
-      interactionLabel: "Open",
-      ariaLabel: `GET /api/fund-structure/report-packs/${reportId}/evidence-bundle for Evidence bundle export`
+      interactionLabel: "Open service",
+      ariaLabel: "Open Evidence bundle export service reference"
     });
   });
 
@@ -935,8 +935,8 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-preview")).toMatchObject({
       href: "/api/export/preview?profile=csv",
       isBrowserNavigable: true,
-      interactionLabel: "Open",
-      ariaLabel: "GET /api/export/preview?profile=csv for CSV export preview"
+      interactionLabel: "Open service",
+      ariaLabel: "Open CSV export preview service reference"
     });
     expect(result.current.workflowTaskPanel?.actions[0]).toMatchObject({
       id: "preview",
@@ -1380,7 +1380,7 @@ describe("useReportingScreenViewModel", () => {
         expect.objectContaining({ label: "Failure", value: "One or more validation errors occurred." })
       ]),
       warnings: [
-        "Endpoint returned 400 for /api/export/analysis.",
+        "Meridian service returned 400. Open diagnostics for technical details.",
         "Validation failed",
         "profileId: Profile is required.",
         "approvalReason: Approval reason must cite packet evidence."

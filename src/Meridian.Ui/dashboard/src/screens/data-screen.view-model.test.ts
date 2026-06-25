@@ -747,7 +747,7 @@ describe("data-screen view model", () => {
     expect(result.current.error).toEqual({
       summary: "Provider rejected the requested date window.",
       details: [
-        "Endpoint returned 400 for /api/backfill/preview.",
+        "Meridian service returned 400. Open diagnostics for technical details.",
         "Backfill validation failed",
         "symbols: At least one supported symbol is required."
       ]
@@ -1386,7 +1386,7 @@ describe("data-screen view model", () => {
         id: "security-master",
         label: "Review Security Master",
         href: "/accounting/security-master",
-        ariaLabel: "Review Security Master coverage after configuring Custom endpoint",
+        ariaLabel: "Review Security Master coverage after configuring Custom data connection",
         variant: "default"
       }
     ]);
@@ -1516,7 +1516,7 @@ describe("data-screen view model", () => {
       expect(result.current.providerSetupError).toEqual({
         summary: "Permission denied for this Meridian role.",
         details: [
-          "Endpoint returned 403 for /api/providers/configure.",
+          "Meridian service returned 403. Open diagnostics for technical details.",
           "Credential verification failed",
           "Paper trading credentials were rejected by the provider.",
           "apiKey: Verify the configured key against the selected environment."
@@ -1555,7 +1555,7 @@ describe("data-screen view model", () => {
       apiSecret: "",
       endpoint: "not-a-url",
       capabilities: ["streaming"]
-    })).toBe("Enter a valid http or https endpoint URL for Interactive Brokers.");
+    })).toBe("Enter a valid http or https service URL for Interactive Brokers.");
 
     expect(validateProviderSetupForm({
       kind: "interactivebrokers",
