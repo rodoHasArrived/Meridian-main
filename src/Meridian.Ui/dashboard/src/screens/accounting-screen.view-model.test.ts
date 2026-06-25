@@ -8471,6 +8471,8 @@ describe("accounting-screen view model", () => {
     expect(view.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({
         rowId: "reference-data-bond-reference",
+        accessLabel: "Read-only",
+        displaySummary: "1 fields returned.",
         statusLabel: "Ready",
         statusBadgeVariant: "success",
         countLabel: "1 record",
@@ -8478,6 +8480,8 @@ describe("accounting-screen view model", () => {
       }),
       expect.objectContaining({
         rowId: "reference-data-option-chain-import",
+        accessLabel: "Write-capable",
+        displaySummary: "option chain import source catalogued; not invoked by this read-only workbench.",
         statusLabel: "Deferred",
         statusBadgeVariant: "outline"
       })
@@ -8485,6 +8489,7 @@ describe("accounting-screen view model", () => {
     expect(view.selectedDetail).toMatchObject({
       title: "Bond reference",
       subtitle: "Reference data source: Bonds",
+      description: "1 fields returned.",
       responsePreview: "{\n  \"couponRate\": 5.25\n}"
     });
   });
