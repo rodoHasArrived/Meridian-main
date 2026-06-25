@@ -9,13 +9,15 @@ These instructions apply to all work in this repository.
 
 ### Protected Target
 
-The `main` branch is protected. Never commit, push, force-push, rebase, reset, or
-otherwise write directly to `main`. Never attempt to bypass GitHub repository rules,
-required status checks, required reviews, or branch protections.
+The `main` branch is protected by GitHub repository rules. These repository
+instructions defer to those rules rather than adding a separate blanket
+prohibition on writes to `main`. Never attempt to bypass GitHub repository
+rules, required status checks, required reviews, or branch protections.
 
-### Branch Workflow
+### Default Branch Workflow
 
-For every task:
+Unless the task explicitly requires a different protected-branch flow that
+GitHub repository rules allow, use the pull-request workflow:
 
 1. Begin from the latest `origin/main`.
 2. Create or use a branch named `codex/<short-task-name>`.
@@ -44,7 +46,6 @@ When GitHub Actions fails:
 
 Do not:
 
-- Push directly to `main`.
 - Force-push any shared branch.
 - Use `--no-verify`.
 - Add `[skip ci]` or another CI-skip directive.
@@ -69,7 +70,7 @@ The following files require explicit human review:
 
 ### Definition Of Done
 
-Work is complete only when:
+Pull-request work is complete only when:
 
 - The requested implementation is present.
 - Relevant tests were added or updated.
