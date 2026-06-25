@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.1,
+  "score_percent": 100.0,
   "endpoint_coverage_percent": 100.0,
-  "contract_coverage_percent": 97.8,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 580,
     "documented_endpoint_count": 580,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 769,
-    "documented_workstation_contract_count": 752,
-    "undocumented_workstation_contract_count": 17
+    "documented_workstation_contract_count": 769,
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
@@ -3929,42 +3929,42 @@
     {
       "name": "EvidenceDocumentClassificationDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:61",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceExtractionStatusDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:76",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentLinkKindDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:86",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentReviewStatusDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:100",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentLinkDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:107",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentReviewStateDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:114",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentAuditEventDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:120",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceRequestDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:127",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentDto",
@@ -3974,27 +3974,27 @@
     {
       "name": "EvidenceManifestDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:161",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentExtractionRequestDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:171",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentExtractionResultDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:179",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentIntakeSourceKindDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:187",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentIntakeSourceDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:193",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceArtifactRefDto",
@@ -4094,22 +4094,22 @@
     {
       "name": "EvidenceVaultDocumentQueryDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:412",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceVaultDocumentEntryDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:424",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceVaultDocumentReviewRequestDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:435",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceVaultDocumentReviewResponseDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:442",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceVaultIntakeRequestDto",
