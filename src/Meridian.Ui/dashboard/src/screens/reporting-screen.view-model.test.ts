@@ -652,7 +652,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.actions[1]).toMatchObject({
       id: "run",
       isDisabled: true,
-      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      disabledReason: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available.",
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence"
     });
@@ -1029,10 +1029,10 @@ describe("useReportingScreenViewModel", () => {
       label: "Run export",
       variant: "default",
       isDisabled: true,
-      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      disabledReason: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available.",
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence",
-      descriptionText: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
+      descriptionText: "Excel export requires loader automation evidence before running governed export analysis. Preview remains available."
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
     expect(result.current.rows.find((r) => r.id === "excel")?.isExpanded).toBe(true);

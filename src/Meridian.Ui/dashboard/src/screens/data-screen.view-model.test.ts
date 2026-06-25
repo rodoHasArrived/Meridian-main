@@ -423,7 +423,7 @@ describe("data-screen view model", () => {
     const overview = buildDataLoadingState("overview");
     expect(overview).toMatchObject({
       title: "Loading Data workspace",
-      statusLabel: "Bootstrap pending",
+      statusLabel: "Workspace data pending",
       role: "status",
       ariaLive: "polite",
       ariaBusy: true,

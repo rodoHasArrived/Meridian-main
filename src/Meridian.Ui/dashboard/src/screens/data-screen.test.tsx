@@ -234,7 +234,7 @@ describe("DataScreen", () => {
     const loading = screen.getByRole("status", { name: "Data backfill loading state" });
     expect(loading).toHaveAttribute("aria-busy", "true");
     expect(screen.getByText("Loading backfill queue")).toBeInTheDocument();
-    expect(screen.getByText("Bootstrap pending")).toBeInTheDocument();
+    expect(screen.getByText("Workspace data pending")).toBeInTheDocument();
     expect(screen.getByText("Backfills")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open alpaca paper provider setup/i }))
       .toHaveAttribute("href", "/settings#alpaca-provider-setup");
