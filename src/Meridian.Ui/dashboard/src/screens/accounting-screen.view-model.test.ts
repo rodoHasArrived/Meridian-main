@@ -5696,7 +5696,8 @@ describe("accounting-screen view model", () => {
     };
 
     const noRules = renderHook(() => useAccountingConfigurationViewModel(noRuleServices));
-    await waitFor(() => expect(noRules.result.current.rules).toHaveLength(0));
+    await waitFor(() => expect(noRules.result.current.loading).toBe(false));
+    expect(noRules.result.current.rules).toHaveLength(0);
 
     await act(async () => {
       await noRules.result.current.duplicateSelectedRule();

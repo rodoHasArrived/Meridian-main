@@ -384,6 +384,13 @@ human-review requirement as a read-only WPF signifier before the queue. Each acc
 evidence row now carries both the desktop shell target and canonical `accounting-record/{recordId}`
 subject target so WPF operators can reconcile the row with the same Evidence Workbench subject used
 by the browser and shared evidence endpoints.
+Desktop evidence read-model parity includes the shared Evidence Vault document queue contracts:
+retained document entries carry classification, source hash, source channel, actor, tenant/scope,
+extraction status, reviewer state, linked close/report/accounting objects, open support-request
+count, retained manifest route, and the shared uploaded/local/imported intake-source descriptor
+without giving document intake authority to post or approve accounting records. WPF serialization
+also preserves `EvidenceVaultIdentityDto.ManifestSnapshot` so desktop close, report, tax, and audit
+package views can consume the same frozen document/request/object-link snapshot as the browser.
 `MainPage` remains the route-compatible desktop shell entry point, but shell chrome is now composed
 from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailControl`,
 `ShellMastheadControl`, `WorkspaceEvidenceStripControl`, `WorkspaceCommandSurfaceControl`,

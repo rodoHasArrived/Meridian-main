@@ -20,6 +20,7 @@ import type {
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceSubject,
+  EvidenceVaultDocumentEntry,
   EvidenceVaultIdentity,
   EvidenceVaultRequestListEntry,
   ExecutionAuditEntry,
@@ -5452,6 +5453,70 @@ const fixtureAccountingRecordVaultIdentity: EvidenceVaultIdentity = {
   ]
 };
 
+const fixtureEvidenceVaultDocuments: EvidenceVaultDocumentEntry[] = [
+  {
+    document: {
+      documentId: "doc:ev-accounting-record-demo",
+      fileName: "operating-bank-statement.csv",
+      classification: "BankEvidence",
+      sourceHashSha256: "c".repeat(64),
+      receivedAt: "2026-05-08T15:12:00Z",
+      sourceChannel: "upload",
+      actor: "fund-controller",
+      tenantId: "tenant-alpha",
+      scope: "fund-alpha",
+      extractionStatus: "NeedsReview",
+      objectLinks: [
+        {
+          linkKind: "CloseTask",
+          objectId: "close-task:cash-support",
+          label: "Cash support",
+          route: "/workstation/accounting/close/tasks/cash-support",
+          relationship: "blocks-close-readiness"
+        },
+        {
+          linkKind: "Journal",
+          objectId: fixtureOperationsWorkflowId,
+          relationship: "supports-accounting-record"
+        }
+      ],
+      reviewerState: {
+        status: "NeedsReview",
+        reviewer: "fund-controller",
+        reviewedAt: null,
+        notes: "Statement amount needs operating-account cross-check."
+      },
+      auditTrail: [
+        {
+          recordedAt: "2026-05-08T15:12:00Z",
+          actor: "fund-controller",
+          action: "DocumentIntakeRetained",
+          summary: "Retained BankEvidence document 'operating-bank-statement.csv' through upload intake.",
+          correlationId: "ev-accounting-record-demo"
+        }
+      ],
+      contentType: "text/csv",
+      sourceSystem: "operator-upload",
+      sourceReference: "file://operating-bank-statement.csv",
+      vaultId: "ev-accounting-record-demo",
+      artifactId: "accounting-record-ledger-artifact",
+      manifestRoute: `/workstation/evidence/accounting-record/${fixtureOperationsWorkflowId}/manifest.json`,
+      extractorId: "manual-metadata-v1"
+    },
+    vaultId: fixtureAccountingRecordVaultIdentity.vaultId,
+    subjectKind: fixtureAccountingRecordVaultIdentity.subjectKind,
+    subjectId: fixtureAccountingRecordVaultIdentity.subjectId,
+    manifestRoute: fixtureAccountingRecordVaultIdentity.manifestRoute,
+    retainedAt: fixtureAccountingRecordVaultIdentity.retainedAt,
+    storageKind: fixtureAccountingRecordVaultIdentity.storageKind,
+    openRequestCount: 1,
+    supportRequests: fixtureAccountingRecordVaultIdentity.supportRequests
+  }
+];
+
+fixtureAccountingRecordVaultIdentity.documents = fixtureEvidenceVaultDocuments.map((entry) => entry.document);
+fixtureAccountingRecordVaultIdentity.artifacts[0].document = fixtureEvidenceVaultDocuments[0].document;
+
 const fixtureEvidenceVaultRequestLists: EvidenceVaultRequestListEntry[] = [
   {
     requestListId: "request-list:auditrequestlist:accounting-record:close-demo",
@@ -6271,6 +6336,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.evidenceSubjects]: [fixtureAccountingRecordEvidenceSubject],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultSearch]: [fixtureAccountingRecordVaultIdentity],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists]: fixtureEvidenceVaultRequestLists,
+  [WORKSTATION_API_ENDPOINTS.evidenceVaultDocuments]: fixtureEvidenceVaultDocuments,
   [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,
   [AUTH_API_ENDPOINTS.accessAssignments]: fixtureAccessAssignments,
   [FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench]: fixtureLedgerMappingWorkbench,

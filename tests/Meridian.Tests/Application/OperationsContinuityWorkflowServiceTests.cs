@@ -606,6 +606,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.ClosePackage.PublishedBy.Should().Be("ops-user");
         closed.Workflow.ClosePackage.SignOffRationale.Should().Be("Close accounting period");
         closed.Workflow.ClosePackage.EvidenceLinks.Should().Contain(link => link.EvidenceId == "report-pack-1");
+        closed.Workflow.ClosePackage.DocumentSnapshots.Should().BeEmpty();
         closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
         closed.Workflow.AccountingRecordSummary.Should().NotBeNull();
         closed.Workflow.AccountingRecordSummary!.IsAuditReady.Should().BeTrue();
@@ -2935,6 +2936,83 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task CloseWorkflowAsync_ShouldFreezeVaultDocumentSnapshotsInClosePackageManifest()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+        var closeDocument = CreateCloseVaultDocument(
+            workflow.PeriodId,
+            workflow.FundAccountId.ToString("D"),
+            "evidence-doc-close-binder-1",
+            "0e5751c026e543b2e8ab2eb06099daa1a8e2e3566cf9ca71972c1d0a12d8df43");
+        var manifestSnapshot = CreateCloseManifestSnapshot(workflow, closeDocument);
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close workflow with vault binder support",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            DocumentSnapshots: [closeDocument],
+            ManifestSnapshot: manifestSnapshot));
+
+        close.Success.Should().BeTrue();
+        close.Workflow!.ClosePackage.Should().NotBeNull();
+        close.Workflow.ClosePackage!.DocumentSnapshots.Should().ContainSingle(document =>
+            document.DocumentId == closeDocument.DocumentId &&
+            document.SourceHashSha256 == closeDocument.SourceHashSha256 &&
+            document.Classification == EvidenceDocumentClassificationDto.BankEvidence &&
+            document.ObjectLinks.Any(link =>
+                link.LinkKind == EvidenceDocumentLinkKindDto.CloseTask &&
+                link.ObjectId == "close-gate-approval"));
+        close.Workflow.ClosePackage.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == closeDocument.DocumentId &&
+            link.Route == closeDocument.ManifestRoute &&
+            link.Source == "upload");
+        close.Workflow.ClosePackage.ManifestSnapshot.Should().NotBeNull();
+        close.Workflow.ClosePackage.ManifestSnapshot!.ManifestId.Should().Be(manifestSnapshot.ManifestId);
+        close.Workflow.ClosePackage.ManifestSnapshot.ContentHashSha256.Should().Be(manifestSnapshot.ContentHashSha256);
+        close.Workflow.ClosePackage.ManifestSnapshot.Documents.Should().ContainSingle(document =>
+            document.DocumentId == closeDocument.DocumentId &&
+            document.SourceHashSha256 == closeDocument.SourceHashSha256);
+        close.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Close package manifest" &&
+            package.EvidenceLinkCount >= 2 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == closeDocument.DocumentId));
+    }
+
+    [Fact]
+    public async Task CloseWorkflowAsync_ShouldIncludeFrozenVaultDocumentHashInServerEvidenceHash()
+    {
+        var firstHash = await CloseWorkflowWithDocumentHashAsync(
+            "0e5751c026e543b2e8ab2eb06099daa1a8e2e3566cf9ca71972c1d0a12d8df43");
+        var secondHash = await CloseWorkflowWithDocumentHashAsync(
+            "a1124d8d32d04453b273bf2ea3cb49fbef5d0e49f7a8e11dfd5eb5eb1738171d");
+
+        firstHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        secondHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        secondHash.Should().NotBe(firstHash);
+    }
+
+    [Fact]
+    public async Task CloseWorkflowAsync_ShouldIncludeFrozenManifestHashInServerEvidenceHash()
+    {
+        var firstHash = await CloseWorkflowWithManifestHashAsync(new string('c', 64));
+        var secondHash = await CloseWorkflowWithManifestHashAsync(new string('d', 64));
+
+        firstHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        secondHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        secondHash.Should().NotBe(firstHash);
+    }
+
+    [Fact]
     public async Task RejectWorkflowAsync_ShouldRouteLedgerMismatchBackToLedgerDraft()
     {
         var service = CreateService(out _, out var auditStore);
@@ -3407,6 +3485,125 @@ public sealed class OperationsContinuityWorkflowServiceTests
             Route: $"/evidence/{evidenceId}",
             Source: "operations-test",
             CapturedAtUtc: new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero));
+
+    private static EvidenceDocumentDto CreateCloseVaultDocument(
+        string periodId,
+        string fundAccountId,
+        string documentId,
+        string sourceHashSha256) =>
+        new(
+            documentId,
+            "close-binder-bank-support.pdf",
+            EvidenceDocumentClassificationDto.BankEvidence,
+            sourceHashSha256,
+            new DateTimeOffset(2026, 6, 1, 9, 30, 0, TimeSpan.Zero),
+            "upload",
+            "ops-user",
+            "tenant-alpha",
+            "fund-alpha",
+            EvidenceExtractionStatusDto.Accepted,
+            [
+                new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Period, periodId, "Close period"),
+                new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Portfolio, fundAccountId, "Fund account"),
+                new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.CloseTask, "close-gate-approval", "Approval close task"),
+                new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Journal, "ledger-batch-1", "Ledger batch")
+            ],
+            new EvidenceDocumentReviewStateDto(
+                EvidenceDocumentReviewStatusDto.Accepted,
+                "controller",
+                new DateTimeOffset(2026, 6, 1, 10, 0, 0, TimeSpan.Zero),
+                "Accepted for close binder."),
+            [
+                new EvidenceDocumentAuditEventDto(
+                    new DateTimeOffset(2026, 6, 1, 9, 30, 0, TimeSpan.Zero),
+                    "ops-user",
+                    "accepted",
+                    "Vault document accepted for close binder.",
+                    "corr-close-doc")
+            ])
+        {
+            ContentType = "application/pdf",
+            VaultId = "vault-close-2026-05",
+            ArtifactId = "artifact-close-binder-bank-support",
+            ManifestRoute = "/api/workstation/evidence/vault/vault-close-2026-05/manifest",
+            ExtractorId = "manual-metadata-v1"
+        };
+
+    private static EvidenceManifestDto CreateCloseManifestSnapshot(
+        OperationsContinuityWorkflowDto workflow,
+        EvidenceDocumentDto closeDocument,
+        string? contentHashSha256 = null) =>
+        new(
+            ManifestId: $"manifest:{workflow.WorkflowId:D}:close",
+            FrozenAt: new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero),
+            PackageKind: "close-package",
+            PackageId: $"close-package:{workflow.WorkflowId:D}",
+            ContentHashSha256: contentHashSha256 ?? new string('c', 64),
+            Documents: [closeDocument],
+            Requests: [],
+            ObjectLinks: closeDocument.ObjectLinks);
+
+    private static async Task<string> CloseWorkflowWithDocumentHashAsync(string sourceHashSha256)
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+        var closeDocument = CreateCloseVaultDocument(
+            workflow.PeriodId,
+            workflow.FundAccountId.ToString("D"),
+            "evidence-doc-close-binder-1",
+            sourceHashSha256);
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close workflow with vault binder support",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ClosePackageEvidenceHash: new string('a', 64),
+            DocumentSnapshots: [closeDocument]));
+
+        close.Success.Should().BeTrue();
+        return close.Workflow!.ClosePackage!.EvidenceHash;
+    }
+
+    private static async Task<string> CloseWorkflowWithManifestHashAsync(string manifestHashSha256)
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+        var closeDocument = CreateCloseVaultDocument(
+            workflow.PeriodId,
+            workflow.FundAccountId.ToString("D"),
+            "evidence-doc-close-binder-1",
+            "0e5751c026e543b2e8ab2eb06099daa1a8e2e3566cf9ca71972c1d0a12d8df43");
+        var manifestSnapshot = CreateCloseManifestSnapshot(workflow, closeDocument, manifestHashSha256);
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close workflow with vault manifest support",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals(),
+            ClosePackageEvidenceHash: new string('a', 64),
+            DocumentSnapshots: [closeDocument],
+            ManifestSnapshot: manifestSnapshot));
+
+        close.Success.Should().BeTrue();
+        return close.Workflow!.ClosePackage!.EvidenceHash;
+    }
 
     private static OperationsBreakCaseDto CreateFinancialOperationsLaneBreak(
         OperationsContinuityWorkflowDto workflow,

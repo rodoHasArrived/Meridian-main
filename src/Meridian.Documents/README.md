@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DOCUMENTS
 path: src/Meridian.Documents
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-25
 ---
 
 # src/Meridian.Documents
@@ -25,7 +25,20 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+Document intake is implemented through shared contracts and the UI Shared Evidence Vault until this
+design module owns a dedicated runtime service. The active V1 workflow retains uploaded,
+API-supplied, local-file, or imported-file-reference sources as immutable vault artifacts, records
+source hash, received timestamp, source channel, source path/route reference, actor, tenant/scope,
+document classification, object links, extraction status, reviewer state, and audit trail, then
+freezes that metadata into searchable manifests and request lists for close, report, tax, and audit
+packages. The shared vault identity also carries a public frozen manifest snapshot so package
+consumers can read retained documents, support requests, object links, and content hash without
+parsing internal manifest JSON.
+
+OCR and AI extraction must stay behind `IEvidenceDocumentExtractor`. The default implementation only
+normalizes operator-supplied deterministic metadata and fixture fields; later OCR or LLM extraction
+should return the same contract without gaining authority to post journals, approve evidence,
+release payments, or certify reports.
 
 ## Diagrams
 

@@ -15343,7 +15343,7 @@ export function buildCloseCommandCenterViewState({
       id: "period",
       label: "Period status",
       value: readinessLabel,
-      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using bootstrap close posture until workflow detail loads.",
+      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using workspace close status until workflow detail loads.",
       tone: statusTone,
       href: workflow ? WORKSTATION_ROUTE_CATALOG.accountingApprovals : null
     },
