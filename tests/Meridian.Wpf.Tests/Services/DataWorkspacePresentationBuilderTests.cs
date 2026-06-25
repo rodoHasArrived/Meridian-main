@@ -335,7 +335,7 @@ public sealed class DataWorkspacePresentationBuilderTests
         presentation.ProviderQueueState.IsEmpty.Should().BeTrue();
         presentation.ProviderQueueState.Title.Should().Be("Demo provider telemetry");
         presentation.ProviderQueueItems[0].StatusLabel.Should().Be("Demo data");
-        presentation.ProviderQueueItems[0].CountLabel.Should().Be("Fixture sample");
+        presentation.ProviderQueueItems[0].CountLabel.Should().Be("Sample data");
         presentation.ProviderQueueItems[0].Tone.Should().Be(WorkspaceTone.Info);
     }
 

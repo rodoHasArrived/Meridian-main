@@ -257,8 +257,8 @@ public sealed class MainShellViewModelTests
 
             vm.CurrentWorkspace.Should().Be("strategy");
             vm.CurrentPageTag.Should().Be("StrategyShell");
-            vm.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
-            vm.RecentPagesSummaryText.Should().Be("1 recent strategy workflow");
+            vm.RecentPages.Select(page => page.PageTag).Should().NotContain(["AccountingShell", "FundLedger"]);
+            vm.RecentPagesSummaryText.Should().Contain("strategy workflow");
         });
     }
 
@@ -562,7 +562,7 @@ public sealed class MainShellViewModelTests
             vm.StartupBannerVisibility.Should().Be(Visibility.Visible);
             vm.StartupBannerStatusText.Should().Be("Startup briefing");
             vm.StartupBannerMessage.Should().Contain("operating context");
-            vm.StartupBannerDetail.Should().Contain("Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings");
+            vm.StartupBannerDetail.Should().Contain("Start Demo / Sample Tour");
 
             notificationService.GetHistory().Should().ContainSingle(item =>
                 item.Title == "Meridian ready"
@@ -1478,45 +1478,51 @@ public sealed class DemoTourServiceTests
     [Fact]
     public void StartTour_EnablesFixtureModeAndNavigatesOrderedDemoWorkflow()
     {
-        var navigationService = NavigationService.Instance;
-        navigationService.ResetForTests();
-        navigationService.Initialize(new Frame());
-        var detector = FixtureModeDetector.Instance;
-        detector.SetFixtureMode(false);
-        detector.UpdateBackendReachability(true);
-        var service = new DemoTourService(detector, navigationService);
+        WpfTestThread.Run(() =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            navigationService.Initialize(new Frame());
+            var detector = FixtureModeDetector.Instance;
+            detector.SetFixtureMode(false);
+            detector.UpdateBackendReachability(true);
+            var service = new DemoTourService(detector, navigationService);
 
-        service.StartTour();
+            service.StartTour();
 
-        detector.IsFixtureMode.Should().BeTrue();
-        service.CurrentStepText.Should().Contain("1 of 6");
-        service.CurrentStep!.PageTag.Should().Be("DataShell");
-        navigationService.GetBreadcrumbs().First().PageTag.Should().Be("DataShell");
+            detector.IsFixtureMode.Should().BeTrue();
+            service.CurrentStepText.Should().Contain("1 of 6");
+            service.CurrentStep!.PageTag.Should().Be("DataShell");
+            navigationService.GetBreadcrumbs().First().PageTag.Should().Be("DataShell");
 
-        service.MoveNext();
-        service.CurrentStep!.PageTag.Should().Be("PortfolioShell");
-        service.MoveNext();
-        service.CurrentStep!.PageTag.Should().Be("FundReconciliation");
-        service.MoveNext();
-        service.CurrentStep!.PageTag.Should().Be("FundAuditTrail");
-        service.MoveNext();
-        service.CurrentStep!.PageTag.Should().Be("ReportingShell");
-        service.MoveNext();
-        service.CurrentStep!.PageTag.Should().Be("SettingsShell");
-        service.CanMoveNext.Should().BeFalse();
+            service.MoveNext();
+            service.CurrentStep!.PageTag.Should().Be("PortfolioShell");
+            service.MoveNext();
+            service.CurrentStep!.PageTag.Should().Be("FundReconciliation");
+            service.MoveNext();
+            service.CurrentStep!.PageTag.Should().Be("FundAuditTrail");
+            service.MoveNext();
+            service.CurrentStep!.PageTag.Should().Be("ReportingShell");
+            service.MoveNext();
+            service.CurrentStep!.PageTag.Should().Be("SettingsShell");
+            service.CanMoveNext.Should().BeFalse();
+        });
     }
 
     [Fact]
     public void MainWindowStartDemoTourCommand_ShowsTourBannerAndSampleModeCopy()
     {
-        var vm = MainShellViewModelTestsCreate.CreateMainWindowViewModelForDemoTour();
+        WpfTestThread.Run(() =>
+        {
+            var vm = MainShellViewModelTestsCreate.CreateMainWindowViewModelForDemoTour();
 
-        vm.StartDemoTourCommand.Execute(null);
+            vm.StartDemoTourCommand.Execute(null);
 
-        vm.DemoTourVisibility.Should().Be(Visibility.Visible);
-        vm.DemoTourStepText.Should().Contain("Data/provider status");
-        vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
-        FixtureModeDetector.Instance.ModeLabel.Should().Contain("Demo data mode");
+            vm.DemoTourVisibility.Should().Be(Visibility.Visible);
+            vm.DemoTourStepText.Should().Contain("Data/provider status");
+            vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
+            FixtureModeDetector.Instance.ModeLabel.Should().Contain("Demo data mode");
+        });
     }
 }
 

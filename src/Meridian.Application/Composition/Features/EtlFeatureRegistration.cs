@@ -35,6 +35,9 @@ internal sealed class EtlFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IPartnerSchemaRegistry, PartnerSchemaRegistry>();
         services.AddSingleton<IPartnerFileParser, CsvPartnerFileParser>();
         services.AddSingleton<EtlNormalizationService>();
+        services.AddSingleton<EtlPreviewService>();
+        services.AddSingleton<ISftpCapabilityService, SftpCapabilityService>();
+        services.AddSingleton<ISftpCredentialResolver, EnvironmentSftpCredentialResolver>();
         services.AddSingleton<ISftpClientFactory, SftpClientFactory>();
         services.AddSingleton<IEtlSourceReader, LocalFileSourceReader>();
         services.AddSingleton<IEtlSourceReader, SftpFileSourceReader>();

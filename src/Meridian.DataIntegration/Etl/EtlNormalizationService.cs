@@ -29,6 +29,38 @@ public sealed class PartnerSchemaRegistry : IPartnerSchemaRegistry
                     ["sequence"] = "sequence",
                     ["aggressor"] = "aggressor"
                 }
+            },
+            ["bank.statement.csv.v1"] = new()
+            {
+                SchemaId = "bank.statement.csv.v1",
+                HasHeaderRow = true,
+                Delimiter = ',',
+                Columns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["transaction_date"] = "transaction_date",
+                    ["value_date"] = "value_date",
+                    ["amount"] = "amount",
+                    ["currency"] = "currency",
+                    ["transaction_type"] = "transaction_type",
+                    ["description"] = "description",
+                    ["reference"] = "reference",
+                    ["closing_balance"] = "closing_balance"
+                }
+            },
+            ["bank.transactions.csv.v1"] = new()
+            {
+                SchemaId = "bank.transactions.csv.v1",
+                HasHeaderRow = true,
+                Delimiter = ',',
+                Columns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["transaction_date"] = "transaction_date",
+                    ["amount"] = "amount",
+                    ["currency"] = "currency",
+                    ["transaction_type"] = "transaction_type",
+                    ["description"] = "description",
+                    ["reference"] = "reference"
+                }
             }
         };
 

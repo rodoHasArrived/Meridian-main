@@ -79,7 +79,7 @@
                 <ContentPresenter x:Name="RightContentPresenter"
                                   Content="{Binding RightContent}"
                                   VerticalAlignment="Center"
-                                  AutomationProperties.AutomationId="{Binding RightContentAutomationId}">
+                                  AutomationProperties.AutomationId="{Binding ElementName=Root, Path=RightContentAutomationId}">
                     <ContentPresenter.Style>
                         <Style TargetType="ContentPresenter">
                             <Style.Triggers>

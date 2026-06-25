@@ -236,5 +236,8 @@ public sealed class BankFeedTransportServiceTests : IDisposable
                 SizeBytes = new FileInfo(_stagedPath).Length
             });
         }
+
+        public Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
+            => Task.CompletedTask;
     }
 }

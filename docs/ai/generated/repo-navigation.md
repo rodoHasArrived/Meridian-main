@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-25T09:57:48Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-25T02:00:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 147 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `2dc164612` (2026-06-25T02:55:51-07:00) | 105 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 79 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `2dc164612` (2026-06-25T02:55:51-07:00) | 75 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 62 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 57 |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 30 |
-| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 25 |
-| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 21 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs` | Unmapped | `2dc164612` (2026-06-25T02:55:51-07:00) | 7 |
-| `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs` | Host and Composition | `2dc164612` (2026-06-25T02:55:51-07:00) | 5 |
-| `src/Meridian.Ui/dashboard/package.json` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 5 |
-| `src/Meridian.Ui/dashboard/package-lock.json` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 4 |
-| `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs` | Host and Composition | `2dc164612` (2026-06-25T02:55:51-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs` | Desktop and UI Workflows | `2dc164612` (2026-06-25T02:55:51-07:00) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | Desktop and UI Workflows | `635d1167c` (2026-06-24T16:15:05Z) | 13 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/report-writer-grid-diff-view.tsx` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.test.ts` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.ts` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/report-writer-chart-preview.tsx` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.test.ts` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.ts` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-hub.test.ts` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-hub.ts` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-periods.test.ts` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/lib/reporting-periods.ts` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `e4921294b` (2026-06-24T15:08:16Z) | 57 |
+| `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs` | Host and Composition | `e4921294b` (2026-06-24T15:08:16Z) | 8 |
 

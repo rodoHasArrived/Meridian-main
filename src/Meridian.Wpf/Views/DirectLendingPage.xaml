@@ -363,9 +363,9 @@
                                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
                                     <TextBlock Text="Servicer statement batches"
                                                FontWeight="SemiBold"
-                                               Style="{StaticResource SectionTitleTextStyle}" />
+                                               Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock Text="Imported position and remittance evidence from the shared Direct Lending operations read model."
-                                               Style="{StaticResource SecondaryTextStyle}" />
+                                               Style="{StaticResource CardDescriptionStyle}" />
                                 </StackPanel>
 
                                 <workstation:DenseDataGridControl Grid.Row="1"

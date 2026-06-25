@@ -200,8 +200,7 @@ public sealed class EtlJobOrchestrator
                         CapturedAtUtc = DateTime.UtcNow
                     };
                 }
-                if (definition.Source.DeleteAfterSuccess && definition.Source.Kind == EtlSourceKind.Local && File.Exists(file.Path))
-                    File.Delete(file.Path);
+                await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
             }
 
             await _pipeline.FlushAsync(ct).ConfigureAwait(false);

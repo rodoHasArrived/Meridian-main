@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-06-25T09:57:48Z",
+  "generatedAt": "2026-06-25T02:00:53Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main-restored-stashes",
+  "repositoryRoot": "Meridian-main",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2188,324 +2188,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui.Shared/README.md",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 147
+      "lastModified": "2026-06-24T16:15:05Z",
+      "lastCommit": "635d1167c",
+      "lastSummary": "Add conditional formatting and chart config UI to report designer",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 105
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/report-writer-grid-diff-view.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 79
+      "lastModified": "2026-06-24T15:33:27Z",
+      "lastCommit": "a4d453a7e",
+      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 75
-    },
-    {
-      "path": "src/Meridian.Wpf/README.md",
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.test.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 62
+      "lastModified": "2026-06-24T15:33:27Z",
+      "lastCommit": "a4d453a7e",
+      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:33:27Z",
+      "lastCommit": "a4d453a7e",
+      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/report-writer-chart-preview.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:28:29Z",
+      "lastCommit": "d2ba8b1cf",
+      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:28:29Z",
+      "lastCommit": "d2ba8b1cf",
+      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:28:29Z",
+      "lastCommit": "d2ba8b1cf",
+      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:22:11Z",
+      "lastCommit": "fd1591527",
+      "lastSummary": "Add report hub overview to reporting workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-hub.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:22:11Z",
+      "lastCommit": "fd1591527",
+      "lastSummary": "Add report hub overview to reporting workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-hub.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:22:11Z",
+      "lastCommit": "fd1591527",
+      "lastSummary": "Add report hub overview to reporting workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:15:41Z",
+      "lastCommit": "a188e17bc",
+      "lastSummary": "Add reporting period switcher to browser workstation",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-periods.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:15:41Z",
+      "lastCommit": "a188e17bc",
+      "lastSummary": "Add reporting period switcher to browser workstation",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-periods.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:15:41Z",
+      "lastCommit": "a188e17bc",
+      "lastSummary": "Add reporting period switcher to browser workstation",
+      "touches": 1
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/types.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
       "touches": 57
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 30
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 25
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 21
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs",
+      "path": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 5
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Ui/dashboard/package.json",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/package-lock.json",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
+      "path": "src/Meridian.Reporting/ReportWriterGridEngine.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Documents/README.md",
+      "path": "src/Meridian.Reporting/ReportSnapshotDiffEngine.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs",
+      "path": "src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Serialization/WorkstationOperationsJsonContext.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:55:51-07:00",
-      "lastCommit": "2dc164612",
-      "lastSummary": "Restore document intake vault stashed changes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:54:37-07:00",
-      "lastCommit": "1c90b3e16",
-      "lastSummary": "Restore ETL and roadmap stashed changes",
-      "touches": 40
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/tsconfig.json",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:54:37-07:00",
-      "lastCommit": "1c90b3e16",
-      "lastSummary": "Restore ETL and roadmap stashed changes",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/test/render.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T02:54:37-07:00",
-      "lastCommit": "1c90b3e16",
-      "lastSummary": "Restore ETL and roadmap stashed changes",
-      "touches": 2
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 55
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 53
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 52
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 49
+      "path": "src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 51
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 36
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 35
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 14
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 26
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Platform/Diagnostics/DiagnosticBundleService.cs",
+      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 3
+      "path": "src/Meridian.Backtesting/CorporateActionAdjustmentService.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 3
+      "path": "src/Meridian.Application/Composition/Startup/ModeRunners/DesktopModeRunner.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-25T00:20:15-07:00",
-      "lastCommit": "65ab9a75d",
-      "lastSummary": "Restore stashed Meridian work on main integration branch",
-      "touches": 3
+      "path": "src/Meridian.Backtesting/Engine/BacktestEngine.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.ProviderSdk/DataSourceAttribute.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.ProviderSdk/IDataSource.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.QuantScript/Compilation/RoslynScriptCompiler.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-06-24T14:35:42-07:00",
+      "lastCommit": "795ae3db1",
+      "lastSummary": "154362",
+      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,
