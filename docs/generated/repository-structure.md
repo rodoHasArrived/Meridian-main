@@ -2331,10 +2331,15 @@ Meridian-main
 │   │   │   ├── .thumbnail
 │   │   │   ├── ds-base.js
 │   │   │   └── index.html
-│   │   └── security-master-registry
-│   │       ├── .thumbnail
+│   │   ├── security-master-registry
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   └── index.html
+│   │   └── split-pane-reconciliation
 │   │       ├── ds-base.js
-│   │       └── index.html
+│   │       ├── screen.jsx
+│   │       ├── Split Pane Reconciliation.dc.html
+│   │       └── support.js
 │   ├── tests
 │   │   └── test_design_system_governance.py
 │   ├── tokens
@@ -4004,6 +4009,7 @@ Meridian-main
 │   │   │   ├── DiagnosticBundleService.cs
 │   │   │   ├── ErrorRingBuffer.cs
 │   │   │   ├── ErrorTracker.cs
+│   │   │   ├── PipelineDiagnosticsProjection.cs
 │   │   │   ├── ShutdownDiagnosticsService.cs
 │   │   │   ├── ShutdownLifecycleTypes.cs
 │   │   │   └── SystemHealthChecker.cs
@@ -6420,6 +6426,7 @@ Meridian-main
 │   │   │   ├── Diagnostics
 │   │   │   │   ├── DiagnosticBundleServiceTests.cs
 │   │   │   │   ├── ErrorRingBufferTests.cs
+│   │   │   │   ├── PipelineDiagnosticsProjectionTests.cs
 │   │   │   │   └── SystemHealthCheckerTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── AlertDispatcherTests.cs
@@ -7067,7 +7074,8 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   └── shared-pattern-suggest.ps1
+│   │   ├── shared-pattern-suggest.ps1
+│   │   └── test-gap-scan.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json
@@ -7105,87 +7113,6 @@ Meridian-main
 │   │   └── validate_source_readmes.py
 │   ├── __init__.py
 │   └── README.md
-├── wwwroot
-│   └── workstation
-│       ├── assets
-│       │   ├── activity-CtHpOVKp.js
-│       │   ├── activity-DdzC2NHl.js
-│       │   ├── arrow-right-BQMXU4Qj.js
-│       │   ├── arrow-right-DVsZxtAC.js
-│       │   ├── briefcase-business-CD4M7um3.js
-│       │   ├── briefcase-business-TKfvxiVx.js
-│       │   ├── circle-alert-D7rSODdk.js
-│       │   ├── circle-alert-HHMNSH16.js
-│       │   ├── circle-check-DPF4ogK2.js
-│       │   ├── circle-check-eX-lGLCP.js
-│       │   ├── circle-x-CMg0Qc3V.js
-│       │   ├── circle-x-DY2RQmFF.js
-│       │   ├── clipboard-list-DAEDYX46.js
-│       │   ├── clipboard-list-jTN-MPwF.js
-│       │   ├── data-operations-screen-B3QBwTVq.js
-│       │   ├── data-operations-screen-D0lJrkiA.js
-│       │   ├── dialog-CinaMm0v.js
-│       │   ├── dialog-DSdabj2S.js
-│       │   ├── evidence-workbench-screen-ClQx7gzd.js
-│       │   ├── evidence-workbench-screen-eYN2-zbn.js
-│       │   ├── external-link-BZXdW9W9.js
-│       │   ├── external-link-Grqr3LkX.js
-│       │   ├── file-text-BlxlUqHd.js
-│       │   ├── file-text-N-hievbj.js
-│       │   ├── governance-screen-DqY6ddBm.js
-│       │   ├── governance-screen-DrFPMbFb.js
-│       │   ├── index-aS_m2ekp.css
-│       │   ├── index-C40I5Ro9.js
-│       │   ├── index-Ch7FNJl9.js
-│       │   ├── index-DRTDTLoU.css
-│       │   ├── input-Cy4wm2Ml.js
-│       │   ├── input-DH1caSqT.js
-│       │   ├── live-quotes-screen--RkhoaOE.js
-│       │   ├── live-quotes-screen-D1hu0dqT.js
-│       │   ├── metric-card-6FGqr-9F.js
-│       │   ├── metric-card-BbZrlC_6.js
-│       │   ├── network-1U1oL-WT.js
-│       │   ├── network-CwsNwANB.js
-│       │   ├── operator-readiness-console-BrBqInOx.js
-│       │   ├── operator-readiness-console-BRtzgXL5.js
-│       │   ├── overview-screen-BeJxfrwP.js
-│       │   ├── overview-screen-BR5AraLj.js
-│       │   ├── plus-Cw2iQHnA.js
-│       │   ├── plus-DSjajpe-.js
-│       │   ├── portfolio-screen-CSEy6zr5.js
-│       │   ├── portfolio-screen-mIlILUNM.js
-│       │   ├── price-alerts-screen-COXY9m6l.js
-│       │   ├── price-alerts-screen-njljCYiX.js
-│       │   ├── quant-lab-screen-BOhDQUug.js
-│       │   ├── quant-lab-screen-Dpy7KWIY.js
-│       │   ├── refresh-cw-DbBLAiPQ.js
-│       │   ├── refresh-cw-Dp5Clkb9.js
-│       │   ├── reporting-screen-BliDtXaE.js
-│       │   ├── reporting-screen-nAqRD7ij.js
-│       │   ├── research-screen-Df8dFRgK.js
-│       │   ├── research-screen-DwSDHbyl.js
-│       │   ├── rotate-ccw-9wKbnWAt.js
-│       │   ├── rotate-ccw-DOv9SmtZ.js
-│       │   ├── select-CoGQYu8S.js
-│       │   ├── select-Dydh4qce.js
-│       │   ├── settings-screen-DpB0U5fm.js
-│       │   ├── settings-screen-paK4sHDZ.js
-│       │   ├── sparkles-C72l2Ug0.js
-│       │   ├── sparkles-CPzvLarX.js
-│       │   ├── strategy-designer-screen-DDl7I7Ey.js
-│       │   ├── trading-screen-CEO2TrpK.js
-│       │   ├── trading-screen-DJVhwdT7.js
-│       │   ├── trash-2-Br6Kw89A.js
-│       │   ├── trash-2-DG_-jE3C.js
-│       │   ├── trending-up-CyiwhFqC.js
-│       │   ├── trending-up-Dm0UHjUd.js
-│       │   ├── ui-kit-primitives-1LSkXU-q.js
-│       │   ├── ui-kit-primitives-HLPUYoNX.js
-│       │   ├── wallet-gTxB9uZO.js
-│       │   ├── wallet-SSwWmFz-.js
-│       │   ├── watchlist-screen-lIteaLqr.js
-│       │   └── watchlist-screen-Z-X12prT.js
-│       └── index.html
 ├── .editorconfig
 ├── .flake8
 ├── .gitattributes

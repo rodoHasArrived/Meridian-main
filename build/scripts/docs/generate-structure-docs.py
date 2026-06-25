@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 EXCLUDED_DIR_NAMES = {
+    ".ai",
     ".artifacts",
     ".git",
     ".idea",
@@ -21,6 +22,7 @@ EXCLUDED_DIR_NAMES = {
     ".playwright-cli",
     ".pytest_cache",
     ".ruff_cache",
+    ".tmp",
     ".vs",
     "__pycache__",
     "artifacts",
@@ -30,8 +32,10 @@ EXCLUDED_DIR_NAMES = {
     "node_modules",
     "obj",
     "obj-codex",
+    "output",
     "archive",
     "TestResults",
+    "wwwroot",
 }
 
 EXCLUDED_ROOT_DIR_NAMES = {
@@ -48,9 +52,13 @@ EXCLUDED_FILE_SUFFIXES = {
 
 EXCLUDED_FILE_PATTERNS = (
     "*.backup-*",
+    "*_wpftmp.csproj",
 )
 EXCLUDED_ROOT_FILE_NAMES = {
     "package-lock.json",
+}
+EXCLUDED_FILE_NAMES = {
+    "appsettings.json",
 }
 REPOSITORY_DISPLAY_NAME = "Meridian-main"
 STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
@@ -79,6 +87,9 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
             return True
 
     name = path.name
+    if name in EXCLUDED_FILE_NAMES:
+        return True
+
     if path.is_file():
         if path.suffix.lower() in EXCLUDED_FILE_SUFFIXES:
             return True
