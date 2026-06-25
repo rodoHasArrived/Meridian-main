@@ -9,6 +9,7 @@ using Xunit;
 namespace Meridian.Tests.Application.Commands;
 
 [Trait("Category", "Unit")]
+[Collection("Sequential")]
 public sealed class SecurityMasterCommandsEdgarTests
 {
     [Fact]

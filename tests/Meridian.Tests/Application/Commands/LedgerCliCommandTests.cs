@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Meridian.Tests.Application.Commands;
 
+[Collection("Sequential")]
 public sealed class LedgerCliCommandTests
 {
     [Fact]
