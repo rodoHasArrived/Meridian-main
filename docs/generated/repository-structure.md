@@ -883,7 +883,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -5968,6 +5967,7 @@ Meridian-main
 │   │   │   ├── Commands
 │   │   │   │   ├── CliArgumentsTests.cs
 │   │   │   │   ├── CommandDispatcherTests.cs
+│   │   │   │   ├── CommandTestConsole.cs
 │   │   │   │   ├── ConfigCommandsTests.cs
 │   │   │   │   ├── DiagnosticsCommandsTests.cs
 │   │   │   │   ├── DryRunCommandTests.cs
@@ -6610,6 +6610,7 @@ Meridian-main
 │   │   │   ├── ActivityTestListenerFactory.cs
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
+│   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
 │   │   ├── Testing
