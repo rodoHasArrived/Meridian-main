@@ -60,6 +60,9 @@ EXCLUDED_FILE_NAMES = {
 EXCLUDED_ROOT_FILE_NAMES = {
     "package-lock.json",
 }
+EXCLUDED_FILE_NAMES = {
+    "appsettings.json",
+}
 REPOSITORY_DISPLAY_NAME = "Meridian-main"
 STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 
@@ -87,6 +90,9 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
             return True
 
     name = path.name
+    if name in EXCLUDED_FILE_NAMES:
+        return True
+
     if path.is_file():
         if name in EXCLUDED_FILE_NAMES:
             return True
