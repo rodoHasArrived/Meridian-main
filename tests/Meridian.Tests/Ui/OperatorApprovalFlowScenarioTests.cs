@@ -13,9 +13,9 @@ namespace Meridian.Tests.Ui;
 /// W2 Operator Approval Flow Scenario Test.
 /// Walks the full operator path from an empty readiness state through session
 /// creation, replay verification, and audit confirmation — proving that the
-/// paper-trading cockpit reaches ReadyForPaperOperation=true via the three
-/// core gates (session, replay, audit-controls) that gate the initial
-/// operator sign-off cycle.
+/// paper-trading cockpit can satisfy the three core paper-session gates
+/// (session, replay, audit-controls) while broader governance gates still
+/// withhold ReadyForPaperOperation until their evidence is present.
 /// </summary>
 [Trait("Category", "Scenario")]
 public sealed class OperatorApprovalFlowScenarioTests
@@ -76,10 +76,9 @@ public sealed class OperatorApprovalFlowScenarioTests
 
         // ---- STEP 5: check overall readiness ----
         //
-        // With no StrategyRunReadService registered the readiness service operates in
-        // 'active session only' mode. In that mode it returns Ready once the session,
-        // replay, and audit-controls gates are all satisfied — brokerage sync and
-        // promotion gates are deferred to the live-run stage.
+        // The session, replay, and audit-control gates can be ready with just the
+        // paper-session services, while the broader governance gates still require
+        // explicit risk, promotion, trust, report-pack, and reconciliation evidence.
 
         await using var readyProvider = new ServiceCollection()
             .AddSingleton(sessionService)
@@ -92,9 +91,9 @@ public sealed class OperatorApprovalFlowScenarioTests
 
         var readiness = await readyReadinessService.GetAsync();
 
-        // Core assertion: the cockpit is ready for paper operation.
-        readiness.ReadyForPaperOperation.Should().BeTrue(
-            "session is active, replay is verified, and audit trail has visible activity");
+        readiness.ReadyForPaperOperation.Should().BeFalse(
+            "broader governance evidence is required before the whole cockpit is ready");
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
 
         // Session gate
         var sessionGate = readiness.AcceptanceGates.FirstOrDefault(g => g.GateId == "session");
@@ -178,8 +177,9 @@ public sealed class OperatorApprovalFlowScenarioTests
 
         var readiness = await readinessService.GetAsync();
 
-        readiness.ReadyForPaperOperation.Should().BeTrue(
-            "fills recorded, replay verified, and audit trail has entries for both symbols");
+        readiness.ReadyForPaperOperation.Should().BeFalse(
+            "fills and replay satisfy the paper-session gates, but broader governance gates still require evidence");
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
         readiness.Replay!.IsConsistent.Should().BeTrue();
     }

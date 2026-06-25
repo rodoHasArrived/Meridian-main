@@ -1228,6 +1228,8 @@ public sealed class LedgerBookServiceTests
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "ledger-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "ledger-test-tenant";
             return next();
         });
         app.UseRateLimiter();

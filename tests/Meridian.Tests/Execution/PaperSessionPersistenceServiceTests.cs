@@ -1468,7 +1468,7 @@ public sealed class PaperTradingAccountingScenarioTests : IDisposable
         loadedAccount.Permissions.Should().BeEquivalentTo(RolePermissions.GetPermissionNames(permissions));
 
         var tenantAdministrationEvidence =
-            $"evidence://tenant-admin/{TenantId}/{CompanyId}/paper-trade-accounting-setup";
+            $"evidence://tenant-admin/full/{TenantId}/{CompanyId}/paper-trade-accounting-setup";
         var tenantProfileStore = new InMemoryAccountingTenantAdministrationProfileStore();
         var tenantProfile = new AccountingTenantAdministrationProfileDto(
             TenantId: TenantId,
@@ -1497,7 +1497,28 @@ public sealed class PaperTradingAccountingScenarioTests : IDisposable
             PostingRuleAuthoringStudioConfigured: true,
             ApprovalQueueStudioConfigured: true,
             DimensionMappingStudioConfigured: true,
-            ImplementationSandboxConfigured: true);
+            ImplementationSandboxConfigured: true,
+            ApprovalQueueConfigurations:
+            [
+                new AccountingApprovalQueueConfigurationDto(
+                    "paper-trade-journal-approval",
+                    "Paper trade journal approvals",
+                    "journal-entry",
+                    "AccountingController",
+                    RequiredApprovalCount: 1,
+                    "submitter-cannot-approve",
+                    "Retain paper-trade journal approval evidence before posting.")
+            ],
+            DimensionMappingConfigurations:
+            [
+                new AccountingDimensionMappingConfigurationDto(
+                    "paper-trade-dimensions",
+                    "Paper trade dimension mapping",
+                    "paper-session",
+                    new LedgerDimensionSetDto(FundId: "paper-fund", EntityId: CompanyId, BookId: "paper-book"),
+                    new LedgerDimensionSetDto(PortfolioId: "paper-session", BookId: "paper-book"),
+                    "Retain dimension mapping evidence for paper-trade accounting.")
+            ]);
         var retainedTenantProfile = await tenantProfileStore.UpsertAsync(
             new AccountingTenantAdministrationProfileUpsertRequestDto(
                 tenantProfile,

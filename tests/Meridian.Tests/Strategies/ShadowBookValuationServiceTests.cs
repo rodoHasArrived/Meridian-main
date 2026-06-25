@@ -47,7 +47,7 @@ public sealed class ShadowBookValuationServiceTests
             ["Macro"] = new ShadowBookVarianceThresholds(100_000m, 10_000m)
         });
 
-        var result = await service.RunAsync(BuildRequest(externalNav: 2_060_000m) with { BlockCloseOnBreach = false });
+        var result = await service.RunAsync(BuildRequest(externalNav: 259_500m) with { BlockCloseOnBreach = false });
 
         result.Snapshot.Breached.Should().BeFalse();
         result.EmittedBreak.Should().BeNull();

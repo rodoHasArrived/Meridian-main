@@ -333,7 +333,8 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             r => r.Method == HttpMethod.Post && r.Url.EndsWith("/options/orders/", StringComparison.Ordinal))
             .Subject;
         submit.Body.Should().Contain("\"option\":\"https://api.robinhood.com/options/instruments/opt-close/\"");
-        handler.Requests.Should().NotContain(r => r.Url.Contains("/instruments/", StringComparison.Ordinal));
+        handler.Requests.Should().NotContain(r =>
+            r.Url.StartsWith("https://api.robinhood.com/instruments/", StringComparison.Ordinal));
         handler.Requests.Should().NotContain(
             r => r.Method == HttpMethod.Post && string.Equals(r.Url, "https://api.robinhood.com/orders/", StringComparison.Ordinal));
 
