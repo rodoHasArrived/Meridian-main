@@ -295,11 +295,16 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
     private static IEnumerable<string> GetCapabilityNames(ProviderCapabilities cap)
     {
-        if (cap.SupportsStreaming) yield return "Streaming";
-        if (cap.SupportsBackfill) yield return "Backfill";
-        if (cap.SupportsSymbolSearch) yield return "Symbol Search";
-        if (cap.SupportsBrokerage) yield return "Brokerage";
-        if (cap.SupportsOptionsChain) yield return "Options Chain";
+        if (cap.SupportsStreaming)
+            yield return "Streaming";
+        if (cap.SupportsBackfill)
+            yield return "Backfill";
+        if (cap.SupportsSymbolSearch)
+            yield return "Symbol Search";
+        if (cap.SupportsBrokerage)
+            yield return "Brokerage";
+        if (cap.SupportsOptionsChain)
+            yield return "Options Chain";
     }
 
     private static IReadOnlyList<Type> DiscoverModuleTypes()
