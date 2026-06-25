@@ -5790,13 +5790,13 @@ function ProviderIntegrationRuntimePanel({
       {syncPlanItems.length > 0 ? (
         <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration sync plan`}>
           {syncPlanItems.slice(0, 3).map((item) => (
-            <div key={`${item.capability}-${item.endpointKey ?? "no-endpoint"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+            <div key={`${item.capability}-${item.endpointKey ?? "no-service"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={item.isBlocked ? "danger" : item.isDue ? "warning" : "success"}>
                   {item.isBlocked ? "Blocked" : item.isDue ? "Due" : "Scheduled"}
                 </Badge>
                 <span className="text-[11px] font-medium text-foreground">{item.capability}</span>
-                <span className="font-mono text-[11px] text-muted-foreground">{item.endpointKey ?? "no endpoint"}</span>
+                <span className="font-mono text-[11px] text-muted-foreground">{item.endpointKey ?? "no service"}</span>
               </div>
               <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{item.reason}</p>
             </div>
@@ -6018,7 +6018,7 @@ function ProviderIntegrationWorkbenchPanel({
       ].filter((detail): detail is string => Boolean(detail));
       setState((current) => ({
         ...current,
-        message: "Manifest id, endpoint key, and valid REST parameter JSON are required before running a REST dry-run.",
+        message: "Manifest id, service key, and valid REST parameter JSON are required before running a REST dry-run.",
         details,
         tone: "warning"
       }));
@@ -6056,7 +6056,7 @@ function ProviderIntegrationWorkbenchPanel({
 
   const checkSchemaDrift = async () => {
     if (!manifestId || !latestRawPayload || !state.endpointKey.trim()) {
-      setState((current) => ({ ...current, message: "A manifest id, endpoint key, and dry-run or runtime raw payload are required before schema drift review.", details: [], tone: "warning" }));
+      setState((current) => ({ ...current, message: "A manifest id, service key, and dry-run or runtime sample are required before schema drift review.", details: [], tone: "warning" }));
       return;
     }
 
@@ -6202,7 +6202,7 @@ function ProviderIntegrationWorkbenchPanel({
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Service key
-          <Input value={state.endpointKey} onChange={(event) => updateField("endpointKey", event.target.value)} list={`${row.providerId}-provider-endpoint-options`} disabled={busy} aria-label={`${row.displayName} provider integration dry-run endpoint key`} />
+          <Input value={state.endpointKey} onChange={(event) => updateField("endpointKey", event.target.value)} list={`${row.providerId}-provider-endpoint-options`} disabled={busy} aria-label={`${row.displayName} provider integration dry-run service key`} />
           <datalist id={`${row.providerId}-provider-endpoint-options`}>{endpointOptions.map((endpoint) => <option key={endpoint.endpointKey} value={endpoint.endpointKey} />)}</datalist>
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
@@ -6235,7 +6235,7 @@ function ProviderIntegrationWorkbenchPanel({
           <Activity className="h-3.5 w-3.5" aria-hidden="true" />
           REST dry-run
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => void checkSchemaDrift()} disabled={busy || !canCheckDrift} busy={state.busyAction === "drift"} disabledReason={!canCheckDrift ? "A dry-run or runtime raw payload is required before schema drift review." : undefined} aria-label={`Check provider integration schema drift for ${row.displayName}`}>
+        <Button type="button" variant="outline" size="sm" onClick={() => void checkSchemaDrift()} disabled={busy || !canCheckDrift} busy={state.busyAction === "drift"} disabledReason={!canCheckDrift ? "A dry-run or runtime sample is required before schema drift review." : undefined} aria-label={`Check provider integration schema drift for ${row.displayName}`}>
           <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />
           Schema drift
         </Button>
