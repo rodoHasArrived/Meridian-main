@@ -162,15 +162,9 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        if (_providerRegistry is not null)
-        {
-            if (enabled)
-                _providerRegistry.Enable(moduleId);
-            else
-                _providerRegistry.Disable(moduleId);
-        }
-
-        return await MutateConfigAsync(cfg =>
+        // Persist first; only update live registry when config write succeeds to keep
+        // the in-process state and the persisted config in sync across restarts.
+        var result = await MutateConfigAsync(cfg =>
         {
             var modules = cfg.ProviderModules?.Modules is not null
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
@@ -181,6 +175,19 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
         }, ct).ConfigureAwait(false);
+
+        if (!result.Success)
+            return result;
+
+        if (_providerRegistry is not null)
+        {
+            if (enabled)
+                _providerRegistry.Enable(moduleId);
+            else
+                _providerRegistry.Disable(moduleId);
+        }
+
+        return result;
     }
 
     public async Task<ProviderModuleSetupResult> RemoveModuleAsync(string moduleId, CancellationToken ct = default)
@@ -218,11 +225,12 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
         var storedCreds = await _credentialStore.GetCredentialsAsync(moduleId, ct).ConfigureAwait(false);
 
-        // Merge env-var-mapped credentials from config (same resolution as BuildModuleContexts at startup)
+        // Merge env-var-mapped credentials and saved settings from config,
+        // matching the same resolution as BuildModuleContexts at startup.
         var cfgForModule = _configStore.Load();
+        cfgForModule.ProviderModules?.Modules?.TryGetValue(moduleId, out var moduleCfg);
         var merged = new Dictionary<string, string?>(storedCreds, StringComparer.OrdinalIgnoreCase);
-        if (cfgForModule.ProviderModules?.Modules.TryGetValue(moduleId, out var moduleCfg) == true
-            && moduleCfg?.Credentials is { } envMap)
+        if (moduleCfg?.Credentials is { } envMap)
         {
             foreach (var (key, envVarName) in envMap)
             {
@@ -235,7 +243,12 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             }
         }
 
-        var context = ProviderModuleContext.FromCredentials(merged);
+        var context = new ProviderModuleContext
+        {
+            Credentials = merged,
+            Settings = moduleCfg?.Settings
+                ?? new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+        };
         module.Configure(context);
 
         var validation = await module.ValidateAsync(ct).ConfigureAwait(false);

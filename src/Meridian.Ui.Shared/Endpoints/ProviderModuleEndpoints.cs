@@ -116,6 +116,9 @@ public static class ProviderModuleEndpoints
             if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
                 return EndpointHelpers.Forbidden();
 
+            if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageCredentials))
+                return EndpointHelpers.Forbidden();
+
             var result = await setupService.RemoveModuleAsync(moduleId, ct).ConfigureAwait(false);
             return result.Success
                 ? Results.Ok()
