@@ -134,7 +134,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaPaperApiBase}/v2/account");
             request.Headers.Add("APCA-API-KEY-ID", keyId);
             request.Headers.Add("APCA-API-SECRET-KEY", secretKey);
-            var response = await ProbeClient.SendAsync(request, ct).ConfigureAwait(false);
+            using var response = await ProbeClient.SendAsync(request, ct).ConfigureAwait(false);
             sw.Stop();
             if (response.IsSuccessStatusCode)
                 return ModuleProbeResult.Success(sw.Elapsed.TotalMilliseconds, "Alpaca paper account reachable");
