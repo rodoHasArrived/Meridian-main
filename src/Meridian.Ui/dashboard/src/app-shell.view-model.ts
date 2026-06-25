@@ -1139,7 +1139,7 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "provider-setup",
         label: "Provider setup",
-        description: "Repair credentials, endpoint acknowledgement, and paper/live provider posture.",
+        description: "Repair credentials, connection acknowledgement, and paper/live provider status.",
         href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         matchPath: WORKSTATION_ROUTE_CATALOG.settings,
         matchHash: "#alpaca-provider-setup"

@@ -375,17 +375,17 @@ const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[
 const referenceDataEndpointColumns: DenseDataTableColumn<ReferenceDataEndpointRowViewModel>[] = [
   {
     id: "endpoint",
-    label: "Endpoint",
+    label: "Data source",
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.path}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.displaySummary}</span>
       </span>
     )
   },
   { id: "family", label: "Family", render: (row) => <span className="text-muted-foreground">{row.familyLabel}</span> },
-  { id: "method", label: "Method", render: (row) => <span className="font-mono text-xs text-foreground">{row.methodLabel}</span> },
-  { id: "payload", label: "Payload", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.countLabel}</span> },
+  { id: "method", label: "Access", render: (row) => <span className="text-xs text-foreground">{row.accessLabel}</span> },
+  { id: "payload", label: "Records", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.countLabel}</span> },
   { id: "latency", label: "Latency", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.latencyLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusLabel}</Badge> }
 ];
@@ -400,11 +400,11 @@ const focusCopy: Record<string, { title: string; description: string }> = {
   },
   "journal-entries": {
     title: "Journal entry workbench",
-    description: "Manual journal entry drafts, line-level Security Master attribution, GL account picks, balancing validation, and approval submission stay endpoint-backed."
+    description: "Manual journal entry drafts, line-level Security Master attribution, GL account picks, balancing validation, and approval submission stay governed."
   },
   "capital-accounts": {
     title: "Capital Account Workbench",
-    description: "Investor-level capital account evidence, allocation rules, statement lineage, restatement support, and audit drill-throughs stay endpoint-backed."
+    description: "Investor-level capital account evidence, allocation rules, statement lineage, restatement support, and audit drill-throughs stay governed."
   },
   reconciliation: {
     title: "Reconciliation queue",
@@ -1177,7 +1177,7 @@ function AccountingApprovalsWorkstream() {
         <div className="min-w-0">
           <p className="eyebrow-label">Approvals</p>
           <h3 id="accounting-approvals-heading" className="workspace-section-title">Approval queue and audit gate</h3>
-          <p className="workspace-section-summary">Close approvals, missing evidence, signer context, and audit history come from the shared operations-continuity workflow payload.</p>
+          <p className="workspace-section-summary">Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.</p>
         </div>
         <Button type="button" size="sm" variant="outline" disabled={loading} busy={loading} busyLabel="Refreshing approvals" onClick={() => void refreshWorkflows()}>
           <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
@@ -2072,7 +2072,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 <div className="eyebrow-label">Multi-asset coverage</div>
                 <CardTitle className="mt-2 text-base">Accounting, reconciliation, and close readiness</CardTitle>
                 <CardDescription>
-                  Asset-class readiness is supplied by the shared portfolio coverage endpoint and rendered without Accounting-local rules.
+                  Asset-class readiness is supplied by portfolio coverage evidence and rendered without Accounting-local rules.
                 </CardDescription>
               </div>
               <Badge variant={multiAssetCoveragePanel.statusTone === "default" ? "outline" : multiAssetCoveragePanel.statusTone}>
@@ -2407,7 +2407,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 ))}
               </Tabs>
               <p className="text-xs text-muted-foreground">
-                Matching, tolerance, validation, and case-state decisions remain in the shared reconciliation services; this view only renders endpoint-supplied read models.
+                Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
               </p>
             </CardContent>
           </Card>
@@ -3809,7 +3809,7 @@ function ReferenceDataWorkbenchPanel({
           </div>
           <div className="min-w-0 lg:max-w-[32rem]">
             <ToolbarStrip
-              ariaLabel="Reference data endpoint coverage metrics"
+              ariaLabel="Reference data source coverage metrics"
               items={view.metrics.map((metric) => ({
                 id: metric.id,
                 label: metric.label,
@@ -3883,7 +3883,7 @@ function ReferenceDataWorkbenchPanel({
                 </div>
               ) : (
                 <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Reference endpoint detail</div>
+                  <div className="eyebrow-label">Reference data detail</div>
                   <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>
@@ -4129,7 +4129,7 @@ function InstrumentPassportPanel({ view }: { view: InstrumentPassportViewState }
               eyebrow="Passport summary"
               title={view.securityId}
               subtitle="Identifiers, trust, pricing, and usage"
-              description="Endpoint-backed instrument passport evidence for the selected Security Master record."
+              description="Instrument passport evidence for the selected Security Master record."
               ariaLabel={`Instrument passport summary for ${view.securityId}`}
               status={<Badge variant={view.statusBadgeVariant} dot>{view.statusLabel}</Badge>}
               fields={view.fields.map((field) => ({ label: field.label, value: field.value }))}
@@ -7104,7 +7104,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <h4 className="text-sm font-semibold text-foreground">Lifecycle controls</h4>
-                <p className="text-xs text-muted-foreground">Approve, post, reverse, rebook, and close-lock actions call the shared journal-entry lifecycle endpoint.</p>
+                <p className="text-xs text-muted-foreground">Approve, post, reverse, rebook, and close-lock actions follow the journal-entry lifecycle controls.</p>
               </div>
               <Badge variant={view.draft.status === "Posted" || view.draft.status === "CloseLocked" ? "success" : view.draft.status === "Rejected" || view.draft.status === "NeedsFix" ? "danger" : view.draft.status === "Submitted" || view.draft.status === "Approved" ? "warning" : "outline"} dot>
                 {view.statusLabel}
@@ -8392,7 +8392,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               <Network className="h-5 w-5 text-primary" />
               Journal templates and preview
             </CardTitle>
-            <CardDescription>Preview uses shared accounting configuration endpoints and does not persist journal entries.</CardDescription>
+            <CardDescription>Preview uses accounting configuration services and does not persist journal entries.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">

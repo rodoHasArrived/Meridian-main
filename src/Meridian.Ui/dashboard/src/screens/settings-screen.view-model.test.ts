@@ -1468,7 +1468,7 @@ describe("buildSettingsScreenViewModel", () => {
 
     expect(result.current.actionMessage).toBe("One or more validation errors occurred.");
     expect(result.current.statusDetails).toEqual([
-      "Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.",
+      "Meridian service returned 422. Open diagnostics for technical details.",
       "secretKey: Secret key must include the paper account scope."
     ]);
     expect(result.current.statusRole).toBe("alert");

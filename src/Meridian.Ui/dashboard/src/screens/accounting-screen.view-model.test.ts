@@ -4881,7 +4881,7 @@ describe("accounting-screen view model", () => {
       ])
     }));
     expect(result.current.tenantAdministrationProfile.sandboxStatusText)
-      .toBe("Implementation sandbox proof retained; readiness refreshed from fixture and ledger-book validation evidence.");
+      .toBe("Implementation sandbox proof retained; readiness refreshed from validation and ledger-book evidence.");
 
     act(() => {
       result.current.tenantAdministrationProfile.updateControl("operator-surface", true);
@@ -8176,7 +8176,7 @@ describe("accounting-screen view model", () => {
       errorText: "Fund account is required."
     });
     expect(trialBalanceState.errorDetails).toEqual([
-      "Endpoint returned 422 for /api/workstation/governance/trial-balance.",
+      "Meridian service returned 422. Open diagnostics for technical details.",
       "Validation failed",
       "Fund account: Select a fund account before loading accounting evidence."
     ]);
@@ -8471,6 +8471,8 @@ describe("accounting-screen view model", () => {
     expect(view.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({
         rowId: "reference-data-bond-reference",
+        accessLabel: "Read-only",
+        displaySummary: "1 fields returned.",
         statusLabel: "Ready",
         statusBadgeVariant: "success",
         countLabel: "1 record",
@@ -8478,13 +8480,16 @@ describe("accounting-screen view model", () => {
       }),
       expect.objectContaining({
         rowId: "reference-data-option-chain-import",
+        accessLabel: "Write-capable",
+        displaySummary: "option chain import source catalogued; not invoked by this read-only workbench.",
         statusLabel: "Deferred",
         statusBadgeVariant: "outline"
       })
     ]));
     expect(view.selectedDetail).toMatchObject({
       title: "Bond reference",
-      subtitle: "GET /api/reference-data/bonds/sec-1",
+      subtitle: "Reference data source: Bonds",
+      description: "1 fields returned.",
       responsePreview: "{\n  \"couponRate\": 5.25\n}"
     });
   });
@@ -8532,7 +8537,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.instrumentPassport).toBeNull();
     expect(result.current.instrumentPassportView).toMatchObject({
       errorText: "Passport provider unavailable.",
-      errorDetails: ["Endpoint returned 503 for /api/workstation/security-master/securities/sec-1/passport."]
+      errorDetails: ["Meridian service returned 503. Open diagnostics for technical details."]
     });
   });
 
@@ -8690,7 +8695,7 @@ describe("accounting-screen view model", () => {
 
     expect(failed.searchErrorText).toBe("Security search failed: Search feed is offline.");
     expect(failed.searchErrorDetails).toEqual([
-      "Endpoint returned 503 for /api/security-master/search.",
+      "Meridian service returned 503. Open diagnostics for technical details.",
       "Provider unavailable"
     ]);
     expect(failed.statusAnnouncement).toBe("Security search failed: Search feed is offline.");
@@ -8753,7 +8758,7 @@ describe("accounting-screen view model", () => {
 
     await waitFor(() => expect(result.current.conflictsErrorText).toBe("Conflict API offline"));
     expect(result.current.conflictsErrorDetails).toEqual([
-      "Endpoint returned 503 for /api/workstation/security-master/conflicts."
+      "Meridian service returned 503. Open diagnostics for technical details."
     ]);
     expect(result.current.conflictRefreshCommand).toMatchObject({
       label: "Retry conflicts",
@@ -9089,13 +9094,13 @@ describe("accounting-screen view model", () => {
         id: "preview",
         label: "Preview report",
         href: "/api/export/preview",
-        ariaLabel: "Open GET /api/export/preview for Preview report"
+        ariaLabel: "Open Preview report service reference"
       },
       {
         id: "formats",
         label: "List export formats",
         href: "/api/export/formats",
-        ariaLabel: "Open GET /api/export/formats for List export formats"
+        ariaLabel: "Open List export formats service reference"
       }
     ]);
   });

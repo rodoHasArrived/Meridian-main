@@ -433,7 +433,7 @@ describe("validateQuickTicket", () => {
         limitPrice: "",
         phase: "error",
         message: "Insufficient buying power",
-        details: ["Endpoint returned 409 for /api/orders."],
+        details: ["Meridian service returned 409. Open diagnostics for technical details."],
         orderId: null,
         acknowledged: false
       },
@@ -620,7 +620,7 @@ describe("useQuickTradeTicket", () => {
     expect(result.current.ticket.phase).toBe("error");
     expect(result.current.ticket.message).toBe("Quantity exceeds configured order limit.");
     expect(result.current.ticket.details).toEqual([
-      "Endpoint returned 422 for /api/orders.",
+      "Meridian service returned 422. Open diagnostics for technical details.",
       "Order validation failed",
       "quantity: Reduce the share count before resubmitting."
     ]);
@@ -1241,7 +1241,7 @@ describe("LiveQuotesScreen quick trade", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Order router is offline.");
-    expect(within(alert).getByText("Endpoint returned 503 for /api/orders.")).toBeInTheDocument();
+    expect(within(alert).getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("Execution service unavailable")).toBeInTheDocument();
     expect(within(alert).getByText("routing: Reconnect the execution provider before retrying this order.")).toBeInTheDocument();
   });

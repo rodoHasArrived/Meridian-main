@@ -789,8 +789,8 @@ export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
   },
   {
     kind: "custom",
-    label: "Custom endpoint",
-    description: "Connect a custom or internal data provider via REST endpoint.",
+    label: "Custom data connection",
+    description: "Connect a custom or internal data provider using its service URL.",
     needsApiKey: true,
     needsApiSecret: false,
     needsEndpoint: true,
@@ -1848,7 +1848,7 @@ export function buildDataLoadingState(
     description: backfillFocus
       ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
       : "Waiting for provider posture, market data health, and export evidence.",
-    statusLabel: "Bootstrap pending",
+    statusLabel: "Workspace data pending",
     detail: backfillFocus
       ? "Queued and review-required jobs will appear here as soon as workspace data is available."
       : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
@@ -3018,10 +3018,10 @@ function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): D
     },
     {
       id: "endpoint-reachable",
-      label: "Endpoint reachable",
+      label: "Provider connection reachable",
       status: endpointPass ? "pass" : "pending",
       statusLabel: endpointPass ? "Pass" : "Placeholder",
-      detail: record.trustSnapshot ? `${Math.round(record.trustSnapshot.score)}% trust snapshot` : "Provider-specific endpoint probes are not part of this MVP."
+      detail: record.trustSnapshot ? `${Math.round(record.trustSnapshot.score)}% trust snapshot` : "Provider-specific connection checks are not part of this MVP."
     },
     {
       id: "quote-test",
@@ -4332,11 +4332,11 @@ export function validateProviderSetupForm(form: ProviderSetupFormState): string 
   }
 
   if (meta?.needsEndpoint && !form.endpoint.trim()) {
-    return `An endpoint URL is required for ${meta.label ?? "this provider"}.`;
+    return `A service URL is required for ${meta.label ?? "this provider"}.`;
   }
 
   if (meta?.needsEndpoint && !isValidEndpointUrl(form.endpoint)) {
-    return `Enter a valid http or https endpoint URL for ${meta.label ?? "this provider"}.`;
+    return `Enter a valid http or https service URL for ${meta.label ?? "this provider"}.`;
   }
 
   if (form.environment === "live" && !form.liveAcknowledged) {
@@ -4659,7 +4659,7 @@ export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): Prov
     {
       id: "connect-source",
       label: "Connect Source",
-      description: "Register provider credentials, endpoint, environment, and capability intent.",
+      description: "Register provider credentials, service URL, environment, and capability intent.",
       status: connected ? "complete" : "current",
       statusLabel: connected ? "Connected" : "Current"
     },
@@ -4766,9 +4766,9 @@ export function buildProviderSetupSummary(
     ? [
         meta.needsApiKey ? providerSetupApiKeyLabel(meta) : null,
         meta.needsApiSecret ? providerSetupApiSecretSummaryLabel(meta) : null,
-        meta.needsEndpoint ? "endpoint URL" : null
+        meta.needsEndpoint ? "service URL" : null
       ].filter(Boolean).join(" + ") || "No credentials required"
-    : "Depends on custom endpoint";
+    : "Depends on custom data connection";
   const capabilityText = form.capabilities.length > 0
     ? form.capabilities.map(formatProviderCapabilityLabel).join(", ")
     : "No capabilities selected";
@@ -4982,8 +4982,8 @@ function buildProviderCredentialFields(
   if (meta?.needsEndpoint) {
     fields.push({
       id: "provider-setup-endpoint",
-      label: "Endpoint URL",
-      ariaLabel: "Provider endpoint URL",
+      label: "Service URL",
+      ariaLabel: "Provider service URL",
       field: "endpoint",
       type: "url",
       value: form.endpoint,
