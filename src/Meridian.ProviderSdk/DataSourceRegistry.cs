@@ -115,6 +115,9 @@ public sealed class DataSourceRegistry
                 if (!typeof(IProviderModule).IsAssignableFrom(type))
                     continue;
 
+                if (type.GetConstructor(Type.EmptyTypes) is null)
+                    continue;
+
                 if (Activator.CreateInstance(type) is not IProviderModule module)
                     continue;
 

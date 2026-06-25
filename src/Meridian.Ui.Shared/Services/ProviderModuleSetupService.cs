@@ -256,7 +256,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(ex, "Connection probe threw for module {ModuleId}", moduleId);
+                _logger.LogWarning(ex, "Connection probe threw for module {ModuleId}", moduleId.Replace('\n', ' ').Replace('\r', ' '));
                 return new ProviderModuleTestResult(false, true, false, ex.Message);
             }
         }
