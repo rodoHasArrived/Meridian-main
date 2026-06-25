@@ -1860,7 +1860,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
       setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
-      setFinancialOperationsCommandCenterError(formatApprovalError(error, "Financial Operations command center could not be loaded."));
     } finally {
       setCloseWorkflowLoading(false);
       setFinancialOperationsCommandCenterLoading(false);
