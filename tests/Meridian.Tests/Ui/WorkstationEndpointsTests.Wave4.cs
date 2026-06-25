@@ -1459,7 +1459,7 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var package = await response.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
         package.Should().NotBeNull();
-        package!.FinancialStatements.PackageId.Should().Be("accounting-report-package-fund-alpha-2026-07");
+        package!.FinancialStatements.PackageId.Should().Be("accounting-report-package-fund-alpha-2026-07-tenant-tenant-test-company-tenant-test");
         package.FinancialStatements.StatementIds.Should().Contain(["balance-sheet", "income-statement", "trial-balance"]);
         package.InvestorCapitalStatements.Should().ContainSingle(statement =>
             statement.CapitalAccountId == "capital-account-lp-1" &&
@@ -1661,7 +1661,7 @@ public sealed partial class WorkstationEndpointsTests
         ready.Should().NotBeNull();
         ready!.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
         var genericCertificationEvidence = $"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:{ready.FinancialStatements.PeriodId}";
-        var certificationEvidence = $"{genericCertificationEvidence}:book:{ledgerBookId:D}";
+        var certificationEvidence = $"{genericCertificationEvidence}:tenant:tenant-test:company:tenant-test:book:{ledgerBookId:D}";
 
         using var assistantCertifyResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackageCertification,
@@ -1909,7 +1909,7 @@ public sealed partial class WorkstationEndpointsTests
         var draft = await buildResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
         draft.Should().NotBeNull();
         draft!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
-        var certificationEvidence = $"evidence:report-certification:controller-approval:{draft.FinancialStatements.PackageId}:{draft.Certification.CertificationId}:{draft.FinancialStatements.PeriodId}:book:{ledgerBookId:D}";
+        var certificationEvidence = $"evidence:report-certification:controller-approval:{draft.FinancialStatements.PackageId}:{draft.Certification.CertificationId}:{draft.FinancialStatements.PeriodId}:tenant:tenant-test:company:tenant-test:book:{ledgerBookId:D}";
 
         using var certifyResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackageCertification,
@@ -1984,16 +1984,19 @@ public sealed partial class WorkstationEndpointsTests
             issue.Code == "LateAdjustmentApprovalPending" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 
-        using var reviewResponse = await client.PostAsJsonAsync(
-            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
-            new ReviewLateAdjustmentRequestDto(
+        using var reviewRequest = new HttpRequestMessage(HttpMethod.Post, UiApiRoutes.LedgerCloseManagementLateAdjustmentReview)
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(new ReviewLateAdjustmentRequestDto(
                 workflowId,
                 adjustment.RequestId,
                 ManualJournalEntryStatusDto.Approved,
                 "browser-user",
                 "Controller approval retained before report certification.",
                 EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}:nav-true-up-approval"]),
-            ServerJsonOptions);
+                options: ServerJsonOptions)
+        };
+        reviewRequest.Headers.Add("X-Meridian-Test-User", "controller-user");
+        using var reviewResponse = await client.SendAsync(reviewRequest);
         reviewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         using var reviewedPackageResponse = await client.PostAsJsonAsync(
@@ -2054,7 +2057,7 @@ public sealed partial class WorkstationEndpointsTests
                     Currency: "usd",
                     Reason: "Retained material close adjustment.",
                     RequestedBy: "browser-user",
-                    EvidenceLinks: ["evidence:close:durable-late-adjustment"]),
+                    EvidenceLinks: [$"evidence:late-adjustment:workflow:{workflowId:D}:period:2026-07:durable-request"]),
                 ServerJsonOptions);
             adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -2102,7 +2105,7 @@ public sealed partial class WorkstationEndpointsTests
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var packages = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         packages.Should().ContainSingle(row =>
-            row.FinancialStatements.PackageId == "accounting-report-package-fund-alpha-2026-07" &&
+            row.FinancialStatements.PackageId == "accounting-report-package-fund-alpha-2026-07-tenant-tenant-test-company-tenant-test" &&
             row.InvestorCapitalStatements.Single().EndingCapital == 111_500m);
     }
 

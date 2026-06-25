@@ -1,8 +1,13 @@
 using FluentAssertions;
+using Meridian.Core.Config;
+using Meridian.Domain.Collectors;
+using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk;
+using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Providers;
@@ -47,9 +52,19 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     }
 
     [Fact]
-    public void Descriptors_with_capabilities_are_resolvable_from_registration_paths()
+    public async Task Descriptors_with_capabilities_are_resolvable_from_registration_paths()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddHttpClient();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton(new AlpacaOptions(
+            KeyId: "AKTESTDESCRIPTOR0001",
+            SecretKey: "descriptor-secret-for-di-tests"));
+        services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
+        services.AddSingleton<QuoteCollector>();
+        services.AddSingleton<TradeDataCollector>();
+
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
             foreach (var implementation in descriptor.Implementations())
@@ -59,7 +74,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         }
 
         RegisterInterfacesFromDescriptors(services);
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {

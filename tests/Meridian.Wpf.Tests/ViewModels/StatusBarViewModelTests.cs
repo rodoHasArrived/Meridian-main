@@ -59,7 +59,7 @@ public sealed class StatusBarViewModelTests
             QueueCapacity = 1_000
         };
 
-        StatusBarViewModel.FormatPipelineQueue(pipeline).Should().Be("Queue: 250/1,000 (25%)");
+        StatusBarViewModel.FormatPipelineQueue(pipeline).Should().Be("Background work: 250/1,000 (25%)");
     }
 
     [Theory]
@@ -138,7 +138,7 @@ public sealed class StatusBarViewModelTests
         xaml.Should().Contain("StatusBarPipelineQueueLabel");
         xaml.Should().Contain("{Binding PipelineQueueLabel}");
         xaml.Should().Contain("{Binding PipelineQueueBrush}");
-        xaml.Should().Contain("AutomationProperties.Name=\"Pipeline queue\"");
+        xaml.Should().Contain("AutomationProperties.Name=\"Background work queue\"");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

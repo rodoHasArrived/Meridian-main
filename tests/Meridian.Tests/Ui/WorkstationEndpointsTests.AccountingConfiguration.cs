@@ -2393,7 +2393,9 @@ public sealed partial class WorkstationEndpointsTests
                     ["evidenceLinks"] = $"source:shared-capital-call-{suffix}",
                     ["automatedJournalStatus"] = "Posted",
                     ["automatedJournalApprovalId"] = "approval:shared-capital-call",
-                    ["approvedBy"] = "controller"
+                    ["approvedBy"] = "controller",
+                    ["tenantId"] = "tenant-test",
+                    ["companyId"] = "tenant-test"
                 }));
     }
 

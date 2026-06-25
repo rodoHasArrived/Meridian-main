@@ -164,7 +164,7 @@ public sealed class AccountingWorkspaceShellPageTests
 
         steps.Select(step => step.Label)
             .Should()
-            .Equal("Receive Activity", "Match Records", "Resolve Exceptions", "Approve Results", "Produce Evidence");
+            .Equal("Receive Activity", "Match Records", "Resolve Review Items", "Approve Results", "Produce Evidence");
         steps.Select(step => step.TargetPageTag)
             .Should()
             .Equal("SwitchContext", "FundLedger", "FundReconciliation", "AccountingApprovals", "FundAuditTrail");

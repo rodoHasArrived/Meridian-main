@@ -175,11 +175,20 @@ public sealed class DirectLendingOutboxDispatcherTests
         queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([sourceEvent]);
         queryService.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns([existingJournal]);
         queryService.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(BuildLoanContract(loanId));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var message = BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate);
+        operationsStore
+            .GetPendingOutboxMessagesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([message]);
+        operationsStore
+            .MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(_ => cts.Cancel());
 
-        await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
+        await InvokeExecuteAsync(dispatcher, cts.Token);
 
         await operationsStore.DidNotReceiveWithAnyArgs().SaveJournalEntryAsync(default!, default);
-        await operationsStore.Received(1).MarkOutboxProcessedAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await operationsStore.Received(1).MarkOutboxProcessedAsync(message.OutboxMessageId, Arg.Any<CancellationToken>());
         await operationsStore.DidNotReceiveWithAnyArgs().MarkOutboxFailedAsync(default, default!, default);
     }
 
@@ -381,6 +390,14 @@ public sealed class DirectLendingOutboxDispatcherTests
         var processAsync = typeof(DirectLendingOutboxDispatcher).GetMethod("ProcessAsync", BindingFlags.Instance | BindingFlags.NonPublic);
         processAsync.Should().NotBeNull();
         var task = (Task)processAsync!.Invoke(dispatcher, [message, CancellationToken.None])!;
+        await task;
+    }
+
+    private static async Task InvokeExecuteAsync(DirectLendingOutboxDispatcher dispatcher, CancellationToken cancellationToken)
+    {
+        var executeAsync = typeof(DirectLendingOutboxDispatcher).GetMethod("ExecuteAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        executeAsync.Should().NotBeNull();
+        var task = (Task)executeAsync!.Invoke(dispatcher, [cancellationToken])!;
         await task;
     }
 

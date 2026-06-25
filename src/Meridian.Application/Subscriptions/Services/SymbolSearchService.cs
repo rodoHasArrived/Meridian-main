@@ -253,6 +253,14 @@ public sealed class SymbolSearchService : IDisposable
         return response;
     }
 
+    private static string NormalizeSymbolKey(string symbol)
+        => symbol.Trim().ToUpperInvariant();
+
+    private static SymbolSearchResult NormalizeResultSymbol(SymbolSearchResult result)
+        => result.Symbol == result.Symbol.Trim()
+            ? result
+            : result with { Symbol = result.Symbol.Trim().ToUpperInvariant() };
+
     /// <summary>
     /// Get detailed information about a specific symbol.
     /// </summary>

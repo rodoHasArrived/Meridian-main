@@ -232,6 +232,8 @@ public sealed class StrategyDesignerWorkstationEndpointsTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "strategy-operator";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "strategy-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "strategy-test-tenant";
             await next();
         });
         app.MapWorkstationEndpoints(ServerJsonOptions);

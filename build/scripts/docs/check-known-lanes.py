@@ -17,7 +17,7 @@ KNOWN = {
 
 FILES = [
     pathlib.Path("README.md"),
-    pathlib.Path("docs/developer/build-test-run.md"),
+    pathlib.Path("archive/docs/developer/build-test-run.md"),
     pathlib.Path(".github/workflows/README.md"),
 ]
 

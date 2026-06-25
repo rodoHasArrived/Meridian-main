@@ -24,7 +24,7 @@ public sealed class WorkstationContractSnapshotTests
     {
         var descriptor = BuildDescriptor();
         var actualHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(descriptor)));
-        var approvedHash = "DEE1D9396E74FB9202798AB08849C13498E0C99B8143065198953CD2AB98C48B4";
+        var approvedHash = "72ECA2A888AF268DE15C2FD9AFFB012775EF72D3D44ED19CE9E573F91AAFDE5E";
         Assert.Equal(approvedHash, actualHash);
     }
 
@@ -63,22 +63,27 @@ public sealed class WorkstationContractSnapshotTests
         var sb = new StringBuilder();
         foreach (var type in DashboardCriticalContractTypes.OrderBy(static t => t.FullName, StringComparer.Ordinal))
         {
-            sb.AppendLine(type.FullName);
+            AppendSnapshotLine(sb, type.FullName ?? type.Name);
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                          .OrderBy(static p => p.Name, StringComparer.Ordinal))
             {
-                sb.Append(property.Name).Append(':').AppendLine(property.PropertyType.FullName ?? property.PropertyType.Name);
+                AppendSnapshotLine(sb, $"{property.Name}:{property.PropertyType.FullName ?? property.PropertyType.Name}");
             }
 
             if (type.IsEnum)
             {
                 foreach (var name in Enum.GetNames(type).OrderBy(static x => x, StringComparer.Ordinal))
                 {
-                    sb.Append("enum:").AppendLine(name);
+                    AppendSnapshotLine(sb, $"enum:{name}");
                 }
             }
         }
 
         return sb.ToString();
+    }
+
+    private static void AppendSnapshotLine(StringBuilder sb, string value)
+    {
+        sb.Append(value).Append('\n');
     }
 }

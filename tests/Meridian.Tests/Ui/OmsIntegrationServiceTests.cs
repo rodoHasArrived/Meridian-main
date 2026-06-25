@@ -152,7 +152,10 @@ public sealed class OmsIntegrationServiceTests
         app.UseRouting();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "oms-operator";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "oms-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "oms-test-tenant";
             await next();
         });
         app.MapOmsIntegrationEndpoints(JsonOptions());
