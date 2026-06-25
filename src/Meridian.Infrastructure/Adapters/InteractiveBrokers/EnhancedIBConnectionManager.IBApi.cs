@@ -807,7 +807,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Dropping malformed option computation tick for tickerId {TickerId}.", tickerId);
+            _log.Warning(ex, "Dropping malformed option computation tick for tickerId {TickerId}.", tickerId);
         }
     }
 

@@ -209,9 +209,8 @@ public sealed class SymbolSearchService : IDisposable
 
         // Deduplicate by symbol, keeping highest score
         var deduped = allResults
-            .Select(NormalizeResultSymbol)
-            .GroupBy(r => r.Symbol, StringComparer.OrdinalIgnoreCase)
-            .Select(g => g.OrderByDescending(r => r.MatchScore).First())
+            .GroupBy(r => NormalizeSymbolKey(r.Symbol))
+            .Select(g => NormalizeResultSymbol(g.OrderByDescending(r => r.MatchScore).First()))
             .OrderByDescending(r => r.MatchScore)
             .Take(request.Limit)
             .ToList();
