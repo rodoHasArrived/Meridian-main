@@ -267,6 +267,25 @@ vi.mock("@/lib/api", async () => {
     }),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
+    getFinancialOperationsCommandCenter: vi.fn().mockResolvedValue({
+      generatedAtUtc: "2026-06-01T12:00:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      fundAccountId: "fund-alpha",
+      periodId: "2026-05",
+      status: "ReviewRequired",
+      isReadyToComplete: false,
+      summary: "Financial Operations command center is ready for workflow review.",
+      activeItemCount: 1,
+      blockedItemCount: 0,
+      reviewItemCount: 1,
+      metrics: [],
+      queueRows: [],
+      activeWorkflow: null,
+      closeCalendar: null,
+      privateCapitalCloseCockpit: null,
+      closeSupportDecision: null
+    }),
     approveOperationsContinuityWorkflow: vi.fn(),
     rejectOperationsContinuityWorkflow: vi.fn(),
     getSecurityInstrumentPassport: vi.fn().mockResolvedValue(null),
@@ -1458,7 +1477,7 @@ async function renderAccountingScreen(
 }
 
 describe("AccountingScreen", () => {
-  it("renders actionable Accounting loading work while workstation payloads bootstrap", async () => {
+  it("renders actionable Accounting loading work while workspace data loads", async () => {
     renderWithRouter(<AccountingScreen data={null} />, { initialEntries: ["/accounting/reconciliation"] });
     await waitForAsyncEffects();
 
@@ -3854,7 +3873,7 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByText("No reconciliation runs are available for this accounting scope.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "No reconciliation run selected" })).toHaveTextContent(
-      "Reconciliation evidence is unavailable until the workspace payload includes at least one run."
+      "Reconciliation evidence is unavailable until workspace data includes at least one run."
     );
   });
 

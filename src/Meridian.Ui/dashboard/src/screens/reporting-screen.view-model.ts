@@ -941,7 +941,7 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
   return {
     regionLabel: "Report-pack publication review",
     title: "Publication review",
-    description: "Signed-off publication metadata stays aligned with the shared backend report-pack DTO.",
+    description: "Signed-off publication metadata stays aligned with shared report-pack review data.",
     statusLabel: selected?.state ?? "No publication",
     statusVariant: selected ? "success" : "outline",
     summaryText: publication
@@ -1174,7 +1174,7 @@ function buildTemplateLastAuditSummary(template: ReportingTemplateMetadata): str
   const auditTrail = template.auditTrail ?? [];
   const last = auditTrail[auditTrail.length - 1];
   if (!last) {
-    return "No template audit events retained in payload";
+    return "No template audit events retained yet";
   }
 
   return `${last.action} ${last.fromStatus}->${last.toStatus} by ${last.actor} at ${formatTimestamp(last.at)}`;
@@ -1993,14 +1993,14 @@ function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null)
   if (!audit) {
     return {
       evaluationScope: "Unavailable",
-      summary: "Reporting access audit evidence is not available for this payload.",
+      summary: "Reporting access audit evidence is not available for this report view.",
       principalScopes: ["scope:unavailable"],
       scopeLabel: "scope:unavailable",
       hiddenTotalLabel: "0 hidden",
       postureLabel: "Unknown",
       postureVariant: "outline",
       countRows: buildAccessAuditCountRows(),
-      denialReasons: ["The server did not include aggregate access-audit counts for this Reporting payload."],
+      denialReasons: ["Access-audit counts are not available for this Reporting view."],
       hasDenialReasons: true,
       ariaLabel: "Reporting access audit unavailable"
     };
@@ -2092,7 +2092,7 @@ function buildWorkflowTaskPanel({
     eyebrow: "Workflow task",
     title: "Report-pack approval",
     description:
-      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the backend export before approval.",
+      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the governed export before approval.",
     statusLabel,
     statusTone,
     statusVariant: workflowStatusVariant(statusTone),
@@ -2100,7 +2100,7 @@ function buildWorkflowTaskPanel({
       { label: "Recipients", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
       { label: "Ready profiles", value: String(readyProfiles) },
-      { label: "Backend", value: EXPORT_API_ENDPOINTS.reportPacks }
+      { label: "Export service", value: EXPORT_API_ENDPOINTS.reportPacks }
     ],
     targetsLabel: "Report-pack distribution recipients",
     targets: packTargets,
@@ -2155,7 +2155,7 @@ function buildWorkflowTaskPanel({
     hasActions: selectedProfileActions.length > 0,
     actionsEmptyText: "Select a report-pack profile before previewing or running export analysis.",
     actionsEmptyAriaLabel: "No selected report-pack export actions",
-    backendLinksLabel: "Report-pack backend endpoints",
+    backendLinksLabel: "Report-pack export service links",
     backendPanelId: REPORT_PACK_PROFILE_BACKEND_ID,
     publicationReview: buildPublicationReviewPanel(reporting.workflowRecords ?? []),
     restatementReview: buildRestatementReviewPanel(reporting.workflowRecords ?? []),
@@ -2328,18 +2328,18 @@ function buildProfileActions(
     ? `${profile.name} export is running. Wait for the result before starting another export.`
     : evidenceDisabledReason
       ? evidenceDisabledReason
-      : "Runs the governed export through the backend mutation and reports generated artifacts here.";
+      : "Runs the governed export service and reports generated artifacts here.";
 
   return [
     {
       id: "preview",
-      label: "Preview payload",
+      label: "Preview export",
       href: exportPreviewEndpoint(profile.id),
       variant: "outline",
-      ariaLabel: `Preview ${profile.name} export payload`,
+      ariaLabel: `Preview ${profile.name} export`,
       describedById: buildProfileActionDescriptionId(profile.id, "preview", surface),
-      statusText: "Opens the current export payload preview in a new browser tab.",
-      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusText: "Opens the current export preview in a new browser tab.",
+      descriptionText: "Opens the current export preview in a new browser tab.",
       statusBadgeLabel: "GET",
       statusBadgeAriaLabel: `${profile.name} export preview uses GET`,
       statusBadgeVariant: "outline",

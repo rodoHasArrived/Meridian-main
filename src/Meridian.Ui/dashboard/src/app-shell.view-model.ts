@@ -438,12 +438,12 @@ function buildTrustStripState({
         : "review";
 
   const dataSourceValue = usingDevelopmentFixtures
-    ? "Demo fixtures"
+    ? "Demo data"
     : bootstrapFailed
       ? "Unavailable"
       : failedWorkspaceCount > 0
-        ? "Partial host"
-        : "Local host";
+        ? "Limited data"
+        : "Connected";
   const dataSourceTone: AppShellTrustStripTone = usingDevelopmentFixtures
     ? "pending"
     : bootstrapFailed
@@ -452,12 +452,12 @@ function buildTrustStripState({
         ? "review"
         : "ready";
   const dataSourceDetail = usingDevelopmentFixtures
-    ? "No-host fixture payloads are visible; do not treat this as live operational readiness."
+    ? "Demo data is visible; confirm live source status before making operating decisions."
     : bootstrapFailed
-      ? "No workstation payloads loaded from the local API host."
+      ? "Workspace data is unavailable from this machine. Try again or open diagnostics."
       : failedWorkspaceCount > 0
-        ? `${formatCount(failedWorkspaceCount, "workspace slice")} failed during bootstrap.`
-        : "Workspace payloads are coming from the local API host.";
+        ? `${formatCount(failedWorkspaceCount, "workspace area")} did not load.`
+        : "Workspace data loaded from Meridian.";
 
   return {
     ariaLabel: "Workstation build, mode, data source, and provider posture",
@@ -466,9 +466,9 @@ function buildTrustStripState({
         id: "build",
         label: "Build",
         value: `v${packageJson.version}`,
-        detail: "Browser workstation bundle version.",
+        detail: "Current Meridian web release.",
         tone: "ready",
-        ariaLabel: `Build ${packageJson.version}. Browser workstation bundle version.`,
+        ariaLabel: `Build ${packageJson.version}. Current Meridian web release.`,
         href: null,
         actionLabel: null
       },
@@ -523,9 +523,9 @@ function buildProviderTrustStripItem(data: DataWorkspaceResponse | null): AppShe
       id: "providers",
       label: "Providers",
       value: "No providers",
-      detail: "No provider posture rows are available in the current workstation payload.",
+      detail: "No provider status rows are available in the current workspace data.",
       tone: "review",
-      ariaLabel: "Providers No providers. No provider posture rows are available in the current workstation payload.",
+      ariaLabel: "Providers No providers. No provider status rows are available in the current workspace data.",
       href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       actionLabel: "Configure provider"
     };
@@ -635,12 +635,12 @@ export function buildDevelopmentFixtureNoticeViewModel({
     role: "status",
     ariaLive: "polite",
     title: "Demo data",
-    detail: "Showing local fixture responses because the Meridian API host is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
+    detail: "Showing demo data because live Meridian data is unavailable; use the evidence path for watchlist, quotes, readiness, and Alpaca setup.",
     workflowLabel: "Evidence path",
     retryLabel: refreshing ? "Retrying live data" : "Retry live data",
     retryAriaLabel: refreshing
-      ? "Retrying Meridian API host and live workstation data"
-      : "Retry Meridian API host and reload live workstation data",
+      ? "Retrying live Meridian workspace data"
+      : "Retry live Meridian workspace data",
     retryDisabled: refreshing,
     retryBusy: refreshing,
     steps: developmentFixtureDemoSteps.map((item) => ({
@@ -909,8 +909,8 @@ function buildShellStatusPanel({
       titleId: "workstation-shell-status-loading-title",
       detailId: "workstation-shell-status-loading-detail",
       tone: "loading",
-      title: "Booting workstation shell",
-      detail: "Loading session state, operator workspaces, and the initial workstation evidence slices.",
+      title: "Preparing workspace",
+      detail: "Loading session state, operator workspaces, and the initial evidence views.",
       role: "status",
       ariaLive: "polite",
       actionLabel: null,
@@ -918,7 +918,7 @@ function buildShellStatusPanel({
       secondaryActionLabel: null,
       secondaryActionAriaLabel: null,
       secondaryActionHref: null,
-      itemListLabel: "Workspace bootstrap status",
+      itemListLabel: "Workspace data loading status",
       items: [
         {
           key: "session-state",
@@ -928,9 +928,9 @@ function buildShellStatusPanel({
         },
         {
           key: "workspace-payloads",
-          label: "Workspace payloads",
+          label: "Workspace data",
           detail: "Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.",
-          ariaLabel: "Workspace payloads: loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings"
+          ariaLabel: "Workspace data: loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings"
         },
         {
           key: "evidence-slices",
@@ -948,38 +948,38 @@ function buildShellStatusPanel({
       titleId: "workstation-shell-status-failed-title",
       detailId: "workstation-shell-status-failed-detail",
       tone: "danger",
-      title: "Workstation bootstrap failed",
-      detail: error ?? "No workstation payloads loaded. Retry the bootstrap before reviewing operator state.",
+      title: "Workspace data unavailable",
+      detail: formatUserVisibleWorkspaceError(error, "Meridian could not load workspace data. Try again or open diagnostics."),
       role: "alert",
       ariaLive: "assertive",
-      actionLabel: "Retry bootstrap",
-      actionAriaLabel: "Retry workstation bootstrap",
+      actionLabel: "Retry workspace data",
+      actionAriaLabel: "Retry workspace data",
       secondaryActionLabel: null,
       secondaryActionAriaLabel: null,
       secondaryActionHref: null,
-      itemListLabel: "Bootstrap failure details",
+      itemListLabel: "Workspace data issues",
       items: failedItems
     };
   }
 
   if (failedItems.length > 0) {
-    const sliceLabel = failedItems.length === 1 ? "slice" : "slices";
-    const recoveryLabel = failedItems.length === 1 ? "that slice recovers" : "those slices recover";
+    const areaLabel = failedItems.length === 1 ? "area" : "areas";
+    const recoveryLabel = failedItems.length === 1 ? "that area recovers" : "those areas recover";
     return {
       id: "workstation-shell-status-degraded",
       titleId: "workstation-shell-status-degraded-title",
       detailId: "workstation-shell-status-degraded-detail",
       tone: "warning",
-      title: "Workstation bootstrap is partially degraded",
-      detail: `${failedItems.length} workstation ${sliceLabel} failed to load. Available routes remain open while ${recoveryLabel}.`,
+      title: "Some workspace data is unavailable",
+      detail: `${failedItems.length} workspace ${areaLabel} did not load. Available routes remain open while ${recoveryLabel}.`,
       role: "status",
       ariaLive: "polite",
-      actionLabel: "Retry failed slices",
-      actionAriaLabel: "Retry failed workstation slices",
+      actionLabel: "Retry failed areas",
+      actionAriaLabel: "Retry failed workspace areas",
       secondaryActionLabel: "Review diagnostics",
-      secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
+      secondaryActionAriaLabel: "Review Settings diagnostics for failed workspace areas",
       secondaryActionHref: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
-      itemListLabel: "Failed workstation slices",
+      itemListLabel: "Workspace data issues",
       items: failedItems
     };
   }
@@ -992,25 +992,44 @@ function buildShellFailureItems(workspaceErrors: WorkspaceErrorMap, workflowErro
     .map(([key, detail]) => {
       const workspaceKey = key as WorkspaceKey;
       const label = WORKSPACES.find((workspace) => workspace.key === workspaceKey)?.label ?? key;
+      const visibleDetail = formatUserVisibleWorkspaceError(detail, "Workspace data unavailable. Try again or open diagnostics.");
       return {
         key: workspaceKey,
         label,
-        detail: detail || "Workspace request failed.",
-        ariaLabel: `${label}: ${detail || "Workspace request failed."}`
+        detail: visibleDetail,
+        ariaLabel: `${label}: ${visibleDetail}`
       };
     })
     .sort((left, right) => left.label.localeCompare(right.label));
 
   if (workflowError) {
+    const visibleDetail = formatUserVisibleWorkspaceError(workflowError, "Workflow data unavailable. Try again or open diagnostics.");
     items.push({
       key: "workflow-catalog",
       label: "Workflow catalog",
-      detail: workflowError,
-      ariaLabel: `Workflow catalog: ${workflowError}`
+      detail: visibleDetail,
+      ariaLabel: `Workflow catalog: ${visibleDetail}`
     });
   }
 
   return items;
+}
+
+function formatUserVisibleWorkspaceError(error: string | null | undefined, fallback: string): string {
+  const detail = error?.trim();
+  if (!detail) {
+    return fallback;
+  }
+
+  return looksLikeRawTechnicalResponse(detail) ? fallback : detail;
+}
+
+function looksLikeRawTechnicalResponse(value: string): boolean {
+  return /<!doctype\s+html/i.test(value)
+    || /<html(?:\s|>)/i.test(value)
+    || /\bfile not found\b/i.test(value)
+    || /^404(?:\s|$|:|-)/i.test(value)
+    || /\bhttp\s+error\s+404\b/i.test(value);
 }
 
 function normalizeHashTarget(hash: string): string | null {
@@ -1872,7 +1891,7 @@ function buildOperatorFocusViewModel(
   if (context.loading) {
     return {
       summary: "Loading cross-workspace operator posture.",
-      emptyText: "Ranked focus actions will appear after workstation payloads load.",
+      emptyText: "Ranked focus actions will appear after workspace data loads.",
       overflowLabel: null,
       items: [],
       commandItems: []
@@ -1897,7 +1916,7 @@ function buildOperatorFocusViewModel(
   return {
     summary: candidates.length > 0
       ? `${formatCount(candidates.length, "focus item")} across workspaces: ${formatStatusCount(blockedCount, "blocked")} and ${formatStatusCount(reviewCount, "review")}.`
-      : "No cross-workspace blockers in loaded workstation payloads.",
+      : "No cross-workspace blockers in loaded workspace data.",
     emptyText: "Loaded workspaces have no ranked blockers.",
     overflowLabel: overflowCount > 0 ? `+${overflowCount} more focus ${overflowCount === 1 ? "item" : "items"}` : null,
     items: visibleItems,
@@ -2516,7 +2535,7 @@ function buildLinkedContextViewModel(
       primaryActionLabel: null,
       primaryActionHref: null,
       primaryActionAriaLabel: null,
-      emptyText: "Portfolio-aware context links will appear after workstation payloads load.",
+      emptyText: "Portfolio-aware context links will appear after workspace data loads.",
       items: []
     };
   }
@@ -2907,7 +2926,7 @@ function buildEvidenceTimelineViewModel(
   if (context.loading) {
     return {
       summary: "Loading cross-workspace evidence timeline.",
-      emptyText: "Recent audit and workflow events will appear after workstation payloads load.",
+      emptyText: "Recent audit and workflow events will appear after workspace data loads.",
       overflowLabel: null,
       items: []
     };
@@ -2932,8 +2951,8 @@ function buildEvidenceTimelineViewModel(
   return {
     summary: candidates.length > 0 && latest
       ? `${formatCount(candidates.length, "evidence event")} across ${formatCount(workspaceCount, "workspace")}. Latest: ${latest.workspaceLabel} at ${latest.timestampLabel}.`
-      : "No timestamped evidence events in loaded workstation payloads.",
-    emptyText: "Loaded payloads have no timestamped evidence events.",
+      : "No timestamped evidence events in loaded workspace data.",
+    emptyText: "Loaded workspace data has no timestamped evidence events.",
     overflowLabel: overflowCount > 0 ? `+${overflowCount} older ${overflowCount === 1 ? "event" : "events"}` : null,
     items: visibleItems
   };

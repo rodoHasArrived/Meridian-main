@@ -51,6 +51,11 @@ Use the GitHub-hosted targeted lane as the preferred remote proof tool before re
 scripts. The .NET lane requires a repo-relative test project under `tests/` and a non-empty
 `dotnet_filter` with a positive class, method, trait, or fully qualified name selector; leave
 solution-level, negative-only, and broad CI filters on the normal CI workflow.
+After timed-out generation, build, or test attempts, run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+validation.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `

@@ -71,6 +71,11 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         root.GetProperty("eventPipeline").GetProperty("isWalEnabled").GetBoolean().Should().BeFalse();
         root.GetProperty("eventPipeline").GetProperty("isValidationEnabled").GetBoolean().Should().BeFalse();
         root.GetProperty("eventPipeline").GetProperty("isDeduplicationEnabled").GetBoolean().Should().BeFalse();
+        var pipelineHealth = root.GetProperty("eventPipelineHealth");
+        pipelineHealth.GetProperty("operationName").GetString().Should().Be("pipeline.health.summary");
+        pipelineHealth.GetProperty("queueName").GetString().Should().Be("market-data");
+        pipelineHealth.GetProperty("status").GetString().Should().BeOneOf("Healthy", "Warning");
+        pipelineHealth.GetProperty("recoveryAction").GetString().Should().NotBeNullOrWhiteSpace();
         root.GetProperty("marketDataMetrics").GetProperty("published").GetInt64().Should().Be(1);
         root.GetProperty("marketDataMetrics").GetProperty("trades").GetInt64().Should().Be(1);
         var runtime = root.GetProperty("runtime");
@@ -97,6 +102,8 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var root = document.RootElement;
         root.GetProperty("eventPipeline").ValueKind.Should().Be(JsonValueKind.Null);
+        root.GetProperty("eventPipelineHealth").GetProperty("available").GetBoolean().Should().BeFalse();
+        root.GetProperty("eventPipelineHealth").GetProperty("failureReason").GetString().Should().Be("pipeline.statistics.unavailable");
         root.GetProperty("marketDataMetrics").ValueKind.Should().Be(JsonValueKind.Null);
         root.GetProperty("runtime").GetProperty("operationName").GetString().Should().Be("diagnostics.metrics.snapshot");
         root.GetProperty("processMemoryBytes").GetInt64().Should().BeGreaterThan(0);

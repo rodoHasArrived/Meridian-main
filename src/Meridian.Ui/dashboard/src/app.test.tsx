@@ -243,9 +243,9 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/providers"] });
 
     const strip = screen.getByRole("region", { name: "Workstation build, mode, data source, and provider posture" });
-    expect(within(strip).getByLabelText("Build 0.1.0. Browser workstation bundle version.")).toHaveTextContent("Buildv0.1.0");
+    expect(within(strip).getByLabelText("Build 0.1.0. Current Meridian web release.")).toHaveTextContent("Buildv0.1.0");
     expect(within(strip).getByLabelText("Mode Paper. Session Ops Desk is operating in paper mode.")).toHaveTextContent("ModePaper");
-    expect(within(strip).getByLabelText("Data source Demo fixtures. No-host fixture payloads are visible; do not treat this as live operational readiness.")).toHaveTextContent("SourceDemo fixtures");
+    expect(within(strip).getByLabelText("Data source Demo data. Demo data is visible; confirm live source status before making operating decisions.")).toHaveTextContent("SourceDemo data");
     expect(within(strip).getByRole("link", {
       name: "Providers 1 degraded. 1 provider degraded; open Data provider posture before trading decisions. Open provider posture."
     })).toHaveAttribute("href", "/data/providers");
@@ -265,12 +265,12 @@ describe("App", () => {
   it("renders an informative startup status while workstation bootstrap is loading", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
-    const status = screen.getByRole("status", { name: "Booting workstation shell" });
+    const status = screen.getByRole("status", { name: "Preparing workspace" });
     expect(status).toHaveAttribute("aria-busy", "true");
     expect(within(status).getByLabelText("Session state: resolving operator context and environment guardrails")).toBeInTheDocument();
-    expect(within(status).getByLabelText("Workspace payloads: loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings")).toBeInTheDocument();
+    expect(within(status).getByLabelText("Workspace data: loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings")).toBeInTheDocument();
     expect(within(status).getByLabelText("Evidence slices: preparing readiness, reconciliation, provider, and report-pack evidence")).toBeInTheDocument();
-    expect(within(status).getByLabelText("Workspace bootstrap status")).toBeInTheDocument();
+    expect(within(status).getByLabelText("Workspace data loading status")).toBeInTheDocument();
   });
 
   it("has no basic accessibility violations in the trading shell", async () => {
@@ -759,9 +759,9 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
-    expect(screen.getByRole("status", { name: "Workstation bootstrap is partially degraded" })).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Some workspace data is unavailable" })).toBeInTheDocument();
     const diagnosticsLink = screen.getByRole("link", {
-      name: "Review Settings capability coverage for failed workstation slices"
+      name: "Review Settings diagnostics for failed workspace areas"
     });
     expect(diagnosticsLink).toHaveAttribute("href", "/settings#backend-capability-coverage");
 

@@ -53,6 +53,19 @@ describe("api-errors", () => {
     });
   });
 
+  it("translates raw HTML 404 responses into operator recovery copy", () => {
+    const error = createApiErrorFromResponseBody(
+      "/api/workstation/reporting",
+      404,
+      "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>"
+    );
+
+    expect(describeApiError(error, "Workspace data unavailable.")).toEqual({
+      summary: "The requested Meridian data is unavailable.",
+      details: ["Meridian returned 404. Open diagnostics for the technical response."]
+    });
+  });
+
   it("maps unauthenticated responses to a session recovery summary", () => {
     const error = createApiErrorFromResponseBody(
       "/api/workstation/session",

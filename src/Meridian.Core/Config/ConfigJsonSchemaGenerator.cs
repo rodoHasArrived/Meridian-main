@@ -30,6 +30,7 @@ public sealed class ConfigJsonSchemaGenerator
         _building.Clear();
 
         var rootSchema = BuildDefinition(typeof(AppConfig)).DeepClone().AsObject();
+        AddHostConfigurationSchemas(rootSchema);
         rootSchema["$schema"] = SchemaDialect;
         rootSchema["title"] = "Meridian appsettings schema";
         rootSchema["description"] = "JSON Schema for Meridian application configuration.";
@@ -54,6 +55,50 @@ public sealed class ConfigJsonSchemaGenerator
         }
 
         return rootSchema;
+    }
+
+    private void AddHostConfigurationSchemas(JsonObject rootSchema)
+    {
+        var properties = rootSchema["properties"]?.AsObject();
+        if (properties == null)
+        {
+            return;
+        }
+
+        properties["ApiHost"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/ApiHostOptions"
+        });
+
+        _definitions["ApiHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["AllowedOrigins"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                },
+                ["AllowInsecureTransportForReverseProxy"] = CreateTypedSchema("boolean"),
+                ["DeploymentMode"] = new JsonObject
+                {
+                    ["type"] = "string",
+                    ["enum"] = new JsonArray(
+                        "LocalWorkstation",
+                        "ProductionApi",
+                        "Worker",
+                        "Migration")
+                },
+                ["ServeWorkstationAssets"] = CreateTypedSchema("boolean"),
+                ["Urls"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                }
+            }
+        };
     }
 
     /// <summary>

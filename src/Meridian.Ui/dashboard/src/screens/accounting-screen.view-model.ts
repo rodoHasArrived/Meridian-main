@@ -3101,7 +3101,7 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     {
       id: "approvals-exceptions",
       label: "Approvals and exceptions",
-      detail: "Preparing dedicated approval and exception workstreams from shared operations-continuity payloads."
+      detail: "Preparing dedicated approval and exception workstreams from close-control data."
     },
     {
       id: "security-reporting",
@@ -3130,7 +3130,7 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     {
       id: "continuity",
       label: "Open continuity",
-      detail: "Review close workflow gates while the workspace payload finishes loading.",
+      detail: "Review close workflow gates while workspace data finishes loading.",
       href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
       ariaLabel: "Open Accounting operations continuity while Accounting loads"
     },
@@ -3186,14 +3186,14 @@ export function buildAccountingLoadingViewState(pathname: string): AccountingLoa
     ariaLive: "polite",
     titleId: `${slug}-workspace-loading-title`,
     detailId: `${slug}-workspace-loading-detail`,
-    eyebrow: `${workspaceLabel} bootstrap`,
+    eyebrow: `${workspaceLabel} workspace data`,
     title: `Loading ${workspaceLabel}`,
     detail: workspaceLabel === "Reporting"
-      ? "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
-      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload.",
+      ? "Waiting for report-pack, governed export, and approval summaries from workspace data."
+      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from workspace data.",
     routeLabel: pathname,
     workstreamLabel,
-    statusItemsLabel: `${workspaceLabel} payloads loading`,
+    statusItemsLabel: `${workspaceLabel} workspace data loading`,
     statusItems: workspaceLabel === "Reporting" ? reportingStatusItems : accountingStatusItems,
     actionsLabel: `${workspaceLabel} actions available while loading`,
     actions: workspaceLabel === "Reporting" ? reportingActions : accountingActions
@@ -10622,7 +10622,7 @@ function buildManualJournalPaymentIntentEvidenceView(
     return {
       label: `Missing intent / ${formatCurrencyWithCode(Math.abs(amount), currency)} / ${effectiveDate ?? "no effective date"}`,
       tone: "warning",
-      summary: "Payment intent evidence is not included in the shared accounting payload.",
+      summary: "Payment intent evidence is not included in the available accounting data.",
       required: "Payment intent id / Retained bank, cash, or settlement evidence"
     };
   }
@@ -12110,7 +12110,7 @@ export function buildReconciliationQueuePanelViewState(
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,
     detailEmptyTitle: "No reconciliation run selected",
-    detailEmptyText: "Reconciliation evidence is unavailable until the workspace payload includes at least one run.",
+    detailEmptyText: "Reconciliation evidence is unavailable until workspace data includes at least one run.",
     detailEmptyAriaLabel: "No reconciliation run selected",
     hasRows: queue.length > 0,
     rows: queue.map((item) => {
@@ -12938,7 +12938,7 @@ export function buildAccountingCashFlowViewState(
   return {
     eyebrow: "Cash Flow",
     title: cashFlow.summary,
-    description: `${contextLabel} at ${routePath} reuses the shared accounting/reporting cash-flow summary payload.`,
+    description: `${contextLabel} at ${routePath} reuses the shared accounting/reporting cash-flow summary data.`,
     routePath,
     statusLabel,
     statusTone,
@@ -13041,7 +13041,7 @@ export function buildAccountingReportingViewState({
     exportCanRun,
     exportBusy,
     backendLinks: [
-      buildAccountingReportingBackendLink("preview", "Preview report payload", EXPORT_API_ENDPOINTS.preview),
+      buildAccountingReportingBackendLink("preview", "Preview report", EXPORT_API_ENDPOINTS.preview),
       buildAccountingReportingBackendLink("formats", "List export formats", EXPORT_API_ENDPOINTS.formats)
     ]
   };
@@ -15343,7 +15343,7 @@ export function buildCloseCommandCenterViewState({
       id: "period",
       label: "Period status",
       value: readinessLabel,
-      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using bootstrap close posture until workflow detail loads.",
+      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using workspace close status until workflow detail loads.",
       tone: statusTone,
       href: workflow ? WORKSTATION_ROUTE_CATALOG.accountingApprovals : null
     },
@@ -15619,7 +15619,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
 
   return {
     title: "CFO / Controller close command center",
-    description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from the shared Financial Operations command-center DTO.",
+    description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from Meridian Financial Operations review data.",
     ariaLabel: "CFO and controller close command center",
     status,
     statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
@@ -16090,7 +16090,7 @@ export function buildAccountingLedgerJournalEvidenceViewState({
 
   return {
     title: "Journal evidence dimensions",
-    description: `Retained journal rows for ${runLabel} with canonical dimensional scope preserved from the shared ledger journal endpoint.`,
+    description: `Retained journal rows for ${runLabel} with canonical dimensional scope preserved for ledger evidence review.`,
     rows: journalRows,
     filteredRowCountLabel: buildLedgerAccountFilteredCountLabel(journalRows.length, rows.length, normalizedFilter),
     hasRows: journalRows.length > 0,
@@ -17530,9 +17530,9 @@ export function buildReferenceDataWorkbenchViewState({
       },
       {
         id: "ready",
-        label: "Ready payloads",
+        label: "Ready data",
         value: readyCount.toLocaleString(),
-        detail: readyCount > 0 ? `${formatCount(readyCount, "endpoint")} returned payload data.` : "No endpoint has returned payload data yet.",
+        detail: readyCount > 0 ? `${formatCount(readyCount, "reference route")} returned data.` : "No reference route has returned data yet.",
         tone: readyCount > 0 ? "success" : "default"
       },
       {
