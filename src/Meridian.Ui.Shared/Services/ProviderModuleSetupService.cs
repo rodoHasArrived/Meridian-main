@@ -112,11 +112,9 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (string.IsNullOrWhiteSpace(request.ModuleId))
             return ProviderModuleSetupResult.Fail("ModuleId is required");
 
-        // Capture pre-mutation state so we can roll back the config entry if the subsequent
-        // credential write fails (keeps config and credential store in sync).
-        var preMutationCfg = _configStore.Load();
+        // Baseline captured inside the lambda so it is read under _configLock,
+        // preventing a concurrent mutation from making the rollback target stale.
         ProviderModuleSettings? preExistingSettings = null;
-        preMutationCfg.ProviderModules?.Modules?.TryGetValue(request.ModuleId, out preExistingSettings);
 
         // Save config first; only persist credentials if config write succeeds,
         // so a failed config save never leaves orphaned credentials on disk.
@@ -126,7 +124,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, ProviderModuleSettings>(StringComparer.OrdinalIgnoreCase);
 
-            modules.TryGetValue(request.ModuleId, out var existingSettings);
+            modules.TryGetValue(request.ModuleId, out preExistingSettings);
 
             var settings = new ProviderModuleSettings(
                 Enabled: request.Enabled,
@@ -210,10 +208,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        // Capture settings before removal so we can restore them if credential deletion fails.
-        var preDeletionCfg = _configStore.Load();
+        // Baseline captured inside the lambda so it is read under _configLock.
         ProviderModuleSettings? removedSettings = null;
-        preDeletionCfg.ProviderModules?.Modules?.TryGetValue(moduleId, out removedSettings);
 
         // Remove config first; if SaveAsync fails, credentials remain intact for the still-configured provider
         var result = await MutateConfigAsync(cfg =>
@@ -223,6 +219,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
             var modules = new Dictionary<string, ProviderModuleSettings>(
                 cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase);
+            modules.TryGetValue(moduleId, out removedSettings);
             modules.Remove(moduleId);
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };

@@ -99,16 +99,11 @@ public sealed class ProviderCredentialStore : IProviderCredentialStore
         if (!File.Exists(_filePath))
             return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
 
-        try
-        {
-            var json = await File.ReadAllTextAsync(_filePath, ct).ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json, JsonOptions);
-            return result ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        }
-        catch (JsonException)
-        {
-            return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        }
+        // Let JsonException propagate — treating a corrupt file as empty would cause the
+        // next write to silently drop every other module's credentials.
+        var json = await File.ReadAllTextAsync(_filePath, ct).ConfigureAwait(false);
+        var result = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json, JsonOptions);
+        return result ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task PersistStoreAsync(
