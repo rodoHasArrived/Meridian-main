@@ -58,7 +58,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                 IsConfigured: true,
                 IsRunning: isRunning,
                 CredentialStatus: credStatus,
-                CapabilityNames: module?.Capabilities.Select(c => c.Name).ToList() ?? []));
+                CapabilityNames: module?.Capabilities.SelectMany(GetCapabilityNames).Distinct().ToList() ?? []));
         }
 
         return result;
@@ -80,7 +80,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             entries.Add(new ProviderModuleCatalogueEntry(
                 ModuleId: m.ModuleId,
                 DisplayName: m.ModuleDisplayName,
-                CapabilityNames: m.Capabilities.Select(c => c.Name).ToList(),
+                CapabilityNames: m.Capabilities.SelectMany(GetCapabilityNames).Distinct().ToList(),
                 CredentialKeyHints: (m as IProviderModuleCredentialHints)?.CredentialKeyHints ?? [],
                 RequiresExternalConfig: m.RequiresExternalConfig,
                 AlreadyConfigured: configured.Contains(m.ModuleId)));
@@ -241,7 +241,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         {
             var cfg = _configStore.Load();
             var next = mutate(cfg);
-            await _configStore.SaveAsync(next, ct).ConfigureAwait(false);
+            await _configStore.SaveAsync(next).ConfigureAwait(false);
             return ProviderModuleSetupResult.Ok();
         }
         catch (OperationCanceledException)
@@ -291,6 +291,15 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         {
             return null;
         }
+    }
+
+    private static IEnumerable<string> GetCapabilityNames(ProviderCapabilities cap)
+    {
+        if (cap.SupportsStreaming) yield return "Streaming";
+        if (cap.SupportsBackfill) yield return "Backfill";
+        if (cap.SupportsSymbolSearch) yield return "Symbol Search";
+        if (cap.SupportsBrokerage) yield return "Brokerage";
+        if (cap.SupportsOptionsChain) yield return "Options Chain";
     }
 
     private static IReadOnlyList<Type> DiscoverModuleTypes()

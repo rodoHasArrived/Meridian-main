@@ -405,7 +405,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
 
-        services.TryAddSingleton<IProviderCredentialStore>(sp =>
+        services.TryAddSingleton<Meridian.Core.Contracts.IProviderCredentialStore>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var dataRoot = configStore.GetDataRoot();
