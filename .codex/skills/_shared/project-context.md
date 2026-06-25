@@ -156,6 +156,11 @@ When local CPU, memory, disk, dependency restore, or MSBuild lock contention mak
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
 tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
 `tests/` plus `dotnet_filter` to keep the remote run scoped to the failing slice.
+After a timed-out generation, build, or test attempt, run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout before retrying local
+validation.
 
 For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
 validation stack before broad build or test runs:

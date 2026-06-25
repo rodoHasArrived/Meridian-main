@@ -12,8 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_DOCS = (
-    "docs/status/production-status.md",
-    "docs/status/provider-validation-matrix.md",
+    "docs/reference/provider-validation-matrix.md",
 )
 
 DENYLIST_PHRASES = (

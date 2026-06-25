@@ -1,11 +1,13 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
 using Meridian.Platform.Diagnostics;
 using Meridian.ProviderSdk;
 using Xunit;
@@ -44,7 +46,8 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
             configProvider: CreateConfigWithSecrets,
             recentErrorsProvider: CreateTrackedErrorsWithSecrets,
             shutdownDiagnosticsProvider: CreateShutdownDiagnosticsWithSecrets,
-            providerConnectionDiagnosticsProvider: CreateProviderConnectionDiagnosticsWithSecrets);
+            providerConnectionDiagnosticsProvider: CreateProviderConnectionDiagnosticsWithSecrets,
+            pipelineStatisticsProvider: CreateBackpressuredPipelineStatistics);
 
         var result = await service.GenerateAsync(new DiagnosticBundleOptions(
             IncludeSystemInfo: false,
@@ -119,6 +122,11 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         runtimeSummaryDocument.RootElement.GetProperty("metrics").GetProperty("quotes").GetInt64().Should().Be(4);
         runtimeSummaryDocument.RootElement.GetProperty("metrics").GetProperty("depthUpdates").GetInt64().Should().Be(2);
         runtimeSummaryDocument.RootElement.GetProperty("metrics").GetProperty("latencySampleCount").GetInt64().Should().Be(10);
+        runtimeSummaryDocument.RootElement.GetProperty("eventPipelineHealth").GetProperty("available").GetBoolean().Should().BeTrue();
+        runtimeSummaryDocument.RootElement.GetProperty("eventPipelineHealth").GetProperty("status").GetString().Should().Be("Critical");
+        runtimeSummaryDocument.RootElement.GetProperty("eventPipelineHealth").GetProperty("failureReason").GetString().Should().Be("pipeline.events.dropped");
+        runtimeSummaryDocument.RootElement.GetProperty("eventPipelineHealth").GetProperty("recoveryAction").GetString()
+            .Should().Contain("Reduce ingestion rate");
         runtimeSummaryDocument.RootElement.GetProperty("errors").GetProperty("available").GetBoolean().Should().BeTrue();
         runtimeSummaryDocument.RootElement.GetProperty("errors").GetProperty("totalErrors").GetInt32().Should().Be(1);
         runtimeSummaryDocument.RootElement.GetProperty("providerConnections").GetProperty("available").GetBoolean().Should().BeTrue();
@@ -236,6 +244,26 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         MemoryUsageMb: 64,
         HeapSizeMb: 32,
         Timestamp: DateTimeOffset.UtcNow);
+
+    private static PipelineStatistics CreateBackpressuredPipelineStatistics() => new(
+        PublishedCount: 100,
+        DroppedCount: 2,
+        ConsumedCount: 90,
+        CurrentQueueSize: 8,
+        PeakQueueSize: 10,
+        QueueCapacity: 10,
+        QueueUtilization: 80,
+        AverageProcessingTimeUs: 50,
+        TimeSinceLastFlush: TimeSpan.FromMilliseconds(500),
+        Timestamp: DateTimeOffset.UtcNow,
+        RecoveredCount: 0,
+        RejectedCount: 1,
+        DeduplicatedCount: 0,
+        IsWalEnabled: true,
+        IsValidationEnabled: true,
+        IsDeduplicationEnabled: false,
+        QueueFullMode: BoundedChannelFullMode.DropWrite,
+        HighWaterMarkWarned: true);
 
     private static ErrorQueryResult CreateTrackedErrorsWithSecrets() => new()
     {

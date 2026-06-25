@@ -3777,7 +3777,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 )}
               </div>
               <div>
-                <div className="eyebrow-label">Backend</div>
+                <div className="eyebrow-label">Export service</div>
                 <div
                   id={vm.workflowTaskPanel.backendPanelId}
                   aria-label={vm.workflowTaskPanel.backendLinksLabel}
@@ -6675,11 +6675,11 @@ function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: Private
               <div className="eyebrow-label">Private capital</div>
               <CardTitle>Fund event ledger and capital account subledger</CardTitle>
               <CardDescription>
-                Read-only report readiness from the Accounting manual journal workbench private-capital activity projection.
+                Read-only report readiness from Accounting private-capital activity data.
               </CardDescription>
             </div>
             <Badge variant={activity ? fundEventRecords.length > 0 ? "success" : "outline" : "warning"} dot>
-              {activity ? "Source projection" : "Not loaded"}
+              {activity ? "Source data" : "Not loaded"}
             </Badge>
           </div>
         </CardHeader>
@@ -6715,8 +6715,8 @@ function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: Private
               </div>
 
               {activity.validationIssues.length > 0 ? (
-                <div role="status" aria-label="Private-capital projection warnings" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                  <p>{activity.validationIssues.length.toLocaleString()} projection issue{activity.validationIssues.length === 1 ? "" : "s"} retained with the shared activity payload.</p>
+                <div role="status" aria-label="Private-capital data warnings" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                  <p>{activity.validationIssues.length.toLocaleString()} data issue{activity.validationIssues.length === 1 ? "" : "s"} retained with the shared activity data.</p>
                   <ul className="mt-2 space-y-1 text-xs">
                     {activity.validationIssues.slice(0, 3).map((issue, index) => (
                       <li key={`${issue.code}-${index}`}>{issue.code}: {issue.message}</li>
@@ -6748,7 +6748,7 @@ function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: Private
                 </div>
               ) : (
                 <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                  No private-capital fund event ledger records were included in the shared workbench projection.
+                  No private-capital fund event ledger records were included in the shared workbench data.
                 </p>
               )}
 
@@ -6785,7 +6785,7 @@ function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: Private
             </>
           ) : (
             <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-              The loaded Reporting workspace payload does not include manualJournalWorkbench.privateCapitalActivity, so private-capital report readiness is not shown from local fallback data.
+              The loaded Reporting workspace data does not include private-capital activity, so private-capital report readiness is not shown from backup data.
             </p>
           )}
         </CardContent>

@@ -180,6 +180,9 @@ public static class DiagnosticsEndpoints
             var jsonlStats = jsonlSink?.GetStatistics();
             var metricsSnapshot = (eventPipeline?.EventMetrics ?? eventMetrics)?.GetSnapshot();
             var providerConnectionDiagnostics = ProviderConnectionDiagnosticsProjection.BuildUniqueSummaries(providerRegistry);
+            var pipelineHealth = pipelineStats.HasValue
+                ? PipelineDiagnosticsProjection.FromStatistics(pipelineStats.Value)
+                : PipelineDiagnosticsProjection.Unavailable();
             return Results.Json(new
             {
                 errors = stats != null ? new
@@ -212,6 +215,7 @@ public static class DiagnosticsEndpoints
                     highWaterMarkWarned = pipelineStats.Value.HighWaterMarkWarned,
                     timestamp = pipelineStats.Value.Timestamp
                 } : null,
+                eventPipelineHealth = pipelineHealth,
                 eventPipelineHotPath = hotPathPipeline != null ? new
                 {
                     tradeBufferCount = hotPathPipeline.TradeBufferCount,

@@ -209,7 +209,8 @@ public sealed class SymbolSearchService : IDisposable
 
         // Deduplicate by symbol, keeping highest score
         var deduped = allResults
-            .GroupBy(r => r.Symbol.ToUpperInvariant())
+            .Select(NormalizeResultSymbol)
+            .GroupBy(r => r.Symbol, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.OrderByDescending(r => r.MatchScore).First())
             .OrderByDescending(r => r.MatchScore)
             .Take(request.Limit)
@@ -440,6 +441,9 @@ public sealed class SymbolSearchService : IDisposable
     {
         return $"{request.Query}:{request.Limit}:{request.AssetType}:{request.Exchange}:{request.Provider}:{request.IncludeFigi}";
     }
+
+    private static SymbolSearchResult NormalizeResultSymbol(SymbolSearchResult result)
+        => result with { Symbol = result.Symbol.Trim().ToUpperInvariant() };
 
     /// <summary>
     /// Clear the search and details cache.

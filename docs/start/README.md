@@ -112,6 +112,11 @@ python build/python/cli/buildctl.py validation-status --summary
 python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
 ```
 
+After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
+validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
+`dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
+point at this checkout.
+
 If local machine limits make the relevant proof lane unreliable, push the branch and use the
 manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts. The .NET lane
 requires a repo-relative test project under `tests/` plus `dotnet_filter` so it runs the failing

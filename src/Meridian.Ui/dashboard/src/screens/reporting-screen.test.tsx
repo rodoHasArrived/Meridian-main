@@ -1344,7 +1344,7 @@ describe("ReportingScreen", () => {
 
     const readiness = screen.getByRole("region", { name: "Private-capital report readiness" });
     expect(within(readiness).getByText("Fund event ledger and capital account subledger")).toBeInTheDocument();
-    expect(within(readiness).getByText("Source projection")).toBeInTheDocument();
+    expect(within(readiness).getByText("Source data")).toBeInTheDocument();
     expect(within(readiness).getAllByText("Report review").length).toBeGreaterThan(1);
     expect(within(readiness).getByText("Not report-ready")).toBeInTheDocument();
     expect(within(readiness).getAllByText("Published").length).toBeGreaterThan(0);
@@ -4941,10 +4941,10 @@ describe("ReportingScreen", () => {
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Selected report-pack export actions" })).toBeInTheDocument();
-    const excelPreviewLink = within(task).getByRole("link", { name: "Preview Excel export payload" });
+    const excelPreviewLink = within(task).getByRole("link", { name: "Preview Excel export" });
     expect(excelPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=excel");
     expect(excelPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-excel-preview-report-pack-task-status");
-    expect(within(task).getByText("Opens the current export payload preview in a new browser tab.")).toHaveAttribute(
+    expect(within(task).getByText("Opens the current export preview in a new browser tab.")).toHaveAttribute(
       "id",
       "reporting-action-excel-preview-report-pack-task-status"
     );
@@ -4995,7 +4995,7 @@ describe("ReportingScreen", () => {
       "href",
       "/api/export/preview?profile=audit-pack"
     );
-    const auditPreviewLink = within(task).getByRole("link", { name: "Preview Audit Pack export payload" });
+    const auditPreviewLink = within(task).getByRole("link", { name: "Preview Audit Pack export" });
     expect(auditPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
     expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-report-pack-task-status");
     expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
@@ -5167,13 +5167,13 @@ describe("ReportingScreen", () => {
     });
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
-    expect(within(task).getByRole("link", { name: "Preview Excel export payload" })).toHaveAttribute(
+    expect(within(task).getByRole("link", { name: "Preview Excel export" })).toHaveAttribute(
       "aria-describedby",
       "reporting-action-excel-preview-report-pack-task-status"
     );
     expect(screen.getByRole("link", { name: "Open Excel report-pack evidence" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Excel export actions" }))
-      .toHaveTextContent("Opens the current export payload preview in a new browser tab.");
+      .toHaveTextContent("Opens the current export preview in a new browser tab.");
 
     const ids = Array.from(container.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
     const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
@@ -5254,7 +5254,7 @@ describe("ReportingScreen", () => {
     expect(within(inspector).getByText("Profile ID")).toBeInTheDocument();
     expect(within(inspector).getByText("audit-pack")).toBeInTheDocument();
 
-    const preview = screen.getByRole("link", { name: "Preview Audit Pack export payload" });
+    const preview = screen.getByRole("link", { name: "Preview Audit Pack export" });
     const run = screen.getByRole("button", { name: "Run Audit Pack export analysis" });
 
     expect(preview).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
