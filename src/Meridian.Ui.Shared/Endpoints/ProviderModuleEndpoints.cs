@@ -21,26 +21,36 @@ public static class ProviderModuleEndpoints
 
         // GET /api/providers/modules — all configured modules with credential status
         group.MapGet(UiApiRoutes.ProviderModules, async (
+            HttpContext context,
             [FromServices] IProviderModuleSetupService setupService,
             CancellationToken ct) =>
         {
+            if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
+                return EndpointHelpers.Forbidden();
+
             var modules = await setupService.GetConfiguredModulesAsync(ct).ConfigureAwait(false);
             return Results.Json(modules, jsonOptions);
         })
         .WithName("GetProviderModules")
         .WithDescription("Returns all configured provider modules with credential status (no credential values).")
-        .Produces<IReadOnlyList<ProviderModuleStatusDto>>(200);
+        .Produces<IReadOnlyList<ProviderModuleStatusDto>>(200)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // GET /api/providers/modules/catalogue — discoverable module types
         group.MapGet(UiApiRoutes.ProviderModulesCatalogue, (
+            HttpContext context,
             [FromServices] IProviderModuleSetupService setupService) =>
         {
+            if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
+                return EndpointHelpers.Forbidden();
+
             var catalogue = setupService.GetDiscoveredModuleCatalogue();
             return Results.Json(catalogue, jsonOptions);
         })
         .WithName("GetProviderModuleCatalogue")
         .WithDescription("Returns all discoverable provider module types with capability and credential metadata.")
-        .Produces<IReadOnlyList<ProviderModuleCatalogueEntry>>(200);
+        .Produces<IReadOnlyList<ProviderModuleCatalogueEntry>>(200)
+        .Produces(StatusCodes.Status403Forbidden);
 
         // POST /api/providers/modules — create or update a module configuration
         group.MapPost(UiApiRoutes.ProviderModules, async (
