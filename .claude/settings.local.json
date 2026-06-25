@@ -29,7 +29,14 @@
       "PowerShell(git stash pop --index 2>&1)",
       "PowerShell(head -20)",
       "PowerShell(npm --prefix src/Meridian.Ui/dashboard run build 2>&1)",
-      "PowerShell(cd \"C:\\\\Users\\\\Andrew James Rowden\\\\OneDrive\\\\Documents\\\\OneDrive\\\\Documents\\\\Desktop\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\" && npm run test -- --reporter=verbose 2>&1 | Select-Object -Last 80)"
+      "PowerShell(cd \"C:\\\\Users\\\\Andrew James Rowden\\\\OneDrive\\\\Documents\\\\OneDrive\\\\Documents\\\\Desktop\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\" && npm run test -- --reporter=verbose 2>&1 | Select-Object -Last 80)",
+      "PowerShell(\"===UNSTAGED DIFFSTAT===\")",
+      "PowerShell(\"===STAGED DIFFSTAT===\")",
+      "PowerShell(\"===LAST COMMIT DIFFSTAT===\")",
+      "PowerShell(\"=== git status --short \\(current\\) ===\")",
+      "PowerShell(\"=== git ls-files -u \\(unmerged index entries\\) ===\")",
+      "PowerShell(\"=== status long header ===\")",
+      "Bash(\"C:/Program Files/Git/cmd/git.exe\" --no-pager show 2dc164612 --format= -- \"src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs\")"
     ]
   }
 }

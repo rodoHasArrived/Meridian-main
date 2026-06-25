@@ -92,8 +92,10 @@ nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above ins
 
 Prefer the narrowest validation command that matches the touched files.
 For completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`
-is the authoritative merge result and work should flow through a `codex/<short-task-name>` branch
-and PR targeting `main`.
+is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
+it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
+`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
+allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
 tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under

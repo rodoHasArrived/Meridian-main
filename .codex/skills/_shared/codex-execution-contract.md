@@ -8,6 +8,10 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - Run `git status --short` before editing.
 - Treat unrelated worktree changes as user-owned.
 - Choose the smallest safe task scope that satisfies the request.
+- Local work may happen on `main` when the user explicitly requests it or the checkout is
+  intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
+  use a `codex/<short-task-name>` branch unless GitHub repository rules explicitly allow the
+  requested protected-branch flow.
 - For implementation tasks, identify whether docs, tests, catalogs, or generated metadata must
   move with the code change before editing.
 - For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable memory.

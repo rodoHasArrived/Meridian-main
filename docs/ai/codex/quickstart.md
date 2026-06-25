@@ -12,7 +12,9 @@ still lives in `../assistant-workflow-contract.md`.
 
 1. Run `git status --short` and separate existing user-owned changes from the task. For PR-bound
    implementation, start from the latest `origin/main` on a `codex/<short-task-name>` branch,
-   never write directly to `main`, and open or update a PR targeting `main`.
+   unless the user explicitly asks for local `main` work or the checkout is intentionally operating
+   there. Do not bypass GitHub branch protections; open or update a PR targeting `main` for
+   PR-ready publishing.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.

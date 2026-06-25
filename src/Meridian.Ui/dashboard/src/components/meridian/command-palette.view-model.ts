@@ -245,7 +245,7 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "settings-integrations",
     label: "Alpaca provider setup",
-    description: "Repair paper credentials, endpoint acknowledgements, and broker connection readiness.",
+    description: "Repair paper credentials, service acknowledgements, and broker connection readiness.",
     route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup
   }
 ];
@@ -391,8 +391,8 @@ function buildCommandPaletteEmptyState(
       actionId: null,
       title: hasWorkflowBackend ? "No workflow commands available" : "No workstation commands available",
       detail: hasWorkflowBackend
-        ? "Workflow and workspace metadata did not load; retry the shell bootstrap before navigating."
-        : "Workspace metadata did not load; retry the shell bootstrap before navigating.",
+        ? "Workflow and workspace data did not load; retry workspace data before navigating."
+        : "Workspace data did not load; retry workspace data before navigating.",
       statusLabel: "Unavailable",
       actionLabel: null,
       actionAriaLabel: null,
@@ -699,10 +699,10 @@ function buildRouteSummary(
   }
 
   if (workflowError) {
-    return `Route through shared backend workflow commands. ${current}.${focus} Workflow library unavailable; local route commands remain available.`;
+    return `Route through shared workflow commands. ${current}.${focus} Workflow library unavailable; local route commands remain available.`;
   }
 
-  return `Route through shared backend workflow commands. ${current}.${focus}`;
+  return `Route through shared workflow commands. ${current}.${focus}`;
 }
 
 function buildBackendStatusLabel(

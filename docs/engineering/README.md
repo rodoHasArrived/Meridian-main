@@ -45,8 +45,10 @@ For completed PR-ready work, use the canonical repository gate:
 bash scripts/ci.sh
 ```
 
-GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Do not write
-directly to `main`; use a `codex/<short-task-name>` branch and a pull request targeting `main`.
+GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
+happen on `main` when the user explicitly requests it or the checkout is intentionally operating
+there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
+`codex/<short-task-name>` branch and a pull request targeting `main`.
 
 For local .NET tests, prefer the contention-aware runner over raw `dotnet test`:
 

@@ -1014,7 +1014,7 @@ describe("command palette view model", () => {
     expect(model.items).toHaveLength(25);
     expect(model.backendStatusLabel).toBe("Workflow library unavailable");
     expect(model.routeSummary).toBe(
-      "Route through shared backend workflow commands. Current: Settings. Workflow library unavailable; local route commands remain available."
+      "Route through shared workflow commands. Current: Settings. Workflow library unavailable; local route commands remain available."
     );
   });
 

@@ -3079,7 +3079,7 @@ export function SettingsScreen({
                   disabled={scopedAccess.busy || scopedAccessRoleOptions.length === 0 || roleProfileDraft.permissionOptions.length === 0}
                   busy={scopedAccess.busy}
                   busyLabel="Granting access"
-                  disabledReason={scopedAccessRoleOptions.length === 0 ? "Role catalog payload has not loaded." : null}
+                  disabledReason={scopedAccessRoleOptions.length === 0 ? "Role catalog data has not loaded." : null}
                 >
                   <Save className="h-3.5 w-3.5" aria-hidden="true" />
                   Grant access
@@ -3174,7 +3174,7 @@ export function SettingsScreen({
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 rounded-md border border-border/60 px-2 py-1 text-[11px] font-mono text-muted-foreground transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    aria-label={`Open raw endpoint for ${card.title}`}
+                    aria-label={`Open service details for ${card.title}`}
                   >
                     GET
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />
@@ -4455,10 +4455,10 @@ export function SettingsScreen({
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="eyebrow-label">API posture</div>
+                <div className="eyebrow-label">Service status</div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <ExternalLink className="h-4 w-4 text-primary" />
-                  Diagnostic endpoints
+                  Diagnostic services
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
               </div>
@@ -4582,7 +4582,7 @@ export function SettingsScreen({
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="eyebrow-label">Backend reachability</div>
+              <div className="eyebrow-label">Service reachability</div>
               <CardTitle className="flex items-center gap-2 text-base">
                 <ExternalLink className="h-4 w-4 text-primary" />
                 Capability coverage
@@ -4797,7 +4797,7 @@ function buildLedgerMappingAssignmentDraft(workbench: LedgerMappingWorkbench | n
     return {
       canAssign: false,
       statusLabel: "Workbench unavailable",
-      disabledReason: "Ledger mapping workbench payload has not loaded.",
+      disabledReason: "Ledger mapping workbench data has not loaded.",
       accountOptions: [],
       ledgerGroupOptions: []
     };
@@ -4858,7 +4858,7 @@ function buildRolePermissionProfileDraft(catalog: RolePermissionCatalog | null):
     return {
       canSave: false,
       statusLabel: "Catalog unavailable",
-      disabledReason: "Role and permission catalog payload has not loaded.",
+      disabledReason: "Role and permission catalog data has not loaded.",
       baseRoleOptions: [],
       permissionOptions: [],
       defaultBaseRole: "",
@@ -4924,7 +4924,7 @@ function buildApprovalPolicyRuleDraft(matrix: OperationsApprovalPolicyMatrix | n
     return {
       canSave: false,
       statusLabel: "Matrix unavailable",
-      disabledReason: "Approval policy matrix payload has not loaded.",
+      disabledReason: "Approval policy matrix data has not loaded.",
       rows: [],
       policyOptions: []
     };
@@ -4963,7 +4963,7 @@ function buildCloseCalendarItemDraft(calendar: OperationsCloseCalendar | null): 
     return {
       canSave: false,
       statusLabel: "Calendar unavailable",
-      disabledReason: "Account close calendar payload has not loaded.",
+      disabledReason: "Account close calendar data has not loaded.",
       items: [],
       workflowOptions: []
     };
@@ -6201,7 +6201,7 @@ function ProviderIntegrationWorkbenchPanel({
           </select>
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
-          Endpoint key
+          Service key
           <Input value={state.endpointKey} onChange={(event) => updateField("endpointKey", event.target.value)} list={`${row.providerId}-provider-endpoint-options`} disabled={busy} aria-label={`${row.displayName} provider integration dry-run endpoint key`} />
           <datalist id={`${row.providerId}-provider-endpoint-options`}>{endpointOptions.map((endpoint) => <option key={endpoint.endpointKey} value={endpoint.endpointKey} />)}</datalist>
         </label>

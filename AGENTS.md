@@ -14,6 +14,13 @@ instructions defer to those rules rather than adding a separate blanket
 prohibition on writes to `main`. Never attempt to bypass GitHub repository
 rules, required status checks, required reviews, or branch protections.
 
+### Local Main Work
+
+AI developers may inspect and make local changes while checked out on `main`
+when the user explicitly requests it or the checkout is intentionally operating
+there. This local permission does not allow direct protected-branch pushes,
+bypasses, self-approval, self-merge, or skipped status checks.
+
 ### Default Branch Workflow
 
 Unless the task explicitly requires a different protected-branch flow that

@@ -565,7 +565,7 @@ describe("SettingsScreen", () => {
       name: "Open Trading readiness from verified profile authentication posture"
     })).toHaveAttribute("href", "/trading/readiness");
     expect(within(profileRegion).getByRole("link", {
-      name: "Open Settings diagnostic endpoints from profile authentication posture"
+      name: "Open Settings diagnostic services from profile authentication posture"
     })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
     expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
   });
@@ -591,11 +591,11 @@ describe("SettingsScreen", () => {
     expect(within(controlCenter).getByText("Accounting active")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 rules")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 blocked")).toBeInTheDocument();
-    expect(within(controlCenter).getByRole("link", { name: "Open role and permission catalog endpoint" })).toHaveAttribute(
+    expect(within(controlCenter).getByRole("link", { name: "Open role and permission catalog service" })).toHaveAttribute(
       "href",
       "/api/auth/roles"
     );
-    expect(within(controlCenter).getByRole("link", { name: "Open raw endpoint for Account Close Calendar" })).toHaveAttribute(
+    expect(within(controlCenter).getByRole("link", { name: "Open service details for Account Close Calendar" })).toHaveAttribute(
       "href",
       "/api/workstation/operations/continuity/close-calendar"
     );
@@ -2155,7 +2155,7 @@ describe("SettingsScreen", () => {
     renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, recentEvents: [] }} />);
 
     expect(screen.getAllByText("No recent events")).toHaveLength(2);
-    expect(screen.getByText("No system events reported for the active session. Diagnostic endpoints remain available below.")).toBeInTheDocument();
+    expect(screen.getByText("No system events reported for the active session. Diagnostic services remain available below.")).toBeInTheDocument();
   });
 
   it("renders an alert state when overview data is unavailable", () => {
@@ -2165,7 +2165,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Reconnect to the Meridian API");
   });
 
-  it("labels diagnostic endpoint links", () => {
+  it("labels diagnostic service links", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -2179,19 +2179,19 @@ describe("SettingsScreen", () => {
       />
     );
 
-    expect(screen.getByRole("link", { name: "Open System overview diagnostic endpoint" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open System overview diagnostic service" })).toHaveAttribute(
       "href",
       "/api/status"
     );
-    expect(screen.getByRole("link", { name: "Open Data workspace diagnostic endpoint" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Data workspace diagnostic service" })).toHaveAttribute(
       "href",
       "/api/workstation/data"
     );
-    expect(screen.getByRole("link", { name: "Open Strategy workspace diagnostic endpoint" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Strategy workspace diagnostic service" })).toHaveAttribute(
       "href",
       "/api/workstation/strategy"
     );
-    expect(screen.getByRole("list", { name: "Diagnostic endpoint availability" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Diagnostic service availability" })).toBeInTheDocument();
     expect(screen.getAllByText("All reachable").length).toBeGreaterThan(0);
   });
 
@@ -2394,7 +2394,7 @@ describe("SettingsScreen", () => {
     expect(within(setupPanel as HTMLElement).getByText("secretKey: Secret key must include the paper account scope.")).toBeInTheDocument();
   });
 
-  it("renders backend capability groups with mapped API links", () => {
+  it("renders service coverage groups with mapped service links", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -2408,7 +2408,7 @@ describe("SettingsScreen", () => {
       />
     );
 
-    expect(screen.getByRole("list", { name: "Backend capability coverage by workstation route" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Service coverage by workstation route" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "GET /api/workstation/workflows for Settings Workflow library" })).toHaveAttribute(
       "href",
       "/api/workstation/workflows"
@@ -2481,7 +2481,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByRole("switch", { name: "Disable Settings workspace" })).toBeDisabled();
   });
 
-  it("renders diagnostic endpoint failures as accessible endpoint cards", () => {
+  it("renders diagnostic service failures as accessible service cards", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -2491,14 +2491,14 @@ describe("SettingsScreen", () => {
         data={null}
         accounting={null}
         error="Workstation request failed."
-        workspaceErrors={{ trading: "Trading API returned 503." }}
+        workspaceErrors={{ trading: "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>" }}
       />
     );
 
-    const tradingLink = screen.getByRole("link", { name: "Open Trading workspace diagnostic endpoint" });
+    const tradingLink = screen.getByRole("link", { name: "Open Trading workspace diagnostic service" });
 
     expect(tradingLink).toHaveAttribute("href", "/api/workstation/trading");
     expect(within(tradingLink).getByText("Failed")).toBeInTheDocument();
-    expect(within(tradingLink).getByText("Trading API returned 503.")).toBeInTheDocument();
+    expect(within(tradingLink).getByText("Workspace data unavailable. Try again or open diagnostics.")).toBeInTheDocument();
   });
 });

@@ -1042,7 +1042,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "System overview",
     href: WORKSTATION_API_ENDPOINTS.systemStatus,
     description: "System health, provider counts, and active run summary.",
-    ariaLabel: "Open System overview diagnostic endpoint",
+    ariaLabel: "Open System overview diagnostic service",
     isAvailable: (payload) => payload.overview !== null,
     unavailableDetail: "System overview has not loaded in this workstation session."
   },
@@ -1051,7 +1051,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "Session info",
     href: WORKSTATION_API_ENDPOINTS.session,
     description: "Current operator session context and environment.",
-    ariaLabel: "Open Session info diagnostic endpoint",
+    ariaLabel: "Open Session info diagnostic service",
     isAvailable: (payload) => payload.session !== null,
     unavailableDetail: "Operator session context has not loaded."
   },
@@ -1060,7 +1060,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "Data workspace",
     href: WORKSTATION_API_ENDPOINTS.data,
     description: "Provider posture, backfill queues, and export readiness.",
-    ariaLabel: "Open Data workspace diagnostic endpoint",
+    ariaLabel: "Open Data workspace diagnostic service",
     workspaceKey: "data",
     isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
     unavailableDetail: "Data workspace provider posture has not loaded."
@@ -1070,40 +1070,40 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     label: "Strategy workspace",
     href: WORKSTATION_API_ENDPOINTS.strategy,
     description: "Strategy run metrics and active run rows.",
-    ariaLabel: "Open Strategy workspace diagnostic endpoint",
+    ariaLabel: "Open Strategy workspace diagnostic service",
     workspaceKey: "strategy",
     isAvailable: (payload) => payload.strategy !== null && payload.strategy !== undefined,
-    unavailableDetail: "Strategy run payload has not loaded."
+    unavailableDetail: "Strategy run data has not loaded."
   },
   {
     id: "trading-workspace",
     label: "Trading workspace",
     href: WORKSTATION_API_ENDPOINTS.trading,
     description: "Live trading positions, orders, fills, and risk.",
-    ariaLabel: "Open Trading workspace diagnostic endpoint",
+    ariaLabel: "Open Trading workspace diagnostic service",
     workspaceKey: "trading",
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
-    unavailableDetail: "Trading workspace payload has not loaded."
+    unavailableDetail: "Trading workspace data has not loaded."
   },
   {
     id: "accounting-workspace",
     label: "Accounting workspace",
     href: WORKSTATION_API_ENDPOINTS.accounting,
     description: "Reconciliation queue, cash flow, and accounting evidence.",
-    ariaLabel: "Open Accounting workspace diagnostic endpoint",
+    ariaLabel: "Open Accounting workspace diagnostic service",
     workspaceKey: "accounting",
     isAvailable: (payload) => payload.accounting !== null && payload.accounting !== undefined,
-    unavailableDetail: "Accounting workspace payload has not loaded."
+    unavailableDetail: "Accounting workspace data has not loaded."
   },
   {
     id: "reporting-workspace",
     label: "Reporting workspace",
     href: WORKSTATION_API_ENDPOINTS.reporting,
     description: "Reporting profiles and governed report-pack recipients.",
-    ariaLabel: "Open Reporting workspace diagnostic endpoint",
+    ariaLabel: "Open Reporting workspace diagnostic service",
     workspaceKey: "reporting",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
-    unavailableDetail: "Reporting workspace payload has not loaded."
+    unavailableDetail: "Reporting workspace data has not loaded."
   }
 ];
 
@@ -1116,7 +1116,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Paper trading cockpit",
     description: "Trading positions, orders, sessions, replay, promotion, controls, and operator inbox readiness.",
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
-    unavailableDetail: "Trading cockpit payload has not loaded.",
+    unavailableDetail: "Trading cockpit data has not loaded.",
     endpoints: [
       { id: "trading-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.trading },
       { id: "trading-readiness", method: "GET", label: "Readiness", href: WORKSTATION_API_ENDPOINTS.tradingReadiness },
@@ -1134,7 +1134,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Portfolio and run continuity",
     description: "Aggregate exposure, symbol exposure, run fills, ledger, attribution, continuity, and review packets.",
     isAvailable: (payload) => payload.portfolio !== null && payload.portfolio !== undefined,
-    unavailableDetail: "Portfolio workspace payload has not loaded.",
+    unavailableDetail: "Portfolio workspace data has not loaded.",
     endpoints: [
       { id: "portfolio-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.portfolio },
       { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: PORTFOLIO_API_ENDPOINTS.aggregate },
@@ -1152,7 +1152,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Accounting and reconciliation",
     description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
     isAvailable: (payload) => payload.accounting !== null && payload.accounting !== undefined,
-    unavailableDetail: "Accounting workspace payload has not loaded.",
+    unavailableDetail: "Accounting workspace data has not loaded.",
     endpoints: [
       { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
       { id: "private-capital-activity", method: "GET", label: "Private-capital activity", href: WORKSTATION_API_ENDPOINTS.privateCapitalActivity },
@@ -1176,7 +1176,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Governed reports and exports",
     description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval lanes.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
-    unavailableDetail: "Reporting workspace payload has not loaded.",
+    unavailableDetail: "Reporting workspace data has not loaded.",
     endpoints: [
       { id: "reporting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.reporting },
       { id: "analysis-export", method: "POST", label: "Analysis export", href: EXPORT_API_ENDPOINTS.analysis },
@@ -1190,9 +1190,9 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Strategy",
     route: WORKSTATION_ROUTE_CATALOG.strategy,
     title: "Strategy run library",
-    description: "Strategy workspace payloads, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
+    description: "Strategy workspace data, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
     isAvailable: (payload) => payload.strategy !== null && payload.strategy !== undefined,
-    unavailableDetail: "Strategy workspace payload has not loaded.",
+    unavailableDetail: "Strategy workspace data has not loaded.",
     endpoints: [
       { id: "strategy-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.strategy },
       { id: "run-history", method: "GET", label: "Run history", href: WORKSTATION_API_ENDPOINTS.runHistory },
@@ -1210,7 +1210,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     title: "Data trust and provider operations",
     description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
     isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
-    unavailableDetail: "Data workspace payload has not loaded.",
+    unavailableDetail: "Data workspace data has not loaded.",
     endpoints: [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
       { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
@@ -1316,7 +1316,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
       listLabel: "No recent system events",
       countLabel: "0",
       statusLabel: "No recent events",
-      statusDetail: "No system events reported for the active session. Diagnostic endpoints remain available below.",
+      statusDetail: "No system events reported for the active session. Diagnostic services remain available below.",
       state: "empty",
       rows
     };
@@ -1649,7 +1649,7 @@ function buildProfileAuthenticationPanel(
         ? "Stored Alpaca keys still need account verification before readiness handoff."
         : "Connect paper Alpaca credentials before relying on brokerage-backed workflows.";
   const summary = !session
-    ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until the session payload returns."
+    ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until session data returns."
     : isLiveSession
       ? `${session.displayName} is operating in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
       : isConnected
@@ -1739,7 +1739,7 @@ function buildProfileAuthenticationPanel(
         id: "operator-session",
         label: "Operator session",
         statusLabel: session ? "Loaded" : "Missing",
-        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session payload has not loaded from the workstation host.",
+        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session data has not loaded from Meridian.",
         tone: session ? "success" : "danger",
         badgeVariant: session ? "success" : "danger",
         actionLabel: null,
@@ -1754,7 +1754,7 @@ function buildProfileAuthenticationPanel(
           ? "Live mode requires explicit brokerage and readiness evidence before sensitive actions."
           : session
             ? `${environmentLabel} mode is active for this workstation session.`
-            : "Operating mode is unknown until the session payload returns.",
+            : "Operating mode is unknown until session data returns.",
         tone: !session ? "danger" : isLiveSession ? "warning" : "success",
         badgeVariant: !session ? "danger" : isLiveSession ? "warning" : "success",
         actionLabel: null,
@@ -1779,13 +1779,13 @@ function buildProfileAuthenticationPanel(
         label: "Audit and diagnostics",
         statusLabel: diagnosticBlocked ? "Review" : "Reachable",
         detail: diagnosticBlocked
-          ? "At least one diagnostic payload failed; inspect API reachability before relying on profile state."
+          ? "At least one diagnostic data source failed; inspect service reachability before relying on profile state."
           : "Session, diagnostics, and provider evidence can be inspected without leaving Settings.",
         tone: diagnosticBlocked ? "warning" : "success",
         badgeVariant: diagnosticBlocked ? "warning" : "success",
         actionLabel: "Open diagnostics",
         actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints,
-        actionAriaLabel: "Open Settings diagnostic endpoints from profile authentication posture"
+        actionAriaLabel: "Open Settings diagnostic services from profile authentication posture"
       }
     ]
   };
@@ -2593,7 +2593,7 @@ function buildRolePermissionControlCard(
     endpointHref: AUTH_API_ENDPOINTS.roles,
     routeHref: AUTH_API_ENDPOINTS.roles,
     routeLabel: "Open catalog",
-    routeAriaLabel: "Open role and permission catalog endpoint",
+    routeAriaLabel: "Open role and permission catalog service",
     metrics: [
       { label: "Roles", value: String(catalog.roles.length), tone: "default" },
       { label: "Permissions", value: String(catalog.permissions.length), tone: "default" },
@@ -2633,7 +2633,7 @@ function buildApprovalPolicyControlCard(
     endpointHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
     routeHref: WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix,
     routeLabel: "Open matrix",
-    routeAriaLabel: "Open approval policy matrix endpoint",
+    routeAriaLabel: "Open approval policy matrix service",
     metrics: [
       { label: "Version", value: matrix.version, tone: "muted" },
       { label: "Rules", value: String(matrix.rows.length), tone: "default" },
@@ -2711,15 +2711,15 @@ function buildUnavailableOperationsControlCard(
     statusVariant: "outline",
     endpointHref,
     routeHref,
-    routeLabel: "Open endpoint",
-    routeAriaLabel: `Open ${title} endpoint`,
+    routeLabel: "Open service",
+    routeAriaLabel: `Open ${title} service detail`,
     metrics: [
       { label: "Loaded", value: "No", tone: loading ? "muted" : "warning" },
-      { label: "Endpoint", value: "GET", tone: "muted" }
+      { label: "Access", value: "Read", tone: "muted" }
     ],
     detail: loading
-      ? "Waiting for the settings bootstrap request to finish."
-      : "This configuration payload did not load in the workstation bootstrap."
+      ? "Waiting for workspace settings to finish loading."
+      : "This configuration data did not load during the workspace refresh."
   };
 }
 
@@ -2741,11 +2741,11 @@ function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
     diagnosticLinks,
     diagnosticCounts: counts,
     diagnosticSummary: counts.checking > 0
-      ? `Checking ${counts.checking} diagnostic endpoint${counts.checking === 1 ? "" : "s"}; ${counts.loaded} already loaded.`
+      ? `Checking ${counts.checking} diagnostic service${counts.checking === 1 ? "" : "s"}; ${counts.loaded} already loaded.`
       : counts.failed > 0
-        ? `${counts.failed} diagnostic endpoint${counts.failed === 1 ? "" : "s"} failed to load in the workstation bootstrap. Open the endpoint card for raw API evidence.`
-        : "All diagnostic endpoint payloads represented on this page are loaded.",
-    diagnosticListLabel: "Diagnostic endpoint availability",
+        ? `${counts.failed} diagnostic service${counts.failed === 1 ? "" : "s"} did not load during the workspace refresh. Open diagnostics for technical evidence.`
+        : "All diagnostic services represented on this page are loaded.",
+    diagnosticListLabel: "Diagnostic service availability",
     diagnosticStatusLabel,
     diagnosticStatusVariant: counts.checking > 0 ? "warning" : counts.failed > 0 ? "danger" : "success"
   };
@@ -2825,11 +2825,11 @@ function buildBackendCapabilitySection(payload: SettingsScreenPayload): Pick<
   return {
     backendCapabilityGroups: groups,
     backendCapabilitySummary: checking > 0
-      ? `Checking ${checking} backend capability group${checking === 1 ? "" : "s"} across the browser workstation.`
+      ? `Checking ${checking} service coverage group${checking === 1 ? "" : "s"} across the browser workstation.`
       : failed > 0
-        ? `${failed} backend capability group${failed === 1 ? "" : "s"} needs API attention before the browser can claim full workflow reachability.`
-        : `${loaded} backend capability group${loaded === 1 ? "" : "s"} are represented by browser routes and mapped API endpoints.`,
-    backendCapabilityListLabel: "Backend capability coverage by workstation route",
+        ? `${failed} service coverage group${failed === 1 ? "" : "s"} needs attention before the browser can claim full workflow reachability.`
+        : `${loaded} service coverage group${loaded === 1 ? "" : "s"} are represented by browser routes and service access points.`,
+    backendCapabilityListLabel: "Service coverage by workstation route",
     backendCapabilityStatusLabel: statusLabel,
     backendCapabilityStatusVariant: checking > 0 ? "warning" : failed > 0 ? "danger" : "success"
   };
@@ -2854,10 +2854,10 @@ function buildBackendCapabilityGroup(
   if (isLoading) {
     return {
       ...definition,
-      endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+      endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: "Checking",
       statusLabel: "Checking",
-      statusDetail: "Workstation bootstrap is refreshing this capability group.",
+      statusDetail: "Workspace data is refreshing this service group.",
       statusVariant: "warning",
       endpoints
     };
@@ -2866,10 +2866,10 @@ function buildBackendCapabilityGroup(
   if (error) {
     return {
       ...definition,
-      endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+      endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: "0 loaded",
       statusLabel: "Unavailable",
-      statusDetail: error,
+      statusDetail: formatSettingsVisibleWorkspaceError(error),
       statusVariant: "danger",
       endpoints
     };
@@ -2878,10 +2878,10 @@ function buildBackendCapabilityGroup(
   if (definition.isAvailable(payload)) {
     return {
       ...definition,
-      endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+      endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: `${endpointCount} mapped`,
       statusLabel: "Surfaced",
-      statusDetail: `${definition.workspaceLabel} has a browser route and mapped backend endpoints. Concrete GET endpoints open directly; templates and mutating endpoints stay reference-only.`,
+      statusDetail: `${definition.workspaceLabel} has a browser route and mapped service access points. Read-only services open directly; templates and change actions stay reference-only.`,
       statusVariant: "success",
       endpoints
     };
@@ -2889,10 +2889,10 @@ function buildBackendCapabilityGroup(
 
   return {
     ...definition,
-    endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
+    endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
     loadedCountLabel: "0 loaded",
     statusLabel: "Unavailable",
-    statusDetail: payload.error ?? definition.unavailableDetail,
+    statusDetail: formatSettingsVisibleWorkspaceError(payload.error ?? definition.unavailableDetail),
     statusVariant: "danger",
     endpoints
   };
@@ -2900,6 +2900,25 @@ function buildBackendCapabilityGroup(
 
 function isBrowserNavigableEndpoint(endpoint: CapabilityEndpointDefinition): boolean {
   return endpoint.method === "GET" && !endpoint.href.includes("{");
+}
+
+function formatSettingsVisibleWorkspaceError(error: string | null | undefined): string {
+  const detail = error?.trim();
+  if (!detail) {
+    return "Workspace data unavailable. Try again or open diagnostics.";
+  }
+
+  return looksLikeRawSettingsTechnicalResponse(detail)
+    ? "Workspace data unavailable. Try again or open diagnostics."
+    : detail;
+}
+
+function looksLikeRawSettingsTechnicalResponse(value: string): boolean {
+  return /<!doctype\s+html/i.test(value)
+    || /<html(?:\s|>)/i.test(value)
+    || /\bfile not found\b/i.test(value)
+    || /^404(?:\s|$|:|-)/i.test(value)
+    || /\bhttp\s+error\s+404\b/i.test(value);
 }
 
 function buildDiagnosticCounts(links: SettingsDiagnosticLink[]): SettingsDiagnosticCounts {
@@ -2928,7 +2947,7 @@ function buildDiagnosticLink(
     return {
       ...endpoint,
       statusLabel: "Checking",
-      statusDetail: "Workstation bootstrap is refreshing this diagnostic payload.",
+      statusDetail: "Workspace data is refreshing this diagnostic service.",
       tone: "warning",
       badgeVariant: "warning",
       isLoading
@@ -2939,7 +2958,7 @@ function buildDiagnosticLink(
     return {
       ...endpoint,
       statusLabel: "Failed",
-      statusDetail: error,
+      statusDetail: formatSettingsVisibleWorkspaceError(error),
       tone: "danger",
       badgeVariant: "danger",
       isLoading: false
@@ -2950,7 +2969,7 @@ function buildDiagnosticLink(
     return {
       ...endpoint,
       statusLabel: "Loaded",
-      statusDetail: "Payload is represented in the current workstation view model.",
+      statusDetail: "Data is represented in the current workstation view.",
       tone: "success",
       badgeVariant: "success",
       isLoading: false
@@ -2960,7 +2979,7 @@ function buildDiagnosticLink(
   return {
     ...endpoint,
     statusLabel: "Unavailable",
-    statusDetail: payload.error ?? endpoint.unavailableDetail,
+    statusDetail: formatSettingsVisibleWorkspaceError(payload.error ?? endpoint.unavailableDetail),
     tone: "danger",
     badgeVariant: "danger",
     isLoading: false

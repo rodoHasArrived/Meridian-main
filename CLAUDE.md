@@ -26,8 +26,10 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 7. For workflows with multiple agents/lanes, use `docs/ai/agent-handoff-checklist.md` as the required handoff format.
 8. Select `docs/ai/work-modes.md` mode before implementation; if running parallel lanes, initialize `docs/ai/parallel-task-manifest-template.md`.
 9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
-10. Never write directly to `main`; use a `codex/<short-task-name>` branch, open a PR to `main`,
-    and treat GitHub Actions `Meridian CI / quality-gate` as the authoritative merge gate.
+10. Local work may happen on `main` when the user explicitly requests it or the checkout is
+    intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
+    use a `codex/<short-task-name>` branch, open a PR to `main`, and treat GitHub Actions
+    `Meridian CI / quality-gate` as the authoritative merge gate.
 
 ## Current Product Direction
 

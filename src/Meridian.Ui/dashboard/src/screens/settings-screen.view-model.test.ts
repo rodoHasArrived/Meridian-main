@@ -654,10 +654,10 @@ describe("buildSettingsScreenViewModel", () => {
     const vm = buildSettingsScreenViewModel(null, null);
     expect(vm.diagnosticLinks.length).toBeGreaterThan(0);
     expect(vm.diagnosticLinks.every((l) => l.href.startsWith("/api/"))).toBe(true);
-    expect(vm.diagnosticLinks.every((l) => l.ariaLabel.includes("diagnostic endpoint"))).toBe(true);
+    expect(vm.diagnosticLinks.every((l) => l.ariaLabel.includes("diagnostic service"))).toBe(true);
   });
 
-  it("derives diagnostic endpoint posture from loaded workspace payloads", () => {
+  it("derives diagnostic service posture from loaded workspace data", () => {
     const vm = buildSettingsScreenViewModel({
       session,
       overview,
@@ -1058,7 +1058,7 @@ describe("buildSettingsScreenViewModel", () => {
     ]));
   });
 
-  it("surfaces canonical backend capability groups with browser routes and mapped endpoints", () => {
+  it("surfaces canonical service coverage groups with browser routes and mapped services", () => {
     const vm = buildSettingsScreenViewModel({
       session,
       overview,
@@ -1107,7 +1107,7 @@ describe("buildSettingsScreenViewModel", () => {
       ])
     );
     expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.statusDetail).toContain(
-      "templates and mutating endpoints stay reference-only"
+      "templates and change actions stay reference-only"
     );
     expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.endpoints).toEqual(
       expect.arrayContaining([
@@ -1176,7 +1176,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.backendCapabilityGroups.find((group) => group.id === "portfolio")).toMatchObject({
       statusLabel: "Unavailable",
       statusVariant: "danger",
-      statusDetail: "Portfolio workspace payload has not loaded."
+      statusDetail: "Portfolio workspace data has not loaded."
     });
   });
 
@@ -1242,7 +1242,7 @@ describe("buildSettingsScreenViewModel", () => {
       failedLabel: "0",
       checkingLabel: "7"
     });
-    expect(vm.diagnosticSummary).toContain("Checking 7 diagnostic endpoints");
+    expect(vm.diagnosticSummary).toContain("Checking 7 diagnostic services");
   });
 
   it("handles null overview gracefully", () => {
