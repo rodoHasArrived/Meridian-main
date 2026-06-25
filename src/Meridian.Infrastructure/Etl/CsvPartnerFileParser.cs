@@ -19,7 +19,7 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
         _schemas = schemas;
     }
 
-    public string SchemaId => "csv";
+    public string SchemaId => "partner.trades.csv.v1";
 
     public bool CanParse(EtlStagedFile file)
     {
