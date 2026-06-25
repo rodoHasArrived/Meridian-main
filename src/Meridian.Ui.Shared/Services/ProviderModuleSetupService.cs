@@ -43,8 +43,23 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             var module = CreateModuleById(moduleId);
 
             var storedKeys = await _credentialStore.GetStoredKeyNamesAsync(moduleId, ct).ConfigureAwait(false);
+
+            // Also treat env-var-mapped credentials as present when the env var is set
+            IReadOnlySet<string> resolvedKeys = storedKeys;
+            if (settings.Credentials is { } envMap)
+            {
+                var augmented = new HashSet<string>(storedKeys, StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, envVarName) in envMap)
+                {
+                    if (!string.IsNullOrWhiteSpace(envVarName)
+                        && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVarName)))
+                        augmented.Add(key);
+                }
+                resolvedKeys = augmented;
+            }
+
             var hintKeys = (module as IProviderModuleCredentialHints)?.CredentialKeyHints ?? [];
-            var credStatus = BuildCredentialStatus(hintKeys, storedKeys);
+            var credStatus = BuildCredentialStatus(hintKeys, resolvedKeys);
 
             var isRunning = _providerRegistry?.GetAllProviders()
                 .Any(p => string.Equals(p.Name, moduleId, StringComparison.OrdinalIgnoreCase) && p.IsEnabled)

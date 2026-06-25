@@ -103,8 +103,10 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         services.AddSingleton<AlpacaBrokerageGateway>(sp =>
         {
             var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var brokerageOptions = sp.GetService<AlpacaOptions>()
-                                   ?? new AlpacaOptions();
+            // Prefer context-resolved credentials; fall back to a registered AlpacaOptions or empty
+            var brokerageOptions = !string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey)
+                ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey)
+                : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger);
         });
