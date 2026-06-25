@@ -1581,7 +1581,7 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Evidence API unavailable");
-    expect(screen.getByText("Endpoint returned 503 for /api/workstation/evidence/subjects.")).toBeInTheDocument();
+    expect(screen.getByText("Meridian service returned 503. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(screen.queryByText("No evidence subjects returned")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /retry loading evidence subjects/i }));
@@ -1638,7 +1638,7 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("One or more validation errors occurred.");
-    expect(screen.getByText("Endpoint returned 422 for /api/workstation/evidence/strategy-run/run-1/export-manifest.")).toBeInTheDocument();
+    expect(screen.getByText("Meridian service returned 422. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(screen.getByText("includeWarnings: Manifest-only export must keep warnings enabled.")).toBeInTheDocument();
   });
 });

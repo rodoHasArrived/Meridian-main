@@ -4989,15 +4989,15 @@ function ExportsReportRunner({
               <div className="eyebrow-label">Exports</div>
               <CardTitle>Run a governed report now</CardTitle>
               <CardDescription>
-                Submit approved Reporting templates through the shared run endpoint with explicit date, requester, retry, and dataset context.
+                Submit approved Reporting templates through Meridian reporting services with explicit date, requester, retry, and dataset context.
               </CardDescription>
             </div>
             <span className="flex flex-wrap items-center gap-1.5">
               <Badge variant={selectedTemplate?.canRunOnDemand ? "success" : "warning"}>
                 {selectedTemplate?.canRunOnDemand ? "Runnable" : "Gated"}
               </Badge>
-              <Badge variant="outline">POST {FUND_STRUCTURE_API_ENDPOINTS.reportingRuns}</Badge>
-              <Badge variant="outline">{WORKSTATION_ROUTE_CATALOG.reportingExports}</Badge>
+              <Badge variant="outline">Reporting service ready</Badge>
+              <Badge variant="outline">Exports workspace</Badge>
             </span>
           </div>
         </CardHeader>
@@ -7352,13 +7352,10 @@ function ReportingBackendReference({
 }) {
   return (
     <>
-      <Badge variant="outline">{link.method}</Badge>
+      <Badge variant="outline">{link.interactionLabel}</Badge>
       <span className="min-w-0">
         <span className="block font-semibold text-foreground">{link.label}</span>
-        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
-        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
-          {link.interactionLabel}
-        </span>
+        <span className="block text-[11px] text-muted-foreground">Meridian service reference retained for diagnostics.</span>
       </span>
     </>
   );

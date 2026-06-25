@@ -3582,13 +3582,13 @@ describe("ReportingScreen", () => {
       "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xlsx"
     );
     expect(screen.getByRole("link", {
-      name: "GET /api/fund-structure/report-packs/report-1/evidence-bundle for Evidence bundle"
+      name: "Open Evidence bundle service reference"
     })).toHaveAttribute("href", "/api/fund-structure/report-packs/report-1/evidence-bundle");
     expect(screen.getByRole("group", {
-      name: "Reference-only GET reporting-run://investor-monthly-statement-20260501/audit for Approval audit trail"
+      name: "Approval audit trail service reference retained for diagnostics"
     })).toHaveTextContent("Approval audit trail");
     expect(screen.getByRole("button", {
-      name: "POST reporting-run://investor-monthly-statement-20260501/approval/approve for Approve reporting run"
+      name: "Approve reporting run service reference retained for diagnostics"
     })).toHaveTextContent("Approve reporting run");
   });
 
@@ -4969,13 +4969,13 @@ describe("ReportingScreen", () => {
       "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
     );
     expect(within(task).getByLabelText("Excel export analysis is gated by missing evidence")).toHaveTextContent("Gated");
-    expect(within(task).getByRole("link", { name: "GET /api/fund-structure/report-packs for Report-pack catalog" })).toHaveAttribute(
+    expect(within(task).getByRole("link", { name: "Open Report-pack catalog service reference" })).toHaveAttribute(
       "href",
       "/api/fund-structure/report-packs"
     );
     expect(within(task).queryByRole("link", { name: "POST /api/export/analysis for Excel export analysis" })).toBeNull();
-    expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Excel export analysis" })).toHaveTextContent(
-      "Reference"
+    expect(within(task).getByRole("group", { name: "Excel export analysis service reference retained for diagnostics" })).toHaveTextContent(
+      "Service reference"
     );
 
     excelProfile.focus();
@@ -4991,15 +4991,15 @@ describe("ReportingScreen", () => {
     expect(within(task).getByRole("status", { name: "Selected report-pack profile" })).toHaveTextContent(
       "Audit Pack is selected for report-pack approval using Markdown output to Audit portal."
     );
-    expect(within(task).getByRole("link", { name: "GET /api/export/preview?profile=audit-pack for Audit Pack export preview" })).toHaveAttribute(
+    expect(within(task).getByRole("link", { name: "Open Audit Pack export preview service reference" })).toHaveAttribute(
       "href",
       "/api/export/preview?profile=audit-pack"
     );
     const auditPreviewLink = within(task).getByRole("link", { name: "Preview Audit Pack export" });
     expect(auditPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
     expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-report-pack-task-status");
-    expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
-      "Reference"
+    expect(within(task).getByRole("group", { name: "Audit Pack export analysis service reference retained for diagnostics" })).toHaveTextContent(
+      "Service reference"
     );
     expect(within(task).getByRole("button", { name: "Run Audit Pack export analysis" })).toBeEnabled();
 
@@ -5378,7 +5378,7 @@ describe("ReportingScreen", () => {
 
     const exportStatus = await screen.findByRole("status", { name: "Reporting export status" });
     expect(within(exportStatus).getByText("Audit Pack export failed. One or more validation errors occurred.")).toBeInTheDocument();
-    expect(within(exportStatus).getByText("Endpoint returned 400 for /api/export/analysis.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Meridian service returned 400. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(exportStatus).getByText("Validation failed")).toBeInTheDocument();
     expect(within(exportStatus).getByText("profileId: Profile is required.")).toBeInTheDocument();
     expect(within(exportStatus).getByText("approvalReason: Approval reason must cite packet evidence.")).toBeInTheDocument();

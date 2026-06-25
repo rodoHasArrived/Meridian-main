@@ -36,7 +36,7 @@ describe("api-errors", () => {
     expect(describeApiError(error, "Export failed.")).toEqual({
       summary: "One or more validation errors occurred.",
       details: [
-        "Endpoint returned 400 for /api/export/analysis.",
+        "Meridian service returned 400. Open diagnostics for technical details.",
         "Validation failed",
         "profileId: Profile is required.",
         "approvalReason: Approval reason must cite packet evidence."
@@ -44,12 +44,12 @@ describe("api-errors", () => {
     });
   });
 
-  it("keeps plain-text backend errors visible", () => {
+  it("keeps plain-text service errors visible without exposing route paths", () => {
     const error = createApiErrorFromResponseBody("/api/export/analysis", 503, "Export worker unavailable");
 
     expect(describeApiError(error, "Export failed.")).toEqual({
       summary: "Export worker unavailable",
-      details: ["Endpoint returned 503 for /api/export/analysis."]
+      details: ["Meridian service returned 503. Open diagnostics for technical details."]
     });
   });
 
@@ -62,7 +62,7 @@ describe("api-errors", () => {
 
     expect(describeApiError(error, "Workspace data unavailable.")).toEqual({
       summary: "The requested Meridian data is unavailable.",
-      details: ["Meridian returned 404. Open diagnostics for the technical response."]
+      details: ["Meridian service returned 404. Open diagnostics for technical details."]
     });
   });
 
@@ -79,7 +79,7 @@ describe("api-errors", () => {
     expect(describeApiError(error, "Session request failed.")).toEqual({
       summary: "Session expired or Meridian sign-in is required.",
       details: [
-        "Endpoint returned 401 for /api/workstation/session.",
+        "Meridian service returned 401. Open diagnostics for technical details.",
         "Unauthorized",
         "The workstation session token expired."
       ]
@@ -99,7 +99,7 @@ describe("api-errors", () => {
     expect(describeApiError(error, "Trading request failed.")).toEqual({
       summary: "Permission denied for this Meridian role.",
       details: [
-        "Endpoint returned 403 for /api/workstation/trading.",
+        "Meridian service returned 403. Open diagnostics for technical details.",
         "Forbidden",
         "The active role cannot read trading readiness."
       ]
