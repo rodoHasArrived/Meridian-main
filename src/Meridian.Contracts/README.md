@@ -723,8 +723,9 @@ scheduler shape.
 Evidence Vault identities also expose retained artifact metadata, grouped request lists, and
 support request rows for file-backed evidence bundles: storage kind, artifact id, kind, relative
 vault path, content hash, retained size, source route, canonical subject linkage, request-list
-target, highest severity, blocked outputs, missing/stale evidence requests, blocking work-item
-references, and validation support issues. Retained artifact references and copied vault artifacts
+target, typed close/audit/tax/report-package/operational-event request-list family, highest
+severity, blocked outputs, missing/stale evidence requests, blocking work-item references, and
+validation support issues. Retained artifact references and copied vault artifacts
 can also carry capture channel/source metadata plus extracted fields with confidence, review state,
 expected value, validation status, and linked record identity. Keep that metadata shared so packet,
 report, approval, screenshot, statement, audit, tax, close, and validation producers can enforce the
@@ -732,27 +733,41 @@ same retained-artifact, extraction, and request-list vocabulary. Request-list in
 contract-owned so close, audit, tax, report-package, browser, and WPF review surfaces can query the
 same frozen support posture without parsing manifest JSON. `EvidenceVaultIdentityDto.ManifestSnapshot`
 is the public frozen-manifest contract over that retained package, carrying package kind/id,
-content hash, document snapshots, support request snapshots, and linked operational objects for
-close, report, tax, and audit packages.
+typed package family for close binders, audit packets, report support packages, tax support packages,
+and event support packages, content hash, document snapshots, support request snapshots, and linked
+operational objects for close, report, tax, and audit packages.
 `EvidenceDocumentDto`, `EvidenceDocumentLinkDto`, `EvidenceRequestDto`, and `EvidenceManifestDto`
 name the document-intake surface explicitly over the retained vault: document identity carries
-classification, immutable source hash, received timestamp, source channel, actor, tenant/scope,
-extraction status, extractor id, reviewer state, audit trail, and links to period, portfolio, account,
-instrument, journal, reconciliation case, report line, or close task objects. `EvidenceVaultDocumentQueryDto`
+classification for bank statements, admin packages, valuation support, capital notices, invoices,
+tax/audit support, agreements, custodian files, immutable source hash, received timestamp, source
+channel plus typed channel kind for upload, email, SFTP, API, portal-download, local-file, and
+imported-file adapter seams, intake source kind for uploaded content, local/imported files, email,
+SFTP, API, and portal-download adapter references, actor, tenant/scope, extraction status including pending, extractor id,
+reviewer state with human-confirmed field rows for accepted evidence, audit trail, explicit
+support-only authority flags, and links to period, portfolio, fund, account, instrument, journal,
+reconciliation case, report line, or close task objects. The same source facts are also grouped in
+`EvidenceDocumentSourceRecordDto` as the immutable receipt record, including hash, receipt time,
+channel, actor, tenant/scope, source system/reference, and receipt hash for manifest and review
+consumers that need a single provenance object. `EvidenceVaultDocumentQueryDto`
 and `EvidenceVaultDocumentEntryDto` provide the shared browser/WPF queue shape for retained
 documents, including vault context, manifest route, open support-request count, and filters for
-classification, extraction state, reviewer state, subject, tenant/scope, and linked object.
+classification, typed channel kind, extraction state, reviewer state, subject, tenant/scope, and
+linked object.
 `EvidenceVaultIntakeRequestDto` and `EvidenceVaultIntakeResponseDto` extend that vocabulary to
 API-backed document intake: callers provide the evidence subject, channel, file name, uploaded
-base64 payload or an `EvidenceDocumentIntakeSourceDto` local/imported file reference, optional
+base64 payload or an `EvidenceDocumentIntakeSourceDto` local/imported/adapter source reference, optional
 expected SHA-256 hash, source reference, extraction fields, lifecycle metadata, document
-classification, reviewer state, object links, and lookup linkage, while the response returns the
+classification, intake channel kind, reviewer state, object links, and lookup linkage, while the response returns the
 retained artifact path, content hash, capture metadata, extraction review fields, document record,
 and vault identity. Non-ready extraction fields are part of the shared support-request vocabulary so
 direct intake can freeze close, audit, tax, report-package, or event request lists without browser or
 WPF clients parsing manifest JSON. Intake and manifest export both populate the same public
 manifest snapshot on the vault identity so browser, WPF, and close binder consumers do not have to
 deserialize the retained manifest payload to discover frozen documents or requests.
+Accepted document review requests must carry at least one `EvidenceDocumentConfirmedFieldDto`,
+keeping accounting-grade evidence behind a human-confirmed field trail instead of a status-only
+transition. `EvidenceDocumentAuthorityDto` remains support-only by default: documents can support,
+block, suggest, and link, but cannot approve, post, certify, or release authority-bearing outputs.
 
 Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs` and normalize
 retained audit records into cross-object timeline rows with object kind, object id, actor,
@@ -777,7 +792,10 @@ workbench payloads. `InstrumentPassportDto` carries identifier and provider mapp
 events, corporate actions, pricing/trading-parameter readiness, downstream usage, and trust posture
 so browser and WPF clients do not rebuild governed passport semantics locally. Provider-confidence
 rows expose mapping source, freshness, confidence score, identifier-conflict links, and override
-history for each provider symbol mapping.
+history for each provider symbol mapping. The same passport now carries an operations workbench
+with identity, provider-evidence, terms, readiness, and handoff panels so browser and WPF clients
+can render valuation, ledger, reconciliation, close, and report readiness without local readiness
+rules.
 
 Security Master custom asset profile contracts live under `SecurityMaster/` and define versioned
 profile definitions, typed field schemas, identifier preferences, lifecycle states, accounting-impact
@@ -1170,6 +1188,10 @@ for mutable drafts and submitted/approved entries. The request carries the curre
 one typed evidence attachment, optional evidence links, and origin metadata; the shared service
 validates line-scoped attachments, audits `manual-je.attach-evidence`, and rejects posted,
 reversed, rebooked, or close-locked entries.
+Evidence Vault document DTOs retain extracted-field rows on the document snapshot itself, alongside
+source record, reviewer state, confirmed fields, authority posture, and object links, so browser,
+WPF, and manifest consumers can review the same field-level evidence before a document becomes
+accounting-grade support.
 `ManualJournalEntryWorkbenchDto` also carries an optional `PrivateCapitalActivityProjectionDto`
 with server-owned fund-event rows, capital-account activity aggregates, ordered capital-account
 subledger entries with running net activity, ledger-impact rows, report-output readiness candidates,

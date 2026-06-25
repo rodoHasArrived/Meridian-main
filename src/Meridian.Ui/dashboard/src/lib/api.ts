@@ -1711,6 +1711,10 @@ export function listEvidenceVaultRequestLists(
     params.set("requestListKind", query.requestListKind);
   }
 
+  if (query.requestListKindCode) {
+    params.set("requestListKindCode", query.requestListKindCode);
+  }
+
   if (query.targetKind) {
     params.set("targetKind", query.targetKind);
   }
@@ -1749,6 +1753,10 @@ export function listEvidenceVaultDocuments(
   const params = new URLSearchParams();
   if (query.classification) {
     params.set("classification", query.classification);
+  }
+
+  if (query.channelKind) {
+    params.set("channelKind", query.channelKind);
   }
 
   if (query.extractionStatus) {

@@ -80,22 +80,44 @@ cleanup, schedule, and data-package endpoints. React renders returned posture, c
 typed package/schedule evidence without inventing local maintenance policy or retention decisions.
 
 Evidence Workbench consumes the shared Evidence Vault request-list and document queue endpoints. The
-browser renders retained documents with classification, source hash, channel/source, actor,
+same intake queue is reachable from the Accounting and Data workspace subnavigation, while the
+legacy Reporting evidence route remains a compatible evidence-packet entrypoint. The
+browser renders retained documents with classification, source hash, typed channel/source, actor,
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
-count, and manifest links, while keeping intake and readiness policy in shared contracts/endpoints.
+count, support-only authority posture, and manifest links, while keeping intake and readiness policy
+in shared contracts/endpoints.
+The request-list queue renders typed close, audit, tax, report-package, and operational-event family
+badges beside each frozen support list so operators can distinguish close binder blockers from audit
+or report-support package gaps without parsing manifest JSON.
 Selecting a retained document opens a read-only review panel with reviewer notes, source metadata,
-object links, audit events, support-request context, and manifest access without introducing
-browser-owned approval or accounting mutation.
+immutable source-record receipt, extracted fields for human confirmation, human-confirmed field
+counts, authority boundary, object links, audit events, support-request context, and manifest access
+without introducing browser-owned approval or accounting mutation.
 Operators can also retain an uploaded document, local-file path, or imported-file reference from
 the selected evidence subject, classify it, record actor and tenant/scope metadata, set extraction
 and reviewer state, and attach one linked operational object before the shared vault intake
-endpoint copies the payload and computes the source hash.
-The TypeScript contract also mirrors `EvidenceDocumentIntakeSourceDto` so uploaded, local-file, and
-imported-file reference intake use the same shared source vocabulary when browser controls submit
-documents.
+endpoint copies the payload and computes the source hash. The intake form exposes the v1
+document-classification vocabulary, `Pending` extraction posture, and linked fund, account, period,
+close, reconciliation, journal, report, instrument, and portfolio object targets; it leaves `Accepted`
+review out of first-pass intake because accepted evidence must pass through the shared review
+endpoint with human-confirmed fields.
+When an operator accepts a retained document from the browser, the shared review endpoint receives
+human-confirmed extracted fields plus the immutable source-hash field so accepted evidence is not
+represented by a status-only transition; the retained document authority still cannot approve,
+post, certify, or release.
+The TypeScript contract also mirrors `EvidenceDocumentIntakeChannelDto` and
+`EvidenceDocumentIntakeSourceDto` so uploaded, email, SFTP, API, portal-download, local-file, and
+imported-file reference intake use the same shared channel/source vocabulary. Browser intake keeps
+email, SFTP, API, and portal-download as upload-backed adapter seams in v1: operators retain the
+document bytes and typed source URI now, while later connector implementations can fetch from those
+channels without changing the retained source-record shape.
 The TypeScript vault identity mirror includes the public `manifestSnapshot` so browser close,
 report, audit, and tax package views can inspect frozen package documents, support requests, object
-links, and content hash without parsing retained manifest JSON.
+links, typed request-list family, typed frozen package family, and content hash without parsing
+retained manifest JSON.
+Manifest export results surface that typed frozen package family directly, so operators can tell
+whether the retained package is a close binder, audit packet, report support package, tax support
+package, or operational-event support package before opening the manifest file.
 The browser DTO mirror also preserves `documentSnapshots` on Operations Continuity close-package
 requests and publications so close binder documents can be frozen by Financial Operations instead
 of recomputed in React.
@@ -916,7 +938,7 @@ anchors open holdings, selected run evidence, brokerage posture, and coverage pr
 Portfolio view model, while Security Master anchors instrument search, identity evidence, conflicts,
 schedules, lots, and trading controls to the Accounting-owned Security Master view model.
 
-The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned.
+The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned. The same passport now renders the endpoint-owned operations workbench panels for identity, provider evidence, terms, readiness, and handoff so browser code does not calculate valuation, ledger, reconciliation, close, or report readiness locally.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source

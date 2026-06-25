@@ -1556,6 +1556,7 @@ public sealed class EvidenceWorkflowFabricTests
         var requestLists = response.VaultIdentity!.RequestLists;
         requestLists.Should().ContainSingle(list =>
             list.RequestListKind == "AuditRequestList" &&
+            list.RequestListKindCode == EvidenceRequestListKindDto.Audit &&
             list.TargetKind == "audit" &&
             list.TargetId == "close-2026-05" &&
             list.HighestSeverity == EvidenceValidationSeverityDto.Critical &&
@@ -1587,6 +1588,7 @@ public sealed class EvidenceWorkflowFabricTests
             request.BlockedOutput == "report-pack/close-2026-05");
         response.VaultIdentity.ManifestSnapshot.Should().NotBeNull();
         response.VaultIdentity.ManifestSnapshot!.PackageKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        response.VaultIdentity.ManifestSnapshot.PackageKindCode.Should().Be(EvidenceManifestPackageKindDto.AuditPacket);
         response.VaultIdentity.ManifestSnapshot.PackageId.Should().Be("close-2026-05");
         response.VaultIdentity.ManifestSnapshot.ContentHashSha256.Should().Be(response.VaultIdentity.ContentHashSha256);
         response.VaultIdentity.ManifestSnapshot.Requests.Should().HaveCount(2);
@@ -1622,10 +1624,162 @@ public sealed class EvidenceWorkflowFabricTests
             Status: "Open"));
         var indexedRequestList = requestListIndex.Should().ContainSingle().Subject;
         indexedRequestList.VaultId.Should().Be(response.VaultIdentity.VaultId);
+        indexedRequestList.RequestListKindCode.Should().Be(EvidenceRequestListKindDto.Audit);
         indexedRequestList.ManifestRoute.Should().Be(response.VaultIdentity.ManifestRoute);
         indexedRequestList.OpenRequestCount.Should().Be(2);
         indexedRequestList.SupportRequests.Should().HaveCount(2);
         indexedRequestList.SupportRequests.Should().Contain(request => request.RequestKind == "MissingEvidence");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_FreezesTypedSupportRequestListsForCloseAuditTaxReportAndEvents()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-06");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes:
+            [
+                Node(subject, "close-nav-support", "close-support", EvidenceStatusDto.Missing),
+                Node(subject, "audit-confirmation", "audit-support", EvidenceStatusDto.Missing),
+                Node(subject, "tax-k1-support", "tax-support", EvidenceStatusDto.Missing),
+                Node(subject, "report-package-support", "report-support", EvidenceStatusDto.Missing),
+                Node(subject, "capital-call-event-support", "fund-event-support", EvidenceStatusDto.Missing)
+            ],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(
+                0,
+                EvidenceStatusDto.Blocked,
+                ["close-nav-support", "audit-confirmation", "tax-k1-support", "report-package-support", "capital-call-event-support"],
+                [],
+                ["close-nav-support", "audit-confirmation", "tax-k1-support", "report-package-support", "capital-call-event-support"],
+                [],
+                [])
+            {
+                ValidationIssues =
+                [
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Close NAV support is missing.",
+                        EvidenceId: "close-nav-support",
+                        EvidenceKind: "close-support",
+                        SourceSystem: "test"),
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Audit confirmation support is missing.",
+                        EvidenceId: "audit-confirmation",
+                        EvidenceKind: "audit-support",
+                        SourceSystem: "test"),
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Tax K-1 support is missing.",
+                        EvidenceId: "tax-k1-support",
+                        EvidenceKind: "tax-support",
+                        SourceSystem: "test"),
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Report-package support is missing.",
+                        EvidenceId: "report-package-support",
+                        EvidenceKind: "report-support",
+                        SourceSystem: "test"),
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Capital-call fund-event support is missing.",
+                        EvidenceId: "capital-call-event-support",
+                        EvidenceKind: "fund-event-support",
+                        SourceSystem: "test")
+                ]
+            },
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "typed request-list freeze"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        var requestLists = response.VaultIdentity!.RequestLists;
+        requestLists.Should().HaveCount(5);
+        requestLists.Should().ContainSingle(list =>
+            list.RequestListKind == "EventRequestList" &&
+            list.RequestListKindCode == EvidenceRequestListKindDto.OperationalEvent &&
+            list.TargetKind == "event");
+        requestLists.Should().ContainSingle(list =>
+            list.RequestListKind == "CloseRequestList" &&
+            list.RequestListKindCode == EvidenceRequestListKindDto.Close &&
+            list.TargetKind == "close");
+        requestLists.Should().ContainSingle(list =>
+            list.RequestListKind == "AuditRequestList" &&
+            list.RequestListKindCode == EvidenceRequestListKindDto.Audit &&
+            list.TargetKind == "audit");
+        requestLists.Should().ContainSingle(list =>
+            list.RequestListKind == "TaxRequestList" &&
+            list.RequestListKindCode == EvidenceRequestListKindDto.Tax &&
+            list.TargetKind == "tax");
+        requestLists.Should().ContainSingle(list =>
+            list.RequestListKind == "ReportPackageRequestList" &&
+            list.RequestListKindCode == EvidenceRequestListKindDto.ReportPackage &&
+            list.TargetKind == "report-package");
+        response.VaultIdentity.ManifestSnapshot.Should().NotBeNull();
+        response.VaultIdentity.ManifestSnapshot!.PackageKindCode.Should().Be(EvidenceManifestPackageKindDto.CloseBinder);
+        response.VaultIdentity.ManifestSnapshot!.Requests.Should().HaveCount(5);
+
+        var eventLists = await store.ListRequestListsAsync(new EvidenceVaultRequestListQueryDto(
+            RequestListKindCode: EvidenceRequestListKindDto.OperationalEvent,
+            Status: "Open"));
+        eventLists.Should().ContainSingle(entry =>
+            entry.VaultId == response.VaultIdentity.VaultId &&
+            entry.RequestListKindCode == EvidenceRequestListKindDto.OperationalEvent &&
+            entry.SupportRequests.Any(request => request.EvidenceId == "capital-call-event-support"));
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_StampsReportSupportPackageManifestFamily()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "board-report-2026-06");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "report-package-support", "report-support", EvidenceStatusDto.Missing)],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(
+                0,
+                EvidenceStatusDto.Blocked,
+                ["report-package-support"],
+                [],
+                ["report-package-support"],
+                [],
+                [])
+            {
+                ValidationIssues =
+                [
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Report-package support is missing.",
+                        EvidenceId: "report-package-support",
+                        EvidenceKind: "report-support",
+                        SourceSystem: "test")
+                ]
+            },
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "report support package"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.ManifestSnapshot.Should().NotBeNull();
+        response.VaultIdentity.ManifestSnapshot!.PackageKindCode.Should().Be(EvidenceManifestPackageKindDto.ReportSupportPackage);
+        response.VaultIdentity.RequestLists.Should().ContainSingle(list =>
+            list.RequestListKindCode == EvidenceRequestListKindDto.ReportPackage &&
+            list.TargetKind == "report-package");
     }
 
     [Fact]
@@ -2129,6 +2283,80 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceEndpoints_VaultDocuments_QuerySupportsAdminAndTaxAuditSupportVocabulary()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-support-vocabulary-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+        var bytes = Encoding.UTF8.GetBytes("support_id,status\r\naudit-2026-06,missing-admin-confirmation\r\n");
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                SubjectKind: EvidenceSubjectResolver.ReportPackKind,
+                SubjectId: "close-audit-2026-06",
+                IntakeChannel: "upload",
+                FileName: "admin-tax-audit-support.csv",
+                ContentBase64: Convert.ToBase64String(bytes),
+                ContentType: "text/csv",
+                SourceSystem: "fund-admin-portal",
+                SourceReference: "portal://fund-admin/close-audit-2026-06",
+                ReceivedBy: "controller")
+            {
+                Classification = EvidenceDocumentClassificationDto.TaxAuditSupport,
+                IntakeChannelKind = EvidenceDocumentIntakeChannelDto.Upload,
+                ExtractionStatus = EvidenceExtractionStatusDto.Pending,
+                TenantId = "tenant-alpha",
+                Scope = "fund-alpha",
+                ObjectLinks =
+                [
+                    new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.Fund, "fund-alpha", "Fund Alpha"),
+                    new EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto.ReportLine, "report-line:tax-support", "Tax support line")
+                ]
+            },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var documents = await client.GetFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(
+            "/api/workstation/evidence/vault/documents?classification=TaxAuditSupport&extractionStatus=Pending&linkKind=Fund&objectId=fund-alpha&tenantId=tenant-alpha&scope=fund-alpha",
+            ServerJsonOptions);
+        var entry = documents.Should().ContainSingle().Subject;
+        entry.Document.Classification.Should().Be(EvidenceDocumentClassificationDto.TaxAuditSupport);
+        entry.Document.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.Upload);
+        entry.Document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.Fund &&
+            link.ObjectId == "fund-alpha");
+        entry.Document.SourceSystem.Should().Be("fund-admin-portal");
+
+        var adminPackageResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                SubjectKind: EvidenceSubjectResolver.ReportPackKind,
+                SubjectId: "admin-package-2026-06",
+                IntakeChannel: "portal-download",
+                FileName: "admin-package.csv",
+                ContentBase64: Convert.ToBase64String(bytes),
+                ContentType: "text/csv",
+                ReceivedBy: "controller")
+            {
+                Classification = EvidenceDocumentClassificationDto.AdminPackage,
+                IntakeChannelKind = EvidenceDocumentIntakeChannelDto.PortalDownload,
+                TenantId = "tenant-alpha",
+                Scope = "fund-alpha"
+            },
+            ServerJsonOptions);
+        adminPackageResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var adminDocuments = await client.GetFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(
+            "/api/workstation/evidence/vault/documents?classification=AdminPackage&channelKind=PortalDownload&tenantId=tenant-alpha&scope=fund-alpha",
+            ServerJsonOptions);
+        adminDocuments.Should().ContainSingle(entry =>
+            entry.Document.Classification == EvidenceDocumentClassificationDto.AdminPackage &&
+            entry.Document.ChannelKind == EvidenceDocumentIntakeChannelDto.PortalDownload);
+    }
+
+    [Fact]
     public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RetainsCapturedDocumentWithReviewMetadata()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-intake-store-{Guid.NewGuid():N}");
@@ -2178,11 +2406,18 @@ public sealed class EvidenceWorkflowFabricTests
                 null,
                 "recon-case-77"))
         {
-            Classification = EvidenceDocumentClassificationDto.BankEvidence,
+            Classification = EvidenceDocumentClassificationDto.BankStatement,
+            IntakeChannelKind = EvidenceDocumentIntakeChannelDto.Api,
             TenantId = "tenant-alpha",
             Scope = "fund-alpha",
             ObjectLinks =
             [
+                new EvidenceDocumentLinkDto(
+                    EvidenceDocumentLinkKindDto.Fund,
+                    "fund-alpha",
+                    "Fund Alpha",
+                    "/workstation/accounting/funds/fund-alpha",
+                    "scope"),
                 new EvidenceDocumentLinkDto(
                     EvidenceDocumentLinkKindDto.CloseTask,
                     "close-task:cash-support",
@@ -2201,6 +2436,7 @@ public sealed class EvidenceWorkflowFabricTests
         response.SubjectId.Should().Be(subjectId);
         response.ContentHashSha256.Should().Be(expectedHash);
         response.Capture.CaptureChannel.Should().Be("api");
+        response.Capture.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.Api);
         response.Capture.SourceSystem.Should().Be("bank-api");
         response.ExtractedFields.Should().Contain(field =>
             field.FieldName == "amount" &&
@@ -2228,36 +2464,81 @@ public sealed class EvidenceWorkflowFabricTests
         artifact.Capture!.ReceivedBy.Should().Be("fund-controller");
         artifact.ExtractedFields.Should().Contain(field => field.FieldName == "amount");
         artifact.Document.Should().NotBeNull();
-        artifact.Document!.Classification.Should().Be(EvidenceDocumentClassificationDto.BankEvidence);
-        artifact.Document.SourceHashSha256.Should().Be(expectedHash);
-        artifact.Document.SourceChannel.Should().Be("api");
-        artifact.Document.Actor.Should().Be("fund-controller");
-        artifact.Document.TenantId.Should().Be("tenant-alpha");
-        artifact.Document.Scope.Should().Be("fund-alpha");
-        artifact.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.NeedsReview);
-        artifact.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.NeedsReview);
-        artifact.Document.ObjectLinks.Should().Contain(link =>
+        var retainedDocument = artifact.Document!;
+        retainedDocument.ExtractedFields.Should().Contain(field =>
+            field.FieldName == "amount" &&
+            field.ExtractedValue == "1250.00" &&
+            field.ValidationStatus == EvidenceStatusDto.Ready);
+        retainedDocument.ExtractedFields.Should().Contain(field =>
+            field.FieldName == "auditSupportReference" &&
+            field.ValidationStatus == EvidenceStatusDto.Missing);
+        retainedDocument.Classification.Should().Be(EvidenceDocumentClassificationDto.BankStatement);
+        retainedDocument.SourceHashSha256.Should().Be(expectedHash);
+        retainedDocument.SourceChannel.Should().Be("api");
+        retainedDocument.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.Api);
+        retainedDocument.Actor.Should().Be("fund-controller");
+        retainedDocument.TenantId.Should().Be("tenant-alpha");
+        retainedDocument.Scope.Should().Be("fund-alpha");
+        retainedDocument.SourceRecord.Should().NotBeNull();
+        retainedDocument.SourceRecord!.SourceHashSha256.Should().Be(expectedHash);
+        retainedDocument.SourceRecord.ReceiptHash.Should().Be(expectedHash);
+        retainedDocument.SourceRecord.ReceivedAt.Should().Be(retainedDocument.ReceivedAt);
+        retainedDocument.SourceRecord.SourceChannel.Should().Be("api");
+        retainedDocument.SourceRecord.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.Api);
+        retainedDocument.SourceRecord.Actor.Should().Be("fund-controller");
+        retainedDocument.SourceRecord.TenantId.Should().Be("tenant-alpha");
+        retainedDocument.SourceRecord.Scope.Should().Be("fund-alpha");
+        retainedDocument.SourceRecord.SourceSystem.Should().Be("bank-api");
+        retainedDocument.SourceRecord.SourceReference.Should().Be("api://bank/settlements/settle-001");
+        retainedDocument.Authority.CanSupport.Should().BeTrue();
+        retainedDocument.Authority.CanBlock.Should().BeTrue();
+        retainedDocument.Authority.CanSuggest.Should().BeTrue();
+        retainedDocument.Authority.CanLink.Should().BeTrue();
+        retainedDocument.Authority.CanApprove.Should().BeFalse();
+        retainedDocument.Authority.CanPost.Should().BeFalse();
+        retainedDocument.Authority.CanCertify.Should().BeFalse();
+        retainedDocument.Authority.CanRelease.Should().BeFalse();
+        retainedDocument.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.NeedsReview);
+        retainedDocument.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.NeedsReview);
+        retainedDocument.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.Fund &&
+            link.ObjectId == "fund-alpha");
+        retainedDocument.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.CloseTask &&
             link.ObjectId == "close-task:cash-support");
-        artifact.Document.ObjectLinks.Should().Contain(link =>
+        retainedDocument.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.Period &&
             link.ObjectId == "2026-06");
-        artifact.Document.ObjectLinks.Should().Contain(link =>
+        retainedDocument.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase &&
             link.ObjectId == "recon-case-77");
-        artifact.Document.AuditTrail.Should().ContainSingle(evt =>
+        retainedDocument.AuditTrail.Should().ContainSingle(evt =>
             evt.Action == "DocumentIntakeRetained" &&
             evt.Actor == "fund-controller");
-        response.Document.Should().BeEquivalentTo(artifact.Document);
-        identity.Documents.Should().ContainSingle(document => document.DocumentId == artifact.Document.DocumentId);
+        response.Document.Should().BeEquivalentTo(retainedDocument);
+        identity.Documents.Should().ContainSingle(document => document.DocumentId == retainedDocument.DocumentId);
         identity.RequestLists.Should().BeEquivalentTo(response.VaultIdentity.RequestLists);
         identity.SupportRequests.Should().BeEquivalentTo(response.VaultIdentity.SupportRequests);
         identity.ManifestSnapshot.Should().NotBeNull();
         identity.ManifestSnapshot!.PackageKind.Should().Be(EvidenceSubjectResolver.PaymentIntentKind);
         identity.ManifestSnapshot.PackageId.Should().Be(subjectId);
         identity.ManifestSnapshot.Documents.Should().ContainSingle(document =>
-            document.DocumentId == artifact.Document.DocumentId &&
-            document.SourceHashSha256 == expectedHash);
+            document.DocumentId == retainedDocument.DocumentId &&
+            document.SourceHashSha256 == expectedHash &&
+            document.SourceRecord != null &&
+            document.SourceRecord.SourceHashSha256 == expectedHash &&
+            document.SourceRecord.ChannelKind == EvidenceDocumentIntakeChannelDto.Api &&
+            document.SourceRecord.Actor == "fund-controller" &&
+            document.SourceRecord.TenantId == "tenant-alpha" &&
+            document.SourceRecord.Scope == "fund-alpha" &&
+            document.ExtractedFields.Any(field =>
+                field.FieldName == "amount" &&
+                field.ExtractedValue == "1250.00") &&
+            document.Authority.CanSupport &&
+            !document.Authority.CanApprove &&
+            !document.Authority.CanPost &&
+            !document.Authority.CanCertify &&
+            !document.Authority.CanRelease);
         identity.ManifestSnapshot.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.CloseTask &&
             link.ObjectId == "close-task:cash-support");
@@ -2285,7 +2566,8 @@ public sealed class EvidenceWorkflowFabricTests
             entry.SupportRequests.Count == 1);
 
         var documents = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
-            Classification: EvidenceDocumentClassificationDto.BankEvidence,
+            Classification: EvidenceDocumentClassificationDto.BankStatement,
+            ChannelKind: EvidenceDocumentIntakeChannelDto.Api,
             ReviewStatus: EvidenceDocumentReviewStatusDto.NeedsReview,
             LinkKind: EvidenceDocumentLinkKindDto.CloseTask,
             ObjectId: "close-task:cash-support",
@@ -2296,6 +2578,16 @@ public sealed class EvidenceWorkflowFabricTests
         documentEntry.Document.DocumentId.Should().Be(artifact.Document.DocumentId);
         documentEntry.ManifestRoute.Should().Be(response.VaultIdentity.ManifestRoute);
         documentEntry.OpenRequestCount.Should().Be(1);
+
+        var fundDocuments = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            Classification: EvidenceDocumentClassificationDto.BankStatement,
+            LinkKind: EvidenceDocumentLinkKindDto.Fund,
+            ObjectId: "fund-alpha",
+            TenantId: "tenant-alpha",
+            Scope: "fund-alpha"));
+        fundDocuments.Should().ContainSingle(entry =>
+            entry.VaultId == response.VaultIdentity.VaultId &&
+            entry.Document.ObjectLinks.Any(link => link.LinkKind == EvidenceDocumentLinkKindDto.Fund));
     }
 
     [Fact]
@@ -2325,33 +2617,81 @@ public sealed class EvidenceWorkflowFabricTests
                 EvidenceDocumentReviewStatusDto.Accepted,
                 "controller",
                 "Reviewed bank support for close package.",
-                CorrelationId: "corr-review-1"),
+                CorrelationId: "corr-review-1")
+            {
+                ConfirmedFields =
+                [
+                    new EvidenceDocumentConfirmedFieldDto(
+                        "endingCash",
+                        "1024.50",
+                        "controller",
+                        default,
+                        "ending_cash",
+                        "Confirmed against retained bank statement.")
+                ]
+            },
             cts.Token);
 
         review.Should().NotBeNull();
         review!.Entry.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.Accepted);
         review.Entry.Document.ReviewerState.Reviewer.Should().Be("controller");
         review.Entry.Document.ReviewerState.Notes.Should().Be("Reviewed bank support for close package.");
+        review.Entry.Document.ReviewerState.ConfirmedFields.Should().ContainSingle(field =>
+            field.FieldName == "endingCash" &&
+            field.ConfirmedValue == "1024.50" &&
+            field.ConfirmedBy == "controller" &&
+            field.ConfirmedAt != default);
+        review.Entry.Document.SourceRecord.Should().NotBeNull();
+        review.Entry.Document.SourceRecord!.SourceHashSha256.Should().Be(intake.ContentHashSha256);
+        review.Entry.Document.SourceRecord.SourceChannel.Should().Be("api");
+        review.Entry.Document.SourceRecord.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.Api);
+        review.Entry.Document.SourceRecord.Actor.Should().Be("fund-controller");
+        review.Entry.Document.Authority.CanSupport.Should().BeTrue();
+        review.Entry.Document.Authority.CanBlock.Should().BeTrue();
+        review.Entry.Document.Authority.CanSuggest.Should().BeTrue();
+        review.Entry.Document.Authority.CanLink.Should().BeTrue();
+        review.Entry.Document.Authority.CanApprove.Should().BeFalse();
+        review.Entry.Document.Authority.CanPost.Should().BeFalse();
+        review.Entry.Document.Authority.CanCertify.Should().BeFalse();
+        review.Entry.Document.Authority.CanRelease.Should().BeFalse();
         review.Entry.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.Accepted);
         review.AuditEvent.Action.Should().Be("DocumentReviewRecorded");
         review.AuditEvent.CorrelationId.Should().Be("corr-review-1");
+        review.AuditEvent.Summary.Should().Contain("1 human-confirmed field");
 
         var identity = await store.TryGetVaultIdentityAsync(intake.VaultIdentity.VaultId, cts.Token);
         identity.Should().NotBeNull();
         identity!.Documents.Should().ContainSingle(document =>
             document.DocumentId == intake.Document.DocumentId &&
             document.ReviewerState.Status == EvidenceDocumentReviewStatusDto.Accepted &&
+            document.ReviewerState.ConfirmedFields.Any(field => field.FieldName == "endingCash") &&
             document.AuditTrail.Any(evt => evt.Action == "DocumentReviewRecorded"));
         identity.ManifestSnapshot.Should().NotBeNull();
         identity.ManifestSnapshot!.Documents.Should().ContainSingle(document =>
             document.DocumentId == intake.Document.DocumentId &&
-            document.ReviewerState.Status == EvidenceDocumentReviewStatusDto.Accepted);
+            document.SourceRecord != null &&
+            document.SourceRecord.SourceHashSha256 == intake.ContentHashSha256 &&
+            document.ReviewerState.Status == EvidenceDocumentReviewStatusDto.Accepted &&
+            document.ReviewerState.ConfirmedFields.Any(field => field.FieldName == "endingCash") &&
+            !document.Authority.CanApprove &&
+            !document.Authority.CanPost &&
+            !document.Authority.CanCertify &&
+            !document.Authority.CanRelease);
 
         await using var manifest = (await store.TryOpenManifestByVaultIdAsync(intake.VaultIdentity.VaultId, cts.Token))!.Content;
         using var reader = new StreamReader(manifest);
         var manifestJson = await reader.ReadToEndAsync(cts.Token);
         manifestJson.Should().Contain("\"action\": \"DocumentReviewRecorded\"");
         manifestJson.Should().Contain("\"status\": \"Accepted\"");
+        manifestJson.Should().Contain("\"fieldName\": \"endingCash\"");
+
+        var unconfirmedReview = () => store.ReviewDocumentAsync(
+            intake.VaultIdentity.VaultId,
+            intake.Document.DocumentId,
+            new EvidenceVaultDocumentReviewRequestDto(EvidenceDocumentReviewStatusDto.Accepted, "controller"),
+            cts.Token);
+        await unconfirmedReview.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*require at least one human-confirmed field*");
     }
 
     [Fact]
@@ -2393,6 +2733,18 @@ public sealed class EvidenceWorkflowFabricTests
                 "fund-controller",
                 DateTimeOffset.Parse("2026-06-30T18:00:00Z"),
                 "Accepted imported custodian file for close support.")
+            {
+                ConfirmedFields =
+                [
+                    new EvidenceDocumentConfirmedFieldDto(
+                        "sourceHashSha256",
+                        expectedHash,
+                        "fund-controller",
+                        DateTimeOffset.Parse("2026-06-30T18:00:00Z"),
+                        "sourceHashSha256",
+                        "Confirmed retained file hash.")
+                ]
+            }
         });
 
         response.ContentHashSha256.Should().Be(expectedHash);
@@ -2420,6 +2772,73 @@ public sealed class EvidenceWorkflowFabricTests
             link.LinkKind == EvidenceDocumentLinkKindDto.Period &&
             link.ObjectId == "2026-06");
         response.Document.Should().BeEquivalentTo(artifact.Document);
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringAdapterSeamIntake_RetainsTypedSourceRecordWithoutFetching()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-adapter-seams-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var adapterCases = new[]
+        {
+            (EvidenceDocumentIntakeSourceKindDto.Email, EvidenceDocumentIntakeChannelDto.Email, "mailbox://ap/fund-alpha/invoice-001.eml"),
+            (EvidenceDocumentIntakeSourceKindDto.Sftp, EvidenceDocumentIntakeChannelDto.Sftp, "sftp://admin.example.com/packages/fund-alpha/nav.zip"),
+            (EvidenceDocumentIntakeSourceKindDto.Api, EvidenceDocumentIntakeChannelDto.Api, "api://fund-admin/packages/nav-2026-06"),
+            (EvidenceDocumentIntakeSourceKindDto.PortalDownload, EvidenceDocumentIntakeChannelDto.PortalDownload, "portal://custodian/fund-alpha/statement-2026-06.pdf")
+        };
+
+        foreach (var (sourceKind, channelKind, uri) in adapterCases)
+        {
+            var bytes = Encoding.UTF8.GetBytes($"adapter,{sourceKind},fund-alpha\r\n");
+            var expectedHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+            var response = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+                SubjectKind: "account",
+                SubjectId: $"fund-alpha-{sourceKind.ToString().ToLowerInvariant()}",
+                IntakeChannel: "upload",
+                FileName: $"{sourceKind.ToString().ToLowerInvariant()}-support.csv",
+                ContentBase64: Convert.ToBase64String(bytes),
+                ContentType: "text/csv",
+                SourceSystem: $"{sourceKind.ToString().ToLowerInvariant()}-adapter",
+                ReceivedBy: "operations-operator")
+            {
+                Classification = EvidenceDocumentClassificationDto.AdminPackage,
+                IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                    sourceKind,
+                    Path: $"adapter/{sourceKind}/support.csv",
+                    Uri: uri,
+                    DisplayName: $"{sourceKind} support",
+                    ExpectedContentHashSha256: expectedHash),
+                TenantId = "tenant-alpha",
+                Scope = "fund-alpha"
+            });
+
+            response.ContentHashSha256.Should().Be(expectedHash);
+            response.Capture.ChannelKind.Should().Be(channelKind);
+            response.Capture.SourceReference.Should().Be(uri);
+            response.Document.Should().NotBeNull();
+            response.Document!.ChannelKind.Should().Be(channelKind);
+            response.Document.SourceRecord.Should().NotBeNull();
+            response.Document.SourceRecord!.SourceHashSha256.Should().Be(expectedHash);
+            response.Document.SourceRecord.ChannelKind.Should().Be(channelKind);
+            response.Document.SourceRecord.SourceReference.Should().Be(uri);
+            response.Document.SourceRecord.SourceSystem.Should().Be($"{sourceKind.ToString().ToLowerInvariant()}-adapter");
+            response.Document.SourceRecord.Actor.Should().Be("operations-operator");
+            response.Document.SourceRecord.TenantId.Should().Be("tenant-alpha");
+            response.Document.SourceRecord.Scope.Should().Be("fund-alpha");
+        }
+
+        var missingContent = () => store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            SubjectKind: "account",
+            SubjectId: "fund-alpha-email",
+            IntakeChannel: "email",
+            FileName: "missing-content.csv")
+        {
+            IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                EvidenceDocumentIntakeSourceKindDto.Email,
+                Uri: "mailbox://ap/fund-alpha/missing-content.eml")
+        });
+        await missingContent.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*adapter seam in v1 and requires contentBase64*");
     }
 
     [Fact]
@@ -2579,6 +2998,100 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceEndpoints_VaultIntake_RetainsAdapterSeamSourceRecord()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-adapter-intake-endpoint-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+        var subjectId = "fund-alpha-admin-package-202606";
+        var bytes = Encoding.UTF8.GetBytes("package,period,status\r\nadmin-package,2026-06,received\r\n");
+        var expectedHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                SubjectKind: "account",
+                SubjectId: subjectId,
+                IntakeChannel: "upload",
+                FileName: "admin-package.csv",
+                ContentBase64: Convert.ToBase64String(bytes),
+                ContentType: "text/csv",
+                SourceSystem: "fund-admin-portal",
+                ReceivedBy: "fund-admin-operator",
+                ExpectedContentHashSha256: expectedHash)
+            {
+                Classification = EvidenceDocumentClassificationDto.AdminPackage,
+                IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                    EvidenceDocumentIntakeSourceKindDto.PortalDownload,
+                    Path: "portal/fund-alpha/admin-package-202606.csv",
+                    Uri: "portal://fund-admin/fund-alpha/admin-package-202606",
+                    DisplayName: "Fund Alpha June admin package",
+                    ExpectedContentHashSha256: expectedHash),
+                TenantId = "tenant-alpha",
+                Scope = "fund-alpha",
+                ObjectLinks =
+                [
+                    new EvidenceDocumentLinkDto(
+                        EvidenceDocumentLinkKindDto.Fund,
+                        "fund-alpha",
+                        "Fund Alpha")
+                ]
+            },
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var intake = await response.Content.ReadFromJsonAsync<EvidenceVaultIntakeResponseDto>(ServerJsonOptions);
+        intake.Should().NotBeNull();
+        intake!.ContentHashSha256.Should().Be(expectedHash);
+        intake.Capture.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.PortalDownload);
+        intake.Capture.SourceReference.Should().Be("portal://fund-admin/fund-alpha/admin-package-202606");
+        intake.Document.Should().NotBeNull();
+        intake.Document!.Classification.Should().Be(EvidenceDocumentClassificationDto.AdminPackage);
+        intake.Document.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.PortalDownload);
+        intake.Document.SourceReference.Should().Be("portal://fund-admin/fund-alpha/admin-package-202606");
+        intake.Document.SourceRecord.Should().NotBeNull();
+        intake.Document.SourceRecord!.SourceHashSha256.Should().Be(expectedHash);
+        intake.Document.SourceRecord.ChannelKind.Should().Be(EvidenceDocumentIntakeChannelDto.PortalDownload);
+        intake.Document.SourceRecord.SourceSystem.Should().Be("fund-admin-portal");
+        intake.Document.SourceRecord.SourceReference.Should().Be("portal://fund-admin/fund-alpha/admin-package-202606");
+        intake.Document.SourceRecord.Actor.Should().Be("fund-admin-operator");
+        intake.Document.SourceRecord.TenantId.Should().Be("tenant-alpha");
+        intake.Document.SourceRecord.Scope.Should().Be("fund-alpha");
+        intake.VaultIdentity.ManifestSnapshot.Should().NotBeNull();
+        intake.VaultIdentity.ManifestSnapshot!.Documents.Should().ContainSingle(document =>
+            document.DocumentId == intake.Document.DocumentId &&
+            document.SourceRecord != null &&
+            document.SourceRecord.ChannelKind == EvidenceDocumentIntakeChannelDto.PortalDownload &&
+            document.SourceRecord.SourceHashSha256 == expectedHash);
+
+        var documentResponse = await client.GetAsync(
+            "/api/workstation/evidence/vault/documents?classification=AdminPackage&channelKind=PortalDownload&linkKind=Fund&objectId=fund-alpha&tenantId=tenant-alpha&scope=fund-alpha");
+        documentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var documentEntries = await documentResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(ServerJsonOptions);
+        documentEntries.Should().ContainSingle(entry =>
+            entry.VaultId == intake.VaultIdentity.VaultId &&
+            entry.Document.SourceRecord != null &&
+            entry.Document.SourceRecord.ChannelKind == EvidenceDocumentIntakeChannelDto.PortalDownload);
+
+        var invalidResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                SubjectKind: "account",
+                SubjectId: subjectId,
+                IntakeChannel: "portal-download",
+                FileName: "admin-package.csv")
+            {
+                IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                    EvidenceDocumentIntakeSourceKindDto.PortalDownload,
+                    Uri: "portal://fund-admin/fund-alpha/missing-content")
+            },
+            ServerJsonOptions);
+        invalidResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await invalidResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        error!.Message.Should().Contain("adapter seam in v1");
+    }
+
+    [Fact]
     public async Task EvidenceEndpoints_VaultIntake_WithFixtureMetadata_UsesDeterministicFixtureExtraction()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-fixture-intake-{Guid.NewGuid():N}");
@@ -2681,7 +3194,19 @@ public sealed class EvidenceWorkflowFabricTests
                 EvidenceDocumentReviewStatusDto.Accepted,
                 "controller",
                 "Invoice support reviewed for retained package.",
-                CorrelationId: "corr-endpoint-review"),
+                CorrelationId: "corr-endpoint-review")
+            {
+                ConfirmedFields =
+                [
+                    new EvidenceDocumentConfirmedFieldDto(
+                        "invoiceTotal",
+                        "125.00",
+                        "controller",
+                        default,
+                        "total",
+                        "Confirmed invoice total before accepting evidence.")
+                ]
+            },
             ServerJsonOptions,
             cts.Token);
 
@@ -2691,6 +3216,18 @@ public sealed class EvidenceWorkflowFabricTests
         review!.Entry.VaultId.Should().Be(intake.VaultIdentity.VaultId);
         review.Entry.Document.DocumentId.Should().Be(intake.Document.DocumentId);
         review.Entry.Document.ReviewerState.Status.Should().Be(EvidenceDocumentReviewStatusDto.Accepted);
+        review.Entry.Document.ReviewerState.ConfirmedFields.Should().ContainSingle(field =>
+            field.FieldName == "invoiceTotal" &&
+            field.ConfirmedValue == "125.00" &&
+            field.ConfirmedBy == "controller");
+        review.Entry.Document.Authority.CanSupport.Should().BeTrue();
+        review.Entry.Document.Authority.CanBlock.Should().BeTrue();
+        review.Entry.Document.Authority.CanSuggest.Should().BeTrue();
+        review.Entry.Document.Authority.CanLink.Should().BeTrue();
+        review.Entry.Document.Authority.CanApprove.Should().BeFalse();
+        review.Entry.Document.Authority.CanPost.Should().BeFalse();
+        review.Entry.Document.Authority.CanCertify.Should().BeFalse();
+        review.Entry.Document.Authority.CanRelease.Should().BeFalse();
         review.Entry.Document.ExtractionStatus.Should().Be(EvidenceExtractionStatusDto.Accepted);
         review.Entry.Document.AuditTrail.Should().Contain(evt =>
             evt.Action == "DocumentReviewRecorded" &&
@@ -2703,7 +3240,15 @@ public sealed class EvidenceWorkflowFabricTests
             cts.Token);
         acceptedDocuments.Should().ContainSingle(entry =>
             entry.VaultId == intake.VaultIdentity.VaultId &&
-            entry.Document.DocumentId == intake.Document.DocumentId);
+            entry.Document.DocumentId == intake.Document.DocumentId &&
+            entry.Document.ReviewerState.ConfirmedFields.Any(field => field.FieldName == "invoiceTotal"));
+
+        var unconfirmedAcceptedResponse = await client.PostAsJsonAsync(
+            $"/api/workstation/evidence/vault/{Uri.EscapeDataString(intake.VaultIdentity.VaultId)}/documents/{Uri.EscapeDataString(intake.Document.DocumentId)}/review",
+            new EvidenceVaultDocumentReviewRequestDto(EvidenceDocumentReviewStatusDto.Accepted, "controller"),
+            ServerJsonOptions,
+            cts.Token);
+        unconfirmedAcceptedResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var missingResponse = await client.PostAsJsonAsync(
             $"/api/workstation/evidence/vault/{Uri.EscapeDataString(intake.VaultIdentity.VaultId)}/documents/missing-document/review",
@@ -2736,14 +3281,25 @@ public sealed class EvidenceWorkflowFabricTests
         entry.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
         entry.SubjectId.Should().Be("close-2026-05");
         entry.RequestListKind.Should().Be("AuditRequestList");
+        entry.RequestListKindCode.Should().Be(EvidenceRequestListKindDto.Audit);
         entry.OpenRequestCount.Should().Be(2);
         entry.ManifestRoute.Should().Be(export.VaultIdentity.ManifestRoute);
         entry.SupportRequests.Should().Contain(request =>
             request.RequestKind == "BlockedWorkItem" &&
             request.WorkItemId == "audit-request:close-2026-05");
 
+        var typedResponse = await client.GetAsync(
+            "/api/workstation/evidence/vault/request-lists?requestListKindCode=Audit&status=Open");
+        typedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var typedEntries = await typedResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(ServerJsonOptions);
+        typedEntries.Should().ContainSingle(typedEntry =>
+            typedEntry.VaultId == export.VaultIdentity.VaultId &&
+            typedEntry.RequestListKindCode == EvidenceRequestListKindDto.Audit);
+
         var invalidResponse = await client.GetAsync("/api/workstation/evidence/vault/request-lists?maxResults=0");
         invalidResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var invalidKindResponse = await client.GetAsync("/api/workstation/evidence/vault/request-lists?requestListKindCode=NotARealKind");
+        invalidKindResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     private static EvidenceGraphService CreateGraphService(IReadOnlyList<IEvidenceContributor> contributors)

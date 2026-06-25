@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck, Upload } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import {
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
   type EvidenceStatusTone,
+  type EvidenceWorkbenchQueueFiltersViewModel,
   type EvidenceVaultDocumentDetailViewModel,
   type EvidenceVaultDocumentIndexPanelViewModel,
   type EvidenceVaultDocumentIndexRowViewModel,
@@ -34,6 +35,7 @@ import type {
   EvidenceDocumentIntakeSourceKind,
   EvidenceDocumentLinkKind,
   EvidenceDocumentReviewStatus,
+  EvidenceRequestListKindCode,
   EvidenceExtractionStatus,
   EvidenceVaultIntakeRequest
 } from "@/types";
@@ -55,7 +57,22 @@ const actionBadgeVariant: Record<EvidencePacketActionTone, "success" | "warning"
 
 export function EvidenceWorkbenchScreen() {
   const location = useLocation();
+  const navigate = useNavigate();
   const vm = useEvidenceWorkbenchViewModel(location.search);
+  const updateQueueFilter = (
+    key: "requestListFamily" | "documentClassification" | "documentReviewStatus",
+    value: string
+  ) => {
+    const params = new URLSearchParams(location.search);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+
+    const nextSearch = params.toString();
+    navigate(`${location.pathname}${nextSearch ? `?${nextSearch}` : ""}`);
+  };
 
   if (vm.loading) {
     return (
@@ -183,6 +200,7 @@ export function EvidenceWorkbenchScreen() {
       ) : null}
 
       <EvidenceDocumentIntakePanel vm={vm} />
+      <EvidenceVaultQueueFilters filters={vm.queueFilters} onChange={updateQueueFilter} />
       <EvidenceVaultRequestListPanel panel={vm.requestListPanel} />
       <EvidenceVaultDocumentPanel panel={vm.documentPanel} />
 
@@ -246,13 +264,16 @@ export function EvidenceWorkbenchScreen() {
                           <div className="font-semibold">{vm.exportResultDetail.title}</div>
                           <div className="mt-1 break-all font-mono text-xs">{vm.exportResultDetail.manifestPath}</div>
                           <div className="mt-1 text-xs">{vm.exportResultDetail.summaryLabel}</div>
-                          {vm.exportResultDetail.vaultIdLabel || vm.exportResultDetail.storageKindLabel ? (
+                          {vm.exportResultDetail.vaultIdLabel || vm.exportResultDetail.storageKindLabel || vm.exportResultDetail.manifestPackageFamilyLabel ? (
                             <div className="mt-2 flex flex-wrap gap-2">
                               {vm.exportResultDetail.vaultIdLabel ? (
                                 <Badge variant="outline">{vm.exportResultDetail.vaultIdLabel}</Badge>
                               ) : null}
                               {vm.exportResultDetail.storageKindLabel ? (
                                 <Badge variant="outline">{vm.exportResultDetail.storageKindLabel}</Badge>
+                              ) : null}
+                              {vm.exportResultDetail.manifestPackageFamilyLabel ? (
+                                <Badge variant="outline">{vm.exportResultDetail.manifestPackageFamilyLabel}</Badge>
                               ) : null}
                             </div>
                           ) : null}
@@ -308,6 +329,7 @@ export function EvidenceWorkbenchScreen() {
                               <div className="flex flex-wrap items-center gap-2 font-semibold">
                                 <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>{requestList.requestListKindLabel}</span>
+                                <Badge variant="outline">{requestList.requestListFamilyLabel}</Badge>
                                 <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
                                 <Badge variant="outline">{requestList.statusLabel}</Badge>
                               </div>
@@ -741,6 +763,8 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
 }
 
 const documentClassifications: EvidenceDocumentClassification[] = [
+  "BankStatement",
+  "AdminPackage",
   "Statement",
   "Invoice",
   "CapitalNotice",
@@ -749,15 +773,27 @@ const documentClassifications: EvidenceDocumentClassification[] = [
   "ValuationSupport",
   "Agreement",
   "TaxSupport",
-  "AuditRequestSupport"
+  "AuditRequestSupport",
+  "TaxAuditSupport"
 ];
 
-const extractionStatuses: EvidenceExtractionStatus[] = ["NotExtracted", "Extracted", "NeedsReview", "Accepted", "Rejected"];
-const reviewStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Accepted", "Rejected"];
-const intakeSourceKinds: EvidenceDocumentIntakeSourceKind[] = ["UploadedContent", "LocalFile", "ImportedFileReference"];
+const extractionStatuses: EvidenceExtractionStatus[] = ["Pending", "NotExtracted", "Extracted", "NeedsReview", "Rejected"];
+const reviewStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Rejected"];
+const documentReviewFilterStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Accepted", "Rejected"];
+const requestListFamilyFilters: EvidenceRequestListKindCode[] = ["Close", "Audit", "Tax", "ReportPackage", "OperationalEvent"];
+const intakeSourceKinds: EvidenceDocumentIntakeSourceKind[] = [
+  "UploadedContent",
+  "Email",
+  "Sftp",
+  "Api",
+  "PortalDownload",
+  "LocalFile",
+  "ImportedFileReference"
+];
 const linkKinds: EvidenceDocumentLinkKind[] = [
   "Period",
   "Portfolio",
+  "Fund",
   "Account",
   "Instrument",
   "Journal",
@@ -766,18 +802,96 @@ const linkKinds: EvidenceDocumentLinkKind[] = [
   "CloseTask"
 ];
 
+function EvidenceVaultQueueFilters({
+  filters,
+  onChange
+}: {
+  filters: EvidenceWorkbenchQueueFiltersViewModel;
+  onChange: (key: "requestListFamily" | "documentClassification" | "documentReviewStatus", value: string) => void;
+}) {
+  return (
+    <Card className="panel-surface" role="region" aria-label="Evidence Vault queue filters">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              Queue filters
+            </CardTitle>
+            <CardDescription>Filter open support requests and retained documents by vault family, classification, and review state.</CardDescription>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {filters.requestListFamily ? <Badge variant="outline">{formatDocumentOption(filters.requestListFamily)}</Badge> : null}
+            {filters.documentClassification ? <Badge variant="outline">{formatDocumentOption(filters.documentClassification)}</Badge> : null}
+            {filters.documentReviewStatus ? <Badge variant="outline">{formatDocumentOption(filters.documentReviewStatus)}</Badge> : null}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 md:grid-cols-3">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Request list family
+            <Select
+              aria-label="Request list family filter"
+              value={filters.requestListFamily ?? ""}
+              onChange={(event) => onChange("requestListFamily", event.target.value)}
+            >
+              <option value="">All request families</option>
+              {requestListFamilyFilters.map((value) => (
+                <option key={value} value={value}>
+                  {formatDocumentOption(value)}
+                </option>
+              ))}
+            </Select>
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Document classification
+            <Select
+              aria-label="Document classification filter"
+              value={filters.documentClassification ?? ""}
+              onChange={(event) => onChange("documentClassification", event.target.value)}
+            >
+              <option value="">All classifications</option>
+              {documentClassifications.map((value) => (
+                <option key={value} value={value}>
+                  {formatDocumentOption(value)}
+                </option>
+              ))}
+            </Select>
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Document review state
+            <Select
+              aria-label="Document review status filter"
+              value={filters.documentReviewStatus ?? ""}
+              onChange={(event) => onChange("documentReviewStatus", event.target.value)}
+            >
+              <option value="">All review states</option>
+              {documentReviewFilterStatuses.map((value) => (
+                <option key={value} value={value}>
+                  {formatDocumentOption(value)}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidenceWorkbenchViewModel> }) {
   const [file, setFile] = useState<File | null>(null);
   const [sourceKind, setSourceKind] = useState<EvidenceDocumentIntakeSourceKind>("UploadedContent");
   const [sourcePath, setSourcePath] = useState("");
-  const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankEvidence");
+  const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankStatement");
   const [sourceChannel, setSourceChannel] = useState("upload");
   const [actor, setActor] = useState("");
   const [tenantId, setTenantId] = useState("");
   const [scope, setScope] = useState("");
   const [sourceSystem, setSourceSystem] = useState("");
   const [sourceReference, setSourceReference] = useState("");
-  const [extractionStatus, setExtractionStatus] = useState<EvidenceExtractionStatus>("NotExtracted");
+  const [extractionStatus, setExtractionStatus] = useState<EvidenceExtractionStatus>("Pending");
   const [reviewStatus, setReviewStatus] = useState<EvidenceDocumentReviewStatus>("Unreviewed");
   const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>("CloseTask");
   const [objectId, setObjectId] = useState("");
@@ -787,11 +901,13 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
     ? `${vm.selectedSubjectKind}/${vm.selectedSubjectId}`
     : "No subject selected";
   const isUpload = sourceKind === "UploadedContent";
-  const hasRequiredSource = isUpload ? Boolean(file) : sourcePath.trim().length > 0;
+  const isAdapterSeam = ["Email", "Sftp", "Api", "PortalDownload"].includes(sourceKind);
+  const requiresPayload = isUpload || isAdapterSeam;
+  const hasRequiredSource = requiresPayload ? Boolean(file) : sourcePath.trim().length > 0;
   const disabledReason = vm.intakeCommand.disabledReason ?? (
     hasRequiredSource
       ? null
-      : isUpload
+      : requiresPayload
         ? "Choose a document file before retaining it."
         : "Enter a local or imported file path before retaining it."
   );
@@ -802,22 +918,24 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
     if (!vm.selectedSubjectKind || !vm.selectedSubjectId || !hasRequiredSource) {
       setFormError(isUpload
         ? "Select an evidence subject and choose a document file before retaining it."
+        : isAdapterSeam
+          ? "Select an evidence subject and choose a document file before retaining adapter-seam metadata."
         : "Select an evidence subject and enter a local or imported file path before retaining it.");
       return;
     }
 
     setFormError(null);
     try {
-      const contentBase64 = isUpload && file ? await readFileAsBase64(file) : null;
-      const retainedFileName = isUpload && file ? file.name : fileNameFromPath(sourcePath);
-      const sourceReferenceValue = sourceReference.trim() || (isUpload ? retainedFileName : sourcePath.trim());
+      const contentBase64 = requiresPayload && file ? await readFileAsBase64(file) : null;
+      const retainedFileName = requiresPayload && file ? file.name : fileNameFromPath(sourcePath);
+      const sourceReferenceValue = sourceReference.trim() || (requiresPayload ? retainedFileName : sourcePath.trim());
       const request: EvidenceVaultIntakeRequest = {
         subjectKind: vm.selectedSubjectKind,
         subjectId: vm.selectedSubjectId,
         intakeChannel: sourceChannel.trim() || defaultIntakeChannel(sourceKind),
         fileName: retainedFileName,
         contentBase64,
-        contentType: isUpload && file ? file.type || "application/octet-stream" : null,
+        contentType: requiresPayload && file ? file.type || "application/octet-stream" : null,
         sourceSystem: sourceSystem.trim() || null,
         sourceReference: sourceReferenceValue,
         receivedBy: actor.trim() || null,
@@ -826,6 +944,7 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
         tenantId: tenantId.trim() || null,
         scope: scope.trim() || null,
         extractionStatus,
+        intakeChannelKind: intakeChannelKindForSource(sourceKind),
         reviewerState: {
           status: reviewStatus,
           reviewer: actor.trim() || null,
@@ -844,7 +963,8 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
           : [],
         intakeSource: {
           sourceKind,
-          path: isUpload ? null : sourcePath.trim(),
+          path: isUpload || isAdapterSeam ? null : sourcePath.trim(),
+          uri: isAdapterSeam ? sourceReferenceValue : null,
           displayName: retainedFileName
         }
       };
@@ -894,11 +1014,11 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
                   ))}
                 </Select>
               </label>
-              {isUpload ? (
+              {requiresPayload ? (
                 <label key="uploaded-content-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
                   Document file
                   <Input
-                    key="uploaded-content-file"
+                    key={`${sourceKind}-file`}
                     type="file"
                     aria-label="Document file"
                     disabled={vm.intakeCommand.busy}
@@ -1034,8 +1154,8 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 {vm.intakeCommand.label}
               </Button>
-              {isUpload && file ? <span className="break-all font-mono text-xs text-muted-foreground">{file.name}</span> : null}
-              {!isUpload && sourcePath.trim() ? <span className="break-all font-mono text-xs text-muted-foreground">{sourcePath.trim()}</span> : null}
+              {requiresPayload && file ? <span className="break-all font-mono text-xs text-muted-foreground">{file.name}</span> : null}
+              {!requiresPayload && sourcePath.trim() ? <span className="break-all font-mono text-xs text-muted-foreground">{sourcePath.trim()}</span> : null}
             </div>
           </div>
         </form>
@@ -1242,11 +1362,43 @@ function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDoc
           </div>
         ))}
       </dl>
-      <div className="mt-4 grid gap-4 xl:grid-cols-3">
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <EvidenceVaultDocumentReviewFields detail={detail} />
         <EvidenceVaultDocumentObjectLinks detail={detail} />
+      </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <EvidenceVaultDocumentAuditTrail detail={detail} />
         <EvidenceVaultDocumentSupportRequests detail={detail} />
       </div>
+    </section>
+  );
+}
+
+function EvidenceVaultDocumentReviewFields({ detail }: { detail: EvidenceVaultDocumentDetailViewModel }) {
+  return (
+    <section aria-label="Human-confirmed extracted fields" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+      <h4 className="text-sm font-semibold text-foreground">Review fields</h4>
+      {detail.reviewFieldRows.length > 0 ? (
+        <ul className="mt-2 space-y-2 text-xs" aria-label="Extracted fields for human confirmation">
+          {detail.reviewFieldRows.map((field) => (
+            <li key={field.id} aria-label={field.ariaLabel} className="rounded-sm border border-border/60 bg-background/40 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-foreground">{field.fieldLabel}</span>
+                <Badge variant={badgeVariant[field.statusTone]}>{field.statusLabel}</Badge>
+                <Badge variant="outline">{field.reviewStateLabel}</Badge>
+              </div>
+              <div className="mt-2 grid gap-1 font-mono text-muted-foreground">
+                <span className="break-all">Extracted: {field.valueLabel}</span>
+                <span className="break-all">Expected: {field.expectedLabel}</span>
+                <span>{field.confidenceLabel}</span>
+                <span className="break-all">{field.linkedRecordLabel}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p role="status" className="mt-2 text-xs text-muted-foreground">{detail.reviewFieldEmptyText}</p>
+      )}
     </section>
   );
 }
@@ -1356,6 +1508,7 @@ function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestL
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
                       <span>{requestList.requestListKindLabel}</span>
+                      <Badge variant="outline">{requestList.requestListFamilyLabel}</Badge>
                       <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
                       <Badge variant="outline">{requestList.statusLabel}</Badge>
                     </div>
@@ -1677,8 +1830,35 @@ function defaultIntakeChannel(sourceKind: EvidenceDocumentIntakeSourceKind) {
       return "local-file";
     case "ImportedFileReference":
       return "imported-file-reference";
+    case "Email":
+      return "email";
+    case "Sftp":
+      return "sftp";
+    case "Api":
+      return "api";
+    case "PortalDownload":
+      return "portal-download";
     default:
       return "upload";
+  }
+}
+
+function intakeChannelKindForSource(sourceKind: EvidenceDocumentIntakeSourceKind) {
+  switch (sourceKind) {
+    case "LocalFile":
+      return "LocalFile";
+    case "ImportedFileReference":
+      return "ImportedFileReference";
+    case "Email":
+      return "Email";
+    case "Sftp":
+      return "Sftp";
+    case "Api":
+      return "Api";
+    case "PortalDownload":
+      return "PortalDownload";
+    default:
+      return "Upload";
   }
 }
 

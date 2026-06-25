@@ -102,7 +102,7 @@ describe("workspace metadata", () => {
 
   it("maps backend workflow targets to browser workstation routes", () => {
     expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
-    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
+    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/accounting/evidence");
     expect(workflowTargetPath("EvidenceWorkbench:accounting-record/accounting-record-2026-05", "accounting"))
       .toBe("/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05");
     expect(workflowTargetPath(" EvidenceWorkbench:strategy-run/run 1/A ", "strategy"))
