@@ -86,9 +86,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// </summary>
     public void ResetForTests()
     {
-        ClearHistory();
         _frame = null;
         _serviceProvider = null;
+        _navigationScopeProvider.Value = null;
+        ClearHistory();
     }
 
     /// <inheritdoc />

@@ -284,10 +284,11 @@ public sealed class WorkspaceService
     public Task SaveWorkspacesAsync(CancellationToken ct = default)
         => WithStateLockAsync(() => SaveWorkspacesCoreAsync(ct), ct);
 
-    private async Task SaveWorkspacesCoreAsync(CancellationToken ct = default)
+    private Task SaveWorkspacesCoreAsync(CancellationToken ct = default)
     {
         try
         {
+            ct.ThrowIfCancellationRequested();
             var data = new WorkspaceData
             {
                 Workspaces = _workspaces.ToList(),
@@ -305,11 +306,17 @@ public sealed class WorkspaceService
             };
 
             var json = JsonSerializer.Serialize(data, UiServices.DesktopJsonOptions.PrettyPrint);
-            await File.WriteAllTextAsync(GetSettingsFilePath(), json);
+            File.WriteAllText(GetSettingsFilePath(), json);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception)
         {
         }
+
+        return Task.CompletedTask;
     }
 
     public async Task<WorkspaceTemplate> CreateWorkspaceAsync(string name, string description, WorkspaceCategory category, CancellationToken ct = default)

@@ -58,6 +58,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
     private int _shellContextRevision;
     private int _workflowSummaryRevision;
+    private bool _disposed;
 
     public MainPageViewModel(
         INavigationService navigationService,
@@ -373,7 +374,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public Visibility PrimaryWorkflowDetailVisibility => _workflowSummaryStrip.PrimaryDetailVisibility;
 
     public bool IsWorkspaceHomePageActive
-        => string.Equals(CurrentPageTag, GetWorkspaceHomePageTag(CurrentWorkspace), StringComparison.OrdinalIgnoreCase);
+        => IsWorkspaceHomePageTag(CurrentPageTag, CurrentWorkspace);
 
     public bool IsDataWorkspaceHomePageActive
         => string.Equals(CurrentPageTag, "DataShell", StringComparison.OrdinalIgnoreCase);
@@ -672,6 +673,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
         _navigationService.Navigated -= OnNavigated;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
@@ -1074,6 +1081,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .Where(pageTag => string.Equals(InferWorkspaceFromPage(pageTag), CurrentWorkspace, StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Where(pageTag => !string.Equals(pageTag, CurrentPageTag, StringComparison.OrdinalIgnoreCase))
+            .Where(pageTag => !string.Equals(pageTag, DefaultPageTag, StringComparison.OrdinalIgnoreCase))
             .Take(6)
             .Select(pageTag => new RecentPageEntry(pageTag!, GetPageDisplayName(pageTag!)))
             .ToArray();
@@ -1872,6 +1880,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private static string GetWorkspaceHomePageTag(string workspace)
         => ShellNavigationCatalog.GetWorkspace(workspace)?.HomePageTag ?? DefaultPageTag;
+
+    private static bool IsWorkspaceHomePageTag(string? pageTag, string workspace)
+        => string.Equals(pageTag, DefaultPageTag, StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(pageTag, GetWorkspaceHomePageTag(workspace), StringComparison.OrdinalIgnoreCase);
 
     private string NormalizePageTag(string? pageTag)
     {
