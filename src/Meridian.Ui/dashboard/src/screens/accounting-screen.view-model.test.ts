@@ -8484,7 +8484,7 @@ describe("accounting-screen view model", () => {
     ]));
     expect(view.selectedDetail).toMatchObject({
       title: "Bond reference",
-      subtitle: "Reference data source: Bond",
+      subtitle: "Reference data source: Bonds",
       responsePreview: "{\n  \"couponRate\": 5.25\n}"
     });
   });
