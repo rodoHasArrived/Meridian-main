@@ -62,6 +62,10 @@ public static class ProviderModuleEndpoints
             if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
                 return EndpointHelpers.Forbidden();
 
+            if (request.CredentialValues is { Count: > 0 }
+                && !EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageCredentials))
+                return EndpointHelpers.Forbidden();
+
             var result = await setupService.UpsertModuleAsync(request, ct).ConfigureAwait(false);
             return result.Success
                 ? Results.Json(result, jsonOptions)
@@ -83,6 +87,10 @@ public static class ProviderModuleEndpoints
             CancellationToken ct) =>
         {
             if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
+                return EndpointHelpers.Forbidden();
+
+            if (request.CredentialValues is { Count: > 0 }
+                && !EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageCredentials))
                 return EndpointHelpers.Forbidden();
 
             var effectiveRequest = request with { ModuleId = moduleId };

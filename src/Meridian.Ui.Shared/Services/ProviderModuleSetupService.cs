@@ -112,21 +112,9 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (string.IsNullOrWhiteSpace(request.ModuleId))
             return ProviderModuleSetupResult.Fail("ModuleId is required");
 
-        if (request.CredentialValues is { Count: > 0 } creds)
-        {
-            var existing = await _credentialStore.GetCredentialsAsync(request.ModuleId, ct).ConfigureAwait(false);
-            var merged = new Dictionary<string, string>(existing, StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in creds)
-            {
-                if (string.IsNullOrEmpty(value))
-                    merged.Remove(key);
-                else
-                    merged[key] = value;
-            }
-            await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
-        }
-
-        return await MutateConfigAsync(cfg =>
+        // Save config first; only persist credentials if config write succeeds,
+        // so a failed config save never leaves orphaned credentials on disk.
+        var result = await MutateConfigAsync(cfg =>
         {
             var modules = cfg.ProviderModules?.Modules is not null
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
@@ -146,6 +134,25 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
         }, ct).ConfigureAwait(false);
+
+        if (!result.Success)
+            return result;
+
+        if (request.CredentialValues is { Count: > 0 } creds)
+        {
+            var existing = await _credentialStore.GetCredentialsAsync(request.ModuleId, ct).ConfigureAwait(false);
+            var merged = new Dictionary<string, string>(existing, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in creds)
+            {
+                if (string.IsNullOrEmpty(value))
+                    merged.Remove(key);
+                else
+                    merged[key] = value;
+            }
+            await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
+        }
+
+        return result;
     }
 
     public async Task<ProviderModuleSetupResult> SetEnabledAsync(
