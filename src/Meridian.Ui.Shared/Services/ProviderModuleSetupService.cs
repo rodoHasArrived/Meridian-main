@@ -279,13 +279,21 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         foreach (var assembly in assemblies)
         {
             IEnumerable<Type> types;
-            try { types = assembly.GetTypes(); }
-            catch (ReflectionTypeLoadException ex) { types = ex.Types.Where(t => t is not null)!; }
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t is not null)!;
+            }
 
             foreach (var type in types)
             {
-                if (type.IsAbstract || type.IsInterface) continue;
-                if (!typeof(IProviderModule).IsAssignableFrom(type)) continue;
+                if (type.IsAbstract || type.IsInterface)
+                    continue;
+                if (!typeof(IProviderModule).IsAssignableFrom(type))
+                    continue;
 
                 try
                 {
