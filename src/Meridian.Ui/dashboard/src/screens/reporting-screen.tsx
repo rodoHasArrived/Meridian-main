@@ -1560,7 +1560,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             <CardHeader>
               <div className="eyebrow-label">Portfolio cuts</div>
               <CardTitle>Exposure, cash, P&L, and shadow NAV</CardTitle>
-              <CardDescription>Fund, strategy, and tag views are projected from the shared portfolio and NAV reporting payload.</CardDescription>
+              <CardDescription>Fund, strategy, and tag views are projected from shared portfolio and NAV reporting data.</CardDescription>
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Portfolio reporting cut rows" className="grid gap-3 lg:grid-cols-3">

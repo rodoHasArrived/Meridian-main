@@ -12052,7 +12052,7 @@ function buildStatementRunRow(
     controlsId: detailPanelId,
     ariaLabel: `Statement run ${run.runId}. ${status}. ${validationIssueCount} validation issues, ${matchCount} matches, ${breakCount} breaks, ${caseCount} cases. Imported ${importedAtLabel}.`,
     selectAriaLabel: `Inspect statement run ${run.runId}`,
-    unavailableReason: missing.length > 0 ? `${missing.join(", ")} not provided by statement run payload.` : null
+    unavailableReason: missing.length > 0 ? `${missing.join(", ")} not provided by statement run data.` : null
   };
 }
 
@@ -12908,7 +12908,7 @@ export function buildAccountingCashFlowViewState(
     return {
       eyebrow: "Cash Flow",
       title: "Cash-flow evidence loading",
-      description: `${contextLabel} is waiting for the shared accounting cash-flow payload.`,
+      description: `${contextLabel} is waiting for shared accounting cash-flow data.`,
       routePath,
       statusLabel: "Pending",
       statusTone: "warning",
@@ -16376,7 +16376,7 @@ function buildTrialBalanceDetail(
     ledgerLinesTitle: "Ledger lines for selected account",
     ledgerLinesDescription: firstJournalEntryId
       ? `Journal support linked to ${line.accountLabel} for ${runLabel}.`
-      : `Account-level ledger inquiry for ${line.accountLabel}; journal-entry ids appear when the ledger payload includes posting references.`,
+      : `Account-level ledger inquiry for ${line.accountLabel}; journal-entry ids appear when ledger data includes posting references.`,
     ledgerLines: buildLedgerLineRows(line, sourceJournalEntryIds, sourceEventIds, approvalDrillThroughHref),
     ledgerLinesEmptyText: "No ledger line support is attached to this account row yet.",
     supportingDocumentsTitle: "Supporting documentation",
