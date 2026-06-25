@@ -275,18 +275,11 @@ public sealed class SystemHealthServiceTests
 
     [Theory]
     [InlineData("IEX")]
-    public async Task TestConnectionAsync_WithVariousProviders_AcceptsAllNames(string provider)
+    public void BuildProviderTestRoute_WithVariousProviders_AcceptsAllNames(string provider)
     {
-        // Arrange
-        var service = SystemHealthService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        var route = SystemHealthService.BuildProviderTestRoute(provider);
 
-        // Act
-        var act = async () => await service.TestConnectionAsync(provider, cts.Token);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>();
+        route.Should().Be($"/api/health/providers/{provider}/test");
     }
 
     [Fact]
