@@ -2242,6 +2242,11 @@ describe("accounting-screen view model", () => {
 
     const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
 
+    await waitFor(() => expect(listPackages).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      periodId: "2026-05",
+      ledgerBookId: "book-alpha"
+    }));
     await waitFor(() => expect(result.current.packageRows).toHaveLength(1));
 
     expect(getClosePlan).toHaveBeenCalledWith("workflow-close-1");
