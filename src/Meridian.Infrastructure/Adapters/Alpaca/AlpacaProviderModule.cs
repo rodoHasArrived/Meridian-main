@@ -141,7 +141,11 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
 
             return ModuleProbeResult.Failure($"HTTP {(int)response.StatusCode} from Alpaca API");
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
         {
             sw.Stop();
             return ModuleProbeResult.Failure($"Connection failed: {ex.Message}");

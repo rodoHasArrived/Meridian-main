@@ -210,6 +210,11 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
+        // Capture settings before removal so we can restore them if credential deletion fails.
+        var preDeletionCfg = _configStore.Load();
+        ProviderModuleSettings? removedSettings = null;
+        preDeletionCfg.ProviderModules?.Modules?.TryGetValue(moduleId, out removedSettings);
+
         // Remove config first; if SaveAsync fails, credentials remain intact for the still-configured provider
         var result = await MutateConfigAsync(cfg =>
         {
@@ -226,7 +231,18 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (!result.Success)
             return result;
 
-        await _credentialStore.DeleteCredentialsAsync(moduleId, ct).ConfigureAwait(false);
+        try
+        {
+            await _credentialStore.DeleteCredentialsAsync(moduleId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Credential deletion failed for {ModuleId}; attempting config rollback",
+                moduleId.Replace('\n', ' ').Replace('\r', ' '));
+            await RollbackModuleConfigAsync(moduleId, removedSettings).ConfigureAwait(false);
+            return ProviderModuleSetupResult.Fail("Failed to delete credentials; the configuration change was rolled back.");
+        }
+
         return result;
     }
 
