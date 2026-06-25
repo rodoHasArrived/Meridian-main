@@ -2773,7 +2773,7 @@ function buildRuntimeCapabilitySection(
       description: "Toggle module-declared workstation feature gates without editing configuration by hand.",
       statusLabel: "Checking",
       statusVariant: "warning",
-      summary: "Capability settings are still loading from the local host.",
+      summary: "Capability settings are still loading from Meridian.",
       listLabel: "Runtime feature capability toggles",
       toggles: []
     };
