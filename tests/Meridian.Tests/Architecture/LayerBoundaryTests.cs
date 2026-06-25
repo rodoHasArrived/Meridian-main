@@ -165,54 +165,42 @@ public sealed class LayerBoundaryTests
     [Fact]
     public void AlpacaConstants_ShouldBe_Internal()
     {
-        var rule = Types()
-            .That().ResideInNamespace("Meridian.Infrastructure.Adapters.Alpaca")
-            .And().HaveNameEndingWith("Constants")
-            .Or().HaveNameEndingWith("Endpoints")
-            .Or().HaveNameEndingWith("RateLimits")
-            .Or().HaveNameEndingWith("MessageTypes")
-            .Or().HaveNameEndingWith("Actions")
-            .Or().HaveNameEndingWith("DedupLimits")
-            .Should().NotBePublic()
-            .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
-
-        rule.Check(Architecture);
+        AssertProviderLocalNamesAreInternal(
+            "Meridian.Infrastructure.Adapters.Alpaca",
+            "Constants",
+            "Endpoints",
+            "RateLimits",
+            "MessageTypes",
+            "Actions",
+            "DedupLimits");
     }
 
     [Fact]
     public void PolygonConstants_ShouldBe_Internal()
     {
-        var rule = Types()
-            .That().ResideInNamespace("Meridian.Infrastructure.Adapters.Polygon")
-            .And().HaveNameEndingWith("Constants")
-            .Or().HaveNameEndingWith("Endpoints")
-            .Or().HaveNameEndingWith("RateLimits")
-            .Or().HaveNameEndingWith("MessageTypes")
-            .Or().HaveNameEndingWith("EventTypes")
-            .Or().HaveNameEndingWith("Actions")
-            .Or().HaveNameEndingWith("Feeds")
-            .Or().HaveNameEndingWith("ApiKeyLimits")
-            .Should().NotBePublic()
-            .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
-
-        rule.Check(Architecture);
+        AssertProviderLocalNamesAreInternal(
+            "Meridian.Infrastructure.Adapters.Polygon",
+            "Constants",
+            "Endpoints",
+            "RateLimits",
+            "MessageTypes",
+            "EventTypes",
+            "Actions",
+            "Feeds",
+            "ApiKeyLimits");
     }
 
     [Fact]
     public void FinnhubConstants_ShouldBe_Internal()
     {
-        var rule = Types()
-            .That().ResideInNamespace("Meridian.Infrastructure.Adapters.Finnhub")
-            .And().HaveNameEndingWith("Constants")
-            .Or().HaveNameEndingWith("Endpoints")
-            .Or().HaveNameEndingWith("RateLimits")
-            .Or().HaveNameEndingWith("Headers")
-            .Or().HaveNameEndingWith("Resolutions")
-            .Or().HaveNameEndingWith("CandleStatus")
-            .Should().NotBePublic()
-            .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
-
-        rule.Check(Architecture);
+        AssertProviderLocalNamesAreInternal(
+            "Meridian.Infrastructure.Adapters.Finnhub",
+            "Constants",
+            "Endpoints",
+            "RateLimits",
+            "Headers",
+            "Resolutions",
+            "CandleStatus");
     }
 
     [Fact]
@@ -226,6 +214,24 @@ public sealed class LayerBoundaryTests
             .WithoutRequiringPositiveResults();
 
         rule.Check(Architecture);
+    }
+
+    private static void AssertProviderLocalNamesAreInternal(string providerNamespace, params string[] suffixes)
+    {
+        var providerLocalTypes = typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly
+            .GetTypes()
+            .Where(type =>
+                string.Equals(type.Namespace, providerNamespace, StringComparison.Ordinal) &&
+                suffixes.Any(suffix => type.Name.EndsWith(suffix, StringComparison.Ordinal)))
+            .ToArray();
+
+        Assert.NotEmpty(providerLocalTypes);
+        foreach (var type in providerLocalTypes)
+        {
+            Assert.False(
+                type.IsVisible,
+                $"{type.FullName} must stay internal because provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
+        }
     }
 
     [Fact]

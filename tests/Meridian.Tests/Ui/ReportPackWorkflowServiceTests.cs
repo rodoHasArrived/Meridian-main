@@ -2585,11 +2585,11 @@ public sealed class ReportPackWorkflowServiceTests
             link.RequiresToken);
         boardPlan.LastDeliveryAccessExpiresAtUtc.Should().NotBeNull();
         boardPlan.LastDeliveryAccessExpiresAtUtc.Should().Be(boardPlan.LastDeliveryAccessLinks![0].ExpiresAtUtc);
-        boardPlan.LastDeliveryAccessSummary.Should().Contain("Email-link package is available through the token-gated route");
-        boardPlan.LastDeliveryChannelSummary.Should().Be("EmailLink delivery to Board reporting committee via Board portal.");
-        boardPlan.LastDeliveryDownloadSummary.Should().Contain("3 artifact(s) retained as Pdf/Xlsx/Csv");
+        boardPlan.LastDeliveryAccessSummary.Should().Contain("token-gated portal route");
+        boardPlan.LastDeliveryChannelSummary.Should().Be("SecurePortal delivery to Board reporting committee via Board portal.");
+        boardPlan.LastDeliveryDownloadSummary.Should().Contain("3 artifact(s) retained as Csv/Pdf/Xlsx");
         boardPlan.LastDeliveryNotificationCount.Should().Be(1);
-        boardPlan.LastDeliveryNotificationSummary.Should().Be("1 notification retained: ReadyToSend via EmailLink.");
+        boardPlan.LastDeliveryNotificationSummary.Should().Be("1 notification retained: PortalPublished via SecurePortal.");
         boardPlan.LastDeliveryArtifactCount.Should().Be(3);
         boardPlan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
         boardPlan.LastDeliveryEntitlementScope.Should().Be("CompanyWide");

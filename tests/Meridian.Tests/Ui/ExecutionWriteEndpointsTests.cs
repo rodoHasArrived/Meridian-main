@@ -196,7 +196,11 @@ public sealed class ExecutionWriteEndpointsTests
                 new ExecutionPosition("AAPL", 5, 180m, 10m, 0m));
             services.AddSingleton(new BrokerageConfiguration
             {
-                ProductionRoutingPhaseEnabled = false
+                ProductionRoutingPhaseEnabled = false,
+                BrokerFlows =
+                {
+                    ["paper"] = new BrokerFlowFlags { PaperOrderFlowEnabled = true }
+                }
             });
         });
 
@@ -1068,6 +1072,8 @@ public sealed class ExecutionWriteEndpointsTests
             }
 
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "execution-test-company";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "execution-test-tenant";
             await next();
         });
 

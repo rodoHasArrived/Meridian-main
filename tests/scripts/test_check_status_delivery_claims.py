@@ -69,6 +69,22 @@ Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pil
             errors = module.validate_doc(doc)
             self.assertTrue(any("missing latest pass packet reference" in err for err in errors))
 
+    def test_allows_archive_migration_stub_without_current_packet_claim(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            doc = self.write_doc(
+                root,
+                "docs/status/provider-validation-matrix.md",
+                """
+# Archived Legacy Status Item: provider-validation-matrix
+
+This status file has been migrated to docs/reference/provider-validation-matrix.md.
+
+**Status:** archive-migration-stub
+""",
+            )
+            self.assertEqual([], module.validate_doc(doc))
+
 
 if __name__ == "__main__":
     unittest.main()

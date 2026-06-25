@@ -63,7 +63,7 @@ run_step "Run .NET non-integration test projects" \
     --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md \
     --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json
 
-run_step "Install dashboard dependencies from lockfile" \\
+run_step "Install dashboard dependencies from lockfile" \
   npm --prefix src/Meridian.Ui/dashboard ci --include=optional
 
 run_step "Run dashboard tests" \
@@ -128,7 +128,7 @@ run_step "Validate source READMEs" \
 run_step "Scan source TODOs" \
   "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
 
-run_step "Render roadmap/source docs and check drift" \\
+run_step "Render roadmap/source docs and check drift" \
   bash -c '"$0" build/scripts/docs/render-roadmap-docs.py --summary && "$0" build/scripts/docs/render-source-docs.py --summary && [ -z "$(git status --porcelain -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src)" ]' "$python_cmd"
 
 echo "Meridian CI completed successfully."

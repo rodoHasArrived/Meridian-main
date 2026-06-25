@@ -73,8 +73,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotTradePublished.Should().Be(0);
-        _pipeline.HotTradeFallbacks.Should().Be(1);
+        _pipeline.HotTradePublished.Should().Be(1);
+        _pipeline.HotTradeFallbacks.Should().Be(0);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "SPY");
     }
 
@@ -86,8 +86,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotQuotePublished.Should().Be(0);
-        _pipeline.HotQuoteFallbacks.Should().Be(1);
+        _pipeline.HotQuotePublished.Should().Be(1);
+        _pipeline.HotQuoteFallbacks.Should().Be(0);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "AAPL");
     }
 
@@ -212,8 +212,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(count, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotTradePublished.Should().Be(0);
-        _pipeline.HotTradeFallbacks.Should().Be(count);
+        _pipeline.HotTradePublished.Should().Be(count);
+        _pipeline.HotTradeFallbacks.Should().Be(0);
         _sink.ReceivedEvents.Should().HaveCount(count);
     }
 
@@ -231,8 +231,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotTradePublished.Should().Be(0);
-        _pipeline.HotTradeFallbacks.Should().Be(1);
+        _pipeline.HotTradePublished.Should().Be(1);
+        _pipeline.HotTradeFallbacks.Should().Be(0);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "SPY");
     }
 
@@ -246,8 +246,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotQuotePublished.Should().Be(0);
-        _pipeline.HotQuoteFallbacks.Should().Be(1);
+        _pipeline.HotQuotePublished.Should().Be(1);
+        _pipeline.HotQuoteFallbacks.Should().Be(0);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "AAPL");
     }
 
@@ -299,7 +299,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         _pipeline.TryPublish(CreateTradeEvent("SPY", seq: 1));
         await WaitForConsumed(1, timeout: TimeSpan.FromSeconds(5));
-        _pipeline.HotTradeConsumed.Should().Be(0);
+        _pipeline.HotTradeConsumed.Should().Be(1);
     }
 
     [Fact]
@@ -307,7 +307,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         _pipeline.TryPublish(CreateQuoteEvent("AAPL", seq: 1));
         await WaitForQuoteConsumed(1, timeout: TimeSpan.FromSeconds(5));
-        _pipeline.HotQuoteConsumed.Should().Be(0);
+        _pipeline.HotQuoteConsumed.Should().Be(1);
     }
 
     #endregion
@@ -324,10 +324,10 @@ public class DualPathEventPipelineTests : IAsyncLifetime
         await WaitForSinkCount(3, timeout: TimeSpan.FromSeconds(5));
 
         _sink.ReceivedEvents.Should().HaveCount(3);
-        _pipeline.HotTradePublished.Should().Be(0);
-        _pipeline.HotTradeFallbacks.Should().Be(1);
-        _pipeline.HotQuotePublished.Should().Be(0);
-        _pipeline.HotQuoteFallbacks.Should().Be(1);
+        _pipeline.HotTradePublished.Should().Be(1);
+        _pipeline.HotTradeFallbacks.Should().Be(0);
+        _pipeline.HotQuotePublished.Should().Be(1);
+        _pipeline.HotQuoteFallbacks.Should().Be(0);
     }
 
     #endregion

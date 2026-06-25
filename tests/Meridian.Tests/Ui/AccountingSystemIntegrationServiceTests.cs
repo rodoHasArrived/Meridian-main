@@ -828,17 +828,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         splitRolloutEvidence.DimensionalReporting.Should().NotBeNull();
-        splitRolloutEvidence.DimensionalReporting!.CompletedControlCount.Should().BeLessThan(10);
+        splitRolloutEvidence.DimensionalReporting!.RequiredControlCount.Should().Be(10);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.period-reports-evidence-missing" &&
+            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.report-package-provenance-evidence-missing" &&
+            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         splitRolloutEvidence.Components.Should().Contain(component =>
@@ -864,17 +864,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         extendedRolloutTokenEvidence.DimensionalReporting.Should().NotBeNull();
-        extendedRolloutTokenEvidence.DimensionalReporting!.CompletedControlCount.Should().BeLessThan(10);
+        extendedRolloutTokenEvidence.DimensionalReporting!.RequiredControlCount.Should().Be(10);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.period-reports-evidence-missing" &&
+            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.report-package-provenance-evidence-missing" &&
+            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         extendedRolloutTokenEvidence.Components.Should().Contain(component =>

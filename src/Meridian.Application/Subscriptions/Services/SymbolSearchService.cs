@@ -209,8 +209,8 @@ public sealed class SymbolSearchService : IDisposable
 
         // Deduplicate by symbol, keeping highest score
         var deduped = allResults
-            .GroupBy(r => r.Symbol.ToUpperInvariant())
-            .Select(g => g.OrderByDescending(r => r.MatchScore).First())
+            .GroupBy(r => NormalizeSymbolKey(r.Symbol))
+            .Select(g => NormalizeResultSymbol(g.OrderByDescending(r => r.MatchScore).First()))
             .OrderByDescending(r => r.MatchScore)
             .Take(request.Limit)
             .ToList();
@@ -251,6 +251,14 @@ public sealed class SymbolSearchService : IDisposable
 
         return response;
     }
+
+    private static string NormalizeSymbolKey(string symbol)
+        => symbol.Trim().ToUpperInvariant();
+
+    private static SymbolSearchResult NormalizeResultSymbol(SymbolSearchResult result)
+        => result.Symbol == result.Symbol.Trim()
+            ? result
+            : result with { Symbol = result.Symbol.Trim().ToUpperInvariant() };
 
     /// <summary>
     /// Get detailed information about a specific symbol.

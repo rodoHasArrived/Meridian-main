@@ -281,7 +281,16 @@ public sealed class FundOpsCloseLaneScenarioTests
                 reconciled.Workflow.Version,
                 "ops-user",
                 ResolutionStatus: "Resolved",
-                Rationale: "Timing difference confirmed with custodian — T+1 settlement"));
+                Rationale: "Timing difference confirmed with custodian — T+1 settlement",
+                EvidenceLinks:
+                [
+                    new OperationsEvidenceLinkDto(
+                        "evidence-break-resolution",
+                        "Custodian settlement confirmation",
+                        "/evidence/fund-ops/break-resolution",
+                        "custodian",
+                        DateTimeOffset.UtcNow)
+                ]));
 
         resolved.Success.Should().BeTrue("break case resolution should succeed");
 
