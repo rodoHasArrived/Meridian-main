@@ -37,11 +37,11 @@ public sealed class QuantScriptViewModelTests
         IScriptRunner? runner = null,
         IQuantScriptCompiler? compiler = null)
     {
-        var fakeRunner   = runner   ?? new FakeScriptRunner();
+        var fakeRunner = runner ?? new FakeScriptRunner();
         var fakeCompiler = compiler ?? new FakeQuantScriptCompiler();
-        var plotQueue    = new PlotQueue();
-        var layout       = new StubLayoutService();
-        var options      = Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() });
+        var plotQueue = new PlotQueue();
+        var layout = new StubLayoutService();
+        var options = Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() });
         var notebookStore = new QuantScriptNotebookStore(options.Value);
         var templateCatalog = new QuantScriptTemplateCatalogService(NullLogger<QuantScriptTemplateCatalogService>.Instance);
         var strategyRunWorkspace = new StrategyRunWorkspaceService(
@@ -52,7 +52,7 @@ public sealed class QuantScriptViewModelTests
             ConfigService.Instance,
             strategyRunWorkspace,
             NullLogger<QuantScriptExecutionHistoryService>.Instance);
-        var logger       = NullLogger<QuantScriptViewModel>.Instance;
+        var logger = NullLogger<QuantScriptViewModel>.Instance;
 
         return new QuantScriptViewModel(
             fakeRunner,

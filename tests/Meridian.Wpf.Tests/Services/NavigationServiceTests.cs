@@ -1,9 +1,9 @@
-using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,23 +24,6 @@ public sealed class NavigationServiceTests : IDisposable
     public NavigationServiceTests()
     {
         NavigationService.Instance.ResetForTests();
-    }
-
-    /// <summary>
-    /// Runs an action on a dedicated STA thread. Required for tests that create WPF UI objects.
-    /// </summary>
-    private static void RunOnSta(Action action)
-    {
-        ExceptionDispatchInfo? captured = null;
-        var thread = new Thread(() =>
-        {
-            try { action(); }
-            catch (Exception ex) { captured = ExceptionDispatchInfo.Capture(ex); }
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-        captured?.Throw();
     }
 
     public void Dispose()
@@ -64,7 +47,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void Initialize_WithValidFrame_ShouldSetFrame()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             // Arrange
             var service = NavigationService.Instance;
@@ -120,7 +103,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void NavigateTo_WithUnregisteredPageTag_ShouldReturnFalse()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             // Arrange
             var service = NavigationService.Instance;
@@ -163,7 +146,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void CreatePageContent_WithWorkspaceScope_ShouldResolvePageFromScope()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             var service = NavigationService.Instance;
             var scopedPage = new WorkspaceCapabilityHomePage();
@@ -182,7 +165,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void NavigateTo_WithWorkspaceScope_ShouldResolvePageFromScope()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             var service = NavigationService.Instance;
             var frame = new Frame();
@@ -372,7 +355,7 @@ public sealed class NavigationServiceTests : IDisposable
     [InlineData("Blotter", "PositionBlotter")]
     public void NavigateTo_WithAlias_ShouldStoreCanonicalPageTag(string alias, string canonicalPageTag)
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             var service = NavigationService.Instance;
             var frame = new Frame();
@@ -393,7 +376,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void NavigateTo_WithOperationsCloseAlias_ShouldStoreFundLedgerAndKeepReportPackContext()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             var service = NavigationService.Instance;
             var frame = new Frame();
@@ -414,7 +397,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void NavigateTo_WithParameterizedEvidenceWorkbenchTarget_ShouldStoreCanonicalAuditTrailPage()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             var service = NavigationService.Instance;
             var frame = new Frame();
@@ -444,7 +427,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void CreatePageContent_WithParameterizedEvidenceWorkbenchTarget_ShouldCreateCanonicalAuditTrailContent()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             var service = NavigationService.Instance;
 
@@ -473,7 +456,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void NavigateTo_WithValidPageTag_ShouldNavigateAndRaiseEvent()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             // Arrange
             var service = NavigationService.Instance;
@@ -511,7 +494,7 @@ public sealed class NavigationServiceTests : IDisposable
     [Fact]
     public void GetBreadcrumbs_AfterNavigation_ShouldContainEntry()
     {
-        RunOnSta(() =>
+        WpfTestThread.Run(() =>
         {
             // Arrange
             var service = NavigationService.Instance;

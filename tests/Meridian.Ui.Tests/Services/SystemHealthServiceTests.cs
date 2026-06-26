@@ -215,7 +215,7 @@ public sealed class SystemHealthServiceTests
     public async Task GetHealthSummaryAsync_WithoutCancellation_AcceptsDefaultToken()
     {
         // Arrange
-        var service = SystemHealthService.Instance;
+        var service = new SystemHealthService(new NullSystemHealthApiClient());
 
         // Act - Call without cancellation token (uses default)
         // API is unavailable in test environment; method should return null gracefully
@@ -351,5 +351,20 @@ public sealed class SystemHealthServiceTests
 
         // Assert - Verify async behavior
         await act.Should().ThrowAsync<Exception>();
+    }
+
+    private sealed class NullSystemHealthApiClient : ISystemHealthApiClient
+    {
+        public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<T?>(null);
+        }
+
+        public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<T?>(null);
+        }
     }
 }
