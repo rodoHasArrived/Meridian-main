@@ -45,6 +45,9 @@ public sealed class SecurityMasterConflictAuthorityPolicyTests
 
         decision.PolicyWinnerSource.Should().Be("GoldenCopy");
         decision.Rule.Should().NotBeNullOrWhiteSpace();
+        // PreserveWinner → recommended source is CurrentWinningSource ("GoldenCopy") == winner, so the
+        // already bulk-eligible conflict stays bulk-eligible.
+        decision.IsBulkEligible.Should().BeTrue();
     }
 
     [Fact]
@@ -105,6 +108,34 @@ public sealed class SecurityMasterConflictAuthorityPolicyTests
     }
 
     // ---- helpers --------------------------------------------------------------------------------
+
+    [Fact]
+    public void Evaluate_BulkEligibility_UsesRecommendationSource_NotProseRecommendedWinner()
+    {
+        // Regression: the real assessment's RecommendedWinner is PROSE ("Preserve GoldenCopy as the
+        // current winner."), not a bare source name. Bulk eligibility must derive the recommended
+        // source from the structured Recommendation (PreserveWinner → CurrentWinningSource), so a
+        // prose RecommendedWinner must NOT silently disable bulk-resolve.
+        var policy = CreatePolicy();
+
+        var assessment = ConflictAssessment(
+            fieldPath: "Identity.Isin",
+            currentWinningSource: "GoldenCopy",
+            challengerSource: "Polygon",
+            recommendedWinner: "Preserve GoldenCopy as the current winner.", // prose, not a source name
+            bulkEligible: true);
+
+        var confidence = new[]
+        {
+            ProviderConfidence("GoldenCopy", confidence: 0.60m, freshness: DateTimeOffset.UtcNow),
+            ProviderConfidence("Polygon", confidence: 0.99m, freshness: DateTimeOffset.UtcNow),
+        };
+
+        var decision = policy.Evaluate(assessment, confidence);
+
+        decision.PolicyWinnerSource.Should().Be("GoldenCopy");
+        decision.IsBulkEligible.Should().BeTrue("bulk eligibility derives the source from Recommendation, not prose");
+    }
 
     private static ISecurityMasterConflictAuthorityPolicy CreatePolicy()
         // BLUEPRINT: the real policy is a pure singleton, configured via IOptionsMonitor<SecurityMasterWorkbenchOptions>.

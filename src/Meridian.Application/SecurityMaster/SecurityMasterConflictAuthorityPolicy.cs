@@ -52,6 +52,10 @@ public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConfl
         var current = assessment.CurrentWinningSource ?? string.Empty;
         var challenger = assessment.ChallengerSource ?? string.Empty;
 
+        // Fetch each source's provider confidence once and reuse it across the freshness/confidence steps.
+        var currentDto = MatchSource(providerConfidence, current);
+        var challengerDto = MatchSource(providerConfidence, challenger);
+
         string winner;
         string rule;
         string rationale;
@@ -68,8 +72,8 @@ public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConfl
         else
         {
             // Step 2 — fresher source wins.
-            var currentAsOf = FreshnessOf(providerConfidence, current);
-            var challengerAsOf = FreshnessOf(providerConfidence, challenger);
+            var currentAsOf = currentDto?.FreshnessAsOf ?? DateTimeOffset.MinValue;
+            var challengerAsOf = challengerDto?.FreshnessAsOf ?? DateTimeOffset.MinValue;
             if (currentAsOf != challengerAsOf)
             {
                 winner = currentAsOf > challengerAsOf ? current : challenger;
@@ -79,17 +83,26 @@ public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConfl
             else
             {
                 // Step 3 — higher confidence score wins.
-                var currentScore = ConfidenceOf(providerConfidence, current);
-                var challengerScore = ConfidenceOf(providerConfidence, challenger);
+                var currentScore = currentDto?.ConfidenceScore ?? 0m;
+                var challengerScore = challengerDto?.ConfidenceScore ?? 0m;
                 winner = challengerScore > currentScore ? challenger : current;
                 rule = "confidence";
                 rationale = $"'{winner}' carries the higher provider confidence score.";
             }
         }
 
+        // Bulk eligibility compares the winner against the recommended SOURCE derived from the
+        // structured Recommendation — NOT the prose RecommendedWinner (e.g. "Preserve Edgar as the
+        // current winner."), which would never match a bare source name and would disable bulk resolve.
+        var recommendedSource = assessment.Recommendation switch
+        {
+            SecurityMasterConflictRecommendationKind.PreserveWinner => assessment.CurrentWinningSource,
+            SecurityMasterConflictRecommendationKind.Challenger => assessment.ChallengerSource,
+            _ => null
+        };
         var isBulkEligible = assessment.IsBulkEligible
-            && !string.IsNullOrWhiteSpace(assessment.RecommendedWinner)
-            && SourceEquals(winner, assessment.RecommendedWinner);
+            && !string.IsNullOrWhiteSpace(recommendedSource)
+            && SourceEquals(winner, recommendedSource);
 
         return new SecurityMasterConflictAuthorityDecision(winner, rule, rationale, isBulkEligible);
     }
@@ -106,16 +119,6 @@ public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConfl
             ?? precedence.FirstOrDefault()
             ?? "GoldenCopy";
     }
-
-    private static DateTimeOffset FreshnessOf(
-        IReadOnlyList<InstrumentPassportProviderConfidenceDto> confidence,
-        string source)
-        => MatchSource(confidence, source)?.FreshnessAsOf ?? DateTimeOffset.MinValue;
-
-    private static decimal ConfidenceOf(
-        IReadOnlyList<InstrumentPassportProviderConfidenceDto> confidence,
-        string source)
-        => MatchSource(confidence, source)?.ConfidenceScore ?? 0m;
 
     private static InstrumentPassportProviderConfidenceDto? MatchSource(
         IReadOnlyList<InstrumentPassportProviderConfidenceDto> confidence,
