@@ -35,6 +35,13 @@ namespace Meridian.Core.Config;
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
 /// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
 /// <param name="FeatureCapabilities">Runtime feature capability overrides.</param>
+/// <param name="ProviderModules">
+/// Declares an arbitrary set of provider modules by family ID, each with credentials
+/// (as environment variable names) and operational settings. When present, the Application
+/// layer resolves credentials from the referenced environment variables and injects them
+/// into each module before registration. Modules not listed here fall back to their
+/// built-in environment variable detection.
+/// </param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
@@ -59,7 +66,8 @@ public sealed record AppConfig(
     bool CoLocationProfile = false,
     ProviderConnectionsConfig? ProviderConnections = null,
     FeatureCapabilityOptions? FeatureCapabilities = null,
-    FundOperationsPersistenceConfig? FundOperationsPersistence = null
+    FundOperationsPersistenceConfig? FundOperationsPersistence = null,
+    ProviderModulesConfig? ProviderModules = null
 );
 
 /// <summary>

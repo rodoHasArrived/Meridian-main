@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluentAssertions;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -186,4 +187,132 @@ public sealed class DataSourceRegistryTests
     }
 
     #endregion
+
+    #region ConfigureModule / ConfigureModules
+
+    [Fact]
+    public void ConfigureModule_ReturnsSameRegistryInstance_ForFluentChaining()
+    {
+        var registry = new DataSourceRegistry();
+        var ctx = new ProviderModuleContext { Enabled = true };
+
+        var result = registry.ConfigureModule("test-provider", ctx);
+
+        result.Should().BeSameAs(registry);
+    }
+
+    [Fact]
+    public void ConfigureModule_NullModuleId_ThrowsArgumentException()
+    {
+        var registry = new DataSourceRegistry();
+        var ctx = new ProviderModuleContext();
+
+        var act = () => registry.ConfigureModule(null!, ctx);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ConfigureModule_NullContext_ThrowsArgumentNullException()
+    {
+        var registry = new DataSourceRegistry();
+
+        var act = () => registry.ConfigureModule("test-provider", null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void ConfigureModules_NullContexts_ThrowsArgumentNullException()
+    {
+        var registry = new DataSourceRegistry();
+
+        var act = () => registry.ConfigureModules(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void ConfigureModules_ValidContexts_DoesNotThrow()
+    {
+        var registry = new DataSourceRegistry();
+        var contexts = new Dictionary<string, ProviderModuleContext>
+        {
+            ["alpaca"] = new ProviderModuleContext { Priority = 10 },
+            ["polygon"] = new ProviderModuleContext { Priority = 20 }
+        };
+
+        var act = () => registry.ConfigureModules(contexts);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void RegisterModules_RequiresConfigModule_SkippedWhenNoContextProvided()
+    {
+        var registry = new DataSourceRegistry();
+        var services = new ServiceCollection();
+
+        // Scan test assembly; DataSourceRegistryRequiresConfigModule has RequiresExternalConfig = true
+        // and no context is provided → it must be skipped.
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+
+        // No exception, and nothing gets registered from the requires-config module.
+        services.Should().NotContain(d =>
+            d.ServiceType == typeof(DataSourceRegistryTestMarker),
+            "the requires-external-config module should be skipped without a context");
+    }
+
+    [Fact]
+    public void RegisterModules_RequiresConfigModule_RegistersWhenContextProvided()
+    {
+        var registry = new DataSourceRegistry();
+        registry.ConfigureModule("ds-registry-requires-config",
+            new ProviderModuleContext { Enabled = true });
+
+        var services = new ServiceCollection();
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+
+        services.Should().Contain(d =>
+            d.ServiceType == typeof(DataSourceRegistryTestMarker),
+            "the module should register its marker when a context is supplied");
+    }
+
+    [Fact]
+    public void RegisterModules_EnabledFalseContext_ModuleSkipped()
+    {
+        var registry = new DataSourceRegistry();
+        registry.ConfigureModule("ds-registry-requires-config",
+            new ProviderModuleContext { Enabled = false });
+
+        var services = new ServiceCollection();
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+
+        services.Should().NotContain(d =>
+            d.ServiceType == typeof(DataSourceRegistryTestMarker),
+            "disabled modules must not register services");
+    }
+
+    #endregion
+}
+
+// -----------------------------------------------------------------------
+// Marker type used to verify module registration in DataSourceRegistry tests
+// -----------------------------------------------------------------------
+
+/// <summary>Marker service type registered by DataSourceRegistryRequiresConfigModule.</summary>
+internal sealed class DataSourceRegistryTestMarker { }
+
+/// <summary>
+/// Test module that requires external config. Used to verify DataSourceRegistry's
+/// context-injection behavior during RegisterModules.
+/// </summary>
+internal sealed class DataSourceRegistryRequiresConfigModule : IProviderModule
+{
+    public string ModuleId => "ds-registry-requires-config";
+    public string ModuleDisplayName => "DataSourceRegistry Test Module";
+    public bool RequiresExternalConfig => true;
+
+    public void Register(IServiceCollection services, DataSourceRegistry registry)
+        => services.AddSingleton<DataSourceRegistryTestMarker>();
 }

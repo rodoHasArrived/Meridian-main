@@ -1,4 +1,5 @@
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
+import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -487,6 +488,7 @@ type SettingsTaskViewId =
   | "operations"
   | "asset-profiles"
   | "providers"
+  | "data-providers"
   | "brokerage"
   | "diagnostics"
   | "runtime";
@@ -528,6 +530,12 @@ const settingsTaskViews: SettingsTaskView[] = [
     label: "Provider Connections",
     href: "#provider-connection-center",
     sectionId: "provider-connection-center"
+  },
+  {
+    id: "data-providers",
+    label: "Data Providers",
+    href: "#data-provider-modules",
+    sectionId: "data-provider-modules"
   },
   {
     id: "brokerage",
@@ -925,6 +933,7 @@ export function SettingsScreen({
   const showOperationsSection = activeTaskView === "operations" || activeTaskView === "access";
   const showAssetProfileSection = activeTaskView === "asset-profiles";
   const showProviderSection = activeTaskView === "providers";
+  const showDataProviderModulesSection = activeTaskView === "data-providers";
   const showBrokerageSection = activeTaskView === "brokerage" || activeTaskView === "providers";
   const showDiagnosticsSection = activeTaskView === "overview" || activeTaskView === "diagnostics" || activeTaskView === "brokerage";
   const showRuntimeSection = activeTaskView === "runtime";
@@ -4135,6 +4144,12 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
+
+      {showDataProviderModulesSection ? (
+      <section id="data-provider-modules" className="scroll-mt-6">
+        <ProviderSetupPanel />
+      </section>
       ) : null}
 
       {showBrokerageSection ? (

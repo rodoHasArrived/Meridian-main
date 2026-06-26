@@ -25,12 +25,19 @@ public static class ProviderServiceExtensions
     /// <param name="config">The application configuration.</param>
     /// <param name="credentialResolver">The credential resolver.</param>
     /// <param name="log">Optional logger.</param>
+    /// <param name="sidecars">
+    /// Optional pre-loaded sidecar credentials keyed by module ID then credential key.
+    /// Values from this snapshot take priority over env-var-mapped credentials, matching
+    /// the same resolution order used in <c>ProviderModuleSetupService.TestModuleAsync</c>.
+    /// Load from <c>IProviderCredentialStore</c> before calling this method.
+    /// </param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddProviderServices(
         this IServiceCollection services,
         AppConfig config,
         IProviderCredentialResolver credentialResolver,
-        ILogger? log = null)
+        ILogger? log = null,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = null)
     {
         // Register credential resolver
         services.AddSingleton(credentialResolver);
@@ -46,6 +53,12 @@ public static class ProviderServiceExtensions
         services.AddSingleton(sp =>
         {
             var registry = new DataSourceRegistry();
+
+            // Pre-configure modules from ProviderModules config before discovery so
+            // each module receives resolved credentials before Register() is called.
+            if (config.ProviderModules?.Modules is { Count: > 0 } modules)
+                registry.ConfigureModules(BuildModuleContexts(modules, sidecars));
+
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             registry.DiscoverFromAssemblies(assemblies);
             registry.RegisterModules(services, assemblies);
@@ -127,6 +140,58 @@ public static class ProviderServiceExtensions
         }
 
         return providers;
+    }
+
+    // Resolves ProviderModulesConfig entries into ProviderModuleContext instances.
+    // Resolution order (highest priority first):
+    //   1. Sidecar store values (from provider-credentials.json via IProviderCredentialStore)
+    //   2. Env-var-mapped values (settings.Credentials maps key → env var name)
+    // This matches the same priority used by ProviderModuleSetupService.TestModuleAsync.
+    private static IReadOnlyDictionary<string, ProviderModuleContext> BuildModuleContexts(
+        Dictionary<string, ProviderModuleSettings> modules,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = null)
+    {
+        var result = new Dictionary<string, ProviderModuleContext>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (moduleId, settings) in modules)
+        {
+            var resolvedCredentials = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+            // 1. Sidecar values take priority (actual values saved by the setup UI)
+            if (sidecars is not null && sidecars.TryGetValue(moduleId, out var sidecar))
+            {
+                foreach (var (key, value) in sidecar)
+                    if (!string.IsNullOrEmpty(value))
+                        resolvedCredentials[key] = value;
+            }
+
+            // 2. Env-var mappings fill in any keys not already satisfied by the sidecar
+            if (settings.Credentials is not null)
+            {
+                foreach (var (key, envVarName) in settings.Credentials)
+                {
+                    if (!resolvedCredentials.ContainsKey(key))
+                        resolvedCredentials[key] = envVarName is null
+                            ? null
+                            : Environment.GetEnvironmentVariable(envVarName);
+                }
+            }
+
+            var resolvedSettings = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            if (settings.Settings is not null)
+            {
+                foreach (var (key, value) in settings.Settings)
+                    resolvedSettings[key] = value;
+            }
+
+            result[moduleId] = new ProviderModuleContext
+            {
+                Enabled = settings.Enabled,
+                Priority = settings.Priority,
+                Credentials = resolvedCredentials,
+                Settings = resolvedSettings
+            };
+        }
+        return result;
     }
 
     /// <summary>

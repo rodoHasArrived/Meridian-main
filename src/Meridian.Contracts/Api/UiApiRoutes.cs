@@ -920,6 +920,14 @@ public static class UiApiRoutes
     public const string ProviderCredentialsValidate = "/api/providers/{provider}/validate-credentials";
     public const string ProviderConnectionTest = "/api/providers/{provider}/test-connection";
 
+    // Provider module setup endpoints (Settings workspace)
+    public const string ProviderModules = "/api/providers/modules";
+    public const string ProviderModulesCatalogue = "/api/providers/modules/catalogue";
+    public const string ProviderModuleById = "/api/providers/modules/{moduleId}";
+    public const string ProviderModuleEnabled = "/api/providers/modules/{moduleId}/enabled";
+    public const string ProviderModuleTest = "/api/providers/modules/{moduleId}/test";
+    public const string ProviderRestart = "/api/providers/restart";
+
     // Covered-call strategy endpoints (slice 1: backtest UI)
     public const string CoveredCallRuns = "/api/strategies/covered-call/runs";
     public const string CoveredCallRunStatus = "/api/strategies/covered-call/runs/{runId}/status";
