@@ -83,7 +83,17 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
             ? "Dismissed"
             : "Resolved";
 
-        var updated = existing with { Status = newStatus };
+        // Capture the winner, resolver, and reason together with the status so the resolution and
+        // its chosen winner are persisted in the SAME atomic write as the close. There is no window
+        // in which the conflict is closed but the winner is unrecorded.
+        var updated = existing with
+        {
+            Status = newStatus,
+            ResolvedWinnerSource = request.ChosenWinnerSource,
+            ResolvedBy = request.ResolvedBy,
+            ResolvedReason = request.Reason,
+            ResolvedAt = DateTimeOffset.UtcNow,
+        };
 
         // Atomic compare-and-set: only the first resolver whose snapshot still matches the stored
         // (Open) record wins. A concurrent resolver that lost the race observes null and must not

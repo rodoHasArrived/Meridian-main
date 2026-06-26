@@ -248,6 +248,38 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task ResolveAsync_RecordsChosenWinnerAndResolverAtomically()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                MakeProjection(securityA, "Cusip", "037833100", provider: "provA"),
+                MakeProjection(securityB, "Cusip", "037833100", provider: "provB")
+            });
+
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+        var conflictId = conflicts[0].ConflictId;
+
+        var updated = await service.ResolveAsync(
+            new ResolveConflictRequest(conflictId, "Resolve", "operator@meridian.test", "Edgar is golden.", ChosenWinnerSource: "Edgar"),
+            CancellationToken.None);
+
+        updated.Should().NotBeNull();
+        updated!.Status.Should().Be("Resolved");
+        updated.ResolvedWinnerSource.Should().Be("Edgar");
+        updated.ResolvedBy.Should().Be("operator@meridian.test");
+        updated.ResolvedReason.Should().Be("Edgar is golden.");
+        updated.ResolvedAt.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task GetConflictAsync_WhenNotFound_ReturnsNull()
     {
         var store = Substitute.For<ISecurityMasterStore>();

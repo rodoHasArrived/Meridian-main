@@ -46,16 +46,32 @@ public sealed record SecurityMasterConflict(
     string ProviderB,
     string ValueB,
     DateTimeOffset DetectedAt,
-    string Status);
+    string Status)
+{
+    /// <summary>The source the resolver chose as the winner; set atomically when the conflict resolves.</summary>
+    public string? ResolvedWinnerSource { get; init; }
+
+    /// <summary>The actor who resolved the conflict; set atomically when the conflict resolves.</summary>
+    public string? ResolvedBy { get; init; }
+
+    /// <summary>The resolver-supplied reason; set atomically when the conflict resolves.</summary>
+    public string? ResolvedReason { get; init; }
+
+    /// <summary>When the conflict was resolved; set atomically when the conflict resolves.</summary>
+    public DateTimeOffset? ResolvedAt { get; init; }
+}
 
 /// <summary>
-/// Request to resolve or dismiss a golden record conflict.
+/// Request to resolve or dismiss a golden record conflict. <see cref="ChosenWinnerSource"/> records
+/// the operator-selected winning source so the resolution and its winner are captured atomically
+/// with the conflict's open→resolved transition.
 /// </summary>
 public sealed record ResolveConflictRequest(
     Guid ConflictId,
     string Resolution,
     string ResolvedBy,
-    string? Reason = null);
+    string? Reason = null,
+    string? ChosenWinnerSource = null);
 
 public sealed record SecurityProjectionRecord(
     Guid SecurityId,

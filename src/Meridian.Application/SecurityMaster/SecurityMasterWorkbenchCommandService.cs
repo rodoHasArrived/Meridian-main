@@ -21,10 +21,15 @@ namespace Meridian.Application.SecurityMaster;
 ///     <see cref="ISecurityMasterConflictService"/> with an atomic open→resolved transition; a
 ///     concurrent duplicate resolution surfaces as <see cref="SecurityMasterConcurrencyException"/>
 ///     rather than silently overwriting the first operator's winner.</item>
-///   <item><c>SubmitForApprovalAsync</c> / <c>ApproveRevisionAsync</c> — routed through the
-///     <see cref="IOperationsContinuityWorkflowService"/> approval gate when a workflow id is supplied.</item>
-///   <item><c>PublishRevisionAsync</c> — idempotent fan-out to the ordered
-///     <see cref="ISecurityMasterRevisionPublishedHandler"/> seam (Phase 3 supplies handlers).</item>
+///   <item><c>SubmitForApprovalAsync</c> / <c>ApproveRevisionAsync</c> — route through the
+///     <see cref="IOperationsContinuityWorkflowService"/> approval gate and advance the durable
+///     <see cref="ISecurityMasterRevisionStore"/> lifecycle (Draft → Submitted → Approved) with
+///     compare-and-set transitions.</item>
+///   <item><c>PublishRevisionAsync</c> — refuses to publish unless the revision is durably Approved,
+///     fans out to the ordered <see cref="ISecurityMasterRevisionPublishedHandler"/> seam (Phase 3
+///     supplies handlers), and surfaces any handler failure (<see cref="SecurityMasterPublishFailedException"/>)
+///     leaving the revision Approved for an idempotent retry; only an all-success fan-out transitions
+///     the revision to Published.</item>
 /// </list>
 /// </summary>
 public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkbenchCommandService
@@ -38,6 +43,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private readonly ISecurityMasterConflictService _conflictService;
     private readonly ISecurityMasterWorkbenchQueryService _queryService;
     private readonly IOperationsContinuityWorkflowService _approvalWorkflow;
+    private readonly ISecurityMasterRevisionStore _revisions;
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
 
@@ -48,6 +54,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         ISecurityMasterConflictService conflictService,
         ISecurityMasterWorkbenchQueryService queryService,
         IOperationsContinuityWorkflowService approvalWorkflow,
+        ISecurityMasterRevisionStore revisions,
         IEnumerable<ISecurityMasterRevisionPublishedHandler> handlers,
         ILogger<SecurityMasterWorkbenchCommandService> logger)
     {
@@ -57,6 +64,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         _conflictService = conflictService ?? throw new ArgumentNullException(nameof(conflictService));
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _approvalWorkflow = approvalWorkflow ?? throw new ArgumentNullException(nameof(approvalWorkflow));
+        _revisions = revisions ?? throw new ArgumentNullException(nameof(revisions));
         _handlers = (handlers ?? throw new ArgumentNullException(nameof(handlers)))
             .OrderBy(static h => h.Order)
             .ToArray();
@@ -99,9 +107,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         };
         await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
 
+        // Open a durable Draft revision so the governed lifecycle (submit → approve → publish) is
+        // anchored to a real, server-issued revision id rather than a transient client value.
+        var revision = await _revisions.CreateDraftAsync(request.SecurityId, request.Actor, ct).ConfigureAwait(false);
+
         _logger.LogInformation(
-            "Security Master field edit staged for {SecurityId} field {FieldPath} at version {Version} by {Actor}",
-            request.SecurityId, request.FieldPath, currentVersion, request.Actor);
+            "Security Master field edit staged for {SecurityId} field {FieldPath} as draft revision {RevisionId} at version {Version} by {Actor}",
+            request.SecurityId, request.FieldPath, revision.RevisionId, currentVersion, request.Actor);
 
         var changeEntry = BuildChangeEntry(
             currentVersion,
@@ -115,7 +127,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         return new SecurityMasterEditResultDto(
             request.SecurityId,
-            Guid.NewGuid(),
+            revision.RevisionId,
             currentVersion,
             SecurityMasterRevisionStateDto.Draft,
             changeEntry);
@@ -167,31 +179,47 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 nameof(request));
         }
 
-        // Close the underlying conflict so it no longer appears Open on the next snapshot. The
-        // conflict service performs an atomic open→resolved transition; a null result means another
-        // operator already resolved this conflict, so surface it as a concurrency conflict rather
-        // than letting the later decision silently win.
+        // Close the underlying conflict AND record the chosen winner in the SAME atomic transition,
+        // so there is no window in which the conflict is resolved but its winner is unrecorded. A
+        // null result means another operator already resolved this conflict, so surface it as a
+        // concurrency conflict rather than letting the later decision silently win.
         var resolution = assessment.Recommendation == SecurityMasterConflictRecommendationKind.DismissAsEquivalent
             ? "Dismiss"
             : "Resolve";
         var resolved = await _conflictService
-            .ResolveAsync(new ResolveConflictRequest(request.ConflictId, resolution, request.Actor, request.Reason), ct)
+            .ResolveAsync(
+                new ResolveConflictRequest(
+                    request.ConflictId, resolution, request.Actor, request.Reason, request.ChosenWinnerSource),
+                ct)
             .ConfigureAwait(false);
         if (resolved is null)
         {
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
 
-        var patch = new OperatorOverridesPatchRequest(
-            SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                [$"conflict-resolution:{request.ConflictId:D}"] = request.ChosenWinnerSource ?? string.Empty,
-            },
-            RemoveKeys: null)
+        // Mirror the winner into the durable override read-model annotation for passport display. The
+        // authoritative resolution already succeeded above, so a mirror failure is logged rather than
+        // surfaced — it cannot lose the recorded winner or re-open the conflict.
+        try
         {
-            ReasonCode = request.Reason,
-        };
-        await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
+            var patch = new OperatorOverridesPatchRequest(
+                SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    [$"conflict-resolution:{request.ConflictId:D}"] = request.ChosenWinnerSource ?? string.Empty,
+                },
+                RemoveKeys: null)
+            {
+                ReasonCode = request.Reason,
+            };
+            await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                ex,
+                "Conflict {ConflictId} for {SecurityId} was resolved, but mirroring the winner into the override annotation failed; the authoritative resolution is recorded on the conflict.",
+                request.ConflictId, request.SecurityId);
+        }
 
         _logger.LogInformation(
             "Resolved Security Master conflict {ConflictId} for {SecurityId}: policy winner {PolicyWinner}, chosen {Chosen}, deviation {IsDeviation}",
@@ -232,6 +260,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     $"Submit for approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
             }
 
+            // Advance the durable revision lifecycle only after the gate accepts the submission.
+            await _revisions.TransitionAsync(
+                request.RevisionId,
+                SecurityMasterRevisionStateDto.Draft,
+                SecurityMasterRevisionStateDto.Submitted,
+                request.Actor,
+                ct).ConfigureAwait(false);
+
             _logger.LogInformation(
                 "Security Master revision {RevisionId} for {SecurityId} submitted through approval gate workflow {WorkflowId}",
                 request.RevisionId, request.SecurityId, workflowId);
@@ -240,6 +276,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 SecurityMasterRevisionStateDto.Submitted, request.Actor, rationale, "operator-field-edit-submitted",
                 "Revision submitted for approval through the operations-continuity gate.");
         }
+
+        await _revisions.TransitionAsync(
+            request.RevisionId,
+            SecurityMasterRevisionStateDto.Draft,
+            SecurityMasterRevisionStateDto.Submitted,
+            request.Actor,
+            ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security Master revision {RevisionId} for {SecurityId} submitted for approval (no workflow context) by {Actor}",
@@ -270,6 +313,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 $"Revision approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
         }
 
+        // Advance the durable revision lifecycle only after the gate records the approval.
+        await _revisions.TransitionAsync(
+            request.RevisionId,
+            SecurityMasterRevisionStateDto.Submitted,
+            SecurityMasterRevisionStateDto.Approved,
+            request.Actor,
+            ct).ConfigureAwait(false);
+
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -285,6 +336,25 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         PublishSecurityMasterRevisionRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        // A revision may only be published if it was actually approved through the governed gate.
+        // This blocks an arbitrary revision id from triggering downstream publish side effects.
+        var revision = await _revisions.GetAsync(request.RevisionId, ct).ConfigureAwait(false);
+        if (revision is null)
+        {
+            throw new SecurityMasterRevisionStateException(
+                request.RevisionId, "no such revision; it cannot be published.");
+        }
+        if (revision.State != SecurityMasterRevisionStateDto.Approved)
+        {
+            throw new SecurityMasterRevisionStateException(
+                request.RevisionId, $"only an Approved revision can be published (current state {revision.State}).");
+        }
+        if (revision.SecurityId != request.SecurityId)
+        {
+            throw new SecurityMasterRevisionStateException(
+                request.RevisionId, $"belongs to security '{revision.SecurityId:D}', not '{request.SecurityId:D}'.");
+        }
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
@@ -304,22 +374,39 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             CorrelationId: request.CorrelationId);
 
         var invalidated = new List<string>();
+        var failedHandlers = new List<string>();
         foreach (var handler in _handlers)
         {
+            var handlerName = handler.GetType().Name;
             try
             {
                 await handler.HandleAsync(evt, ct).ConfigureAwait(false);
-                invalidated.Add(handler.GetType().Name);
+                invalidated.Add(handlerName);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                // The revision is already durable; handlers are idempotent so publish is retry-safe.
+                failedHandlers.Add(handlerName);
                 _logger.LogError(
                     ex,
                     "Revision-published handler {Handler} failed for {SecurityId} revision {RevisionId}",
-                    handler.GetType().Name, request.SecurityId, request.RevisionId);
+                    handlerName, request.SecurityId, request.RevisionId);
             }
         }
+
+        // If any handler failed, a required side effect (projection rebuild, coverage invalidation,
+        // restatement proposal) did not run. Leave the revision Approved and surface the failure so
+        // the caller can retry; handlers are idempotent, so a retry re-runs the full ordered fan-out.
+        if (failedHandlers.Count > 0)
+        {
+            throw new SecurityMasterPublishFailedException(request.SecurityId, request.RevisionId, failedHandlers);
+        }
+
+        await _revisions.TransitionAsync(
+            request.RevisionId,
+            SecurityMasterRevisionStateDto.Approved,
+            SecurityMasterRevisionStateDto.Published,
+            request.Actor,
+            ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers)",

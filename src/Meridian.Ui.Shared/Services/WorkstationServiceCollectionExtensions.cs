@@ -223,6 +223,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+        // Durable governed-revision lifecycle state is process-wide, so it is a singleton consulted by
+        // the scoped command service (publish refuses to run unless the revision is durably Approved).
+        services.TryAddSingleton<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionStore,
+            Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore>();
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService,
             Meridian.Application.SecurityMaster.SecurityMasterWorkbenchCommandService>();

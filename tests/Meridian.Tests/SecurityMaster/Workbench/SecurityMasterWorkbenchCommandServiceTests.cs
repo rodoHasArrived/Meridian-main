@@ -77,6 +77,12 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         result.ChangeEntry.EffectiveAtUtc.Should().Be(effectiveFrom);
         result.ChangeEntry.ChangedFields.Should().Contain("EconomicDefinition.Coupon");
 
+        // A durable Draft revision is opened with a real, server-issued id (not a transient client value).
+        var stored = await harness.Revisions.GetAsync(result.RevisionId);
+        stored.Should().NotBeNull();
+        stored!.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+        stored.SecurityId.Should().Be(SecurityId);
+
         // The edit is staged purely as an override read-model annotation. It must NOT be appended to
         // the economic event stream — that stream is replayed verbatim to rebuild the passport, so a
         // partial field-edit payload would corrupt the economic definition on the next reload.
@@ -132,7 +138,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     public async Task Submit_WithoutWorkflow_ReturnsSubmittedState()
     {
         var harness = new Harness(currentVersion: 2);
-        var revisionId = Guid.NewGuid();
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
 
         var request = new SubmitSecurityMasterRevisionRequest(
             SecurityId: SecurityId,
@@ -144,6 +150,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
         result.RevisionId.Should().Be(revisionId);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
         harness.Workflow.Verify(
             w => w.SubmitForApprovalAsync(It.IsAny<Guid>(), It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Never);
@@ -154,13 +161,14 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         var workflowId = Guid.NewGuid();
         var harness = new Harness(currentVersion: 2);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
         harness.Workflow
             .Setup(w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(SuccessTransition(newVersion: 3));
 
         var request = new SubmitSecurityMasterRevisionRequest(
             SecurityId: SecurityId,
-            RevisionId: Guid.NewGuid(),
+            RevisionId: revisionId,
             Actor: "ops.analyst",
             Note: "Submit through gate.",
             FundProfileId: null,
@@ -172,6 +180,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var result = await harness.Service.SubmitForApprovalAsync(request);
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
         harness.Workflow.Verify(
             w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Once);
@@ -182,13 +191,14 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         var workflowId = Guid.NewGuid();
         var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Submitted);
         harness.Workflow
             .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(SuccessTransition(newVersion: 5));
 
         var request = new ApproveSecurityMasterRevisionRequest(
             SecurityId: SecurityId,
-            RevisionId: Guid.NewGuid(),
+            RevisionId: revisionId,
             WorkflowId: workflowId,
             ExpectedWorkflowVersion: 4,
             Actor: "ops.reviewer",
@@ -199,6 +209,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var result = await harness.Service.ApproveRevisionAsync(request);
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
         harness.Workflow.Verify(
             w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Once);
@@ -223,16 +234,17 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     // ---- Publish ------------------------------------------------------------------------------
 
     [Fact]
-    public async Task Publish_FansOutHandlersInOrder_AndReturnsResult()
+    public async Task Publish_ApprovedRevision_FansOutHandlersInOrder_AndTransitionsToPublished()
     {
         var log = new List<int>();
         var ufl = new RecordingHandler(order: 10, invocationLog: log);
         var coverage = new RecordingHandler(order: 20, invocationLog: log);
         var harness = new Harness(currentVersion: 4, handlers: [coverage, ufl]); // intentionally out of order
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
 
         var request = new PublishSecurityMasterRevisionRequest(
             SecurityId: SecurityId,
-            RevisionId: Guid.NewGuid(),
+            RevisionId: revisionId,
             Actor: "ops.analyst",
             ApproverActor: "ops.reviewer");
 
@@ -244,24 +256,64 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         result.RestatementRequired.Should().BeFalse();
         result.RestatementCandidates.Should().BeEmpty();
         result.InvalidatedProjections.Should().HaveCount(2);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
     }
 
     [Fact]
-    public async Task Publish_HandlerThrows_DoesNotFailPublish()
+    public async Task Publish_RevisionNotApproved_Throws_AndDoesNotFanOut()
     {
-        var throwing = new RecordingHandler(order: 10, onHandle: () => throw new InvalidOperationException("transient"));
-        var harness = new Harness(currentVersion: 6, handlers: [throwing]);
+        var handler = new RecordingHandler(order: 10);
+        var harness = new Harness(currentVersion: 4, handlers: [handler]);
+        // Submitted, not yet Approved — publish must refuse.
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Submitted);
 
         var request = new PublishSecurityMasterRevisionRequest(
             SecurityId: SecurityId,
-            RevisionId: Guid.NewGuid(),
+            RevisionId: revisionId,
             Actor: "ops.analyst",
             ApproverActor: "ops.reviewer");
 
-        var result = await harness.Service.PublishRevisionAsync(request);
+        await harness.Service.Invoking(s => s.PublishRevisionAsync(request))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>();
+        handler.Received.Should().BeEmpty("an unapproved revision must never trigger publish handlers");
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+    }
 
-        result.Should().NotBeNull();
-        result.InvalidatedProjections.Should().BeEmpty();
+    [Fact]
+    public async Task Publish_UnknownRevision_Throws()
+    {
+        var harness = new Harness(currentVersion: 4);
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: Guid.NewGuid(), // never created
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        await harness.Service.Invoking(s => s.PublishRevisionAsync(request))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>();
+    }
+
+    [Fact]
+    public async Task Publish_HandlerThrows_SurfacesFailure_AndLeavesRevisionApproved()
+    {
+        var throwing = new RecordingHandler(order: 10, onHandle: () => throw new InvalidOperationException("transient"));
+        var harness = new Harness(currentVersion: 6, handlers: [throwing]);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        // A failed required side effect surfaces to the caller instead of a silently-successful publish.
+        var ex = await harness.Service.Invoking(s => s.PublishRevisionAsync(request))
+            .Should().ThrowAsync<SecurityMasterPublishFailedException>();
+        ex.Which.FailedHandlers.Should().ContainSingle();
+
+        // The revision stays Approved so the idempotent fan-out can be retried.
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
     }
 
     // ---- helpers ------------------------------------------------------------------------------
@@ -277,6 +329,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Mock<ISecurityMasterConflictService> ConflictService { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterWorkbenchQueryService> QueryService { get; } = new(MockBehavior.Loose);
         public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
+        public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
         public SecurityMasterWorkbenchCommandService Service { get; }
 
         public Harness(long currentVersion, IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null)
@@ -299,8 +352,35 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 ConflictService.Object,
                 QueryService.Object,
                 Workflow.Object,
+                Revisions,
                 handlers ?? Array.Empty<ISecurityMasterRevisionPublishedHandler>(),
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance);
+        }
+
+        /// <summary>Seeds a revision advanced to <paramref name="state"/> and returns its id.</summary>
+        public async Task<Guid> SeedRevisionAsync(SecurityMasterRevisionStateDto state, string actor = "ops.analyst")
+        {
+            var draft = await Revisions.CreateDraftAsync(SecurityId, actor);
+            var id = draft.RevisionId;
+            if (state == SecurityMasterRevisionStateDto.Draft)
+            {
+                return id;
+            }
+
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, actor);
+            if (state == SecurityMasterRevisionStateDto.Submitted)
+            {
+                return id;
+            }
+
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, actor);
+            if (state == SecurityMasterRevisionStateDto.Approved)
+            {
+                return id;
+            }
+
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, actor);
+            return id;
         }
     }
 
