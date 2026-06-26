@@ -76,15 +76,15 @@ command; the GitHub-hosted `quality-gate` check remains authoritative before mer
 
 When local machine limits, restore failures, or MSBuild locks make validation unreliable, push the
 branch and use the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
-broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
-non-empty `dotnet_filter`:
+broad local scripts. Select a whitelisted `mode`; the .NET lane uses `mode=dotnet-filtered` with a
+repo-relative test project under `tests/` and a non-empty `dotnet_filter`:
 After timed-out generation, build, or test attempts, first run
 `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
 shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
 `VBCSCompiler` PIDs whose command lines clearly point at this checkout.
 
 ```bash
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```
 
 ## Repository Layout

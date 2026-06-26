@@ -26,10 +26,10 @@ env:
   MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
 jobs:
-  quality-gate:
-    name: quality-gate
+  verify-dotnet:
+    name: verify-dotnet
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 45
 
     steps:
       - name: Check out repository
@@ -42,13 +42,6 @@ jobs:
         uses: actions/setup-dotnet@v5.2.0
         with:
           global-json-file: global.json
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6.4.0
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Set up Python
         uses: actions/setup-python@v6.2.0
@@ -64,5 +57,162 @@ jobs:
             ${{ runner.os }}-nuget-quality-gate-
             ${{ runner.os }}-nuget-
 
-      - name: Run Meridian verification
-        run: bash scripts/ci.sh
+      - name: Run .NET lane
+        run: bash scripts/ci.sh --lane verify-dotnet
+
+      - name: Upload .NET lane artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            artifacts/build-logs/
+            artifacts/test-results/dotnet/
+            artifacts/ci-summary/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  verify-browser:
+    name: verify-browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run browser workstation lane
+        run: bash scripts/ci.sh --lane verify-browser
+
+      - name: Upload browser lane artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            src/Meridian.Ui/dashboard/dist/
+            artifacts/ci-summary/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  verify-docs:
+    name: verify-docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run docs/source/AI lane
+        run: bash scripts/ci.sh --lane verify-docs
+
+      - name: Upload docs lane artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-ci-docs-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            docs/status/docs-automation-summary.md
+            docs/status/docs-automation-summary.json
+            docs/status/todo-scan-results.json
+            artifacts/ci-summary/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  verify-workflows:
+    name: verify-workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run workflow hygiene lane
+        run: bash scripts/ci.sh --lane verify-workflows
+
+      - name: Upload workflow lane artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-ci-workflows-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/ci-summary/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  quality-gate:
+    name: quality-gate
+    runs-on: ubuntu-latest
+    needs:
+      - verify-dotnet
+      - verify-browser
+      - verify-docs
+      - verify-workflows
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Evaluate Meridian CI lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          declare -A results=(
+            ["verify-dotnet"]="${{ needs.verify-dotnet.result }}"
+            ["verify-browser"]="${{ needs.verify-browser.result }}"
+            ["verify-docs"]="${{ needs.verify-docs.result }}"
+            ["verify-workflows"]="${{ needs.verify-workflows.result }}"
+          )
+
+          failed=0
+          {
+            echo "### Meridian CI quality gate"
+            echo ""
+            echo "| Lane | Result |"
+            echo "| --- | --- |"
+            for lane in verify-dotnet verify-browser verify-docs verify-workflows; do
+              result="${results[$lane]}"
+              echo "| \`$lane\` | \`$result\` |"
+              if [[ "$result" != "success" ]]; then
+                failed=1
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$failed" -ne 0 ]]; then
+            echo "One or more Meridian CI lanes failed. Inspect the lane job summaries and artifacts."
+            exit 1
+          fi
+
+          echo "All Meridian CI lanes passed."

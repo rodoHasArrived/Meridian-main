@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "requiredStatusCheck": {
+    "workflow": "Meridian CI",
+    "job": "quality-gate",
+    "checkName": "Meridian CI / quality-gate"
+  },
+  "lanes": [
+    {
+      "id": "bootstrap",
+      "displayName": "Bootstrap",
+      "runner": "local",
+      "localCommand": "make bootstrap",
+      "hostedMode": null,
+      "artifacts": [],
+      "timeoutMinutes": 0,
+      "pathTriggerNotes": "Local developer setup only; no hosted workflow is required.",
+      "requiredCheckRole": "none"
+    },
+    {
+      "id": "quality-gate",
+      "displayName": "Quality Gate",
+      "runner": "ubuntu-latest",
+      "localCommand": "bash scripts/ci.sh",
+      "hostedMode": "aggregator",
+      "artifacts": [
+        "artifacts/ci-summary/"
+      ],
+      "timeoutMinutes": 75,
+      "pathTriggerNotes": "Runs for pull requests to main, pushes to main, merge queue groups, and manual dispatch.",
+      "requiredCheckRole": "aggregator"
+    },
+    {
+      "id": "verify-dotnet",
+      "displayName": ".NET Restore Build Test",
+      "runner": "ubuntu-latest",
+      "localCommand": "bash scripts/ci.sh --lane verify-dotnet",
+      "hostedMode": "meridian-ci-dotnet",
+      "artifacts": [
+        "artifacts/build-logs/",
+        "artifacts/test-results/dotnet/",
+        "artifacts/ci-summary/"
+      ],
+      "timeoutMinutes": 45,
+      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, web-workstation .NET build, and non-integration .NET tests.",
+      "requiredCheckRole": "evidence"
+    },
+    {
+      "id": "verify-browser",
+      "displayName": "Browser Workstation",
+      "runner": "ubuntu-latest",
+      "localCommand": "bash scripts/ci.sh --lane verify-browser",
+      "hostedMode": "browser-workstation",
+      "artifacts": [
+        "src/Meridian.Ui/dashboard/dist",
+        "artifacts/ci-summary/"
+      ],
+      "timeoutMinutes": 25,
+      "pathTriggerNotes": "Covers lockfile-strict dashboard install, tests, and production bundle build.",
+      "requiredCheckRole": "evidence"
+    },
+    {
+      "id": "verify-docs",
+      "displayName": "Docs Source AI Validation",
+      "runner": "ubuntu-latest",
+      "localCommand": "bash scripts/ci.sh --lane verify-docs",
+      "hostedMode": "docs-source",
+      "artifacts": [
+        "docs/status/docs-automation-summary.md",
+        "docs/status/docs-automation-summary.json",
+        "docs/status/todo-scan-results.json",
+        "artifacts/ci-summary/"
+      ],
+      "timeoutMinutes": 25,
+      "pathTriggerNotes": "Covers docs delivery claims, status staleness, AI contract drift, lane vocabulary, roadmap registry, source READMEs, TODO scans, and generated roadmap/source drift.",
+      "requiredCheckRole": "evidence"
+    },
+    {
+      "id": "verify-workflows",
+      "displayName": "Workflow Hygiene",
+      "runner": "ubuntu-latest",
+      "localCommand": "bash scripts/ci.sh --lane verify-workflows",
+      "hostedMode": "workflow-hygiene",
+      "artifacts": [
+        "artifacts/ci-summary/"
+      ],
+      "timeoutMinutes": 10,
+      "pathTriggerNotes": "Covers lane manifest consistency and workflow hygiene checks.",
+      "requiredCheckRole": "evidence"
+    },
+    {
+      "id": "verify-fast",
+      "displayName": "Fast Local Verification",
+      "runner": "ubuntu-latest",
+      "localCommand": "bash scripts/ci.sh --lane verify-fast",
+      "hostedMode": null,
+      "artifacts": [
+        "artifacts/build-logs/",
+        "artifacts/test-results/dotnet/",
+        "src/Meridian.Ui/dashboard/dist",
+        "artifacts/ci-summary/"
+      ],
+      "timeoutMinutes": 60,
+      "pathTriggerNotes": "Local aggregate of .NET and browser lanes for pre-PR confidence.",
+      "requiredCheckRole": "none"
+    },
+    {
+      "id": "targeted-test",
+      "displayName": "Curated Hosted Lane Validation",
+      "runner": "ubuntu-latest or windows-latest",
+      "localCommand": "gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\"",
+      "hostedMode": "dotnet-filtered,browser-workstation,docs-source,wpf-dev-loop,wpf-route,desktop-smoke",
+      "artifacts": [
+        "artifacts/test-results/targeted-dotnet/",
+        "artifacts/targeted-browser/",
+        "artifacts/targeted-docs/",
+        "artifacts/wpf-validation/",
+        "artifacts/publish/targeted-desktop-smoke/"
+      ],
+      "timeoutMinutes": 60,
+      "pathTriggerNotes": "Manual only; use after pushing a branch when local machine limits block reliable proof.",
+      "requiredCheckRole": "manual-evidence"
+    },
+    {
+      "id": "verify-desktop",
+      "displayName": "Windows Desktop Build",
+      "runner": "windows-latest",
+      "localCommand": "pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore -Filter \"Category!=Integration&FullyQualifiedName!~Integration\"",
+      "hostedMode": "windows-desktop-build",
+      "artifacts": [
+        "artifacts/wpf-validation/windows-desktop-build/",
+        "artifacts/publish/desktop-smoke/"
+      ],
+      "timeoutMinutes": 55,
+      "pathTriggerNotes": "Path-filtered for WPF and dependency changes; smoke publish runs on main, manual request, or WPF/publish graph PR changes.",
+      "requiredCheckRole": "evidence"
+    },
+    {
+      "id": "verify-release",
+      "displayName": "Release Publish and Packaging",
+      "runner": "windows-latest",
+      "localCommand": "pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -OutputDir artifacts/publish/publish-smoke",
+      "hostedMode": "publish-smoke,desktop-installer-release",
+      "artifacts": [
+        "artifacts/publish/",
+        "artifacts/release/"
+      ],
+      "timeoutMinutes": 75,
+      "pathTriggerNotes": "Manual publish smoke or tag/manual desktop installer packaging.",
+      "requiredCheckRole": "release-evidence"
+    },
+    {
+      "id": "verify-full",
+      "displayName": "Full Coverage and Scenario Tests",
+      "runner": "ubuntu-latest",
+      "localCommand": "make verify-full",
+      "hostedMode": "ci-verify-full",
+      "artifacts": [
+        "artifacts/test-results/full/",
+        "docs/status/coverage-report.md"
+      ],
+      "timeoutMinutes": 60,
+      "pathTriggerNotes": "Nightly on main or manual dispatch; not part of every PR critical path.",
+      "requiredCheckRole": "scheduled-evidence"
+    }
+  ]
+}

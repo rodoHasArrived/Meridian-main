@@ -169,7 +169,7 @@ public sealed class ApiClientService : IDisposable
             var json = await response.Content.ReadAsStringAsync(ct);
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
@@ -208,7 +208,7 @@ public sealed class ApiClientService : IDisposable
                 Data = data
             };
         }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
@@ -254,7 +254,7 @@ public sealed class ApiClientService : IDisposable
             var json = await response.Content.ReadAsStringAsync(ct);
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
@@ -303,7 +303,7 @@ public sealed class ApiClientService : IDisposable
                 Data = data
             };
         }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
@@ -360,7 +360,7 @@ public sealed class ApiClientService : IDisposable
                 Data = data
             };
         }
-        catch (TaskCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }

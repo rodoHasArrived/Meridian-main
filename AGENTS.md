@@ -134,7 +134,7 @@ Actions remains the merge authority.
 4. Read the nearest source README and `docs/source/data/source-modules.yml` before source edits under `src/**`.
 5. Prefer shared service/read-model seams before UI-specific forks.
 6. Use the narrowest validation command that covers the files changed.
-7. If local machine capacity, restore, or MSBuild locks block validation, run `python build/python/cli/buildctl.py validation-status --summary`, shut down leftover build servers with `dotnet build-server shutdown`, and stop only abandoned repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this checkout before retrying; if local proof remains unreliable, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter`.
+7. If local machine capacity, restore, or MSBuild locks block validation, run `python build/python/cli/buildctl.py validation-status --summary`, shut down leftover build servers with `dotnet build-server shutdown`, and stop only abandoned repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this checkout before retrying; if local proof remains unreliable, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a whitelisted `mode`, using `mode=dotnet-filtered` plus a repo-relative test project under `tests/` and `dotnet_filter` for .NET slices.
 8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
 9. For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable
    memory. If the work has a named scope, route through the matching

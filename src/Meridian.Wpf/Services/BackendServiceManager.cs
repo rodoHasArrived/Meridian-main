@@ -280,6 +280,10 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         {
             return await _remoteClient.CheckHealthEndpointAsync(ct).ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return false;
+        }
         catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
         {
             return false;

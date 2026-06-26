@@ -299,13 +299,17 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
-    public void WindowsDesktopBuildWorkflow_ShouldEnableFullWpfBuildTestAndPublish()
+    public void WindowsDesktopBuildWorkflow_ShouldRunIsolatedValidationAndGatedPublish()
     {
         var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\windows-desktop-build.yml"));
 
-        workflow.Should().Contain("dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
-        workflow.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj");
-        workflow.Should().Contain("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj");
+        workflow.Should().Contain("pwsh ./scripts/dev/validate-wpf-dev.ps1");
+        workflow.Should().Contain("-Restore");
+        workflow.Should().Contain("-Filter \"Category!=Integration&FullyQualifiedName!~Integration\"");
+        workflow.Should().Contain("-OutputRoot \"artifacts/wpf-validation/windows-desktop-build\"");
+        workflow.Should().Contain("run_smoke_publish");
+        workflow.Should().Contain("Decide desktop smoke publish");
+        workflow.Should().Contain("if: steps.desktop-smoke.outputs.run == 'true'");
         workflow.Should().Contain("dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("/p:EnableWindowsTargeting=true");
