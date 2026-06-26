@@ -88,6 +88,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // SecurityMasterMapping.FromEconomicPayload to rebuild the passport, so a partial
         // field-edit payload would clobber the economic definition on the next reload/replay.
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        if (currentVersion == 0)
+        {
+            // No events means the security was never created in the event-sourced Security Master.
+            // Reject the edit before staging an override / opening a draft for a phantom security
+            // (the override store upserts by id and would otherwise create overlay state for it).
+            throw new InvalidOperationException(
+                $"Security '{request.SecurityId:D}' was not found; it cannot be edited.");
+        }
         if (request.ExpectedVersion != currentVersion)
         {
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
@@ -239,6 +247,12 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // Preflight the revision BEFORE mutating the approval gate: a stale/mistyped revision id must
+        // not leave an orphaned submitted workflow that can never be published. The TransitionAsync
+        // CAS below remains the authority against concurrent advancement.
+        await EnsureRevisionInStateAsync(
+            request.RevisionId, request.SecurityId, SecurityMasterRevisionStateDto.Draft, ct).ConfigureAwait(false);
+
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
         var rationale = string.IsNullOrWhiteSpace(request.Note)
             ? "Security Master revision submitted for approval."
@@ -298,6 +312,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // Preflight the revision BEFORE mutating the approval gate (same orphaned-lane reasoning as
+        // SubmitForApprovalAsync); the TransitionAsync CAS below is the authority on concurrency.
+        await EnsureRevisionInStateAsync(
+            request.RevisionId, request.SecurityId, SecurityMasterRevisionStateDto.Submitted, ct).ConfigureAwait(false);
+
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
             Actor: request.Actor,
@@ -337,24 +356,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        // A revision may only be published if it was actually approved through the governed gate.
-        // This blocks an arbitrary revision id from triggering downstream publish side effects.
-        var revision = await _revisions.GetAsync(request.RevisionId, ct).ConfigureAwait(false);
-        if (revision is null)
-        {
-            throw new SecurityMasterRevisionStateException(
-                request.RevisionId, "no such revision; it cannot be published.");
-        }
-        if (revision.State != SecurityMasterRevisionStateDto.Approved)
-        {
-            throw new SecurityMasterRevisionStateException(
-                request.RevisionId, $"only an Approved revision can be published (current state {revision.State}).");
-        }
-        if (revision.SecurityId != request.SecurityId)
-        {
-            throw new SecurityMasterRevisionStateException(
-                request.RevisionId, $"belongs to security '{revision.SecurityId:D}', not '{request.SecurityId:D}'.");
-        }
+        // A revision may only be published if it was actually approved through the governed gate and
+        // belongs to this security. This blocks an arbitrary revision id from triggering downstream
+        // publish side effects.
+        await EnsureRevisionInStateAsync(
+            request.RevisionId, request.SecurityId, SecurityMasterRevisionStateDto.Approved, ct).ConfigureAwait(false);
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
@@ -425,6 +431,28 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
         return events.Count == 0 ? 0L : events.Max(static e => e.StreamVersion);
+    }
+
+    private async Task<SecurityMasterRevisionRecord> EnsureRevisionInStateAsync(
+        Guid revisionId, Guid securityId, SecurityMasterRevisionStateDto expected, CancellationToken ct)
+    {
+        var revision = await _revisions.GetAsync(revisionId, ct).ConfigureAwait(false);
+        if (revision is null)
+        {
+            throw new SecurityMasterRevisionStateException(revisionId, "no such revision.");
+        }
+        if (revision.SecurityId != securityId)
+        {
+            throw new SecurityMasterRevisionStateException(
+                revisionId, $"belongs to security '{revision.SecurityId:D}', not '{securityId:D}'.");
+        }
+        if (revision.State != expected)
+        {
+            throw new SecurityMasterRevisionStateException(
+                revisionId, $"expected state {expected} but the revision is {revision.State}.");
+        }
+
+        return revision;
     }
 
     private static SecurityMasterEditResultDto BuildLifecycleResult(

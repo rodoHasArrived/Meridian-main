@@ -56,6 +56,28 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task UpdateSecurityField_UnknownSecurity_Throws()
+    {
+        // currentVersion 0 == no events == the security was never created.
+        var harness = new Harness(currentVersion: 0);
+
+        var request = new UpdateSecurityFieldRequest(
+            SecurityId: SecurityId,
+            ExpectedVersion: 0,
+            FieldPath: "Identity.Isin",
+            NewValue: "US0378331005",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            Actor: "ops.analyst",
+            Justification: "Backfill ISIN.");
+
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>();
+        harness.Overrides.Verify(
+            o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task UpdateSecurityField_HappyPath_StagesOverrideAnnotation_WithoutEconomicStreamAppend()
     {
         var effectiveFrom = new DateTimeOffset(2026, 03, 31, 0, 0, 0, TimeSpan.Zero);
@@ -187,6 +209,55 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Submit_UnknownRevision_Throws_BeforeTouchingGate()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 2);
+
+        var request = new SubmitSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: Guid.NewGuid(), // never created
+            Actor: "ops.analyst",
+            Note: "Submit through gate.",
+            FundProfileId: null,
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 2,
+            Reviewer: "ops.reviewer",
+            ReportPackId: "rp-1");
+
+        await harness.Service.Invoking(s => s.SubmitForApprovalAsync(request))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>();
+
+        // The approval gate must not be mutated for a stale/mistyped revision id (no orphaned lane).
+        harness.Workflow.Verify(
+            w => w.SubmitForApprovalAsync(It.IsAny<Guid>(), It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Approve_UnknownRevision_Throws_BeforeTouchingGate()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+
+        var request = new ApproveSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: Guid.NewGuid(), // never created
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 4,
+            Actor: "ops.reviewer",
+            Reviewer: "ops.reviewer",
+            Rationale: "Approved.",
+            ReportPackId: "rp-1");
+
+        await harness.Service.Invoking(s => s.ApproveRevisionAsync(request))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>();
+        harness.Workflow.Verify(
+            w => w.ApproveWorkflowAsync(It.IsAny<Guid>(), It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task Approve_RoutesThroughApprovalGate_AndReturnsApproved()
     {
         var workflowId = Guid.NewGuid();
@@ -220,15 +291,19 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         var workflowId = Guid.NewGuid();
         var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Submitted);
         harness.Workflow
             .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OperationsTransitionResultDto(false, "BLOCKED", "Independent reviewer required.", null, [], []));
 
         var request = new ApproveSecurityMasterRevisionRequest(
-            SecurityId, Guid.NewGuid(), workflowId, 4, "ops.analyst", "ops.analyst", "Approve.", "rp-1");
+            SecurityId, revisionId, workflowId, 4, "ops.analyst", "ops.analyst", "Approve.", "rp-1");
 
         await harness.Service.Invoking(s => s.ApproveRevisionAsync(request))
             .Should().ThrowAsync<InvalidOperationException>();
+
+        // The gate rejected the approval, so the revision must remain Submitted (not advanced).
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
     }
 
     // ---- Publish ------------------------------------------------------------------------------
