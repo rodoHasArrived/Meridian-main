@@ -24,6 +24,9 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         self.assertIn("Decide desktop smoke publish", self.workflow)
         self.assertIn("steps.desktop-smoke.outputs.run == 'true'", self.workflow)
         self.assertIn("run_smoke_publish:", self.workflow)
+        self.assertIn("fetch-depth: 2", self.workflow)
+        self.assertIn('"HEAD^1" "HEAD^2"', self.workflow)
+        self.assertIn("git fetch origin $env:BASE_REF --depth=100", self.workflow)
         self.assertIn("git diff --name-only", self.workflow)
         self.assertIn("^build/scripts/(publish|install)/", self.workflow)
 
