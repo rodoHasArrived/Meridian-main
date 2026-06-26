@@ -7,11 +7,13 @@ namespace Meridian.Application.SecurityMaster;
 /// Deterministic conflict-authority policy. Selects the default winner from the precedence ladder:
 /// <list type="number">
 ///   <item>golden-copy source (the configured authority) wins outright;</item>
-///   <item>otherwise the fresher source (by <c>FreshnessAsOf</c>) wins;</item>
+///   <item>otherwise the higher-ranked source in <c>SourcePrecedence</c> wins;</item>
+///   <item>otherwise (equal rank) the fresher source (by <c>FreshnessAsOf</c>) wins;</item>
 ///   <item>otherwise the higher confidence score wins.</item>
 /// </list>
-/// The decision is bulk-eligible only when it matches the assessment's recommended winner, so a
-/// policy winner that diverges from the recommendation always falls back to per-row review.
+/// Bulk eligibility is derived from the structured <c>Recommendation</c>: equivalent dismissals stay
+/// eligible regardless of winner, while accept-winner/accept-challenger recommendations stay eligible
+/// only when the policy winner matches the recommended source (otherwise they fall back to per-row review).
 /// </summary>
 public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConflictAuthorityPolicy
 {
@@ -71,38 +73,51 @@ public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConfl
         }
         else
         {
-            // Step 2 — fresher source wins.
-            var currentAsOf = currentDto?.FreshnessAsOf ?? DateTimeOffset.MinValue;
-            var challengerAsOf = challengerDto?.FreshnessAsOf ?? DateTimeOffset.MinValue;
-            if (currentAsOf != challengerAsOf)
+            // Step 2 — higher-ranked source in the precedence ladder wins (rank before freshness).
+            var currentRank = RankOf(options, current);
+            var challengerRank = RankOf(options, challenger);
+            if (currentRank != challengerRank)
             {
-                winner = currentAsOf > challengerAsOf ? current : challenger;
-                rule = "freshness";
-                rationale = $"'{winner}' carries the fresher provider evidence (AsOf).";
+                winner = currentRank < challengerRank ? current : challenger;
+                rule = "source-precedence";
+                rationale = $"'{winner}' outranks the alternative in the configured source precedence ladder.";
             }
             else
             {
-                // Step 3 — higher confidence score wins.
-                var currentScore = currentDto?.ConfidenceScore ?? 0m;
-                var challengerScore = challengerDto?.ConfidenceScore ?? 0m;
-                winner = challengerScore > currentScore ? challenger : current;
-                rule = "confidence";
-                rationale = $"'{winner}' carries the higher provider confidence score.";
+                // Step 3 — equal rank: fresher source wins.
+                var currentAsOf = currentDto?.FreshnessAsOf ?? DateTimeOffset.MinValue;
+                var challengerAsOf = challengerDto?.FreshnessAsOf ?? DateTimeOffset.MinValue;
+                if (currentAsOf != challengerAsOf)
+                {
+                    winner = currentAsOf > challengerAsOf ? current : challenger;
+                    rule = "freshness";
+                    rationale = $"'{winner}' carries the fresher provider evidence (AsOf).";
+                }
+                else
+                {
+                    // Step 4 — higher confidence score wins.
+                    var currentScore = currentDto?.ConfidenceScore ?? 0m;
+                    var challengerScore = challengerDto?.ConfidenceScore ?? 0m;
+                    winner = challengerScore > currentScore ? challenger : current;
+                    rule = "confidence";
+                    rationale = $"'{winner}' carries the higher provider confidence score.";
+                }
             }
         }
 
-        // Bulk eligibility compares the winner against the recommended SOURCE derived from the
-        // structured Recommendation — NOT the prose RecommendedWinner (e.g. "Preserve Edgar as the
-        // current winner."), which would never match a bare source name and would disable bulk resolve.
-        var recommendedSource = assessment.Recommendation switch
+        // Bulk eligibility derives from the structured Recommendation (NOT the prose RecommendedWinner,
+        // e.g. "Preserve Edgar as the current winner.", which would never match a bare source name):
+        //  - DismissAsEquivalent: values normalize to the same thing, so a bulk dismiss stays safe
+        //    regardless of which source the policy nominally picked — preserve eligibility.
+        //  - Challenger / PreserveWinner: stay eligible only when the policy winner matches the
+        //    recommended source, so a divergent policy decision falls back to per-row review.
+        var isBulkEligible = assessment.IsBulkEligible && assessment.Recommendation switch
         {
-            SecurityMasterConflictRecommendationKind.PreserveWinner => assessment.CurrentWinningSource,
-            SecurityMasterConflictRecommendationKind.Challenger => assessment.ChallengerSource,
-            _ => null
+            SecurityMasterConflictRecommendationKind.DismissAsEquivalent => true,
+            SecurityMasterConflictRecommendationKind.Challenger => SourceEquals(winner, assessment.ChallengerSource),
+            SecurityMasterConflictRecommendationKind.PreserveWinner => SourceEquals(winner, assessment.CurrentWinningSource),
+            _ => false
         };
-        var isBulkEligible = assessment.IsBulkEligible
-            && !string.IsNullOrWhiteSpace(recommendedSource)
-            && SourceEquals(winner, recommendedSource);
 
         return new SecurityMasterConflictAuthorityDecision(winner, rule, rationale, isBulkEligible);
     }
@@ -118,6 +133,27 @@ public sealed class SecurityMasterConflictAuthorityPolicy : ISecurityMasterConfl
         return precedence.FirstOrDefault(s => !SourceEquals(s, "Operator"))
             ?? precedence.FirstOrDefault()
             ?? "GoldenCopy";
+    }
+
+    /// <summary>Rank of a source in the precedence ladder (lower = higher authority);
+    /// sources absent from the ladder share the lowest authority (int.MaxValue).</summary>
+    private static int RankOf(SecurityMasterWorkbenchOptions options, string source)
+    {
+        var precedence = options.SourcePrecedence;
+        if (precedence is null)
+        {
+            return int.MaxValue;
+        }
+
+        for (var i = 0; i < precedence.Count; i++)
+        {
+            if (SourceEquals(precedence[i], source))
+            {
+                return i;
+            }
+        }
+
+        return int.MaxValue;
     }
 
     private static InstrumentPassportProviderConfidenceDto? MatchSource(

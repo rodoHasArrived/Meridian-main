@@ -289,9 +289,12 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   during publish → logged, append already durable, handlers idempotent so retry-safe.
 
 ### `SecurityMasterConflictAuthorityPolicy`
-- **Lifetime:** Singleton (pure). Precedence: golden-copy rule (`TrustPosture.GoldenCopyRule`) →
-  configured source rank → `AsOf` freshness → `ConfidenceScore`. `IsBulkEligible` = assessment
-  eligible AND decision matches `RecommendedWinner`. `IOptionsMonitor<SecurityMasterWorkbenchOptions>`.
+- **Lifetime:** Singleton (pure). Precedence: golden-copy source → configured source rank
+  (`SourcePrecedence`) → `AsOf` freshness → `ConfidenceScore`. `IsBulkEligible` derives from the
+  structured `Recommendation` (NOT the prose `RecommendedWinner`): `DismissAsEquivalent` stays
+  eligible regardless of winner; `Challenger`/`PreserveWinner` stay eligible only when the policy
+  winner matches the recommended source (`ChallengerSource`/`CurrentWinningSource`). Gated by
+  `assessment.IsBulkEligible`. `IOptionsMonitor<SecurityMasterWorkbenchOptions>`.
 
 ### `PeriodAwarePropagationHandler` (`Order = 100`) — formerly `ClosedPeriodRestatementProposalHandler`
 - **Dependencies:** `ILedgerPeriodLockReader` (**authoritative** period status),

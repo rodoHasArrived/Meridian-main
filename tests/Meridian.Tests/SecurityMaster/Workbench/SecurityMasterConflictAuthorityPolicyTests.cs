@@ -6,11 +6,12 @@
 //   - SecurityMasterConflictAuthorityDecision
 //
 // Inputs the policy consumes:
-//   - SecurityMasterConflictAssessmentDto (CurrentWinningSource, ChallengerSource, RecommendedWinner,
-//     ImpactSeverity, IsBulkEligible, Conflict)  — Meridian.Contracts.Workstation
+//   - SecurityMasterConflictAssessmentDto (CurrentWinningSource, ChallengerSource, Recommendation,
+//     RecommendedWinner, ImpactSeverity, IsBulkEligible, Conflict)  — Meridian.Contracts.Workstation
 //   - InstrumentPassportProviderConfidenceDto (Provider, ConfidenceScore, FreshnessAsOf)
 //
-// Precedence under test (resolved D1): golden-copy source -> freshness(AsOf) -> confidence.
+// Precedence under test (resolved D1): golden-copy source -> source rank -> freshness(AsOf) -> confidence.
+// Default SourcePrecedence: ["GoldenCopy", "Edgar", "Polygon", "Operator"].
 
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -22,18 +23,15 @@ namespace Meridian.Tests.SecurityMaster.Workbench;
 public sealed class SecurityMasterConflictAuthorityPolicyTests
 {
     [Fact]
-    public void Evaluate_GoldenCopyRuleWins_OverRankAndFreshness()
+    public void Evaluate_GoldenCopySource_WinsOutright()
     {
-        // When a golden-copy source rule designates a winner, it must win even if a fresher,
-        // higher-ranked challenger exists.
+        // The configured golden-copy source wins even against a fresher, otherwise-ranked challenger.
         var policy = CreatePolicy();
 
         var assessment = ConflictAssessment(
-            fieldPath: "Identity.Isin",
             currentWinningSource: "GoldenCopy",
             challengerSource: "Polygon",
-            recommendedWinner: "GoldenCopy",
-            bulkEligible: true);
+            recommendedWinner: "GoldenCopy");
 
         var confidence = new[]
         {
@@ -44,86 +42,145 @@ public sealed class SecurityMasterConflictAuthorityPolicyTests
         var decision = policy.Evaluate(assessment, confidence);
 
         decision.PolicyWinnerSource.Should().Be("GoldenCopy");
-        decision.Rule.Should().NotBeNullOrWhiteSpace();
-        // PreserveWinner → recommended source is CurrentWinningSource ("GoldenCopy") == winner, so the
-        // already bulk-eligible conflict stays bulk-eligible.
+        decision.Rule.Should().Be("golden-copy-source");
+        // PreserveWinner → recommended source is CurrentWinningSource ("GoldenCopy") == winner.
         decision.IsBulkEligible.Should().BeTrue();
     }
 
     [Fact]
-    public void Evaluate_TieBrokenByFreshnessThenConfidence()
+    public void Evaluate_SourcePrecedence_RanksBeforeFreshness()
     {
-        // With no golden-copy override and equal source rank, fresher AsOf wins; if freshness ties,
-        // the higher confidence score wins.
+        // Neither source is golden; the higher-ranked source (Edgar) must win over a lower-ranked
+        // but fresher source (Polygon) — rank is applied before freshness.
         var policy = CreatePolicy();
 
         var assessment = ConflictAssessment(
-            fieldPath: "EconomicDefinition.Coupon",
             currentWinningSource: "Edgar",
             challengerSource: "Polygon",
-            recommendedWinner: "Polygon",
-            bulkEligible: true);
-
-        var fresher = DateTimeOffset.UtcNow;
-        var staler = DateTimeOffset.UtcNow.AddDays(-5);
+            recommendedWinner: "Edgar");
 
         var confidence = new[]
         {
-            ProviderConfidence("Edgar", confidence: 0.90m, freshness: staler),
-            ProviderConfidence("Polygon", confidence: 0.70m, freshness: fresher),
+            ProviderConfidence("Edgar", confidence: 0.50m, freshness: DateTimeOffset.UtcNow.AddDays(-10)),
+            ProviderConfidence("Polygon", confidence: 0.99m, freshness: DateTimeOffset.UtcNow), // fresher, lower rank
         };
 
         var decision = policy.Evaluate(assessment, confidence);
 
-        decision.PolicyWinnerSource.Should().Be("Polygon", "fresher AsOf must break the tie before confidence");
+        decision.PolicyWinnerSource.Should().Be("Edgar", "higher source-precedence rank must win before freshness");
+        decision.Rule.Should().Be("source-precedence");
     }
 
     [Fact]
-    public void Evaluate_BulkEligibleOnlyWhenMatchesRecommendedWinner()
+    public void Evaluate_EqualRank_TieBrokenByFreshness()
     {
-        // Bulk-resolve safety: a conflict is only bulk-eligible when the policy decision matches the
-        // assessment's RecommendedWinner AND the assessment was already flagged bulk-eligible.
+        // Two sources absent from the precedence ladder share the lowest rank, so freshness decides.
         var policy = CreatePolicy();
 
-        var divergent = ConflictAssessment(
-            fieldPath: "Venues.PrimaryMic",
-            currentWinningSource: "Edgar",
-            challengerSource: "Polygon",
-            recommendedWinner: "Edgar",
-            bulkEligible: true);
+        var assessment = ConflictAssessment(
+            currentWinningSource: "VendorX",
+            challengerSource: "VendorY",
+            recommendedWinner: "VendorY");
 
-        // Confidence/freshness steer the policy toward Polygon, diverging from RecommendedWinner=Edgar.
         var confidence = new[]
         {
-            ProviderConfidence("Edgar", confidence: 0.50m, freshness: DateTimeOffset.UtcNow.AddDays(-10)),
-            ProviderConfidence("Polygon", confidence: 0.95m, freshness: DateTimeOffset.UtcNow),
+            ProviderConfidence("VendorX", confidence: 0.90m, freshness: DateTimeOffset.UtcNow.AddDays(-5)),
+            ProviderConfidence("VendorY", confidence: 0.70m, freshness: DateTimeOffset.UtcNow), // fresher
         };
 
-        var decision = policy.Evaluate(divergent, confidence);
+        var decision = policy.Evaluate(assessment, confidence);
 
-        if (!string.Equals(decision.PolicyWinnerSource, divergent.RecommendedWinner, StringComparison.OrdinalIgnoreCase))
-        {
-            decision.IsBulkEligible.Should().BeFalse("a policy winner that diverges from RecommendedWinner must fall back to per-row review");
-        }
+        decision.PolicyWinnerSource.Should().Be("VendorY", "fresher AsOf breaks an equal-rank tie");
+        decision.Rule.Should().Be("freshness");
     }
 
-    // ---- helpers --------------------------------------------------------------------------------
+    [Fact]
+    public void Evaluate_EqualRankAndFreshness_TieBrokenByConfidence()
+    {
+        // Equal rank and equal freshness → higher confidence score wins.
+        var policy = CreatePolicy();
+        var sameInstant = DateTimeOffset.UtcNow;
+
+        var assessment = ConflictAssessment(
+            currentWinningSource: "VendorX",
+            challengerSource: "VendorY",
+            recommendedWinner: "VendorY");
+
+        var confidence = new[]
+        {
+            ProviderConfidence("VendorX", confidence: 0.70m, freshness: sameInstant),
+            ProviderConfidence("VendorY", confidence: 0.95m, freshness: sameInstant), // higher confidence
+        };
+
+        var decision = policy.Evaluate(assessment, confidence);
+
+        decision.PolicyWinnerSource.Should().Be("VendorY");
+        decision.Rule.Should().Be("confidence");
+    }
+
+    [Fact]
+    public void Evaluate_BulkIneligible_WhenPolicyWinnerDivergesFromRecommendedSource()
+    {
+        // PreserveWinner recommends the current source, but equal-rank freshness steers the policy to
+        // the challenger — the divergence must drop the conflict back to per-row review.
+        var policy = CreatePolicy();
+
+        var assessment = ConflictAssessment(
+            currentWinningSource: "VendorA",
+            challengerSource: "VendorB",
+            recommendedWinner: "Preserve VendorA as the current winner.",
+            recommendation: SecurityMasterConflictRecommendationKind.PreserveWinner,
+            bulkEligible: true);
+
+        var confidence = new[]
+        {
+            ProviderConfidence("VendorA", confidence: 0.50m, freshness: DateTimeOffset.UtcNow.AddDays(-3)),
+            ProviderConfidence("VendorB", confidence: 0.50m, freshness: DateTimeOffset.UtcNow), // fresher → wins
+        };
+
+        var decision = policy.Evaluate(assessment, confidence);
+
+        decision.PolicyWinnerSource.Should().Be("VendorB");
+        decision.IsBulkEligible.Should().BeFalse("a winner diverging from the recommended source falls back to per-row review");
+    }
+
+    [Fact]
+    public void Evaluate_DismissAsEquivalent_PreservesBulkEligibility()
+    {
+        // Equivalent dismissals are safe to bulk-resolve regardless of which source the policy nominally
+        // picks — eligibility must be preserved, not forced false.
+        var policy = CreatePolicy();
+
+        var assessment = ConflictAssessment(
+            currentWinningSource: "Edgar",
+            challengerSource: "Polygon",
+            recommendedWinner: "Edgar and Polygon normalize to the same value.",
+            recommendation: SecurityMasterConflictRecommendationKind.DismissAsEquivalent,
+            bulkEligible: true);
+
+        var confidence = new[]
+        {
+            ProviderConfidence("Edgar", confidence: 0.90m, freshness: DateTimeOffset.UtcNow),
+            ProviderConfidence("Polygon", confidence: 0.70m, freshness: DateTimeOffset.UtcNow.AddDays(-1)),
+        };
+
+        var decision = policy.Evaluate(assessment, confidence);
+
+        decision.IsBulkEligible.Should().BeTrue("equivalent dismissals stay bulk-eligible regardless of the policy winner");
+    }
 
     [Fact]
     public void Evaluate_BulkEligibility_UsesRecommendationSource_NotProseRecommendedWinner()
     {
         // Regression: the real assessment's RecommendedWinner is PROSE ("Preserve GoldenCopy as the
-        // current winner."), not a bare source name. Bulk eligibility must derive the recommended
-        // source from the structured Recommendation (PreserveWinner → CurrentWinningSource), so a
-        // prose RecommendedWinner must NOT silently disable bulk-resolve.
+        // current winner."), not a bare source name. Bulk eligibility derives the recommended source
+        // from the structured Recommendation, so prose must NOT silently disable bulk-resolve.
         var policy = CreatePolicy();
 
         var assessment = ConflictAssessment(
-            fieldPath: "Identity.Isin",
             currentWinningSource: "GoldenCopy",
             challengerSource: "Polygon",
-            recommendedWinner: "Preserve GoldenCopy as the current winner.", // prose, not a source name
-            bulkEligible: true);
+            recommendedWinner: "Preserve GoldenCopy as the current winner."); // prose, not a source name
 
         var confidence = new[]
         {
@@ -137,17 +194,18 @@ public sealed class SecurityMasterConflictAuthorityPolicyTests
         decision.IsBulkEligible.Should().BeTrue("bulk eligibility derives the source from Recommendation, not prose");
     }
 
+    // ---- helpers --------------------------------------------------------------------------------
+
     private static ISecurityMasterConflictAuthorityPolicy CreatePolicy()
-        // BLUEPRINT: the real policy is a pure singleton, configured via IOptionsMonitor<SecurityMasterWorkbenchOptions>.
-        // A parameterless or options-seeded constructor is assumed here.
         => new SecurityMasterConflictAuthorityPolicy();
 
     private static SecurityMasterConflictAssessmentDto ConflictAssessment(
-        string fieldPath,
         string currentWinningSource,
         string challengerSource,
         string recommendedWinner,
-        bool bulkEligible)
+        SecurityMasterConflictRecommendationKind recommendation = SecurityMasterConflictRecommendationKind.PreserveWinner,
+        bool bulkEligible = true,
+        string fieldPath = "Identity.Isin")
         => new(
             Conflict: new SecurityMasterConflict(
                 ConflictId: Guid.NewGuid(),
@@ -164,10 +222,10 @@ public sealed class SecurityMasterConflictAuthorityPolicyTests
             ChallengerValue: "challenger",
             CurrentWinningSource: currentWinningSource,
             ChallengerSource: challengerSource,
-            Recommendation: SecurityMasterConflictRecommendationKind.PreserveWinner,
+            Recommendation: recommendation,
             RecommendedResolution: "review",
             RecommendedWinner: recommendedWinner,
-            ImpactSeverity: SecurityMasterImpactSeverity.Medium,
+            ImpactSeverity: SecurityMasterImpactSeverity.Low,
             ImpactSummary: $"conflict on {fieldPath}",
             ImpactDetail: "detail",
             IsBulkEligible: bulkEligible);
