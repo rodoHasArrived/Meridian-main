@@ -83,7 +83,7 @@ write_ci_summary() {
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     summary_args+=(--github-step-summary "$GITHUB_STEP_SUMMARY")
   fi
-  "$python_cmd" build/scripts/ci/summarize-ci-artifacts.py "${summary_args[@]}" >/dev/null 2>&1 || true
+  "$python_cmd" build/scripts/ci/summarize-ci-artifacts.py "${summary_args[@]}" >/dev/null || true
   exit "$status"
 }
 trap write_ci_summary EXIT
