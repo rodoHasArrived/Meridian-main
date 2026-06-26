@@ -10,7 +10,7 @@
     "documented_endpoint_count": 588,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 792,
-    "documented_workstation_contract_count": 791,
+    "documented_workstation_contract_count": 792,
     "undocumented_workstation_contract_count": 1
   },
   "endpoints": [
@@ -6292,7 +6292,7 @@
     {
       "name": "ApproveSecurityMasterRevisionRequest",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:79",
-      "documented": false
+      "documented": true
     },
     {
       "name": "PublishSecurityMasterRevisionRequest",
