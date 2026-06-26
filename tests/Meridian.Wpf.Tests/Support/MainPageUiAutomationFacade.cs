@@ -330,11 +330,14 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
             disposable.Dispose();
         }
 
+        ContentFrame.Content = null;
+        Page.DataContext = null;
         _serviceProvider.Dispose();
         NavigationService.Instance.ResetForTests();
         WorkspaceService.Instance.ResetForTests();
         WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+        RunMatUiAutomationFacade.DrainDispatcher();
 
         try
         {

@@ -218,7 +218,7 @@ public sealed class StorageOptimizationViewModelTests
         xaml.Should().Contain("{Binding TotalSizeText}");
         xaml.Should().Contain("{Binding SymbolBreakdownRows}");
         xaml.Should().Contain("{Binding IsSymbolBreakdownEmpty, Converter={StaticResource BoolToVisibilityConverter}}");
-        xaml.Should().Contain("{Binding DriveUsedPercent}");
+        xaml.Should().Contain("{Binding DriveUsedPercent, Mode=OneWay}");
         xaml.Should().Contain("{Binding RunAnalysisCommand}");
         xaml.Should().Contain("{Binding ViewTierStatisticsCommand}");
         xaml.Should().Contain("{Binding AnalysisResultText}");

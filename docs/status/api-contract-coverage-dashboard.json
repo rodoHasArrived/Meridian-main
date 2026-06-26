@@ -9,8 +9,8 @@
     "endpoint_count": 580,
     "documented_endpoint_count": 580,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 773,
-    "documented_workstation_contract_count": 773,
+    "workstation_contract_count": 779,
+    "documented_workstation_contract_count": 779,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -3923,257 +3923,287 @@
     },
     {
       "name": "EvidenceArtifactExtractionFieldDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:48",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:49",
       "documented": true
     },
     {
       "name": "EvidenceDocumentClassificationDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:61",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:62",
+      "documented": true
+    },
+    {
+      "name": "EvidenceDocumentIntakeChannelDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:80",
       "documented": true
     },
     {
       "name": "EvidenceExtractionStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:76",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:93",
       "documented": true
     },
     {
       "name": "EvidenceDocumentLinkKindDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:86",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:104",
       "documented": true
     },
     {
       "name": "EvidenceDocumentReviewStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:100",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:119",
       "documented": true
     },
     {
       "name": "EvidenceDocumentLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:107",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:126",
       "documented": true
     },
     {
       "name": "EvidenceDocumentReviewStateDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:114",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:133",
+      "documented": true
+    },
+    {
+      "name": "EvidenceDocumentConfirmedFieldDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:142",
       "documented": true
     },
     {
       "name": "EvidenceDocumentAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:120",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:150",
+      "documented": true
+    },
+    {
+      "name": "EvidenceDocumentAuthorityDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:157",
+      "documented": true
+    },
+    {
+      "name": "EvidenceDocumentSourceRecordDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:168",
       "documented": true
     },
     {
       "name": "EvidenceRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:127",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:180",
       "documented": true
     },
     {
       "name": "EvidenceDocumentDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:137",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:190",
+      "documented": true
+    },
+    {
+      "name": "EvidenceManifestPackageKindDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:220",
       "documented": true
     },
     {
       "name": "EvidenceManifestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:161",
-      "documented": true
-    },
-    {
-      "name": "EvidenceDocumentExtractionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:171",
-      "documented": true
-    },
-    {
-      "name": "EvidenceDocumentExtractionResultDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:179",
-      "documented": true
-    },
-    {
-      "name": "EvidenceDocumentIntakeSourceKindDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:187",
-      "documented": true
-    },
-    {
-      "name": "EvidenceDocumentIntakeSourceDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:193",
-      "documented": true
-    },
-    {
-      "name": "EvidenceArtifactRefDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:200",
-      "documented": true
-    },
-    {
-      "name": "EvidenceNodeDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:206",
-      "documented": true
-    },
-    {
-      "name": "EvidenceNodeDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:217",
-      "documented": true
-    },
-    {
-      "name": "EvidenceEdgeDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:222",
-      "documented": true
-    },
-    {
-      "name": "EvidenceValidationSeverityDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:230",
       "documented": true
     },
     {
-      "name": "EvidenceValidationIssueDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:236",
+      "name": "EvidenceDocumentExtractionRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:243",
       "documented": true
     },
     {
-      "name": "EvidenceSlaPolicyDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:245",
+      "name": "EvidenceDocumentExtractionResultDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:251",
       "documented": true
     },
     {
-      "name": "EvidenceSlaAssessmentDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:254",
+      "name": "EvidenceDocumentIntakeSourceKindDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:259",
       "documented": true
     },
     {
-      "name": "EvidenceAssuranceComponentDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:265",
+      "name": "EvidenceDocumentIntakeSourceDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:269",
       "documented": true
     },
     {
-      "name": "MeridianAssuranceScoreDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:272",
+      "name": "EvidenceArtifactRefDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:276",
       "documented": true
     },
     {
-      "name": "EvidenceProofChainLayerKindDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:280",
+      "name": "EvidenceNodeDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:282",
       "documented": true
     },
     {
-      "name": "EvidenceProofChainLayerDto",
+      "name": "EvidenceNodeDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:293",
       "documented": true
     },
     {
-      "name": "EvidenceProofChainDto",
+      "name": "EvidenceEdgeDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:298",
+      "documented": true
+    },
+    {
+      "name": "EvidenceValidationSeverityDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:306",
       "documented": true
     },
     {
-      "name": "EvidenceVaultIdentityDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:323",
+      "name": "EvidenceValidationIssueDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:312",
       "documented": true
     },
     {
-      "name": "EvidenceVaultArtifactDto",
+      "name": "EvidenceSlaPolicyDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:321",
+      "documented": true
+    },
+    {
+      "name": "EvidenceSlaAssessmentDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:330",
+      "documented": true
+    },
+    {
+      "name": "EvidenceAssuranceComponentDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:341",
       "documented": true
     },
     {
+      "name": "MeridianAssuranceScoreDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:348",
+      "documented": true
+    },
+    {
+      "name": "EvidenceProofChainLayerKindDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:356",
+      "documented": true
+    },
+    {
+      "name": "EvidenceProofChainLayerDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:369",
+      "documented": true
+    },
+    {
+      "name": "EvidenceProofChainDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:382",
+      "documented": true
+    },
+    {
+      "name": "EvidenceVaultIdentityDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:399",
+      "documented": true
+    },
+    {
+      "name": "EvidenceVaultArtifactDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:417",
+      "documented": true
+    },
+    {
       "name": "EvidenceSupportRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:358",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:434",
+      "documented": true
+    },
+    {
+      "name": "EvidenceRequestListKindDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:448",
       "documented": true
     },
     {
       "name": "EvidenceRequestListDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:370",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:458",
       "documented": true
     },
     {
       "name": "EvidenceVaultRequestListQueryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:383",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:474",
       "documented": true
     },
     {
       "name": "EvidenceVaultRequestListEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:392",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:484",
       "documented": true
     },
     {
       "name": "EvidenceVaultDocumentQueryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:412",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:507",
       "documented": true
     },
     {
       "name": "EvidenceVaultDocumentEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:424",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:520",
       "documented": true
     },
     {
       "name": "EvidenceVaultDocumentReviewRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:435",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:531",
       "documented": true
     },
     {
       "name": "EvidenceVaultDocumentReviewResponseDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:442",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:541",
       "documented": true
     },
     {
       "name": "EvidenceVaultIntakeRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:446",
-      "documented": true
-    },
-    {
-      "name": "EvidenceVaultIntakeResponseDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:472",
-      "documented": true
-    },
-    {
-      "name": "EvidenceLifecycleMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:489",
-      "documented": true
-    },
-    {
-      "name": "EvidenceSubjectLinkageDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:495",
-      "documented": true
-    },
-    {
-      "name": "EvidenceVaultLookupRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:505",
-      "documented": true
-    },
-    {
-      "name": "EvidenceEndpointErrorDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:515",
-      "documented": true
-    },
-    {
-      "name": "EvidenceCompletenessDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:523",
-      "documented": true
-    },
-    {
-      "name": "EvidencePacketDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:545",
       "documented": true
     },
     {
-      "name": "EvidenceGraphDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:557",
-      "documented": true
-    },
-    {
-      "name": "EvidenceTemplateExportSettingsDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:567",
-      "documented": true
-    },
-    {
-      "name": "EvidenceTemplateDto",
+      "name": "EvidenceVaultIntakeResponseDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:572",
       "documented": true
     },
     {
+      "name": "EvidenceLifecycleMetadataDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:589",
+      "documented": true
+    },
+    {
+      "name": "EvidenceSubjectLinkageDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:595",
+      "documented": true
+    },
+    {
+      "name": "EvidenceVaultLookupRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:605",
+      "documented": true
+    },
+    {
+      "name": "EvidenceEndpointErrorDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:615",
+      "documented": true
+    },
+    {
+      "name": "EvidenceCompletenessDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:623",
+      "documented": true
+    },
+    {
+      "name": "EvidencePacketDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:645",
+      "documented": true
+    },
+    {
+      "name": "EvidenceGraphDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:657",
+      "documented": true
+    },
+    {
+      "name": "EvidenceTemplateExportSettingsDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:667",
+      "documented": true
+    },
+    {
+      "name": "EvidenceTemplateDto",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:672",
+      "documented": true
+    },
+    {
       "name": "EvidencePacketExportRequest",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:579",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:679",
       "documented": true
     },
     {
       "name": "EvidencePacketExportResponse",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:588",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:688",
       "documented": true
     },
     {
