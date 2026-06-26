@@ -112,9 +112,10 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         if (string.IsNullOrWhiteSpace(request.ModuleId))
             return ProviderModuleSetupResult.Fail("ModuleId is required");
 
-        // Baseline captured inside the lambda so it is read under _configLock,
+        // Both baselines captured inside the lambda so they are read under _configLock,
         // preventing a concurrent mutation from making the rollback target stale.
         ProviderModuleSettings? preExistingSettings = null;
+        ProviderModuleSettings? writtenSettings = null;
 
         // Save config first; only persist credentials if config write succeeds,
         // so a failed config save never leaves orphaned credentials on disk.
@@ -134,6 +135,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                     ? new Dictionary<string, string?>(request.Settings, StringComparer.OrdinalIgnoreCase)
                     : preExistingSettings?.Settings);
 
+            writtenSettings = settings;
             modules[request.ModuleId] = settings;
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
@@ -161,7 +163,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             {
                 _logger.LogError(ex, "Credential operation failed for {ModuleId}; attempting config rollback",
                     request.ModuleId.Replace('\n', ' ').Replace('\r', ' '));
-                await RollbackModuleConfigAsync(request.ModuleId, preExistingSettings).ConfigureAwait(false);
+                await RollbackModuleConfigAsync(request.ModuleId, preExistingSettings, writtenSettings).ConfigureAwait(false);
                 return ProviderModuleSetupResult.Fail("Failed to read or save credentials; the configuration change was rolled back.");
             }
         }
@@ -236,7 +238,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         {
             _logger.LogError(ex, "Credential deletion failed for {ModuleId}; attempting config rollback",
                 moduleId.Replace('\n', ' ').Replace('\r', ' '));
-            await RollbackModuleConfigAsync(moduleId, removedSettings).ConfigureAwait(false);
+            // writtenSettings is null — signals the rollback that the module should be absent.
+            await RollbackModuleConfigAsync(moduleId, removedSettings, writtenSettings: null).ConfigureAwait(false);
             return ProviderModuleSetupResult.Fail("Failed to delete credentials; the configuration change was rolled back.");
         }
 
@@ -322,7 +325,10 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     // Private helpers
     // ------------------------------------------------------------------
 
-    private async Task RollbackModuleConfigAsync(string moduleId, ProviderModuleSettings? preExistingSettings)
+    private async Task RollbackModuleConfigAsync(
+        string moduleId,
+        ProviderModuleSettings? preExistingSettings,
+        ProviderModuleSettings? writtenSettings)
     {
         try
         {
@@ -331,6 +337,16 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                 var modules = cfg.ProviderModules?.Modules is not null
                     ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
                     : new Dictionary<string, ProviderModuleSettings>(StringComparer.OrdinalIgnoreCase);
+
+                // Only apply compensation if the config still reflects exactly what this operation
+                // wrote, so a concurrent admin mutation between our write and the credential failure
+                // is never silently overwritten.
+                var currentMatches = writtenSettings is null
+                    ? !modules.ContainsKey(moduleId)            // remove path: key should be absent
+                    : modules.TryGetValue(moduleId, out var cur) && cur == writtenSettings; // upsert path
+
+                if (!currentMatches)
+                    return cfg; // concurrent mutation detected — leave config as-is
 
                 if (preExistingSettings is null)
                     modules.Remove(moduleId);

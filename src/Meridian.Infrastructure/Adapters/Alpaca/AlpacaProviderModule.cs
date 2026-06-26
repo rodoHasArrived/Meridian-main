@@ -66,7 +66,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // Historical backfill provider
         // ----------------------------------------------------------------
         services.AddSingleton<AlpacaHistoricalDataProvider>(_ =>
-            new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey));
+            new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey, feed: feed));
 
         services.AddSingleton<IHistoricalDataProvider>(sp =>
             sp.GetRequiredService<AlpacaHistoricalDataProvider>());
