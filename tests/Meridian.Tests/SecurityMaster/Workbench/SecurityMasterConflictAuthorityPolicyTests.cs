@@ -196,8 +196,14 @@ public sealed class SecurityMasterConflictAuthorityPolicyTests
 
     // ---- helpers --------------------------------------------------------------------------------
 
+    // The production default SourcePrecedence is empty (neutral until config-bound); tests supply an
+    // explicit ladder so rank-based behaviour is exercised deterministically.
     private static ISecurityMasterConflictAuthorityPolicy CreatePolicy()
-        => new SecurityMasterConflictAuthorityPolicy();
+        => new SecurityMasterConflictAuthorityPolicy(new SecurityMasterWorkbenchOptions
+        {
+            SourcePrecedence = ["GoldenCopy", "Edgar", "Polygon", "Operator"],
+            GoldenCopySource = "GoldenCopy",
+        });
 
     private static SecurityMasterConflictAssessmentDto ConflictAssessment(
         string currentWinningSource,

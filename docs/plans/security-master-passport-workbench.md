@@ -333,7 +333,7 @@ POST /api/security-master/{securityId:guid}/workbench/publish
 public sealed class SecurityMasterWorkbenchOptions
 {
     public const string SectionName = "SecurityMasterWorkbench";
-    public List<string> SourcePrecedence { get; init; } = ["GoldenCopy", "Edgar", "Polygon", "Operator"];
+    public List<string> SourcePrecedence { get; init; } = []; // real source ids; empty default, bound from config
     public bool RequireIndependentReviewer { get; init; } = true;
     public int MaxBulkResolveBatch { get; init; } = 200;
 }

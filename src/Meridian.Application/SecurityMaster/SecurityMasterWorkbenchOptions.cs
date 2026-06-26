@@ -10,10 +10,13 @@ public sealed class SecurityMasterWorkbenchOptions
     public const string SectionName = "SecurityMasterWorkbench";
 
     /// <summary>
-    /// Source precedence ladder, highest authority first. The first non-operator entry is treated as
-    /// the golden-copy source unless <see cref="GoldenCopySource"/> is set explicitly.
+    /// Source precedence ladder, highest authority first, using real source-system identifiers. The
+    /// first non-operator entry is treated as the golden-copy source unless <see cref="GoldenCopySource"/>
+    /// is set explicitly. Empty by default: until this is bound from configuration with the deployment's
+    /// real source systems, the policy applies no presumptive ranking and falls through to freshness then
+    /// confidence, so a placeholder ladder can never reverse the actual golden copy.
     /// </summary>
-    public List<string> SourcePrecedence { get; init; } = ["GoldenCopy", "Edgar", "Polygon", "Operator"];
+    public List<string> SourcePrecedence { get; init; } = [];
 
     /// <summary>Explicit golden-copy source; when null it is derived from <see cref="SourcePrecedence"/>.</summary>
     public string? GoldenCopySource { get; init; }
