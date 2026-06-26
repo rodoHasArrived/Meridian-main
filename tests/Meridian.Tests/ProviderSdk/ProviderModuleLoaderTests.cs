@@ -269,6 +269,114 @@ public sealed class ProviderModuleLoaderTests
     }
 
     // -----------------------------------------------------------------------
+    // Context injection (ConfigureModule / ConfigureModules)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ConfigureModule_BeforeLoad_InjectsContextBeforeRegister()
+    {
+        var loader = new ProviderModuleLoader();
+        var services = new ServiceCollection();
+        var registry = new DataSourceRegistry();
+        var module = new ContextCapturingProviderModule();
+
+        var ctx = new ProviderModuleContext
+        {
+            Enabled = true,
+            Credentials = new Dictionary<string, string?> { ["apiKey"] = "resolved-key" }
+        };
+        loader.ConfigureModule(module.ModuleId, ctx);
+
+        await loader.LoadModulesAsync(services, registry, new[] { module });
+
+        module.ReceivedContext.Should().NotBeNull();
+        module.ReceivedContext!.GetCredential("apiKey").Should().Be("resolved-key");
+        module.RegisterWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ConfigureModule_DisabledContext_SkipsModuleWithoutFailure()
+    {
+        var loader = new ProviderModuleLoader();
+        var services = new ServiceCollection();
+        var registry = new DataSourceRegistry();
+        var module = new ContextCapturingProviderModule();
+
+        loader.ConfigureModule(module.ModuleId, new ProviderModuleContext { Enabled = false });
+
+        var report = await loader.LoadModulesAsync(services, registry, new[] { module });
+
+        report.LoadedCount.Should().Be(0);
+        report.FailedCount.Should().Be(0, "disabled modules are skipped silently");
+        module.RegisterWasCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RequiresExternalConfig_WithNoContext_ReportsFailure()
+    {
+        var loader = new ProviderModuleLoader();
+        var services = new ServiceCollection();
+        var registry = new DataSourceRegistry();
+        var module = new RequiresConfigProviderModule();
+
+        var report = await loader.LoadModulesAsync(services, registry, new[] { module });
+
+        report.LoadedCount.Should().Be(0);
+        report.FailedCount.Should().Be(1);
+        report.Failed[0].ModuleId.Should().Be(module.ModuleId);
+        module.RegisterWasCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RequiresExternalConfig_WithContextProvided_LoadsSuccessfully()
+    {
+        var loader = new ProviderModuleLoader();
+        var services = new ServiceCollection();
+        var registry = new DataSourceRegistry();
+        var module = new RequiresConfigProviderModule();
+
+        loader.ConfigureModule(module.ModuleId, new ProviderModuleContext { Enabled = true });
+
+        var report = await loader.LoadModulesAsync(services, registry, new[] { module });
+
+        report.LoadedCount.Should().Be(1);
+        report.FailedCount.Should().Be(0);
+        module.RegisterWasCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ConfigureModules_NullContexts_ThrowsArgumentNullException()
+    {
+        var loader = new ProviderModuleLoader();
+
+        var act = () => loader.ConfigureModules(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task ConfigureModules_MultipleContexts_AllAppliedToMatchingModules()
+    {
+        var loader = new ProviderModuleLoader();
+        var services = new ServiceCollection();
+        var registry = new DataSourceRegistry();
+
+        var moduleA = new ContextCapturingProviderModule("provider-x", "Provider X");
+        var moduleB = new ContextCapturingProviderModule("provider-y", "Provider Y");
+
+        loader.ConfigureModules(new Dictionary<string, ProviderModuleContext>
+        {
+            ["provider-x"] = new ProviderModuleContext { Credentials = new Dictionary<string, string?> { ["apiKey"] = "key-x" } },
+            ["provider-y"] = new ProviderModuleContext { Credentials = new Dictionary<string, string?> { ["apiKey"] = "key-y" } }
+        });
+
+        await loader.LoadModulesAsync(services, registry, new IProviderModule[] { moduleA, moduleB });
+
+        moduleA.ReceivedContext!.GetCredential("apiKey").Should().Be("key-x");
+        moduleB.ReceivedContext!.GetCredential("apiKey").Should().Be("key-y");
+    }
+
+    // -----------------------------------------------------------------------
     // Default interface implementations
     // -----------------------------------------------------------------------
 
@@ -408,4 +516,46 @@ internal sealed class ThrowingConstructorProviderModule : IProviderModule
 internal sealed class MinimalProviderModule : IProviderModule
 {
     public void Register(IServiceCollection services, DataSourceRegistry registry) { }
+}
+
+/// <summary>
+/// Extends ConfigurableProviderModuleBase to capture the context injected by the loader.
+/// Explicit parameterless constructor allows Activator.CreateInstance in assembly-scan paths.
+/// </summary>
+internal sealed class ContextCapturingProviderModule : ConfigurableProviderModuleBase
+{
+    private readonly string _id;
+    private readonly string _displayName;
+
+    public ContextCapturingProviderModule() : this("context-capturing", "Context Capturing Module") { }
+
+    public ContextCapturingProviderModule(string id, string displayName)
+    {
+        _id = id;
+        _displayName = displayName;
+    }
+
+    public ProviderModuleContext? ReceivedContext => Context;
+    public bool RegisterWasCalled { get; private set; }
+
+    public override string ModuleId => _id;
+    public override string ModuleDisplayName => _displayName;
+
+    public override void Register(IServiceCollection services, DataSourceRegistry registry)
+        => RegisterWasCalled = true;
+}
+
+/// <summary>
+/// Requires external config — skipped without a pre-configured context.
+/// </summary>
+internal sealed class RequiresConfigProviderModule : IProviderModule
+{
+    public bool RegisterWasCalled { get; private set; }
+
+    public string ModuleId => "requires-config";
+    public string ModuleDisplayName => "Requires Config Module";
+    public bool RequiresExternalConfig => true;
+
+    public void Register(IServiceCollection services, DataSourceRegistry registry)
+        => RegisterWasCalled = true;
 }

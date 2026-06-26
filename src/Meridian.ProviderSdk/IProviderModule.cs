@@ -15,6 +15,10 @@ namespace Meridian.Infrastructure.Adapters.Core;
 ///
 /// All new properties have default interface implementations so existing callers of
 /// <see cref="Register"/> remain source-compatible without changes.
+///
+/// To receive runtime configuration (credentials, priority, settings), override
+/// <see cref="Configure"/> and set <see cref="RequiresExternalConfig"/> as needed.
+/// Prefer inheriting <see cref="ConfigurableProviderModuleBase"/> for the common case.
 /// </remarks>
 [ImplementsAdr("ADR-001", "Module-based provider registration entry point")]
 [ImplementsAdr("ADR-005", "Module-based provider discovery alongside attribute-based discovery")]
@@ -38,6 +42,25 @@ public interface IProviderModule
     /// load diagnostics. An empty array means the module does not self-declare capabilities.
     /// </summary>
     ProviderCapabilities[] Capabilities => Array.Empty<ProviderCapabilities>();
+
+    /// <summary>
+    /// When true, <see cref="ProviderModuleLoader"/> skips this module if no matching
+    /// <see cref="ProviderModuleContext"/> was provided via
+    /// <see cref="ProviderModuleLoader.ConfigureModule"/>. Default is false — the module
+    /// loads even without external config (typically by falling back to env vars).
+    /// </summary>
+    bool RequiresExternalConfig => false;
+
+    /// <summary>
+    /// Called by <see cref="ProviderModuleLoader"/> before <see cref="Register"/> when a
+    /// matching <see cref="ProviderModuleContext"/> was provided via
+    /// <see cref="ProviderModuleLoader.ConfigureModule"/>. Default is a no-op.
+    /// </summary>
+    /// <remarks>
+    /// Use this hook to capture resolved credentials and settings. Prefer inheriting
+    /// <see cref="ConfigurableProviderModuleBase"/> rather than implementing this directly.
+    /// </remarks>
+    void Configure(ProviderModuleContext context) { }
 
     /// <summary>
     /// Validates that prerequisites for this module are satisfied before registration.
