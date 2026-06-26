@@ -592,6 +592,9 @@ public sealed record WorkstationReportingRunPayload(
     int? AddedLineCount = null,
     int? RemovedLineCount = null);
 
+/// <summary>
+/// Daily reporting-work item surfaced in the workstation cockpit for operator triage.
+/// </summary>
 public sealed record WorkstationReportingDailyWorkItemDto(
     string WorkItemId,
     string Kind,
