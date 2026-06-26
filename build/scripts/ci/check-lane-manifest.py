@@ -128,7 +128,7 @@ def validate_manifest(payload: dict[str, Any]) -> list[str]:
         errors.append(f"lane manifest missing required lanes: {', '.join(missing_required)}.")
 
     unknown_required_role = [
-        lane["id"]
+        lane.get("id", "unknown")
         for lane in payload["lanes"]
         if isinstance(lane, dict)
         and lane.get("requiredCheckRole") == "aggregator"
