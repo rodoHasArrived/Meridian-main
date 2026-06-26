@@ -1730,6 +1730,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   ├── runbook-template-registry-modernization-plan.md
+│   │   ├── security-master-passport-workbench.md
 │   │   ├── sfo-mvp-implementation-design.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-accounting-impact-model.md
@@ -2725,6 +2726,7 @@ Meridian-main
 │   │   │   ├── FileSecurityValidationSnapshotStore.cs
 │   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
+│   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
@@ -2736,6 +2738,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
+│   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandService.cs
@@ -2753,6 +2756,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterRebuildOrchestrator.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterWorkbenchOptions.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   ├── SecurityValidationService.cs
@@ -3162,6 +3166,7 @@ Meridian-main
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── ResearchBriefingDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   ├── StatementReconciliationDtos.cs
 │   │   │   ├── StrategyBriefingDtos.cs
@@ -6519,6 +6524,8 @@ Meridian-main
 │   │   │   ├── PositionLimitRuleTests.cs
 │   │   │   └── RiskIntegrationTests.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── Workbench
+│   │   │   │   └── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs

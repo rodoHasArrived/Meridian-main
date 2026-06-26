@@ -1,11 +1,11 @@
 {
-  "total_files": 533,
-  "total_lines": 85497,
-  "orphaned_count": 203,
+  "total_files": 534,
+  "total_lines": 86064,
+  "orphaned_count": 204,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 199,
-  "average_lines": 160.4,
+  "average_lines": 161.2,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -138,6 +138,7 @@
     "docs/plans/quantscript-l3-multiinstance-round2-roadmap.md",
     "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
     "docs/plans/runbook-template-registry-modernization-plan.md",
+    "docs/plans/security-master-passport-workbench.md",
     "docs/plans/sfo-mvp-implementation-design.md",
     "docs/plans/trading-workstation-migration-blueprint.md",
     "docs/plans/ufl-accounting-impact-model.md",
@@ -2128,7 +2129,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7171,
+      "line_count": 7186,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2777,6 +2778,14 @@
     {
       "path": "docs/plans/runbook-template-registry-modernization-plan.md",
       "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/security-master-passport-workbench.md",
+      "line_count": 544,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
