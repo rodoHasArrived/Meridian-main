@@ -131,6 +131,21 @@ compare-and-set) — a concurrent duplicate resolution returns `null` → `Secur
   storage layer (last-writer-wins on that single key); the staleness guard still catches canonical
   drift. Tracked for the next Phase 2 slice alongside the approval-gate scoping work.
 
+**D2c (AMENDED during Phase 2 hardening — durable revision lifecycle + governed publish).** The
+governed write lifecycle is anchored to a durable `ISecurityMasterRevisionStore` (an in-memory,
+compare-and-set state machine this slice, mirroring `SecurityMasterConflictService`; Postgres-backed
+durability is the next slice). `UpdateSecurityFieldAsync` opens a `Draft` with a **server-issued**
+revision id; `SubmitForApprovalAsync`/`ApproveRevisionAsync` advance `Draft → Submitted → Approved`
+only after the operations-continuity gate accepts. `PublishRevisionAsync` **refuses to run unless the
+revision is durably `Approved` and belongs to the security** (`SecurityMasterRevisionStateException`
+otherwise) — an arbitrary revision id can no longer trigger publish side effects. Handler fan-out is
+fail-loud: any failed handler is collected and surfaced as `SecurityMasterPublishFailedException`, the
+revision is left `Approved` for an idempotent retry, and only an all-success fan-out transitions it to
+`Published`. Conflict resolution records the chosen winner, resolver, reason, and timestamp **inside**
+the same atomic open→resolved CAS (`ResolveConflictRequest.ChosenWinnerSource` →
+`SecurityMasterConflict.Resolved*`), so the durable winner and the close commit together; the override
+key is a best-effort display mirror whose failure is logged, not surfaced.
+
 **D3 — Publish a domain event; the ledger accounting-period status is the lock authority; edits route by tri-state period status, never silent mutation (Unknown #3 — RESOLVED).**
 `PublishRevisionAsync` invokes ordered `IEnumerable<ISecurityMasterRevisionPublishedHandler>` after
 the durable append: **per-security projection rebuild** (`SecurityProjectionRebuildHandler`, which
