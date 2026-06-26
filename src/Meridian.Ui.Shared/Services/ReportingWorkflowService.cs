@@ -1262,7 +1262,10 @@ public sealed class ReportPackWorkflowService
         IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks,
         string? note = null,
         ReportBrandingThemeDto? brandingTheme = null,
-        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator,
+        string? signedOffRole = null,
+        string? signOffReason = null,
+        string? signOffContext = null)
     {
         EnsureHumanOrigin(actionOrigin, "publish reports");
         ArgumentException.ThrowIfNullOrWhiteSpace(signedOffBy);
@@ -1292,7 +1295,11 @@ public sealed class ReportPackWorkflowService
                 signedOffBy.Trim(),
                 DateTimeOffset.UtcNow,
                 NormalizeEvidenceLinks(evidenceLinks),
-                NormalizePublicationBrandingTheme(brandingTheme))
+                NormalizePublicationBrandingTheme(brandingTheme),
+                SignedOffRole: NormalizeWorkflowOptional(signedOffRole) ?? role.Trim(),
+                SignOffReason: NormalizeWorkflowOptional(signOffReason) ?? NormalizeWorkflowOptional(note),
+                SignOffContext: NormalizeWorkflowOptional(signOffContext) ?? BuildPublicationSignOffContext(actor, role, actionOrigin),
+                ActionOrigin: actionOrigin)
         };
         _records[reportId] = next;
         PersistRecords();
@@ -1353,19 +1360,40 @@ public sealed class ReportPackWorkflowService
             target == ReportPackWorkflowStateDto.InReview ||
             target == ReportPackWorkflowStateDto.Validated ||
             target == ReportPackWorkflowStateDto.PendingApproval
-                ? normalized is "operator" or "reviewer" or "validator" or "admin"
+                ? IsReportingReviewRole(normalized) || IsReportingOperationsRole(normalized)
                 : target switch
                 {
-                    ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
-                    ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
-                    ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
-                    ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
+                    ReportPackWorkflowStateDto.Rejected => IsReportingReviewRole(normalized) || IsReportingApprovalRole(normalized),
+                    ReportPackWorkflowStateDto.Approved => IsReportingApprovalRole(normalized),
+                    ReportPackWorkflowStateDto.Published => IsReportingPublicationRole(normalized),
+                    ReportPackWorkflowStateDto.Restated => IsReportingApprovalRole(normalized),
                     ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
                     _ => true
                 };
         if (!allowed)
             throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
     }
+
+    private static bool IsReportingOperationsRole(string normalized) =>
+        normalized is "operator" or "validator" or "admin" or "accounting" or "fundaccountant" or "reportinganalyst" or "controller";
+
+    private static bool IsReportingReviewRole(string normalized) =>
+        normalized is "reviewer" or "admin" or "accounting" or "fundaccountant" or "reportinganalyst" or "controller" or "compliance";
+
+    private static bool IsReportingApprovalRole(string normalized) =>
+        normalized is "approver" or "admin" or "accounting" or "controller" or "compliance";
+
+    private static bool IsReportingPublicationRole(string normalized) =>
+        normalized is "publisher" or "admin" or "accounting" or "controller";
+
+    private static string BuildPublicationSignOffContext(
+        string actor,
+        string role,
+        OperationsActionOriginDto actionOrigin) =>
+        $"Published by {actor.Trim()} as {role.Trim()} via {actionOrigin}.";
+
+    private static string? NormalizeWorkflowOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance) =>
         lineProvenance?

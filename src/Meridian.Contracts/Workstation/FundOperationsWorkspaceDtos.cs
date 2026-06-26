@@ -447,7 +447,8 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null,
     FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null,
     IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
-    WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
+    WorkstationReportAccessAuditSummaryDto? AccessAudit = null,
+    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -930,6 +931,9 @@ public sealed record ReportPackDeliveryPackageDto(
     string? PublicationManifestId = null,
     string? PublicationRetainedManifestPath = null,
     string? PublicationSignedOffBy = null,
+    string? PublicationSignedOffRole = null,
+    string? PublicationSignOffReason = null,
+    string? PublicationSignOffContext = null,
     DateTimeOffset? PublicationSignedOffAtUtc = null,
     IReadOnlyList<ReportPackEvidenceLinkDto>? PublicationEvidenceLinks = null,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
@@ -1107,7 +1111,8 @@ public sealed record ReportingRunRequestDto(
     string? JobId = null,
     string? RequestedBy = null,
     IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
-    string? DatasetSourceId = null);
+    string? DatasetSourceId = null,
+    string? RetryReason = null);
 
 public sealed record ReportingRunResultDto(
     WorkstationReportingRunPayload Run);
@@ -1506,7 +1511,11 @@ public sealed record ReportPackPublicationManifestDto(
     string SignedOffBy,
     DateTimeOffset SignedOffAt,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
-    ReportBrandingThemeDto? BrandingTheme = null);
+    ReportBrandingThemeDto? BrandingTheme = null,
+    string? SignedOffRole = null,
+    string? SignOffReason = null,
+    string? SignOffContext = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 /// <summary>Request payload for publishing an approved report pack into retained evidence storage.</summary>
 public sealed record ReportPackPublishRequestDto(
     string SignedOffBy,
@@ -1523,8 +1532,8 @@ public sealed record ReportPackWorkflowActionRequestDto(
 /// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,
-    string Actor,
-    string ActorRole,
+    string Actor = "",
+    string ActorRole = "",
     IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 public sealed record ReportPackCreateRequestDto(
     string FundProfileId,

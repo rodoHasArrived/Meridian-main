@@ -4948,6 +4948,18 @@ export interface ReportingRunStatusProjection {
   reportWriterDatasetRowCount?: number | null;
   brandingThemeId?: string | null;
   brandingTheme?: ReportBrandingTheme | null;
+  runSeriesId?: string | null;
+  runAttemptOrdinal?: number | null;
+  priorRunId?: string | null;
+  retryReason?: string | null;
+  latestGeneratedRunId?: string | null;
+  latestApprovedRunId?: string | null;
+  isLatestGenerated?: boolean | null;
+  isLatestApproved?: boolean | null;
+  comparisonSummary?: string | null;
+  changedLineCount?: number | null;
+  addedLineCount?: number | null;
+  removedLineCount?: number | null;
 }
 
 export interface ReportingGeneratedReportWriterGrid {
@@ -5437,6 +5449,7 @@ export interface ReportingRunRequest {
   requestedBy?: string | null;
   datasetRows?: Record<string, string>[] | null;
   datasetSourceId?: string | null;
+  retryReason?: string | null;
 }
 
 export interface ReportingRunResult {
@@ -5523,6 +5536,11 @@ export interface ReportingWorkflowPublication {
   signedOffBy: string;
   signedOffAt: string;
   evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
+  brandingTheme?: ReportBrandingTheme | null;
+  signedOffRole?: string | null;
+  signOffReason?: string | null;
+  signOffContext?: string | null;
+  actionOrigin?: string | null;
 }
 
 export interface ReportingWorkflowRecord {
@@ -5559,6 +5577,23 @@ export interface ReportingAccessAuditSummary {
   denialReasons: string[];
 }
 
+export interface ReportingDailyWorkItem {
+  workItemId: string;
+  kind: string;
+  title: string;
+  statusLabel: string;
+  detail: string;
+  tone: string;
+  owner: string;
+  dueAtUtc: string | null;
+  primaryActionLabel: string;
+  primaryActionHref: string | null;
+  evidenceGaps?: string[] | null;
+  context?: string[] | null;
+  secondaryActionLabel?: string | null;
+  secondaryActionHref?: string | null;
+}
+
 export interface AccountingReportingSummary {
   profileCount: number;
   fundProfileId?: string | null;
@@ -5578,6 +5613,7 @@ export interface AccountingReportingSummary {
   structuredExports?: StructuredReportingExport[];
   brandingThemes?: ReportBrandingTheme[];
   reportWriterDatasetSources?: ReportWriterDatasetSource[];
+  dailyWork?: ReportingDailyWorkItem[];
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];

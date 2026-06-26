@@ -274,9 +274,20 @@ export interface ReportingRunStatusRow {
   status: string;
   trigger: string;
   runIdLabel: string;
+  runSeriesLabel: string;
+  runAttemptOrdinal: number;
+  isLatestGenerated: boolean;
+  isLatestApproved: boolean;
   templateLabel: string;
   asOfDateLabel: string;
   attemptLabel: string;
+  runAttemptLabel: string;
+  latestGeneratedLabel: string;
+  latestApprovedLabel: string;
+  priorRunLabel: string;
+  retryReasonLabel: string;
+  comparisonSummary: string;
+  changedLineLabel: string;
   sectionLabel: string;
   lineageLabel: string;
   artifactLabel: string;
@@ -936,6 +947,10 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
   const evidenceCount = publication?.evidenceLinks?.length ?? 0;
   const lineProvenance = selected?.lineProvenance ?? [];
   const signedOffBy = publication?.signedOffBy?.trim() || "signer pending";
+  const signedOffRole = publication?.signedOffRole?.trim() || "role pending";
+  const signOffReason = publication?.signOffReason?.trim() || "No sign-off reason retained";
+  const signOffContext = publication?.signOffContext?.trim() || "No sign-off context retained";
+  const actionOrigin = publication?.actionOrigin?.trim() || "HumanOperator";
   const publicationTime = publication?.signedOffAt?.trim() || "Publication time pending";
 
   return {
@@ -952,6 +967,10 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
       buildReportingDetailField("Published records", String(publishedRecords.length), publishedRecords.length > 0 ? "success" : "muted"),
       buildReportingDetailField("Report ID", selected?.reportId ?? "None", selected ? "default" : "muted"),
       buildReportingDetailField("Signed off by", signedOffBy, publication ? "success" : "muted"),
+      buildReportingDetailField("Signed-off role", signedOffRole, publication?.signedOffRole ? "success" : "muted"),
+      buildReportingDetailField("Sign-off reason", signOffReason, publication?.signOffReason ? "default" : "muted"),
+      buildReportingDetailField("Sign-off context", signOffContext, publication?.signOffContext ? "default" : "muted"),
+      buildReportingDetailField("Action origin", actionOrigin, publication ? "default" : "muted"),
       buildReportingDetailField("Evidence hash", publication?.evidenceHash ?? "None", publication?.evidenceHash ? "success" : "muted"),
       buildReportingDetailField("Manifest path", publication?.retainedManifestPath ?? "None", publication?.retainedManifestPath ? "default" : "muted"),
       buildReportingDetailField("Publication time", publicationTime, publication ? "default" : "muted"),
@@ -1579,9 +1598,20 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       status: run.status,
       trigger: run.trigger,
       runIdLabel: run.runId,
+      runSeriesLabel: run.runSeriesId?.trim() || run.runId,
+      runAttemptOrdinal: run.runAttemptOrdinal ?? 1,
+      isLatestGenerated: Boolean(run.isLatestGenerated),
+      isLatestApproved: Boolean(run.isLatestApproved),
       templateLabel: run.templateId,
       asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
       attemptLabel: `${run.attemptCount} attempt${run.attemptCount === 1 ? "" : "s"}`,
+      runAttemptLabel: buildRunAttemptLabel(run),
+      latestGeneratedLabel: buildLatestGeneratedLabel(run),
+      latestApprovedLabel: buildLatestApprovedLabel(run),
+      priorRunLabel: run.priorRunId?.trim() || "No prior attempt",
+      retryReasonLabel: run.retryReason?.trim() || "No retry reason retained",
+      comparisonSummary: run.comparisonSummary?.trim() || buildRunComparisonFallback(run),
+      changedLineLabel: buildChangedLineLabel(run),
       sectionLabel: `${run.sectionCount} section${run.sectionCount === 1 ? "" : "s"}`,
       lineageLabel: `${run.lineageLinkedSections}/${run.sectionCount} linked`,
       artifactLabel: `${run.artifacts.length} artifact${run.artifacts.length === 1 ? "" : "s"}`,
@@ -1615,6 +1645,43 @@ function buildRunDatasetSourceLabel(run: ReportingRunStatusProjection): string {
   return rowCount == null
     ? baseLabel
     : `${baseLabel} (${rowCount} row${rowCount === 1 ? "" : "s"})`;
+}
+
+function buildRunAttemptLabel(run: ReportingRunStatusProjection): string {
+  const attempt = run.runAttemptOrdinal ?? 1;
+  return `Version ${attempt}`;
+}
+
+function buildLatestGeneratedLabel(run: ReportingRunStatusProjection): string {
+  if (run.isLatestGenerated) {
+    return "Latest generated";
+  }
+
+  const latest = run.latestGeneratedRunId?.trim();
+  return latest ? `Latest generated: ${latest}` : "Latest generated unavailable";
+}
+
+function buildLatestApprovedLabel(run: ReportingRunStatusProjection): string {
+  if (run.isLatestApproved) {
+    return "Latest approved";
+  }
+
+  const latest = run.latestApprovedRunId?.trim();
+  return latest ? `Latest approved: ${latest}` : "No approved attempt";
+}
+
+function buildRunComparisonFallback(run: ReportingRunStatusProjection): string {
+  const prior = run.priorRunId?.trim();
+  return prior
+    ? `Compared with ${prior}; no changed-line summary was retained.`
+    : "First generated attempt in this run series.";
+}
+
+function buildChangedLineLabel(run: ReportingRunStatusProjection): string {
+  const changed = Math.max(0, run.changedLineCount ?? 0);
+  const added = Math.max(0, run.addedLineCount ?? 0);
+  const removed = Math.max(0, run.removedLineCount ?? 0);
+  return `${changed} changed · ${added} added · ${removed} removed`;
 }
 
 function buildGeneratedGridLabel(run: ReportingRunStatusProjection): string {
