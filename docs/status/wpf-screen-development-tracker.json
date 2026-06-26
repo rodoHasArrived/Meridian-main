@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "b10cb19d48d9",
+  "sourceFingerprint": "9c7c333ec670",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 92,

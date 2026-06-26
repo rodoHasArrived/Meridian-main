@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.7,
+  "score_percent": 100.0,
   "endpoint_coverage_percent": 100.0,
-  "contract_coverage_percent": 99.2,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 580,
     "documented_endpoint_count": 580,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 779,
-    "documented_workstation_contract_count": 773,
-    "undocumented_workstation_contract_count": 6
+    "documented_workstation_contract_count": 779,
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
@@ -3934,7 +3934,7 @@
     {
       "name": "EvidenceDocumentIntakeChannelDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:80",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceExtractionStatusDto",
@@ -3964,7 +3964,7 @@
     {
       "name": "EvidenceDocumentConfirmedFieldDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:142",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentAuditEventDto",
@@ -3974,12 +3974,12 @@
     {
       "name": "EvidenceDocumentAuthorityDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:157",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceDocumentSourceRecordDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:168",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceRequestDto",
@@ -3994,7 +3994,7 @@
     {
       "name": "EvidenceManifestPackageKindDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:220",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceManifestDto",
@@ -4104,7 +4104,7 @@
     {
       "name": "EvidenceRequestListKindDto",
       "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:448",
-      "documented": false
+      "documented": true
     },
     {
       "name": "EvidenceRequestListDto",
