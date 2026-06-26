@@ -55,12 +55,14 @@ than replacing them — they remain valid lower-level seams.
 - Asset-class-scoped UFL replay (`IUflProjectionRebuilder` Phase-0 shared replay used as-is).
 
 **Assumptions (verify before coding)**
-- `OperationsApprovalPolicyMatrixService` already contains a `SecurityMaster` gate row
-  (`OperationsGateKeyDto.SecurityMaster`, event `security-master-override-approved`,
-  `RequiredDistinctApprovals:1`, `RequiresIndependentReviewer:true`). Reused; a distinct
-  `security-master-field-edit` key is a one-row matrix addition if wanted.
-- "Closed period" state is readable via `FundAccountCloseReadinessService` / period-lock posture
-  already surfaced in `MultiAssetCoverageReadService`.
+- `OperationsApprovalPolicyMatrixService` already contains the `operations-continuity.security-master-override`
+  row (gate `OperationsGateKeyDto.SecurityMaster`, audit `security-master-override-approved`,
+  `RequiredDistinctApprovals:1`, `RequiresIndependentReviewer:true`). Per Q1: conflict resolution
+  reuses it; field edits get a new `operations-continuity.security-master-field-edit` row (data-only
+  add via `UpsertRuleAsync`, audit `security-master-field-edit-approved`).
+- "Closed period" state is the **ledger accounting period status** (`LedgerAccountingPeriod.Status`),
+  read via `ILedgerJournalStore.GetPeriodAsync`/`ListPeriodsAsync` and authoritative per Q2 —
+  not `FundAccountCloseReadinessService` (readiness only).
 
 ## Architectural Overview
 
@@ -81,9 +83,9 @@ WPF SecurityMaster page ──┘         └─ WPF: SecurityPassportEditorView
                                         │               │                  │                 │
                 ISecurityMasterConflict │   ISecurityMasterEventStore      │  Operations-    │  ISecurityMasterRevision
                 AuthorityPolicy (NEW)   │   .AppendAsync(id,                │  Continuity     │  PublishedHandler[] (NEW)
-                                        │     expectedVersion, events)      │  WorkflowService│     ├─ UflProjectionRebuildHandler
+                                        │     expectedVersion, events)      │  WorkflowService│     ├─ SecurityProjectionRebuildHandler (per-security)
                                         │   (EXISTS, optimistic concr.)     │  (EXISTS)       │     ├─ CoverageInvalidationHandler
-                                        │                                   │                 │     └─ ClosedPeriodRestatementProposalHandler
+                                        │                                   │                 │     └─ PeriodAwarePropagationHandler (ledger period status)
                                         ▼                                   ▼                 ▼           │
                               SecurityMasterEventEnvelope (Origin=Operator,        ReportingWorkflowService
                                EffectiveFrom, Provenance{AsOf,UpdatedBy,Reason})   .ProposeRestatement(...) (NEW)
@@ -110,7 +112,9 @@ UpdatedBy=actor, Reason=justification} }` and appends with the caller's `expecte
 
 **D3 — Publish a domain event; the ledger accounting-period status is the lock authority; edits route by tri-state period status, never silent mutation (Unknown #3 — RESOLVED).**
 `PublishRevisionAsync` invokes ordered `IEnumerable<ISecurityMasterRevisionPublishedHandler>` after
-the durable append: UFL rebuild → coverage invalidation → `PeriodAwarePropagationHandler`. The
+the durable append: **per-security projection rebuild** (`SecurityProjectionRebuildHandler`, which
+calls `SecurityMasterAggregateRebuilder.RebuildAsync(securityId)` — NOT a full UFL replay, see Q4)
+→ coverage invalidation → `PeriodAwarePropagationHandler`. The
 **single authoritative** answer to "is the period covering `EffectiveFrom` locked?" is the **ledger
 accounting period status** (`LedgerAccountingPeriod.Status`, enum `LedgerPeriodStatusDto` ∈ `Open` /
 `SoftClosed` / `HardClosed`), enforced at post-time by `LedgerPeriodPostingGuard.Validate(...)` in
@@ -214,8 +218,15 @@ public sealed record SecurityMasterConflictResolutionDto(
     bool IsPolicyDeviation, string Reason, long NewVersion);
 
 public sealed record SecurityMasterPublishResultDto(
-    Guid SecurityId, Guid RevisionId, long NewVersion, bool TriggeredRestatementProposal,
-    Guid? RestatementProposalId, IReadOnlyList<string> InvalidatedProjections);
+    Guid SecurityId, Guid RevisionId, long NewVersion,
+    bool RestatementRequired,                                  // true when a hard-closed period with
+                                                              // report exposure is affected (Q3 default-deny)
+    IReadOnlyList<RestatementCandidateDto> RestatementCandidates,  // operator picks which to restate
+    IReadOnlyList<string> InvalidatedProjections);
+
+public sealed record RestatementCandidateDto(
+    Guid ReportId, Guid PriorVersionReportId, string PeriodLabel, string Summary,
+    IReadOnlyList<ReportPackChangedLineDto> ChangedLines);
 
 public sealed record SecurityMasterConflictAuthorityDecision(
     string PolicyWinnerSource, string Rule, string Rationale, bool IsBulkEligible);
@@ -267,8 +278,11 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   `IEnumerable<ISecurityMasterRevisionPublishedHandler>`, `ILogger<…>`
 - **Responsibilities:** validate justification on operator origin; build operator-authored
   envelope; append with `expectedVersion`; map store concurrency failure → `ConcurrencyException`
-  (→ 409); drive Submit/Approve through `OperationsContinuityWorkflowService`; on publish, append +
-  fan out to ordered handlers.
+  (→ 409); drive Submit/Approve through `OperationsContinuityWorkflowService` using the
+  **`security-master-field-edit`** policy key for field edits and the existing
+  **`security-master-override`** key for conflict resolutions (Q1); resolve `evt.AffectedLedgerBookIds`
+  from the passport/impact read at publish time; on publish, append + fan out to ordered handlers and
+  return any `RestatementCandidateDto`s.
 - **Concurrency:** all mutation via `AppendAsync(securityId, expectedVersion, …)`; no in-process
   locks; stale token throws before any side effect.
 - **Errors:** empty justification on operator origin → 422; version mismatch → 409; handler failure
@@ -282,24 +296,33 @@ POST /api/security-master/{securityId:guid}/workbench/publish
 ### `PeriodAwarePropagationHandler` (`Order = 100`) — formerly `ClosedPeriodRestatementProposalHandler`
 - **Dependencies:** `ILedgerPeriodLockReader` (**authoritative** period status),
   `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment posting carrying approval metadata —
-  wraps the ledger posting path), `IReportPackRestatementProposer` (implemented by
-  `ReportingWorkflowService.ProposeRestatement`), `ILogger<…>`.
-- **Logic:** for each affected ledger book in `evt.DownstreamImpact`, call
+  wraps the ledger posting path), `IRestatementCandidateResolver` (resolves affected report packs
+  into `RestatementCandidateDto`s — see Q3; backed by the report-usage projection, surfacing
+  candidates rather than auto-restating), `ILogger<…>`.
+- **Logic:** for each affected ledger book in `evt.AffectedLedgerBookIds`, call
   `ILedgerPeriodLockReader.GetPeriodStatusAsync(ledgerBookId, DateOnly.FromDateTime(evt.EffectiveFrom.UtcDateTime))`
   and route by the D3 matrix: `Open` → no-op (lower-`Order` handlers already propagated);
   `SoftClosed` → post the downstream effect as a governed `Adjustment` carrying the workbench
-  approval as `LedgerAdjustmentApprovalMetadataDto`, plus a restatement proposal only if a published
-  report pack consumed the line; `HardClosed` (or indeterminate/default-deny) →
-  `ReportingWorkflowService.ProposeRestatement(...)` with `ReportPackChangedLineDto`s built from
-  `evt.ChangedFields` + evidence links, **no posting**.
+  approval as `LedgerAdjustmentApprovalMetadataDto`, plus restatement candidates only if a published
+  report pack consumed the line; `HardClosed` (or indeterminate/default-deny) → **no posting**, and
+  `IRestatementCandidateResolver` resolves `RestatementCandidateDto`s (with `ReportPackChangedLineDto`s
+  built from `evt.ChangedFields` + evidence links) onto the publish result. If exposure exists but no
+  candidate resolves, set `RestatementRequired=true` and emit a manual "locate affected packs" task —
+  never silently complete. The operator approves each candidate via the existing
+  `ReportingWorkflowService.Restate(...)` path.
 - **Why the authority change:** the previous draft depended on `FundAccountCloseReadinessService`,
   which reports *readiness to close*, not *lock state* — using it as the gate would let a hard-closed
   book be silently mutated. The ledger period status is the same authority `LedgerPeriodPostingGuard`
   enforces, so the workbench can never produce a state the ledger would reject.
 
-### `UflProjectionRebuildHandler` (`Order = 10`) / `CoverageInvalidationHandler` (`Order = 20`)
-- Thin, idempotent: `IUflProjectionRebuilder.RebuildAsync(assetClass, ct)`; evict
-  `MultiAssetCoverageReadService` cache key for the impacted fund/asset class.
+### `SecurityProjectionRebuildHandler` (`Order = 10`) / `CoverageInvalidationHandler` (`Order = 20`)
+- Thin, idempotent. `SecurityProjectionRebuildHandler` rebuilds only the edited security via
+  `SecurityMasterAggregateRebuilder.RebuildAsync(evt.SecurityId, …)` (snapshot + tail events — O(events
+  since snapshot for one stream), the per-edit hot path; see Q4). It does **not** call
+  `IUflProjectionRebuilder.RebuildAsync(assetClass)` — that is a full shared-cache replay reserved for
+  ingest/maintenance and triggered async/debounced only on structural reclassification.
+  `CoverageInvalidationHandler` evicts the `MultiAssetCoverageReadService` cache key for the impacted
+  fund/asset class.
 
 ### Configuration
 
@@ -324,17 +347,19 @@ public sealed class SecurityMasterWorkbenchOptions
 5. Submit → `OperationsContinuityWorkflowService.SubmitForApprovalAsync` (gate `SecurityMaster`).
    State = `Submitted`.
 6. Independent reviewer approves → `Approved`.
-7. Publish → `PublishRevisionAsync`: durable append, then handlers by `Order`: UFL rebuild →
-   coverage evict → closed-period check (open ⇒ no-op).
-8. Returns `{ TriggeredRestatementProposal=false, InvalidatedProjections=[...] }`; Portfolio row
-   flips Review-required → Trusted on refetch.
+7. Publish → `PublishRevisionAsync`: durable append, then handlers by `Order`: per-security
+   projection rebuild (`SecurityMasterAggregateRebuilder.RebuildAsync(securityId)`) → coverage evict
+   → period-status check (open ⇒ no-op).
+8. Returns `{ RestatementRequired=false, RestatementCandidates=[], InvalidatedProjections=[...] }`;
+   Portfolio row flips Review-required → Trusted on refetch.
 
 ### B. Closed-period edit (restatement path)
 1–6 as above, but `EffectiveFrom` falls in a locked period.
-7. `ClosedPeriodRestatementProposalHandler` sees `ReportPackExposureCount > 0` + locked → calls
-   `ProposeRestatement(...)`.
-8. Returns `{ TriggeredRestatementProposal=true, RestatementProposalId=… }`. **No posted number is
-   mutated**; report pack shows a pending restatement for human approval via existing `Restate()`.
+7. `PeriodAwarePropagationHandler` reads the authoritative ledger period status for each affected
+   book; `HardClosed` + report exposure → `IRestatementCandidateResolver` resolves
+   `RestatementCandidateDto`s (or sets `RestatementRequired=true` if none resolve). **No posting.**
+8. Returns `{ RestatementRequired=true, RestatementCandidates=[…] }`. **No posted number is mutated**;
+   the operator picks candidates and approves each via the existing `Restate()` path.
 
 ### C. Conflict resolution (policy + override)
 1. Source Conflicts tab shows `PolicyWinnerSource` (from `Evaluate`) vs `ChallengerValue`.
@@ -450,9 +475,14 @@ PR3 browser UI, PR4 WPF parity.
 - [ ] Map `ConcurrencyException` → 409 in endpoint.
 
 ### Phase 3 — Propagation
-- [ ] `ISecurityMasterRevisionPublishedHandler` + `UflProjectionRebuildHandler`,
-      `CoverageInvalidationHandler`, `ClosedPeriodRestatementProposalHandler`.
-- [ ] Add `ReportingWorkflowService.ProposeRestatement(...)` + `ReportPackRestatementProposalDto`.
+- [ ] `ISecurityMasterRevisionPublishedHandler` + `SecurityProjectionRebuildHandler`
+      (per-security `SecurityMasterAggregateRebuilder.RebuildAsync(securityId)` — NOT full UFL replay, Q4),
+      `CoverageInvalidationHandler`, `PeriodAwarePropagationHandler`.
+- [ ] `ILedgerPeriodLockReader` over `ILedgerJournalStore` (authoritative period status, default-deny — Q2).
+- [ ] `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment) + `IRestatementCandidateResolver`
+      (surfaces candidates — Q3); add `ReportingWorkflowService.ProposeRestatement(...)` for the
+      operator-approved restatement step.
+- [ ] `SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds` resolved at publish time.
 - [ ] DI registration (ordered handler collection).
 
 ### Phase 4 — Endpoints + UI
@@ -478,10 +508,10 @@ PR3 browser UI, PR4 WPF parity.
 
 | # | Question | Owner | Impact if unresolved |
 | --- | --- | --- | --- |
-| 1 | Separate `security-master-field-edit` approval policy key, or reuse `security-master-override-approved`? | Product/Governance | One-row matrix add vs reuse; low risk either way |
+| 1 | ~~Separate `security-master-field-edit` approval policy key, or reuse `security-master-override-approved`?~~ **RESOLVED 2026-06-26:** split by action. Conflict resolution **reuses** the existing `operations-continuity.security-master-override` row (it genuinely *is* an override). Field edits get a **new** `operations-continuity.security-master-field-edit` row — same governance defaults (gate `SecurityMaster`, `RequiredDistinctApprovals:1`, `RequiresIndependentReviewer:true`, `RequiresReportPack:false`) but a distinct `AuditEventType` (`security-master-field-edit-approved`) and Route. Data-only change via `UpsertRuleAsync` (JSON-persisted); no code change. Distinct audit type preserves the audit trail and allows future divergence. | Resolved | — |
 | 2 | ~~Exact "closed period" predicate — `FundAccountCloseReadinessService` authoritative, or a distinct ledger period-lock service?~~ **RESOLVED 2026-06-26:** the **ledger accounting period status** (`LedgerAccountingPeriod.Status` ∈ `Open`/`SoftClosed`/`HardClosed`, enum `LedgerPeriodStatusDto`) is the sole authority, enforced at post-time by `LedgerPeriodPostingGuard.Validate(...)` and read via `ILedgerJournalStore.GetPeriodAsync`/`ListPeriodsAsync`. `FundAccountCloseReadinessService` is readiness-only; the close-package is derivative. See D3 routing matrix + new `ILedgerPeriodLockReader`. | Resolved | — |
-| 3 | Should `ProposeRestatement` auto-select impacted `reportId`(s) or surface candidates? | Product | Recommend surface-candidates for v1 |
-| 4 | Asset-class-scoped UFL rebuild needed, or Phase-0 shared replay acceptable for edit latency? | Implementer | Shared replay may be slow on large masters; acceptable for v1 |
+| 3 | ~~Should `ProposeRestatement` auto-select impacted `reportId`(s) or surface candidates?~~ **RESOLVED 2026-06-26:** **surface candidates** for v1. No durable `security → reportId` index exists — `ReportPackExposureCount` is computed at runtime by rendering a report and matching rows; impact `Links` carry summaries, not Guids. Auto-select would require new schema. The handler attaches resolved `RestatementCandidateDto`s to `SecurityMasterPublishResultDto`; the operator picks which to restate via the existing `Restate()` path. **Default-deny:** if the period is hard-closed with report exposure but no candidate resolves, publish records `RestatementRequired=true` (blocks "done") and surfaces a manual "locate affected packs" task — never a silent completion. *Follow-up (Phase 2):* add `Guid ReportPackId` to `SecurityMasterImpactLinkDto` + a persistent provenance index keyed by security to enable later auto-select. | Resolved | — |
+| 4 | ~~Asset-class-scoped UFL rebuild needed, or Phase-0 shared replay acceptable for edit latency?~~ **RESOLVED 2026-06-26:** neither — rebuild only the **edited security** via `SecurityMasterAggregateRebuilder.RebuildAsync(securityId, …)` (snapshot + tail events for one stream). `IUflProjectionRebuilder.RebuildAsync(assetClass)` ignores the asset class and does a **full shared-cache replay** (Phase-0), unacceptable per edit. Broad UFL replay stays a maintenance/ingest operation, triggered async/debounced only when a structural change (e.g. asset-class reclassification) requires it. | Resolved | — |
 
 ## Risks
 

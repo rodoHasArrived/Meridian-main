@@ -188,8 +188,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         ufl.Received.Should().ContainSingle();
         coverage.Received.Should().ContainSingle();
-        result.TriggeredRestatementProposal.Should().BeFalse();
-        result.RestatementProposalId.Should().BeNull();
+        result.RestatementRequired.Should().BeFalse();
+        result.RestatementCandidates.Should().BeEmpty();
     }
 
     [Fact]
@@ -208,8 +208,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         var result = await harness.Service.PublishRevisionAsync(request);
 
-        result.TriggeredRestatementProposal.Should().BeTrue();
-        result.RestatementProposalId.Should().NotBeNull();
+        result.RestatementRequired.Should().BeTrue();
+        result.RestatementCandidates.Should().NotBeEmpty("hard-closed report exposure surfaces restatement candidates");
     }
 
     [Fact]

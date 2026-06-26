@@ -14,8 +14,8 @@
 //   - PeriodAwarePropagationHandler : ISecurityMasterRevisionPublishedHandler
 //   - ILedgerPeriodLockReader (returns LedgerPeriodStatusDto; HardClosed when indeterminate)
 //   - IGovernedLedgerAdjustmentPoster (soft-closed adjustment posting seam)
-//   - IReportPackRestatementProposer (implemented by ReportingWorkflowService.ProposeRestatement)
-//   - SecurityMasterRevisionPublishedEvent (now carries AffectedLedgerBookIds)
+//   - IRestatementCandidateResolver (Q3: surfaces RestatementCandidateDto[] — operator picks, no auto-restate)
+//   - RestatementCandidateDto, SecurityMasterRevisionPublishedEvent (now carries AffectedLedgerBookIds)
 //
 // Real existing type used: LedgerPeriodStatusDto (Meridian.Contracts.Ledger).
 
@@ -40,7 +40,7 @@ public sealed class PeriodAwarePropagationHandlerTests
         await harness.Handler.HandleAsync(BuildEvent());
 
         harness.AdjustmentPoster.Posted.Should().BeEmpty("open periods propagate via lower-Order handlers");
-        harness.RestatementProposer.Proposals.Should().BeEmpty();
+        harness.CandidateResolver.Resolved.Should().BeEmpty();
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public sealed class PeriodAwarePropagationHandlerTests
 
         harness.AdjustmentPoster.Posted.Should().ContainSingle(
             "soft-closed periods accept approved Adjustment postings — the edit posts as a governed adjustment, not blocked");
-        harness.RestatementProposer.Proposals.Should().BeEmpty(
+        harness.CandidateResolver.Resolved.Should().BeEmpty(
             "no published report pack consumed the line in this case");
     }
 
@@ -65,7 +65,7 @@ public sealed class PeriodAwarePropagationHandlerTests
         await harness.Handler.HandleAsync(BuildEvent());
 
         harness.AdjustmentPoster.Posted.Should().BeEmpty("hard-closed periods permit no postings");
-        harness.RestatementProposer.Proposals.Should().ContainSingle()
+        harness.CandidateResolver.Resolved.Should().ContainSingle()
             .Which.ChangedLines.Should().NotBeEmpty("the proposal must carry changed-line evidence");
     }
 
@@ -79,7 +79,7 @@ public sealed class PeriodAwarePropagationHandlerTests
         await harness.Handler.HandleAsync(BuildEvent());
 
         harness.AdjustmentPoster.Posted.Should().BeEmpty();
-        harness.RestatementProposer.Proposals.Should().ContainSingle("indeterminate period state must default-deny to restatement");
+        harness.CandidateResolver.Resolved.Should().ContainSingle("indeterminate period state must default-deny to restatement");
     }
 
     private static SecurityMasterRevisionPublishedEvent BuildEvent()
@@ -117,7 +117,7 @@ public sealed class PeriodAwarePropagationHandlerTests
     {
         public FakeLedgerPeriodLockReader LockReader { get; }
         public SpyGovernedAdjustmentPoster AdjustmentPoster { get; } = new();
-        public SpyRestatementProposer RestatementProposer { get; } = new();
+        public SpyRestatementCandidateResolver CandidateResolver { get; } = new();
         public PeriodAwarePropagationHandler Handler { get; }
 
         public Harness(LedgerPeriodStatusDto? periodStatus)
@@ -129,8 +129,8 @@ public sealed class PeriodAwarePropagationHandlerTests
             }
 
             // BLUEPRINT: assumed constructor (ILedgerPeriodLockReader, IGovernedLedgerAdjustmentPoster,
-            // IReportPackRestatementProposer, ILogger). Logger omitted via NullLogger in the real impl.
-            Handler = new PeriodAwarePropagationHandler(LockReader, AdjustmentPoster, RestatementProposer);
+            // IRestatementCandidateResolver, ILogger). Logger omitted via NullLogger in the real impl.
+            Handler = new PeriodAwarePropagationHandler(LockReader, AdjustmentPoster, CandidateResolver);
         }
     }
 
@@ -160,20 +160,24 @@ public sealed class PeriodAwarePropagationHandlerTests
         }
     }
 
-    private sealed class SpyRestatementProposer : IReportPackRestatementProposer
+    /// <summary>Q3: resolves restatement CANDIDATES (the operator picks + approves via Restate());
+    /// it does NOT auto-restate. Returns one candidate per affected book here for assertion.</summary>
+    private sealed class SpyRestatementCandidateResolver : IRestatementCandidateResolver
     {
-        public List<ReportPackRestatementProposalDto> Proposals { get; } = new();
+        public List<RestatementCandidateDto> Resolved { get; } = new();
 
-        public Task<ReportPackRestatementProposalDto> ProposeAsync(SecurityMasterRevisionPublishedEvent evt, Guid ledgerBookId, CancellationToken ct = default)
+        public Task<IReadOnlyList<RestatementCandidateDto>> ResolveAsync(SecurityMasterRevisionPublishedEvent evt, Guid ledgerBookId, CancellationToken ct = default)
         {
-            // BLUEPRINT: ReportPackRestatementProposalDto carries ChangedLines built from evt.ChangedFields.
-            var proposal = new ReportPackRestatementProposalDto(
-                ProposalId: Guid.NewGuid(),
-                ReasonCode: "security-master-edit",
+            // BLUEPRINT: RestatementCandidateDto carries ChangedLines built from evt.ChangedFields.
+            var candidate = new RestatementCandidateDto(
+                ReportId: Guid.NewGuid(),
+                PriorVersionReportId: Guid.NewGuid(),
+                PeriodLabel: "2026-03",
+                Summary: "coupon correction affects published pack",
                 ChangedLines: evt.ChangedFields.Select(f => new ReportPackChangedLineDto(
                     LineKey: f, FieldName: f, OldValue: null, NewValue: null)).ToArray());
-            Proposals.Add(proposal);
-            return Task.FromResult(proposal);
+            Resolved.Add(candidate);
+            return Task.FromResult<IReadOnlyList<RestatementCandidateDto>>(new[] { candidate });
         }
     }
 }
