@@ -4,14 +4,14 @@
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 100.0,
   "endpoint_coverage_percent": 100.0,
-  "contract_coverage_percent": 99.9,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 588,
     "documented_endpoint_count": 588,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 792,
     "documented_workstation_contract_count": 792,
-    "undocumented_workstation_contract_count": 1
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
