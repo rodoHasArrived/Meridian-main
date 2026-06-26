@@ -217,7 +217,8 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 
 - Owners: @developer-experience, @ci-platform
 - Commands:
-  - `gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
+  - `gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
+  - `gh workflow run targeted-test.yml --ref <branch> -f mode=wpf-dev-loop -f runner=windows-latest -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests"`
 
 #### `robinhood-options-smoke`
 

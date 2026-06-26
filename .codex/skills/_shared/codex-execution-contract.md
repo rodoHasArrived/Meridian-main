@@ -92,9 +92,10 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
   run `python build/python/cli/buildctl.py validation-status --summary`, shut down leftover build
   servers with `dotnet build-server shutdown`, and stop only abandoned repo-owned `dotnet`,
   `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines point
-  at this checkout. Then push the branch and dispatch GitHub Actions `Targeted Test` with the same
-  repo-relative .NET test project under `tests/` plus filter before retrying broad local scripts.
-  Do not omit the .NET filter; the lane is designed to fail closed rather than run a whole test
+  at this checkout. Then push the branch and dispatch GitHub Actions `Targeted Test` with a
+  whitelisted `mode` before retrying broad local scripts. For .NET slices, use
+  `mode=dotnet-filtered` with the same repo-relative test project under `tests/` plus filter. Do
+  not omit the .NET filter; that mode is designed to fail closed rather than run a whole test
   project.
 - Use broad suites only when the changed layer or release risk requires them.
 - If `make` is unavailable on Windows, run the target's underlying command directly and report that

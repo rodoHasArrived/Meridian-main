@@ -74,11 +74,13 @@ pwsh ./scripts/dev/run-local-quality.ps1 -IncludePlaywrightSmoke
 
 When local CPU, memory, disk, package restore, or MSBuild lock contention makes validation
 unreliable, push the branch and run the manual GitHub-hosted
-`Targeted Test` workflow before retrying broad local scripts. It accepts a repo-relative .NET test
-project under `tests/` plus a required positive class, method, trait, or fully qualified name filter.
+`Targeted Test` workflow before retrying broad local scripts. Select a whitelisted `mode`; the
+`dotnet-filtered` mode accepts a repo-relative .NET test project under `tests/` plus a required
+positive class, method, trait, or fully qualified name filter.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `
+  -f mode=dotnet-filtered `
   -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj `
   -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```

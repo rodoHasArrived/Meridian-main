@@ -62,14 +62,14 @@
 - `build/scripts/ai/tests/test_ai_edit_tool.py`
 - `build/scripts/ai/tests/test_context_budget.py`
 - `build/scripts/ai/tests/test_promptfoo_adapter.py`
+- `build/scripts/ci/check-lane-manifest.py`
 - `build/scripts/ci/check-warning-suppressions.py`
 - `build/scripts/ci/check-workflow-hygiene.py`
 - `build/scripts/ci/run-dotnet-ci-tests.py`
+- `build/scripts/ci/summarize-ci-artifacts.py`
 - `build/scripts/docs/add-todos.py`
 - `build/scripts/docs/ai-docs-maintenance.py`
 - `build/scripts/docs/check-ai-contract-drift.py`
 - `build/scripts/docs/check-ai-handoff.py`
 - `build/scripts/docs/check-ai-inventory.py`
 - `build/scripts/docs/check-ai-navigation-freshness.py`
-- `build/scripts/docs/check-ai-routing-parity.py`
-- `build/scripts/docs/check-codex-memory.py`
