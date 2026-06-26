@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 99.2% |
-| Endpoint coverage | 98.6% |
+| Weighted score | 100.0% |
+| Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 580 / 588 |
+| Endpoints documented | 588 / 588 |
 | Workstation contracts documented | 779 / 779 |
 
 ## Endpoint Coverage
@@ -368,16 +368,16 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/providers/ib/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:24` |
 | `GET` | `/api/providers/latency` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:129` |
 | `GET` | `/api/providers/metrics` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:451` |
-| `GET` | `/api/providers/modules` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23` |
-| `POST` | `/api/providers/modules` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:56` |
-| `GET` | `/api/providers/modules/catalogue` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:40` |
-| `DELETE` | `/api/providers/modules/{moduleId}` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:110` |
-| `PUT` | `/api/providers/modules/{moduleId}` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:82` |
-| `PUT` | `/api/providers/modules/{moduleId}/enabled` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:135` |
-| `POST` | `/api/providers/modules/{moduleId}/test` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:158` |
+| `GET` | `/api/providers/modules` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23` |
+| `POST` | `/api/providers/modules` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:56` |
+| `GET` | `/api/providers/modules/catalogue` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:40` |
+| `DELETE` | `/api/providers/modules/{moduleId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:110` |
+| `PUT` | `/api/providers/modules/{moduleId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:82` |
+| `PUT` | `/api/providers/modules/{moduleId}/enabled` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:135` |
+| `POST` | `/api/providers/modules/{moduleId}/test` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:158` |
 | `GET` | `/api/providers/rate-limits` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:111` |
 | `GET` | `/api/providers/readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:347` |
-| `POST` | `/api/providers/restart` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:177` |
+| `POST` | `/api/providers/restart` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:177` |
 | `GET` | `/api/providers/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:359` |
 | `POST` | `/api/providers/switch` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:164` |
 | `DELETE` | `/api/providers/{providerId}/credentials` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:87` |
@@ -1396,7 +1396,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 8 mapped endpoint gap(s).
+No API contract coverage gaps detected.
 
 ---
 
