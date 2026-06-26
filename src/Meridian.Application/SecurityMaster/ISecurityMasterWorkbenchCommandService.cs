@@ -25,9 +25,16 @@ public interface ISecurityMasterWorkbenchCommandService
     Task<SecurityMasterConflictResolutionDto> ResolveSourceConflictAsync(
         ResolveSourceConflictRequest request, CancellationToken ct = default);
 
-    /// <summary>Transitions a draft revision into the governed approval gate.</summary>
+    /// <summary>
+    /// Transitions a draft revision into the governed approval gate. When the request carries a
+    /// workflow id, submission is routed through <c>IOperationsContinuityWorkflowService</c>.
+    /// </summary>
     Task<SecurityMasterEditResultDto> SubmitForApprovalAsync(
         SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);
+
+    /// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
+    Task<SecurityMasterEditResultDto> ApproveRevisionAsync(
+        ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// Publishes an approved revision: fans out to the ordered revision-published handlers and

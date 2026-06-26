@@ -59,13 +59,33 @@ public sealed record ResolveSourceConflictRequest(
     bool AcknowledgePolicyDeviation = false,
     string? CorrelationId = null);
 
-/// <summary>Transitions a draft revision into the governed approval gate.</summary>
+/// <summary>
+/// Transitions a draft revision into the governed approval gate. When <see cref="WorkflowId"/> is
+/// supplied, submission is routed through the operations-continuity approval workflow using the
+/// workflow's <see cref="ExpectedWorkflowVersion"/>, <see cref="Reviewer"/>, and <see cref="ReportPackId"/>.
+/// </summary>
 public sealed record SubmitSecurityMasterRevisionRequest(
     Guid SecurityId,
     Guid RevisionId,
     string Actor,
     string? Note,
-    string? FundProfileId = null);
+    string? FundProfileId = null,
+    Guid? WorkflowId = null,
+    long ExpectedWorkflowVersion = 0,
+    string? Reviewer = null,
+    string? ReportPackId = null);
+
+/// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
+public sealed record ApproveSecurityMasterRevisionRequest(
+    Guid SecurityId,
+    Guid RevisionId,
+    Guid WorkflowId,
+    long ExpectedWorkflowVersion,
+    string Actor,
+    string Reviewer,
+    string Rationale,
+    string ReportPackId,
+    string? CorrelationId = null);
 
 /// <summary>Publishes an approved revision (durable append + downstream propagation).</summary>
 public sealed record PublishSecurityMasterRevisionRequest(

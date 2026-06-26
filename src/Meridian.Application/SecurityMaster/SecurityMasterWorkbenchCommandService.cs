@@ -1,5 +1,8 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Serialization;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -8,25 +11,31 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// Phase 2 governed write surface for the Security Master Passport Workbench.
 ///
-/// <para>This slice implements the two operator write primitives end-to-end:</para>
 /// <list type="bullet">
-///   <item><c>UpdateSecurityFieldAsync</c> — justification-gated, version-guarded operator field
-///     edits staged through the existing <see cref="IOperatorOverridesStore"/>.</item>
-///   <item><c>ResolveSourceConflictAsync</c> — conflict resolution scored by the Phase 1
-///     <see cref="ISecurityMasterConflictAuthorityPolicy"/>, with acknowledged-deviation enforcement.</item>
+///   <item><c>UpdateSecurityFieldAsync</c> — justification-gated operator field edits appended as a
+///     versioned operator-field-edit event so optimistic concurrency is enforced by the event store
+///     (a stale <c>ExpectedVersion</c> surfaces as <see cref="SecurityMasterConcurrencyException"/> →
+///     HTTP 409); the read-model annotation is mirrored into <see cref="IOperatorOverridesStore"/>.</item>
+///   <item><c>ResolveSourceConflictAsync</c> — scored by the conflict-authority policy, enforces
+///     acknowledged deviation, and closes the underlying conflict via
+///     <see cref="ISecurityMasterConflictService"/> so it no longer appears Open.</item>
+///   <item><c>SubmitForApprovalAsync</c> / <c>ApproveRevisionAsync</c> — routed through the
+///     <see cref="IOperationsContinuityWorkflowService"/> approval gate when a workflow id is supplied.</item>
+///   <item><c>PublishRevisionAsync</c> — idempotent fan-out to the ordered
+///     <see cref="ISecurityMasterRevisionPublishedHandler"/> seam (Phase 3 supplies handlers).</item>
 /// </list>
-/// <para><c>PublishRevisionAsync</c> fans out to the ordered
-/// <see cref="ISecurityMasterRevisionPublishedHandler"/> seam (Phase 3 supplies the handlers). The
-/// full OperationsContinuity approval-gate bridge (workflow scoping + reviewer routing + durable
-/// submitted/approved state) is the subsequent Phase 2 slice; <c>SubmitForApprovalAsync</c> records
-/// the logical transition until then.</para>
 /// </summary>
 public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkbenchCommandService
 {
+    private const string OperatorFieldEditEventType = "operator-field-edit";
+    private const string OperatorSourceSystem = "operator-workbench";
+
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly IOperatorOverridesStore _overrides;
     private readonly ISecurityMasterConflictAuthorityPolicy _conflictPolicy;
+    private readonly ISecurityMasterConflictService _conflictService;
     private readonly ISecurityMasterWorkbenchQueryService _queryService;
+    private readonly IOperationsContinuityWorkflowService _approvalWorkflow;
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
 
@@ -34,14 +43,18 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         ISecurityMasterEventStore eventStore,
         IOperatorOverridesStore overrides,
         ISecurityMasterConflictAuthorityPolicy conflictPolicy,
+        ISecurityMasterConflictService conflictService,
         ISecurityMasterWorkbenchQueryService queryService,
+        IOperationsContinuityWorkflowService approvalWorkflow,
         IEnumerable<ISecurityMasterRevisionPublishedHandler> handlers,
         ILogger<SecurityMasterWorkbenchCommandService> logger)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _overrides = overrides ?? throw new ArgumentNullException(nameof(overrides));
         _conflictPolicy = conflictPolicy ?? throw new ArgumentNullException(nameof(conflictPolicy));
+        _conflictService = conflictService ?? throw new ArgumentNullException(nameof(conflictService));
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        _approvalWorkflow = approvalWorkflow ?? throw new ArgumentNullException(nameof(approvalWorkflow));
         _handlers = (handlers ?? throw new ArgumentNullException(nameof(handlers)))
             .OrderBy(static h => h.Order)
             .ToArray();
@@ -64,6 +77,22 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
 
+        var newVersion = currentVersion + 1;
+        var envelope = BuildOperatorFieldEditEnvelope(request, newVersion);
+
+        // The event store is the authority for optimistic concurrency: a competing append that
+        // advanced the stream since this caller loaded it is rejected here, not silently overwritten.
+        try
+        {
+            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("version conflict", StringComparison.OrdinalIgnoreCase))
+        {
+            var latest = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+            throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, latest);
+        }
+
+        // Mirror the operator value into the override read-model annotation.
         var patch = new OperatorOverridesPatchRequest(
             SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -73,16 +102,15 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             ReasonCode = request.Justification,
         };
-
         await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Security Master field edit staged for {SecurityId} field {FieldPath} effective {EffectiveFrom:o} by {Actor}",
-            request.SecurityId, request.FieldPath, request.EffectiveFrom, request.Actor);
+            "Security Master field edit appended for {SecurityId} field {FieldPath} version {NewVersion} by {Actor}",
+            request.SecurityId, request.FieldPath, newVersion, request.Actor);
 
         var changeEntry = BuildChangeEntry(
-            currentVersion,
-            eventType: "operator-field-edit",
+            newVersion,
+            eventType: OperatorFieldEditEventType,
             actor: request.Actor,
             effectiveFrom: request.EffectiveFrom,
             sourceRecordId: request.SourceRecordId,
@@ -93,7 +121,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         return new SecurityMasterEditResultDto(
             request.SecurityId,
             Guid.NewGuid(),
-            currentVersion,
+            newVersion,
             SecurityMasterRevisionStateDto.Draft,
             changeEntry);
     }
@@ -117,19 +145,24 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         var snapshot = await _queryService
             .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: null, ct)
             .ConfigureAwait(false);
+        if (snapshot is null)
+        {
+            throw new InvalidOperationException(
+                $"Trust snapshot for security '{request.SecurityId}' was not found.");
+        }
 
-        var assessment = snapshot?.ConflictAssessments
+        var assessment = snapshot.ConflictAssessments?
             .FirstOrDefault(a => a.Conflict.ConflictId == request.ConflictId)
             ?? throw new InvalidOperationException(
                 $"Conflict '{request.ConflictId}' was not found for security '{request.SecurityId}'.");
 
-        var providerConfidence = snapshot?.InstrumentPassport?.ProviderConfidence
+        var providerConfidence = snapshot.InstrumentPassport?.ProviderConfidence
             ?? Array.Empty<InstrumentPassportProviderConfidenceDto>();
 
         var decision = _conflictPolicy.Evaluate(assessment, providerConfidence);
         var isDeviation = !string.Equals(
-            request.ChosenWinnerSource?.Trim(),
-            decision.PolicyWinnerSource?.Trim(),
+            request.ChosenWinnerSource?.Trim() ?? string.Empty,
+            decision.PolicyWinnerSource?.Trim() ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
 
         if (isDeviation && !request.AcknowledgePolicyDeviation)
@@ -138,6 +171,14 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 "Choosing a winner that diverges from the policy winner requires acknowledging the deviation.",
                 nameof(request));
         }
+
+        // Close the underlying conflict so it no longer appears Open on the next snapshot.
+        var resolution = assessment.Recommendation == SecurityMasterConflictRecommendationKind.DismissAsEquivalent
+            ? "Dismiss"
+            : "Resolve";
+        await _conflictService
+            .ResolveAsync(new ResolveConflictRequest(request.ConflictId, resolution, request.Actor, request.Reason), ct)
+            .ConfigureAwait(false);
 
         var patch = new OperatorOverridesPatchRequest(
             SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
@@ -148,7 +189,6 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         {
             ReasonCode = request.Reason,
         };
-
         await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -170,27 +210,73 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         ArgumentNullException.ThrowIfNull(request);
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+        var rationale = string.IsNullOrWhiteSpace(request.Note)
+            ? "Security Master revision submitted for approval."
+            : request.Note!;
+
+        if (request.WorkflowId is { } workflowId)
+        {
+            var dto = new OperationsSubmitApprovalRequestDto(
+                ExpectedVersion: request.ExpectedWorkflowVersion,
+                Actor: request.Actor,
+                Reviewer: string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer!,
+                Rationale: rationale,
+                ReportPackId: request.ReportPackId ?? string.Empty);
+
+            var result = await _approvalWorkflow.SubmitForApprovalAsync(workflowId, dto, ct).ConfigureAwait(false);
+            if (!result.Success)
+            {
+                throw new InvalidOperationException(
+                    $"Submit for approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
+            }
+
+            _logger.LogInformation(
+                "Security Master revision {RevisionId} for {SecurityId} submitted through approval gate workflow {WorkflowId}",
+                request.RevisionId, request.SecurityId, workflowId);
+
+            return BuildLifecycleResult(request.SecurityId, request.RevisionId, result.NewVersion ?? currentVersion,
+                SecurityMasterRevisionStateDto.Submitted, request.Actor, rationale, "operator-field-edit-submitted",
+                "Revision submitted for approval through the operations-continuity gate.");
+        }
 
         _logger.LogInformation(
-            "Security Master revision {RevisionId} for {SecurityId} submitted for approval by {Actor}",
+            "Security Master revision {RevisionId} for {SecurityId} submitted for approval (no workflow context) by {Actor}",
             request.RevisionId, request.SecurityId, request.Actor);
 
-        var changeEntry = BuildChangeEntry(
-            currentVersion,
-            eventType: "operator-field-edit-submitted",
-            actor: request.Actor,
-            effectiveFrom: null,
-            sourceRecordId: null,
-            reason: request.Note,
-            summary: "Revision submitted for approval.",
-            changedFields: []);
+        return BuildLifecycleResult(request.SecurityId, request.RevisionId, currentVersion,
+            SecurityMasterRevisionStateDto.Submitted, request.Actor, rationale, "operator-field-edit-submitted",
+            "Revision submitted for approval.");
+    }
 
-        return new SecurityMasterEditResultDto(
-            request.SecurityId,
-            request.RevisionId,
-            currentVersion,
-            SecurityMasterRevisionStateDto.Submitted,
-            changeEntry);
+    public async Task<SecurityMasterEditResultDto> ApproveRevisionAsync(
+        ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var dto = new OperationsApprovalDecisionRequestDto(
+            ExpectedVersion: request.ExpectedWorkflowVersion,
+            Actor: request.Actor,
+            Reviewer: request.Reviewer,
+            Rationale: request.Rationale,
+            ReportPackId: request.ReportPackId,
+            CorrelationId: request.CorrelationId);
+
+        var result = await _approvalWorkflow.ApproveWorkflowAsync(request.WorkflowId, dto, ct).ConfigureAwait(false);
+        if (!result.Success)
+        {
+            throw new InvalidOperationException(
+                $"Revision approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
+        }
+
+        var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
+
+        _logger.LogInformation(
+            "Security Master revision {RevisionId} for {SecurityId} approved through gate workflow {WorkflowId} by {Actor}",
+            request.RevisionId, request.SecurityId, request.WorkflowId, request.Actor);
+
+        return BuildLifecycleResult(request.SecurityId, request.RevisionId, result.NewVersion ?? currentVersion,
+            SecurityMasterRevisionStateDto.Approved, request.Actor, request.Rationale, "security-master-field-edit-approved",
+            "Revision approved through the operations-continuity gate.");
     }
 
     public async Task<SecurityMasterPublishResultDto> PublishRevisionAsync(
@@ -252,6 +338,53 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         return events.Count == 0 ? 0L : events.Max(static e => e.StreamVersion);
     }
 
+    private static SecurityMasterEventEnvelope BuildOperatorFieldEditEnvelope(
+        UpdateSecurityFieldRequest request, long newVersion)
+    {
+        var payload = JsonSerializer.SerializeToElement(
+            new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["fieldPath"] = request.FieldPath,
+                ["newValue"] = request.NewValue,
+                ["effectiveFrom"] = request.EffectiveFrom,
+                ["justification"] = request.Justification,
+            },
+            SecurityMasterJsonContext.Default.DictionaryStringObject);
+
+        var metadata = JsonSerializer.SerializeToElement(
+            new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["sourceSystem"] = OperatorSourceSystem,
+                ["reason"] = request.Justification,
+                ["origin"] = "Operator",
+                ["sourceRecordId"] = request.SourceRecordId,
+            },
+            SecurityMasterJsonContext.Default.DictionaryStringObject);
+
+        return new SecurityMasterEventEnvelope(
+            GlobalSequence: null,
+            SecurityId: request.SecurityId,
+            StreamVersion: newVersion,
+            EventType: OperatorFieldEditEventType,
+            EventTimestamp: DateTimeOffset.UtcNow,
+            Actor: request.Actor,
+            CorrelationId: TryParseGuid(request.CorrelationId),
+            CausationId: null,
+            Payload: payload,
+            Metadata: metadata);
+    }
+
+    private static SecurityMasterEditResultDto BuildLifecycleResult(
+        Guid securityId, Guid revisionId, long version, SecurityMasterRevisionStateDto state,
+        string actor, string? reason, string eventType, string summary)
+        => new(
+            securityId,
+            revisionId,
+            version,
+            state,
+            BuildChangeEntry(version, eventType, actor, effectiveFrom: null, sourceRecordId: null,
+                reason: reason, summary: summary, changedFields: []));
+
     private static SecurityMasterChangeHistoryItemDto BuildChangeEntry(
         long streamVersion,
         string eventType,
@@ -269,12 +402,15 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             EffectiveAtUtc: effectiveFrom,
             Actor: actor,
             Origin: "User",
-            SourceSystem: "operator-workbench",
+            SourceSystem: OperatorSourceSystem,
             SourceRecordId: sourceRecordId,
             Reason: reason,
             Summary: summary,
             ChangedFields: changedFields,
             ChangedFieldsSummary: changedFields.Count == 0 ? "No structured field diff." : string.Join(", ", changedFields));
+
+    private static Guid? TryParseGuid(string? value)
+        => Guid.TryParse(value, out var parsed) ? parsed : null;
 
     private static SecurityMasterDownstreamImpactDto EmptyDownstreamImpact()
         => new(

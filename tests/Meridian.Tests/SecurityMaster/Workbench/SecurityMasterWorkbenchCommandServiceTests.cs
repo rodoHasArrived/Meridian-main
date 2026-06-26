@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -28,12 +29,9 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             Actor: "ops.analyst",
             Justification: "   ");
 
-        var act = () => harness.Service.UpdateSecurityFieldAsync(request);
-
-        await act.Should().ThrowAsync<ArgumentException>();
-        harness.Overrides.Verify(
-            o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+        await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
+            .Should().ThrowAsync<ArgumentException>();
+        harness.EventStore.Appends.Should().BeEmpty();
     }
 
     [Fact]
@@ -54,10 +52,11 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<SecurityMasterConcurrencyException>();
         ex.Which.CurrentVersion.Should().Be(9);
         ex.Which.ExpectedVersion.Should().Be(8);
+        harness.EventStore.Appends.Should().BeEmpty("a stale edit is rejected before any append");
     }
 
     [Fact]
-    public async Task UpdateSecurityField_HappyPath_PatchesOverrideAndReturnsDraft()
+    public async Task UpdateSecurityField_HappyPath_AppendsVersionedEventAndPatchesOverride()
     {
         var effectiveFrom = new DateTimeOffset(2026, 03, 31, 0, 0, 0, TimeSpan.Zero);
         var harness = new Harness(currentVersion: 7);
@@ -74,19 +73,19 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var result = await harness.Service.UpdateSecurityFieldAsync(request);
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
-        result.NewVersion.Should().Be(7);
-        result.ChangeEntry.Actor.Should().Be("ops.analyst");
+        result.NewVersion.Should().Be(8, "the operator edit advances the event stream");
         result.ChangeEntry.EffectiveAtUtc.Should().Be(effectiveFrom);
         result.ChangeEntry.ChangedFields.Should().Contain("EconomicDefinition.Coupon");
-        result.ChangeEntry.Reason.Should().Contain("term sheet");
 
+        // The authoritative write is a versioned event (real optimistic concurrency)...
+        var append = harness.EventStore.Appends.Should().ContainSingle().Subject;
+        append.ExpectedVersion.Should().Be(7);
+        append.Events.Should().ContainSingle().Which.EventType.Should().Be("operator-field-edit");
+        // ...mirrored into the override read-model annotation.
         harness.Overrides.Verify(
             o => o.PatchAsync(
                 SecurityId,
-                It.Is<OperatorOverridesPatchRequest>(p =>
-                    p.ReasonCode == "Corrected coupon per agent term sheet." &&
-                    p.SetValues != null &&
-                    p.SetValues.ContainsKey("EconomicDefinition.Coupon")),
+                It.Is<OperatorOverridesPatchRequest>(p => p.SetValues != null && p.SetValues.ContainsKey("EconomicDefinition.Coupon")),
                 "ops.analyst",
                 It.IsAny<CancellationToken>()),
             Times.Once);
@@ -128,10 +127,10 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<SecurityMasterConcurrencyException>();
     }
 
-    // ---- Submit -------------------------------------------------------------------------------
+    // ---- Submit / Approve through the gate ----------------------------------------------------
 
     [Fact]
-    public async Task Submit_ReturnsSubmittedState()
+    public async Task Submit_WithoutWorkflow_ReturnsSubmittedState()
     {
         var harness = new Harness(currentVersion: 2);
         var revisionId = Guid.NewGuid();
@@ -146,6 +145,80 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
         result.RevisionId.Should().Be(revisionId);
+        harness.Workflow.Verify(
+            w => w.SubmitForApprovalAsync(It.IsAny<Guid>(), It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Submit_WithWorkflow_RoutesThroughApprovalGate()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 2);
+        harness.Workflow
+            .Setup(w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 3));
+
+        var request = new SubmitSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: Guid.NewGuid(),
+            Actor: "ops.analyst",
+            Note: "Submit through gate.",
+            FundProfileId: null,
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 2,
+            Reviewer: "ops.reviewer",
+            ReportPackId: "rp-1");
+
+        var result = await harness.Service.SubmitForApprovalAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        harness.Workflow.Verify(
+            w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Approve_RoutesThroughApprovalGate_AndReturnsApproved()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(SuccessTransition(newVersion: 5));
+
+        var request = new ApproveSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: Guid.NewGuid(),
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 4,
+            Actor: "ops.reviewer",
+            Reviewer: "ops.reviewer",
+            Rationale: "Approved.",
+            ReportPackId: "rp-1");
+
+        var result = await harness.Service.ApproveRevisionAsync(request);
+
+        result.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
+        harness.Workflow.Verify(
+            w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Approve_WhenGateBlocks_Throws()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        harness.Workflow
+            .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationsTransitionResultDto(false, "BLOCKED", "Independent reviewer required.", null, [], []));
+
+        var request = new ApproveSecurityMasterRevisionRequest(
+            SecurityId, Guid.NewGuid(), workflowId, 4, "ops.analyst", "ops.analyst", "Approve.", "rp-1");
+
+        await harness.Service.Invoking(s => s.ApproveRevisionAsync(request))
+            .Should().ThrowAsync<InvalidOperationException>();
     }
 
     // ---- Publish ------------------------------------------------------------------------------
@@ -168,7 +241,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         ufl.Received.Should().ContainSingle();
         coverage.Received.Should().ContainSingle();
-        log.Should().Equal(10, 20, "handlers run in ascending Order");
+        log.Should().Equal(new[] { 10, 20 });
         result.RestatementRequired.Should().BeFalse();
         result.RestatementCandidates.Should().BeEmpty();
         result.InvalidatedProjections.Should().HaveCount(2);
@@ -188,22 +261,29 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
 
         var result = await harness.Service.PublishRevisionAsync(request);
 
-        // The publish completes; the failed handler is logged, not surfaced.
         result.Should().NotBeNull();
         result.InvalidatedProjections.Should().BeEmpty();
     }
 
-    // ---- harness + doubles --------------------------------------------------------------------
+    // ---- helpers ------------------------------------------------------------------------------
+
+    private static OperationsTransitionResultDto SuccessTransition(long newVersion)
+        => new(true, null, null, null, [], [], newVersion);
 
     private sealed class Harness
     {
+        public FakeEventStore EventStore { get; }
         public Mock<IOperatorOverridesStore> Overrides { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterConflictAuthorityPolicy> Policy { get; } = new(MockBehavior.Loose);
+        public Mock<ISecurityMasterConflictService> ConflictService { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterWorkbenchQueryService> QueryService { get; } = new(MockBehavior.Loose);
+        public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
         public SecurityMasterWorkbenchCommandService Service { get; }
 
         public Harness(long currentVersion, IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null)
         {
+            EventStore = new FakeEventStore(currentVersion);
+
             Overrides
                 .Setup(o => o.PatchAsync(It.IsAny<Guid>(), It.IsAny<OperatorOverridesPatchRequest>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, OperatorOverridesPatchRequest _, string actor, CancellationToken _) =>
@@ -214,21 +294,25 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 .ReturnsAsync((SecurityMasterTrustSnapshotDto?)null);
 
             Service = new SecurityMasterWorkbenchCommandService(
-                new FakeEventStore(currentVersion),
+                EventStore,
                 Overrides.Object,
                 Policy.Object,
+                ConflictService.Object,
                 QueryService.Object,
+                Workflow.Object,
                 handlers ?? Array.Empty<ISecurityMasterRevisionPublishedHandler>(),
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance);
         }
     }
 
-    /// <summary>Returns a stream whose max StreamVersion equals the configured current version.</summary>
+    /// <summary>Version-aware fake: LoadAsync reports the configured stream version; AppendAsync is recorded.</summary>
     private sealed class FakeEventStore : ISecurityMasterEventStore
     {
         private readonly long _version;
 
         public FakeEventStore(long version) => _version = version;
+
+        public List<(Guid SecurityId, long ExpectedVersion, IReadOnlyList<SecurityMasterEventEnvelope> Events)> Appends { get; } = new();
 
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default)
         {
@@ -252,7 +336,10 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         }
 
         public Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList<SecurityMasterEventEnvelope> events, CancellationToken ct = default)
-            => Task.CompletedTask;
+        {
+            Appends.Add((securityId, expectedVersion, events));
+            return Task.CompletedTask;
+        }
 
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
