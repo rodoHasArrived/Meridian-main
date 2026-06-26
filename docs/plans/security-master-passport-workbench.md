@@ -108,16 +108,31 @@ a `SecurityMasterEventEnvelope { Origin=Operator, EffectiveFrom, Provenance{AsOf
 UpdatedBy=actor, Reason=justification} }` and appends with the caller's `expectedVersion`.
 - *Consequence:* a stale token throws → HTTP 409 → UI refetch. No bespoke locking.
 
-**D3 — Publish a domain event; closed-period edits route to restatement, never silent mutation (Unknown #3).**
+**D3 — Publish a domain event; the ledger accounting-period status is the lock authority; edits route by tri-state period status, never silent mutation (Unknown #3 — RESOLVED).**
 `PublishRevisionAsync` invokes ordered `IEnumerable<ISecurityMasterRevisionPublishedHandler>` after
-the durable append: UFL rebuild → coverage invalidation → `ClosedPeriodRestatementProposalHandler`,
-which checks `SecurityMasterDownstreamImpactDto.ReportPackExposureCount` against period-lock state
-and, for closed periods, calls `ReportingWorkflowService.ProposeRestatement(...)` (enqueues a
-`ReportPackRestatementMetadataDto` with changed-line evidence for human approval) rather than
-mutating posted numbers.
-- *Rationale:* preserves the W4-RPT-001 invariant that restatements are human-approved and
-  evidence-backed; the security-master edit only *proposes*. Synchronous direct `Restate()` rejected
-  (requires human `actor`/`approver`, `EnsureHumanOrigin`).
+the durable append: UFL rebuild → coverage invalidation → `PeriodAwarePropagationHandler`. The
+**single authoritative** answer to "is the period covering `EffectiveFrom` locked?" is the **ledger
+accounting period status** (`LedgerAccountingPeriod.Status`, enum `LedgerPeriodStatusDto` ∈ `Open` /
+`SoftClosed` / `HardClosed`), enforced at post-time by `LedgerPeriodPostingGuard.Validate(...)` in
+`Meridian.Storage.Ledger`. `FundAccountCloseReadinessService` (readiness score) and the
+OperationsContinuity close-package are **derivative/informational, not the gate**. The handler reads
+period status per affected ledger book and routes by the matrix below:
+
+| Period status (covering `EffectiveFrom`) | Posting path | Restatement proposal |
+| --- | --- | --- |
+| `Open` | immediate propagation (UFL rebuild + coverage invalidate) | none |
+| `SoftClosed` | downstream ledger effect posts as a **governed `Adjustment`** carrying the workbench approval as `LedgerAdjustmentApprovalMetadataDto` (satisfies `LedgerPeriodPostingGuard`'s soft-closed adjustment rule) | only if a **published** report pack consumed the changed line |
+| `HardClosed` | **NO posting** | **mandatory** — `ReportingWorkflowService.ProposeRestatement(...)` with changed-line evidence |
+| indeterminate / period missing / unrecognized status | treated as `HardClosed` (**default-deny**) | mandatory |
+
+- *Rationale:* the ledger posting guard is the hardest gate (rejects posts into closed periods at
+  the storage layer), so aligning the handler to the *same* authority guarantees the workbench can
+  never produce a state the ledger would have rejected. Tri-state matters: `SoftClosed` already
+  permits *approved* adjustments, and the workbench approval gate produces exactly that approval
+  metadata — so soft-closed edits post as governed adjustments rather than blocked. `HardClosed`
+  and the default-deny fallback preserve the W4-RPT-001 invariant that restatements are
+  human-approved and evidence-backed; the security-master edit only *proposes*. Synchronous direct
+  `Restate()` rejected (requires human `actor`/`approver`, `EnsureHumanOrigin`).
 
 ## Interface & API Contracts
 
@@ -154,6 +169,18 @@ public interface ISecurityMasterRevisionPublishedHandler
 {
     int Order { get; }  // lower runs first; restatement proposal runs last
     Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);
+}
+
+/// <summary>Authoritative read of accounting-period lock status for a date. Backed by the ledger
+/// accounting period (LedgerAccountingPeriod.Status), the same source LedgerPeriodPostingGuard
+/// enforces at post-time. Default-deny: returns HardClosed when the covering period is missing or
+/// its status is unrecognized.</summary>
+public interface ILedgerPeriodLockReader
+{
+    /// <summary>Resolves the period covering <paramref name="date"/> for the ledger book and returns
+    /// its lock status; HardClosed when indeterminate.</summary>
+    Task<LedgerPeriodStatusDto> GetPeriodStatusAsync(
+        Guid ledgerBookId, DateOnly date, CancellationToken ct = default);
 }
 ```
 
@@ -196,6 +223,8 @@ public sealed record SecurityMasterConflictAuthorityDecision(
 public sealed record SecurityMasterRevisionPublishedEvent(
     Guid SecurityId, Guid RevisionId, long Version, DateTimeOffset EffectiveFrom,
     IReadOnlyList<string> ChangedFields, SecurityMasterDownstreamImpactDto DownstreamImpact,
+    IReadOnlyList<Guid> AffectedLedgerBookIds,   // resolved by the command service at publish time;
+                                                 // the period-aware handler checks each book's lock status
     string Actor, string? CorrelationId);
 ```
 
@@ -250,11 +279,23 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   configured source rank → `AsOf` freshness → `ConfidenceScore`. `IsBulkEligible` = assessment
   eligible AND decision matches `RecommendedWinner`. `IOptionsMonitor<SecurityMasterWorkbenchOptions>`.
 
-### `ClosedPeriodRestatementProposalHandler` (`Order = 100`)
-- **Dependencies:** `FundAccountCloseReadinessService`, `ReportingWorkflowService`, `ILogger<…>`.
-  From `evt.DownstreamImpact`, enumerate report-pack links; closed/locked + reported-line affected →
-  `ProposeRestatement(...)` with `ReportPackChangedLineDto`s built from `evt.ChangedFields` +
-  evidence links. Open periods → no-op.
+### `PeriodAwarePropagationHandler` (`Order = 100`) — formerly `ClosedPeriodRestatementProposalHandler`
+- **Dependencies:** `ILedgerPeriodLockReader` (**authoritative** period status),
+  `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment posting carrying approval metadata —
+  wraps the ledger posting path), `IReportPackRestatementProposer` (implemented by
+  `ReportingWorkflowService.ProposeRestatement`), `ILogger<…>`.
+- **Logic:** for each affected ledger book in `evt.DownstreamImpact`, call
+  `ILedgerPeriodLockReader.GetPeriodStatusAsync(ledgerBookId, DateOnly.FromDateTime(evt.EffectiveFrom.UtcDateTime))`
+  and route by the D3 matrix: `Open` → no-op (lower-`Order` handlers already propagated);
+  `SoftClosed` → post the downstream effect as a governed `Adjustment` carrying the workbench
+  approval as `LedgerAdjustmentApprovalMetadataDto`, plus a restatement proposal only if a published
+  report pack consumed the line; `HardClosed` (or indeterminate/default-deny) →
+  `ReportingWorkflowService.ProposeRestatement(...)` with `ReportPackChangedLineDto`s built from
+  `evt.ChangedFields` + evidence links, **no posting**.
+- **Why the authority change:** the previous draft depended on `FundAccountCloseReadinessService`,
+  which reports *readiness to close*, not *lock state* — using it as the gate would let a hard-closed
+  book be silently mutated. The ledger period status is the same authority `LedgerPeriodPostingGuard`
+  enforces, so the workbench can never produce a state the ledger would reject.
 
 ### `UflProjectionRebuildHandler` (`Order = 10`) / `CoverageInvalidationHandler` (`Order = 20`)
 - Thin, idempotent: `IUflProjectionRebuilder.RebuildAsync(assetClass, ct)`; evict
@@ -364,11 +405,13 @@ handler boundaries; assert event envelopes and governance transitions. xUnit + F
 | `Resolve_OverrideWithoutAck_Throws422` | deviation must be acknowledged |
 | `Resolve_OverrideWithAck_RecordsDeviationReason` | deviation is the audited artifact |
 
-### Unit — `ClosedPeriodRestatementProposalHandler`
+### Unit — `PeriodAwarePropagationHandler`
 | Test | Verifies |
 | --- | --- |
-| `Handle_OpenPeriod_NoProposal` | no-op on open |
-| `Handle_ClosedPeriod_BuildsChangedLinesWithEvidence` | proposal carries changed-line evidence |
+| `Handle_OpenPeriod_NoProposalNoAdjustment` | no-op on open (lower-Order handlers already propagated) |
+| `Handle_SoftClosedPeriod_PostsGovernedAdjustmentWithApproval` | soft-closed → governed `Adjustment` carrying approval metadata, not blocked |
+| `Handle_HardClosedPeriod_ProposesRestatementNoPosting` | hard-closed → restatement proposal, evidence-backed, **no ledger posting** |
+| `Handle_IndeterminatePeriod_DefaultDenyTreatsAsHardClosed` | missing/unrecognized status ⇒ restatement proposal (default-deny) |
 
 ### Unit — `SecurityPassportEditorViewModel`
 | Test | Verifies |
@@ -436,7 +479,7 @@ PR3 browser UI, PR4 WPF parity.
 | # | Question | Owner | Impact if unresolved |
 | --- | --- | --- | --- |
 | 1 | Separate `security-master-field-edit` approval policy key, or reuse `security-master-override-approved`? | Product/Governance | One-row matrix add vs reuse; low risk either way |
-| 2 | Exact "closed period" predicate — `FundAccountCloseReadinessService` authoritative, or a distinct ledger period-lock service? | Implementer | Wrong predicate → closed-period edit could slip through as open (the invariant we must not miss) |
+| 2 | ~~Exact "closed period" predicate — `FundAccountCloseReadinessService` authoritative, or a distinct ledger period-lock service?~~ **RESOLVED 2026-06-26:** the **ledger accounting period status** (`LedgerAccountingPeriod.Status` ∈ `Open`/`SoftClosed`/`HardClosed`, enum `LedgerPeriodStatusDto`) is the sole authority, enforced at post-time by `LedgerPeriodPostingGuard.Validate(...)` and read via `ILedgerJournalStore.GetPeriodAsync`/`ListPeriodsAsync`. `FundAccountCloseReadinessService` is readiness-only; the close-package is derivative. See D3 routing matrix + new `ILedgerPeriodLockReader`. | Resolved | — |
 | 3 | Should `ProposeRestatement` auto-select impacted `reportId`(s) or surface candidates? | Product | Recommend surface-candidates for v1 |
 | 4 | Asset-class-scoped UFL rebuild needed, or Phase-0 shared replay acceptable for edit latency? | Implementer | Shared replay may be slow on large masters; acceptable for v1 |
 
@@ -444,7 +487,7 @@ PR3 browser UI, PR4 WPF parity.
 
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
-| Closed-period detection misclassifies a locked period as open → silent mutation of a closed book | Low | High | Default-deny: indeterminate period state ⇒ treat as closed and propose restatement; integration test |
+| Closed-period detection misclassifies a locked period as open → silent mutation of a closed book | Low | High | **Resolved by D3**: gate on the authoritative ledger period status (same source `LedgerPeriodPostingGuard` enforces), not readiness. Default-deny: missing/unrecognized status ⇒ treat as `HardClosed` and propose restatement; integration test asserts no ledger mutation |
 | Handler partial failure leaves projections inconsistent after committed append | Med | Med | Idempotent handlers + publish retry; `InvalidatedProjections` reports partial success |
 | Operator override fatigue erodes provenance value | Med | Med | Require `Reason` on deviation; surface deviation rate in trust posture; bulk-resolve only non-deviating |
 | Scope creep into corporate-action authoring / new persistence | Med | Med | Explicit Out-of-Scope; link to existing services |
@@ -458,6 +501,9 @@ PR3 browser UI, PR4 WPF parity.
 - `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs`
 - `src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs` (`Restate`)
 - `src/Meridian.Application/SecurityMaster/IUflProjectionRebuilder.cs`
+- `src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs` (authoritative period-lock enforcement — Q2)
+- `src/Meridian.Storage/Ledger/ILedgerJournalStore.cs` (`LedgerAccountingPeriod`, `GetPeriodAsync`, `ListPeriodsAsync`)
+- `src/Meridian.Contracts/Ledger/LedgerBookDtos.cs` (`LedgerPeriodStatusDto { Open, SoftClosed, HardClosed }`)
 - `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`
 - `src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs`
 - `src/Meridian.Storage/Archival/AtomicFileWriter.cs`
