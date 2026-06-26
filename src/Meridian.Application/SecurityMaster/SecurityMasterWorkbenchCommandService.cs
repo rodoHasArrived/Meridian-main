@@ -1,7 +1,5 @@
-using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using Meridian.Core.Serialization;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
@@ -12,13 +10,17 @@ namespace Meridian.Application.SecurityMaster;
 /// Phase 2 governed write surface for the Security Master Passport Workbench.
 ///
 /// <list type="bullet">
-///   <item><c>UpdateSecurityFieldAsync</c> — justification-gated operator field edits appended as a
-///     versioned operator-field-edit event so optimistic concurrency is enforced by the event store
-///     (a stale <c>ExpectedVersion</c> surfaces as <see cref="SecurityMasterConcurrencyException"/> →
-///     HTTP 409); the read-model annotation is mirrored into <see cref="IOperatorOverridesStore"/>.</item>
+///   <item><c>UpdateSecurityFieldAsync</c> — justification-gated operator field edits staged as
+///     overlay annotations in <see cref="IOperatorOverridesStore"/>. The passport-displayed security
+///     version is a read-only staleness guard (a stale <c>ExpectedVersion</c> surfaces as
+///     <see cref="SecurityMasterConcurrencyException"/> → HTTP 409). Overlay edits are deliberately
+///     NOT appended to the economic event stream: that stream is replayed verbatim to rebuild the
+///     passport, so a partial field-edit payload would corrupt the economic definition.</item>
 ///   <item><c>ResolveSourceConflictAsync</c> — scored by the conflict-authority policy, enforces
 ///     acknowledged deviation, and closes the underlying conflict via
-///     <see cref="ISecurityMasterConflictService"/> so it no longer appears Open.</item>
+///     <see cref="ISecurityMasterConflictService"/> with an atomic open→resolved transition; a
+///     concurrent duplicate resolution surfaces as <see cref="SecurityMasterConcurrencyException"/>
+///     rather than silently overwriting the first operator's winner.</item>
 ///   <item><c>SubmitForApprovalAsync</c> / <c>ApproveRevisionAsync</c> — routed through the
 ///     <see cref="IOperationsContinuityWorkflowService"/> approval gate when a workflow id is supplied.</item>
 ///   <item><c>PublishRevisionAsync</c> — idempotent fan-out to the ordered
@@ -71,28 +73,21 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 "Operator field edits require a justification.", nameof(request));
         }
 
+        // The passport-displayed security version is a read-only staleness guard: a stale view of
+        // the canonical security (it was amended/deactivated since the operator loaded it) is
+        // rejected before any overlay write. Operator field edits are overlay annotations and must
+        // NOT be appended to the economic event stream — that stream is replayed verbatim through
+        // SecurityMasterMapping.FromEconomicPayload to rebuild the passport, so a partial
+        // field-edit payload would clobber the economic definition on the next reload/replay.
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
         if (request.ExpectedVersion != currentVersion)
         {
             throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
         }
 
-        var newVersion = currentVersion + 1;
-        var envelope = BuildOperatorFieldEditEnvelope(request, newVersion);
-
-        // The event store is the authority for optimistic concurrency: a competing append that
-        // advanced the stream since this caller loaded it is rejected here, not silently overwritten.
-        try
-        {
-            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("version conflict", StringComparison.OrdinalIgnoreCase))
-        {
-            var latest = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
-            throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, latest);
-        }
-
-        // Mirror the operator value into the override read-model annotation.
+        // Stage the operator value as an override read-model annotation. The override store applies
+        // the patch under a serializable, row-locked transaction; it does not advance the economic
+        // version, so the returned NewVersion is the unchanged canonical version.
         var patch = new OperatorOverridesPatchRequest(
             SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -105,11 +100,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Security Master field edit appended for {SecurityId} field {FieldPath} version {NewVersion} by {Actor}",
-            request.SecurityId, request.FieldPath, newVersion, request.Actor);
+            "Security Master field edit staged for {SecurityId} field {FieldPath} at version {Version} by {Actor}",
+            request.SecurityId, request.FieldPath, currentVersion, request.Actor);
 
         var changeEntry = BuildChangeEntry(
-            newVersion,
+            currentVersion,
             eventType: OperatorFieldEditEventType,
             actor: request.Actor,
             effectiveFrom: request.EffectiveFrom,
@@ -121,7 +116,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         return new SecurityMasterEditResultDto(
             request.SecurityId,
             Guid.NewGuid(),
-            newVersion,
+            currentVersion,
             SecurityMasterRevisionStateDto.Draft,
             changeEntry);
     }
@@ -172,13 +167,20 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                 nameof(request));
         }
 
-        // Close the underlying conflict so it no longer appears Open on the next snapshot.
+        // Close the underlying conflict so it no longer appears Open on the next snapshot. The
+        // conflict service performs an atomic open→resolved transition; a null result means another
+        // operator already resolved this conflict, so surface it as a concurrency conflict rather
+        // than letting the later decision silently win.
         var resolution = assessment.Recommendation == SecurityMasterConflictRecommendationKind.DismissAsEquivalent
             ? "Dismiss"
             : "Resolve";
-        await _conflictService
+        var resolved = await _conflictService
             .ResolveAsync(new ResolveConflictRequest(request.ConflictId, resolution, request.Actor, request.Reason), ct)
             .ConfigureAwait(false);
+        if (resolved is null)
+        {
+            throw new SecurityMasterConcurrencyException(request.SecurityId, request.ExpectedVersion, currentVersion);
+        }
 
         var patch = new OperatorOverridesPatchRequest(
             SetValues: new Dictionary<string, string>(StringComparer.Ordinal)
@@ -338,42 +340,6 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         return events.Count == 0 ? 0L : events.Max(static e => e.StreamVersion);
     }
 
-    private static SecurityMasterEventEnvelope BuildOperatorFieldEditEnvelope(
-        UpdateSecurityFieldRequest request, long newVersion)
-    {
-        var payload = JsonSerializer.SerializeToElement(
-            new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["fieldPath"] = request.FieldPath,
-                ["newValue"] = request.NewValue,
-                ["effectiveFrom"] = request.EffectiveFrom,
-                ["justification"] = request.Justification,
-            },
-            SecurityMasterJsonContext.Default.DictionaryStringObject);
-
-        var metadata = JsonSerializer.SerializeToElement(
-            new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                ["sourceSystem"] = OperatorSourceSystem,
-                ["reason"] = request.Justification,
-                ["origin"] = "Operator",
-                ["sourceRecordId"] = request.SourceRecordId,
-            },
-            SecurityMasterJsonContext.Default.DictionaryStringObject);
-
-        return new SecurityMasterEventEnvelope(
-            GlobalSequence: null,
-            SecurityId: request.SecurityId,
-            StreamVersion: newVersion,
-            EventType: OperatorFieldEditEventType,
-            EventTimestamp: DateTimeOffset.UtcNow,
-            Actor: request.Actor,
-            CorrelationId: TryParseGuid(request.CorrelationId),
-            CausationId: null,
-            Payload: payload,
-            Metadata: metadata);
-    }
-
     private static SecurityMasterEditResultDto BuildLifecycleResult(
         Guid securityId, Guid revisionId, long version, SecurityMasterRevisionStateDto state,
         string actor, string? reason, string eventType, string summary)
@@ -408,9 +374,6 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             Summary: summary,
             ChangedFields: changedFields,
             ChangedFieldsSummary: changedFields.Count == 0 ? "No structured field diff." : string.Join(", ", changedFields));
-
-    private static Guid? TryParseGuid(string? value)
-        => Guid.TryParse(value, out var parsed) ? parsed : null;
 
     private static SecurityMasterDownstreamImpactDto EmptyDownstreamImpact()
         => new(

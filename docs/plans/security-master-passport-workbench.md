@@ -110,6 +110,27 @@ a `SecurityMasterEventEnvelope { Origin=Operator, EffectiveFrom, Provenance{AsOf
 UpdatedBy=actor, Reason=justification} }` and appends with the caller's `expectedVersion`.
 - *Consequence:* a stale token throws → HTTP 409 → UI refetch. No bespoke locking.
 
+**D2 (AMENDED during Phase 2 implementation — operator edits are overlay annotations, not economic
+events).** Appending an operator-origin envelope to the shared Security Master event stream was found
+to be unsafe: `SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync` folds **every**
+post-snapshot event verbatim through `SecurityMasterMapping.FromEconomicPayload`, which only
+understands full economic-definition / projection payloads. A partial field-edit payload would either
+throw or rebuild an empty economic definition on the next passport reload/replay, and — because the
+canonical amend path keys `AppendAsync(expectedVersion: economicVersion)` off the stream head —
+annotation events would also desync the canonical version and spuriously 409 the next legitimate
+amend. **Corrected model:** operator field edits stage purely as overlay annotations in
+`IOperatorOverridesStore` (serializable, row-locked patch); they never touch the economic event
+stream. The passport-displayed security version remains a **read-only staleness guard** (stale view of
+the canonical security → 409). Source-conflict resolution takes its concurrency from an **atomic
+open→resolved transition** in `SecurityMasterConflictService.ResolveAsync` (`ConcurrentDictionary.TryUpdate`
+compare-and-set) — a concurrent duplicate resolution returns `null` → `SecurityMasterConcurrencyException`
+(409) instead of silently overwriting the first operator's winner.
+- *Deferred follow-up:* a true optimistic-concurrency 409 for two operators editing the **same overlay
+  field key** requires surfacing an overlay revision etag through the passport read model and round-
+  tripping it on `UpdateSecurityFieldRequest`. Until then, same-key overlay edits serialize at the
+  storage layer (last-writer-wins on that single key); the staleness guard still catches canonical
+  drift. Tracked for the next Phase 2 slice alongside the approval-gate scoping work.
+
 **D3 — Publish a domain event; the ledger accounting-period status is the lock authority; edits route by tri-state period status, never silent mutation (Unknown #3 — RESOLVED).**
 `PublishRevisionAsync` invokes ordered `IEnumerable<ISecurityMasterRevisionPublishedHandler>` after
 the durable append: **per-security projection rebuild** (`SecurityProjectionRebuildHandler`, which

@@ -56,7 +56,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateSecurityField_HappyPath_AppendsVersionedEventAndPatchesOverride()
+    public async Task UpdateSecurityField_HappyPath_StagesOverrideAnnotation_WithoutEconomicStreamAppend()
     {
         var effectiveFrom = new DateTimeOffset(2026, 03, 31, 0, 0, 0, TimeSpan.Zero);
         var harness = new Harness(currentVersion: 7);
@@ -73,15 +73,14 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var result = await harness.Service.UpdateSecurityFieldAsync(request);
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
-        result.NewVersion.Should().Be(8, "the operator edit advances the event stream");
+        result.NewVersion.Should().Be(7, "an overlay annotation does not advance the canonical security version");
         result.ChangeEntry.EffectiveAtUtc.Should().Be(effectiveFrom);
         result.ChangeEntry.ChangedFields.Should().Contain("EconomicDefinition.Coupon");
 
-        // The authoritative write is a versioned event (real optimistic concurrency)...
-        var append = harness.EventStore.Appends.Should().ContainSingle().Subject;
-        append.ExpectedVersion.Should().Be(7);
-        append.Events.Should().ContainSingle().Which.EventType.Should().Be("operator-field-edit");
-        // ...mirrored into the override read-model annotation.
+        // The edit is staged purely as an override read-model annotation. It must NOT be appended to
+        // the economic event stream — that stream is replayed verbatim to rebuild the passport, so a
+        // partial field-edit payload would corrupt the economic definition on the next reload.
+        harness.EventStore.Appends.Should().BeEmpty("overlay edits never enter the economic replay stream");
         harness.Overrides.Verify(
             o => o.PatchAsync(
                 SecurityId,

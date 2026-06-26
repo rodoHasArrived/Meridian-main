@@ -73,12 +73,23 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         if (!_conflicts.TryGetValue(request.ConflictId, out var existing))
             return Task.FromResult<SecurityMasterConflict?>(null);
 
+        // Only an Open conflict can be resolved. Returning null when the conflict was already
+        // resolved or dismissed lets a governed caller detect a concurrent/duplicate decision
+        // instead of silently overwriting the first operator's winner.
+        if (!string.Equals(existing.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            return Task.FromResult<SecurityMasterConflict?>(null);
+
         var newStatus = request.Resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
             ? "Dismissed"
             : "Resolved";
 
         var updated = existing with { Status = newStatus };
-        _conflicts[request.ConflictId] = updated;
+
+        // Atomic compare-and-set: only the first resolver whose snapshot still matches the stored
+        // (Open) record wins. A concurrent resolver that lost the race observes null and must not
+        // re-apply its decision.
+        if (!_conflicts.TryUpdate(request.ConflictId, updated, existing))
+            return Task.FromResult<SecurityMasterConflict?>(null);
 
         _logger.LogInformation(
             "Conflict {ConflictId} for security {SecurityId} {Status} by {ResolvedBy}",
