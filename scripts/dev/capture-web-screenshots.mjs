@@ -81,8 +81,18 @@ function toRouteUrl(baseUrl, routePath) {
   return `${normalizeBaseUrl(baseUrl)}${normalizedPath}`;
 }
 
-function npmCommand() {
-  return process.platform === "win32" ? "npm.cmd" : "npm";
+function npmInvocation(args) {
+  if (process.platform === "win32") {
+    return {
+      command: "cmd.exe",
+      args: ["/d", "/s", "/c", "npm.cmd", ...args]
+    };
+  }
+
+  return {
+    command: "npm",
+    args
+  };
 }
 
 function appendLog(logs, prefix, chunk) {
@@ -113,9 +123,10 @@ async function waitForServer(url, timeoutMs) {
 }
 
 function startViteServer(dashboardDir, host, port, logs) {
+  const invocation = npmInvocation(["run", "dev", "--", "--host", host, "--port", String(port), "--strictPort"]);
   const child = spawn(
-    npmCommand(),
-    ["run", "dev", "--", "--host", host, "--port", String(port), "--strictPort"],
+    invocation.command,
+    invocation.args,
     {
       cwd: dashboardDir,
       env: {

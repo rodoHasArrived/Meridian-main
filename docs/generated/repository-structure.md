@@ -883,7 +883,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -1862,21 +1861,98 @@ Meridian-main
 │   │   │   │       └── 07-run-risk.png
 │   │   │   ├── README.md
 │   │   │   ├── retry-telemetry.json
+│   │   │   ├── wpf-account-portfolio.png
+│   │   │   ├── wpf-accounting-shell.png
+│   │   │   ├── wpf-activity-log.png
+│   │   │   ├── wpf-add-provider-wizard.png
+│   │   │   ├── wpf-admin-maintenance.png
+│   │   │   ├── wpf-advanced-analytics.png
+│   │   │   ├── wpf-aggregate-portfolio.png
+│   │   │   ├── wpf-analysis-export-wizard.png
+│   │   │   ├── wpf-analysis-export.png
+│   │   │   ├── wpf-archive-health.png
 │   │   │   ├── wpf-backfill.png
 │   │   │   ├── wpf-backtest.png
+│   │   │   ├── wpf-batch-backtest.png
+│   │   │   ├── wpf-charts.png
+│   │   │   ├── wpf-collection-sessions.png
+│   │   │   ├── wpf-credential-management.png
 │   │   │   ├── wpf-dashboard.png
 │   │   │   ├── wpf-data-browser.png
+│   │   │   ├── wpf-data-calendar.png
+│   │   │   ├── wpf-data-export.png
 │   │   │   ├── wpf-data-quality.png
+│   │   │   ├── wpf-data-sampling.png
+│   │   │   ├── wpf-data-shell.png
+│   │   │   ├── wpf-data-sources.png
 │   │   │   ├── wpf-diagnostics.png
+│   │   │   ├── wpf-direct-lending.png
+│   │   │   ├── wpf-environment-designer.png
+│   │   │   ├── wpf-event-replay.png
+│   │   │   ├── wpf-export-presets.png
+│   │   │   ├── wpf-fund-accounting-close.png
+│   │   │   ├── wpf-fund-accounting-configure.png
+│   │   │   ├── wpf-fund-accounts.png
+│   │   │   ├── wpf-fund-audit-trail.png
+│   │   │   ├── wpf-fund-banking.png
+│   │   │   ├── wpf-fund-cash-financing.png
+│   │   │   ├── wpf-fund-ledger.png
+│   │   │   ├── wpf-fund-portfolio.png
+│   │   │   ├── wpf-fund-reconciliation.png
+│   │   │   ├── wpf-fund-report-pack.png
+│   │   │   ├── wpf-fund-structure-setup.png
+│   │   │   ├── wpf-fund-trial-balance.png
+│   │   │   ├── wpf-help.png
+│   │   │   ├── wpf-home-workspace.png
+│   │   │   ├── wpf-index-subscription.png
+│   │   │   ├── wpf-keyboard-shortcuts.png
+│   │   │   ├── wpf-lean-integration.png
+│   │   │   ├── wpf-ledger-explorer.png
 │   │   │   ├── wpf-live-data.png
+│   │   │   ├── wpf-messaging-hub.png
+│   │   │   ├── wpf-notification-center.png
+│   │   │   ├── wpf-options.png
+│   │   │   ├── wpf-order-book.png
+│   │   │   ├── wpf-package-manager.png
+│   │   │   ├── wpf-portfolio-explorer.png
+│   │   │   ├── wpf-portfolio-import.png
+│   │   │   ├── wpf-portfolio-shell.png
+│   │   │   ├── wpf-position-blotter.png
 │   │   │   ├── wpf-provider-health.png
-│   │   │   ├── wpf-providers.png
+│   │   │   ├── wpf-provider.png
 │   │   │   ├── wpf-quant-script.png
+│   │   │   ├── wpf-report-line-provenance-explorer.png
+│   │   │   ├── wpf-report-run-status.png
+│   │   │   ├── wpf-reporting-shell.png
+│   │   │   ├── wpf-retention-assurance.png
+│   │   │   ├── wpf-run-cash-flow.png
+│   │   │   ├── wpf-run-detail.png
+│   │   │   ├── wpf-run-ledger.png
+│   │   │   ├── wpf-run-mat.png
+│   │   │   ├── wpf-run-portfolio.png
+│   │   │   ├── wpf-run-risk.png
+│   │   │   ├── wpf-schedules.png
+│   │   │   ├── wpf-security-instrument-explorer.png
 │   │   │   ├── wpf-security-master.png
+│   │   │   ├── wpf-service-manager.png
+│   │   │   ├── wpf-settings-shell.png
 │   │   │   ├── wpf-settings.png
+│   │   │   ├── wpf-setup-wizard.png
+│   │   │   ├── wpf-storage-optimization.png
 │   │   │   ├── wpf-storage.png
 │   │   │   ├── wpf-strategy-runs.png
-│   │   │   └── wpf-strategy-workspace.png
+│   │   │   ├── wpf-strategy-shell.png
+│   │   │   ├── wpf-symbol-mapping.png
+│   │   │   ├── wpf-symbol-storage.png
+│   │   │   ├── wpf-symbols.png
+│   │   │   ├── wpf-system-health.png
+│   │   │   ├── wpf-time-series-alignment.png
+│   │   │   ├── wpf-trading-hours.png
+│   │   │   ├── wpf-trading-shell.png
+│   │   │   ├── wpf-watchlist.png
+│   │   │   ├── wpf-welcome.png
+│   │   │   ├── wpf-workflow-library.png
+│   │   │   └── wpf-workspaces.png
 │   │   ├── web
 │   │   │   ├── web-accounting-approvals.png
 │   │   │   ├── web-accounting-exceptions.png
@@ -3840,6 +3916,7 @@ Meridian-main
 │   │   ├── Meridian.Infrastructure.csproj
 │   │   ├── NoOpMarketDataClient.cs
 │   │   └── README.md
+│   ├── Meridian.Infrastructure.CppTrader
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
 │   │   │   └── AssetOperationsReadService.cs
@@ -7107,7 +7184,8 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   └── shared-pattern-suggest.ps1
+│   │   ├── shared-pattern-suggest.ps1
+│   │   └── test-gap-scan.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

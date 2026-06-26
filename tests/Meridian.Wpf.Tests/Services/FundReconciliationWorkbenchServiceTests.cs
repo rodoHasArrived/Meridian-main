@@ -13,6 +13,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -52,6 +53,22 @@ public sealed class FundReconciliationWorkbenchServiceTests
     }
 
     [Fact]
+    public async Task GetSnapshotAsync_WhenWorkstationApiUnavailable_KeepsLocalRunsAndFallbackCalibration()
+    {
+        var context = await CreateContextAsync(new UnavailableWorkstationReconciliationApiClient());
+
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+
+        snapshot.BreakQueueItems.Should().BeEmpty();
+        snapshot.CalibrationProfiles.Should().BeEmpty();
+        snapshot.CalibrationSummary.Should().NotBeNull();
+        snapshot.CalibrationSummary!.Status.Should().Be(ReconciliationCalibrationStatusDto.Ready);
+        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
+        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        snapshot.InReviewBreakCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task GetBreakDetailAsync_HighlightsFocusedBreak_AndIncludesSecurityCoverage()
     {
         var context = await CreateContextAsync();
@@ -86,7 +103,8 @@ public sealed class FundReconciliationWorkbenchServiceTests
         detail.AuditRows.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
-    private static async Task<WorkbenchContext> CreateContextAsync()
+    private static async Task<WorkbenchContext> CreateContextAsync(
+        IWorkstationReconciliationApiClient? apiClientOverride = null)
     {
         var storagePath = Path.Combine(
             Path.GetTempPath(),
@@ -170,7 +188,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
             workspaceService,
             strategyReconciliationService);
 
-        var apiClient = new FakeWorkstationReconciliationApiClient(
+        var apiClient = apiClientOverride ?? new FakeWorkstationReconciliationApiClient(
         [
             new ReconciliationBreakQueueItem(
                 BreakId: "run-fund-ops:open-large",
@@ -477,6 +495,51 @@ public sealed class FundReconciliationWorkbenchServiceTests
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
         }
+    }
+
+    private sealed class UnavailableWorkstationReconciliationApiClient : IWorkstationReconciliationApiClient
+    {
+        public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
+            => Task.FromException<ReconciliationCalibrationSummaryDto?>(new InvalidOperationException("Workstation API is offline."));
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
+            => Task.FromException<IReadOnlyList<ReconciliationBreakQueueItem>>(new InvalidOperationException("Workstation API is offline."));
+
+        public Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([]);
+
+        public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+            => Task.FromResult<StatementRunSummaryDto?>(null);
+
+        public Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<StatementRunExceptionDto>>([]);
+
+        public Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<StatementBreakDto>>([]);
+
+        public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ReconciliationCaseSummaryDto>>([]);
+
+        public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
+
+        public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
+            => Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<ReconciliationRunDetail?> GetRunDetailAsync(string reconciliationRunId, CancellationToken ct = default)
+            => Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
+            string breakId,
+            ReviewReconciliationBreakRequest request,
+            CancellationToken ct = default)
+            => Task.FromException<WorkstationReconciliationActionResult>(new InvalidOperationException("Workstation API is offline."));
+
+        public Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
+            string breakId,
+            ResolveReconciliationBreakRequest request,
+            CancellationToken ct = default)
+            => Task.FromException<WorkstationReconciliationActionResult>(new InvalidOperationException("Workstation API is offline."));
     }
 
     private sealed record WorkbenchContext(FundReconciliationWorkbenchService Service);
