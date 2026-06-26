@@ -73,7 +73,8 @@ public sealed class ReportingRunCommandService
                 DatasetRows: datasetRows,
                 ReportWriterDatasetSourceId: datasetSourceEvidence.SourceId,
                 ReportWriterDatasetSourceLabel: datasetSourceEvidence.Label,
-                AccessPolicy: template.AccessPolicy),
+                AccessPolicy: template.AccessPolicy,
+                RetryReason: request.RetryReason),
             cancellationToken).ConfigureAwait(false);
 
         return new ReportingRunResultDto(ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId), template));
@@ -140,7 +141,17 @@ public sealed class ReportingRunCommandService
             GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray(),
             ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
             ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
-            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount);
+            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount,
+            RunSeriesId: ResolveRunSeriesId(manifest),
+            RunAttemptOrdinal: ResolveRunAttemptOrdinal(manifest),
+            PriorRunId: manifest.PriorRunId,
+            RetryReason: manifest.RetryReason,
+            LatestGeneratedRunId: manifest.RunId,
+            IsLatestGenerated: true,
+            ComparisonSummary: BuildRunComparisonSummary(manifest),
+            ChangedLineCount: CountChangedLines(manifest),
+            AddedLineCount: CountAddedLines(manifest),
+            RemovedLineCount: CountRemovedLines(manifest));
 
     private static IEnumerable<WorkstationGeneratedReportWriterGridPayload> BuildGeneratedReportWriterGrids(
         ReportingOutputManifest manifest,
@@ -298,6 +309,36 @@ public sealed class ReportingRunCommandService
 
     private static string BuildRunAuditRoute(string runId) =>
         UiApiRoutes.WithParam(UiApiRoutes.ReportingRunAuditTrail, "runId", runId);
+
+    private static string ResolveRunSeriesId(ReportingOutputManifest manifest) =>
+        string.IsNullOrWhiteSpace(manifest.RunSeriesId) ? manifest.RunId : manifest.RunSeriesId.Trim();
+
+    private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest) =>
+        manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
+
+    private static string? BuildRunComparisonSummary(ReportingOutputManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.PriorRunId))
+        {
+            return "First generated attempt in this run series.";
+        }
+
+        var changed = CountChangedLines(manifest);
+        var added = CountAddedLines(manifest);
+        var removed = CountRemovedLines(manifest);
+        return manifest.ReportWriterGridDiffs.IsDefaultOrEmpty
+            ? $"Compared with {manifest.PriorRunId}; no report-writer line comparison was retained."
+            : $"{changed} changed, {added} added, {removed} removed lines compared with {manifest.PriorRunId}.";
+    }
+
+    private static int CountChangedLines(ReportingOutputManifest manifest) =>
+        manifest.ReportWriterGridDiffs.IsDefaultOrEmpty ? 0 : manifest.ReportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount);
+
+    private static int CountAddedLines(ReportingOutputManifest manifest) =>
+        manifest.ReportWriterGridDiffs.IsDefaultOrEmpty ? 0 : manifest.ReportWriterGridDiffs.Sum(static diff => diff.AddedRowCount);
+
+    private static int CountRemovedLines(ReportingOutputManifest manifest) =>
+        manifest.ReportWriterGridDiffs.IsDefaultOrEmpty ? 0 : manifest.ReportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount);
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
         ReportingRunRequestDto request,

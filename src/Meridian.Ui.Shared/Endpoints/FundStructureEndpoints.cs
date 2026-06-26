@@ -1107,7 +1107,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/templates/{templateName}/versions/{version:int}/approve", (string templateName, int version, ReportTemplateDecisionRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1140,7 +1140,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/templates/{templateName}/versions/{version:int}/reject", (string templateName, int version, ReportTemplateDecisionRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1254,7 +1254,7 @@ public static class FundStructureEndpoints
             await TransitionPackAsync(context, reportId, ReportPackWorkflowStateDto.Approved, jsonOptions).ConfigureAwait(false));
         group.MapPost("/reporting/packs/{reportId:guid}/reject", (Guid reportId, ReportPackRejectRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1298,7 +1298,7 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden);
         group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, ReportPackPublishRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1327,14 +1327,17 @@ public static class FundStructureEndpoints
                         reportId,
                         actor,
                         role,
-                        request.SignedOffBy,
+                        actor,
                         request.EvidenceHash,
                         request.ManifestId,
                         request.RetainedManifestPath,
                         request.EvidenceLinks,
                         request.Note,
                         request.BrandingTheme,
-                        request.ActionOrigin),
+                        request.ActionOrigin,
+                        signedOffRole: role,
+                        signOffReason: request.Note,
+                        signOffContext: BuildPublicationSignOffContext(actor, role, request.SignedOffBy, request.ActionOrigin)),
                     jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1345,7 +1348,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/packs/{reportId:guid}/restatements", (Guid reportId, ReportPackRestateRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1500,7 +1503,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/packs/{reportId:guid}/deliveries", (Guid reportId, ReportPackDeliveryRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingDeliveryPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1541,7 +1544,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/packs/{reportId:guid}/deliveries/failures", (Guid reportId, ReportPackDeliveryFailureRequestDto request, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingDeliveryPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1582,7 +1585,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string reasonCode, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
         {
-            if (!HasReportingWorkflowPermission(context))
+            if (!HasReportingApprovalPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -2014,7 +2017,7 @@ public static class FundStructureEndpoints
         ReportPackWorkflowStateDto target,
         JsonSerializerOptions jsonOptions)
     {
-        if (!HasReportingWorkflowPermission(context))
+        if (!HasReportingTransitionPermission(context, target))
         {
             return EndpointHelpers.Forbidden();
         }
@@ -2117,10 +2120,44 @@ public static class FundStructureEndpoints
             UserPermission.AdminMaintenance);
 
     private static bool HasReportingWorkflowPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageReporting, UserPermission.AdminMaintenance);
+
+    private static bool HasReportingApprovalPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ApproveReporting, UserPermission.AdminMaintenance);
+
+    private static bool HasReportingDeliveryPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
+
+    private static bool HasReportingTransitionPermission(HttpContext context, ReportPackWorkflowStateDto target) =>
+        target switch
+        {
+            ReportPackWorkflowStateDto.Approved or
+            ReportPackWorkflowStateDto.Rejected or
+            ReportPackWorkflowStateDto.Restated or
+            ReportPackWorkflowStateDto.Archived => HasReportingApprovalPermission(context),
+            _ => HasReportingWorkflowPermission(context)
+        };
 
     private static bool HasReportingReadPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewAnalytics, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewReporting,
+            UserPermission.ManageReporting,
+            UserPermission.ApproveReporting,
+            UserPermission.DeliverReporting,
+            UserPermission.AdminMaintenance);
+
+    private static string BuildPublicationSignOffContext(
+        string actor,
+        string role,
+        string callerSuppliedSignedOffBy,
+        OperationsActionOriginDto actionOrigin)
+    {
+        var callerSigner = string.IsNullOrWhiteSpace(callerSuppliedSignedOffBy)
+            ? "no caller-supplied signer"
+            : $"caller supplied signer '{callerSuppliedSignedOffBy.Trim()}'";
+        return $"Authenticated actor '{actor.Trim()}' with role '{role.Trim()}' approved publication via {actionOrigin}; {callerSigner} was retained as request context, not the audit signer.";
+    }
 
     private static Task<IResult?> RequireScopedFundStructureGraphReadAccessAsync(
         OrganizationStructureQuery query,

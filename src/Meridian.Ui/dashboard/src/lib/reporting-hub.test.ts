@@ -77,6 +77,21 @@ describe("reporting hub model", () => {
     expect(performance.openLabel).toBe("Open latest output");
   });
 
+  it("prefers explicit latest generated and approved rerun markers over same-date sorting", () => {
+    const model = buildReportingHubModel(
+      [
+        run({ family: "Performance", status: "Approved", runIdLabel: "perf-20260630", isLatestApproved: true, runAttemptOrdinal: 1 }),
+        run({ family: "Performance", status: "Draft", runIdLabel: "perf-20260630-v2", isLatestGenerated: true, runAttemptOrdinal: 2 })
+      ],
+      [template({ family: "Performance" })]
+    );
+
+    const performance = model.cards[0];
+    expect(performance.latestRunId).toBe("perf-20260630-v2");
+    expect(performance.approvedAsOfLabel).toBe("Approved as of Jun 30, 2026");
+    expect(performance.readiness).toBe("Draft");
+  });
+
   it("represents families that have templates but no runs", () => {
     const model = buildReportingHubModel([], [template({ family: "Audit", templateName: "audit-pack" })]);
 
@@ -105,6 +120,40 @@ describe("reporting hub model", () => {
     expect(model.currentCount).toBe(1);
     expect(model.attentionCount).toBe(1);
     expect(model.summaryLabel).toBe("1 of 2 families current · 1 need attention");
+  });
+
+  it("surfaces daily reporting work ahead of family launch cards", () => {
+    const model = buildReportingHubModel(
+      [run({ family: "Performance", status: "Released" })],
+      [template({ family: "Performance" })],
+      [
+        {
+          workItemId: "delivery-failure:1",
+          kind: "delivery-failure",
+          title: "Delivery failure: Board portal",
+          statusLabel: "Failed",
+          detail: "Secure portal package rejected.",
+          tone: "danger",
+          owner: "fund-controller",
+          dueAtUtc: "2026-06-30T15:00:00Z",
+          primaryActionLabel: "Review delivery",
+          primaryActionHref: "/reporting?deliveryAttempt=1",
+          evidenceGaps: ["Delivery failure has no retained evidence link."],
+          context: ["board", "Secure portal"]
+        }
+      ]
+    );
+
+    expect(model.isEmpty).toBe(false);
+    expect(model.dailyWorkSummaryLabel).toBe("1 daily item · 1 blocked · 0 need review");
+    expect(model.dailyWork[0]).toMatchObject({
+      kindLabel: "Delivery failure",
+      badgeVariant: "danger",
+      dueLabel: "Due Jun 30, 2026",
+      evidenceGaps: ["Delivery failure has no retained evidence link."],
+      primaryActionHref: "/reporting?deliveryAttempt=1"
+    });
+    expect(model.cards[0]?.family).toBe("Performance");
   });
 
   it("is empty when nothing is configured", () => {

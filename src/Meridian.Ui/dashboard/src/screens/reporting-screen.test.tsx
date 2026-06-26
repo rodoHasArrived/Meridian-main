@@ -4670,7 +4670,6 @@ describe("ReportingScreen", () => {
         method: "POST",
         body: JSON.stringify({
           distributionId: "board-reporting-committee",
-          actor: "browser-workstation",
           deliveryReference: "delivery-failure:attempt-board-1",
           note: "Delivery failure recorded from Reporting workspace for Board reporting committee.",
           failureReason: "Operator recorded delivery failure for Board reporting committee after attempt 1.",
@@ -5090,6 +5089,10 @@ describe("ReportingScreen", () => {
               evidenceHash: "sha256:restated123",
               signedOffBy: "reporting-ops",
               signedOffAt: "2026-05-28T15:20:00Z",
+              signedOffRole: "Controller",
+              signOffReason: "Approved NAV correction package.",
+              signOffContext: "Authenticated actor 'reporting-ops' with role 'Controller' approved publication via HumanOperator.",
+              actionOrigin: "HumanOperator",
               evidenceLinks: [
                 {
                   evidenceId: "publication-evidence-1",
@@ -5130,6 +5133,9 @@ describe("ReportingScreen", () => {
     const publication = screen.getByRole("region", { name: "Report-pack publication review" });
     expect(within(publication).getByText("Publication review")).toBeInTheDocument();
     expect(within(publication).getByText("manifest-restated-1 signed off by reporting-ops at 2026-05-28T15:20:00Z.")).toBeInTheDocument();
+    expect(within(publication).getByText("Controller")).toBeInTheDocument();
+    expect(within(publication).getByText("Approved NAV correction package.")).toBeInTheDocument();
+    expect(within(publication).getByText("Authenticated actor 'reporting-ops' with role 'Controller' approved publication via HumanOperator.")).toBeInTheDocument();
     expect(within(publication).getByText("sha256:restated123")).toBeInTheDocument();
     expect(within(publication).getByText("vault/report-packs/manifest-restated-1.json")).toBeInTheDocument();
     const publicationEvidence = within(publication).getByRole("list", { name: "Publication evidence links" });

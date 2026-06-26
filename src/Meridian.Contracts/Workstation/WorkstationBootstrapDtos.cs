@@ -578,7 +578,35 @@ public sealed record WorkstationReportingRunPayload(
     IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null,
     string? ReportWriterDatasetSourceId = null,
     string? ReportWriterDatasetSourceLabel = null,
-    int? ReportWriterDatasetRowCount = null);
+    int? ReportWriterDatasetRowCount = null,
+    string? RunSeriesId = null,
+    int? RunAttemptOrdinal = null,
+    string? PriorRunId = null,
+    string? RetryReason = null,
+    string? LatestGeneratedRunId = null,
+    string? LatestApprovedRunId = null,
+    bool? IsLatestGenerated = null,
+    bool? IsLatestApproved = null,
+    string? ComparisonSummary = null,
+    int? ChangedLineCount = null,
+    int? AddedLineCount = null,
+    int? RemovedLineCount = null);
+
+public sealed record WorkstationReportingDailyWorkItemDto(
+    string WorkItemId,
+    string Kind,
+    string Title,
+    string StatusLabel,
+    string Detail,
+    string Tone,
+    string Owner,
+    DateTimeOffset? DueAtUtc,
+    string PrimaryActionLabel,
+    string? PrimaryActionHref,
+    IReadOnlyList<string>? EvidenceGaps = null,
+    IReadOnlyList<string>? Context = null,
+    string? SecondaryActionLabel = null,
+    string? SecondaryActionHref = null);
 
 /// <summary>
 /// Recipient-level distribution posture for governed report-pack output.
@@ -639,7 +667,8 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null,
     IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
     IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
-    WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
+    WorkstationReportAccessAuditSummaryDto? AccessAudit = null,
+    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null);
 
 /// <summary>
 /// Accounting run-card governance details linked to strategy evidence.

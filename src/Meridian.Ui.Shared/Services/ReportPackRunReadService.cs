@@ -248,6 +248,13 @@ public sealed class ReportPackRunReadService
             deliveryAttempts.Count,
             visibleStructuredExportCount,
             hiddenStructuredExportCount);
+        var recentRuns = runs.Select(static run => run.Payload).ToArray();
+        var dailyWork = BuildDailyWorkItems(
+            workflowRecords,
+            recentRuns,
+            schedules,
+            scheduleDeliveryPlans,
+            deliveryAttempts);
 
         return new WorkstationReportingPayload(
             ProfileCount: profiles.Length,
@@ -256,7 +263,7 @@ public sealed class ReportPackRunReadService
             ReportPackDistributions: distributions,
             Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows; {distributions.Length} distribution recipients are visible; {pendingDistributionCount} have pending work.",
             Templates: templates,
-            RecentRuns: runs.Select(static run => run.Payload).ToArray(),
+            RecentRuns: recentRuns,
             Schedules: schedules,
             DeliveryAttempts: deliveryAttempts,
             SelectedFundProfileId: selectedFundProfileId,
@@ -270,7 +277,8 @@ public sealed class ReportPackRunReadService
             StructuredExports: structuredExports,
             BrandingThemes: BuiltInReportBrandingThemes,
             ReportWriterDatasetSources: reportWriterDatasetSources,
-            AccessAudit: accessAudit);
+            AccessAudit: accessAudit,
+            DailyWork: dailyWork);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -1646,9 +1654,8 @@ public sealed class ReportPackRunReadService
         IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById,
         IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords)
     {
-        var genericRuns = _runStore?
-            .ListRuns(limit)
-            .Select(run => ProjectGenericRun(run, familyByTemplate, templatesById)) ?? [];
+        IReadOnlyList<ReportingRunSnapshot> genericSnapshots = _runStore?.ListRuns(200) ?? [];
+        var genericRuns = ProjectGenericRuns(genericSnapshots, familyByTemplate, templatesById);
         var workflowRuns = workflowRecords
             .Take(limit)
             .Select(ProjectWorkflowRun);
@@ -1711,6 +1718,293 @@ public sealed class ReportPackRunReadService
             .SelectMany(schedule => BuildScheduleDeliveryPlans(schedule, attempts))
             .ToArray();
     }
+
+    private static IReadOnlyList<WorkstationReportingDailyWorkItemDto> BuildDailyWorkItems(
+        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
+        IReadOnlyList<WorkstationReportingRunPayload> runs,
+        IReadOnlyList<ReportingScheduleRecordDto> schedules,
+        IReadOnlyList<ReportingScheduleDeliveryPlanDto> scheduleDeliveryPlans,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts)
+    {
+        var items = new List<WorkstationReportingDailyWorkItemDto>();
+        var nowUtc = DateTimeOffset.UtcNow;
+        var dueWindowUtc = nowUtc.AddDays(1);
+
+        foreach (var schedule in schedules
+            .Where(static schedule => schedule.State == ReportingScheduleStateDto.Active)
+            .Where(schedule => schedule.DueAtUtc <= dueWindowUtc))
+        {
+            var isOverdue = schedule.DueAtUtc <= nowUtc;
+            items.Add(new WorkstationReportingDailyWorkItemDto(
+                WorkItemId: $"due-package:{schedule.ScheduleId}",
+                Kind: "due-package",
+                Title: $"Due package: {schedule.TemplateId}",
+                StatusLabel: isOverdue ? "Due now" : "Due within 24h",
+                Detail: $"Next as-of {schedule.NextAsOfDate:yyyy-MM-dd}; {CountUnit(schedule.DeliveryTargets?.Count ?? 0, "delivery target")}.",
+                Tone: isOverdue ? "warning" : "muted",
+                Owner: schedule.RequestedBy,
+                DueAtUtc: schedule.DueAtUtc,
+                PrimaryActionLabel: "Review schedule",
+                PrimaryActionHref: $"/reporting?schedule={Uri.EscapeDataString(schedule.ScheduleId)}",
+                Context: schedule.DeliveryTargets?
+                    .Select(static target => target.DistributionId)
+                    .Where(static distributionId => !string.IsNullOrWhiteSpace(distributionId))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()));
+        }
+
+        foreach (var record in workflowRecords)
+        {
+            var reportId = record.ReportId.ToString("D");
+            var reportLabel = BuildReportPackLabel(record);
+            var reportHref = $"/reporting?reportPack={reportId}";
+            switch (record.State)
+            {
+                case ReportPackWorkflowStateDto.InReview:
+                case ReportPackWorkflowStateDto.PendingApproval:
+                    items.Add(new WorkstationReportingDailyWorkItemDto(
+                        WorkItemId: $"approval-needed:{reportId}",
+                        Kind: "approval-needed",
+                        Title: $"Approval needed: {reportLabel}",
+                        StatusLabel: record.State == ReportPackWorkflowStateDto.PendingApproval ? "Pending approval" : "In review",
+                        Detail: $"{record.FundAccountId} / {record.Period}; version {record.Version.ToString(CultureInfo.InvariantCulture)}.",
+                        Tone: "warning",
+                        Owner: record.CreatedBy,
+                        DueAtUtc: null,
+                        PrimaryActionLabel: "Review approval",
+                        PrimaryActionHref: reportHref,
+                        EvidenceGaps: BuildWorkflowEvidenceGaps(record)));
+                    break;
+                case ReportPackWorkflowStateDto.Rejected:
+                    items.Add(new WorkstationReportingDailyWorkItemDto(
+                        WorkItemId: $"blocked-package:{reportId}",
+                        Kind: "blocked-package",
+                        Title: $"Blocked package: {reportLabel}",
+                        StatusLabel: "Rejected",
+                        Detail: record.Rejection?.Reason ?? "Reviewer returned the package before publication.",
+                        Tone: "danger",
+                        Owner: record.Rejection?.Actor ?? record.CreatedBy,
+                        DueAtUtc: record.Rejection?.RejectedAt,
+                        PrimaryActionLabel: "Review rejection",
+                        PrimaryActionHref: reportHref,
+                        EvidenceGaps: BuildWorkflowEvidenceGaps(record),
+                        Context: BuildWorkflowContext(record)));
+                    break;
+                case ReportPackWorkflowStateDto.Restated:
+                    items.Add(new WorkstationReportingDailyWorkItemDto(
+                        WorkItemId: $"restatement:{reportId}",
+                        Kind: "restatement",
+                        Title: $"Restatement: {reportLabel}",
+                        StatusLabel: "Restated",
+                        Detail: BuildRestatementDetail(record),
+                        Tone: "warning",
+                        Owner: record.Restatement?.Approver ?? record.CreatedBy,
+                        DueAtUtc: record.UpdatedAt,
+                        PrimaryActionLabel: "Compare restatement",
+                        PrimaryActionHref: reportHref,
+                        EvidenceGaps: BuildRestatementEvidenceGaps(record),
+                        Context: BuildWorkflowContext(record)));
+                    break;
+            }
+        }
+
+        foreach (var attempt in deliveryAttempts.Where(static attempt =>
+            attempt.State is ReportPackDeliveryStateDto.Failed or ReportPackDeliveryStateDto.Blocked))
+        {
+            items.Add(new WorkstationReportingDailyWorkItemDto(
+                WorkItemId: $"delivery-failure:{attempt.AttemptId:D}",
+                Kind: "delivery-failure",
+                Title: $"Delivery failure: {attempt.Recipient}",
+                StatusLabel: attempt.State.ToString(),
+                Detail: attempt.FailureReason ?? attempt.Note ?? $"Delivery reference {attempt.DeliveryReference} requires review.",
+                Tone: "danger",
+                Owner: attempt.Actor,
+                DueAtUtc: attempt.AttemptedAtUtc,
+                PrimaryActionLabel: "Review delivery",
+                PrimaryActionHref: $"/reporting?deliveryAttempt={attempt.AttemptId:D}",
+                EvidenceGaps: attempt.EvidenceLinks is { Count: > 0 }
+                    ? []
+                    : ["Delivery failure has no retained evidence link."],
+                Context:
+                [
+                    attempt.DistributionId,
+                    attempt.Channel,
+                    attempt.RecipientRole
+                ]));
+        }
+
+        foreach (var run in runs.Where(static run => string.Equals(run.Status, "Failed", StringComparison.OrdinalIgnoreCase)))
+        {
+            items.Add(new WorkstationReportingDailyWorkItemDto(
+                WorkItemId: $"blocked-run:{run.RunId}",
+                Kind: "blocked-package",
+                Title: $"Blocked run: {run.TemplateId}",
+                StatusLabel: "Failed",
+                Detail: run.FailureReason ?? $"Run {run.RunId} failed before report-package readiness.",
+                Tone: "danger",
+                Owner: "Reporting",
+                DueAtUtc: null,
+                PrimaryActionLabel: "Open run",
+                PrimaryActionHref: ResolveRunPrimaryHref(run),
+                EvidenceGaps: BuildRunEvidenceGaps(run),
+                Context: [run.Family, run.AsOfDate]));
+        }
+
+        foreach (var run in runs.Where(static run => run.SectionCount > 0 && run.LineageLinkedSections < run.SectionCount))
+        {
+            items.Add(new WorkstationReportingDailyWorkItemDto(
+                WorkItemId: $"evidence-gap:{run.RunId}",
+                Kind: "evidence-gap",
+                Title: $"Evidence gap: {run.TemplateId}",
+                StatusLabel: "Lineage incomplete",
+                Detail: $"{(run.SectionCount - run.LineageLinkedSections).ToString(CultureInfo.InvariantCulture)} of {run.SectionCount.ToString(CultureInfo.InvariantCulture)} section(s) are missing retained lineage.",
+                Tone: "warning",
+                Owner: "Reporting",
+                DueAtUtc: null,
+                PrimaryActionLabel: "Open evidence",
+                PrimaryActionHref: ResolveRunPrimaryHref(run),
+                EvidenceGaps: BuildRunEvidenceGaps(run),
+                Context: [run.Family, run.AsOfDate]));
+        }
+
+        foreach (var plan in scheduleDeliveryPlans.Where(static plan => !plan.IsReady))
+        {
+            items.Add(new WorkstationReportingDailyWorkItemDto(
+                WorkItemId: $"readiness-warning:{plan.PlanId}",
+                Kind: "evidence-gap",
+                Title: $"Readiness warning: {plan.TemplateId}",
+                StatusLabel: "Delivery not ready",
+                Detail: plan.ReadinessSummary,
+                Tone: plan.DueAtUtc <= nowUtc ? "danger" : "warning",
+                Owner: plan.Owner,
+                DueAtUtc: plan.DueAtUtc,
+                PrimaryActionLabel: "Review readiness",
+                PrimaryActionHref: $"/reporting?schedule={Uri.EscapeDataString(plan.ScheduleId)}",
+                EvidenceGaps: BuildReadinessEvidenceGaps(plan),
+                Context:
+                [
+                    plan.DistributionId,
+                    plan.Recipient,
+                    plan.Channel
+                ]));
+        }
+
+        return items
+            .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static item => DailyWorkToneRank(item.Tone))
+            .ThenBy(static item => item.DueAtUtc ?? DateTimeOffset.MaxValue)
+            .ThenBy(static item => item.Title, StringComparer.OrdinalIgnoreCase)
+            .Take(16)
+            .ToArray();
+    }
+
+    private static string BuildReportPackLabel(ReportPackWorkflowRecordDto record) =>
+        $"{record.TemplateId.Name} v{record.TemplateId.Version.ToString(CultureInfo.InvariantCulture)}";
+
+    private static string BuildRestatementDetail(ReportPackWorkflowRecordDto record)
+    {
+        var changedLineCount = record.Restatement?.ChangedLines.Count ?? 0;
+        var reason = string.IsNullOrWhiteSpace(record.Restatement?.ReasonCode)
+            ? "Restatement retained"
+            : record.Restatement!.ReasonCode;
+        return $"{reason}; {CountUnit(changedLineCount, "changed line")}.";
+    }
+
+    private static IReadOnlyList<string> BuildWorkflowEvidenceGaps(ReportPackWorkflowRecordDto record)
+    {
+        var gaps = new List<string>();
+        if (record.LineProvenance is null || record.LineProvenance.Count == 0)
+        {
+            gaps.Add("Report pack has no retained line-provenance rows.");
+        }
+        else
+        {
+            var missingEvidenceCount = record.LineProvenance.Count(static line => string.IsNullOrWhiteSpace(line.EvidenceId));
+            if (missingEvidenceCount > 0)
+            {
+                gaps.Add($"{missingEvidenceCount.ToString(CultureInfo.InvariantCulture)} line-provenance row(s) are missing evidence IDs.");
+            }
+        }
+
+        if (record.Publication is null && record.State is ReportPackWorkflowStateDto.Approved or ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated)
+        {
+            gaps.Add("Publication manifest is not retained.");
+        }
+
+        return gaps;
+    }
+
+    private static IReadOnlyList<string> BuildRestatementEvidenceGaps(ReportPackWorkflowRecordDto record)
+    {
+        var gaps = BuildWorkflowEvidenceGaps(record).ToList();
+        var changedLines = record.Restatement?.ChangedLines ?? [];
+        var changedLinesWithoutEvidence = changedLines.Count(static line => line.EvidenceLinks is null || line.EvidenceLinks.Count == 0);
+        if (changedLinesWithoutEvidence > 0)
+        {
+            gaps.Add($"{changedLinesWithoutEvidence.ToString(CultureInfo.InvariantCulture)} restatement line(s) are missing evidence links.");
+        }
+
+        return gaps;
+    }
+
+    private static IReadOnlyList<string> BuildRunEvidenceGaps(WorkstationReportingRunPayload run)
+    {
+        var gaps = new List<string>();
+        if (run.SectionCount > 0 && run.LineageLinkedSections < run.SectionCount)
+        {
+            gaps.Add($"{(run.SectionCount - run.LineageLinkedSections).ToString(CultureInfo.InvariantCulture)} of {run.SectionCount.ToString(CultureInfo.InvariantCulture)} section(s) are missing retained lineage.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(run.FailureReason))
+        {
+            gaps.Add(run.FailureReason);
+        }
+
+        return gaps;
+    }
+
+    private static IReadOnlyList<string> BuildReadinessEvidenceGaps(ReportingScheduleDeliveryPlanDto plan)
+    {
+        var blockers = plan.ReadinessBlockers?
+            .Where(static blocker => !string.IsNullOrWhiteSpace(blocker))
+            .Select(static blocker => blocker.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (blockers is { Length: > 0 })
+        {
+            return blockers;
+        }
+
+        return string.IsNullOrWhiteSpace(plan.ReadinessSummary)
+            ? []
+            : [plan.ReadinessSummary.Trim()];
+    }
+
+    private static IReadOnlyList<string> BuildWorkflowContext(ReportPackWorkflowRecordDto record) =>
+    [
+        record.FundProfileId,
+        record.FundAccountId,
+        record.Period
+    ];
+
+    private static string? ResolveRunPrimaryHref(WorkstationReportingRunPayload run) =>
+        run.DrilldownLinks?
+            .FirstOrDefault(static link => link.IsBrowserNavigable && !string.IsNullOrWhiteSpace(link.Href))
+            ?.Href;
+
+    private static int DailyWorkToneRank(string tone) =>
+        tone.Trim().ToLowerInvariant() switch
+        {
+            "danger" => 0,
+            "warning" => 1,
+            "success" => 2,
+            _ => 3
+        };
+
+    private static string CountUnit(int count, string singular) =>
+        $"{count.ToString(CultureInfo.InvariantCulture)} {singular}{(count == 1 ? string.Empty : "s")}";
 
     private static IEnumerable<ReportingScheduleDeliveryPlanDto> BuildScheduleDeliveryPlans(
         ReportingScheduleRecordDto schedule,
@@ -2173,16 +2467,60 @@ public sealed class ReportPackRunReadService
             null);
     }
 
+    private static IEnumerable<UnifiedReportingRun> ProjectGenericRuns(
+        IReadOnlyList<ReportingRunSnapshot> runs,
+        IReadOnlyDictionary<string, string> familyByTemplate,
+        IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById)
+    {
+        var latestGeneratedBySeries = runs
+            .GroupBy(static run => ResolveRunSeriesId(run.Manifest), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group
+                    .OrderByDescending(static run => ResolveRunAttemptOrdinal(run.Manifest))
+                    .ThenByDescending(static run => run.UpdatedAtUtc)
+                    .First().Manifest.RunId,
+                StringComparer.OrdinalIgnoreCase);
+        var latestApprovedBySeries = runs
+            .Where(static run => IsApprovedReportingRun(run.Manifest))
+            .GroupBy(static run => ResolveRunSeriesId(run.Manifest), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group
+                    .OrderByDescending(static run => ResolveRunAttemptOrdinal(run.Manifest))
+                    .ThenByDescending(static run => run.UpdatedAtUtc)
+                    .First().Manifest.RunId,
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var run in runs)
+        {
+            var runSeriesId = ResolveRunSeriesId(run.Manifest);
+            latestGeneratedBySeries.TryGetValue(runSeriesId, out var latestGeneratedRunId);
+            latestApprovedBySeries.TryGetValue(runSeriesId, out var latestApprovedRunId);
+            yield return ProjectGenericRun(
+                run,
+                familyByTemplate,
+                templatesById,
+                runSeriesId,
+                latestGeneratedRunId,
+                latestApprovedRunId);
+        }
+    }
+
     private static UnifiedReportingRun ProjectGenericRun(
         ReportingRunSnapshot run,
         IReadOnlyDictionary<string, string> familyByTemplate,
-        IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById)
+        IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById,
+        string runSeriesId,
+        string? latestGeneratedRunId,
+        string? latestApprovedRunId)
     {
         var manifest = run.Manifest;
         var family = familyByTemplate.TryGetValue(manifest.TemplateId, out var templateFamily)
             ? templateFamily
             : "ReportingRun";
         templatesById.TryGetValue(manifest.TemplateId, out var template);
+        var comparisonCounts = CountReportWriterLineChanges(manifest);
 
         return new UnifiedReportingRun(
             new WorkstationReportingRunPayload(
@@ -2210,7 +2548,20 @@ public sealed class ReportPackRunReadService
                 GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray(),
                 ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
                 ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
-                ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount),
+                ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount,
+                RunSeriesId: runSeriesId,
+                RunAttemptOrdinal: ResolveRunAttemptOrdinal(manifest),
+                PriorRunId: manifest.PriorRunId,
+                RetryReason: manifest.RetryReason,
+                LatestGeneratedRunId: latestGeneratedRunId,
+                LatestApprovedRunId: latestApprovedRunId,
+                IsLatestGenerated: string.Equals(manifest.RunId, latestGeneratedRunId, StringComparison.OrdinalIgnoreCase),
+                IsLatestApproved: latestApprovedRunId is not null &&
+                    string.Equals(manifest.RunId, latestApprovedRunId, StringComparison.OrdinalIgnoreCase),
+                ComparisonSummary: BuildRunComparisonSummary(manifest, comparisonCounts),
+                ChangedLineCount: comparisonCounts.Changed,
+                AddedLineCount: comparisonCounts.Added,
+                RemovedLineCount: comparisonCounts.Removed),
             run.UpdatedAtUtc);
     }
 
@@ -2245,6 +2596,42 @@ public sealed class ReportPackRunReadService
                 NextActions: BuildWorkflowNextActions(record).ToArray(),
                 GeneratedReportWriterGrids: []),
             record.UpdatedAt);
+    }
+
+    private static string ResolveRunSeriesId(ReportingOutputManifest manifest) =>
+        string.IsNullOrWhiteSpace(manifest.RunSeriesId) ? manifest.RunId : manifest.RunSeriesId.Trim();
+
+    private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest) =>
+        manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
+
+    private static bool IsApprovedReportingRun(ReportingOutputManifest manifest) =>
+        manifest.Status is ReportingRunStatus.Approved or ReportingRunStatus.Released;
+
+    private static ReportingLineChangeCounts CountReportWriterLineChanges(ReportingOutputManifest manifest)
+    {
+        if (manifest.ReportWriterGridDiffs.IsDefaultOrEmpty)
+        {
+            return new ReportingLineChangeCounts(0, 0, 0);
+        }
+
+        return new ReportingLineChangeCounts(
+            manifest.ReportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount),
+            manifest.ReportWriterGridDiffs.Sum(static diff => diff.AddedRowCount),
+            manifest.ReportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount));
+    }
+
+    private static string? BuildRunComparisonSummary(
+        ReportingOutputManifest manifest,
+        ReportingLineChangeCounts comparisonCounts)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.PriorRunId))
+        {
+            return "First generated attempt in this run series.";
+        }
+
+        return manifest.ReportWriterGridDiffs.IsDefaultOrEmpty
+            ? $"Compared with {manifest.PriorRunId}; no report-writer line comparison was retained."
+            : $"{comparisonCounts.Changed} changed, {comparisonCounts.Added} added, {comparisonCounts.Removed} removed lines compared with {manifest.PriorRunId}.";
     }
 
     private static IEnumerable<WorkstationGeneratedReportWriterGridPayload> BuildGeneratedReportWriterGrids(
@@ -2914,6 +3301,8 @@ public sealed class ReportPackRunReadService
         TimeSpan CorrectionSla);
 
     private sealed record UnifiedReportingRun(WorkstationReportingRunPayload Payload, DateTimeOffset UpdatedAtUtc);
+
+    private sealed record ReportingLineChangeCounts(int Changed, int Added, int Removed);
 
     private sealed record ScheduleDeliveryReadiness(
         bool IsReady,

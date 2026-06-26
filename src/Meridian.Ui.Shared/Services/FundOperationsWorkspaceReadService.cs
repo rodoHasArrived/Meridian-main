@@ -2758,20 +2758,21 @@ public sealed class FundOperationsWorkspaceReadService
             .Select(static profile => profile.Id)
             .ToArray();
         var workflowRecords = FilterReportPackWorkflowRecords(BuildReportPackWorkflowRecords(accounts, asOf), accessContext);
-        var filteredReportingPayload = accessContext is not null
+        var scopedReportingPayload = accessContext is not null
             ? _reportPackRunReadService?.BuildPayload(accessContext)
             : null;
-        var deliveryAttempts = filteredReportingPayload?.DeliveryAttempts
+        var dailyWorkPayload = scopedReportingPayload ?? _reportPackRunReadService?.BuildPayload();
+        var deliveryAttempts = scopedReportingPayload?.DeliveryAttempts
             ?? _reportPackDeliveryService?.ListAttempts(500)
             ?? [];
-        var schedules = filteredReportingPayload?.Schedules
+        var schedules = scopedReportingPayload?.Schedules
             ?? _reportingScheduleService?.ListSchedules(100)
             ?? [];
-        var scheduleDeliveryPlans = filteredReportingPayload?.ScheduleDeliveryPlans
+        var scheduleDeliveryPlans = scopedReportingPayload?.ScheduleDeliveryPlans
             ?? ReportPackRunReadService.BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
-        var distributions = filteredReportingPayload?.ReportPackDistributions
+        var distributions = scopedReportingPayload?.ReportPackDistributions
             ?? ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts);
-        var reportLineProvenanceExplorer = filteredReportingPayload?.ReportLineProvenanceExplorer
+        var reportLineProvenanceExplorer = scopedReportingPayload?.ReportLineProvenanceExplorer
             ?? FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(workflowRecords, deliveryAttempts);
         var portfolioCuts = BuildPortfolioReportingCuts(accounts, cashFinancing, nav, runSources, asOf);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
@@ -2811,7 +2812,8 @@ public sealed class FundOperationsWorkspaceReadService
             ScheduleDeliveryPlans: scheduleDeliveryPlans,
             ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
             ReportWriterDatasetSources: reportWriterDatasetSources,
-            AccessAudit: filteredReportingPayload?.AccessAudit);
+            AccessAudit: scopedReportingPayload?.AccessAudit,
+            DailyWork: dailyWorkPayload?.DailyWork);
     }
 
     private static IReadOnlyList<WorkstationReportWriterDatasetSourcePayload> BuildReportWriterDatasetSources(

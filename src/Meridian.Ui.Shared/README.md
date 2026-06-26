@@ -1036,7 +1036,13 @@ report-pack workflow records after create, submit, approve, publish, reject, res
 mutations, and `ReportPackRunReadService` projects both sources into the shared
 `WorkstationReportingPayload`. Browser and WPF Reporting surfaces should consume those recent-run
 rows for true template, schedule, attempt, approval, publication, evidence-bundle, restatement, and
-drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads. Generic
+drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads. Recent-run
+rows now expose run-series/version metadata, latest generated/latest approved pointers, retry
+reason, and changed/added/removed report-writer line counts from the retained Reporting manifest.
+The same service also projects `DailyWork` items for due packages, blocked packages, approvals,
+delivery failures, restatements, readiness warnings, and evidence gaps; browser and WPF Reporting
+cockpits should use those items as the first decision queue instead of locally rescoring readiness.
+Generic
 run audit trails are exposed through `/api/fund-structure/reporting/runs/{runId}/audit` with the
 same governed template access policy used by retained grid artifacts, so private or restricted run
 actors, timestamps, notes, and report-writer dataset source evidence do not leak through audit
