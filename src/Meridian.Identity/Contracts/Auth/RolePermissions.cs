@@ -30,7 +30,11 @@ public static class RolePermissions
         UserPermission.ModifySecurityMaster |
         UserPermission.ViewDirectLending |
         UserPermission.ManageDirectLending |
-        UserPermission.ManageFundStructure;
+        UserPermission.ManageFundStructure |
+        UserPermission.ViewReporting |
+        UserPermission.ManageReporting |
+        UserPermission.ApproveReporting |
+        UserPermission.DeliverReporting;
 
     private const UserPermission DeveloperPermissions =
         AdminPermissions & ~UserPermission.ManageUsers;
@@ -54,7 +58,8 @@ public static class RolePermissions
         UserPermission.ExportData |
         UserPermission.ViewStrategies |
         UserPermission.ViewSecurityMaster |
-        UserPermission.ViewDirectLending;
+        UserPermission.ViewDirectLending |
+        UserPermission.ViewReporting;
 
     private const UserPermission AccountingPermissions =
         UserPermission.ViewTrades |
@@ -63,7 +68,52 @@ public static class RolePermissions
         UserPermission.ViewStrategies |
         UserPermission.ViewDirectLending |
         UserPermission.ManageDirectLending |
-        UserPermission.ManageFundStructure;
+        UserPermission.ManageFundStructure |
+        UserPermission.ViewReporting |
+        UserPermission.ManageReporting |
+        UserPermission.ApproveReporting |
+        UserPermission.DeliverReporting;
+
+    private const UserPermission FundAccountantPermissions =
+        UserPermission.ViewTrades |
+        UserPermission.ViewAnalytics |
+        UserPermission.ExportData |
+        UserPermission.ViewDirectLending |
+        UserPermission.ManageDirectLending |
+        UserPermission.ManageFundStructure |
+        UserPermission.ViewReporting |
+        UserPermission.ManageReporting |
+        UserPermission.DeliverReporting;
+
+    private const UserPermission ReportingAnalystPermissions =
+        UserPermission.ViewAnalytics |
+        UserPermission.ExportData |
+        UserPermission.ViewStrategies |
+        UserPermission.ViewSecurityMaster |
+        UserPermission.ViewReporting |
+        UserPermission.ManageReporting;
+
+    private const UserPermission ControllerPermissions =
+        UserPermission.ViewTrades |
+        UserPermission.ViewAnalytics |
+        UserPermission.ExportData |
+        UserPermission.ViewDirectLending |
+        UserPermission.ManageDirectLending |
+        UserPermission.ManageFundStructure |
+        UserPermission.ViewReporting |
+        UserPermission.ManageReporting |
+        UserPermission.ApproveReporting |
+        UserPermission.DeliverReporting;
+
+    private const UserPermission CompliancePermissions =
+        UserPermission.ViewTrades |
+        UserPermission.ViewAnalytics |
+        UserPermission.ExportData |
+        UserPermission.ViewSecurityMaster |
+        UserPermission.ViewDirectLending |
+        UserPermission.ViewReporting |
+        UserPermission.ApproveReporting |
+        UserPermission.DeliverReporting;
 
     private const UserPermission ExecutivePermissions =
         UserPermission.ViewMarketData |
@@ -73,7 +123,8 @@ public static class RolePermissions
         UserPermission.ExportData |
         UserPermission.ViewStrategies |
         UserPermission.ViewSecurityMaster |
-        UserPermission.ViewDirectLending;
+        UserPermission.ViewDirectLending |
+        UserPermission.ViewReporting;
 
     private const UserPermission ReadOnlyPermissions =
         UserPermission.ViewMarketData |
@@ -93,6 +144,10 @@ public static class RolePermissions
         UserRole.TradeDesk => TradeDeskPermissions,
         UserRole.Analysis => AnalysisPermissions,
         UserRole.Accounting => AccountingPermissions,
+        UserRole.FundAccountant => FundAccountantPermissions,
+        UserRole.ReportingAnalyst => ReportingAnalystPermissions,
+        UserRole.Controller => ControllerPermissions,
+        UserRole.Compliance => CompliancePermissions,
         UserRole.Executive => ExecutivePermissions,
         UserRole.ReadOnly => ReadOnlyPermissions,
         _ => UserPermission.None
@@ -186,6 +241,10 @@ public static class RolePermissions
         UserRole.TradeDesk => "Trade Desk",
         UserRole.Analysis => "Analysis",
         UserRole.Accounting => "Accounting",
+        UserRole.FundAccountant => "Fund Accountant",
+        UserRole.ReportingAnalyst => "Reporting Analyst",
+        UserRole.Controller => "Controller",
+        UserRole.Compliance => "Compliance",
         UserRole.Executive => "Executive",
         UserRole.ReadOnly => "Read-only",
         _ => role.ToString()
@@ -198,6 +257,10 @@ public static class RolePermissions
         UserRole.TradeDesk => "Trading desk access for market data, orders, strategy operation, and execution review.",
         UserRole.Analysis => "Research and analytics access for market data, strategy results, and read-only reference data.",
         UserRole.Accounting => "Accounting and fund-operations access for trade records, exports, and direct-lending operations.",
+        UserRole.FundAccountant => "Fund-accounting access for reporting packages, delivery readiness, and retained evidence operations.",
+        UserRole.ReportingAnalyst => "Reporting operations access for templates, schedules, runs, and pre-approval evidence review.",
+        UserRole.Controller => "Controller access for governed reporting approval, publication, restatement, and delivery oversight.",
+        UserRole.Compliance => "Compliance access for reporting evidence, approvals, delivery posture, and retained audit context.",
         UserRole.Executive => "Read-only management visibility across dashboards, trades, analytics, and fund operations.",
         UserRole.ReadOnly => "Minimal read-only workstation access.",
         _ => "Custom role."
@@ -215,6 +278,7 @@ public static class RolePermissions
         UserPermission.ViewSecurityMaster or UserPermission.ModifySecurityMaster => "Security Master",
         UserPermission.ViewDirectLending or UserPermission.ManageDirectLending => "Direct lending",
         UserPermission.ManageFundStructure => "Fund structure",
+        UserPermission.ViewReporting or UserPermission.ManageReporting or UserPermission.ApproveReporting or UserPermission.DeliverReporting => "Reporting",
         _ => "Other"
     };
 
@@ -243,6 +307,10 @@ public static class RolePermissions
         UserPermission.ViewDirectLending => "View direct-lending contracts and positions.",
         UserPermission.ManageDirectLending => "Create and service direct-lending contracts.",
         UserPermission.ManageFundStructure => "Create or modify fund-structure ownership and governance records.",
+        UserPermission.ViewReporting => "View governed reporting runs, schedules, delivery posture, and evidence.",
+        UserPermission.ManageReporting => "Create and manage reporting templates, schedules, runs, and work packages.",
+        UserPermission.ApproveReporting => "Approve, reject, publish, restate, and archive governed report packs.",
+        UserPermission.DeliverReporting => "Deliver report packs and record delivery failures or retry evidence.",
         _ => permission.ToString()
     };
 }

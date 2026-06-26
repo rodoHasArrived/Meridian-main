@@ -227,7 +227,7 @@ public sealed class ReportingScheduleService
         }
 
         EnsureTemplateAccess(schedule.TemplateId, accessContext);
-        return await RunScheduleAsync(schedule, requestedBy, ct).ConfigureAwait(false);
+        return await RunScheduleAsync(schedule, requestedBy, isDueRun: false, ct).ConfigureAwait(false);
     }
 
     public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
@@ -247,7 +247,7 @@ public sealed class ReportingScheduleService
         foreach (var schedule in dueSchedules)
         {
             ct.ThrowIfCancellationRequested();
-            results.Add(await RunScheduleAsync(schedule, requestedBy: null, ct).ConfigureAwait(false));
+            results.Add(await RunScheduleAsync(schedule, requestedBy: null, isDueRun: true, ct).ConfigureAwait(false));
         }
 
         return new ReportingDueScheduleRunResultDto(nowUtc, results);
@@ -256,6 +256,7 @@ public sealed class ReportingScheduleService
     private async Task<ReportingScheduleRunResultDto> RunScheduleAsync(
         ReportingScheduleRecordDto schedule,
         string? requestedBy,
+        bool isDueRun,
         CancellationToken ct)
     {
         if (schedule.State != ReportingScheduleStateDto.Active)
@@ -282,7 +283,10 @@ public sealed class ReportingScheduleService
             datasetSourceEvidence.Label,
             BrandingThemeId: ResolveBrandingThemeId(schedule),
             BrandingTheme: schedule.BrandingThemeOverride,
-            AccessPolicy: accessPolicy);
+            AccessPolicy: accessPolicy,
+            RetryReason: isDueRun
+                ? $"scheduled due run for {schedule.CronExpression}"
+                : $"manual schedule run requested by {actor}");
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
         var advanced = AdvanceSchedule(schedule, manifest);
@@ -368,7 +372,47 @@ public sealed class ReportingScheduleService
             GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest).ToArray(),
             ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
             ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
-            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount);
+            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount,
+            RunSeriesId: ResolveRunSeriesId(manifest),
+            RunAttemptOrdinal: ResolveRunAttemptOrdinal(manifest),
+            PriorRunId: manifest.PriorRunId,
+            RetryReason: manifest.RetryReason,
+            LatestGeneratedRunId: manifest.RunId,
+            IsLatestGenerated: true,
+            ComparisonSummary: BuildRunComparisonSummary(manifest),
+            ChangedLineCount: CountChangedLines(manifest),
+            AddedLineCount: CountAddedLines(manifest),
+            RemovedLineCount: CountRemovedLines(manifest));
+
+    private static string ResolveRunSeriesId(ReportingOutputManifest manifest) =>
+        string.IsNullOrWhiteSpace(manifest.RunSeriesId) ? manifest.RunId : manifest.RunSeriesId.Trim();
+
+    private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest) =>
+        manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
+
+    private static string? BuildRunComparisonSummary(ReportingOutputManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.PriorRunId))
+        {
+            return "First generated attempt in this run series.";
+        }
+
+        var changed = CountChangedLines(manifest);
+        var added = CountAddedLines(manifest);
+        var removed = CountRemovedLines(manifest);
+        return manifest.ReportWriterGridDiffs.IsDefaultOrEmpty
+            ? $"Compared with {manifest.PriorRunId}; no report-writer line comparison was retained."
+            : $"{changed} changed, {added} added, {removed} removed lines compared with {manifest.PriorRunId}.";
+    }
+
+    private static int CountChangedLines(ReportingOutputManifest manifest) =>
+        manifest.ReportWriterGridDiffs.IsDefaultOrEmpty ? 0 : manifest.ReportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount);
+
+    private static int CountAddedLines(ReportingOutputManifest manifest) =>
+        manifest.ReportWriterGridDiffs.IsDefaultOrEmpty ? 0 : manifest.ReportWriterGridDiffs.Sum(static diff => diff.AddedRowCount);
+
+    private static int CountRemovedLines(ReportingOutputManifest manifest) =>
+        manifest.ReportWriterGridDiffs.IsDefaultOrEmpty ? 0 : manifest.ReportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount);
 
     private DatasetSourceEvidence ResolveDatasetSourceEvidence(ReportingScheduleRecordDto schedule)
     {
