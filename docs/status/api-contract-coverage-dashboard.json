@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.2,
-  "endpoint_coverage_percent": 98.6,
+  "score_percent": 100.0,
+  "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 588,
-    "documented_endpoint_count": 580,
-    "undocumented_endpoint_count": 8,
+    "documented_endpoint_count": 588,
+    "undocumented_endpoint_count": 0,
     "workstation_contract_count": 779,
     "documented_workstation_contract_count": 779,
     "undocumented_workstation_contract_count": 0
@@ -2682,49 +2682,49 @@
       "method": "GET",
       "path": "/api/providers/modules",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/modules/catalogue",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:40",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/modules",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:56",
-      "documented": false
+      "documented": true
     },
     {
       "method": "PUT",
       "path": "/api/providers/modules/{moduleId}",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:82",
-      "documented": false
+      "documented": true
     },
     {
       "method": "DELETE",
       "path": "/api/providers/modules/{moduleId}",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:110",
-      "documented": false
+      "documented": true
     },
     {
       "method": "PUT",
       "path": "/api/providers/modules/{moduleId}/enabled",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:135",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/modules/{moduleId}/test",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:158",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/restart",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:177",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
