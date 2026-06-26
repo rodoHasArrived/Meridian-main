@@ -223,6 +223,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService,
+            Meridian.Application.SecurityMaster.SecurityMasterWorkbenchCommandService>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();

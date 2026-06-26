@@ -2728,6 +2728,8 @@ Meridian-main
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
+│   │   │   ├── ISecurityMasterRevisionPublishedHandler.cs
+│   │   │   ├── ISecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── IUflProjectionRebuilder.cs
@@ -2738,6 +2740,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
+│   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
@@ -2756,6 +2759,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterRebuildOrchestrator.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityValidationGateService.cs
@@ -6525,7 +6529,8 @@ Meridian-main
 │   │   │   └── RiskIntegrationTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── Workbench
-│   │   │   │   └── SecurityMasterConflictAuthorityPolicyTests.cs
+│   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
+│   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
