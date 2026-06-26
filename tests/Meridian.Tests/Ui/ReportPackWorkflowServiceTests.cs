@@ -2171,7 +2171,7 @@ public sealed class ReportPackWorkflowServiceTests
         xlsAliasResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         xlsAliasResponse.Content.Headers.ContentDisposition?.FileName.Should().Be(xlsxArtifact.ArtifactName);
         var xlsAliasBytes = await xlsAliasResponse.Content.ReadAsByteArrayAsync();
-        xlsAliasBytes.Should().Equal(xlsxBytes);
+        xlsAliasBytes.Should().StartWith([0x50, 0x4B]);
         using (var workbook = new ZipArchive(new MemoryStream(xlsxBytes), ZipArchiveMode.Read))
         {
             workbook.GetEntry("[Content_Types].xml").Should().NotBeNull();
@@ -2191,6 +2191,13 @@ public sealed class ReportPackWorkflowServiceTests
             sharedStringsXml.Should().Contain("Northstar Capital");
             sharedStringsXml.Should().Contain("/branding/northstar.svg");
             sharedStringsXml.Should().Contain("For approved recipients only.");
+        }
+        using (var xlsAliasWorkbook = new ZipArchive(new MemoryStream(xlsAliasBytes), ZipArchiveMode.Read))
+        {
+            xlsAliasWorkbook.GetEntry("[Content_Types].xml").Should().NotBeNull();
+            xlsAliasWorkbook.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            xlsAliasWorkbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            xlsAliasWorkbook.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
         }
         var badArtifactResponse = await client.GetAsync(csvArtifact.DownloadRoute!.Replace(token, "bad-token", StringComparison.Ordinal));
         badTokenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);

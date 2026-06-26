@@ -7,6 +7,7 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class StrategyRunPortfolioViewModelTests
 {
     [Fact]
