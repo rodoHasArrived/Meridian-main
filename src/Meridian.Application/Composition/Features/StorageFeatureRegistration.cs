@@ -323,6 +323,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
         services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
+        // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
+        services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
         services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
