@@ -62,7 +62,9 @@ public sealed partial class WorkstationEndpointsTests
         UserRole? currentUserRole = null,
         string? currentUserRoleProfileName = null,
         string? currentUserCompanyId = "tenant-test",
-        string currentUserName = "ops-user")
+        string currentUserName = "ops-user",
+        bool? mapLedgerApi = null,
+        [System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -121,10 +123,20 @@ public sealed partial class WorkstationEndpointsTests
         }
 
         app.MapWorkstationEndpoints(jsonOptions);
-        app.MapLedgerEndpoints(jsonOptions);
+        if (mapLedgerApi ?? IsLedgerEndpointTestFile(callerFilePath))
+        {
+            app.MapLedgerEndpoints(jsonOptions);
+        }
 
         await app.StartAsync();
         return app;
+    }
+
+    private static bool IsLedgerEndpointTestFile(string callerFilePath)
+    {
+        var fileName = Path.GetFileName(callerFilePath);
+        return string.Equals(fileName, "WorkstationEndpointsTests.Wave4.cs", StringComparison.Ordinal) ||
+            string.Equals(fileName, "WorkstationEndpointsTests.AccountingConfiguration.cs", StringComparison.Ordinal);
     }
 
     private static void RegisterRunReadServices(IServiceCollection services)

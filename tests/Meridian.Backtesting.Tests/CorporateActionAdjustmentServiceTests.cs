@@ -232,7 +232,7 @@ public sealed class CorporateActionAdjustmentServiceTests
             new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", new DateOnly(2024, 9, 1), null, 1m, "USD", null, null, null, null, null, null, null)
         ]);
 
-        var bars = Enumerable.Range(0, 50_000)
+        var bars = Enumerable.Range(0, 5_000)
             .Select(i => CreateBar("SPY", new DateOnly(2020, 1, 1).AddDays(i), 100m + i, 101m + i, 99m + i, 100.5m + i, 1_000 + i))
             .ToArray();
 

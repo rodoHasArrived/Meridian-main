@@ -3197,9 +3197,12 @@ Meridian-main
 │   │   │   ├── IConfigurationProvider.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── ProviderConnectionsConfig.cs
+│   │   │   ├── ProviderModulesConfig.cs
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
 │   │   │   └── ValidatedConfig.cs
+│   │   ├── Contracts
+│   │   │   └── IProviderCredentialStore.cs
 │   │   ├── Diagnostics
 │   │   │   └── RuntimeDiagnosticRedactor.cs
 │   │   ├── Exceptions
@@ -4074,6 +4077,7 @@ Meridian-main
 │   │   ├── Backfill
 │   │   │   └── BackfillJob.cs
 │   │   ├── AttributeCredentialResolver.cs
+│   │   ├── ConfigurableProviderModuleBase.cs
 │   │   ├── CredentialSchemaRegistry.cs
 │   │   ├── CredentialValidator.cs
 │   │   ├── DataSourceAttribute.cs
@@ -4089,10 +4093,14 @@ Meridian-main
 │   │   ├── IProviderFamilyAdapter.cs
 │   │   ├── IProviderMetadata.cs
 │   │   ├── IProviderModule.cs
+│   │   ├── IProviderModuleConnectionProbe.cs
+│   │   ├── IProviderModuleCredentialHints.cs
+│   │   ├── IProviderModuleSettingsSchema.cs
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── PluginLoaderService.cs
 │   │   ├── ProviderHttpUtilities.cs
+│   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
 │   │   ├── README.md
@@ -4491,7 +4499,12 @@ Meridian-main
 │   │   │   │   │       └── meridian-mark.svg
 │   │   │   │   ├── components
 │   │   │   │   │   ├── data
+│   │   │   │   │   │   ├── add-provider-drawer.tsx
 │   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
+│   │   │   │   │   │   ├── edit-provider-drawer.tsx
+│   │   │   │   │   │   ├── provider-capability-badges.tsx
+│   │   │   │   │   │   ├── provider-setup-panel.test.tsx
+│   │   │   │   │   │   ├── provider-setup-panel.tsx
 │   │   │   │   │   │   ├── symbol-universe-manager.test.tsx
 │   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
@@ -4604,6 +4617,8 @@ Meridian-main
 │   │   │   │   │   │   ├── storage.test.ts
 │   │   │   │   │   │   ├── storage.ts
 │   │   │   │   │   │   └── types.ts
+│   │   │   │   │   ├── provider-setup
+│   │   │   │   │   │   └── use-provider-setup.ts
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
@@ -4721,7 +4736,8 @@ Meridian-main
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types
-│   │   │   │   │   └── covered-call.types.ts
+│   │   │   │   │   ├── covered-call.types.ts
+│   │   │   │   │   └── provider-setup.ts
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
 │   │   │   │   ├── app.test.tsx
@@ -4953,6 +4969,7 @@ Meridian-main
 │   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
+│   │   │   ├── ProviderModuleEndpoints.cs
 │   │   │   ├── ProviderRoutingEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
 │   │   │   ├── ReplayEndpoints.cs
@@ -5049,6 +5066,7 @@ Meridian-main
 │   │   │   ├── IBackfillProviderConfigAuditReader.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
+│   │   │   ├── IProviderModuleSetupService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
@@ -5059,7 +5077,10 @@ Meridian-main
 │   │   │   ├── PortfolioLedgerWorkflowStatusService.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
+│   │   │   ├── ProviderCredentialStore.cs
 │   │   │   ├── ProviderLedgerReconciliationService.cs
+│   │   │   ├── ProviderModuleSetupModels.cs
+│   │   │   ├── ProviderModuleSetupService.cs
 │   │   │   ├── ProviderNavigationRouteMapper.cs
 │   │   │   ├── ProviderReadinessService.cs
 │   │   │   ├── ReconciliationApiService.cs
@@ -6091,7 +6112,9 @@ Meridian-main
 │   │   │   │   ├── PreflightCheckerTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Ui
-│   │   │   │   └── ConfigStoreTests.cs
+│   │   │   │   ├── ConfigStoreTests.cs
+│   │   │   │   ├── ProviderCredentialStoreTests.cs
+│   │   │   │   └── ProviderModuleSetupServiceTests.cs
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
