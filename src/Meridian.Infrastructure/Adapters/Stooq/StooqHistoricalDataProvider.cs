@@ -36,6 +36,14 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
     {
     }
 
+    internal StooqHistoricalDataProvider(
+        HttpClient? httpClient,
+        ILogger? log,
+        bool enableResilience)
+        : base(httpClient, log, enableResilience)
+    {
+    }
+
     /// <summary>
     /// Stooq uses lowercase symbols with dots replaced by dashes.
     /// </summary>

@@ -60,8 +60,14 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     public async Task<FundReconciliationWorkbenchSnapshot> GetSnapshotAsync(string fundProfileId, CancellationToken ct = default)
     {
         var summaryTask = _reconciliationReadService.GetAsync(fundProfileId, ct);
-        var calibrationSummaryTask = _apiClient.GetCalibrationSummaryAsync(ct);
-        var breakQueueTask = _apiClient.GetBreakQueueAsync(ct);
+        var calibrationSummaryTask = ReadOptionalWorkstationAsync(
+            token => _apiClient.GetCalibrationSummaryAsync(token),
+            (ReconciliationCalibrationSummaryDto?)null,
+            ct);
+        var breakQueueTask = ReadOptionalWorkstationAsync<IReadOnlyList<ReconciliationBreakQueueItem>>(
+            token => _apiClient.GetBreakQueueAsync(token),
+            Array.Empty<ReconciliationBreakQueueItem>(),
+            ct);
         var runsTask = _runWorkspaceService.GetRecordedRunsAsync(ct);
 
         await Task.WhenAll(summaryTask, calibrationSummaryTask, breakQueueTask, runsTask).ConfigureAwait(false);
@@ -205,6 +211,24 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ct);
     }
 
+    private static async Task<T> ReadOptionalWorkstationAsync<T>(
+        Func<CancellationToken, Task<T>> readAsync,
+        T fallback,
+        CancellationToken ct)
+    {
+        try
+        {
+            return await readAsync(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return fallback;
+        }
+    }
 
     private static ReconciliationCalibrationSummaryDto BuildCalibrationSummary(
         IReadOnlyList<ReconciliationBreakQueueItem> items,

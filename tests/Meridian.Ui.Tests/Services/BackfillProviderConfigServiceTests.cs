@@ -25,10 +25,13 @@ public sealed class BackfillProviderConfigServiceTests
         a.Should().BeSameAs(b);
     }
 
+    private static BackfillProviderConfigService CreateService()
+        => new(_ => Task.FromResult<BackfillProviderStatusDto[]?>([]));
+
     [Fact]
     public async Task GetProviderMetadataAsync_ReturnsAllKnownProviders()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var metadata = await service.GetProviderMetadataAsync();
 
@@ -42,7 +45,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderMetadataAsync_EachProviderHasRequiredFields()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var metadata = await service.GetProviderMetadataAsync();
 
@@ -59,7 +62,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderStatusesAsync_WithNullConfig_ReturnsDefaults()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var statuses = await service.GetProviderStatusesAsync(null);
 
@@ -75,7 +78,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderStatusesAsync_SortedByPriority()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var statuses = await service.GetProviderStatusesAsync(null);
 
@@ -89,7 +92,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderStatusesAsync_WithCustomConfig_UsesConfigValues()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var config = new BackfillProvidersConfigDto
         {
@@ -113,7 +116,8 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetFallbackChainAsync_OnlyIncludesEnabledProviders()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = new BackfillProviderConfigService(_ =>
+            Task.FromResult<BackfillProviderStatusDto[]?>([]));
 
         var config = new BackfillProvidersConfigDto
         {
@@ -131,7 +135,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetFallbackChainAsync_WithAllDefaults_ReturnsAllProviders()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var chain = await service.GetFallbackChainAsync(null);
 
@@ -141,7 +145,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GenerateDryRunPlanAsync_ReturnsSymbolPlans()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         var symbols = new[] { "SPY", "AAPL" };
 
         var plan = await service.GenerateDryRunPlanAsync(null, symbols);
@@ -156,7 +160,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GenerateDryRunPlanAsync_EachSymbolHasProviderSequence()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         var symbols = new[] { "MSFT" };
 
         var plan = await service.GenerateDryRunPlanAsync(null, symbols);
@@ -168,7 +172,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GenerateDryRunPlanAsync_WithAllDisabled_ReturnsValidationError()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         var config = new BackfillProvidersConfigDto
         {
             Alpaca = new BackfillProviderOptionsDto { Enabled = false },
@@ -190,7 +194,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GenerateDryRunPlanAsync_DetectsDuplicatePriorities()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         var config = new BackfillProvidersConfigDto
         {
             Alpaca = new BackfillProviderOptionsDto { Enabled = true, Priority = 10 },
@@ -205,7 +209,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public void RecordAuditEntry_AddsEntry()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         var initialCount = service.GetAuditLog().Count;
 
         service.RecordAuditEntry("test-provider", "test-action", "old", "new");
@@ -218,7 +222,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public void GetAuditLog_RespectsMaxEntries()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         // Add multiple entries
         for (int i = 0; i < 10; i++)
@@ -233,7 +237,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public void GetAuditLog_OrderedByTimestampDescending()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         service.RecordAuditEntry("first", "create", null, "v1");
         service.RecordAuditEntry("second", "create", null, "v2");
 
@@ -245,7 +249,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetDefaultOptionsAsync_ReturnsMatchingDefaults()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var defaults = await service.GetDefaultOptionsAsync("alpaca");
 
@@ -257,7 +261,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetDefaultOptionsAsync_UnknownProvider_ReturnsGenericDefaults()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var defaults = await service.GetDefaultOptionsAsync("unknown-provider");
 
@@ -267,7 +271,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderStatusesAsync_ConfigSourceBadge_IsDefault_WhenNoOverrides()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var statuses = await service.GetProviderStatusesAsync(null);
 
@@ -280,7 +284,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderStatusesAsync_ConfigSourceBadge_IsUser_WhenOverridden()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
         var config = new BackfillProvidersConfigDto
         {
             Alpaca = new BackfillProviderOptionsDto
@@ -302,7 +306,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderMetadataAsync_SomeProvidersHaveFeatureFlags()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var metadata = await service.GetProviderMetadataAsync();
 
@@ -314,7 +318,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderFeatureFlagsAsync_ReturnsFlags()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var flags = await service.GetProviderFeatureFlagsAsync("alpaca");
 
@@ -325,7 +329,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task GetProviderFeatureFlagsAsync_UnknownProvider_ReturnsEmptyDictionary()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var flags = await service.GetProviderFeatureFlagsAsync("nonexistent");
 
@@ -335,7 +339,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task IsProviderFeatureEnabledAsync_ReturnsTrueForKnownFlag()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var result = await service.IsProviderFeatureEnabledAsync("polygon", "supportsAggregates");
 
@@ -345,7 +349,7 @@ public sealed class BackfillProviderConfigServiceTests
     [Fact]
     public async Task IsProviderFeatureEnabledAsync_ReturnsFalseForUnknownFlag()
     {
-        var service = BackfillProviderConfigService.Instance;
+        var service = CreateService();
 
         var result = await service.IsProviderFeatureEnabledAsync("alpaca", "nonexistentFlag");
 

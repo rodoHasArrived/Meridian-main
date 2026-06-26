@@ -12,22 +12,22 @@ public sealed class WorkspaceDeepPageChromeTests
     [Fact]
     public void WorkspaceDeepPageHostPage_ShouldToggleHostedShellState()
     {
-            WpfTestThread.Run(() =>
-            {
-                RunMatUiAutomationFacade.EnsureApplicationResources();
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
 
             var navigationService = (Meridian.Wpf.Services.NavigationService)Activator.CreateInstance(
-                typeof(Meridian.Wpf.Services.NavigationService),
-                nonPublic: true)!;
+                    typeof(Meridian.Wpf.Services.NavigationService),
+                    nonPublic: true)!;
 
             var hostedPage = new Page();
             var hostPage = new WorkspaceDeepPageHostPage(
-                navigationService,
-                shellContextService: null,
-                pageTag: "EventReplay",
-                hostedPage,
-                navigationParameter: null,
-                presentationMode: WorkspaceChromePresentationMode.Docked);
+                    navigationService,
+                    shellContextService: null,
+                    pageTag: "EventReplay",
+                    hostedPage,
+                    navigationParameter: null,
+                    presentationMode: WorkspaceChromePresentationMode.Docked);
 
             var window = new Window
             {

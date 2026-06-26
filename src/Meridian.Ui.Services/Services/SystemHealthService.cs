@@ -13,16 +13,26 @@ namespace Meridian.Ui.Services;
 public sealed class SystemHealthService
 {
     private static readonly Lazy<SystemHealthService> _instance = new(() => new SystemHealthService());
+    private readonly ISystemHealthApiClient _apiClient;
+
     public static SystemHealthService Instance => _instance.Value;
 
-    private SystemHealthService() { }
+    private SystemHealthService()
+        : this(new ApiClientSystemHealthApiClient(ApiClientService.Instance))
+    {
+    }
+
+    internal SystemHealthService(ISystemHealthApiClient apiClient)
+    {
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+    }
 
     /// <summary>
     /// Gets overall system health summary.
     /// </summary>
     public async Task<SystemHealthSummary?> GetHealthSummaryAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<SystemHealthSummary>(UiApiRoutes.HealthSummary, ct);
+        return await _apiClient.GetAsync<SystemHealthSummary>(UiApiRoutes.HealthSummary, ct);
     }
 
     /// <summary>
@@ -30,7 +40,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<List<ProviderHealth>?> GetProviderHealthAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<ProviderHealth>>(UiApiRoutes.HealthProviders, ct);
+        return await _apiClient.GetAsync<List<ProviderHealth>>(UiApiRoutes.HealthProviders, ct);
     }
 
     /// <summary>
@@ -38,7 +48,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ProviderReadinessSummaryDto?> GetProviderReadinessAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, ct);
+        return await _apiClient.GetAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, ct);
     }
 
     /// <summary>
@@ -46,7 +56,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ProviderDiagnostics?> GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<ProviderDiagnostics>(BuildProviderDiagnosticsRoute(provider), ct);
+        return await _apiClient.GetAsync<ProviderDiagnostics>(BuildProviderDiagnosticsRoute(provider), ct);
     }
 
     /// <summary>
@@ -54,7 +64,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<StorageHealth?> GetStorageHealthAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<StorageHealth>(UiApiRoutes.HealthStorage, ct);
+        return await _apiClient.GetAsync<StorageHealth>(UiApiRoutes.HealthStorage, ct);
     }
 
     /// <summary>
@@ -62,7 +72,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<List<SystemEvent>?> GetRecentEventsAsync(int limit = 50, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<List<SystemEvent>>(BuildRecentEventsRoute(limit), ct);
+        return await _apiClient.GetAsync<List<SystemEvent>>(BuildRecentEventsRoute(limit), ct);
     }
 
     /// <summary>
@@ -70,7 +80,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<SystemMetrics?> GetSystemMetricsAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.GetAsync<SystemMetrics>(UiApiRoutes.HealthMetrics, ct);
+        return await _apiClient.GetAsync<SystemMetrics>(UiApiRoutes.HealthMetrics, ct);
     }
 
     /// <summary>
@@ -78,7 +88,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ConnectionTestResult?> TestConnectionAsync(string provider, CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<ConnectionTestResult>(BuildProviderTestRoute(provider), null, ct);
+        return await _apiClient.PostAsync<ConnectionTestResult>(BuildProviderTestRoute(provider), null, ct);
     }
 
     /// <summary>
@@ -86,7 +96,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<DiagnosticBundle?> GenerateDiagnosticBundleAsync(CancellationToken ct = default)
     {
-        return await ApiClientService.Instance.PostAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct);
+        return await _apiClient.PostAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct);
     }
 
     internal static string BuildProviderDiagnosticsRoute(string provider)
@@ -99,6 +109,22 @@ public sealed class SystemHealthService
 
     internal static string BuildProviderTestRoute(string provider)
         => UiApiRoutes.WithParam(UiApiRoutes.HealthProviderTest, "provider", provider);
+}
+
+internal interface ISystemHealthApiClient
+{
+    Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class;
+
+    Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class;
+}
+
+internal sealed class ApiClientSystemHealthApiClient(ApiClientService apiClient) : ISystemHealthApiClient
+{
+    public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+        => apiClient.GetAsync<T>(endpoint, ct);
+
+    public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+        => apiClient.PostAsync<T>(endpoint, body, ct);
 }
 
 // DTO classes for system health

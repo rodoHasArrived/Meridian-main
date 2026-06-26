@@ -82,7 +82,8 @@ public sealed class PendingOperationsQueueServiceTests
         // Arrange
         var service = PendingOperationsQueueService.Instance;
         // Drain existing items
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
         var initialCount = service.PendingCount;
 
         // Act
@@ -100,7 +101,8 @@ public sealed class PendingOperationsQueueServiceTests
     {
         // Arrange
         var service = PendingOperationsQueueService.Instance;
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
         service.Enqueue("test-dequeue", "payload-data");
 
         // Act
@@ -117,7 +119,8 @@ public sealed class PendingOperationsQueueServiceTests
     {
         // Arrange
         var service = PendingOperationsQueueService.Instance;
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
 
         // Act
         var result = service.Dequeue();
@@ -131,7 +134,8 @@ public sealed class PendingOperationsQueueServiceTests
     {
         // Arrange
         var service = PendingOperationsQueueService.Instance;
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
         service.Enqueue("peek-test", null);
 
         // Act
@@ -152,7 +156,8 @@ public sealed class PendingOperationsQueueServiceTests
     {
         // Arrange
         var service = PendingOperationsQueueService.Instance;
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
         service.Enqueue("op-1", null);
         service.Enqueue("op-2", null);
 
@@ -164,7 +169,8 @@ public sealed class PendingOperationsQueueServiceTests
         all.Count.Should().BeGreaterThanOrEqualTo(2);
 
         // Cleanup
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
     }
 
     [Fact]
@@ -243,7 +249,8 @@ public sealed class PendingOperationsQueueServiceTests
     {
         // Arrange
         var service = PendingOperationsQueueService.Instance;
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
 
         var processedItems = new List<string>();
         service.RegisterHandler("process-test", payload =>
@@ -271,7 +278,8 @@ public sealed class PendingOperationsQueueServiceTests
     {
         // Arrange
         var service = PendingOperationsQueueService.Instance;
-        while (service.Dequeue() != null) { }
+        while (service.Dequeue() != null)
+        { }
 
         service.RegisterHandler("fail-test", _ => throw new InvalidOperationException("Test failure"));
         service.Enqueue(new PendingOperation { OperationType = "fail-test", MaxRetries = 3 });

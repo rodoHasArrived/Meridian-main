@@ -6,8 +6,8 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 580,
-    "documented_endpoint_count": 580,
+    "endpoint_count": 588,
+    "documented_endpoint_count": 588,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 779,
     "documented_workstation_contract_count": 779,
@@ -2676,6 +2676,54 @@
       "method": "GET",
       "path": "/api/providers/dashboard",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:278",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/modules",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/modules/catalogue",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:40",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/modules",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:56",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/providers/modules/{moduleId}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:82",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/providers/modules/{moduleId}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:110",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/providers/modules/{moduleId}/enabled",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:135",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/modules/{moduleId}/test",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:158",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/restart",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:177",
       "documented": true
     },
     {

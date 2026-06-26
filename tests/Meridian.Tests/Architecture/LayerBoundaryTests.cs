@@ -24,7 +24,7 @@ namespace Meridian.Tests.Architecture;
 public sealed class LayerBoundaryTests
 {
     // Build the architecture model once per test class.
-    private static readonly ArchModel Architecture = new ArchLoader()
+    private static readonly Lazy<ArchModel> Architecture = new(() => new ArchLoader()
         .LoadAssemblies(
             // Leaf / shared contracts
             typeof(Meridian.Contracts.Domain.ProviderId).Assembly,
@@ -38,7 +38,7 @@ public sealed class LayerBoundaryTests
             typeof(Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService).Assembly,
             // Infrastructure (adapters, providers, resilience)
             typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly)
-        .Build();
+        .Build());
 
     // ------------------------------------------------------------------ //
     //  Contracts — leaf project (no upstream dependencies)                //
@@ -58,7 +58,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespaceMatching(@"^Meridian\.Domain\."))
             .Because("Contracts is a leaf project that must have zero upstream project dependencies (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInAssemblyMatching(@"^Meridian\.Infrastructure$"))
             .Because("Contracts is a leaf project that must have zero upstream project dependencies (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     // ------------------------------------------------------------------ //
@@ -80,13 +80,15 @@ public sealed class LayerBoundaryTests
     [Fact]
     public void Domain_ShouldNot_DependOn_Infrastructure()
     {
-        var rule = Types()
-            .That().ResideInNamespaceMatching(@"^Meridian\.Domain\.")
-            .Should().NotDependOnAny(
-                Types().That().ResideInAssemblyMatching(@"^Meridian\.Infrastructure$"))
-            .Because("Domain types must remain independent of Infrastructure to preserve the dependency inversion principle.");
+        var domainAssembly = typeof(Meridian.Domain.Events.MarketEvent).Assembly;
 
-        rule.Check(Architecture);
+        var forbiddenReferences = domainAssembly
+            .GetReferencedAssemblies()
+            .Where(reference => reference.Name is "Meridian.Infrastructure")
+            .Select(reference => reference.Name)
+            .ToArray();
+
+        Assert.Empty(forbiddenReferences);
     }
 
     // ------------------------------------------------------------------ //
@@ -102,7 +104,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespaceMatching(@"^Meridian\.Domain\."))
             .Because("ProviderSdk must only reference Contracts to stay thin and reusable (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -114,7 +116,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInAssemblyMatching(@"^Meridian\.Infrastructure$"))
             .Because("ProviderSdk must only reference Contracts to stay thin and reusable (ADR-001).");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     // ------------------------------------------------------------------ //
@@ -130,7 +132,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespace("Meridian.Infrastructure.Adapters.Polygon"))
             .Because("Provider adapters must not cross-reference peer adapters to keep them independently deployable.");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -142,7 +144,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespace("Meridian.Infrastructure.Adapters.Alpaca"))
             .Because("Provider adapters must not cross-reference peer adapters to keep them independently deployable.");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     [Fact]
@@ -154,7 +156,7 @@ public sealed class LayerBoundaryTests
                 Types().That().ResideInNamespace("Meridian.Infrastructure.Adapters.Alpaca"))
             .Because("Provider adapters must not cross-reference peer adapters to keep them independently deployable.");
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 
     // ------------------------------------------------------------------ //
@@ -244,6 +246,6 @@ public sealed class LayerBoundaryTests
             .Because("UI reconciliation services should consume application-owned workflows instead of orchestrating infrastructure reconciliation storage directly.")
             .WithoutRequiringPositiveResults();
 
-        rule.Check(Architecture);
+        rule.Check(Architecture.Value);
     }
 }

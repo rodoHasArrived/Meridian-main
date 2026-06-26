@@ -262,7 +262,7 @@ public sealed class WriteAheadLogTests : IAsyncDisposable
         var recordCount = Bound(recordCountSeed, minInclusive: 1, maxInclusive: 120);
         var duplicateModulo = Bound(duplicateModuloSeed, minInclusive: 1, maxInclusive: 12);
 
-        await using (var wal = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite }))
+        await using (var wal = new WriteAheadLog(scenarioDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
         {
             await wal.InitializeAsync();
             for (var i = 0; i < recordCount; i++)

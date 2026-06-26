@@ -385,7 +385,7 @@ public class HistoricalProviderContractTests
     {
         // Arrange
         var httpClient = CreateMockHttpClient("Error", HttpStatusCode.InternalServerError);
-        var provider = new StooqHistoricalDataProvider(httpClient);
+        var provider = new StooqHistoricalDataProvider(httpClient, log: null, enableResilience: false);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<DataProviderException>(

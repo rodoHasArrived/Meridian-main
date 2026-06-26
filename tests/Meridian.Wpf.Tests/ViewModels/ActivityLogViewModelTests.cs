@@ -39,6 +39,23 @@ public sealed class ActivityLogViewModelTests
     }
 
     [Fact]
+    public void LocalEntries_RaisedFromBackgroundThread_UpdateOnDispatcher()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var viewModel = CreateViewModel();
+            var timestamp = new DateTime(2026, 4, 26, 15, 5, 0, DateTimeKind.Utc);
+
+            await Task.Run(() => viewModel.AddLocalLogEntry(LogLevel.Warning, "Health check retry", "Connection", timestamp));
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+
+            viewModel.FilteredLogs.Should().ContainSingle();
+            viewModel.FilteredLogs[0].Message.Should().Be("Health check retry");
+            viewModel.WarningLogCountText.Should().Be("1 warning");
+        });
+    }
+
+    [Fact]
     public void StartAsync_LoadsRemoteLogsThroughRemoteWorkstationClient()
     {
         WpfTestThread.Run(async () =>
