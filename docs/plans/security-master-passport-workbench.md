@@ -146,6 +146,21 @@ the same atomic open→resolved CAS (`ResolveConflictRequest.ChosenWinnerSource`
 `SecurityMasterConflict.Resolved*`), so the durable winner and the close commit together; the override
 key is a best-effort display mirror whose failure is logged, not surfaced.
 
+**D2d (AMENDED — governed-write integrity follow-ups).** Four post-merge review findings closed the
+remaining governance/correctness gaps on the write surface: (1) **Workflow binding** — the revision
+record persists the submitting `WorkflowId` (bound on `Draft → Submitted`), and `ApproveRevisionAsync`
+rejects an approval whose `WorkflowId` differs, so a revision cannot be approved through an unrelated,
+already-approvable workflow lane. (2) **Independent reviewer** — `SubmitForApprovalAsync` no longer
+defaults a blank reviewer to the submitter; it requires a non-blank reviewer distinct from the actor
+(the gate only checks reviewer-matches-assigned, not independence), removing the self-approval path.
+(3) **Winner-candidate validation** — `ResolveSourceConflictAsync` rejects a `ChosenWinnerSource` that
+is not one of the conflict's two competing sources (`CurrentWinningSource` / `ChallengerSource` — the
+same pair the authority policy decides between), so an acknowledged deviation cannot record a typo or
+arbitrary source as the winner. (4) **Publish metadata** — the revision record carries the edit's
+`FieldPath`/`EffectiveFrom`, and `PublishRevisionAsync` emits the stored effective date and changed
+field (not publish-time / empty) so the Phase 3 period-aware/restatement handlers can scope impact
+analysis to the actual, possibly back-dated, edit.
+
 **D3 — Publish a domain event; the ledger accounting-period status is the lock authority; edits route by tri-state period status, never silent mutation (Unknown #3 — RESOLVED).**
 `PublishRevisionAsync` invokes ordered `IEnumerable<ISecurityMasterRevisionPublishedHandler>` after
 the durable append: **per-security projection rebuild** (`SecurityProjectionRebuildHandler`, which

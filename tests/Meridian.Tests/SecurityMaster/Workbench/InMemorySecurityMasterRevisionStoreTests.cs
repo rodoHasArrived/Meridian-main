@@ -85,4 +85,63 @@ public sealed class InMemorySecurityMasterRevisionStoreTests
 
         (await store.GetAsync(Guid.NewGuid())).Should().BeNull();
     }
+
+    [Fact]
+    public async Task Transition_DraftToSubmitted_BindsWorkflowId()
+    {
+        var store = new InMemorySecurityMasterRevisionStore();
+        var draft = await store.CreateDraftAsync(SecurityId, "ops.analyst");
+        var workflowId = Guid.NewGuid();
+
+        await store.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted,
+            "ops.analyst", workflowIdForSubmit: workflowId);
+
+        (await store.GetAsync(draft.RevisionId))!.WorkflowId.Should().Be(workflowId);
+    }
+
+    [Fact]
+    public async Task Transition_DraftToSubmitted_WithoutWorkflow_LeavesBindingNull()
+    {
+        var store = new InMemorySecurityMasterRevisionStore();
+        var draft = await store.CreateDraftAsync(SecurityId, "ops.analyst");
+
+        await store.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+
+        (await store.GetAsync(draft.RevisionId))!.WorkflowId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Transition_NonSubmitTransition_DoesNotRebindWorkflow()
+    {
+        var store = new InMemorySecurityMasterRevisionStore();
+        var draft = await store.CreateDraftAsync(SecurityId, "ops.analyst");
+        var submitWorkflowId = Guid.NewGuid();
+        await store.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted,
+            "ops.analyst", workflowIdForSubmit: submitWorkflowId);
+
+        // A later transition carrying a different workflow id must not overwrite the submit binding.
+        await store.TransitionAsync(
+            draft.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved,
+            "ops.reviewer", workflowIdForSubmit: Guid.NewGuid());
+
+        (await store.GetAsync(draft.RevisionId))!.WorkflowId.Should().Be(submitWorkflowId);
+    }
+
+    [Fact]
+    public async Task CreateDraft_WithFieldMetadata_PersistsFieldEdit()
+    {
+        var store = new InMemorySecurityMasterRevisionStore();
+        var effectiveFrom = new DateTimeOffset(2026, 03, 31, 0, 0, 0, TimeSpan.Zero);
+
+        var draft = await store.CreateDraftAsync(
+            SecurityId, "ops.analyst", "EconomicDefinition.Coupon", effectiveFrom, "Corrected coupon.");
+
+        draft.FieldPath.Should().Be("EconomicDefinition.Coupon");
+        draft.FieldEffectiveFrom.Should().Be(effectiveFrom);
+        draft.FieldJustification.Should().Be("Corrected coupon.");
+        draft.WorkflowId.Should().BeNull();
+    }
 }

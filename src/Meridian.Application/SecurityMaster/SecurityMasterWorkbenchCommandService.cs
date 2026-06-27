@@ -115,9 +115,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         };
         await _overrides.PatchAsync(request.SecurityId, patch, request.Actor, ct).ConfigureAwait(false);
 
-        // Open a durable Draft revision so the governed lifecycle (submit → approve → publish) is
-        // anchored to a real, server-issued revision id rather than a transient client value.
-        var revision = await _revisions.CreateDraftAsync(request.SecurityId, request.Actor, ct).ConfigureAwait(false);
+        // Open a durable Draft revision carrying the field-edit metadata so the governed lifecycle
+        // (submit → approve → publish) is anchored to a real, server-issued revision id, and publish
+        // can later emit the correct effective-date and changed-field set for downstream impact
+        // analysis rather than defaulting to publish time.
+        var revision = await _revisions.CreateDraftAsync(
+            request.SecurityId, request.Actor, request.FieldPath, request.EffectiveFrom, request.Justification, ct)
+            .ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security Master field edit staged for {SecurityId} field {FieldPath} as draft revision {RevisionId} at version {Version} by {Actor}",
@@ -170,6 +174,11 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             .FirstOrDefault(a => a.Conflict.ConflictId == request.ConflictId)
             ?? throw new InvalidOperationException(
                 $"Conflict '{request.ConflictId}' was not found for security '{request.SecurityId}'.");
+
+        // The chosen winner must be one of the conflict's two competing sources (the same pair the
+        // authority policy decides between). Without this, an acknowledged deviation would let a typo
+        // or arbitrary source name close the conflict and record a "winner" that was never in conflict.
+        EnsureChosenWinnerIsCandidate(assessment, request.ChosenWinnerSource);
 
         var providerConfidence = snapshot.InstrumentPassport?.ProviderConfidence
             ?? Array.Empty<InstrumentPassportProviderConfidenceDto>();
@@ -260,10 +269,26 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         if (request.WorkflowId is { } workflowId)
         {
+            // A governed submission must name an INDEPENDENT reviewer. Defaulting a blank reviewer to
+            // the submitter would create a self-approval path, because the approval gate only checks
+            // the approving reviewer matches the assigned reviewer — it does not enforce independence.
+            if (string.IsNullOrWhiteSpace(request.Reviewer))
+            {
+                throw new ArgumentException(
+                    "An independent reviewer is required to submit a Security Master revision for approval.",
+                    nameof(request));
+            }
+            if (string.Equals(request.Reviewer.Trim(), request.Actor?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "The reviewer must be independent from the submitter; self-approval is not permitted.",
+                    nameof(request));
+            }
+
             var dto = new OperationsSubmitApprovalRequestDto(
                 ExpectedVersion: request.ExpectedWorkflowVersion,
                 Actor: request.Actor,
-                Reviewer: string.IsNullOrWhiteSpace(request.Reviewer) ? request.Actor : request.Reviewer!,
+                Reviewer: request.Reviewer!,
                 Rationale: rationale,
                 ReportPackId: request.ReportPackId ?? string.Empty);
 
@@ -274,13 +299,15 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
                     $"Submit for approval was blocked ({result.ErrorCode}): {result.ErrorMessage}");
             }
 
-            // Advance the durable revision lifecycle only after the gate accepts the submission.
+            // Advance the durable revision lifecycle only after the gate accepts the submission, and
+            // bind the submitting workflow so approval can be restricted to this same lane.
             await _revisions.TransitionAsync(
                 request.RevisionId,
                 SecurityMasterRevisionStateDto.Draft,
                 SecurityMasterRevisionStateDto.Submitted,
                 request.Actor,
-                ct).ConfigureAwait(false);
+                workflowIdForSubmit: workflowId,
+                ct: ct).ConfigureAwait(false);
 
             _logger.LogInformation(
                 "Security Master revision {RevisionId} for {SecurityId} submitted through approval gate workflow {WorkflowId}",
@@ -296,7 +323,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             SecurityMasterRevisionStateDto.Draft,
             SecurityMasterRevisionStateDto.Submitted,
             request.Actor,
-            ct).ConfigureAwait(false);
+            ct: ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Security Master revision {RevisionId} for {SecurityId} submitted for approval (no workflow context) by {Actor}",
@@ -314,8 +341,17 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         // Preflight the revision BEFORE mutating the approval gate (same orphaned-lane reasoning as
         // SubmitForApprovalAsync); the TransitionAsync CAS below is the authority on concurrency.
-        await EnsureRevisionInStateAsync(
+        var revision = await EnsureRevisionInStateAsync(
             request.RevisionId, request.SecurityId, SecurityMasterRevisionStateDto.Submitted, ct).ConfigureAwait(false);
+
+        // Approval must run through the SAME workflow the revision was submitted to. Otherwise a
+        // caller could approve revision A via an unrelated, already-approvable workflow lane.
+        if (revision.WorkflowId != request.WorkflowId)
+        {
+            throw new SecurityMasterRevisionStateException(
+                request.RevisionId,
+                $"was submitted through workflow '{revision.WorkflowId:D}' but approval was attempted via workflow '{request.WorkflowId:D}'.");
+        }
 
         var dto = new OperationsApprovalDecisionRequestDto(
             ExpectedVersion: request.ExpectedWorkflowVersion,
@@ -338,7 +374,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             SecurityMasterRevisionStateDto.Submitted,
             SecurityMasterRevisionStateDto.Approved,
             request.Actor,
-            ct).ConfigureAwait(false);
+            ct: ct).ConfigureAwait(false);
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
@@ -359,7 +395,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // A revision may only be published if it was actually approved through the governed gate and
         // belongs to this security. This blocks an arbitrary revision id from triggering downstream
         // publish side effects.
-        await EnsureRevisionInStateAsync(
+        var revision = await EnsureRevisionInStateAsync(
             request.RevisionId, request.SecurityId, SecurityMasterRevisionStateDto.Approved, ct).ConfigureAwait(false);
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
@@ -368,12 +404,15 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: null, ct)
             .ConfigureAwait(false);
 
+        // Carry the edit's effective date and changed field from the durable revision so period-aware
+        // / restatement handlers can scope impact analysis to the actual (possibly back-dated) edit
+        // rather than to publish time. AffectedLedgerBookIds resolution is Phase 3 (kept empty here).
         var evt = new SecurityMasterRevisionPublishedEvent(
             SecurityId: request.SecurityId,
             RevisionId: request.RevisionId,
             Version: currentVersion,
-            EffectiveFrom: DateTimeOffset.UtcNow,
-            ChangedFields: [],
+            EffectiveFrom: revision.FieldEffectiveFrom ?? DateTimeOffset.UtcNow,
+            ChangedFields: revision.FieldPath is { } fieldPath ? [fieldPath] : [],
             DownstreamImpact: snapshot?.DownstreamImpact ?? EmptyDownstreamImpact(),
             AffectedLedgerBookIds: [],
             Actor: request.Actor,
@@ -412,7 +451,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             SecurityMasterRevisionStateDto.Approved,
             SecurityMasterRevisionStateDto.Published,
             request.Actor,
-            ct).ConfigureAwait(false);
+            ct: ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers)",
@@ -431,6 +470,27 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     {
         var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
         return events.Count == 0 ? 0L : events.Max(static e => e.StreamVersion);
+    }
+
+    /// <summary>
+    /// Rejects a chosen winner that is not one of the conflict's two competing sources. The authority
+    /// policy only ever picks between <c>CurrentWinningSource</c> and <c>ChallengerSource</c>, so a
+    /// value outside that pair (a typo or arbitrary source) must never be allowed to close the conflict.
+    /// </summary>
+    internal static void EnsureChosenWinnerIsCandidate(
+        SecurityMasterConflictAssessmentDto assessment, string? chosenWinnerSource)
+    {
+        var chosen = chosenWinnerSource?.Trim() ?? string.Empty;
+        var isCandidate =
+            string.Equals(chosen, assessment.CurrentWinningSource?.Trim(), StringComparison.OrdinalIgnoreCase)
+            || string.Equals(chosen, assessment.ChallengerSource?.Trim(), StringComparison.OrdinalIgnoreCase);
+        if (!isCandidate)
+        {
+            throw new ArgumentException(
+                $"Chosen winner source '{chosenWinnerSource}' is not one of the conflict's candidate sources " +
+                $"('{assessment.CurrentWinningSource}', '{assessment.ChallengerSource}').",
+                nameof(chosenWinnerSource));
+        }
     }
 
     private async Task<SecurityMasterRevisionRecord> EnsureRevisionInStateAsync(

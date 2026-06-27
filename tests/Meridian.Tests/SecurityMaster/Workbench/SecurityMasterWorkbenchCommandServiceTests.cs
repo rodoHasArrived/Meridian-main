@@ -99,11 +99,15 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         result.ChangeEntry.EffectiveAtUtc.Should().Be(effectiveFrom);
         result.ChangeEntry.ChangedFields.Should().Contain("EconomicDefinition.Coupon");
 
-        // A durable Draft revision is opened with a real, server-issued id (not a transient client value).
+        // A durable Draft revision is opened with a real, server-issued id (not a transient client
+        // value), carrying the field-edit metadata so a later publish can scope downstream impact.
         var stored = await harness.Revisions.GetAsync(result.RevisionId);
         stored.Should().NotBeNull();
         stored!.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
         stored.SecurityId.Should().Be(SecurityId);
+        stored.FieldPath.Should().Be("EconomicDefinition.Coupon");
+        stored.FieldEffectiveFrom.Should().Be(effectiveFrom);
+        stored.FieldJustification.Should().Be("Corrected coupon per agent term sheet.");
 
         // The edit is staged purely as an override read-model annotation. It must NOT be appended to
         // the economic event stream — that stream is replayed verbatim to rebuild the passport, so a
@@ -154,6 +158,60 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<SecurityMasterConcurrencyException>();
     }
 
+    // ---- ResolveSourceConflict (winner-candidate validation) ----------------------------------
+
+    [Theory]
+    [InlineData("Edgar")]        // the current winning source
+    [InlineData("edgar")]        // case-insensitive
+    [InlineData("  Edgar  ")]    // whitespace-tolerant
+    [InlineData("Polygon")]      // the challenger source
+    public void EnsureChosenWinnerIsCandidate_ValidCandidate_DoesNotThrow(string chosen)
+    {
+        var assessment = BuildAssessment(currentSource: "Edgar", challengerSource: "Polygon");
+
+        var act = () => SecurityMasterWorkbenchCommandService.EnsureChosenWinnerIsCandidate(assessment, chosen);
+
+        act.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("Bloomberg")]    // never in conflict
+    [InlineData("Edgr")]         // typo
+    [InlineData("")]             // empty
+    public void EnsureChosenWinnerIsCandidate_NonCandidate_Throws(string chosen)
+    {
+        var assessment = BuildAssessment(currentSource: "Edgar", challengerSource: "Polygon");
+
+        var act = () => SecurityMasterWorkbenchCommandService.EnsureChosenWinnerIsCandidate(assessment, chosen);
+
+        act.Should().Throw<ArgumentException>("an arbitrary or mistyped source must not be allowed to close the conflict");
+    }
+
+    private static SecurityMasterConflictAssessmentDto BuildAssessment(string currentSource, string challengerSource)
+        => new(
+            Conflict: new SecurityMasterConflict(
+                ConflictId: Guid.NewGuid(),
+                SecurityId: SecurityId,
+                ConflictKind: "IdentifierAmbiguity",
+                FieldPath: "Identifiers.Cusip",
+                ProviderA: currentSource,
+                ValueA: "value-a",
+                ProviderB: challengerSource,
+                ValueB: "value-b",
+                DetectedAt: DateTimeOffset.UnixEpoch,
+                Status: "Open"),
+            CurrentWinningValue: "value-a",
+            ChallengerValue: "value-b",
+            CurrentWinningSource: currentSource,
+            ChallengerSource: challengerSource,
+            Recommendation: SecurityMasterConflictRecommendationKind.PreserveWinner,
+            RecommendedResolution: "Resolve",
+            RecommendedWinner: currentSource,
+            ImpactSeverity: SecurityMasterImpactSeverity.Low,
+            ImpactSummary: "summary",
+            ImpactDetail: "detail",
+            IsBulkEligible: false);
+
     // ---- Submit / Approve through the gate ----------------------------------------------------
 
     [Fact]
@@ -202,10 +260,62 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         var result = await harness.Service.SubmitForApprovalAsync(request);
 
         result.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
-        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        var stored = await harness.Revisions.GetAsync(revisionId);
+        stored!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        stored.WorkflowId.Should().Be(workflowId, "the submitting workflow is bound so approval is restricted to this lane");
         harness.Workflow.Verify(
             w => w.SubmitForApprovalAsync(workflowId, It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task Submit_WithWorkflow_BlankReviewer_ThrowsBeforeGate()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 2);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
+
+        var request = new SubmitSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            Note: "Submit.",
+            FundProfileId: null,
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 2,
+            Reviewer: "   ", // blank — would otherwise default to the submitter
+            ReportPackId: "rp-1");
+
+        await harness.Service.Invoking(s => s.SubmitForApprovalAsync(request))
+            .Should().ThrowAsync<ArgumentException>();
+        harness.Workflow.Verify(
+            w => w.SubmitForApprovalAsync(It.IsAny<Guid>(), It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Submit_WithWorkflow_ReviewerEqualsSubmitter_ThrowsBeforeGate()
+    {
+        var workflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 2);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Draft);
+
+        var request = new SubmitSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            Note: "Submit.",
+            FundProfileId: null,
+            WorkflowId: workflowId,
+            ExpectedWorkflowVersion: 2,
+            Reviewer: "OPS.ANALYST", // same actor, different case — self-approval attempt
+            ReportPackId: "rp-1");
+
+        await harness.Service.Invoking(s => s.SubmitForApprovalAsync(request))
+            .Should().ThrowAsync<ArgumentException>();
+        harness.Workflow.Verify(
+            w => w.SubmitForApprovalAsync(It.IsAny<Guid>(), It.IsAny<OperationsSubmitApprovalRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
@@ -258,11 +368,40 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Approve_WorkflowMismatch_Throws_BeforeTouchingGate()
+    {
+        var submitWorkflowId = Guid.NewGuid();
+        var unrelatedWorkflowId = Guid.NewGuid();
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: submitWorkflowId);
+
+        // Approve via an unrelated, already-approvable workflow lane.
+        var request = new ApproveSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            WorkflowId: unrelatedWorkflowId,
+            ExpectedWorkflowVersion: 4,
+            Actor: "ops.reviewer",
+            Reviewer: "ops.reviewer",
+            Rationale: "Approved.",
+            ReportPackId: "rp-1");
+
+        await harness.Service.Invoking(s => s.ApproveRevisionAsync(request))
+            .Should().ThrowAsync<SecurityMasterRevisionStateException>();
+        harness.Workflow.Verify(
+            w => w.ApproveWorkflowAsync(It.IsAny<Guid>(), It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+    }
+
+    [Fact]
     public async Task Approve_RoutesThroughApprovalGate_AndReturnsApproved()
     {
         var workflowId = Guid.NewGuid();
         var harness = new Harness(currentVersion: 4);
-        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Submitted);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
         harness.Workflow
             .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(SuccessTransition(newVersion: 5));
@@ -291,7 +430,8 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     {
         var workflowId = Guid.NewGuid();
         var harness = new Harness(currentVersion: 4);
-        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Submitted);
+        var revisionId = await harness.SeedRevisionAsync(
+            SecurityMasterRevisionStateDto.Submitted, workflowId: workflowId);
         harness.Workflow
             .Setup(w => w.ApproveWorkflowAsync(workflowId, It.IsAny<OperationsApprovalDecisionRequestDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OperationsTransitionResultDto(false, "BLOCKED", "Independent reviewer required.", null, [], []));
@@ -332,6 +472,28 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         result.RestatementCandidates.Should().BeEmpty();
         result.InvalidatedProjections.Should().HaveCount(2);
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+    }
+
+    [Fact]
+    public async Task Publish_FieldEditRevision_EmitsEventWithStoredEffectiveDateAndChangedField()
+    {
+        var effectiveFrom = new DateTimeOffset(2026, 03, 31, 0, 0, 0, TimeSpan.Zero);
+        var handler = new RecordingHandler(order: 10);
+        var harness = new Harness(currentVersion: 4, handlers: [handler]);
+        var revisionId = await harness.SeedFieldEditRevisionAsync(
+            "EconomicDefinition.Coupon", effectiveFrom, "Corrected coupon.");
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        await harness.Service.PublishRevisionAsync(request);
+
+        var evt = handler.Received.Should().ContainSingle().Subject;
+        evt.EffectiveFrom.Should().Be(effectiveFrom, "the published event must carry the edit's effective date, not publish time");
+        evt.ChangedFields.Should().Equal("EconomicDefinition.Coupon");
     }
 
     [Fact]
@@ -432,8 +594,13 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance);
         }
 
-        /// <summary>Seeds a revision advanced to <paramref name="state"/> and returns its id.</summary>
-        public async Task<Guid> SeedRevisionAsync(SecurityMasterRevisionStateDto state, string actor = "ops.analyst")
+        /// <summary>
+        /// Seeds a revision advanced to <paramref name="state"/> and returns its id. When
+        /// <paramref name="workflowId"/> is supplied it is bound on the Draft→Submitted transition so
+        /// approval-binding checks can be exercised.
+        /// </summary>
+        public async Task<Guid> SeedRevisionAsync(
+            SecurityMasterRevisionStateDto state, string actor = "ops.analyst", Guid? workflowId = null)
         {
             var draft = await Revisions.CreateDraftAsync(SecurityId, actor);
             var id = draft.RevisionId;
@@ -442,7 +609,9 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 return id;
             }
 
-            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, actor);
+            await Revisions.TransitionAsync(
+                id, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, actor,
+                workflowIdForSubmit: workflowId);
             if (state == SecurityMasterRevisionStateDto.Submitted)
             {
                 return id;
@@ -455,6 +624,17 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             }
 
             await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, actor);
+            return id;
+        }
+
+        /// <summary>Seeds an Approved revision carrying field-edit metadata (path + effective date).</summary>
+        public async Task<Guid> SeedFieldEditRevisionAsync(
+            string fieldPath, DateTimeOffset effectiveFrom, string justification, string actor = "ops.analyst")
+        {
+            var draft = await Revisions.CreateDraftAsync(SecurityId, actor, fieldPath, effectiveFrom, justification);
+            var id = draft.RevisionId;
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, actor);
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, actor);
             return id;
         }
     }
