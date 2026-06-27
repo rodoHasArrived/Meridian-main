@@ -44,6 +44,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private readonly ISecurityMasterWorkbenchQueryService _queryService;
     private readonly IOperationsContinuityWorkflowService _approvalWorkflow;
     private readonly ISecurityMasterRevisionStore _revisions;
+    private readonly IPeriodAwareRestatementResolver _restatementResolver;
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
 
@@ -55,6 +56,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         ISecurityMasterWorkbenchQueryService queryService,
         IOperationsContinuityWorkflowService approvalWorkflow,
         ISecurityMasterRevisionStore revisions,
+        IPeriodAwareRestatementResolver restatementResolver,
         IEnumerable<ISecurityMasterRevisionPublishedHandler> handlers,
         ILogger<SecurityMasterWorkbenchCommandService> logger)
     {
@@ -65,6 +67,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _approvalWorkflow = approvalWorkflow ?? throw new ArgumentNullException(nameof(approvalWorkflow));
         _revisions = revisions ?? throw new ArgumentNullException(nameof(revisions));
+        _restatementResolver = restatementResolver ?? throw new ArgumentNullException(nameof(restatementResolver));
         _handlers = (handlers ?? throw new ArgumentNullException(nameof(handlers)))
             .OrderBy(static h => h.Order)
             .ToArray();
@@ -453,16 +456,21 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             request.Actor,
             ct: ct).ConfigureAwait(false);
 
+        // Period-aware propagation: after the side-effect handlers run, resolve whether any affected
+        // ledger book is in a closed period and therefore needs a governed restatement proposal rather
+        // than silent mutation. The authority is the ledger accounting-period status (default-deny).
+        var restatement = await _restatementResolver.ResolveAsync(evt, ct).ConfigureAwait(false);
+
         _logger.LogInformation(
-            "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers)",
-            request.RevisionId, request.SecurityId, request.Actor, _handlers.Count);
+            "Published Security Master revision {RevisionId} for {SecurityId} by {Actor} ({HandlerCount} handlers, restatementRequired={RestatementRequired})",
+            request.RevisionId, request.SecurityId, request.Actor, _handlers.Count, restatement.RestatementRequired);
 
         return new SecurityMasterPublishResultDto(
             request.SecurityId,
             request.RevisionId,
             currentVersion,
-            RestatementRequired: false,
-            RestatementCandidates: [],
+            RestatementRequired: restatement.RestatementRequired,
+            RestatementCandidates: restatement.Candidates,
             InvalidatedProjections: invalidated);
     }
 

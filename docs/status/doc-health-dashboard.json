@@ -1,11 +1,11 @@
 {
   "total_files": 534,
-  "total_lines": 86143,
+  "total_lines": 86161,
   "orphaned_count": 204,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 199,
-  "average_lines": 161.3,
+  "average_lines": 161.4,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2129,7 +2129,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7204,
+      "line_count": 7208,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2785,7 +2785,7 @@
     },
     {
       "path": "docs/plans/security-master-passport-workbench.md",
-      "line_count": 595,
+      "line_count": 609,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

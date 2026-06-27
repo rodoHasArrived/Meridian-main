@@ -497,6 +497,34 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Publish_ClosedPeriodExposure_FlowsRestatementDecisionIntoResult()
+    {
+        var harness = new Harness(currentVersion: 4);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+        var candidate = new RestatementCandidateDto(
+            ReportId: Guid.NewGuid(),
+            PriorVersionReportId: Guid.NewGuid(),
+            PeriodLabel: "2026-P03",
+            Summary: "Restate Q1 NAV pack for corrected coupon.",
+            ChangedLines: []);
+        harness.Restatement
+            .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterRevisionPublishedEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SecurityMasterRestatementDecision(RestatementRequired: true, Candidates: [candidate]));
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        var result = await harness.Service.PublishRevisionAsync(request);
+
+        result.RestatementRequired.Should().BeTrue();
+        result.RestatementCandidates.Should().ContainSingle().Which.Should().Be(candidate);
+        (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+    }
+
+    [Fact]
     public async Task Publish_RevisionNotApproved_Throws_AndDoesNotFanOut()
     {
         var handler = new RecordingHandler(order: 10);
@@ -566,6 +594,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Mock<ISecurityMasterConflictService> ConflictService { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterWorkbenchQueryService> QueryService { get; } = new(MockBehavior.Loose);
         public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
+        public Mock<IPeriodAwareRestatementResolver> Restatement { get; } = new(MockBehavior.Loose);
         public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
         public SecurityMasterWorkbenchCommandService Service { get; }
 
@@ -582,6 +611,11 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 .Setup(q => q.GetTrustSnapshotAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((SecurityMasterTrustSnapshotDto?)null);
 
+            // Default: no closed-period exposure. Individual tests override to assert restatement flow-through.
+            Restatement
+                .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterRevisionPublishedEvent>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []));
+
             Service = new SecurityMasterWorkbenchCommandService(
                 EventStore,
                 Overrides.Object,
@@ -590,6 +624,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 QueryService.Object,
                 Workflow.Object,
                 Revisions,
+                Restatement.Object,
                 handlers ?? Array.Empty<ISecurityMasterRevisionPublishedHandler>(),
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance);
         }

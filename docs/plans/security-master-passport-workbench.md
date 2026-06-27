@@ -368,6 +368,20 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   which reports *readiness to close*, not *lock state* — using it as the gate would let a hard-closed
   book be silently mutated. The ledger period status is the same authority `LedgerPeriodPostingGuard`
   enforces, so the workbench can never produce a state the ledger would reject.
+- **Implementation refinement (Phase 3 slice 1 — result-bearing decision via a resolver).** The
+  *result-bearing* part of this handler — deciding `RestatementRequired` and the `RestatementCandidateDto`s
+  the publish reports — is implemented as `IPeriodAwareRestatementResolver`, which the command service
+  calls at publish time, because the `void` `ISecurityMasterRevisionPublishedHandler` fan-out cannot
+  return candidates to the publish result without overloading the handler contract. The default
+  `PeriodAwareRestatementResolver` routes each `evt.AffectedLedgerBookIds` entry by the D3 matrix over
+  the authoritative `ILedgerPeriodLockReader` (hard-closed / indeterminate ⇒ mandatory proposal,
+  empty-candidate ⇒ manual locate; soft-closed ⇒ restate only already-published packs; open ⇒ none).
+  The `void` published-handler seam remains for the pure side effects (`SecurityProjectionRebuildHandler`,
+  `CoverageInvalidationHandler`). Still deferred to later slices: the soft-closed governed adjustment
+  poster (`IGovernedLedgerAdjustmentPoster`), the report-pack `IRestatementCandidateResolver`
+  (defaults to a no-op → manual-locate), and command-service resolution of `evt.AffectedLedgerBookIds`
+  from the passport/impact read (publish currently emits `[]`, so the resolver is a no-op end-to-end
+  until that feed lands — the resolver itself is fully unit-tested with explicit inputs).
 
 ### `SecurityProjectionRebuildHandler` (`Order = 10`) / `CoverageInvalidationHandler` (`Order = 20`)
 - Thin, idempotent. `SecurityProjectionRebuildHandler` rebuilds only the edited security via
