@@ -57,6 +57,29 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Total .NET slices: 2", totals)
         self.assertEqual(failed, ["ui (tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj) exited 1"])
 
+    def test_load_dotnet_summary_handles_malformed_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "summary.json"
+            path.write_text("{", encoding="utf-8")
+
+            totals, failed = MODULE.load_dotnet_summary(path)
+
+        self.assertEqual(totals, [])
+        self.assertEqual(failed, ["Failed to read or parse .NET test summary."])
+
+    def test_load_dotnet_summary_handles_partial_result_entries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "summary.json"
+            path.write_text(
+                json.dumps({"results": [{"exit_code": 1}, "invalid", {"path": "tests/example.csproj"}]}),
+                encoding="utf-8",
+            )
+
+            totals, failed = MODULE.load_dotnet_summary(path)
+
+        self.assertIn("Total .NET slices: 0", totals)
+        self.assertEqual(failed, ["Unknown (Unknown) exited 1"])
+
     def test_build_summary_includes_lane_result_and_failure_lines(self) -> None:
         summary = MODULE.build_summary(
             lane="verify-dotnet",
