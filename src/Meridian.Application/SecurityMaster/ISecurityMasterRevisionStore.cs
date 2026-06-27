@@ -14,6 +14,19 @@ public interface ISecurityMasterRevisionStore
     /// <summary>Creates a new <see cref="SecurityMasterRevisionStateDto.Draft"/> revision for a security.</summary>
     Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default);
 
+    /// <summary>
+    /// Creates a Draft revision carrying the field-edit metadata (path, effective date, justification)
+    /// so a later publish can emit the correct effective-from and changed-field set for downstream
+    /// (period-aware / restatement) impact analysis instead of defaulting to publish time.
+    /// </summary>
+    Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId,
+        string actor,
+        string fieldPath,
+        DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification,
+        CancellationToken ct = default);
+
     /// <summary>Returns the revision, or <c>null</c> when no revision with that id exists.</summary>
     Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default);
 
@@ -21,12 +34,15 @@ public interface ISecurityMasterRevisionStore
     /// Atomically transitions a revision from <paramref name="expected"/> to <paramref name="next"/>.
     /// Throws <see cref="SecurityMasterRevisionStateException"/> when the revision is missing or its
     /// current state is not <paramref name="expected"/> (a concurrent or out-of-order transition).
+    /// When <paramref name="workflowIdForSubmit"/> is supplied on a Draft→Submitted transition, it is
+    /// durably bound to the revision so approval can be restricted to that same workflow lane.
     /// </summary>
     Task<SecurityMasterRevisionRecord> TransitionAsync(
         Guid revisionId,
         SecurityMasterRevisionStateDto expected,
         SecurityMasterRevisionStateDto next,
         string actor,
+        Guid? workflowIdForSubmit = null,
         CancellationToken ct = default);
 }
 
@@ -37,7 +53,11 @@ public sealed record SecurityMasterRevisionRecord(
     SecurityMasterRevisionStateDto State,
     string Actor,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    Guid? WorkflowId = null,
+    string? FieldPath = null,
+    DateTimeOffset? FieldEffectiveFrom = null,
+    string? FieldJustification = null);
 
 /// <summary>
 /// Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision
@@ -64,6 +84,23 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
     private readonly ConcurrentDictionary<Guid, SecurityMasterRevisionRecord> _revisions = new();
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
+        => CreateDraftCore(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null);
+
+    public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
+        Guid securityId,
+        string actor,
+        string fieldPath,
+        DateTimeOffset fieldEffectiveFrom,
+        string fieldJustification,
+        CancellationToken ct = default)
+        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification);
+
+    private Task<SecurityMasterRevisionRecord> CreateDraftCore(
+        Guid securityId,
+        string actor,
+        string? fieldPath,
+        DateTimeOffset? fieldEffectiveFrom,
+        string? fieldJustification)
     {
         var now = DateTimeOffset.UtcNow;
         var record = new SecurityMasterRevisionRecord(
@@ -72,7 +109,11 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
             State: SecurityMasterRevisionStateDto.Draft,
             Actor: actor,
             CreatedAt: now,
-            UpdatedAt: now);
+            UpdatedAt: now,
+            WorkflowId: null,
+            FieldPath: fieldPath,
+            FieldEffectiveFrom: fieldEffectiveFrom,
+            FieldJustification: fieldJustification);
         _revisions[record.RevisionId] = record;
         return Task.FromResult(record);
     }
@@ -88,6 +129,7 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         SecurityMasterRevisionStateDto expected,
         SecurityMasterRevisionStateDto next,
         string actor,
+        Guid? workflowIdForSubmit = null,
         CancellationToken ct = default)
     {
         if (!_revisions.TryGetValue(revisionId, out var existing))
@@ -102,7 +144,12 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
                 revisionId, $"expected state {expected} but the revision is {existing.State}.");
         }
 
-        var updated = existing with { State = next, Actor = actor, UpdatedAt = DateTimeOffset.UtcNow };
+        // Bind the submitting workflow only on the Draft→Submitted transition; other transitions
+        // preserve the existing binding so approval can be restricted to the same lane.
+        var workflowId = next == SecurityMasterRevisionStateDto.Submitted && workflowIdForSubmit.HasValue
+            ? workflowIdForSubmit
+            : existing.WorkflowId;
+        var updated = existing with { State = next, Actor = actor, UpdatedAt = DateTimeOffset.UtcNow, WorkflowId = workflowId };
 
         // Compare-and-set: only the caller whose view still matches the stored record wins; a
         // concurrent transition that already advanced the revision loses and is rejected.
