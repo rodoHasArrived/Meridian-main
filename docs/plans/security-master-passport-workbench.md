@@ -110,6 +110,42 @@ a `SecurityMasterEventEnvelope { Origin=Operator, EffectiveFrom, Provenance{AsOf
 UpdatedBy=actor, Reason=justification} }` and appends with the caller's `expectedVersion`.
 - *Consequence:* a stale token throws → HTTP 409 → UI refetch. No bespoke locking.
 
+**D2 (AMENDED during Phase 2 implementation — operator edits are overlay annotations, not economic
+events).** Appending an operator-origin envelope to the shared Security Master event stream was found
+to be unsafe: `SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync` folds **every**
+post-snapshot event verbatim through `SecurityMasterMapping.FromEconomicPayload`, which only
+understands full economic-definition / projection payloads. A partial field-edit payload would either
+throw or rebuild an empty economic definition on the next passport reload/replay, and — because the
+canonical amend path keys `AppendAsync(expectedVersion: economicVersion)` off the stream head —
+annotation events would also desync the canonical version and spuriously 409 the next legitimate
+amend. **Corrected model:** operator field edits stage purely as overlay annotations in
+`IOperatorOverridesStore` (serializable, row-locked patch); they never touch the economic event
+stream. The passport-displayed security version remains a **read-only staleness guard** (stale view of
+the canonical security → 409). Source-conflict resolution takes its concurrency from an **atomic
+open→resolved transition** in `SecurityMasterConflictService.ResolveAsync` (`ConcurrentDictionary.TryUpdate`
+compare-and-set) — a concurrent duplicate resolution returns `null` → `SecurityMasterConcurrencyException`
+(409) instead of silently overwriting the first operator's winner.
+- *Deferred follow-up:* a true optimistic-concurrency 409 for two operators editing the **same overlay
+  field key** requires surfacing an overlay revision etag through the passport read model and round-
+  tripping it on `UpdateSecurityFieldRequest`. Until then, same-key overlay edits serialize at the
+  storage layer (last-writer-wins on that single key); the staleness guard still catches canonical
+  drift. Tracked for the next Phase 2 slice alongside the approval-gate scoping work.
+
+**D2c (AMENDED during Phase 2 hardening — durable revision lifecycle + governed publish).** The
+governed write lifecycle is anchored to a durable `ISecurityMasterRevisionStore` (an in-memory,
+compare-and-set state machine this slice, mirroring `SecurityMasterConflictService`; Postgres-backed
+durability is the next slice). `UpdateSecurityFieldAsync` opens a `Draft` with a **server-issued**
+revision id; `SubmitForApprovalAsync`/`ApproveRevisionAsync` advance `Draft → Submitted → Approved`
+only after the operations-continuity gate accepts. `PublishRevisionAsync` **refuses to run unless the
+revision is durably `Approved` and belongs to the security** (`SecurityMasterRevisionStateException`
+otherwise) — an arbitrary revision id can no longer trigger publish side effects. Handler fan-out is
+fail-loud: any failed handler is collected and surfaced as `SecurityMasterPublishFailedException`, the
+revision is left `Approved` for an idempotent retry, and only an all-success fan-out transitions it to
+`Published`. Conflict resolution records the chosen winner, resolver, reason, and timestamp **inside**
+the same atomic open→resolved CAS (`ResolveConflictRequest.ChosenWinnerSource` →
+`SecurityMasterConflict.Resolved*`), so the durable winner and the close commit together; the override
+key is a best-effort display mirror whose failure is logged, not surfaced.
+
 **D3 — Publish a domain event; the ledger accounting-period status is the lock authority; edits route by tri-state period status, never silent mutation (Unknown #3 — RESOLVED).**
 `PublishRevisionAsync` invokes ordered `IEnumerable<ISecurityMasterRevisionPublishedHandler>` after
 the durable append: **per-security projection rebuild** (`SecurityProjectionRebuildHandler`, which
