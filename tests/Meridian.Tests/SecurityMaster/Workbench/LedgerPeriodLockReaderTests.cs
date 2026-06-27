@@ -26,7 +26,7 @@ public sealed class LedgerPeriodLockReaderTests
     public async Task GetPeriodStatus_MapsCoveringPeriodStatus(string status, LedgerPeriodStatusDto expected)
     {
         var store = StoreWithPeriod(status);
-        var reader = new LedgerPeriodLockReader(store, NullLogger<LedgerPeriodLockReader>.Instance);
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, store);
 
         var result = await reader.GetPeriodStatusAsync(LedgerBookId, InsidePeriod);
 
@@ -37,7 +37,7 @@ public sealed class LedgerPeriodLockReaderTests
     public async Task GetPeriodStatus_NoCoveringPeriod_DefaultsToHardClosed()
     {
         var store = StoreWithPeriod("Open");
-        var reader = new LedgerPeriodLockReader(store, NullLogger<LedgerPeriodLockReader>.Instance);
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, store);
 
         // The only period covers March 2026; a May date is covered by no period.
         var result = await reader.GetPeriodStatusAsync(LedgerBookId, OutsideAnyPeriod);
@@ -53,7 +53,7 @@ public sealed class LedgerPeriodLockReaderTests
         store.ListPeriodsAsync(
                 Arg.Any<Guid?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
             .Returns(Array.Empty<LedgerAccountingPeriod>());
-        var reader = new LedgerPeriodLockReader(store, NullLogger<LedgerPeriodLockReader>.Instance);
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, store);
 
         var result = await reader.GetPeriodStatusAsync(LedgerBookId, InsidePeriod);
 
@@ -67,7 +67,7 @@ public sealed class LedgerPeriodLockReaderTests
     public async Task GetPeriodStatus_UnrecognizedStatus_DefaultsToHardClosed(string status)
     {
         var store = StoreWithPeriod(status);
-        var reader = new LedgerPeriodLockReader(store, NullLogger<LedgerPeriodLockReader>.Instance);
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, store);
 
         var result = await reader.GetPeriodStatusAsync(LedgerBookId, InsidePeriod);
 
@@ -82,7 +82,7 @@ public sealed class LedgerPeriodLockReaderTests
         store.ListPeriodsAsync(
                 Arg.Any<Guid?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("ledger store unavailable"));
-        var reader = new LedgerPeriodLockReader(store, NullLogger<LedgerPeriodLockReader>.Instance);
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, store);
 
         var result = await reader.GetPeriodStatusAsync(LedgerBookId, InsidePeriod);
 
@@ -96,11 +96,24 @@ public sealed class LedgerPeriodLockReaderTests
         // The ledger persists canonical PascalCase status tokens; a lowercase value indicates an
         // unexpected/foreign source and must not be optimistically treated as Open.
         var store = StoreWithPeriod("open");
-        var reader = new LedgerPeriodLockReader(store, NullLogger<LedgerPeriodLockReader>.Instance);
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, store);
 
         var result = await reader.GetPeriodStatusAsync(LedgerBookId, InsidePeriod);
 
         result.Should().Be(LedgerPeriodStatusDto.HardClosed);
+    }
+
+    [Fact]
+    public async Task GetPeriodStatus_NoJournalStoreRegistered_DefaultsToHardClosed()
+    {
+        // The ledger journal store is an optional dependency: with no durable ledger backend
+        // configured, the reader cannot confirm any lock state and must default-deny.
+        var reader = new LedgerPeriodLockReader(NullLogger<LedgerPeriodLockReader>.Instance, journalStore: null);
+
+        var result = await reader.GetPeriodStatusAsync(LedgerBookId, InsidePeriod);
+
+        result.Should().Be(LedgerPeriodStatusDto.HardClosed,
+            "without a ledger store the lock state is unknowable and must never be treated as postable");
     }
 
     private static ILedgerJournalStore StoreWithPeriod(string status)

@@ -28,22 +28,37 @@ public interface ILedgerPeriodLockReader
 /// Default <see cref="ILedgerPeriodLockReader"/> over <see cref="ILedgerJournalStore"/>, applying the
 /// default-deny posture on any indeterminate state.
 /// </summary>
+/// <remarks>
+/// The <see cref="ILedgerJournalStore"/> is an optional dependency: it is only registered when a
+/// durable ledger backend is configured (see <c>LedgerFeatureRegistration</c>, which itself binds the
+/// store via <c>GetService</c>). When no store is present the reader cannot confirm any period's lock
+/// state, so the default-deny posture applies and every date resolves to
+/// <see cref="LedgerPeriodStatusDto.HardClosed"/>.
+/// </remarks>
 public sealed class LedgerPeriodLockReader : ILedgerPeriodLockReader
 {
-    private readonly ILedgerJournalStore _journalStore;
+    private readonly ILedgerJournalStore? _journalStore;
     private readonly ILogger<LedgerPeriodLockReader> _logger;
 
     public LedgerPeriodLockReader(
-        ILedgerJournalStore journalStore,
-        ILogger<LedgerPeriodLockReader> logger)
+        ILogger<LedgerPeriodLockReader> logger,
+        ILedgerJournalStore? journalStore = null)
     {
-        _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _journalStore = journalStore;
     }
 
     public async Task<LedgerPeriodStatusDto> GetPeriodStatusAsync(
         Guid ledgerBookId, DateOnly date, CancellationToken ct = default)
     {
+        if (_journalStore is null)
+        {
+            _logger.LogWarning(
+                "No ledger journal store is registered; cannot confirm period lock for ledger book {LedgerBookId} at {Date}; defaulting to HardClosed.",
+                ledgerBookId, date);
+            return LedgerPeriodStatusDto.HardClosed;
+        }
+
         try
         {
             var periods = await _journalStore
