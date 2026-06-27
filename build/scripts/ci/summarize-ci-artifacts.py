@@ -101,12 +101,26 @@ def load_dotnet_summary(path: Path | None) -> tuple[list[str], list[str]]:
     if path is None or not path.exists():
         return [], []
 
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    failed_projects = [
-        f"{result['name']} ({result['path']}) exited {result['exit_code']}"
-        for result in payload.get("results", [])
-        if result.get("exit_code") != 0
-    ]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return [], ["Failed to read or parse .NET test summary."]
+    if not isinstance(payload, dict):
+        return [], ["Invalid .NET test summary format."]
+
+    failed_projects = []
+    results = payload.get("results", [])
+    if not isinstance(results, list):
+        results = []
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        exit_code = result.get("exit_code")
+        if exit_code is None or exit_code == 0:
+            continue
+        name = result.get("name", "Unknown")
+        result_path = result.get("path", "Unknown")
+        failed_projects.append(f"{name} ({result_path}) exited {exit_code}")
     totals = [
         f"Total .NET slices: {payload.get('total', 0)}",
         f"Passed: {payload.get('passed', 0)}",
