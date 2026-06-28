@@ -249,6 +249,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IAffectedLedgerBookResolver,
             Meridian.Application.SecurityMaster.LedgerBookAffectedResolver>();
+        // Ordered published-revision side-effect fan-out: projection rebuild (Order=10) then coverage
+        // invalidation (Order=20). The period-aware restatement decision is resolved separately by the
+        // command service (it returns candidates the void handler seam cannot). The coverage read path
+        // is currently uncached, so the invalidator defaults to a no-op.
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator,
+            Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator>();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.SecurityProjectionRebuildHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.CoverageInvalidationHandler>());
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
