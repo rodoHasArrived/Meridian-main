@@ -2725,7 +2725,9 @@ Meridian-main
 │   │   │   ├── EdgarIngestOrchestrator.cs
 │   │   │   ├── FileSecurityValidationSnapshotStore.cs
 │   │   │   ├── IEdgarIngestOrchestrator.cs
+│   │   │   ├── ILedgerPeriodLockReader.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
+│   │   │   ├── IPeriodAwareRestatementResolver.cs
 │   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRevisionPublishedHandler.cs
@@ -6542,6 +6544,8 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── Workbench
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
+│   │   │   │   ├── LedgerPeriodLockReaderTests.cs
+│   │   │   │   ├── PeriodAwareRestatementResolverTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs

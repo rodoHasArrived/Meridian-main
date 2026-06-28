@@ -231,6 +231,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService,
             Meridian.Application.SecurityMaster.SecurityMasterWorkbenchCommandService>();
+        // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
+        // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
+        // closed-period edit into a governed restatement proposal rather than a silent mutation; the
+        // candidate resolver (report-pack locating) defaults to no-op until the report-usage projection lands.
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.ILedgerPeriodLockReader,
+            Meridian.Application.SecurityMaster.LedgerPeriodLockReader>();
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IRestatementCandidateResolver,
+            Meridian.Application.SecurityMaster.NullRestatementCandidateResolver>();
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver,
+            Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
