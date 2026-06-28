@@ -90,6 +90,13 @@ public sealed class LedgerBookAffectedResolver : IAffectedLedgerBookResolver
                 .ListLedgerBooksAsync(fundProfileId: impact.FundProfileId, ct: ct)
                 .ConfigureAwait(false);
 
+            if (books is null)
+            {
+                // The store should return an empty list rather than null, but treat a null result as
+                // "no books resolved" cleanly instead of letting it surface as a caught failure below.
+                return [];
+            }
+
             return books
                 .Select(static b => b.LedgerBookId)
                 .Distinct()
