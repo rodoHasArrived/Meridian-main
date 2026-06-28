@@ -497,6 +497,32 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
+    public async Task Publish_ResolvesAffectedLedgerBooks_AndFlowsThemIntoPublishedEvent()
+    {
+        var bookA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var bookB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var handler = new RecordingHandler(order: 10);
+        var harness = new Harness(currentVersion: 4, handlers: [handler]);
+        var revisionId = await harness.SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+        harness.AffectedBooks
+            .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterDownstreamImpactDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IReadOnlyList<Guid>)[bookA, bookB]);
+
+        var request = new PublishSecurityMasterRevisionRequest(
+            SecurityId: SecurityId,
+            RevisionId: revisionId,
+            Actor: "ops.analyst",
+            ApproverActor: "ops.reviewer");
+
+        await harness.Service.PublishRevisionAsync(request);
+
+        // The resolved books must reach the published event so the period-aware resolver and the
+        // side-effect handlers route by each book's accounting-period lock status.
+        var evt = handler.Received.Should().ContainSingle().Subject;
+        evt.AffectedLedgerBookIds.Should().Equal(bookA, bookB);
+    }
+
+    [Fact]
     public async Task Publish_ClosedPeriodExposure_FlowsRestatementDecisionIntoResult()
     {
         var harness = new Harness(currentVersion: 4);
@@ -595,6 +621,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         public Mock<ISecurityMasterWorkbenchQueryService> QueryService { get; } = new(MockBehavior.Loose);
         public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
         public Mock<IPeriodAwareRestatementResolver> Restatement { get; } = new(MockBehavior.Loose);
+        public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose);
         public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
         public SecurityMasterWorkbenchCommandService Service { get; }
 
@@ -616,6 +643,11 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterRevisionPublishedEvent>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []));
 
+            // Default: no affected ledger books resolved. Individual tests override to assert the feed flows.
+            AffectedBooks
+                .Setup(r => r.ResolveAsync(It.IsAny<SecurityMasterDownstreamImpactDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IReadOnlyList<Guid>)[]);
+
             Service = new SecurityMasterWorkbenchCommandService(
                 EventStore,
                 Overrides.Object,
@@ -625,6 +657,7 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
                 Workflow.Object,
                 Revisions,
                 Restatement.Object,
+                AffectedBooks.Object,
                 handlers ?? Array.Empty<ISecurityMasterRevisionPublishedHandler>(),
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance);
         }

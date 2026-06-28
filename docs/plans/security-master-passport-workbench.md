@@ -377,11 +377,18 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   the authoritative `ILedgerPeriodLockReader` (hard-closed / indeterminate ⇒ mandatory proposal,
   empty-candidate ⇒ manual locate; soft-closed ⇒ restate only already-published packs; open ⇒ none).
   The `void` published-handler seam remains for the pure side effects (`SecurityProjectionRebuildHandler`,
-  `CoverageInvalidationHandler`). Still deferred to later slices: the soft-closed governed adjustment
-  poster (`IGovernedLedgerAdjustmentPoster`), the report-pack `IRestatementCandidateResolver`
-  (defaults to a no-op → manual-locate), and command-service resolution of `evt.AffectedLedgerBookIds`
-  from the passport/impact read (publish currently emits `[]`, so the resolver is a no-op end-to-end
-  until that feed lands — the resolver itself is fully unit-tested with explicit inputs).
+  `CoverageInvalidationHandler`).
+- **Implementation refinement (Phase 3 slice 2 — `AffectedLedgerBookIds` feed).** The command service now
+  resolves `evt.AffectedLedgerBookIds` at publish time via `IAffectedLedgerBookResolver` /
+  `LedgerBookAffectedResolver`, so the period-aware resolver routes real books end-to-end. Restatement
+  protects *durable accounting books* (the only ledger surface carrying a period lock), which are keyed
+  by fund profile, so a fund-scoped impact with reported ledger exposure resolves to that fund's books
+  (fund-book granularity); the set is empty when the impact reports no ledger exposure, has no fund
+  scope, or no durable ledger backend is registered (the store is an optional dependency). Still
+  deferred to later slices: narrowing to the specific posting books that referenced the security (via
+  journal-line dimensions), cross-fund expansion for unscoped impacts, the soft-closed governed
+  adjustment poster (`IGovernedLedgerAdjustmentPoster`), and the report-pack `IRestatementCandidateResolver`
+  (defaults to a no-op → manual-locate).
 
 ### `SecurityProjectionRebuildHandler` (`Order = 10`) / `CoverageInvalidationHandler` (`Order = 20`)
 - Thin, idempotent. `SecurityProjectionRebuildHandler` rebuilds only the edited security via
@@ -546,11 +553,14 @@ PR3 browser UI, PR4 WPF parity.
 - [ ] `ISecurityMasterRevisionPublishedHandler` + `SecurityProjectionRebuildHandler`
       (per-security `SecurityMasterAggregateRebuilder.RebuildAsync(securityId)` — NOT full UFL replay, Q4),
       `CoverageInvalidationHandler`, `PeriodAwarePropagationHandler`.
-- [ ] `ILedgerPeriodLockReader` over `ILedgerJournalStore` (authoritative period status, default-deny — Q2).
+- [x] `ILedgerPeriodLockReader` over `ILedgerJournalStore` (authoritative period status, default-deny — Q2).
 - [ ] `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment) + `IRestatementCandidateResolver`
-      (surfaces candidates — Q3); add `ReportingWorkflowService.ProposeRestatement(...)` for the
-      operator-approved restatement step.
-- [ ] `SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds` resolved at publish time.
+      (surfaces candidates — Q3; `NullRestatementCandidateResolver` shipped as the no-op default, the
+      real report-pack resolver is deferred); add `ReportingWorkflowService.ProposeRestatement(...)` for
+      the operator-approved restatement step.
+- [x] `SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds` resolved at publish time
+      (`IAffectedLedgerBookResolver` / `LedgerBookAffectedResolver`: fund-book granularity from the
+      impacted fund profile; empty when there is no ledger exposure or no durable ledger backend).
 - [ ] DI registration (ordered handler collection).
 
 ### Phase 4 — Endpoints + UI

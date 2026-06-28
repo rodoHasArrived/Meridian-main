@@ -244,6 +244,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver,
             Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver>();
+        // Publish-time feed for SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds: maps an
+        // impacted fund profile to its durable ledger books so period-aware routing has books to check.
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IAffectedLedgerBookResolver,
+            Meridian.Application.SecurityMaster.LedgerBookAffectedResolver>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
