@@ -701,7 +701,7 @@ export function useRobinhoodConnectionViewModel({
       setBusyAction(null);
       setActionMessage(
         authorizationUrl
-          ? "Complete Robinhood authorization in the opened tab, then refresh."
+          ? "Complete Robinhood authorization in the opened tab (or the link below if a popup was blocked), then refresh."
           : status.isConnected
             ? "Robinhood connection is active."
             : status.lastError ?? status.warnings[0] ?? "Robinhood connection updated."
@@ -1682,7 +1682,6 @@ function buildRobinhoodConnectionPanel(connection: BrokerageConnectionStatus | n
         : "default";
   const scopes = connection?.scopes ?? [];
   const isConfigured = connection?.isConfigured === true;
-  const isConnected = connection?.isConnected === true;
 
   return {
     providerLabel: connection?.displayName ?? "Robinhood",
@@ -1698,7 +1697,7 @@ function buildRobinhoodConnectionPanel(connection: BrokerageConnectionStatus | n
     warnings: connection?.warnings ?? [],
     isConfigured,
     canConnect: state !== "Connected",
-    canDisconnect: isConfigured || isConnected
+    canDisconnect: state !== "NotConfigured" && state !== "Disconnected"
   };
 }
 

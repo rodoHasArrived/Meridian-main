@@ -2313,6 +2313,20 @@ describe("SettingsScreen", () => {
     expect(authorizationLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  it("mounts the Robinhood card when deep-linked to the robinhood-provider-setup hash", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        robinhoodConnection={robinhoodConnection}
+      />,
+      { initialEntries: ["/settings#robinhood-provider-setup"] }
+    );
+
+    expect(document.querySelector("#robinhood-provider-setup")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Connect Robinhood" })).toBeInTheDocument();
+  });
+
   it("blocks live Alpaca credential testing until the live endpoint is acknowledged", async () => {
     const user = userEvent.setup();
     renderWithRouter(

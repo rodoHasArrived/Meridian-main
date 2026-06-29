@@ -564,6 +564,9 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   if (normalizedHash === "backend-capability-coverage") {
     return "diagnostics";
   }
+  if (normalizedHash === "robinhood-provider-setup") {
+    return "brokerage";
+  }
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
 }
 

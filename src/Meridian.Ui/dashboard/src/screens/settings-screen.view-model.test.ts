@@ -782,6 +782,21 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.robinhoodConnectionPanel.statusDetail).toBe("Aggregation provider rejected the refresh token.");
   });
 
+  it("blocks disconnect when the Robinhood connection is already disconnected", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      robinhoodConnection: {
+        ...robinhoodConnection,
+        state: "Disconnected",
+        isConnected: false
+      }
+    });
+
+    expect(vm.robinhoodConnectionPanel.canDisconnect).toBe(false);
+    expect(vm.robinhoodConnectionPanel.canConnect).toBe(true);
+  });
+
   it("derives an unconfigured Robinhood panel that blocks connect and disconnect", () => {
     const vm = buildSettingsScreenViewModel({
       session,
