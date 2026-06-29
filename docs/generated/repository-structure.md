@@ -4560,6 +4560,10 @@ Meridian-main
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
 │   │   │   │   │   │   ├── security-details-tracker.view-model.ts
+│   │   │   │   │   │   ├── security-passport-editor.test.tsx
+│   │   │   │   │   │   ├── security-passport-editor.tsx
+│   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
+│   │   │   │   │   │   ├── security-passport-editor.view-model.ts
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
@@ -4624,7 +4628,9 @@ Meridian-main
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api
 │   │   │   │   │   │   ├── covered-call.api.test.ts
-│   │   │   │   │   │   └── covered-call.api.ts
+│   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── security-master-workbench.api.test.ts
+│   │   │   │   │   │   └── security-master-workbench.api.ts
 │   │   │   │   │   ├── covered-call
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts

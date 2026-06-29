@@ -604,8 +604,25 @@ PR3 browser UI, PR4 WPF parity.
 - [x] `SecurityMasterWorkbenchOptions` bound from the `SecurityMasterWorkbench` configuration section
       (`AddOptions<…>().Configure<IConfiguration>(…)`), so the conflict-authority policy's
       `IOptionsMonitor` ranks the deployment's real source systems and hot-reloads.
-- [ ] Browser `security-passport-editor.tsx` extending `security-details-tracker.tsx`; entry point
-      from `buildMultiAssetCoveragePanel()` row. *(Follow-up slice — backend write surface lands first.)*
+- [~] Browser `security-passport-editor.tsx` extending `security-details-tracker.tsx`; entry point
+      from `buildMultiAssetCoveragePanel()` row. **Slice 1 (client foundation) landed:**
+      `lib/api/security-master-workbench.api.ts` typed client for the five governed-write routes
+      (server-derived identity omitted from request inputs; path `securityId` passed explicitly) plus
+      `classifyWorkbenchWriteError` mapping the 409 `version-conflict`/`revision-state-conflict`, 422
+      `workflow-required`/`unprocessable`, and 401/403 responses into a discriminated recovery hint for
+      the reload-banner / workflow-prompt UX. **Slice 2 (editor component) landed:**
+      `security-passport-editor.tsx` + `security-passport-editor.view-model.ts` — header (symbol · asset
+      class · trust-posture dot · state badge · version chip), a governed field-edit form (path · value ·
+      effective-from · justification) wired to Save Draft, a lifecycle action bar (Save Draft → Submit →
+      Approve → Publish) whose enablement is driven by the pure view-model (Publish stays disabled until
+      Approved), and a `role="alert"` banner that renders a non-destructive **Reload passport** action on a
+      stale-version 409. The client is injectable for testing. A **Source conflicts** section renders each
+      conflict (field · severity · policy winner · challenger) with **Accept** (resolve to the policy
+      winner) and **Override…** (inline form: winning source · reason · acknowledge-deviation) wired to
+      `resolveSourceConflict`; the override is gated client-side by `validateConflictOverride` (reason
+      required; acknowledgement required when deviating from the policy winner — mirroring the server's
+      422). The coverage-panel entry point (`buildMultiAssetCoveragePanel()` row → editor) and the
+      remaining read tabs (Economics/Venues/History) are the next slice.
 - [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
 
 ### Phase 5 — Tests
