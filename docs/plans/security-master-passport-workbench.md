@@ -642,9 +642,15 @@ PR3 browser UI, PR4 WPF parity.
       the server re-validates. Registered in the Accounting feature module with a navigation `Parameter`
       hydration hook; ViewModel unit tests cover the error matrix, Publish-disabled-until-Approved, the
       conflict-resolution write, the load-gate, the workflow-version handling, and the version-conflict
-      banner. *(Reachability — a Security Master entry point that passes the selected securityId + version —
-      is a scoped follow-up: a shell route would need a `scripts/` screenshot-catalog entry, which is
-      outside the PR7 phase allowlist.)*
+      banner.
+- [x] WPF editor reachability — contextual launch from the Security Master page. The editor body is
+      extracted into a reusable `SecurityPassportEditorView` UserControl; the Security Master page hosts it
+      inline and exposes an **Edit passport** action that hydrates `SecurityPassportEditorParameter`
+      (securityId + the trust snapshot's optimistic-concurrency version + asset class) for the selected
+      security, so the desktop editor is wired to a real passport rather than the disabled unloaded state.
+      This stays inside the PR7 `src/`+`tests/` scope — a shell route was avoided because it would require a
+      `scripts/` screenshot-catalog entry (PR9-only). `SecurityMasterViewModel` unit test covers the
+      open → hydrate → close flow.
 
 ### Phase 5 — Tests
 - [ ] All unit tests above (~22) green; ≥80% on new code.

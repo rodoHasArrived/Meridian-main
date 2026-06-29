@@ -56,9 +56,31 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         RevisionState = null;
         BannerText = null;
         BannerIsError = false;
+
+        // The editor instance is reused across contextual launches, so clear every write input — a
+        // prior security's draft, conflict, or approval data must never post against this passport.
+        ResetWriteInputs();
+
         StatusText = SecurityId == Guid.Empty
             ? string.Empty
             : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
+    }
+
+    /// <summary>Clears every field-edit, source-conflict, and approval write input to its default.</summary>
+    private void ResetWriteInputs()
+    {
+        FieldPath = string.Empty;
+        NewValue = null;
+        EffectiveFrom = null;
+        Justification = string.Empty;
+        ConflictId = null;
+        ChosenWinnerSource = string.Empty;
+        ConflictReason = string.Empty;
+        AcknowledgePolicyDeviation = false;
+        WorkflowId = null;
+        ExpectedWorkflowVersion = 0;
+        Reviewer = string.Empty;
+        ReportPackId = string.Empty;
     }
 
     // ── Header / identity ────────────────────────────────────────────────────
@@ -147,6 +169,32 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     // The editor can be opened from shell navigation without a passport context; in that state every
     // write stays disabled so an all-zero security id is never posted.
     public bool HasLoadedPassport => SecurityId != Guid.Empty;
+
+    /// <summary>A working revision that is still editable (not a terminal published/rejected session).</summary>
+    private bool HasActiveRevision =>
+        RevisionId is not null
+        && RevisionState is SecurityMasterRevisionStateDto.Draft
+            or SecurityMasterRevisionStateDto.Submitted
+            or SecurityMasterRevisionStateDto.Approved;
+
+    /// <summary>
+    /// True when the editor holds a still-editable revision or any unsaved operator input. A host reusing
+    /// this editor across contextual launches must not silently discard such work by re-hydrating; a
+    /// terminal published/rejected session is not preserve-worthy.
+    /// </summary>
+    public bool HasUnsavedWork =>
+        HasActiveRevision
+        || !string.IsNullOrWhiteSpace(FieldPath)
+        || !string.IsNullOrWhiteSpace(NewValue)
+        || EffectiveFrom is not null
+        || !string.IsNullOrWhiteSpace(Justification)
+        || ConflictId is not null
+        || !string.IsNullOrWhiteSpace(ChosenWinnerSource)
+        || !string.IsNullOrWhiteSpace(ConflictReason)
+        || AcknowledgePolicyDeviation
+        || WorkflowId is not null
+        || !string.IsNullOrWhiteSpace(Reviewer)
+        || !string.IsNullOrWhiteSpace(ReportPackId);
 
     private bool CanSaveDraft()
         => HasLoadedPassport && !IsBusy && !string.IsNullOrWhiteSpace(FieldPath) && !string.IsNullOrWhiteSpace(Justification);
@@ -279,6 +327,12 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     private void ApplyConflictResolutionResult(SecurityMasterConflictResolutionDto result)
     {
         Version = result.NewVersion;
+        // The conflict is resolved (a terminal passport-level write); clear its inputs so the completed
+        // request is not treated as preserve-worthy work and cannot re-execute against the new version.
+        ConflictId = null;
+        ChosenWinnerSource = string.Empty;
+        ConflictReason = string.Empty;
+        AcknowledgePolicyDeviation = false;
         StatusText = result.IsPolicyDeviation
             ? $"Conflict resolved to {result.ChosenWinnerSource} (policy deviation from {result.PolicyWinnerSource}) at v{result.NewVersion}."
             : $"Conflict resolved to {result.ChosenWinnerSource} at v{result.NewVersion}.";
@@ -286,8 +340,13 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
 
     private void ApplyPublishResult(SecurityMasterPublishResultDto result)
     {
-        RevisionState = SecurityMasterRevisionStateDto.Published;
         Version = result.NewVersion;
+        // Publishing completes the session: drop the working revision and clear every write input so the
+        // editor reflects a clean, current passport. This keeps the just-published edit from being
+        // re-staged, and lets a reused editor re-hydrate to the new version instead of preserving it.
+        RevisionId = null;
+        RevisionState = SecurityMasterRevisionStateDto.Published;
+        ResetWriteInputs();
         StatusText = result.RestatementRequired
             ? $"Published at v{result.NewVersion}; {result.RestatementCandidates.Count} restatement candidate(s) proposed."
             : $"Published at v{result.NewVersion}.";
