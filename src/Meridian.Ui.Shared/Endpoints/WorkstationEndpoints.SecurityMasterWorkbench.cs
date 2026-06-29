@@ -54,7 +54,13 @@ public static partial class WorkstationEndpoints
                 return WorkbenchMissingPayload("An UpdateSecurityFieldRequest body is required.");
             }
 
-            var bound = request with { SecurityId = securityId };
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            // The acting principal is server-derived from the session, never trusted from the body.
+            var bound = request with { SecurityId = securityId, Actor = actor };
             return await ExecuteWorkbenchAsync(
                 () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
@@ -85,7 +91,12 @@ public static partial class WorkstationEndpoints
                 return WorkbenchMissingPayload("A ResolveSourceConflictRequest body is required.");
             }
 
-            var bound = request with { SecurityId = securityId };
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var bound = request with { SecurityId = securityId, Actor = actor };
             return await ExecuteWorkbenchAsync(
                 () => service.ResolveSourceConflictAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
@@ -116,7 +127,14 @@ public static partial class WorkstationEndpoints
                 return WorkbenchMissingPayload("A SubmitSecurityMasterRevisionRequest body is required.");
             }
 
-            var bound = request with { SecurityId = securityId };
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            // Actor is the server-derived submitter; Reviewer stays as the body-supplied assignment (who
+            // must later approve) — the command service enforces that the two differ.
+            var bound = request with { SecurityId = securityId, Actor = actor };
             return await ExecuteWorkbenchAsync(
                 () => service.SubmitForApprovalAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
@@ -147,7 +165,14 @@ public static partial class WorkstationEndpoints
                 return WorkbenchMissingPayload("An ApproveSecurityMasterRevisionRequest body is required.");
             }
 
-            var bound = request with { SecurityId = securityId };
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            // The caller IS the reviewer: both Actor and Reviewer are server-derived from the session, so a
+            // caller cannot post the assigned reviewer's name and record/bypass approval as that person.
+            var bound = request with { SecurityId = securityId, Actor = actor, Reviewer = actor };
             return await ExecuteWorkbenchAsync(
                 () => service.ApproveRevisionAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
@@ -178,7 +203,12 @@ public static partial class WorkstationEndpoints
                 return WorkbenchMissingPayload("A PublishSecurityMasterRevisionRequest body is required.");
             }
 
-            var bound = request with { SecurityId = securityId };
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var bound = request with { SecurityId = securityId, Actor = actor };
             return await ExecuteWorkbenchAsync(
                 () => service.PublishRevisionAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })

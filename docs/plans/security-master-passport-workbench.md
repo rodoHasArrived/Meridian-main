@@ -584,7 +584,13 @@ PR3 browser UI, PR4 WPF parity.
       resolve-conflict, submit, **approve**, publish — approve added so the UI can drive the full
       field→submit→approve→publish lifecycle through one cohesive surface). Each route requires
       `ModifySecurityMaster`, is tenant-scoped, and the path `securityId` overrides the request body so a
-      mismatched body can never target another security. Domain failures map via a shared
+      mismatched body can never target another security. The **acting principal is server-derived** from
+      the session (`EndpointAuthorization.TryResolveActor`, 401 if unresolved) and overwrites the body
+      `Actor` on every route; on approve it also overwrites `Reviewer` (the caller *is* the reviewer), so a
+      caller cannot post the assigned reviewer's name to record/bypass approval as that person — the
+      approval gate's reviewer-match and the submit-time reviewer-independence check run against trusted
+      identity (`Reviewer` on submit stays body-supplied: it is the assignment of who must approve). Domain
+      failures map via a shared
       `ExecuteWorkbenchAsync` helper: stale version → **409** `{ version-conflict, currentVersion }`;
       invalid lifecycle transition (incl. publish-before-approved / unknown revision) → **409**
       `{ revision-state-conflict }`; rejected invariant (justification / policy-deviation / non-candidate

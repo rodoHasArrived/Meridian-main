@@ -24,6 +24,7 @@ namespace Meridian.Tests.Ui;
 public sealed class SecurityMasterWorkbenchEndpointsTests
 {
     private static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private const string SessionActor = "session.actor";
 
     [Fact]
     public async Task Field_WithoutModifyPermission_Returns403()
@@ -40,7 +41,7 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
     }
 
     [Fact]
-    public async Task Field_WithPermission_Returns200_AndPathSecurityIdOverridesBody()
+    public async Task Field_WithPermission_Returns200_AndServerOverridesPathIdAndActor()
     {
         var pathId = Guid.NewGuid();
         var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
@@ -50,13 +51,63 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster);
         var client = app.GetTestClient();
 
-        // Body carries a DIFFERENT security id than the path; the path must win.
+        // Body carries a DIFFERENT security id than the path AND a spoofed actor; both must be overridden.
+        var spoofed = FieldRequest(Guid.NewGuid()) with { Actor = "spoofed.actor" };
         using var response = await client.PostAsJsonAsync(
-            $"/api/security-master/{pathId:D}/workbench/field", FieldRequest(Guid.NewGuid()), Json);
+            $"/api/security-master/{pathId:D}/workbench/field", spoofed, Json);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         captured.Should().NotBeNull();
         captured!.SecurityId.Should().Be(pathId, "the route id is authoritative over the request body");
+        captured.Actor.Should().Be(SessionActor, "the acting principal is derived from the session, not the body");
+    }
+
+    [Fact]
+    public async Task Approve_DerivesActorAndReviewerFromSession_IgnoringBody()
+    {
+        // The impersonation vector: a caller posts the assigned reviewer's name to approve as that
+        // person. The endpoint must override both Actor and Reviewer with the authenticated session id.
+        var securityId = Guid.NewGuid();
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        ApproveSecurityMasterRevisionRequest? captured = null;
+        service.ApproveRevisionAsync(Arg.Do<ApproveSecurityMasterRevisionRequest>(r => captured = r), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((ApproveSecurityMasterRevisionRequest)ci[0]).SecurityId));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        var body = new ApproveSecurityMasterRevisionRequest(
+            SecurityId: securityId,
+            RevisionId: Guid.NewGuid(),
+            WorkflowId: Guid.NewGuid(),
+            ExpectedWorkflowVersion: 1,
+            Actor: "attacker",
+            Reviewer: "victim.assigned.reviewer",
+            Rationale: "looks good",
+            ReportPackId: "rp-1");
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{securityId:D}/workbench/approve", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        captured.Should().NotBeNull();
+        captured!.Actor.Should().Be(SessionActor);
+        captured.Reviewer.Should().Be(SessionActor, "the caller is the reviewer; a body-supplied reviewer name must not impersonate");
+    }
+
+    [Fact]
+    public async Task UnauthenticatedActor_Returns401_WithoutTouchingService()
+    {
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        // Permission present but no resolvable session actor.
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster, sessionActor: null);
+        var client = app.GetTestClient();
+
+        var securityId = Guid.NewGuid();
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{securityId:D}/workbench/field", FieldRequest(securityId), Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        await service.DidNotReceive().UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -183,7 +234,9 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
                 ChangedFieldsSummary: "EconomicDefinition.Coupon"));
 
     private static async Task<WebApplication> CreateAppAsync(
-        ISecurityMasterWorkbenchCommandService service, UserPermission permissions)
+        ISecurityMasterWorkbenchCommandService service,
+        UserPermission permissions,
+        string? sessionActor = SessionActor)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -194,6 +247,10 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            if (sessionActor is not null)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = sessionActor;
+            }
             await next();
         });
         app.MapSecurityMasterWorkbenchEndpoints(Json);
