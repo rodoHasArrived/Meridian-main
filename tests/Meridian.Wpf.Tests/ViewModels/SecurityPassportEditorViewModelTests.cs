@@ -299,6 +299,43 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse("the field-edit inputs were reset");
     }
 
+    [Fact]
+    public async Task Publish_ClearsCompletedSession_SoItIsNotPreservedOnReuse()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.PublishRevisionAsync(SecurityId, It.IsAny<PublishSecurityMasterRevisionRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<SecurityMasterPublishResultDto>.Ok(new SecurityMasterPublishResultDto(
+                SecurityId: SecurityId,
+                RevisionId: Guid.NewGuid(),
+                NewVersion: 9,
+                RestatementRequired: false,
+                RestatementCandidates: Array.Empty<RestatementCandidateDto>(),
+                InvalidatedProjections: Array.Empty<string>())));
+
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            RevisionId = Guid.NewGuid(),
+            RevisionState = SecurityMasterRevisionStateDto.Approved,
+            FieldPath = "EconomicDefinition.Coupon",
+            Justification = "vendor confirmation"
+        };
+
+        viewModel.HasUnsavedWork.Should().BeTrue();
+
+        await viewModel.PublishCommand.ExecuteAsync(null);
+
+        // A published session is terminal: the working revision and inputs are cleared so a reused editor
+        // re-hydrates to the new version instead of re-staging the just-published edit.
+        viewModel.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Published);
+        viewModel.Version.Should().Be(9);
+        viewModel.HasUnsavedWork.Should().BeFalse();
+        viewModel.FieldPath.Should().BeEmpty();
+        viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse("the published edit must not be re-stageable");
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,
