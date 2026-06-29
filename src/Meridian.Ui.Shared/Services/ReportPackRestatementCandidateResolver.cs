@@ -16,19 +16,28 @@ namespace Meridian.Ui.Shared.Services;
 /// hard-closed book with report exposure no longer always degrades to a manual "locate affected packs"
 /// task.</para>
 ///
-/// <para><b>Matching.</b> A pack is a candidate when it is in a live published state
-/// (<see cref="ReportPackWorkflowStateDto.Published"/> or <see cref="ReportPackWorkflowStateDto.Restated"/>),
-/// is scoped to the impacted fund profile, and carries a retained report-line provenance entry tying a
-/// line to this security (by <c>SecurityMasterId</c>/<c>SecurityDefinitionId</c>, or a security-kind
-/// source whose id is the security). Matching is precise on purpose: a published pack that cannot be
-/// tied to the security is left to the caller's default-deny safety net (a hard-closed book still
-/// reports <see cref="SecurityMasterRestatementDecision.RestatementRequired"/> with a manual locate
-/// task), so a genuine miss is never silently completed.</para>
+/// <para><b>Matching.</b> A pack is an actionable candidate when it is in the live
+/// <see cref="ReportPackWorkflowStateDto.Published"/> state, is scoped to the impacted fund profile, and
+/// carries a retained report-line provenance entry tying a line to this security (by
+/// <c>SecurityMasterId</c>/<c>SecurityDefinitionId</c>, or a security-kind source whose id is the
+/// security). Matching is precise on purpose: a published pack that cannot be tied to the security is
+/// left to the caller's default-deny safety net (a hard-closed book still reports
+/// <see cref="SecurityMasterRestatementDecision.RestatementRequired"/> with a manual locate task), so a
+/// genuine miss is never silently completed.</para>
 ///
-/// <para><b>Deferred</b> to later slices: narrowing candidates to the specific reporting period
-/// covering the edit's effective date (the pack <c>Period</c> is a free-form label, so period-precise
-/// filtering is not yet safe and over-inclusion stays operator-reviewed); soft-closed governed-adjustment
-/// posting; and a durable security→report-line index that would replace this per-fund scan.</para>
+/// <para><b>Already-restated packs.</b> A pack already in <see cref="ReportPackWorkflowStateDto.Restated"/>
+/// that still references the security is deliberately NOT returned as a candidate: the workflow only
+/// permits <c>Restated -&gt; Archived</c>, so <see cref="ReportPackWorkflowService.Restate"/> (which
+/// transitions to <c>Restated</c>) would reject a repeat restatement as an invalid transition — a
+/// candidate the operator could not act on. Such a match is instead logged for manual attention rather
+/// than silently dropped. Supporting repeated restatement is a deferred report-pack workflow change.</para>
+///
+/// <para><b>Deferred</b> to later slices: repeated-restatement workflow support (so an already-restated
+/// pack can be re-restated instead of only logged); narrowing candidates to the specific reporting
+/// period covering the edit's effective date (the pack <c>Period</c> is a free-form label, so
+/// period-precise filtering is not yet safe and over-inclusion stays operator-reviewed); soft-closed
+/// governed-adjustment posting; and a durable security→report-line index that would replace this
+/// per-fund scan.</para>
 /// </summary>
 public sealed class ReportPackRestatementCandidateResolver : IRestatementCandidateResolver
 {
@@ -73,8 +82,11 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             ct.ThrowIfCancellationRequested();
 
             // Only a live published output can require a restatement; drafts, in-review, approved, and
-            // archived/rejected packs are not published numbers consumers rely on.
-            if (record.State is not (ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated))
+            // archived/rejected packs are not published numbers consumers rely on. An already-Restated
+            // pack is handled separately below — it is live but cannot be re-restated through the workflow.
+            var isPublished = record.State == ReportPackWorkflowStateDto.Published;
+            var isRestated = record.State == ReportPackWorkflowStateDto.Restated;
+            if (!isPublished && !isRestated)
             {
                 continue;
             }
@@ -82,6 +94,19 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             var matchedLines = MatchSecurityLines(record, securityId);
             if (matchedLines.Count == 0)
             {
+                continue;
+            }
+
+            if (isRestated)
+            {
+                // The pack references the security but is already Restated; the workflow only allows
+                // Restated -> Archived, so Restate(...) would throw "invalid transition Restated ->
+                // Restated". Surfacing it as a candidate would hand the operator an unusable action, and
+                // dropping it silently would hide a genuinely affected published output. Log it for
+                // manual attention instead. (Repeated restatement is a deferred workflow change.)
+                _logger.LogWarning(
+                    "Report pack {ReportId} (period {Period}) consumed security {SecurityId} but is already in the Restated state; repeated restatement is not supported (Restated -> Archived only), so it is surfaced for manual review rather than as an actionable restatement candidate.",
+                    record.ReportId, record.Period, securityId);
                 continue;
             }
 
@@ -112,8 +137,11 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
     /// The retained report-line provenance entries on <paramref name="record"/> that tie a line to the
     /// edited security, projected into proposed changed lines. The proposal carries the line's retained
     /// report value (as both previous and current, since the restated value is the operator's to enter)
-    /// and forwards the provenance evidence id so the operator's later <see cref="ReportPackWorkflowService.Restate"/>
-    /// call can satisfy its evidence requirement.
+    /// and forwards the provenance evidence id <b>when the line has one</b>, giving the operator a head
+    /// start on <see cref="ReportPackWorkflowService.Restate"/>'s evidence requirement. These changed
+    /// lines are a proposal: the operator still supplies the final restated values and any missing
+    /// evidence links when invoking <c>Restate(...)</c>, which re-validates that every changed line
+    /// carries evidence.
     /// </summary>
     private static IReadOnlyList<ReportPackChangedLineDto> MatchSecurityLines(
         ReportPackWorkflowRecordDto record, Guid securityId)

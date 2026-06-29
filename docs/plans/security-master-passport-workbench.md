@@ -582,11 +582,16 @@ PR3 browser UI, PR4 WPF parity.
       impacted fund profile (threaded through `IRestatementCandidateResolver.ResolveAsync` from the
       published event's downstream impact), matches precisely (an untieable pack is left to the
       hard-closed default-deny manual-locate path, never a false candidate), and the period-aware
-      resolver deduplicates candidates by report across affected books. **Still deferred:**
-      `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment posting), period-precise candidate
-      narrowing (the pack `Period` is a free-form label), and a durable security→report-line index to
-      replace the per-fund scan. `ReportingWorkflowService.Restate(...)` already exists as the
-      operator-approved restatement step the candidates feed.
+      resolver deduplicates candidates by report across affected books. Only `Published` packs become
+      actionable candidates: an already-`Restated` pack that still references the security is logged for
+      manual attention rather than surfaced, because the workflow only allows `Restated -> Archived` so
+      `Restate(...)` would reject a repeat restatement (the hard-closed default-deny path still flags
+      such books for manual locate). **Still deferred:** repeated-restatement workflow support (so an
+      already-restated pack can be re-restated rather than only logged), `IGovernedLedgerAdjustmentPoster`
+      (soft-closed adjustment posting), period-precise candidate narrowing (the pack `Period` is a
+      free-form label), and a durable security→report-line index to replace the per-fund scan.
+      `ReportingWorkflowService.Restate(...)` already exists as the operator-approved restatement step the
+      candidates feed.
 - [x] `SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds` resolved at publish time
       (`IAffectedLedgerBookResolver` / `LedgerBookAffectedResolver`: fund-book granularity from the
       impacted fund profile; empty when there is no ledger exposure or no durable ledger backend).

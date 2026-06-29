@@ -82,15 +82,18 @@ public sealed class ReportPackRestatementCandidateResolverTests
     }
 
     [Fact]
-    public async Task RestatedPackReferencingSecurity_IsACandidate()
+    public async Task RestatedPackReferencingSecurity_IsNotAnActionableCandidate()
     {
+        // An already-Restated pack cannot be re-restated (workflow allows Restated -> Archived only), so
+        // surfacing it as a candidate would hand the operator an action Restate() rejects. It is logged
+        // for manual attention instead of returned as a candidate.
         var resolver = NewResolver(
             PackInState(ReportPackWorkflowStateDto.Restated, FundProfileId, "2026-P02", SecurityLine("line-1", SecurityId)));
 
         var candidates = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().ContainSingle("a restated pack is still the live published version");
+        candidates.Should().BeEmpty("a Restated pack is not actionable through Restate() and must not be a candidate");
     }
 
     [Fact]
