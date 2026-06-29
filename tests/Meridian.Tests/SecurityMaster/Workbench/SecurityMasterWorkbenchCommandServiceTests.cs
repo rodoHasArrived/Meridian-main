@@ -635,6 +635,22 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             Times.Once);
     }
 
+    [Fact]
+    public async Task Publish_BlankScopes_ResolveToUnscopedNull()
+    {
+        var harness = new Harness(currentVersion: 5);
+        // No fund on the draft revision; a whitespace request scope must normalize to null (unscoped).
+        var revisionId = await harness.SeedFieldEditRevisionAsync(
+            "EconomicDefinition.Coupon", new DateTimeOffset(2026, 3, 15, 0, 0, 0, TimeSpan.Zero), "Corrected coupon.");
+
+        await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
+            SecurityId, revisionId, "ops.analyst", "approver.independent", FundProfileId: "   "));
+
+        harness.QueryService.Verify(
+            q => q.GetTrustSnapshotAsync(SecurityId, null, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static OperationsTransitionResultDto SuccessTransition(long newVersion)

@@ -416,9 +416,10 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // override) the scope; otherwise fall back to the scope captured on the draft revision (the fund
         // the edit was made under, if any). A null/blank scope yields an unscoped impact and the
         // period-aware path reports no restatement — cross-fund/multi-fund activation is a later slice.
-        var fundScope = string.IsNullOrWhiteSpace(request.FundProfileId)
+        var rawScope = string.IsNullOrWhiteSpace(request.FundProfileId)
             ? revision.FundProfileId
-            : request.FundProfileId.Trim();
+            : request.FundProfileId;
+        var fundScope = string.IsNullOrWhiteSpace(rawScope) ? null : rawScope.Trim();
 
         var snapshot = await _queryService
             .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: fundScope, ct)
