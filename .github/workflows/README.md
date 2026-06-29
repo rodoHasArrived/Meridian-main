@@ -41,8 +41,8 @@ scope.
 | Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
 | Desktop Standalone Publish | `desktop-standalone-publish.yml` | Manual only | Publishes a desktop standalone `win-x64` executable and uploads the output. | Desktop standalone output |
 | Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Runs a WPF release preflight build/test gate, builds signed MSIX installer packages for `win-x64` and `win-arm64`, uploads workflow artifacts, and attaches package assets to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) |
-| Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. Screenshot/manual workflows are read-only and upload artifacts; they do not commit back to the repository. | Desktop workflow, screenshot, or manual artifacts |
-| Web Screenshot Capture | `web-screenshot-capture.yml` | Manual only | Captures browser workstation screenshots from the configured route list using lockfile-strict `npm ci`. The workflow is read-only and uploads artifacts; it does not open PRs or push commits. | Web screenshot artifacts |
+| Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. These workflows always upload artifacts; `desktop-screenshot-capture.yml` can additionally open a `peter-evans/create-pull-request` PR with the refreshed catalog when dispatched with `commit: true`. They never push commits directly. | Desktop workflow, screenshot, or manual artifacts; optional screenshot refresh PR |
+| Web Screenshot Capture | `web-screenshot-capture.yml` | Manual only | Captures browser workstation screenshots from the configured route list with `npm install --include=optional`, uploads artifacts, and opens a `peter-evans/create-pull-request` PR (`automation/web-screenshot-capture`) with the refreshed catalog. It never pushes commits directly. | Web screenshot artifacts; screenshot refresh PR |
 | Provider Smoke Checks | `ibapi-smoke.yml`, `robinhood-options-smoke.yml` | Path-filtered or manual | Runs provider smoke checks that are too specialized for the normal PR fast path. | Smoke evidence artifacts |
 | Copilot Setup Steps | `copilot-setup-steps.yml` | Copilot setup, relevant pushes/PRs, manual | Validates the GitHub Copilot hosted setup path for repository dependencies. | None |
 
@@ -162,8 +162,9 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 
 - All workflows use repository-relative paths.
 - Default token permissions are read-only.
-- Manual screenshot and manual-generation workflows are artifact-only; repository writes should be
-  made from a reviewed local or PR workflow, not from those capture jobs.
+- Manual screenshot-capture workflows never push commits directly; any repository write is proposed
+  through a reviewed `peter-evans/create-pull-request` PR (always for the web capture, and for the
+  desktop capture only when dispatched with `commit: true`).
 - PR and branch workflows cancel superseded runs.
 - Build/test workflows use explicit restore, build, and test phases; the CI .NET lane aggregates per-project test results before failing so each run reports all broken configured test slices.
 - Test lanes that enable hang diagnostics upload uniquely named evidence artifacts for reruns so passing and failing runs both leave inspectable logs.

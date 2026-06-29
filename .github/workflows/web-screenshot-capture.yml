@@ -13,7 +13,8 @@ on:
         default: "scripts/dev/web-screenshot-routes.json"
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 concurrency:
   group: web-screenshot-capture-${{ github.ref }}
@@ -44,7 +45,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
-        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Install Playwright browser
         run: |
@@ -166,3 +167,19 @@ jobs:
           path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Open screenshot refresh pull request
+        if: ${{ steps.capture_web.outcome == 'success' }}
+        continue-on-error: true
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/web-screenshot-capture
+          base: ${{ github.event.repository.default_branch }}
+          title: "chore: refresh web workstation screenshot catalog"
+          commit-message: "chore: refresh web workstation screenshot catalog"
+          body: |
+            Automated refresh of the web workstation screenshot catalog captured by the
+            Web Screenshot Capture workflow. Review the rendered routes before merging.
+          add-paths: |
+            ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
+          delete-branch: true

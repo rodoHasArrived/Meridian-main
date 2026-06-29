@@ -7,9 +7,15 @@ on:
         description: Output directory for captured screenshots.
         required: false
         default: "docs/screenshots/desktop"
+      commit:
+        description: Open a pull request with the refreshed desktop screenshots.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 concurrency:
   group: desktop-screenshot-capture-${{ github.ref }}
@@ -186,3 +192,18 @@ jobs:
           path: artifacts/desktop-screenshot-capture/all-screenshots/
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Open screenshot refresh pull request
+        if: ${{ success() && inputs.commit == true }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/desktop-screenshot-capture
+          base: ${{ github.event.repository.default_branch }}
+          title: "chore: refresh desktop workstation screenshot catalog"
+          commit-message: "chore: refresh desktop workstation screenshot catalog"
+          body: |
+            Automated refresh of the desktop WPF screenshot catalog captured by the
+            Desktop Screenshot Capture workflow. Review the rendered screens before merging.
+          add-paths: |
+            ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
+          delete-branch: true
