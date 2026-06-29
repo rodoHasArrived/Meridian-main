@@ -622,7 +622,13 @@ PR3 browser UI, PR4 WPF parity.
       `resolveSourceConflict`; the override is gated client-side by `validateConflictOverride` (reason
       required; acknowledgement required when deviating from the policy winner — mirroring the server's
       422). The coverage-panel entry point (`buildMultiAssetCoveragePanel()` row → editor) and the
-      remaining read tabs (Economics/Venues/History) are the next slice.
+      remaining read tabs (Economics/Venues/History) are the next slice. **Slice 3 (coverage entry)
+      landed:** because a multi-asset coverage row is an asset-class aggregate with no securityId, the
+      entry is a **drill-through** — `coverage-passport-drill-in.tsx` (+ pure `buildCoverageSecurityDrillIns`)
+      lists the Security Master records of the row's asset class, and `security-passport-editor-launcher.tsx`
+      fetches the passport version from the trust snapshot (`economicDefinition.version`, newly surfaced on
+      the dashboard `SecurityMasterTrustSnapshot` type) before mounting the editor. Mounted per row in the
+      Accounting screen's multi-asset coverage panel.
 - [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
 
 ### Phase 5 — Tests
