@@ -1404,12 +1404,15 @@ public sealed class ReportPackWorkflowService
 
     private void SaveAndIndex(ReportPackWorkflowRecordDto record)
     {
-        // Single chokepoint for every report-pack mutation: update the authoritative record map, persist,
-        // then update the derived security→report-line index. Routing all writes through here keeps the
-        // index from drifting out of sync with _records.
+        // Single chokepoint for every report-pack mutation. Update the authoritative record map and the
+        // derived security→report-line index together BEFORE persisting, so the two in-memory views stay
+        // consistent even if PersistRecords throws. (Persisting between them would, on a write failure,
+        // leave the index permanently missing a record _records already has — a silent restatement
+        // candidate miss, since the index-backed lookup no longer scans _records.) PersistRecords runs
+        // last because it serializes the current _records snapshot.
         _records[record.ReportId] = record;
-        PersistRecords();
         _securityLineIndex?.Upsert(record);
+        PersistRecords();
     }
 
     private void PersistRecords()
