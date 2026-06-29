@@ -24,10 +24,11 @@ public sealed class ReportPackRestatementCandidateResolverTests
         var resolver = NewResolver(
             PublishedPack(FundProfileId, "2026-P03", SecurityLine("line-1", SecurityId)));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], fundProfileId: null);
 
-        candidates.Should().BeEmpty("without a fund scope the published packs cannot be narrowed");
+        result.Candidates.Should().BeEmpty("without a fund scope the published packs cannot be narrowed");
+        result.HasNonActionableMatches.Should().BeFalse();
     }
 
     [Fact]
@@ -36,13 +37,14 @@ public sealed class ReportPackRestatementCandidateResolverTests
         var resolver = NewResolver(
             PublishedPack(FundProfileId, "2026-P03", SecurityLine("nav.line", SecurityId)));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().ContainSingle();
-        var candidate = candidates[0];
+        result.Candidates.Should().ContainSingle();
+        var candidate = result.Candidates[0];
         candidate.PeriodLabel.Should().Be("2026-P03");
         candidate.ChangedLines.Should().ContainSingle().Which.LineKey.Should().Be("nav.line");
+        result.HasNonActionableMatches.Should().BeFalse();
     }
 
     [Fact]
@@ -51,10 +53,10 @@ public sealed class ReportPackRestatementCandidateResolverTests
         var resolver = NewResolver(
             PublishedPack(FundProfileId, "2026-P03", SecurityLine("line-1", OtherSecurityId)));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().BeEmpty("the pack's provenance ties its line to a different security");
+        result.Candidates.Should().BeEmpty("the pack's provenance ties its line to a different security");
     }
 
     [Fact]
@@ -63,10 +65,10 @@ public sealed class ReportPackRestatementCandidateResolverTests
         var resolver = NewResolver(
             PublishedPack("fund-beta", "2026-P03", SecurityLine("line-1", SecurityId)));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().BeEmpty("only the impacted fund's packs are in scope");
+        result.Candidates.Should().BeEmpty("only the impacted fund's packs are in scope");
     }
 
     [Fact]
@@ -75,25 +77,28 @@ public sealed class ReportPackRestatementCandidateResolverTests
         var resolver = NewResolver(
             PackInState(ReportPackWorkflowStateDto.Approved, FundProfileId, "2026-P03", SecurityLine("line-1", SecurityId)));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().BeEmpty("only a live published output can require a restatement");
+        result.Candidates.Should().BeEmpty("only a live published output can require a restatement");
+        result.HasNonActionableMatches.Should().BeFalse("an approved (not yet published) pack is not a live output to flag");
     }
 
     [Fact]
     public async Task RestatedPackReferencingSecurity_IsNotAnActionableCandidate()
     {
         // An already-Restated pack cannot be re-restated (workflow allows Restated -> Archived only), so
-        // surfacing it as a candidate would hand the operator an action Restate() rejects. It is logged
-        // for manual attention instead of returned as a candidate.
+        // surfacing it as a candidate would hand the operator an action Restate() rejects. It is reported
+        // as a non-actionable match (logged, and a manual-follow-up signal to the caller) rather than a
+        // candidate or a silent drop.
         var resolver = NewResolver(
             PackInState(ReportPackWorkflowStateDto.Restated, FundProfileId, "2026-P02", SecurityLine("line-1", SecurityId)));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().BeEmpty("a Restated pack is not actionable through Restate() and must not be a candidate");
+        result.Candidates.Should().BeEmpty("a Restated pack is not actionable through Restate() and must not be a candidate");
+        result.HasNonActionableMatches.Should().BeTrue("the affected Restated pack must surface a manual-follow-up signal");
     }
 
     [Fact]
@@ -109,10 +114,11 @@ public sealed class ReportPackRestatementCandidateResolverTests
                     SourceId: "ledger-entry-9",
                     EvidenceId: "ev-9")));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().BeEmpty();
+        result.Candidates.Should().BeEmpty();
+        result.HasNonActionableMatches.Should().BeFalse();
     }
 
     [Fact]
@@ -126,10 +132,10 @@ public sealed class ReportPackRestatementCandidateResolverTests
                     SourceId: SecurityId.ToString("D"),
                     EvidenceId: "ev-1")));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        candidates.Should().ContainSingle();
+        result.Candidates.Should().ContainSingle();
     }
 
     [Fact]
@@ -138,10 +144,10 @@ public sealed class ReportPackRestatementCandidateResolverTests
         var resolver = NewResolver(
             PublishedPack(FundProfileId, "2026-P03", SecurityLine("nav.line", SecurityId, evidenceId: "ev-42")));
 
-        var candidates = await resolver.ResolveAsync(
+        var result = await resolver.ResolveAsync(
             SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
 
-        var changedLine = candidates.Should().ContainSingle().Subject.ChangedLines.Should().ContainSingle().Subject;
+        var changedLine = result.Candidates.Should().ContainSingle().Subject.ChangedLines.Should().ContainSingle().Subject;
         changedLine.EvidenceLinks.Should().ContainSingle().Which.EvidenceId.Should().Be("ev-42");
     }
 

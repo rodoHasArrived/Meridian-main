@@ -52,7 +52,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public Task<IReadOnlyList<RestatementCandidateDto>> ResolveAsync(
+    public Task<RestatementCandidateResult> ResolveAsync(
         Guid securityId,
         Guid ledgerBookId,
         DateOnly effectiveDate,
@@ -69,7 +69,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             _logger.LogWarning(
                 "Restatement candidates for security {SecurityId} could not be located: the published revision has no fund profile scope.",
                 securityId);
-            return Task.FromResult<IReadOnlyList<RestatementCandidateDto>>([]);
+            return Task.FromResult(RestatementCandidateResult.Empty);
         }
 
         var changedFieldSummary = changedFields.Count == 0
@@ -77,6 +77,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             : string.Join(", ", changedFields);
 
         var candidates = new List<RestatementCandidateDto>();
+        var hasNonActionableMatches = false;
         foreach (var record in _reportPackWorkflow.ListRecordsForFundProfile(fundProfileId))
         {
             ct.ThrowIfCancellationRequested();
@@ -104,6 +105,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
                 // Restated". Surfacing it as a candidate would hand the operator an unusable action, and
                 // dropping it silently would hide a genuinely affected published output. Log it for
                 // manual attention instead. (Repeated restatement is a deferred workflow change.)
+                hasNonActionableMatches = true;
                 _logger.LogWarning(
                     "Report pack {ReportId} (period {Period}) consumed security {SecurityId} but is already in the Restated state; repeated restatement is not supported (Restated -> Archived only), so it is surfaced for manual review rather than as an actionable restatement candidate.",
                     record.ReportId, record.Period, securityId);
@@ -130,7 +132,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
                 candidates.Count, securityId, fundProfileId);
         }
 
-        return Task.FromResult<IReadOnlyList<RestatementCandidateDto>>(candidates);
+        return Task.FromResult(new RestatementCandidateResult(candidates, hasNonActionableMatches));
     }
 
     /// <summary>

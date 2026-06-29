@@ -34,6 +34,21 @@ public sealed record SecurityMasterRestatementDecision(
     IReadOnlyList<RestatementCandidateDto> Candidates);
 
 /// <summary>
+/// The outcome of locating report packs that consumed a changed line in a locked period: the actionable
+/// restatement <see cref="Candidates"/>, plus <see cref="HasNonActionableMatches"/> — true when at least
+/// one published pack referenced the security but could not be turned into an actionable candidate (for
+/// example an already-restated pack the workflow cannot re-restate). The caller uses the flag to require
+/// a manual follow-up for a soft-closed book even when no actionable candidate was produced, so a real
+/// match is never silently dropped.
+/// </summary>
+public sealed record RestatementCandidateResult(
+    IReadOnlyList<RestatementCandidateDto> Candidates,
+    bool HasNonActionableMatches)
+{
+    public static RestatementCandidateResult Empty { get; } = new([], false);
+}
+
+/// <summary>
 /// Resolves the report packs that consumed a changed line in a locked period covering an upstream
 /// edit, as restatement candidates. <paramref name="fundProfileId"/> scopes the search to the impacted
 /// fund's published packs. An empty result for a hard-closed book is treated by the caller as a manual
@@ -42,7 +57,7 @@ public sealed record SecurityMasterRestatementDecision(
 /// </summary>
 public interface IRestatementCandidateResolver
 {
-    Task<IReadOnlyList<RestatementCandidateDto>> ResolveAsync(
+    Task<RestatementCandidateResult> ResolveAsync(
         Guid securityId,
         Guid ledgerBookId,
         DateOnly effectiveDate,
@@ -59,16 +74,14 @@ public interface IRestatementCandidateResolver
 /// </summary>
 public sealed class NullRestatementCandidateResolver : IRestatementCandidateResolver
 {
-    private static readonly IReadOnlyList<RestatementCandidateDto> Empty = [];
-
-    public Task<IReadOnlyList<RestatementCandidateDto>> ResolveAsync(
+    public Task<RestatementCandidateResult> ResolveAsync(
         Guid securityId,
         Guid ledgerBookId,
         DateOnly effectiveDate,
         IReadOnlyList<string> changedFields,
         string? fundProfileId,
         CancellationToken ct = default)
-        => Task.FromResult(Empty);
+        => Task.FromResult(RestatementCandidateResult.Empty);
 }
 
 /// <summary>
@@ -115,20 +128,38 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
                     break;
 
                 case LedgerPeriodStatusDto.SoftClosed:
+                {
                     // The effect posts as a governed adjustment (later slice). Only already-published
                     // report packs that consumed the line need restating.
-                    candidates.AddRange(await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false));
+                    var result = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
+                    candidates.AddRange(result.Candidates);
+
+                    // A pack that matched but is not an actionable candidate (e.g. already Restated, which
+                    // the workflow cannot re-restate) still needs manual follow-up. Unlike a hard-closed
+                    // book the soft-closed arm does not default-deny, so without this the decision would be
+                    // silently empty for a real match.
+                    if (result.HasNonActionableMatches)
+                    {
+                        restatementRequired = true;
+                        _logger.LogInformation(
+                            "Security Master revision {RevisionId} affects soft-closed ledger book {LedgerBookId} at {EffectiveDate} with a matching but non-actionable report pack; flagging manual restatement follow-up.",
+                            publishedEvent.RevisionId, ledgerBookId, effectiveDate);
+                    }
                     break;
+                }
 
                 case LedgerPeriodStatusDto.HardClosed:
                 default:
+                {
                     // Hard-closed or any indeterminate/default-deny state: no posting, mandatory proposal.
                     restatementRequired = true;
-                    candidates.AddRange(await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false));
+                    var result = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
+                    candidates.AddRange(result.Candidates);
                     _logger.LogInformation(
                         "Security Master revision {RevisionId} affects hard-closed ledger book {LedgerBookId} at {EffectiveDate}; proposing restatement (no posting).",
                         publishedEvent.RevisionId, ledgerBookId, effectiveDate);
                     break;
+                }
             }
         }
 
@@ -145,7 +176,7 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
             restatementRequired || distinctCandidates.Length > 0, distinctCandidates);
     }
 
-    private Task<IReadOnlyList<RestatementCandidateDto>> ResolveCandidatesAsync(
+    private Task<RestatementCandidateResult> ResolveCandidatesAsync(
         SecurityMasterRevisionPublishedEvent publishedEvent, Guid ledgerBookId, DateOnly effectiveDate, CancellationToken ct)
         => _candidateResolver.ResolveAsync(
             publishedEvent.SecurityId, ledgerBookId, effectiveDate, publishedEvent.ChangedFields,
