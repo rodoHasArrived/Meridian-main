@@ -44,10 +44,11 @@ internal sealed class AccountingHistoryFundProfileTenantGuard : IFundProfileTena
         try
         {
             // Null tenant/company => return history for this fund across every company, which is exactly
-            // the cross-company signal needed to tell "foreign" from "unknown".
+            // the cross-company signal needed to tell "foreign" from "unknown". Coalesce to empty so a
+            // misbehaving store can never throw past the loop and break a legitimate edit.
             history = await _auditStore
                 .ListAsync(fund, ledgerBookId: null, ct, tenantId: null, companyId: null)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false) ?? [];
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -60,6 +61,8 @@ internal sealed class AccountingHistoryFundProfileTenantGuard : IFundProfileTena
             return FundProfileTenantDecision.Allow("Fund-profile tenant authority unavailable; deferring to deployment boundary.");
         }
 
+        var callerCompany = Normalize(tenant.CompanyId);
+        var callerTenant = Normalize(tenant.TenantId);
         var sawAttributedHistory = false;
         foreach (var entry in history)
         {
@@ -71,7 +74,7 @@ internal sealed class AccountingHistoryFundProfileTenantGuard : IFundProfileTena
             }
 
             sawAttributedHistory = true;
-            if (Matches(company, tenant.CompanyId) || Matches(entryTenant, tenant.TenantId))
+            if (Matches(company, callerCompany) || Matches(entryTenant, callerTenant))
             {
                 return FundProfileTenantDecision.Allow(
                     "Fund profile has accounting history under the caller's tenant/company.");
@@ -89,6 +92,6 @@ internal sealed class AccountingHistoryFundProfileTenantGuard : IFundProfileTena
 
     private static bool Matches(string? candidate, string? callerValue)
         => candidate is not null
-            && !string.IsNullOrWhiteSpace(callerValue)
-            && string.Equals(candidate, callerValue.Trim(), StringComparison.OrdinalIgnoreCase);
+            && callerValue is not null
+            && string.Equals(candidate, callerValue, StringComparison.OrdinalIgnoreCase);
 }
