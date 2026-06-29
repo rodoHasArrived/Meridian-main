@@ -307,6 +307,7 @@ Meridian-main
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
 │   │   └── skills_provider.py
+│   ├── scheduled_tasks.lock
 │   ├── settings.json
 │   └── settings.local.json
 ├── .codex

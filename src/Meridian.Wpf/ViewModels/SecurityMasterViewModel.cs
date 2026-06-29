@@ -562,6 +562,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _selectedTrustSnapshot, value))
             {
                 RaiseScheduleAndOpenLotStateChanged();
+                OpenPassportEditorCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -575,6 +576,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isTrustSnapshotLoading, value))
             {
                 RaiseScheduleAndOpenLotStateChanged();
+                OpenPassportEditorCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -1769,7 +1771,6 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasOpenLotRows));
         RaisePropertyChanged(nameof(ScheduleBookStatusText));
         RaisePropertyChanged(nameof(OpenLotReadModelStatusText));
-        OpenPassportEditorCommand?.NotifyCanExecuteChanged();
     }
 
     // The contextual passport editor is reachable once the selected security's trust snapshot has
@@ -1778,20 +1779,21 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnOpenPassportEditor()
     {
+        // Defensive: although these are non-nullable contract members, a partially-deserialized snapshot
+        // could surface nulls, and the editor must not open against an absent economic definition.
         var snapshot = SelectedTrustSnapshot;
-        if (snapshot is null)
+        if (snapshot?.EconomicDefinition is not { } economic)
         {
             return;
         }
 
-        var economic = snapshot.EconomicDefinition;
         PassportEditor.Parameter = new SecurityPassportEditorParameter(
             SecurityId: economic.SecurityId,
             Version: economic.Version,
-            Symbol: snapshot.Security.DisplayName,
+            Symbol: snapshot.Security?.DisplayName ?? string.Empty,
             AssetClass: economic.AssetClass,
-            TrustPosture: snapshot.TrustPosture.Tone.ToString(),
-            FundProfileId: snapshot.DownstreamImpact.IsScoped ? snapshot.DownstreamImpact.FundProfileId : null);
+            TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
+            FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null);
         IsPassportEditorOpen = true;
     }
 
