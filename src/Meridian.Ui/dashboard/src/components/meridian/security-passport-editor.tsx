@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, RefreshCw, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -113,7 +113,18 @@ export function SecurityPassportEditor({
   service,
   onReloadRequested
 }: SecurityPassportEditorProps) {
-  const client = useMemo<SecurityPassportWorkbenchService>(() => ({ ...defaultService, ...service }), [service]);
+  // Depend on the individual methods rather than the `service` object so an inline `service={{…}}`
+  // literal (a fresh reference each render) does not invalidate every dependent useCallback.
+  const client = useMemo<SecurityPassportWorkbenchService>(
+    () => ({
+      updateField: service?.updateField ?? defaultUpdateField,
+      resolveConflict: service?.resolveConflict ?? defaultResolveConflict,
+      submit: service?.submit ?? defaultSubmit,
+      approve: service?.approve ?? defaultApprove,
+      publish: service?.publish ?? defaultPublish
+    }),
+    [service?.updateField, service?.resolveConflict, service?.submit, service?.approve, service?.publish]
+  );
 
   const [revision, setRevision] = useState<WorkingRevision | null>(null);
   const [isBusy, setBusy] = useState(false);
@@ -138,6 +149,21 @@ export function SecurityPassportEditor({
     reviewer: "",
     reportPackId: ""
   });
+
+  // Switching the active passport (or its loaded version) must not leak a draft, banner, or resolved
+  // conflicts from the previously-viewed security.
+  useEffect(() => {
+    setRevision(null);
+    setLiveVersion(version);
+    setBanner(null);
+    setResolvedConflictIds([]);
+    setOverrideConflictId(null);
+    setFieldPath("");
+    setNewValue("");
+    setEffectiveFrom("");
+    setJustification("");
+    setApproval({ workflowId: "", expectedWorkflowVersion: 0, reviewer: "", reportPackId: "" });
+  }, [securityId, version]);
 
   const hasPendingEdit = fieldPath.trim().length > 0 && justification.trim().length > 0;
   const stateBadge = buildPassportStateBadge(revision?.state ?? null);
@@ -183,7 +209,9 @@ export function SecurityPassportEditor({
         expectedVersion,
         fieldPath: fieldPath.trim(),
         newValue: newValue.length > 0 ? newValue : null,
-        effectiveFrom: effectiveFrom.length > 0 ? effectiveFrom : new Date().toISOString(),
+        // <input type="date"> yields a date-only YYYY-MM-DD; pin it to UTC midnight so the server's
+        // DateTimeOffset parse is unambiguous and never shifts a day across the operator's timezone.
+        effectiveFrom: effectiveFrom.length > 0 ? `${effectiveFrom}T00:00:00Z` : new Date().toISOString(),
         justification: justification.trim(),
         fundProfileId: fundProfileId ?? null
       });
@@ -339,10 +367,25 @@ export function SecurityPassportEditor({
               />
             </label>
             <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">Expected workflow version</span>
+              <Input
+                type="number"
+                value={approval.expectedWorkflowVersion || ""}
+                onChange={(e) => setApproval((a) => ({ ...a, expectedWorkflowVersion: Number.parseInt(e.target.value, 10) || 0 }))}
+              />
+            </label>
+            <label className="space-y-1 text-sm">
               <span className="text-muted-foreground">Independent reviewer</span>
               <Input
                 value={approval.reviewer}
                 onChange={(e) => setApproval((a) => ({ ...a, reviewer: e.target.value }))}
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">Report pack id</span>
+              <Input
+                value={approval.reportPackId}
+                onChange={(e) => setApproval((a) => ({ ...a, reportPackId: e.target.value }))}
               />
             </label>
           </fieldset>
