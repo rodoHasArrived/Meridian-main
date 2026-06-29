@@ -128,17 +128,14 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
                     break;
 
                 case LedgerPeriodStatusDto.SoftClosed:
-                {
                     // The effect posts as a governed adjustment (later slice). Only already-published
-                    // report packs that consumed the line need restating.
-                    var result = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
-                    candidates.AddRange(result.Candidates);
-
-                    // A pack that matched but is not an actionable candidate (e.g. already Restated, which
-                    // the workflow cannot re-restate) still needs manual follow-up. Unlike a hard-closed
-                    // book the soft-closed arm does not default-deny, so without this the decision would be
-                    // silently empty for a real match.
-                    if (result.HasNonActionableMatches)
+                    // report packs that consumed the line need restating. A pack that matched but is not
+                    // an actionable candidate (e.g. already Restated, which the workflow cannot re-restate)
+                    // still needs manual follow-up; unlike a hard-closed book the soft-closed arm does not
+                    // default-deny, so without this the decision would be silently empty for a real match.
+                    var softClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
+                    candidates.AddRange(softClosed.Candidates);
+                    if (softClosed.HasNonActionableMatches)
                     {
                         restatementRequired = true;
                         _logger.LogInformation(
@@ -146,20 +143,17 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
                             publishedEvent.RevisionId, ledgerBookId, effectiveDate);
                     }
                     break;
-                }
 
                 case LedgerPeriodStatusDto.HardClosed:
                 default:
-                {
                     // Hard-closed or any indeterminate/default-deny state: no posting, mandatory proposal.
                     restatementRequired = true;
-                    var result = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
-                    candidates.AddRange(result.Candidates);
+                    var hardClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
+                    candidates.AddRange(hardClosed.Candidates);
                     _logger.LogInformation(
                         "Security Master revision {RevisionId} affects hard-closed ledger book {LedgerBookId} at {EffectiveDate}; proposing restatement (no posting).",
                         publishedEvent.RevisionId, ledgerBookId, effectiveDate);
                     break;
-                }
             }
         }
 
