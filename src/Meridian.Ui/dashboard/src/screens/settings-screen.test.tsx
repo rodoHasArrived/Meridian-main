@@ -162,6 +162,24 @@ const alpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********1234"
 };
 
+const robinhoodConnection: BrokerageConnectionStatus = {
+  providerId: "robinhood",
+  displayName: "Robinhood",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:50:00Z",
+  expiresAt: "2026-06-07T11:50:00Z",
+  lastError: null,
+  warnings: [],
+  scopes: ["positions:read", "balances:read"],
+  environment: null,
+  externalAccountId: "RH-987",
+  verifiedAt: null,
+  maskedKeyId: null
+};
+
 const providerConnections: ProviderConnectionRow[] = [
   {
     providerId: "alpaca",
@@ -2231,6 +2249,82 @@ describe("SettingsScreen", () => {
       "title",
       "Enter an Alpaca key ID before testing the connection."
     );
+  });
+
+  it("renders the Robinhood read-only connection card with a connect button", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        robinhoodConnection={robinhoodConnection}
+      />
+    );
+
+    expect(screen.getByText("Robinhood (read-only)").closest("#robinhood-provider-setup")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Connect Robinhood" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Disconnect" })).toBeInTheDocument();
+    expect(screen.getByText("RH-987")).toBeInTheDocument();
+    expect(screen.getByText("positions:read, balances:read")).toBeInTheDocument();
+  });
+
+  it("shows the OAuth environment hint and blocks connect when Robinhood is not configured", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        robinhoodConnection={{
+          ...robinhoodConnection,
+          state: "NotConfigured",
+          isConfigured: false,
+          isConnected: false,
+          connectedAt: null,
+          expiresAt: null,
+          externalAccountId: null,
+          authorizationUrl: null,
+          scopes: []
+        }}
+      />
+    );
+
+    expect(screen.getByText(/Read-only Robinhood requires an authorized aggregation provider/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Connect Robinhood" })).toBeDisabled();
+  });
+
+  it("renders the Robinhood authorization link when authorization is pending", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        robinhoodConnection={{
+          ...robinhoodConnection,
+          state: "AuthorizationPending",
+          isConnected: false,
+          authorizationUrl: "https://aggregator.example/oauth/authorize?token=abc"
+        }}
+      />
+    );
+
+    const authorizationLink = screen.getByRole("link", { name: /Open authorization page/ });
+    expect(authorizationLink).toHaveAttribute("href", "https://aggregator.example/oauth/authorize?token=abc");
+    expect(authorizationLink).toHaveAttribute("target", "_blank");
+    expect(authorizationLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("mounts the Robinhood card when deep-linked to the robinhood-provider-setup hash", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        robinhoodConnection={robinhoodConnection}
+      />,
+      { initialEntries: ["/settings#robinhood-provider-setup"] }
+    );
+
+    expect(document.querySelector("#robinhood-provider-setup")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Connect Robinhood" })).toBeInTheDocument();
   });
 
   it("blocks live Alpaca credential testing until the live endpoint is acknowledged", async () => {

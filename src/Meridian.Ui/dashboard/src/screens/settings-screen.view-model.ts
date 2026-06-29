@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
+import {
+  connectAlpacaConnection,
+  revokeAlpacaConnection,
+  startRobinhoodConnection,
+  revokeRobinhoodConnection
+} from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -617,6 +622,166 @@ function isActiveAction(
   return mountedRef.current && actionRevisionRef.current === revision;
 }
 
+interface SettingsRobinhoodConnectionDependencies {
+  startConnection?: () => Promise<BrokerageConnectionStatus>;
+  revokeConnection?: () => Promise<BrokerageConnectionStatus>;
+  openAuthorizationUrl?: (url: string) => void;
+}
+
+export interface SettingsRobinhoodConnectionFormViewModel {
+  busy: boolean;
+  busyAction: "connect" | "disconnect" | null;
+  actionMessage: string | null;
+  actionDetails: string[];
+  actionTone: "default" | "success" | "warning" | "danger";
+  statusRole: "status" | "alert";
+  statusClassName: string;
+  authorizationUrl: string | null;
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
+}
+
+function defaultOpenAuthorizationUrl(url: string): void {
+  if (typeof window !== "undefined" && typeof window.open === "function") {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
+export function useRobinhoodConnectionViewModel({
+  onRefresh,
+  canConnect,
+  canDisconnect,
+  startConnection = startRobinhoodConnection,
+  revokeConnection = revokeRobinhoodConnection,
+  openAuthorizationUrl = defaultOpenAuthorizationUrl
+}: {
+  onRefresh?: () => Promise<void> | void;
+  canConnect: boolean;
+  canDisconnect: boolean;
+} & SettingsRobinhoodConnectionDependencies): SettingsRobinhoodConnectionFormViewModel {
+  const [busyAction, setBusyAction] = useState<"connect" | "disconnect" | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [actionDetails, setActionDetails] = useState<string[]>([]);
+  const [actionTone, setActionTone] = useState<"default" | "success" | "warning" | "danger">("default");
+  // The Robinhood status endpoint only ever returns authorizationUrl on the connect
+  // response (status refreshes return null), so retain it here to keep the manual
+  // fallback link available after the post-connect refresh and across status polls.
+  const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const actionRevisionRef = useRef(0);
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+    actionRevisionRef.current += 1;
+  }, []);
+
+  const connect = async () => {
+    if (!canConnect || busyAction !== null) {
+      return;
+    }
+
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
+    setBusyAction("connect");
+    setActionMessage(null);
+    setActionDetails([]);
+    setActionTone("default");
+
+    try {
+      const status = await startConnection();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      const nextAuthorizationUrl = status.authorizationUrl?.trim() || null;
+      if (nextAuthorizationUrl) {
+        setAuthorizationUrl(nextAuthorizationUrl);
+        openAuthorizationUrl(nextAuthorizationUrl);
+      }
+
+      await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      setBusyAction(null);
+      setActionMessage(
+        nextAuthorizationUrl
+          ? "Complete Robinhood authorization in the opened tab (or the link below if a popup was blocked), then refresh."
+          : status.isConnected
+            ? "Robinhood connection is active."
+            : status.lastError ?? status.warnings[0] ?? "Robinhood connection updated."
+      );
+      setActionDetails([]);
+      setActionTone(nextAuthorizationUrl || status.isConnected ? "success" : "warning");
+    } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      const display = describeApiError(err, "Robinhood connection request failed.");
+      setBusyAction(null);
+      setActionMessage(display.summary);
+      setActionDetails(display.details);
+      setActionTone("danger");
+    }
+  };
+
+  const disconnect = async () => {
+    if (!canDisconnect || busyAction !== null) {
+      return;
+    }
+
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
+    setBusyAction("disconnect");
+    setActionMessage(null);
+    setActionDetails([]);
+    setActionTone("default");
+
+    try {
+      await revokeConnection();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      setAuthorizationUrl(null);
+      setBusyAction(null);
+      setActionMessage("Robinhood connection revoked.");
+      setActionDetails([]);
+      setActionTone("success");
+    } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
+      const display = describeApiError(err, "Robinhood disconnect request failed.");
+      setBusyAction(null);
+      setActionMessage(display.summary);
+      setActionDetails(display.details);
+      setActionTone("danger");
+    }
+  };
+
+  return {
+    busy: busyAction !== null,
+    busyAction,
+    actionMessage,
+    actionDetails,
+    actionTone,
+    statusRole: actionTone === "danger" ? "alert" : "status",
+    statusClassName: actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
+    authorizationUrl,
+    connect,
+    disconnect
+  };
+}
+
 export interface SettingsSessionItem {
   label: string;
   value: string;
@@ -794,6 +959,23 @@ export interface SettingsAlpacaConnectionPanel {
   setupChecklist: SettingsAlpacaSetupStep[];
 }
 
+export interface SettingsRobinhoodConnectionPanel {
+  providerLabel: string;
+  stateLabel: string;
+  statusDetail: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  badgeVariant: "outline" | "success" | "warning" | "danger";
+  accountLabel: string;
+  connectedAtLabel: string;
+  expiresAtLabel: string;
+  scopesLabel: string;
+  authorizationUrl: string | null;
+  warnings: string[];
+  isConfigured: boolean;
+  canConnect: boolean;
+  canDisconnect: boolean;
+}
+
 export interface SettingsProviderConnectionRow {
   providerId: string;
   integrationConnectionId: string;
@@ -962,6 +1144,7 @@ export interface SettingsScreenViewModel {
   recentEventsSection: SettingsRecentEventsSection;
   providerConnectionCenter: SettingsProviderConnectionCenter;
   alpacaConnectionPanel: SettingsAlpacaConnectionPanel;
+  robinhoodConnectionPanel: SettingsRobinhoodConnectionPanel;
   diagnosticLinks: SettingsDiagnosticLink[];
   diagnosticCounts: SettingsDiagnosticCounts;
   diagnosticSummary: string;
@@ -988,6 +1171,7 @@ export interface SettingsScreenPayload {
   accounting?: AccountingWorkspaceResponse | null;
   reporting?: ReportingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  robinhoodConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
@@ -1495,6 +1679,36 @@ function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null
   };
 }
 
+function buildRobinhoodConnectionPanel(connection: BrokerageConnectionStatus | null): SettingsRobinhoodConnectionPanel {
+  const state = connection?.state ?? "NotConfigured";
+  const tone: SettingsRobinhoodConnectionPanel["statusTone"] = state === "Connected"
+    ? "success"
+    : state === "Degraded" || state === "ReauthorizationRequired"
+      ? "danger"
+      : state === "Disconnected" || state === "AuthorizationPending"
+        ? "warning"
+        : "default";
+  const scopes = connection?.scopes ?? [];
+  const isConfigured = connection?.isConfigured === true;
+
+  return {
+    providerLabel: connection?.displayName ?? "Robinhood",
+    stateLabel: connectionStateLabel(state),
+    statusDetail: robinhoodConnectionStatusDetail(connection),
+    statusTone: tone,
+    badgeVariant: tone === "default" ? "outline" : tone,
+    accountLabel: connection?.externalAccountId?.trim() || "Not linked",
+    connectedAtLabel: connection?.connectedAt?.trim() || "Not connected",
+    expiresAtLabel: connection?.expiresAt?.trim() || "No expiry recorded",
+    scopesLabel: scopes.length > 0 ? scopes.join(", ") : "No scopes granted",
+    authorizationUrl: connection?.authorizationUrl?.trim() || null,
+    warnings: connection?.warnings ?? [],
+    isConfigured,
+    canConnect: state !== "Connected",
+    canDisconnect: state !== "NotConfigured" && state !== "Disconnected"
+  };
+}
+
 function buildAlpacaSetupChecklist(
   connection: BrokerageConnectionStatus | null,
   isLive: boolean
@@ -1601,6 +1815,29 @@ function connectionStatusDetail(connection: BrokerageConnectionStatus | null): s
   }
 
   return "No Alpaca API-key connection is stored.";
+}
+
+function robinhoodConnectionStatusDetail(connection: BrokerageConnectionStatus | null): string {
+  if (connection?.isConnected) {
+    const account = connection.externalAccountId?.trim();
+    return account
+      ? `Read-only Robinhood account ${account} is linked via OAuth.`
+      : "Read-only Robinhood account is linked via OAuth.";
+  }
+
+  if (connection?.lastError) {
+    return connection.lastError;
+  }
+
+  if (connection?.state === "AuthorizationPending" || connection?.authorizationUrl?.trim()) {
+    return "Robinhood authorization is pending. Complete the OAuth consent to finish linking.";
+  }
+
+  if (connection?.isConfigured) {
+    return "Robinhood OAuth is configured but no account is connected yet.";
+  }
+
+  return "No read-only Robinhood connection is configured. Set the ROBINHOOD_BROKERAGE_* OAuth environment variables.";
 }
 
 function buildProfileAuthenticationPanel(
@@ -2364,6 +2601,7 @@ export function buildSettingsScreenViewModel(
     payload.providerRoutingRefreshing === true
   );
   const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null);
+  const robinhoodConnectionPanel = buildRobinhoodConnectionPanel(payload.robinhoodConnection ?? null);
 
   return {
     headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel),
@@ -2383,6 +2621,7 @@ export function buildSettingsScreenViewModel(
     recentEventsSection: buildRecentEventsSection(overview),
     providerConnectionCenter,
     alpacaConnectionPanel,
+    robinhoodConnectionPanel,
     runtimeCapabilitySection,
     operationsControlCenter,
     assetProfileGovernancePanel,

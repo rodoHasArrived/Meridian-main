@@ -56,6 +56,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     accounting: null,
     reporting: null,
     brokerageConnection: null,
+    robinhoodConnection: null,
     providerConnections: null,
     providerReadiness: null,
     providerRoutingConnections: null,

@@ -3608,16 +3608,16 @@ export function getQualityCompleteness() {
   return getJson<Array<{ symbol: string; score: number; sampledAt: string }>>(QUALITY_API_ENDPOINTS.completeness);
 }
 
-export function getRobinhoodConnectionStatus() {
-  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("robinhood"));
+export function getRobinhoodConnectionStatus(options: ApiRequestOptions = {}) {
+  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("robinhood"), options);
 }
 
-export function startRobinhoodConnection() {
-  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("robinhood"));
+export function startRobinhoodConnection(options: ApiRequestOptions = {}) {
+  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("robinhood"), undefined, options);
 }
 
-export function revokeRobinhoodConnection() {
-  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("robinhood"));
+export function revokeRobinhoodConnection(options: ApiRequestOptions = {}) {
+  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("robinhood"), options);
 }
 
 export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
