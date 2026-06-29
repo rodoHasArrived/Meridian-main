@@ -411,13 +411,17 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
-        // Scope the downstream-impact computation to the fund profile the edit was made under (carried
-        // on the draft revision), so affected ledger books and report-pack restatement candidates can be
-        // resolved. A null/blank scope (edit made without a fund context) yields an unscoped impact and
-        // the period-aware path reports no restatement — the cross-fund/multi-fund activation case is a
-        // later slice.
+        // Scope the downstream-impact computation to the fund captured on the draft revision (the fund
+        // the edit was made under, if any) so affected ledger books and report-pack restatement
+        // candidates can be resolved. Publish deliberately does NOT accept a caller-supplied fund scope:
+        // a publisher must not be able to resolve impact for a fund the operator did not edit under,
+        // which would disclose another scope's affected books/candidates. A null/blank scope yields an
+        // unscoped impact and the period-aware path reports no restatement — publish-time re-scoping and
+        // cross-fund/multi-fund activation are a later slice gated on tenant-scoped holdings discovery.
+        var fundScope = string.IsNullOrWhiteSpace(revision.FundProfileId) ? null : revision.FundProfileId.Trim();
+
         var snapshot = await _queryService
-            .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: revision.FundProfileId, ct)
+            .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: fundScope, ct)
             .ConfigureAwait(false);
 
         var downstreamImpact = snapshot?.DownstreamImpact ?? EmptyDownstreamImpact();

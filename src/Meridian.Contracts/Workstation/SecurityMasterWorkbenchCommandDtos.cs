@@ -87,7 +87,13 @@ public sealed record ApproveSecurityMasterRevisionRequest(
     string ReportPackId,
     string? CorrelationId = null);
 
-/// <summary>Publishes an approved revision (durable append + downstream propagation).</summary>
+/// <summary>
+/// Publishes an approved revision (durable append + downstream propagation).
+/// <para>The downstream restatement impact is scoped to the fund captured on the draft revision (the
+/// fund the edit was made under, if any). Publish deliberately carries no caller-supplied fund scope, so
+/// a publisher cannot resolve impact for a fund the operator did not edit under. Publish-time re-scoping
+/// and cross-fund (multi-held) expansion are a separate slice gated on tenant-scoped holdings discovery.</para>
+/// </summary>
 public sealed record PublishSecurityMasterRevisionRequest(
     Guid SecurityId,
     Guid RevisionId,

@@ -607,6 +607,38 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
         (await harness.Revisions.GetAsync(revisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Approved);
     }
 
+    [Fact]
+    public async Task Publish_ScopesImpactToDraftFundScope()
+    {
+        var harness = new Harness(currentVersion: 5);
+        // The fund scope is captured on the draft at edit time; publish reuses it and accepts no
+        // caller-supplied override, so impact resolution targets the fund the operator edited under.
+        var revisionId = await harness.SeedFieldEditRevisionWithFundAsync("fund-from-edit");
+
+        await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
+            SecurityId, revisionId, "ops.analyst", "approver.independent"));
+
+        harness.QueryService.Verify(
+            q => q.GetTrustSnapshotAsync(SecurityId, "fund-from-edit", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Publish_BlankDraftScope_ResolvesToUnscopedNull()
+    {
+        var harness = new Harness(currentVersion: 5);
+        // No fund captured on the draft revision → publish resolves an unscoped (null) impact.
+        var revisionId = await harness.SeedFieldEditRevisionAsync(
+            "EconomicDefinition.Coupon", new DateTimeOffset(2026, 3, 15, 0, 0, 0, TimeSpan.Zero), "Corrected coupon.");
+
+        await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
+            SecurityId, revisionId, "ops.analyst", "approver.independent"));
+
+        harness.QueryService.Verify(
+            q => q.GetTrustSnapshotAsync(SecurityId, null, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static OperationsTransitionResultDto SuccessTransition(long newVersion)
@@ -700,6 +732,18 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
             string fieldPath, DateTimeOffset effectiveFrom, string justification, string actor = "ops.analyst")
         {
             var draft = await Revisions.CreateDraftAsync(SecurityId, actor, fieldPath, effectiveFrom, justification);
+            var id = draft.RevisionId;
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, actor);
+            await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, actor);
+            return id;
+        }
+
+        /// <summary>Seeds an Approved field-edit revision carrying a fund-profile scope from the edit.</summary>
+        public async Task<Guid> SeedFieldEditRevisionWithFundAsync(string fundProfileId, string actor = "ops.analyst")
+        {
+            var effectiveFrom = new DateTimeOffset(2026, 3, 15, 0, 0, 0, TimeSpan.Zero);
+            var draft = await Revisions.CreateDraftAsync(
+                SecurityId, actor, "EconomicDefinition.Coupon", effectiveFrom, "Corrected coupon.", fundProfileId);
             var id = draft.RevisionId;
             await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, actor);
             await Revisions.TransitionAsync(id, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, actor);
