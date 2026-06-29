@@ -35,4 +35,40 @@ describe("CoveragePassportDrillIn", () => {
     expect(loadVersion).toHaveBeenCalledWith("s-1");
     expect(screen.getByText("v7")).toBeInTheDocument();
   });
+
+  it("lazily fetches the asset-class securities on first expand when no eager list is given", async () => {
+    const user = userEvent.setup();
+    const loadSecurities = vi.fn().mockResolvedValue(securities);
+    render(<CoveragePassportDrillIn assetClass="Equity" loadSecurities={loadSecurities} />);
+
+    // The toggle is offered before anything is loaded; nothing is fetched until the operator expands it.
+    expect(loadSecurities).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: /edit passports/i }));
+
+    await waitFor(() => expect(loadSecurities).toHaveBeenCalledWith("Equity"));
+    // Only the exact Equity match survives the asset-class filter.
+    await waitFor(() => expect(screen.getByRole("button", { name: /acme corp · acme/i })).toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /gov 2032/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /edit passports \(1\)/i })).toBeInTheDocument();
+  });
+
+  it("shows an empty state when the lazy fetch returns no matching securities", async () => {
+    const user = userEvent.setup();
+    const loadSecurities = vi.fn().mockResolvedValue([]);
+    render(<CoveragePassportDrillIn assetClass="Crypto" loadSecurities={loadSecurities} />);
+
+    await user.click(screen.getByRole("button", { name: /edit passports/i }));
+
+    await waitFor(() => expect(screen.getByText(/no crypto securities are available to edit/i)).toBeInTheDocument());
+  });
+
+  it("surfaces an error state when the lazy fetch fails", async () => {
+    const user = userEvent.setup();
+    const loadSecurities = vi.fn().mockRejectedValue(new Error("boom"));
+    render(<CoveragePassportDrillIn assetClass="Equity" loadSecurities={loadSecurities} />);
+
+    await user.click(screen.getByRole("button", { name: /edit passports/i }));
+
+    await waitFor(() => expect(screen.getByText(/could not load equity securities/i)).toBeInTheDocument());
+  });
 });
