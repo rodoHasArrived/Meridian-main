@@ -52,7 +52,7 @@
 <polygon fill="#1d4ed8" stroke="#60a5fa" points="1385.19,-442.4 1152.81,-442.4 1152.81,-384 1391.19,-384 1391.19,-436.4 1385.19,-442.4"/>
 <polyline fill="none" stroke="#60a5fa" points="1385.19,-442.4 1385.19,-436.4"/>
 <polyline fill="none" stroke="#60a5fa" points="1391.19,-436.4 1385.19,-436.4"/>
-<text xml:space="preserve" text-anchor="middle" x="1272" y="-425.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: e70c5efd8ec9</text>
+<text xml:space="preserve" text-anchor="middle" x="1272" y="-425.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: c08a75e1512a</text>
 <text xml:space="preserve" text-anchor="middle" x="1272" y="-409" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Screens: 92</text>
 <text xml:space="preserve" text-anchor="middle" x="1272" y="-392.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source: src/Meridian.Wpf shell registry</text>
 </g>

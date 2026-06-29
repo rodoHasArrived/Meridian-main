@@ -625,11 +625,26 @@ PR3 browser UI, PR4 WPF parity.
       remaining read tabs (Economics/Venues/History) are the next slice. **Slice 3 (coverage entry)
       landed:** because a multi-asset coverage row is an asset-class aggregate with no securityId, the
       entry is a **drill-through** — `coverage-passport-drill-in.tsx` (+ pure `buildCoverageSecurityDrillIns`)
-      lists the Security Master records of the row's asset class, and `security-passport-editor-launcher.tsx`
-      fetches the passport version from the trust snapshot (`economicDefinition.version`, newly surfaced on
-      the dashboard `SecurityMasterTrustSnapshot` type) before mounting the editor. Mounted per row in the
-      Accounting screen's multi-asset coverage panel.
-- [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
+      lists the Security Master records of the row's asset class (lazily fetched per asset class and
+      retry-safe), and `security-passport-editor-launcher.tsx` fetches the passport version from the trust
+      snapshot (`economicDefinition.version`, newly surfaced on the dashboard `SecurityMasterTrustSnapshot`
+      type) before mounting the editor. Mounted per row in the Accounting screen's multi-asset coverage panel.
+- [x] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml` — desktop parity over the
+      same command DTOs. The ViewModel (`BindableBase`/CommunityToolkit) exposes field-edit, approval, and
+      source-conflict inputs and `[RelayCommand]` lifecycle commands whose `CanExecute` mirrors the browser
+      gating (Save Draft needs a pending edit; a governed Accept/Override conflict resolution;
+      Submit/Approve/Publish gate on Draft/Submitted/Approved; all disabled while busy and until a passport
+      is loaded — `HasLoadedPassport` blocks posting to an empty security id). Writes go through
+      `IWorkstationSecurityMasterApiClient` (extended with the five workbench POSTs); a shared
+      `ClassifyWorkbenchError` maps 409 version-conflict / revision-state, 422 workflow-required /
+      unprocessable, and 401/403 into an operator banner (reload hint on a stale version). Submit/Approve
+      store the returned approval-workflow version (not the passport token). No WPF-local governance rules —
+      the server re-validates. Registered in the Accounting feature module with a navigation `Parameter`
+      hydration hook; ViewModel unit tests cover the error matrix, Publish-disabled-until-Approved, the
+      conflict-resolution write, the load-gate, the workflow-version handling, and the version-conflict
+      banner. *(Reachability — a Security Master entry point that passes the selected securityId + version —
+      is a scoped follow-up: a shell route would need a `scripts/` screenshot-catalog entry, which is
+      outside the PR7 phase allowlist.)*
 
 ### Phase 5 — Tests
 - [ ] All unit tests above (~22) green; ≥80% on new code.

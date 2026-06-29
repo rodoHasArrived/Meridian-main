@@ -1675,6 +1675,22 @@ public sealed class SecurityMasterViewModelTests
             LastBulkRequest = request;
             return Task.FromResult(ApiResponse<BulkResolveSecurityMasterConflictsResult>.Ok(BulkResolveResult));
         }
+
+        // Passport Workbench governed-write methods are not exercised by these tests.
+        public Task<ApiResponse<SecurityMasterEditResultDto>> UpdateFieldAsync(Guid securityId, UpdateSecurityFieldRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterConflictResolutionDto>> ResolveConflictAsync(Guid securityId, ResolveSourceConflictRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterConflictResolutionDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterEditResultDto>> SubmitRevisionAsync(Guid securityId, SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterEditResultDto>> ApproveRevisionAsync(Guid securityId, ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterPublishResultDto>> PublishRevisionAsync(Guid securityId, PublishSecurityMasterRevisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterPublishResultDto>.Fail("not supported in stub", 501));
     }
 
     private sealed class StubSecurityMasterRuntimeStatus : ISecurityMasterRuntimeStatus

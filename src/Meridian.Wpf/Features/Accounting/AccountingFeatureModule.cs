@@ -59,6 +59,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<IWorkstationReconciliationApiClient, WorkstationReconciliationApiClient>();
         services.AddSingleton<IWorkstationSecurityMasterApiClient, WorkstationSecurityMasterApiClient>();
+        // Passport Workbench governed-write editor (Phase 4 desktop parity).
+        services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
+        services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();
         services.AddSingleton<ISecurityAssetProfileWorkflowClient, SecurityAssetProfileWorkflowClient>();
         services.AddSingleton<IOperationsControlCenterClient, OperationsControlCenterClient>();
         services.AddSingleton<IFundReconciliationWorkbenchService, FundReconciliationWorkbenchService>();
