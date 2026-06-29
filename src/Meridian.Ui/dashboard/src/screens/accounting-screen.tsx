@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
+import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import {
   approveOperationsContinuityWorkflow,
   certifyAccountingSystemExportPackage,
@@ -2118,6 +2119,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     {item.ledgerLabel}
                   </p>
+                  <CoveragePassportDrillIn assetClass={item.assetClass} securities={securityMaster.results} />
                 </div>
               ))}
             </div>
