@@ -107,7 +107,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Justification: Justification.Trim(),
                 FundProfileId: FundProfileId);
             return _client.UpdateFieldAsync(SecurityId, request, ct);
-        }, ApplyEditResult).ConfigureAwait(false);
+        }, ApplyEditResult);
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]
@@ -126,7 +126,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Reviewer: string.IsNullOrWhiteSpace(Reviewer) ? null : Reviewer.Trim(),
                 ReportPackId: string.IsNullOrWhiteSpace(ReportPackId) ? null : ReportPackId.Trim());
             return _client.SubmitRevisionAsync(SecurityId, request, ct);
-        }, ApplyEditResult).ConfigureAwait(false);
+        }, ApplyEditResult);
     }
 
     [RelayCommand(CanExecute = nameof(CanApprove))]
@@ -142,24 +142,23 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Actor: string.Empty,
                 Reviewer: string.Empty,
                 Rationale: string.IsNullOrWhiteSpace(Justification) ? "Approved via passport workbench." : Justification.Trim(),
-                ReportPackId: ReportPackId.Trim());
+                ReportPackId: string.IsNullOrWhiteSpace(ReportPackId) ? string.Empty : ReportPackId.Trim());
             return _client.ApproveRevisionAsync(SecurityId, request, ct);
-        }, ApplyEditResult).ConfigureAwait(false);
+        }, ApplyEditResult);
     }
 
     [RelayCommand(CanExecute = nameof(CanPublish))]
     private async Task PublishAsync(CancellationToken ct)
     {
-        await RunAsync("Publishing…", async () =>
+        await RunAsync("Publishing…", () =>
         {
             var request = new PublishSecurityMasterRevisionRequest(
                 SecurityId: SecurityId,
                 RevisionId: RevisionId ?? Guid.Empty,
                 Actor: string.Empty,
                 ApproverActor: string.Empty);
-            var response = await _client.PublishRevisionAsync(SecurityId, request, ct).ConfigureAwait(false);
-            return response;
-        }, ApplyPublishResult).ConfigureAwait(false);
+            return _client.PublishRevisionAsync(SecurityId, request, ct);
+        }, ApplyPublishResult);
     }
 
     // ── Result handling ───────────────────────────────────────────────────────
@@ -189,7 +188,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         StatusText = busyText;
         try
         {
-            var response = await action().ConfigureAwait(false);
+            var response = await action();
             if (response.Success && response.Data is not null)
             {
                 onSuccess(response.Data);
