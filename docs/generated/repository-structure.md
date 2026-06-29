@@ -2721,12 +2721,15 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── AssetClassValidatorRegistry.cs
 │   │   │   ├── CorporateActionCommandService.cs
+│   │   │   ├── CoverageInvalidationHandler.cs
 │   │   │   ├── DataVendorEntitlementService.cs
 │   │   │   ├── EdgarIngestOrchestrator.cs
 │   │   │   ├── FileSecurityValidationSnapshotStore.cs
+│   │   │   ├── IAffectedLedgerBookResolver.cs
 │   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILedgerPeriodLockReader.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
+│   │   │   ├── IMultiAssetCoverageInvalidator.cs
 │   │   │   ├── IPeriodAwareRestatementResolver.cs
 │   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
@@ -2765,6 +2768,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchOptions.cs
+│   │   │   ├── SecurityProjectionRebuildHandler.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   ├── SecurityValidationService.cs
@@ -6544,8 +6548,10 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── Workbench
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
+│   │   │   │   ├── LedgerBookAffectedResolverTests.cs
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
 │   │   │   │   ├── PeriodAwareRestatementResolverTests.cs
+│   │   │   │   ├── PublishedRevisionHandlerTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs

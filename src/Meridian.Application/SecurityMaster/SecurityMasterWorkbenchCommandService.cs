@@ -45,6 +45,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
     private readonly IOperationsContinuityWorkflowService _approvalWorkflow;
     private readonly ISecurityMasterRevisionStore _revisions;
     private readonly IPeriodAwareRestatementResolver _restatementResolver;
+    private readonly IAffectedLedgerBookResolver _affectedLedgerBookResolver;
     private readonly IReadOnlyList<ISecurityMasterRevisionPublishedHandler> _handlers;
     private readonly ILogger<SecurityMasterWorkbenchCommandService> _logger;
 
@@ -57,6 +58,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         IOperationsContinuityWorkflowService approvalWorkflow,
         ISecurityMasterRevisionStore revisions,
         IPeriodAwareRestatementResolver restatementResolver,
+        IAffectedLedgerBookResolver affectedLedgerBookResolver,
         IEnumerable<ISecurityMasterRevisionPublishedHandler> handlers,
         ILogger<SecurityMasterWorkbenchCommandService> logger)
     {
@@ -68,6 +70,7 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         _approvalWorkflow = approvalWorkflow ?? throw new ArgumentNullException(nameof(approvalWorkflow));
         _revisions = revisions ?? throw new ArgumentNullException(nameof(revisions));
         _restatementResolver = restatementResolver ?? throw new ArgumentNullException(nameof(restatementResolver));
+        _affectedLedgerBookResolver = affectedLedgerBookResolver ?? throw new ArgumentNullException(nameof(affectedLedgerBookResolver));
         _handlers = (handlers ?? throw new ArgumentNullException(nameof(handlers)))
             .OrderBy(static h => h.Order)
             .ToArray();
@@ -407,17 +410,26 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
             .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: null, ct)
             .ConfigureAwait(false);
 
+        var downstreamImpact = snapshot?.DownstreamImpact ?? EmptyDownstreamImpact();
+
+        // Resolve the durable accounting books the edit could have touched so the period-aware resolver
+        // can route each by its accounting-period lock status. Without this feed the resolver sees an
+        // empty affected set and short-circuits to no restatement.
+        var affectedLedgerBookIds = await _affectedLedgerBookResolver
+            .ResolveAsync(downstreamImpact, ct)
+            .ConfigureAwait(false);
+
         // Carry the edit's effective date and changed field from the durable revision so period-aware
         // / restatement handlers can scope impact analysis to the actual (possibly back-dated) edit
-        // rather than to publish time. AffectedLedgerBookIds resolution is Phase 3 (kept empty here).
+        // rather than to publish time.
         var evt = new SecurityMasterRevisionPublishedEvent(
             SecurityId: request.SecurityId,
             RevisionId: request.RevisionId,
             Version: currentVersion,
             EffectiveFrom: revision.FieldEffectiveFrom ?? DateTimeOffset.UtcNow,
             ChangedFields: revision.FieldPath is { } fieldPath ? [fieldPath] : [],
-            DownstreamImpact: snapshot?.DownstreamImpact ?? EmptyDownstreamImpact(),
-            AffectedLedgerBookIds: [],
+            DownstreamImpact: downstreamImpact,
+            AffectedLedgerBookIds: affectedLedgerBookIds,
             Actor: request.Actor,
             CorrelationId: request.CorrelationId);
 
