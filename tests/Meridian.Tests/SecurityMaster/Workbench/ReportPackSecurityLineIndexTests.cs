@@ -149,6 +149,27 @@ public sealed class ReportPackSecurityLineIndexTests
     }
 
     [Fact]
+    public void Upsert_LineWithNullKey_StillIndexesSecurityWithoutThrowing()
+    {
+        // A null line key must not crash the Ordinal Distinct, and — unlike skipping the whole line —
+        // must not drop the security reference (that would be a silent miss, which this feature exists
+        // to avoid). The security is indexed; the null key is simply omitted from LineKeys.
+        var index = new InMemoryReportPackSecurityLineIndex();
+        var line = new ReportPackLineProvenanceDto(
+            LineKey: null!,
+            SourceKind: "security-master",
+            SourceId: SecurityA.ToString("D"),
+            EvidenceId: "ev-1",
+            SecurityMasterId: SecurityA.ToString("D"));
+
+        var act = () => index.Upsert(Pack(FundA, ReportPackWorkflowStateDto.Published, line));
+
+        act.Should().NotThrow();
+        index.LookupByFund(SecurityA, FundA).Should().ContainSingle()
+            .Which.LineKeys.Should().BeEmpty();
+    }
+
+    [Fact]
     public void NonSecurityKindSource_DoesNotReferenceSecurityBySourceId()
     {
         // A ledger-kind source whose id happens to be a guid must NOT be treated as a security reference.

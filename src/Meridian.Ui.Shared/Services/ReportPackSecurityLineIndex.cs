@@ -58,7 +58,16 @@ public sealed class InMemoryReportPackSecurityLineIndex : IReportPackSecurityLin
     public void Upsert(ReportPackWorkflowRecordDto record)
     {
         ArgumentNullException.ThrowIfNull(record);
+        lock (_gate)
+        {
+            UpsertLocked(record);
+        }
+    }
 
+    // Recomputes a record's contributions. The caller MUST hold _gate, so a Rebuild can apply many
+    // upserts atomically (the index is never observed half-rebuilt by a concurrent lookup).
+    private void UpsertLocked(ReportPackWorkflowRecordDto record)
+    {
         var perSecurityLineKeys = new Dictionary<Guid, List<string>>();
         foreach (var line in record.LineProvenance ?? [])
         {
@@ -70,39 +79,41 @@ public sealed class InMemoryReportPackSecurityLineIndex : IReportPackSecurityLin
                     perSecurityLineKeys[securityId] = keys;
                 }
 
-                keys.Add(line.LineKey);
-            }
-        }
-
-        lock (_gate)
-        {
-            RemoveReportInternal(record.ReportId);
-
-            if (perSecurityLineKeys.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var (securityId, lineKeys) in perSecurityLineKeys)
-            {
-                var entry = new ReportPackSecurityLineIndexEntry(
-                    securityId,
-                    record.ReportId,
-                    record.FundProfileId,
-                    record.State,
-                    lineKeys.Distinct(StringComparer.Ordinal).ToArray());
-
-                if (!_bySecurity.TryGetValue(securityId, out var byReport))
+                // Register the security even when the contributing line has no key; only collect
+                // non-empty keys so the Ordinal Distinct below never hashes a null line key.
+                if (!string.IsNullOrEmpty(line.LineKey))
                 {
-                    byReport = [];
-                    _bySecurity[securityId] = byReport;
+                    keys.Add(line.LineKey);
                 }
+            }
+        }
 
-                byReport[record.ReportId] = entry;
+        RemoveReportInternal(record.ReportId);
+
+        if (perSecurityLineKeys.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var (securityId, lineKeys) in perSecurityLineKeys)
+        {
+            var entry = new ReportPackSecurityLineIndexEntry(
+                securityId,
+                record.ReportId,
+                record.FundProfileId,
+                record.State,
+                lineKeys.Distinct(StringComparer.Ordinal).ToArray());
+
+            if (!_bySecurity.TryGetValue(securityId, out var byReport))
+            {
+                byReport = [];
+                _bySecurity[securityId] = byReport;
             }
 
-            _reportSecurities[record.ReportId] = perSecurityLineKeys.Keys.ToArray();
+            byReport[record.ReportId] = entry;
         }
+
+        _reportSecurities[record.ReportId] = perSecurityLineKeys.Keys.ToArray();
     }
 
     public void RemoveReport(Guid reportId)
@@ -117,15 +128,17 @@ public sealed class InMemoryReportPackSecurityLineIndex : IReportPackSecurityLin
     {
         ArgumentNullException.ThrowIfNull(records);
 
+        // Clear and re-apply under a single lock so a concurrent lookup never observes a partially
+        // rebuilt (or momentarily empty) index.
         lock (_gate)
         {
             _bySecurity.Clear();
             _reportSecurities.Clear();
-        }
-
-        foreach (var record in records)
-        {
-            Upsert(record);
+            foreach (var record in records)
+            {
+                ArgumentNullException.ThrowIfNull(record);
+                UpsertLocked(record);
+            }
         }
     }
 
