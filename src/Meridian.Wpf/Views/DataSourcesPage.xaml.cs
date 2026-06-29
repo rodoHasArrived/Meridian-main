@@ -25,7 +25,17 @@ public partial class DataSourcesPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.LoadAsync();
+        try
+        {
+            await _viewModel.LoadAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Data Sources page failed to load.", ex);
+        }
     }
 
     // ── Save – reads secret input before delegating ───────────────────────

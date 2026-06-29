@@ -53,20 +53,30 @@ public partial class WorkspaceDeepPageHostPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        ApplyHostedChromeState();
-        ApplyPresentationMode();
-        CommandBar.CommandGroup = BuildCommandGroup();
-        _settingsConfigurationService.DesktopShellPreferencesChanged += OnDesktopShellPreferencesChanged;
-
-        if (!ReferenceEquals(HostedFrame.Content, _hostedPage))
+        try
         {
-            HostedFrame.Content = _hostedPage;
+            ApplyHostedChromeState();
+            ApplyPresentationMode();
+            CommandBar.CommandGroup = BuildCommandGroup();
+            _settingsConfigurationService.DesktopShellPreferencesChanged += OnDesktopShellPreferencesChanged;
+
+            if (!ReferenceEquals(HostedFrame.Content, _hostedPage))
+            {
+                HostedFrame.Content = _hostedPage;
+            }
+
+            if (_presentationMode == WorkspaceChromePresentationMode.Standalone && _shellContextService is not null)
+            {
+                _shellContextService.SignalsChanged += OnShellSignalsChanged;
+                await RefreshContextAsync();
+            }
         }
-
-        if (_presentationMode == WorkspaceChromePresentationMode.Standalone && _shellContextService is not null)
+        catch (System.OperationCanceledException)
         {
-            _shellContextService.SignalsChanged += OnShellSignalsChanged;
-            await RefreshContextAsync();
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Workspace Deep Page Host page failed to load.", ex);
         }
     }
 

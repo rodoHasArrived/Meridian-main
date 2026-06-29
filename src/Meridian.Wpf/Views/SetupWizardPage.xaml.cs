@@ -13,9 +13,19 @@ public partial class SetupWizardPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (DataContext is SetupWizardViewModel viewModel)
+        try
         {
-            await viewModel.LoadAsync();
+            if (DataContext is SetupWizardViewModel viewModel)
+            {
+                await viewModel.LoadAsync();
+            }
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Setup Wizard page failed to load.", ex);
         }
     }
 }

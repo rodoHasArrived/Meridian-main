@@ -31,8 +31,20 @@ public partial class OptionsPage : Page
         DataContext = _viewModel;
     }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _viewModel.LoadAllAsync();
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.LoadAllAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Options page failed to load.", ex);
+        }
+    }
 
     private async void LoadExpirations_Click(object sender, RoutedEventArgs e) =>
         await _viewModel.LoadExpirationsAsync();
