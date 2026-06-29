@@ -193,12 +193,6 @@
           "notes": "Capture the Security and instrument explorer screen from the registered WPF shell catalog."
         },
         {
-          "title": "Security passport editor",
-          "pageTag": "SecurityPassportEditor",
-          "captureName": "wpf-security-passport-editor",
-          "notes": "Capture the Security passport editor screen from the registered WPF shell catalog."
-        },
-        {
           "title": "Reporting Workspace",
           "pageTag": "ReportingShell",
           "captureName": "wpf-reporting-shell",

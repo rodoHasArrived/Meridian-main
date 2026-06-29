@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2561 / 7183** items documented (**35.7%**) &mdash; Grade: **F**
+**2562 / 7184** items documented (**35.7%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 35.7%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2440 | 6688 | 36.5% | F |
+| Public Classes / Interfaces | 2441 | 6689 | 36.5% | F |
 | API Endpoints | 107 | 348 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -27,56 +27,56 @@
 
 | Item | Location |
 | ------ | ---------- |
-| `AutoRemediationOutcome` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:12` |
-| `AutoRemediationTriggerSource` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:21` |
-| `AutoGapRemediationPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:28` |
-| `QualityAlertRemediationSignal` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:45` |
-| `BackfillCostRequest` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:280` |
-| `BackfillCostEstimate` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:290` |
-| `ProviderCostEstimate` | `src/Meridian.Application/Backfill/BackfillCostEstimator.cs:314` |
-| `IHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:16` |
-| `ConsoleHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:35` |
-| `DesktopHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:81` |
-| `StreamingHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:120` |
-| `BackfillHostAdapter` | `src/Meridian.Application/Composition/HostAdapters.cs:170` |
-| `HostBuilder` | `src/Meridian.Application/Composition/HostAdapters.cs:201` |
-| `NonProductionOnlyImplementationAttribute` | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs:5` |
-| `INonProductionOnlyService` | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs:8` |
-| `IApplicationLifecycleCoordinator` | `src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:9` |
-| `IHostDashboardServer` | `src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs:23` |
-| `PipelineOptions` | `src/Meridian.Application/Config/ConfigurationPipeline.cs:487` |
-| `SelfHealingStrictness` | `src/Meridian.Application/Config/ConfigurationPipeline.cs:553` |
-| `SelfHealingSeverity` | `src/Meridian.Application/Config/ConfigurationPipeline.cs:575` |
-| `SelfHealingFix` | `src/Meridian.Application/Config/ConfigurationPipeline.cs:599` |
-| `TokenStatus` | `src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs:386` |
-| `IProviderIntegrationHttpTransport` | `src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:9` |
-| `ProviderIntegrationHttpRequest` | `src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:16` |
-| `ProviderIntegrationHttpResponse` | `src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:23` |
-| `DetailedHealthCheckConfig` | `src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:456` |
-| `DetailedHealthStatus` | `src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:474` |
-| `DetailedHealthReport` | `src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:486` |
-| `HealthCheckItem` | `src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:497` |
-| `HealthSummary` | `src/Meridian.Application/Monitoring/DetailedHealthCheck.cs:508` |
-| `PrometheusReconnectionMetrics` | `src/Meridian.Application/Monitoring/PrometheusMetrics.cs:773` |
-| `PrometheusMetricsUpdater` | `src/Meridian.Application/Monitoring/PrometheusMetrics.cs:782` |
-| `DeadLetterStatistics` | `src/Meridian.Application/Pipeline/DeadLetterSink.cs:225` |
-| `DroppedEventStatistics` | `src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:129` |
-| `IngestionJobSummary` | `src/Meridian.Application/Pipeline/IngestionJobService.cs:420` |
-| `SchemaUpcasterStatistics` | `src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs:172` |
-| `IBestOfBreedProviderSelector` | `src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:7` |
-| `KernelObservabilitySnapshot` | `src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs:187` |
-| `KernelDomainSnapshot` | `src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs:194` |
-| `KernelLatencyPercentiles` | `src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs:212` |
-| `KernelCriticalSeverityAlertThresholds` | `src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs:214` |
-| `ProviderPresetService` | `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:10` |
-| `ProviderCertificationService` | `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:182` |
-| `ProviderRouteExplainabilityService` | `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:260` |
-| `IProviderFamilyCatalogService` | `src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:443` |
-| `ExecutionTrigger` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:134` |
-| `ExecutionStatus` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:158` |
-| `ExecutionStatistics` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185` |
-| `ProviderUsageStats` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:218` |
-| `SymbolExecutionResult` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:234` |
+| `BackfillExecutionHistory` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:250` |
+| `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:407` |
+| `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:427` |
+| `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
+| `BackfillSchedulePresets` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:213` |
+| `ScheduleStatusSummary` | `src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:413` |
+| `ScheduledBackfillOptions` | `src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:630` |
+| `SecurityValidationContext` | `src/Meridian.Application/SecurityMaster/AssetClassValidatorRegistry.cs:7` |
+| `ISecurityAssetClassValidator` | `src/Meridian.Application/SecurityMaster/AssetClassValidatorRegistry.cs:11` |
+| `ICorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:6` |
+| `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:11` |
+| `ISecurityValidationSnapshotStore` | `src/Meridian.Application/SecurityMaster/FileSecurityValidationSnapshotStore.cs:10` |
+| `NullSecurityValidationSnapshotStore` | `src/Meridian.Application/SecurityMaster/FileSecurityValidationSnapshotStore.cs:69` |
+| `PositionCorporateActionAdjustment` | `src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:6` |
+| `SecurityMasterRestatementDecision` | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:32` |
+| `SecurityMasterRevisionRecord` | `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:50` |
+| `NullSecurityMasterPricingService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:10` |
+| `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
+| `NullDataVendorEntitlementService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:53` |
+| `NullSecurityMasterDataQualityService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:75` |
+| `NullSecurityMasterQueryService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:21` |
+| `NullCorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:120` |
+| `NullSecurityMasterCorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:133` |
+| `NullSecurityMasterImportService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:169` |
+| `NullTradingParametersBackfillService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:191` |
+| `ISecurityAssetProfileGovernanceService` | `src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:9` |
+| `ISecurityMasterConflictService` | `src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:11` |
+| `SecurityMasterImportResult` | `src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12` |
+| `SecurityMasterImportProgress` | `src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:22` |
+| `ISecurityMasterImportService` | `src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:32` |
+| `SecurityMasterIngestStatusSnapshot` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:6` |
+| `SecurityMasterActiveImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13` |
+| `SecurityMasterCompletedImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:26` |
+| `ISecurityMasterIngestStatusService` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:41` |
+| `ISecurityMasterLedgerBridge` | `src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs:13` |
+| `SecurityMasterOperationalReadinessRequest` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:8` |
+| `SecurityMasterOperationalEvidenceSnapshot` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:14` |
+| `SecurityMasterOperationalEvidenceItem` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:21` |
+| `ISecurityMasterOperationalReadinessService` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:33` |
+| `NullSecurityValidationGateService` | `src/Meridian.Application/SecurityMaster/SecurityValidationGateService.cs:160` |
+| `ISecurityValidationService` | `src/Meridian.Application/SecurityMaster/SecurityValidationService.cs:8` |
+| `NullSecurityValidationService` | `src/Meridian.Application/SecurityMaster/SecurityValidationService.cs:731` |
+| `NullUflProjectionRebuilder` | `src/Meridian.Application/SecurityMaster/UflProjectionRebuilder.cs:42` |
+| `DetectedProvider` | `src/Meridian.Application/Services/AutoConfigurationService.cs:21` |
+| `AutoConfigResult` | `src/Meridian.Application/Services/AutoConfigurationService.cs:34` |
+| `ConfigPresetInfo` | `src/Meridian.Application/Services/AutoConfigurationService.cs:967` |
+| `FirstTimeConfigOptions` | `src/Meridian.Application/Services/AutoConfigurationService.cs:977` |
+| `SymbolPreset` | `src/Meridian.Application/Services/AutoConfigurationService.cs:1001` |
+| `WizardResult` | `src/Meridian.Application/Services/ConfigurationWizard.cs:314` |
+| `DataSourceSelection` | `src/Meridian.Application/Services/ConfigurationWizard.cs:323` |
 | ... and 4198 more | |
 
 ### API Endpoints (241 undocumented)

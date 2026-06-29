@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `6b924b5a6a22`
+- Source fingerprint: `d9a678d6e20f`
 - Baseline date for open Gantt tasks: `2026-06-17`
-- Registered WPF screens: `93`
-- Open automated tasks: `78`
+- Registered WPF screens: `92`
+- Open automated tasks: `77`
 
 ## Workspace Summary
 
@@ -26,7 +26,7 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Trading | 6 | 5 | 1 | 0 | 1 | 6 | 5 |
 | Portfolio | 9 | 4 | 4 | 1 | 0 | 9 | 9 |
-| Accounting | 15 | 6 | 9 | 0 | 0 | 15 | 15 |
+| Accounting | 14 | 6 | 8 | 0 | 0 | 14 | 14 |
 | Reporting | 8 | 5 | 3 | 0 | 1 | 8 | 7 |
 | Strategy | 13 | 6 | 3 | 3 | 4 | 13 | 9 |
 | Data | 25 | 6 | 9 | 10 | 7 | 25 | 18 |
@@ -73,7 +73,6 @@ gantt
     Ledger explorer Needs screenshot index row :active, accounting_ledgerexplorer, 2026-06-17, 3d
     Fund audit trail Needs screenshot :active, accounting_fundaudittrail, 2026-06-17, 3d
     Security and instrument explorer Needs screenshot index row :active, accounting_securityinstrumentexplorer, 2026-06-17, 3d
-    Security passport editor Needs screenshot index row :active, accounting_securitypassporteditor, 2026-06-17, 3d
     section Reporting
     Reporting Workspace Needs screenshot :crit, active, reporting_reportingshell, 2026-06-17, 3d
     Fund report pack Needs screenshot :crit, active, reporting_fundreportpack, 2026-06-17, 3d
@@ -382,14 +381,6 @@ gantt
 - [x] Registered in the WPF shell registry as SecurityInstrumentExplorer (FinancialRecordExplorerPage).
 - [ ] Add SecurityInstrumentExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more.
-
-#### Security passport editor (`SecurityPassportEditor`)
-
-- Workspace section: `Fund Ops`; visibility: `Secondary`; page class: `SecurityPassportEditorPage`.
-- Status: `Needs screenshot index row`.
-- [x] Registered in the WPF shell registry as SecurityPassportEditor (SecurityPassportEditorPage).
-- [ ] Add SecurityPassportEditor to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs.
 
 ### Reporting
 

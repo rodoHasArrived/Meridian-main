@@ -40,8 +40,7 @@ public sealed class AccountingFeatureModuleTests
             "LedgerExplorer",
             "FundReconciliation",
             "FundAuditTrail",
-            "SecurityInstrumentExplorer",
-            "SecurityPassportEditor");
+            "SecurityInstrumentExplorer");
     }
 
     [Fact]
