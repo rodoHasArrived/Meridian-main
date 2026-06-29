@@ -61,6 +61,39 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Source conflict resolution -->
+            <TextBlock Text="Source conflict" FontWeight="SemiBold" Margin="0,18,0,6" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                    <TextBlock Text="Conflict id" Opacity="0.8" />
+                    <TextBox Text="{Binding ConflictId, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                    <TextBlock Text="Chosen winner source" Opacity="0.8" />
+                    <TextBox Text="{Binding ChosenWinnerSource, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Reason (required)" Opacity="0.8" />
+                    <TextBox Text="{Binding ConflictReason, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Bottom">
+                    <CheckBox Content="Acknowledge policy deviation"
+                              IsChecked="{Binding AcknowledgePolicyDeviation}" Margin="0,0,0,2" />
+                </StackPanel>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Button Content="Resolve conflict" Command="{Binding ResolveConflictCommand}" Padding="12,6" />
+            </StackPanel>
+
             <!-- Approval context -->
             <TextBlock Text="Approval context" FontWeight="SemiBold" Margin="0,18,0,6" />
             <Grid>

@@ -184,12 +184,12 @@
 <!-- generated -->
 <g id="node1" class="node">
 <title>generated</title>
-<polygon fill="#1d4ed8" stroke="#60a5fa" points="915.65,-762.8 714.35,-762.8 714.35,-704.4 921.65,-704.4 921.65,-756.8 915.65,-762.8"/>
-<polyline fill="none" stroke="#60a5fa" points="915.65,-762.8 915.65,-756.8"/>
-<polyline fill="none" stroke="#60a5fa" points="921.65,-756.8 915.65,-756.8"/>
-<text xml:space="preserve" text-anchor="middle" x="818" y="-746.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: c08a75e1512a</text>
+<polygon fill="#1d4ed8" stroke="#60a5fa" points="916.03,-762.8 713.97,-762.8 713.97,-704.4 922.03,-704.4 922.03,-756.8 916.03,-762.8"/>
+<polyline fill="none" stroke="#60a5fa" points="916.03,-762.8 916.03,-756.8"/>
+<polyline fill="none" stroke="#60a5fa" points="922.03,-756.8 916.03,-756.8"/>
+<text xml:space="preserve" text-anchor="middle" x="818" y="-746.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: b2d912b9e6c2</text>
 <text xml:space="preserve" text-anchor="middle" x="818" y="-729.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Transient pages in App.xaml.cs: 4</text>
-<text xml:space="preserve" text-anchor="middle" x="818" y="-712.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Registry tags: 92</text>
+<text xml:space="preserve" text-anchor="middle" x="818" y="-712.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Registry tags: 93</text>
 </g>
 <!-- app -->
 <g id="node2" class="node">
@@ -451,7 +451,7 @@
 <title>section_11</title>
 <polygon fill="#0f172a" stroke="#64748b" points="2986.71,-181.8 2983.71,-185.8 2962.71,-185.8 2959.71,-181.8 2839.29,-181.8 2839.29,-123.4 2986.71,-123.4 2986.71,-181.8"/>
 <text xml:space="preserve" text-anchor="middle" x="2913" y="-165.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Accounting / Fund Ops</text>
-<text xml:space="preserve" text-anchor="middle" x="2913" y="-148.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">11 page classes</text>
+<text xml:space="preserve" text-anchor="middle" x="2913" y="-148.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">12 page classes</text>
 <text xml:space="preserve" text-anchor="middle" x="2913" y="-131.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">0 transient registrations</text>
 </g>
 <!-- views&#45;&gt;section_11 -->
@@ -1092,7 +1092,7 @@
 <polygon fill="#0f172a" stroke="#64748b" points="3473.48,-63.2 3340.52,-63.2 3340.52,-27.2 3479.48,-27.2 3479.48,-57.2 3473.48,-63.2"/>
 <polyline fill="none" stroke="#64748b" points="3473.48,-63.2 3473.48,-57.2"/>
 <polyline fill="none" stroke="#64748b" points="3479.48,-57.2 3473.48,-57.2"/>
-<text xml:space="preserve" text-anchor="middle" x="3410" y="-41" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">+ 3 more page classes</text>
+<text xml:space="preserve" text-anchor="middle" x="3410" y="-41" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">+ 4 more page classes</text>
 </g>
 <!-- section_11&#45;&gt;section_11_more -->
 <g id="edge43" class="edge">

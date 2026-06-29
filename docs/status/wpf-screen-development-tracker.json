@@ -7,18 +7,18 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "5c1f1694ad15",
+  "sourceFingerprint": "472b4495a59f",
   "baselineDate": "2026-06-17",
   "summary": {
-    "screenCount": 92,
+    "screenCount": 93,
     "workspaceCount": 7,
     "screenshotCount": 15,
-    "testReferenceCount": 92,
-    "openTaskCount": 77,
+    "testReferenceCount": 93,
+    "openTaskCount": 78,
     "statusCounts": {
       "needs-screenshot": 70,
       "evidence-current": 15,
-      "needs-screenshot-index": 7
+      "needs-screenshot-index": 8
     },
     "workspaces": [
       {
@@ -43,13 +43,13 @@
       },
       {
         "name": "Accounting",
-        "screenCount": 14,
+        "screenCount": 15,
         "primaryCount": 6,
-        "secondaryCount": 8,
+        "secondaryCount": 9,
         "overflowCount": 0,
         "screenshotCount": 0,
-        "testReferenceCount": 14,
-        "openTaskCount": 14
+        "testReferenceCount": 15,
+        "openTaskCount": 15
       },
       {
         "name": "Reporting",
@@ -1330,6 +1330,40 @@
         {
           "done": true,
           "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
+        }
+      ],
+      "openTaskCount": 1
+    },
+    {
+      "workspace": "Accounting",
+      "pageTag": "SecurityPassportEditor",
+      "title": "Security passport editor",
+      "section": "Fund Ops",
+      "visibilityTier": "Secondary",
+      "order": 95,
+      "pageType": "SecurityPassportEditorPage",
+      "screenshotIndexRow": false,
+      "screenshotPath": null,
+      "screenshotExists": false,
+      "refreshedDate": null,
+      "fixtureMode": null,
+      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs"
+      ],
+      "status": "needs-screenshot-index",
+      "tasks": [
+        {
+          "done": true,
+          "text": "Registered in the WPF shell registry as SecurityPassportEditor (SecurityPassportEditorPage)."
+        },
+        {
+          "done": false,
+          "text": "Add SecurityPassportEditor to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+        },
+        {
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2775,6 +2809,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
@@ -2816,7 +2851,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +69 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +70 more."
         }
       ],
       "openTaskCount": 0

@@ -46,6 +46,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveDraftCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResolveConflictCommand))]
     [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
     [NotifyCanExecuteChangedFor(nameof(ApproveCommand))]
     [NotifyCanExecuteChangedFor(nameof(PublishCommand))]
@@ -79,9 +80,33 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     [ObservableProperty] private string _reviewer = string.Empty;
     [ObservableProperty] private string _reportPackId = string.Empty;
 
+    // ── Source-conflict resolution inputs ─────────────────────────────────────
+    // Governed Accept/Override over the same passport stream: the operator picks a winning source for
+    // an open conflict. Choosing a winner other than the policy default requires acknowledging the
+    // deviation, which is retained as the audited artifact (the server re-validates this).
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ResolveConflictCommand))]
+    private Guid? _conflictId;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ResolveConflictCommand))]
+    private string _chosenWinnerSource = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ResolveConflictCommand))]
+    private string _conflictReason = string.Empty;
+
+    [ObservableProperty] private bool _acknowledgePolicyDeviation;
+
     // ── Command guards ────────────────────────────────────────────────────────
     private bool CanSaveDraft()
         => !IsBusy && !string.IsNullOrWhiteSpace(FieldPath) && !string.IsNullOrWhiteSpace(Justification);
+
+    private bool CanResolveConflict()
+        => !IsBusy
+           && ConflictId is { } id && id != Guid.Empty
+           && !string.IsNullOrWhiteSpace(ChosenWinnerSource)
+           && !string.IsNullOrWhiteSpace(ConflictReason);
 
     private bool CanSubmit() => !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Draft;
 
@@ -108,6 +133,23 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 FundProfileId: FundProfileId);
             return _client.UpdateFieldAsync(SecurityId, request, ct);
         }, ApplyEditResult, ct);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanResolveConflict))]
+    private async Task ResolveConflictAsync(CancellationToken ct)
+    {
+        await RunAsync("Resolving source conflict…", () =>
+        {
+            var request = new ResolveSourceConflictRequest(
+                SecurityId: SecurityId,
+                ConflictId: ConflictId ?? Guid.Empty,
+                ExpectedVersion: Version,
+                ChosenWinnerSource: ChosenWinnerSource.Trim(),
+                Actor: string.Empty,
+                Reason: ConflictReason.Trim(),
+                AcknowledgePolicyDeviation: AcknowledgePolicyDeviation);
+            return _client.ResolveConflictAsync(SecurityId, request, ct);
+        }, ApplyConflictResolutionResult, ct);
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]
@@ -180,6 +222,16 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         RevisionState = result.State;
         ExpectedWorkflowVersion = result.NewVersion;
         StatusText = $"Revision {result.State} (approval workflow v{result.NewVersion}).";
+    }
+
+    // Resolving a source conflict is a passport-level governed write (Accept/Override over the same
+    // stream); it advances the passport version but does not touch the draft revision lifecycle.
+    private void ApplyConflictResolutionResult(SecurityMasterConflictResolutionDto result)
+    {
+        Version = result.NewVersion;
+        StatusText = result.IsPolicyDeviation
+            ? $"Conflict resolved to {result.ChosenWinnerSource} (policy deviation from {result.PolicyWinnerSource}) at v{result.NewVersion}."
+            : $"Conflict resolved to {result.ChosenWinnerSource} at v{result.NewVersion}.";
     }
 
     private void ApplyPublishResult(SecurityMasterPublishResultDto result)

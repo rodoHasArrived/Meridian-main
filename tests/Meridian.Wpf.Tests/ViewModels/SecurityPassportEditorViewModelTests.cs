@@ -129,6 +129,90 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.ApproveCommand.CanExecute(null).Should().BeTrue();
     }
 
+    [Fact]
+    public void ResolveConflictCommand_IsDisabledUntilConflictInputsArePresent()
+    {
+        var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7
+        };
+
+        viewModel.ResolveConflictCommand.CanExecute(null).Should().BeFalse();
+
+        viewModel.ConflictId = Guid.NewGuid();
+        viewModel.ChosenWinnerSource = "ProviderB";
+        viewModel.ResolveConflictCommand.CanExecute(null).Should().BeFalse("a reason is still required");
+
+        viewModel.ConflictReason = "Vendor B confirmed the corporate action.";
+        viewModel.ResolveConflictCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ResolveConflict_PostsChosenWinnerAndAdvancesPassportVersion()
+    {
+        var conflictId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        ResolveSourceConflictRequest? captured = null;
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.ResolveConflictAsync(SecurityId, It.IsAny<ResolveSourceConflictRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, ResolveSourceConflictRequest, CancellationToken>((_, request, _) => captured = request)
+            .ReturnsAsync(ApiResponse<SecurityMasterConflictResolutionDto>.Ok(
+                new SecurityMasterConflictResolutionDto(
+                    ConflictId: conflictId,
+                    PolicyWinnerSource: "ProviderA",
+                    ChosenWinnerSource: "ProviderB",
+                    IsPolicyDeviation: true,
+                    Reason: "Vendor B confirmed the corporate action.",
+                    NewVersion: 9)));
+
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            ConflictId = conflictId,
+            ChosenWinnerSource = "ProviderB",
+            ConflictReason = "Vendor B confirmed the corporate action.",
+            AcknowledgePolicyDeviation = true
+        };
+
+        await viewModel.ResolveConflictCommand.ExecuteAsync(null);
+
+        captured.Should().NotBeNull();
+        captured!.ConflictId.Should().Be(conflictId);
+        captured.ExpectedVersion.Should().Be(7, "the passport version is the optimistic-concurrency token");
+        captured.ChosenWinnerSource.Should().Be("ProviderB");
+        captured.AcknowledgePolicyDeviation.Should().BeTrue();
+        viewModel.Version.Should().Be(9, "the resolution result advances the passport version");
+        viewModel.RevisionState.Should().BeNull("conflict resolution does not touch the draft lifecycle");
+        viewModel.BannerIsError.Should().BeFalse();
+        viewModel.StatusText.Should().Contain("policy deviation");
+    }
+
+    [Fact]
+    public async Task ResolveConflict_OnVersionConflict_RaisesReloadBanner()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.ResolveConflictAsync(SecurityId, It.IsAny<ResolveSourceConflictRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<SecurityMasterConflictResolutionDto>.Fail("{\"error\":\"version-conflict\",\"currentVersion\":11}", 409));
+
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            ConflictId = Guid.NewGuid(),
+            ChosenWinnerSource = "ProviderB",
+            ConflictReason = "reason"
+        };
+
+        await viewModel.ResolveConflictCommand.ExecuteAsync(null);
+
+        viewModel.BannerIsError.Should().BeTrue();
+        viewModel.BannerText.Should().Contain("v11");
+        viewModel.Version.Should().Be(7, "a rejected resolution must not advance the optimistic token");
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,
