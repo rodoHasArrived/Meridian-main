@@ -35,10 +35,20 @@ public partial class DataQualityPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.StartAsync();
-        CommandBar.CommandGroup = BuildCommandGroup();
-        RenderTrendChart(_viewModel.TrendPoints);
-        ApplyDrilldownHeatmap();
+        try
+        {
+            await _viewModel.StartAsync();
+            CommandBar.CommandGroup = BuildCommandGroup();
+            RenderTrendChart(_viewModel.TrendPoints);
+            ApplyDrilldownHeatmap();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Data Quality page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) => _viewModel.Stop();

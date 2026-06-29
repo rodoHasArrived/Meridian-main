@@ -33,6 +33,16 @@ public partial class StorageOptimizationPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.LoadAsync();
+        try
+        {
+            await _viewModel.LoadAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Storage Optimization page failed to load.", ex);
+        }
     }
 }

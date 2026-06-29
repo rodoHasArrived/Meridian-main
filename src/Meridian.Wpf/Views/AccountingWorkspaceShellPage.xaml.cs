@@ -58,16 +58,26 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _fundContextService.ActiveFundProfileChanged += OnSignalsChanged;
-        _shellContextService.SignalsChanged += OnSignalsChanged;
-        if (_operatingContextService is not null)
+        try
         {
-            _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
-            _operatingContextService.WindowModeChanged += OnSignalsChanged;
-        }
+            _fundContextService.ActiveFundProfileChanged += OnSignalsChanged;
+            _shellContextService.SignalsChanged += OnSignalsChanged;
+            if (_operatingContextService is not null)
+            {
+                _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
+                _operatingContextService.WindowModeChanged += OnSignalsChanged;
+            }
 
-        await RefreshAsync();
-        await RestoreShellDockLayoutAsync(AccountingDockManager);
+            await RefreshAsync();
+            await RestoreShellDockLayoutAsync(AccountingDockManager);
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Accounting Workspace Shell page failed to load.", ex);
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
