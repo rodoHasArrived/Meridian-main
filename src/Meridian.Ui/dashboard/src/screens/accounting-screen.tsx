@@ -2119,7 +2119,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     {item.ledgerLabel}
                   </p>
-                  <CoveragePassportDrillIn assetClass={item.assetClass} securities={securityMaster.results} />
+                  <CoveragePassportDrillIn assetClass={item.assetClass} securities={securityMaster?.results} />
                 </div>
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getSecurityTrustSnapshot } from "@/lib/api";
 import { SecurityPassportEditor, type SecurityPassportWorkbenchService } from "./security-passport-editor";
 
@@ -20,7 +20,7 @@ export interface SecurityPassportEditorLauncherProps {
 
 async function defaultLoadVersion(securityId: string): Promise<number> {
   const snapshot = await getSecurityTrustSnapshot(securityId);
-  return snapshot.economicDefinition?.version ?? 0;
+  return snapshot?.economicDefinition?.version ?? 0;
 }
 
 type LauncherState =
@@ -38,8 +38,11 @@ export function SecurityPassportEditorLauncher({
   loadVersion
 }: SecurityPassportEditorLauncherProps) {
   const [state, setState] = useState<LauncherState>({ status: "loading" });
+  // Bumping this re-runs the effect (and its cleanup) instead of calling the loader imperatively, so a
+  // pending request is always cancelled before the next one — no state updates on an unmounted component.
+  const [reloadCount, setReloadCount] = useState(0);
 
-  const load = useCallback(() => {
+  useEffect(() => {
     let cancelled = false;
     setState({ status: "loading" });
     const loader = loadVersion ?? defaultLoadVersion;
@@ -55,9 +58,7 @@ export function SecurityPassportEditorLauncher({
     return () => {
       cancelled = true;
     };
-  }, [securityId, loadVersion]);
-
-  useEffect(() => load(), [load]);
+  }, [securityId, loadVersion, reloadCount]);
 
   if (state.status === "loading") {
     return (
@@ -84,7 +85,7 @@ export function SecurityPassportEditorLauncher({
       trustPosture={trustPosture}
       fundProfileId={fundProfileId}
       service={service}
-      onReloadRequested={() => load()}
+      onReloadRequested={() => setReloadCount((count) => count + 1)}
     />
   );
 }

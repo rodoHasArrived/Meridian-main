@@ -31,10 +31,10 @@ export function buildCoverageSecurityDrillIns(
 
   const target = normalize(assetClass);
   return securities
-    .filter((entry) => normalize(entry.classification?.assetClass) === target)
+    .filter((entry) => entry && normalize(entry.classification?.assetClass) === target)
     .map((entry) => ({
       securityId: entry.securityId,
-      displayName: entry.displayName,
+      displayName: entry.displayName ?? "",
       symbol: entry.classification?.primaryIdentifierValue ?? null,
       assetClass: entry.classification?.assetClass ?? assetClass
     }))
