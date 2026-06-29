@@ -87,13 +87,20 @@ public sealed record ApproveSecurityMasterRevisionRequest(
     string ReportPackId,
     string? CorrelationId = null);
 
-/// <summary>Publishes an approved revision (durable append + downstream propagation).</summary>
+/// <summary>
+/// Publishes an approved revision (durable append + downstream propagation).
+/// <para><see cref="FundProfileId"/> optionally scopes the downstream restatement impact to a fund at
+/// publish time, overriding the scope captured on the draft revision; when omitted the revision's scope
+/// (the fund the edit was made under, if any) is used. Cross-fund (multi-held) expansion is a separate
+/// slice gated on tenant-scoped holdings discovery.</para>
+/// </summary>
 public sealed record PublishSecurityMasterRevisionRequest(
     Guid SecurityId,
     Guid RevisionId,
     string Actor,
     string ApproverActor,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    string? FundProfileId = null);
 
 /// <summary>Result of a field edit / submit transition.</summary>
 public sealed record SecurityMasterEditResultDto(

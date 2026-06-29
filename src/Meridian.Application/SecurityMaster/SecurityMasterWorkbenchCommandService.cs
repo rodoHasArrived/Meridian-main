@@ -411,13 +411,17 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
-        // Scope the downstream-impact computation to the fund profile the edit was made under (carried
-        // on the draft revision), so affected ledger books and report-pack restatement candidates can be
-        // resolved. A null/blank scope (edit made without a fund context) yields an unscoped impact and
-        // the period-aware path reports no restatement — the cross-fund/multi-fund activation case is a
-        // later slice.
+        // Scope the downstream-impact computation to a fund profile so affected ledger books and
+        // report-pack restatement candidates can be resolved. The publish request may supply (or
+        // override) the scope; otherwise fall back to the scope captured on the draft revision (the fund
+        // the edit was made under, if any). A null/blank scope yields an unscoped impact and the
+        // period-aware path reports no restatement — cross-fund/multi-fund activation is a later slice.
+        var fundScope = string.IsNullOrWhiteSpace(request.FundProfileId)
+            ? revision.FundProfileId
+            : request.FundProfileId.Trim();
+
         var snapshot = await _queryService
-            .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: revision.FundProfileId, ct)
+            .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: fundScope, ct)
             .ConfigureAwait(false);
 
         var downstreamImpact = snapshot?.DownstreamImpact ?? EmptyDownstreamImpact();
