@@ -164,6 +164,24 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     // write stays disabled so an all-zero security id is never posted.
     public bool HasLoadedPassport => SecurityId != Guid.Empty;
 
+    /// <summary>
+    /// True when the editor holds an in-progress draft or any unsaved operator input. A host reusing this
+    /// editor across contextual launches must not silently discard such work by re-hydrating.
+    /// </summary>
+    public bool HasUnsavedWork =>
+        RevisionId is not null
+        || !string.IsNullOrWhiteSpace(FieldPath)
+        || !string.IsNullOrWhiteSpace(NewValue)
+        || EffectiveFrom is not null
+        || !string.IsNullOrWhiteSpace(Justification)
+        || ConflictId is not null
+        || !string.IsNullOrWhiteSpace(ChosenWinnerSource)
+        || !string.IsNullOrWhiteSpace(ConflictReason)
+        || AcknowledgePolicyDeviation
+        || WorkflowId is not null
+        || !string.IsNullOrWhiteSpace(Reviewer)
+        || !string.IsNullOrWhiteSpace(ReportPackId);
+
     private bool CanSaveDraft()
         => HasLoadedPassport && !IsBusy && !string.IsNullOrWhiteSpace(FieldPath) && !string.IsNullOrWhiteSpace(Justification);
 

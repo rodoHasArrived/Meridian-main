@@ -1052,6 +1052,39 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void OpenPassportEditor_ReopeningSameSecurity_PreservesUnsavedFieldEdits()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("dddddddd-4444-4444-4444-444444444444");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (id, _) => CreateTrustSnapshot(id)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+            var editor = viewModel.PassportEditor;
+
+            // Operator types an edit but has not saved a draft yet (RevisionId still null).
+            editor.FieldPath = "EconomicDefinition.Coupon";
+            editor.Justification = "vendor confirmation";
+
+            // Clicking Edit Passport again for the same security must not discard the unsaved edit.
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            viewModel.PassportEditor.Should().BeSameAs(editor);
+            viewModel.PassportEditor.FieldPath.Should().Be("EconomicDefinition.Coupon");
+            viewModel.PassportEditor.Justification.Should().Be("vendor confirmation");
+        });
+    }
+
+    [Fact]
     public void OpenPassportEditor_DifferentSecurity_BuildsFreshEditorInstance()
     {
         WpfTestThread.Run(async () =>

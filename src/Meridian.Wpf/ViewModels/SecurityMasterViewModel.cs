@@ -1793,13 +1793,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
-        // Reuse the existing editor only to keep an in-progress draft for the *same* security alive, and
-        // only when no write is in flight. Otherwise build a fresh editor: a different security, a refreshed
-        // version, or an in-flight write started against a prior security must never bleed into this passport.
-        var preserveActiveDraft = PassportEditor.SecurityId == economic.SecurityId
-            && PassportEditor.RevisionId is not null
+        // Reuse the existing editor only to keep unsaved work for the *same* security alive (a saved draft
+        // or typed-but-unsaved input), and only when no write is in flight. Otherwise build a fresh editor:
+        // a different security, a refreshed version on an empty editor, or an in-flight write started
+        // against a prior security must never bleed into this passport.
+        var preserveInProgressWork = PassportEditor.SecurityId == economic.SecurityId
+            && PassportEditor.HasUnsavedWork
             && !PassportEditor.IsBusy;
-        if (!preserveActiveDraft)
+        if (!preserveInProgressWork)
         {
             PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient)
             {
