@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `472b4495a59f`
+- Source fingerprint: `6b924b5a6a22`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `93`
 - Open automated tasks: `78`
@@ -389,7 +389,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as SecurityPassportEditor (SecurityPassportEditorPage).
 - [ ] Add SecurityPassportEditor to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs.
 
 ### Reporting
 

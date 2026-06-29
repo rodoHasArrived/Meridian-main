@@ -213,6 +213,48 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.Version.Should().Be(7, "a rejected resolution must not advance the optimistic token");
     }
 
+    [Fact]
+    public void Writes_AreDisabledUntilAPassportIsLoaded()
+    {
+        // Opened from shell navigation without a passport context: SecurityId is empty, so no governed
+        // write may post against the all-zero security id even once field inputs are present.
+        var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)
+        {
+            FieldPath = "EconomicDefinition.Coupon",
+            Justification = "Vendor confirmation #4821."
+        };
+
+        viewModel.HasLoadedPassport.Should().BeFalse();
+        viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse();
+
+        viewModel.SecurityId = SecurityId;
+
+        viewModel.HasLoadedPassport.Should().BeTrue();
+        viewModel.SaveDraftCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parameter_HydratesIdentityAndConcurrencyTokenFromNavigationContext()
+    {
+        var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)
+        {
+            Parameter = new SecurityPassportEditorParameter(
+                SecurityId: SecurityId,
+                Version: 12,
+                Symbol: "ACME",
+                AssetClass: "Equity",
+                FundProfileId: "fund-1")
+        };
+
+        viewModel.SecurityId.Should().Be(SecurityId);
+        viewModel.Version.Should().Be(12);
+        viewModel.Symbol.Should().Be("ACME");
+        viewModel.AssetClass.Should().Be("Equity");
+        viewModel.FundProfileId.Should().Be("fund-1");
+        viewModel.HasLoadedPassport.Should().BeTrue();
+        viewModel.RevisionState.Should().BeNull("a freshly-loaded passport has no working revision");
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,

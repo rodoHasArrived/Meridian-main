@@ -25,8 +25,52 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         _client = client ?? throw new ArgumentNullException(nameof(client));
     }
 
+    /// <summary>
+    /// Navigation hook. The shell sets this when the editor is opened contextually for a selected
+    /// passport (e.g. from the Security Master page); a <see cref="SecurityPassportEditorParameter"/>
+    /// hydrates the editor identity and optimistic-concurrency token. Opening the route without a
+    /// parameter (command palette) leaves the editor unloaded and every governed write disabled.
+    /// </summary>
+    public object? Parameter
+    {
+        set
+        {
+            if (value is SecurityPassportEditorParameter context)
+            {
+                LoadPassportContext(context);
+            }
+        }
+    }
+
+    private void LoadPassportContext(SecurityPassportEditorParameter context)
+    {
+        SecurityId = context.SecurityId;
+        Version = context.Version;
+        Symbol = context.Symbol ?? string.Empty;
+        AssetClass = context.AssetClass;
+        TrustPosture = context.TrustPosture;
+        FundProfileId = context.FundProfileId;
+
+        // A freshly-loaded passport has no working revision yet.
+        RevisionId = null;
+        RevisionState = null;
+        BannerText = null;
+        BannerIsError = false;
+        StatusText = SecurityId == Guid.Empty
+            ? string.Empty
+            : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
+    }
+
     // ── Header / identity ────────────────────────────────────────────────────
-    [ObservableProperty] private Guid _securityId;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasLoadedPassport))]
+    [NotifyCanExecuteChangedFor(nameof(SaveDraftCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResolveConflictCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ApproveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PublishCommand))]
+    private Guid _securityId;
+
     [ObservableProperty] private string _symbol = string.Empty;
     [ObservableProperty] private string? _assetClass;
     [ObservableProperty] private string? _trustPosture;
@@ -99,20 +143,26 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     [ObservableProperty] private bool _acknowledgePolicyDeviation;
 
     // ── Command guards ────────────────────────────────────────────────────────
+    // A passport must be loaded (non-empty security identity) before any governed write is allowed.
+    // The editor can be opened from shell navigation without a passport context; in that state every
+    // write stays disabled so an all-zero security id is never posted.
+    public bool HasLoadedPassport => SecurityId != Guid.Empty;
+
     private bool CanSaveDraft()
-        => !IsBusy && !string.IsNullOrWhiteSpace(FieldPath) && !string.IsNullOrWhiteSpace(Justification);
+        => HasLoadedPassport && !IsBusy && !string.IsNullOrWhiteSpace(FieldPath) && !string.IsNullOrWhiteSpace(Justification);
 
     private bool CanResolveConflict()
-        => !IsBusy
+        => HasLoadedPassport
+           && !IsBusy
            && ConflictId is { } id && id != Guid.Empty
            && !string.IsNullOrWhiteSpace(ChosenWinnerSource)
            && !string.IsNullOrWhiteSpace(ConflictReason);
 
-    private bool CanSubmit() => !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Draft;
+    private bool CanSubmit() => HasLoadedPassport && !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Draft;
 
-    private bool CanApprove() => !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Submitted;
+    private bool CanApprove() => HasLoadedPassport && !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Submitted;
 
-    private bool CanPublish() => !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Approved;
+    private bool CanPublish() => HasLoadedPassport && !IsBusy && RevisionState == SecurityMasterRevisionStateDto.Approved;
 
     // ── Commands ──────────────────────────────────────────────────────────────
     [RelayCommand(CanExecute = nameof(CanSaveDraft))]
@@ -345,3 +395,16 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         }
     }
 }
+
+/// <summary>
+/// Navigation context for opening the passport editor against a selected security. Supplied by the
+/// shell when launching the editor contextually (e.g. from the Security Master page); the editor
+/// hydrates its identity and optimistic-concurrency token from it.
+/// </summary>
+public sealed record SecurityPassportEditorParameter(
+    Guid SecurityId,
+    long Version,
+    string? Symbol = null,
+    string? AssetClass = null,
+    string? TrustPosture = null,
+    string? FundProfileId = null);
