@@ -978,6 +978,44 @@ public sealed class SecurityMasterViewModelTests
         condition().Should().BeTrue();
     }
 
+    [Fact]
+    public void OpenPassportEditor_HydratesEditorFromLoadedTrustSnapshot()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("aaaaaaaa-9999-9999-9999-999999999999");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => CreateTrustSnapshot(securityId)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            viewModel.OpenPassportEditorCommand.CanExecute(null).Should().BeFalse("no trust snapshot is loaded yet");
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            viewModel.OpenPassportEditorCommand.CanExecute(null).Should().BeTrue();
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // The editor is hydrated from the selected security's snapshot, so its governed writes are
+            // wired to the real passport (securityId + optimistic-concurrency version) rather than the
+            // disabled unloaded state.
+            viewModel.IsPassportEditorOpen.Should().BeTrue();
+            viewModel.PassportEditor.SecurityId.Should().Be(securityId);
+            viewModel.PassportEditor.Version.Should().Be(4);
+            viewModel.PassportEditor.AssetClass.Should().Be("Equity");
+            viewModel.PassportEditor.HasLoadedPassport.Should().BeTrue();
+
+            viewModel.ClosePassportEditorCommand.Execute(null);
+            viewModel.IsPassportEditorOpen.Should().BeFalse();
+        });
+    }
+
     private static SecurityMasterViewModel CreateViewModel(
         NavigationService navigation,
         StubWorkstationSecurityMasterApiClient snapshotClient,
