@@ -314,6 +314,8 @@ POST /api/security-master/{securityId:guid}/workbench/resolve-conflict
 
 POST /api/security-master/{securityId:guid}/workbench/submit
   Body: SubmitSecurityMasterRevisionRequest → 200: SecurityMasterEditResultDto
+  422: { "error": "workflow-required" }   # governed submit must name an approval workflow (a
+                                          # workflow-less submit would strand the revision in Submitted)
   409: { "error": "revision-state-conflict", ... } | { "error": "version-conflict", currentVersion }
 
 POST /api/security-master/{securityId:guid}/workbench/approve

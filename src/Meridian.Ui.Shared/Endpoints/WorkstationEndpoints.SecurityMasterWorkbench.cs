@@ -132,6 +132,16 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            // The governed surface must submit through the approval workflow: a workflow-less submit
+            // advances the revision to Submitted without binding a workflow, but the only approval path
+            // requires one, leaving the revision stuck and unpublishable. Require the workflow context here.
+            if (request.WorkflowId is not { } workflowId || workflowId == Guid.Empty)
+            {
+                return WorkbenchUnprocessable(
+                    "workflow-required",
+                    "A workflowId is required to submit a Security Master revision through the governed approval gate.");
+            }
+
             // Actor is the server-derived submitter; Reviewer stays as the body-supplied assignment (who
             // must later approve) — the command service enforces that the two differ.
             var bound = request with { SecurityId = securityId, Actor = actor };
@@ -288,6 +298,9 @@ public static partial class WorkstationEndpoints
 
     private static IResult WorkbenchMissingPayload(string detail)
         => Results.ValidationProblem(new Dictionary<string, string[]> { ["request"] = [detail] });
+
+    private static IResult WorkbenchUnprocessable(string error, string message)
+        => Results.Json(new { error, message }, statusCode: StatusCodes.Status422UnprocessableEntity);
 
     private static string SecurityMasterSubroute(string route)
     {

@@ -95,6 +95,32 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
     }
 
     [Fact]
+    public async Task Submit_WithoutWorkflowId_Returns422_WithoutAdvancingRevision()
+    {
+        // A workflow-less submit would advance the revision to Submitted with no bound workflow, which the
+        // approve route can never satisfy — so the governed endpoint must reject it up front.
+        var securityId = Guid.NewGuid();
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        var body = new SubmitSecurityMasterRevisionRequest(
+            SecurityId: securityId,
+            RevisionId: Guid.NewGuid(),
+            Actor: "ops.analyst",
+            Note: "ready",
+            WorkflowId: null);
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{securityId:D}/workbench/submit", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+        payload.GetProperty("error").GetString().Should().Be("workflow-required");
+        await service.DidNotReceive().SubmitForApprovalAsync(Arg.Any<SubmitSecurityMasterRevisionRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task UnauthenticatedActor_Returns401_WithoutTouchingService()
     {
         var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();

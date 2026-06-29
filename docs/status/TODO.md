@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **196**
+Total items: **197**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -193,6 +193,7 @@ Total items: **196**
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 418 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 112 | `NOTE` | ❌ | Note: "Approved by controller.", |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 1757 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
+| `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 111 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 179 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
 | `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 85 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |
