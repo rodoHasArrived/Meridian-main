@@ -610,7 +610,15 @@ PR3 browser UI, PR4 WPF parity.
       (server-derived identity omitted from request inputs; path `securityId` passed explicitly) plus
       `classifyWorkbenchWriteError` mapping the 409 `version-conflict`/`revision-state-conflict`, 422
       `workflow-required`/`unprocessable`, and 401/403 responses into a discriminated recovery hint for
-      the reload-banner / workflow-prompt UX. The editor component + coverage-panel entry are the next slice.
+      the reload-banner / workflow-prompt UX. **Slice 2 (editor component) landed:**
+      `security-passport-editor.tsx` + `security-passport-editor.view-model.ts` — header (symbol · asset
+      class · trust-posture dot · state badge · version chip), a governed field-edit form (path · value ·
+      effective-from · justification) wired to Save Draft, a lifecycle action bar (Save Draft → Submit →
+      Approve → Publish) whose enablement is driven by the pure view-model (Publish stays disabled until
+      Approved), and a `role="alert"` banner that renders a non-destructive **Reload passport** action on a
+      stale-version 409. The client is injectable for testing. The coverage-panel entry point
+      (`buildMultiAssetCoveragePanel()` row → editor) and the richer tabs/source-conflicts grid are the
+      next slice.
 - [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
 
 ### Phase 5 — Tests
