@@ -716,6 +716,9 @@ export function SettingsScreen({
     canConnect: vm.robinhoodConnectionPanel.canConnect && vm.robinhoodConnectionPanel.isConfigured,
     canDisconnect: vm.robinhoodConnectionPanel.canDisconnect
   });
+  // The status endpoint returns authorizationUrl only on the connect response, so prefer the
+  // URL the form retained over the (post-refresh null) panel value for the manual fallback link.
+  const robinhoodAuthorizationUrl = robinhoodForm.authorizationUrl ?? vm.robinhoodConnectionPanel.authorizationUrl;
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
   const inferredTaskView = useMemo(() => inferSettingsTaskView({
     overview,
@@ -4444,11 +4447,11 @@ export function SettingsScreen({
                 {vm.robinhoodConnectionPanel.warnings[0]}
               </div>
             ) : null}
-            {vm.robinhoodConnectionPanel.authorizationUrl ? (
+            {robinhoodAuthorizationUrl && vm.robinhoodConnectionPanel.canConnect ? (
               <div className="rounded-md border border-primary/35 bg-primary/10 px-3 py-2 text-xs leading-5">
                 <p className="leading-5">Complete authorization in the opened tab to finish connecting Robinhood.</p>
                 <a
-                  href={vm.robinhoodConnectionPanel.authorizationUrl}
+                  href={robinhoodAuthorizationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2 inline-flex items-center gap-1 font-medium text-primary underline"

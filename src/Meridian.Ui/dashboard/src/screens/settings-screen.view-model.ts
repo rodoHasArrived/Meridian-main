@@ -636,6 +636,7 @@ export interface SettingsRobinhoodConnectionFormViewModel {
   actionTone: "default" | "success" | "warning" | "danger";
   statusRole: "status" | "alert";
   statusClassName: string;
+  authorizationUrl: string | null;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
 }
@@ -662,6 +663,10 @@ export function useRobinhoodConnectionViewModel({
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [actionDetails, setActionDetails] = useState<string[]>([]);
   const [actionTone, setActionTone] = useState<"default" | "success" | "warning" | "danger">("default");
+  // The Robinhood status endpoint only ever returns authorizationUrl on the connect
+  // response (status refreshes return null), so retain it here to keep the manual
+  // fallback link available after the post-connect refresh and across status polls.
+  const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const actionRevisionRef = useRef(0);
 
@@ -688,9 +693,10 @@ export function useRobinhoodConnectionViewModel({
         return;
       }
 
-      const authorizationUrl = status.authorizationUrl?.trim();
-      if (authorizationUrl) {
-        openAuthorizationUrl(authorizationUrl);
+      const nextAuthorizationUrl = status.authorizationUrl?.trim() || null;
+      if (nextAuthorizationUrl) {
+        setAuthorizationUrl(nextAuthorizationUrl);
+        openAuthorizationUrl(nextAuthorizationUrl);
       }
 
       await onRefresh?.();
@@ -700,14 +706,14 @@ export function useRobinhoodConnectionViewModel({
 
       setBusyAction(null);
       setActionMessage(
-        authorizationUrl
+        nextAuthorizationUrl
           ? "Complete Robinhood authorization in the opened tab (or the link below if a popup was blocked), then refresh."
           : status.isConnected
             ? "Robinhood connection is active."
             : status.lastError ?? status.warnings[0] ?? "Robinhood connection updated."
       );
       setActionDetails([]);
-      setActionTone(authorizationUrl || status.isConnected ? "success" : "warning");
+      setActionTone(nextAuthorizationUrl || status.isConnected ? "success" : "warning");
     } catch (err) {
       if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
         return;
@@ -744,6 +750,7 @@ export function useRobinhoodConnectionViewModel({
         return;
       }
 
+      setAuthorizationUrl(null);
       setBusyAction(null);
       setActionMessage("Robinhood connection revoked.");
       setActionDetails([]);
@@ -769,6 +776,7 @@ export function useRobinhoodConnectionViewModel({
     actionTone,
     statusRole: actionTone === "danger" ? "alert" : "status",
     statusClassName: actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
+    authorizationUrl,
     connect,
     disconnect
   };

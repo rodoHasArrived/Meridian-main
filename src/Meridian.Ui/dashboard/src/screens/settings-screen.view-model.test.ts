@@ -1629,6 +1629,40 @@ describe("buildSettingsScreenViewModel", () => {
     expect(result.current.actionMessage).toContain("opened tab");
   });
 
+  it("retains the authorization URL across the post-connect refresh and clears it on disconnect", async () => {
+    const startConnection = vi.fn().mockResolvedValue({
+      ...robinhoodConnection,
+      state: "AuthorizationPending",
+      isConnected: false,
+      authorizationUrl: "https://aggregator.example/oauth/authorize?token=abc"
+    });
+    const revokeConnection = vi.fn().mockResolvedValue({
+      ...robinhoodConnection,
+      state: "Disconnected",
+      isConnected: false
+    });
+    // The status endpoint returns authorizationUrl: null, so onRefresh must not erase the link.
+    const onRefresh = vi.fn();
+    const { result } = renderHook(() => useRobinhoodConnectionViewModel({
+      canConnect: true,
+      canDisconnect: true,
+      startConnection,
+      revokeConnection,
+      openAuthorizationUrl: vi.fn(),
+      onRefresh
+    }));
+
+    await act(async () => {
+      await result.current.connect();
+    });
+    expect(result.current.authorizationUrl).toBe("https://aggregator.example/oauth/authorize?token=abc");
+
+    await act(async () => {
+      await result.current.disconnect();
+    });
+    expect(result.current.authorizationUrl).toBeNull();
+  });
+
   it("ignores Robinhood connect when connect is not permitted", async () => {
     const startConnection = vi.fn();
     const { result } = renderHook(() => useRobinhoodConnectionViewModel({
