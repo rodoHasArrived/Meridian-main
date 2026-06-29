@@ -126,7 +126,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Reviewer: string.IsNullOrWhiteSpace(Reviewer) ? null : Reviewer.Trim(),
                 ReportPackId: string.IsNullOrWhiteSpace(ReportPackId) ? null : ReportPackId.Trim());
             return _client.SubmitRevisionAsync(SecurityId, request, ct);
-        }, ApplyEditResult, ct);
+        }, ApplyLifecycleResult, ct);
     }
 
     [RelayCommand(CanExecute = nameof(CanApprove))]
@@ -144,7 +144,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Rationale: string.IsNullOrWhiteSpace(Justification) ? "Approved via passport workbench." : Justification.Trim(),
                 ReportPackId: string.IsNullOrWhiteSpace(ReportPackId) ? string.Empty : ReportPackId.Trim());
             return _client.ApproveRevisionAsync(SecurityId, request, ct);
-        }, ApplyEditResult, ct);
+        }, ApplyLifecycleResult, ct);
     }
 
     [RelayCommand(CanExecute = nameof(CanPublish))]
@@ -162,12 +162,24 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     }
 
     // ── Result handling ───────────────────────────────────────────────────────
+    // A field edit returns the passport stream version (the optimistic-concurrency token).
     private void ApplyEditResult(SecurityMasterEditResultDto result)
     {
         RevisionId = result.RevisionId;
         RevisionState = result.State;
         Version = result.NewVersion;
         StatusText = $"Revision {result.State} at v{result.NewVersion}.";
+    }
+
+    // A workflow-backed submit/approve returns the operations-approval *workflow* version, not the
+    // passport version. Store it as the next ExpectedWorkflowVersion so the following gate command
+    // matches, and leave the passport Version (the optimistic token) untouched.
+    private void ApplyLifecycleResult(SecurityMasterEditResultDto result)
+    {
+        RevisionId = result.RevisionId;
+        RevisionState = result.State;
+        ExpectedWorkflowVersion = result.NewVersion;
+        StatusText = $"Revision {result.State} (approval workflow v{result.NewVersion}).";
     }
 
     private void ApplyPublishResult(SecurityMasterPublishResultDto result)

@@ -100,6 +100,35 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.RevisionState.Should().BeNull();
     }
 
+    [Fact]
+    public async Task Submit_StoresWorkflowVersionInExpectedWorkflowVersion_NotPassportVersion()
+    {
+        // A workflow-backed submit returns the operations approval-workflow version, which must feed the
+        // next ExpectedWorkflowVersion (so Approve matches) and must NOT overwrite the passport token.
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.SubmitRevisionAsync(SecurityId, It.IsAny<SubmitSecurityMasterRevisionRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<SecurityMasterEditResultDto>.Ok(EditResult(SecurityMasterRevisionStateDto.Submitted, version: 42)));
+
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            RevisionId = Guid.NewGuid(),
+            RevisionState = SecurityMasterRevisionStateDto.Draft,
+            WorkflowId = Guid.NewGuid(),
+            ExpectedWorkflowVersion = 1,
+            Reviewer = "independent.reviewer"
+        };
+
+        await viewModel.SubmitCommand.ExecuteAsync(null);
+
+        viewModel.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Submitted);
+        viewModel.ExpectedWorkflowVersion.Should().Be(42, "the returned workflow version drives the next gate command");
+        viewModel.Version.Should().Be(7, "the passport optimistic token must not be clobbered by the workflow version");
+        viewModel.ApproveCommand.CanExecute(null).Should().BeTrue();
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,
