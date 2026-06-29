@@ -5138,6 +5138,7 @@ Meridian-main
 │   │   │   ├── ReportPackSecurityLineIndex.cs
 │   │   │   ├── ReportPackSecurityLineMatcher.cs
 │   │   │   ├── ReportPackValidationService.cs
+│   │   │   ├── ReportPeriodRange.cs
 │   │   │   ├── ReportWriterDatasetSourceService.cs
 │   │   │   ├── ReportWriterGridArtifactService.cs
 │   │   │   ├── RiskRuleRuntimeService.cs
@@ -6575,6 +6576,7 @@ Meridian-main
 │   │   │   │   ├── PublishedRevisionHandlerTests.cs
 │   │   │   │   ├── ReportPackRestatementCandidateResolverTests.cs
 │   │   │   │   ├── ReportPackSecurityLineIndexTests.cs
+│   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
