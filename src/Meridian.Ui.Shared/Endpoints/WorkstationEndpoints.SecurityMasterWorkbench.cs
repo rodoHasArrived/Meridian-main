@@ -262,7 +262,15 @@ public static partial class WorkstationEndpoints
     private static string SecurityMasterSubroute(string route)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(SecurityMasterApiRoutePrefix, StringComparison.Ordinal)
+
+        // Only strip the prefix when the route is exactly the prefix or the prefix is followed by a path
+        // separator, so a similarly-named sibling (e.g. "/api/security-master-templates") is never mangled.
+        if (route.Equals(SecurityMasterApiRoutePrefix, StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
+        return route.StartsWith(SecurityMasterApiRoutePrefix + "/", StringComparison.Ordinal)
             ? route[SecurityMasterApiRoutePrefix.Length..]
             : route;
     }
