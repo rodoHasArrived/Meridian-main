@@ -356,6 +356,7 @@ public static class UiApiRoutes
     public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
+    public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";
     public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";

@@ -231,6 +231,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService,
             Meridian.Application.SecurityMaster.SecurityMasterWorkbenchCommandService>();
+        // Bind the source-precedence ladder (and the rest of the workbench options) from configuration so
+        // the conflict-authority policy ranks real deployment source systems. IConfiguration is resolved
+        // at build time (the extension takes no config arg), and IOptionsMonitor lets the ladder hot-reload.
+        services
+            .AddOptions<Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions>()
+            .Configure<IConfiguration>((options, configuration) => configuration
+                .GetSection(Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions.SectionName)
+                .Bind(options));
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the
