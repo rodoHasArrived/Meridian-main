@@ -4383,7 +4383,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_014__journal_leg_dimensions.sql
 │   │   │   │   ├── V_ledger_015__accounting_configuration_ledger_book_scope.sql
 │   │   │   │   ├── V_ledger_016__accounting_configuration_tenant_company_scope.sql
-│   │   │   │   └── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
+│   │   │   │   ├── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
+│   │   │   │   └── V_ledger_018__accounting_audit_fund_lower_index.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
