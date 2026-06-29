@@ -255,6 +255,50 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.RevisionState.Should().BeNull("a freshly-loaded passport has no working revision");
     }
 
+    [Fact]
+    public void Parameter_RehydrationClearsPriorWriteInputs()
+    {
+        // The editor instance is reused across contextual launches, so hydrating a new passport must
+        // clear the previous security's field-edit, conflict, and approval inputs — otherwise a stale
+        // draft could post against the newly assigned security id.
+        var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)
+        {
+            Parameter = new SecurityPassportEditorParameter(SecurityId, Version: 7),
+            FieldPath = "EconomicDefinition.Coupon",
+            NewValue = "5.25",
+            EffectiveFrom = new DateTime(2026, 4, 20),
+            Justification = "first edit",
+            ConflictId = Guid.NewGuid(),
+            ChosenWinnerSource = "ProviderB",
+            ConflictReason = "reason",
+            AcknowledgePolicyDeviation = true,
+            WorkflowId = Guid.NewGuid(),
+            ExpectedWorkflowVersion = 3,
+            Reviewer = "independent.reviewer",
+            ReportPackId = "rp-1"
+        };
+
+        var nextSecurityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        viewModel.Parameter = new SecurityPassportEditorParameter(nextSecurityId, Version: 12, AssetClass: "Bond");
+
+        viewModel.SecurityId.Should().Be(nextSecurityId);
+        viewModel.Version.Should().Be(12);
+        viewModel.AssetClass.Should().Be("Bond");
+        viewModel.FieldPath.Should().BeEmpty();
+        viewModel.NewValue.Should().BeNull();
+        viewModel.EffectiveFrom.Should().BeNull();
+        viewModel.Justification.Should().BeEmpty();
+        viewModel.ConflictId.Should().BeNull();
+        viewModel.ChosenWinnerSource.Should().BeEmpty();
+        viewModel.ConflictReason.Should().BeEmpty();
+        viewModel.AcknowledgePolicyDeviation.Should().BeFalse();
+        viewModel.WorkflowId.Should().BeNull();
+        viewModel.ExpectedWorkflowVersion.Should().Be(0);
+        viewModel.Reviewer.Should().BeEmpty();
+        viewModel.ReportPackId.Should().BeEmpty();
+        viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse("the field-edit inputs were reset");
+    }
+
     private static SecurityMasterEditResultDto EditResult(SecurityMasterRevisionStateDto state, long version)
         => new(
             SecurityId: SecurityId,

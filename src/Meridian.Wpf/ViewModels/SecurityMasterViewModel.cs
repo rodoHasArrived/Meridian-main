@@ -1943,6 +1943,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ClearSelectedSecurityAssuranceState()
     {
+        // The contextual editor targets the previously-selected security, so close it when the
+        // selection changes; reopening for the new security re-hydrates and resets its inputs.
+        IsPassportEditorOpen = false;
         SelectedTrustSnapshot = null;
         SelectedInstrumentPassport = null;
         TrustSnapshotErrorText = string.Empty;

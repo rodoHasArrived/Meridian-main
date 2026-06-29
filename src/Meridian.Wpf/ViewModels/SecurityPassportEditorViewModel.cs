@@ -56,6 +56,22 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         RevisionState = null;
         BannerText = null;
         BannerIsError = false;
+
+        // The editor instance is reused across contextual launches, so clear every write input — a
+        // prior security's draft, conflict, or approval data must never post against this passport.
+        FieldPath = string.Empty;
+        NewValue = null;
+        EffectiveFrom = null;
+        Justification = string.Empty;
+        ConflictId = null;
+        ChosenWinnerSource = string.Empty;
+        ConflictReason = string.Empty;
+        AcknowledgePolicyDeviation = false;
+        WorkflowId = null;
+        ExpectedWorkflowVersion = 0;
+        Reviewer = string.Empty;
+        ReportPackId = string.Empty;
+
         StatusText = SecurityId == Guid.Empty
             ? string.Empty
             : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
