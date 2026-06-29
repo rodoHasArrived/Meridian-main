@@ -98,6 +98,51 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         secondSeen.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task IsDuplicateAsync_FlushOnWriteTrue_PersistsRecordBeforeDisposeOrFlush()
+    {
+        var evt = CreateTradeEvent("AAPL", 1);
+
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, flushOnWrite: true);
+        await _firstLedger.InitializeAsync();
+
+        var firstSeen = await _firstLedger.IsDuplicateAsync(evt, CancellationToken.None);
+        firstSeen.Should().BeFalse();
+
+        // No FlushAsync, no DisposeAsync. Under strict durability the dedup record must
+        // already be on disk before IsDuplicateAsync reported the event as new — otherwise a
+        // crash here would re-admit the (already-emitted) event as new on restart.
+        var ledgerPath = Path.Combine(_ledgerDirectory, "dedup_ledger.jsonl");
+        var lines = await File.ReadAllLinesAsync(ledgerPath);
+        lines.Should().ContainSingle();
+        lines[0].Should().Contain("\"k\":\"TEST:AAPL:Trade:");
+    }
+
+    [Fact]
+    public async Task IsDuplicateAsync_FlushOnWriteFalse_RecordStaysBufferedUntilFlush()
+    {
+        var evt = CreateTradeEvent("MSFT", 1);
+
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, flushOnWrite: false);
+        await _firstLedger.InitializeAsync();
+
+        var firstSeen = await _firstLedger.IsDuplicateAsync(evt, CancellationToken.None);
+        firstSeen.Should().BeFalse();
+
+        // Default (throughput) mode: the record is still in the writer buffer, not yet on disk.
+        // The append-mode file handle creates an empty file, but no line has been flushed.
+        var ledgerPath = Path.Combine(_ledgerDirectory, "dedup_ledger.jsonl");
+        var bufferedLines = File.Exists(ledgerPath)
+            ? await File.ReadAllLinesAsync(ledgerPath)
+            : Array.Empty<string>();
+        bufferedLines.Should().BeEmpty();
+
+        // An explicit flush makes the buffered record durable, confirming it was buffered (not lost).
+        await _firstLedger.FlushAsync(CancellationToken.None);
+        var flushedLines = await File.ReadAllLinesAsync(ledgerPath);
+        flushedLines.Should().ContainSingle();
+    }
+
     private static MarketEvent CreateTradeEvent(string symbol, long sequence)
     {
         var trade = new Trade(

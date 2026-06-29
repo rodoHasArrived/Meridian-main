@@ -85,6 +85,15 @@ public sealed class StorageOptions
     public bool VerifyOnRead { get; init; } = false;
 
     /// <summary>
+    /// Whether the persistent deduplication ledger flushes each new-event write to the OS
+    /// before reporting the event as new. When <c>true</c>, a crash cannot drop a dedup
+    /// record after its event was already emitted downstream (which would re-admit the event
+    /// as new on restart), at the cost of a per-new-event flush on the ingestion hot path.
+    /// Default is <c>false</c> (throughput-optimized; durable on clean shutdown only).
+    /// </summary>
+    public bool DedupFlushOnWrite { get; init; } = false;
+
+    /// <summary>
     /// Whether to enable Parquet storage as an additional sink alongside JSONL.
     /// When enabled, events are written to both JSONL and Parquet via CompositeSink.
     /// </summary>

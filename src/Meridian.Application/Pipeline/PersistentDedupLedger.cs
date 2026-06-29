@@ -24,6 +24,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     private readonly string _ledgerPath;
     private readonly TimeSpan _entryTtl;
     private readonly int _maxInMemoryEntries;
+    private readonly bool _flushOnWrite;
 
     // In-memory cache: composite key → expiry timestamp
     private readonly ConcurrentDictionary<string, long> _cache = new(StringComparer.Ordinal);
@@ -55,14 +56,24 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// </summary>
     public long TotalDuplicates => Interlocked.Read(ref _totalDuplicates);
 
+    /// <param name="flushOnWrite">
+    /// When true, the ledger flushes each new-event write to the OS before
+    /// <see cref="IsDuplicateAsync"/> reports the event as new. This closes the
+    /// application-crash window where an event is emitted downstream but its dedup
+    /// record is still buffered (and would be lost on crash, re-admitting the event
+    /// as new on restart). It serializes a flush on the hot path per new event, so it
+    /// trades throughput for at-most-once durability and defaults to false.
+    /// </param>
     public PersistentDedupLedger(
         string ledgerDirectory,
         TimeSpan? entryTtl = null,
-        int maxInMemoryEntries = 500_000)
+        int maxInMemoryEntries = 500_000,
+        bool flushOnWrite = false)
     {
         _ledgerPath = Path.Combine(ledgerDirectory, "dedup_ledger.jsonl");
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
         _maxInMemoryEntries = maxInMemoryEntries;
+        _flushOnWrite = flushOnWrite;
         Directory.CreateDirectory(ledgerDirectory);
         WarmHashPath();
         WarmPrefixCache();
@@ -187,12 +198,18 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         _cache[key] = nowTicks;
         var ledgerLine = CreateLedgerLine(key, nowTicks);
 
-        // Persist to disk (fire-and-forget the write, but serialize access)
+        // Persist to disk (serialize access). Under strict durability, flush the write
+        // before reporting the event as new so a crash cannot drop the dedup record
+        // after the event was already emitted downstream.
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
             await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+            if (_flushOnWrite)
+            {
+                await _writer.FlushAsync(ct).ConfigureAwait(false);
+            }
         }
         finally
         {
