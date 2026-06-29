@@ -151,11 +151,38 @@ public sealed class ReportPackRestatementCandidateResolverTests
         changedLine.EvidenceLinks.Should().ContainSingle().Which.EvidenceId.Should().Be("ev-42");
     }
 
+    [Fact]
+    public async Task IndexBackedAndScan_ProduceIdenticalResults()
+    {
+        // The index-backed lookup must be a behaviour-preserving optimization of the full fund scan.
+        var seed = new[]
+        {
+            PublishedPack(FundProfileId, "2026-P03", SecurityLine("nav.line", SecurityId), SecurityLine("alt.line", OtherSecurityId)),
+            PackInState(ReportPackWorkflowStateDto.Restated, FundProfileId, "2026-P02", SecurityLine("old.line", SecurityId)),
+            PublishedPack("fund-beta", "2026-P03", SecurityLine("other-fund.line", SecurityId)),
+            PackInState(ReportPackWorkflowStateDto.Approved, FundProfileId, "2026-P03", SecurityLine("draft.line", SecurityId)),
+        };
+
+        var indexed = await NewResolver(useIndex: true, seed)
+            .ResolveAsync(SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+        var scanned = await NewResolver(useIndex: false, seed)
+            .ResolveAsync(SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+
+        indexed.Candidates.Select(c => c.ReportId).Should().BeEquivalentTo(scanned.Candidates.Select(c => c.ReportId));
+        indexed.HasNonActionableMatches.Should().Be(scanned.HasNonActionableMatches);
+        indexed.Candidates.Should().ContainSingle("only the Published same-fund pack is actionable");
+        indexed.HasNonActionableMatches.Should().BeTrue("the Restated same-fund pack is a non-actionable match");
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static ReportPackRestatementCandidateResolver NewResolver(params ReportPackWorkflowRecordDto[] seedRecords)
+        => NewResolver(useIndex: true, seedRecords);
+
+    private static ReportPackRestatementCandidateResolver NewResolver(bool useIndex, params ReportPackWorkflowRecordDto[] seedRecords)
     {
-        var workflow = new ReportPackWorkflowService(new SeedStore(seedRecords));
+        IReportPackSecurityLineIndex? index = useIndex ? new InMemoryReportPackSecurityLineIndex() : null;
+        var workflow = new ReportPackWorkflowService(new SeedStore(seedRecords), index);
         return new ReportPackRestatementCandidateResolver(
             workflow, NullLogger<ReportPackRestatementCandidateResolver>.Instance);
     }

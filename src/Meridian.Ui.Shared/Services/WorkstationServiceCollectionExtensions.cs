@@ -306,6 +306,10 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportTemplateRegistryService>()));
         services.TryAddSingleton<IReportingTemplateCatalog>(sp =>
             sp.GetRequiredService<GovernedReportingTemplateCatalog>());
+        // Derived security→report-line index backing the report-pack restatement candidate lookup. A
+        // singleton so it shares the lifetime of the (singleton) workflow service that keeps it current;
+        // it is rebuilt from the persisted workflow records on construction.
+        services.TryAddSingleton<IReportPackSecurityLineIndex, InMemoryReportPackSecurityLineIndex>();
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportPackDeliveryService>();
         services.TryAddSingleton<ReportWriterDatasetSourceService>();
