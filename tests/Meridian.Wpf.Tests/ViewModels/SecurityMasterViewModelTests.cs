@@ -1051,6 +1051,76 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    [Fact]
+    public void OpenPassportEditor_DifferentSecurity_BuildsFreshEditorInstance()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityA = Guid.Parse("aaaaaaaa-1111-1111-1111-111111111111");
+            var securityB = Guid.Parse("bbbbbbbb-2222-2222-2222-222222222222");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (id, _) => CreateTrustSnapshot(id)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityA);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+            var editorForA = viewModel.PassportEditor;
+            editorForA.SecurityId.Should().Be(securityA);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityB);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // A different security must get a fresh editor so a prior security's inputs or in-flight write
+            // result can never bleed onto it.
+            viewModel.PassportEditor.Should().NotBeSameAs(editorForA);
+            viewModel.PassportEditor.SecurityId.Should().Be(securityB);
+        });
+    }
+
+    [Fact]
+    public void OpenPassportEditor_SameSecurityNoDraft_RefreshesToCurrentVersion()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("cccccccc-3333-3333-3333-333333333333");
+            var version = 4L;
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (id, _) =>
+                {
+                    var snapshot = CreateTrustSnapshot(id);
+                    return snapshot with { EconomicDefinition = snapshot.EconomicDefinition with { Version = version } };
+                }
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+            viewModel.PassportEditor.Version.Should().Be(4);
+
+            viewModel.ClosePassportEditorCommand.Execute(null);
+            version = 5;
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // With no in-progress draft, reopening the same security refreshes to the current version, so
+            // the editor never posts a stale ExpectedVersion.
+            viewModel.PassportEditor.Version.Should().Be(5);
+        });
+    }
+
     private static SecurityMasterViewModel CreateViewModel(
         NavigationService navigation,
         StubWorkstationSecurityMasterApiClient snapshotClient,

@@ -582,11 +582,17 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     }
 
     /// <summary>
-    /// Governed passport editor hosted contextually for the selected security. Hydrated from the loaded
-    /// trust snapshot (securityId + optimistic-concurrency version) when the operator opens it, so the
-    /// editor is wired to a real passport rather than the disabled unloaded state.
+    /// Governed passport editor hosted contextually for the selected security. A fresh instance is built
+    /// for each launch (hydrated from the loaded trust snapshot's securityId + optimistic-concurrency
+    /// version); the instance is reused only to keep an in-progress draft for the same security alive, so a
+    /// different security, a refreshed version, or an in-flight write from a prior security can never bleed in.
     /// </summary>
-    public SecurityPassportEditorViewModel PassportEditor { get; }
+    private SecurityPassportEditorViewModel _passportEditor;
+    public SecurityPassportEditorViewModel PassportEditor
+    {
+        get => _passportEditor;
+        private set => SetProperty(ref _passportEditor, value);
+    }
 
     private bool _isPassportEditorOpen;
     public bool IsPassportEditorOpen
@@ -1524,7 +1530,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _service = service;
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
-        PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
+        _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
 
         CreateNewCommand = new RelayCommand(OnCreateNew);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
@@ -1787,18 +1793,24 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
-        // Re-hydrate only when switching to a different security. Reopening the same security preserves any
-        // in-progress draft (RevisionId / RevisionState and its write inputs) so the operator can still
-        // submit it; switching securities resets the editor so a prior draft never posts against the new one.
-        if (PassportEditor.SecurityId != economic.SecurityId)
+        // Reuse the existing editor only to keep an in-progress draft for the *same* security alive, and
+        // only when no write is in flight. Otherwise build a fresh editor: a different security, a refreshed
+        // version, or an in-flight write started against a prior security must never bleed into this passport.
+        var preserveActiveDraft = PassportEditor.SecurityId == economic.SecurityId
+            && PassportEditor.RevisionId is not null
+            && !PassportEditor.IsBusy;
+        if (!preserveActiveDraft)
         {
-            PassportEditor.Parameter = new SecurityPassportEditorParameter(
-                SecurityId: economic.SecurityId,
-                Version: economic.Version,
-                Symbol: snapshot.Security?.DisplayName ?? string.Empty,
-                AssetClass: economic.AssetClass,
-                TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
-                FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null);
+            PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient)
+            {
+                Parameter = new SecurityPassportEditorParameter(
+                    SecurityId: economic.SecurityId,
+                    Version: economic.Version,
+                    Symbol: snapshot.Security?.DisplayName ?? string.Empty,
+                    AssetClass: economic.AssetClass,
+                    TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
+                    FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null)
+            };
         }
 
         IsPassportEditorOpen = true;
