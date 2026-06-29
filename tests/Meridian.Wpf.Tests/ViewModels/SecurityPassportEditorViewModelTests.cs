@@ -187,6 +187,14 @@ public sealed class SecurityPassportEditorViewModelTests
         viewModel.RevisionState.Should().BeNull("conflict resolution does not touch the draft lifecycle");
         viewModel.BannerIsError.Should().BeFalse();
         viewModel.StatusText.Should().Contain("policy deviation");
+
+        // The resolved conflict is terminal: its inputs are cleared so the completed request is not
+        // preserved or re-executed against the new version.
+        viewModel.ConflictId.Should().BeNull();
+        viewModel.ChosenWinnerSource.Should().BeEmpty();
+        viewModel.ConflictReason.Should().BeEmpty();
+        viewModel.AcknowledgePolicyDeviation.Should().BeFalse();
+        viewModel.ResolveConflictCommand.CanExecute(null).Should().BeFalse("the resolved conflict must not be re-submittable");
     }
 
     [Fact]

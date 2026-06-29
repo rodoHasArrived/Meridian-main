@@ -327,6 +327,12 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     private void ApplyConflictResolutionResult(SecurityMasterConflictResolutionDto result)
     {
         Version = result.NewVersion;
+        // The conflict is resolved (a terminal passport-level write); clear its inputs so the completed
+        // request is not treated as preserve-worthy work and cannot re-execute against the new version.
+        ConflictId = null;
+        ChosenWinnerSource = string.Empty;
+        ConflictReason = string.Empty;
+        AcknowledgePolicyDeviation = false;
         StatusText = result.IsPolicyDeviation
             ? $"Conflict resolved to {result.ChosenWinnerSource} (policy deviation from {result.PolicyWinnerSource}) at v{result.NewVersion}."
             : $"Conflict resolved to {result.ChosenWinnerSource} at v{result.NewVersion}.";
