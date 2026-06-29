@@ -107,7 +107,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Justification: Justification.Trim(),
                 FundProfileId: FundProfileId);
             return _client.UpdateFieldAsync(SecurityId, request, ct);
-        }, ApplyEditResult);
+        }, ApplyEditResult, ct);
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]
@@ -126,7 +126,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Reviewer: string.IsNullOrWhiteSpace(Reviewer) ? null : Reviewer.Trim(),
                 ReportPackId: string.IsNullOrWhiteSpace(ReportPackId) ? null : ReportPackId.Trim());
             return _client.SubmitRevisionAsync(SecurityId, request, ct);
-        }, ApplyEditResult);
+        }, ApplyEditResult, ct);
     }
 
     [RelayCommand(CanExecute = nameof(CanApprove))]
@@ -144,7 +144,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Rationale: string.IsNullOrWhiteSpace(Justification) ? "Approved via passport workbench." : Justification.Trim(),
                 ReportPackId: string.IsNullOrWhiteSpace(ReportPackId) ? string.Empty : ReportPackId.Trim());
             return _client.ApproveRevisionAsync(SecurityId, request, ct);
-        }, ApplyEditResult);
+        }, ApplyEditResult, ct);
     }
 
     [RelayCommand(CanExecute = nameof(CanPublish))]
@@ -158,7 +158,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 Actor: string.Empty,
                 ApproverActor: string.Empty);
             return _client.PublishRevisionAsync(SecurityId, request, ct);
-        }, ApplyPublishResult);
+        }, ApplyPublishResult, ct);
     }
 
     // ── Result handling ───────────────────────────────────────────────────────
@@ -179,7 +179,7 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
             : $"Published at v{result.NewVersion}.";
     }
 
-    private async Task RunAsync<T>(string busyText, Func<Task<ApiResponse<T>>> action, Action<T> onSuccess)
+    private async Task RunAsync<T>(string busyText, Func<Task<ApiResponse<T>>> action, Action<T> onSuccess, CancellationToken ct)
         where T : class
     {
         IsBusy = true;
@@ -199,12 +199,15 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
                 StatusText = string.Empty;
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
+            // Genuine command cancellation (the operator navigated away / the token was cancelled).
             StatusText = string.Empty;
         }
         catch (Exception ex)
         {
+            // Anything else — including an HttpClient transport timeout surfaced as a
+            // (Task)OperationCanceledException whose token is NOT the command token — is a real failure.
             SetErrorBanner($"The request could not be completed: {ex.Message}");
             StatusText = string.Empty;
         }
