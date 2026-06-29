@@ -562,6 +562,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _selectedTrustSnapshot, value))
             {
                 RaiseScheduleAndOpenLotStateChanged();
+                OpenPassportEditorCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -575,8 +576,29 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isTrustSnapshotLoading, value))
             {
                 RaiseScheduleAndOpenLotStateChanged();
+                OpenPassportEditorCommand?.NotifyCanExecuteChanged();
             }
         }
+    }
+
+    /// <summary>
+    /// Governed passport editor hosted contextually for the selected security. A fresh instance is built
+    /// for each launch (hydrated from the loaded trust snapshot's securityId + optimistic-concurrency
+    /// version); the instance is reused only to keep an in-progress draft for the same security alive, so a
+    /// different security, a refreshed version, or an in-flight write from a prior security can never bleed in.
+    /// </summary>
+    private SecurityPassportEditorViewModel _passportEditor;
+    public SecurityPassportEditorViewModel PassportEditor
+    {
+        get => _passportEditor;
+        private set => SetProperty(ref _passportEditor, value);
+    }
+
+    private bool _isPassportEditorOpen;
+    public bool IsPassportEditorOpen
+    {
+        get => _isPassportEditorOpen;
+        private set => SetProperty(ref _isPassportEditorOpen, value);
     }
 
     private string _trustSnapshotErrorText = string.Empty;
@@ -1423,6 +1445,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
     public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }
+    public IRelayCommand OpenPassportEditorCommand { get; }
+    public IRelayCommand ClosePassportEditorCommand { get; }
     public IAsyncRelayCommand AcceptPrimaryConflictCommand { get; }
     public IAsyncRelayCommand AcceptSecondaryConflictCommand { get; }
     public IAsyncRelayCommand DismissConflictCommand { get; }
@@ -1506,6 +1530,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _service = service;
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
+        _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
+
         CreateNewCommand = new RelayCommand(OnCreateNew);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
         DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive());
@@ -1526,6 +1552,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 ? LoadSelectedTrustSnapshotAsync(SelectedSecurity.SecurityId, ct)
                 : Task.CompletedTask,
             () => HasSelectedSecurity && !IsTrustSnapshotLoading);
+        OpenPassportEditorCommand = new RelayCommand(OnOpenPassportEditor, () => CanOpenPassportEditor);
+        ClosePassportEditorCommand = new RelayCommand(() => IsPassportEditorOpen = false);
         AcceptPrimaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptA", ct), () => CanResolveSelectedConflict);
         AcceptSecondaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptB", ct), () => CanResolveSelectedConflict);
         DismissConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("Dismiss", ct), () => CanResolveSelectedConflict);
@@ -1751,6 +1779,44 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(OpenLotReadModelStatusText));
     }
 
+    // The contextual passport editor is reachable once the selected security's trust snapshot has
+    // loaded (it carries the securityId and the optimistic-concurrency version the editor needs).
+    private bool CanOpenPassportEditor => SelectedTrustSnapshot is not null && !IsTrustSnapshotLoading;
+
+    private void OnOpenPassportEditor()
+    {
+        // Defensive: although these are non-nullable contract members, a partially-deserialized snapshot
+        // could surface nulls, and the editor must not open against an absent economic definition.
+        var snapshot = SelectedTrustSnapshot;
+        if (snapshot?.EconomicDefinition is not { } economic)
+        {
+            return;
+        }
+
+        // Reuse the existing editor only to keep unsaved work for the *same* security alive (a saved draft
+        // or typed-but-unsaved input), and only when no write is in flight. Otherwise build a fresh editor:
+        // a different security, a refreshed version on an empty editor, or an in-flight write started
+        // against a prior security must never bleed into this passport.
+        var preserveInProgressWork = PassportEditor.SecurityId == economic.SecurityId
+            && PassportEditor.HasUnsavedWork
+            && !PassportEditor.IsBusy;
+        if (!preserveInProgressWork)
+        {
+            PassportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient)
+            {
+                Parameter = new SecurityPassportEditorParameter(
+                    SecurityId: economic.SecurityId,
+                    Version: economic.Version,
+                    Symbol: snapshot.Security?.DisplayName ?? string.Empty,
+                    AssetClass: economic.AssetClass,
+                    TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
+                    FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null)
+            };
+        }
+
+        IsPassportEditorOpen = true;
+    }
+
     private void NotifySelectionCommandsChanged()
     {
         EditSelectedCommand.NotifyCanExecuteChanged();
@@ -1897,6 +1963,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ClearSelectedSecurityAssuranceState()
     {
+        // The contextual editor targets the previously-selected security, so close it when the
+        // selection changes; reopening for the new security re-hydrates and resets its inputs.
+        IsPassportEditorOpen = false;
         SelectedTrustSnapshot = null;
         SelectedInstrumentPassport = null;
         TrustSnapshotErrorText = string.Empty;
