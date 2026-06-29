@@ -1787,13 +1787,20 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
-        PassportEditor.Parameter = new SecurityPassportEditorParameter(
-            SecurityId: economic.SecurityId,
-            Version: economic.Version,
-            Symbol: snapshot.Security?.DisplayName ?? string.Empty,
-            AssetClass: economic.AssetClass,
-            TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
-            FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null);
+        // Re-hydrate only when switching to a different security. Reopening the same security preserves any
+        // in-progress draft (RevisionId / RevisionState and its write inputs) so the operator can still
+        // submit it; switching securities resets the editor so a prior draft never posts against the new one.
+        if (PassportEditor.SecurityId != economic.SecurityId)
+        {
+            PassportEditor.Parameter = new SecurityPassportEditorParameter(
+                SecurityId: economic.SecurityId,
+                Version: economic.Version,
+                Symbol: snapshot.Security?.DisplayName ?? string.Empty,
+                AssetClass: economic.AssetClass,
+                TrustPosture: snapshot.TrustPosture?.Tone.ToString() ?? string.Empty,
+                FundProfileId: snapshot.DownstreamImpact?.IsScoped == true ? snapshot.DownstreamImpact.FundProfileId : null);
+        }
+
         IsPassportEditorOpen = true;
     }
 

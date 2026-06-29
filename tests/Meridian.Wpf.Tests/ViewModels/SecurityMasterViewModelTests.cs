@@ -1016,6 +1016,41 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    [Fact]
+    public void OpenPassportEditor_ReopeningSameSecurity_PreservesInProgressDraft()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("aaaaaaaa-8888-8888-8888-888888888888");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => CreateTrustSnapshot(securityId)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // Simulate a saved draft on the open editor.
+            var revisionId = Guid.NewGuid();
+            viewModel.PassportEditor.RevisionId = revisionId;
+            viewModel.PassportEditor.RevisionState = SecurityMasterRevisionStateDto.Draft;
+
+            viewModel.ClosePassportEditorCommand.Execute(null);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // Reopening the same security must not discard the in-progress draft.
+            viewModel.IsPassportEditorOpen.Should().BeTrue();
+            viewModel.PassportEditor.RevisionId.Should().Be(revisionId);
+            viewModel.PassportEditor.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Draft);
+            viewModel.PassportEditor.SubmitCommand.CanExecute(null).Should().BeTrue("the saved draft is still submittable");
+        });
+    }
+
     private static SecurityMasterViewModel CreateViewModel(
         NavigationService navigation,
         StubWorkstationSecurityMasterApiClient snapshotClient,
