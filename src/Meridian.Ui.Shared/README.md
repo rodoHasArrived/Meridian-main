@@ -1254,6 +1254,17 @@ shared service instead of client code.
 The same normalization assigns each retained line a Financial Record Explorer id and
 `/api/workstation/financial-record-explorers/{explorerId}` href so browser and WPF clients can open
 the source-backed ledger, portfolio, or Security & Instrument Explorer without deriving routes.
+That retained report-line provenance also backs the Security Master Passport Workbench's
+closed-period restatement path: `ReportPackRestatementCandidateResolver` implements the
+application-layer `IRestatementCandidateResolver`, so when a governed reference-data edit publishes
+into a locked accounting period it locates the published packs that consumed the edited security
+(by retained `SecurityMasterId`/`SecurityDefinitionId` or a security-kind provenance source, scoped
+to the impacted fund profile) and surfaces them as governed restatement candidates the operator
+approves through `Restate(...)`. It is the registered default; `NullRestatementCandidateResolver`
+remains the no-op fallback for hosts without a report-pack backend. Matching is precise — an
+untieable published pack is left to the period-aware resolver's hard-closed default-deny
+manual-locate path rather than surfaced as a false candidate — and candidates are deduplicated by
+report across affected ledger books.
 Generated governed report packs enrich line-level provenance with display labels,
 source-system tags, related ledger and journal evidence IDs, line amounts, latest evidence
 timestamps, and API routes back to run continuity, ledger trial-balance, reconciliation, and

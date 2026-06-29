@@ -394,9 +394,10 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   (fund-book granularity); the set is empty when the impact reports no ledger exposure, has no fund
   scope, or no durable ledger backend is registered (the store is an optional dependency). Still
   deferred to later slices: narrowing to the specific posting books that referenced the security (via
-  journal-line dimensions), cross-fund expansion for unscoped impacts, the soft-closed governed
-  adjustment poster (`IGovernedLedgerAdjustmentPoster`), and the report-pack `IRestatementCandidateResolver`
-  (defaults to a no-op → manual-locate).
+  journal-line dimensions), cross-fund expansion for unscoped impacts, and the soft-closed governed
+  adjustment poster (`IGovernedLedgerAdjustmentPoster`). The report-pack `IRestatementCandidateResolver`
+  is now implemented (`ReportPackRestatementCandidateResolver`, report-line-provenance backed); only
+  period-precise candidate narrowing and a durable security→report-line index remain as refinements.
 
 ### `SecurityProjectionRebuildHandler` (`Order = 10`) / `CoverageInvalidationHandler` (`Order = 20`)
 - Thin, idempotent. `SecurityProjectionRebuildHandler` rebuilds only the edited security via
@@ -572,10 +573,20 @@ PR3 browser UI, PR4 WPF parity.
       The result-bearing period-aware restatement decision is resolved by the command service via
       `IPeriodAwareRestatementResolver` (slice 1), not a void handler.
 - [x] `ILedgerPeriodLockReader` over `ILedgerJournalStore` (authoritative period status, default-deny — Q2).
-- [ ] `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment) + `IRestatementCandidateResolver`
-      (surfaces candidates — Q3; `NullRestatementCandidateResolver` shipped as the no-op default, the
-      real report-pack resolver is deferred); add `ReportingWorkflowService.ProposeRestatement(...)` for
-      the operator-approved restatement step.
+- [~] `IRestatementCandidateResolver` (surfaces candidates — Q3) is now report-pack-backed:
+      `ReportPackRestatementCandidateResolver` (in `Meridian.Ui.Shared`) locates the published packs
+      that consumed the edited security from retained report-line provenance
+      (`SecurityMasterId`/`SecurityDefinitionId`, or a security-kind source) and surfaces them as
+      restatement candidates, and is the registered default; `NullRestatementCandidateResolver` is kept
+      as the no-op fallback for hosts without a report-pack backend. The resolver is scoped to the
+      impacted fund profile (threaded through `IRestatementCandidateResolver.ResolveAsync` from the
+      published event's downstream impact), matches precisely (an untieable pack is left to the
+      hard-closed default-deny manual-locate path, never a false candidate), and the period-aware
+      resolver deduplicates candidates by report across affected books. **Still deferred:**
+      `IGovernedLedgerAdjustmentPoster` (soft-closed adjustment posting), period-precise candidate
+      narrowing (the pack `Period` is a free-form label), and a durable security→report-line index to
+      replace the per-fund scan. `ReportingWorkflowService.Restate(...)` already exists as the
+      operator-approved restatement step the candidates feed.
 - [x] `SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds` resolved at publish time
       (`IAffectedLedgerBookResolver` / `LedgerBookAffectedResolver`: fund-book granularity from the
       impacted fund profile; empty when there is no ledger exposure or no durable ledger backend).

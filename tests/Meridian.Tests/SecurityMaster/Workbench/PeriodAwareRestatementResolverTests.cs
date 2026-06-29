@@ -99,6 +99,20 @@ public sealed class PeriodAwareRestatementResolverTests
         decision.RestatementRequired.Should().BeTrue("any hard-closed affected book forces a restatement proposal");
     }
 
+    [Fact]
+    public async Task MultipleBooks_SameFundCandidate_IsDeduplicatedByReport()
+    {
+        // The candidate resolver locates fund-scoped published packs, so the same report surfaces from
+        // every affected book; the decision must collapse them to one proposal per report.
+        var candidate = Candidate();
+        var resolver = NewResolver(new FakeLockReader(_ => LedgerPeriodStatusDto.HardClosed), Candidates(candidate));
+
+        var decision = await resolver.ResolveAsync(Event(affectedBooks: [BookA, BookB]));
+
+        decision.RestatementRequired.Should().BeTrue();
+        decision.Candidates.Should().ContainSingle().Which.Should().Be(candidate);
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static PeriodAwareRestatementResolver NewResolver(
@@ -162,7 +176,8 @@ public sealed class PeriodAwareRestatementResolverTests
         public FakeCandidateResolver(IReadOnlyList<RestatementCandidateDto> candidates) => _candidates = candidates;
 
         public Task<IReadOnlyList<RestatementCandidateDto>> ResolveAsync(
-            Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList<string> changedFields, CancellationToken ct = default)
+            Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList<string> changedFields,
+            string? fundProfileId, CancellationToken ct = default)
             => Task.FromResult(_candidates);
     }
 }

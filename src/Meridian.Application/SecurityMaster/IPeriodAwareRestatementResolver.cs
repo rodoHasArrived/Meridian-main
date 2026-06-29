@@ -35,9 +35,10 @@ public sealed record SecurityMasterRestatementDecision(
 
 /// <summary>
 /// Resolves the report packs that consumed a changed line in a locked period covering an upstream
-/// edit, as restatement candidates. The default implementation returns none (report-usage projection
-/// integration is a later slice); an empty result for a hard-closed book is treated as a manual
-/// locate-affected-packs task rather than "no restatement needed".
+/// edit, as restatement candidates. <paramref name="fundProfileId"/> scopes the search to the impacted
+/// fund's published packs. An empty result for a hard-closed book is treated by the caller as a manual
+/// locate-affected-packs task rather than "no restatement needed", so a precise resolver that cannot
+/// tie a published pack to the security never silently completes a closed period.
 /// </summary>
 public interface IRestatementCandidateResolver
 {
@@ -46,10 +47,16 @@ public interface IRestatementCandidateResolver
         Guid ledgerBookId,
         DateOnly effectiveDate,
         IReadOnlyList<string> changedFields,
+        string? fundProfileId,
         CancellationToken ct = default);
 }
 
-/// <summary>Default no-op candidate resolver — surfaces no packs until the report-usage projection is wired.</summary>
+/// <summary>
+/// No-op candidate resolver retained as the fallback for hosts without a report-pack backend. The
+/// report-pack-backed resolver (<c>ReportPackRestatementCandidateResolver</c> in the workstation layer)
+/// is the registered default; this surfaces no packs, leaving the caller's default-deny safety net to
+/// flag a hard-closed book for manual locate.
+/// </summary>
 public sealed class NullRestatementCandidateResolver : IRestatementCandidateResolver
 {
     private static readonly IReadOnlyList<RestatementCandidateDto> Empty = [];
@@ -59,6 +66,7 @@ public sealed class NullRestatementCandidateResolver : IRestatementCandidateReso
         Guid ledgerBookId,
         DateOnly effectiveDate,
         IReadOnlyList<string> changedFields,
+        string? fundProfileId,
         CancellationToken ct = default)
         => Task.FromResult(Empty);
 }
@@ -124,12 +132,22 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
             }
         }
 
-        // Any located candidate (even from a soft-closed book) is a published pack that must be restated.
-        return new SecurityMasterRestatementDecision(restatementRequired || candidates.Count > 0, candidates);
+        // The same fund-scoped published pack can surface from more than one affected ledger book;
+        // collapse to one proposal per report so the operator never sees a duplicate restatement
+        // candidate. Any located candidate (even from a soft-closed book) is a published pack that must
+        // be restated.
+        var distinctCandidates = candidates
+            .GroupBy(static candidate => candidate.ReportId)
+            .Select(static group => group.First())
+            .ToArray();
+
+        return new SecurityMasterRestatementDecision(
+            restatementRequired || distinctCandidates.Length > 0, distinctCandidates);
     }
 
     private Task<IReadOnlyList<RestatementCandidateDto>> ResolveCandidatesAsync(
         SecurityMasterRevisionPublishedEvent publishedEvent, Guid ledgerBookId, DateOnly effectiveDate, CancellationToken ct)
         => _candidateResolver.ResolveAsync(
-            publishedEvent.SecurityId, ledgerBookId, effectiveDate, publishedEvent.ChangedFields, ct);
+            publishedEvent.SecurityId, ledgerBookId, effectiveDate, publishedEvent.ChangedFields,
+            publishedEvent.DownstreamImpact.FundProfileId, ct);
 }

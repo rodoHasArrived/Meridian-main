@@ -95,6 +95,7 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [ ] Keep the work anchored to the current Security Master detail/passport route and shared read models; do not create a new route for this slice.
 - [ ] Extend the detail flow to cover multi-asset reference-data review, provider evidence, identifier confidence, terms/obligations, projected cash-flow readiness, ledger classification, and operations handoff from the retained Security Master context.
 - [ ] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
+- [x] Closed-period propagation: replace the no-op restatement candidate resolver with a report-pack-backed `ReportPackRestatementCandidateResolver` that locates the published packs which consumed the edited security (from retained report-line provenance) and surfaces them as governed restatement candidates, so a closed-period reference-data edit no longer always degrades to a manual locate-affected-packs task. Remaining: soft-closed governed-adjustment posting, period-precise candidate narrowing, and a durable security→report-line index.
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 

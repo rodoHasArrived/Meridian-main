@@ -240,13 +240,15 @@ public static class WorkstationServiceCollectionExtensions
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the
-        // candidate resolver (report-pack locating) defaults to no-op until the report-usage projection lands.
+        // candidate resolver locates the published report packs that consumed the edited security from
+        // retained report-line provenance (ReportPackRestatementCandidateResolver), falling back to the
+        // no-op NullRestatementCandidateResolver only where no report-pack workflow backend is present.
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.ILedgerPeriodLockReader,
             Meridian.Application.SecurityMaster.LedgerPeriodLockReader>();
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IRestatementCandidateResolver,
-            Meridian.Application.SecurityMaster.NullRestatementCandidateResolver>();
+            ReportPackRestatementCandidateResolver>();
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver,
             Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver>();
