@@ -35,7 +35,7 @@ public partial class FundLedgerPage : Page
         }
         catch (Exception ex)
         {
-            Services.LoggingService.Instance.LogError(
+            Meridian.Wpf.Services.LoggingService.Instance.LogError(
                 "Fund operations page failed to load.", ex);
         }
     }
