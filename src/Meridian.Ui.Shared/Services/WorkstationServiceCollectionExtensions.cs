@@ -223,6 +223,53 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+        // Durable governed-revision lifecycle state is process-wide, so it is a singleton consulted by
+        // the scoped command service (publish refuses to run unless the revision is durably Approved).
+        services.TryAddSingleton<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionStore,
+            Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore>();
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchCommandService,
+            Meridian.Application.SecurityMaster.SecurityMasterWorkbenchCommandService>();
+        // Bind the source-precedence ladder (and the rest of the workbench options) from configuration so
+        // the conflict-authority policy ranks real deployment source systems. BindConfiguration registers a
+        // reload-token source, so IOptionsMonitor reflects ladder changes without a restart.
+        services
+            .AddOptions<Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions>()
+            .BindConfiguration(Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions.SectionName);
+        // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
+        // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
+        // closed-period edit into a governed restatement proposal rather than a silent mutation; the
+        // candidate resolver locates the published report packs that consumed the edited security from
+        // retained report-line provenance (ReportPackRestatementCandidateResolver), falling back to the
+        // no-op NullRestatementCandidateResolver only where no report-pack workflow backend is present.
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.ILedgerPeriodLockReader,
+            Meridian.Application.SecurityMaster.LedgerPeriodLockReader>();
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IRestatementCandidateResolver,
+            ReportPackRestatementCandidateResolver>();
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver,
+            Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver>();
+        // Publish-time feed for SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds: maps an
+        // impacted fund profile to its durable ledger books so period-aware routing has books to check.
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IAffectedLedgerBookResolver,
+            Meridian.Application.SecurityMaster.LedgerBookAffectedResolver>();
+        // Ordered published-revision side-effect fan-out: projection rebuild (Order=10) then coverage
+        // invalidation (Order=20). The period-aware restatement decision is resolved separately by the
+        // command service (it returns candidates the void handler seam cannot). The coverage read path
+        // is currently uncached, so the invalidator defaults to a no-op.
+        services.TryAddScoped<
+            Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator,
+            Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator>();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.SecurityProjectionRebuildHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.CoverageInvalidationHandler>());
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
@@ -259,6 +306,10 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportTemplateRegistryService>()));
         services.TryAddSingleton<IReportingTemplateCatalog>(sp =>
             sp.GetRequiredService<GovernedReportingTemplateCatalog>());
+        // Derived security→report-line index backing the report-pack restatement candidate lookup. A
+        // singleton so it shares the lifetime of the (singleton) workflow service that keeps it current;
+        // it is rebuilt from the persisted workflow records on construction.
+        services.TryAddSingleton<IReportPackSecurityLineIndex, InMemoryReportPackSecurityLineIndex>();
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportPackDeliveryService>();
         services.TryAddSingleton<ReportWriterDatasetSourceService>();

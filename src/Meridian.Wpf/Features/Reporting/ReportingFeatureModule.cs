@@ -1,3 +1,4 @@
+using Meridian.Core.Config;
 using Meridian.Wpf.Features.Reporting.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -20,6 +21,9 @@ public sealed class ReportingFeatureModule : IDesktopFeatureModule
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;
+
+    public IReadOnlyList<FeatureCapabilityDescriptor> DeclareCapabilities() =>
+        FeatureCapabilityCatalog.Reporting;
 
     public WorkspaceCapabilityDescriptor DescribeWorkspace() => Capability;
 }

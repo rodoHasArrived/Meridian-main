@@ -1,0 +1,136 @@
+<UserControl x:Class="Meridian.Wpf.Views.SecurityPassportEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Security Passport Editor"
+             AutomationProperties.AutomationId="SecurityPassportEditorView">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,20,28,32" MaxWidth="900">
+
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Symbol}" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding AssetClass}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" />
+                <TextBlock Text="{Binding Version, StringFormat='v{0}'}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" />
+                <TextBlock Text="{Binding RevisionState}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" />
+                <TextBlock Text="{Binding TrustPosture}" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" />
+            </StackPanel>
+            <TextBlock Text="Governed passport edit — changes are staged as a draft and published through the approval gate."
+                       Opacity="0.7" Margin="0,4,0,0" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding StatusText}" Margin="0,6,0,0" Opacity="0.7" />
+
+            <!-- Recovery banner -->
+            <Border Margin="0,8,0,0" Padding="10,8" BorderThickness="1"
+                    BorderBrush="#C0392B"
+                    Visibility="{Binding HasBanner, Converter={StaticResource BooleanToVisibility}}"
+                    AutomationProperties.Name="Passport edit banner">
+                <TextBlock Text="{Binding BannerText}" TextWrapping="Wrap" />
+            </Border>
+
+            <!-- Field edit -->
+            <TextBlock Text="Field edit" FontWeight="SemiBold" Margin="0,18,0,6" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                    <TextBlock Text="Field path" Opacity="0.8" />
+                    <TextBox Text="{Binding FieldPath, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                    <TextBlock Text="New value" Opacity="0.8" />
+                    <TextBox Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Effective from" Opacity="0.8" />
+                    <DatePicker SelectedDate="{Binding EffectiveFrom}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
+                    <TextBlock Text="Justification (required)" Opacity="0.8" />
+                    <TextBox Text="{Binding Justification, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Source conflict resolution -->
+            <TextBlock Text="Source conflict" FontWeight="SemiBold" Margin="0,18,0,6" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                    <TextBlock Text="Conflict id" Opacity="0.8" />
+                    <TextBox Text="{Binding ConflictId, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                    <TextBlock Text="Chosen winner source" Opacity="0.8" />
+                    <TextBox Text="{Binding ChosenWinnerSource, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Reason (required)" Opacity="0.8" />
+                    <TextBox Text="{Binding ConflictReason, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Bottom">
+                    <CheckBox Content="Acknowledge policy deviation"
+                              IsChecked="{Binding AcknowledgePolicyDeviation}" Margin="0,0,0,2" />
+                </StackPanel>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Button Content="Resolve conflict" Command="{Binding ResolveConflictCommand}" Padding="12,6" />
+            </StackPanel>
+
+            <!-- Approval context -->
+            <TextBlock Text="Approval context" FontWeight="SemiBold" Margin="0,18,0,6" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                    <TextBlock Text="Approval workflow id" Opacity="0.8" />
+                    <TextBox Text="{Binding WorkflowId, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                    <TextBlock Text="Expected workflow version" Opacity="0.8" />
+                    <TextBox Text="{Binding ExpectedWorkflowVersion, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="Independent reviewer" Opacity="0.8" />
+                    <TextBox Text="{Binding Reviewer, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
+                    <TextBlock Text="Report pack id" Opacity="0.8" />
+                    <TextBox Text="{Binding ReportPackId, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Action bar -->
+            <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                <Button Content="Save draft" Command="{Binding SaveDraftCommand}" Margin="0,0,8,0" Padding="12,6" />
+                <Button Content="Submit for approval" Command="{Binding SubmitCommand}" Margin="0,0,8,0" Padding="12,6" />
+                <Button Content="Approve" Command="{Binding ApproveCommand}" Margin="0,0,8,0" Padding="12,6" />
+                <Button Content="Publish" Command="{Binding PublishCommand}" Padding="12,6" />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -351,6 +351,13 @@ public static class UiApiRoutes
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
+
+    // Passport Workbench governed-write surface (see docs/plans/security-master-passport-workbench.md).
+    public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
+    public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
+    public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
+    public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";
+    public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
@@ -668,6 +675,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
     public const string OperationsContinuitySecurityMasterResolve = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/resolve";
     public const string OperationsContinuitySecurityMasterOverrideApprove = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/overrides/{overrideId}/approve";
+    public const string OperationsContinuitySecurityMasterFieldEditApprove = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/field-edits/{revisionId}/approve";
     public const string OperationsContinuityLedgerDraft = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/draft";
     public const string OperationsContinuityLedgerValidate = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/validate";
     public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";

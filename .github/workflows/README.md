@@ -14,21 +14,24 @@ scope.
 | Lane | Workflow alignment |
 | --- | --- |
 | `bootstrap` | Local-only lane (`make bootstrap`); no dedicated hosted workflow. |
-| `quality-gate` | `Meridian CI` (`meridian-ci.yml`) runs the canonical `bash scripts/ci.sh` PR gate and should be the required status check for `main`. |
-| `verify-fast` | `CI` (`ci.yml`) and browser workstation job names reference this lane. |
-| `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted .NET project/filter slices. |
+| `quality-gate` | `Meridian CI` (`meridian-ci.yml`) fans out parallel evidence lanes and finishes with one stable `quality-gate` aggregator that should be the required status check for `main`. |
+| `verify-dotnet` | `Meridian CI` .NET lane plus local `bash scripts/ci.sh --lane verify-dotnet`. |
+| `verify-browser` | `Meridian CI` browser lane plus local `bash scripts/ci.sh --lane verify-browser`. |
+| `verify-docs` | `Meridian CI` docs/source/AI lane, `CI` source-doc determinism job, and local docs checks. |
+| `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation. |
+| `verify-fast` | Local aggregate of `verify-dotnet` and `verify-browser`. |
+| `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted curated lanes. |
 | `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
-| `verify-docs` | `CI` source-doc determinism job plus local docs checks. |
 | `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
 | `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Packaging` (`desktop-installer-packaging.yml`). |
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs the canonical noninteractive `bash scripts/ci.sh` command in a GitHub-hosted Ubuntu runner. This stable `quality-gate` job is the required status check for protected `main` merges after repository rulesets are enabled. | Job logs; no separate artifact upload |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports one stable `quality-gate` aggregator result. `Meridian CI / quality-gate` is the required status check for protected `main` merges after repository rulesets are enabled. | Lane summaries, build logs, TRX summaries, docs outputs, and workflow-hygiene evidence |
 | CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Restores `Meridian.sln`, verifies formatting and warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, runs every configured non-integration .NET test project through the aggregate `run-dotnet-ci-tests.py` runner so one failing project does not hide later failures, tests and builds the dashboard with lockfile-strict `npm ci`, scans secrets, validates source-doc determinism, and runs nightly/manual verify-full coverage on `main`. | .NET build logs, TRX summaries, browser bundle, and coverage artifacts |
-| Targeted Test | `targeted-test.yml` | Manual only | Runs one selected .NET test project plus a required `dotnet test --filter` on a GitHub-hosted runner when local machine capacity, locks, or long-running suites make local validation impractical. Inputs are validated and limited to repo-relative `tests/` project paths and normal filter expressions for the failing slice, with hang diagnostics enabled for stuck tests. | Targeted TRX and hang diagnostic results |
+| Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, validating the pilot readiness dashboard renderer, and uploading evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
-| Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. Path filters include the WPF project-reference closure so shared service, reporting, storage, workflow, and related dependency changes trigger the lane. | WPF TRX results and desktop smoke publish output |
+| Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Runs the isolated WPF validation script on Windows, including build-once/test-without-rebuild behavior. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | WPF, WPF dependency, desktop workflow script, or manual changes | Runs `scripts/dev/validate-wpf-dev.ps1` with the desktop workflow script-test default or a manual filter override. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | WPF, shared route dependency, route script, or manual changes | Runs position-blotter and operator-inbox route validation scripts on Windows. | Route validation evidence |
 | Documentation Automation | `documentation.yml` | Documentation, Codex memory, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, validates AI inventory, Codex memory summary/receipt commands and focused memory-checker tests, regenerates tracked documentation outputs, refreshes Mermaid/UML/UI diagrams using root `npm install`, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
@@ -38,8 +41,8 @@ scope.
 | Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
 | Desktop Standalone Publish | `desktop-standalone-publish.yml` | Manual only | Publishes a desktop standalone `win-x64` executable and uploads the output. | Desktop standalone output |
 | Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Runs a WPF release preflight build/test gate, builds signed MSIX installer packages for `win-x64` and `win-arm64`, uploads workflow artifacts, and attaches package assets to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) |
-| Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. Screenshot/manual workflows are read-only and upload artifacts; they do not commit back to the repository. | Desktop workflow, screenshot, or manual artifacts |
-| Web Screenshot Capture | `web-screenshot-capture.yml` | Manual only | Captures browser workstation screenshots from the configured route list using lockfile-strict `npm ci`. The workflow is read-only and uploads artifacts; it does not open PRs or push commits. | Web screenshot artifacts |
+| Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. These workflows always upload artifacts; `desktop-screenshot-capture.yml` can additionally open a `peter-evans/create-pull-request` PR with the refreshed catalog when dispatched with `commit: true`. They never push commits directly. | Desktop workflow, screenshot, or manual artifacts; optional screenshot refresh PR |
+| Web Screenshot Capture | `web-screenshot-capture.yml` | Manual only | Captures browser workstation screenshots from the configured route list with `npm install --include=optional`, uploads artifacts, and opens a `peter-evans/create-pull-request` PR (`automation/web-screenshot-capture`) with the refreshed catalog. It never pushes commits directly. | Web screenshot artifacts; screenshot refresh PR |
 | Provider Smoke Checks | `ibapi-smoke.yml`, `robinhood-options-smoke.yml` | Path-filtered or manual | Runs provider smoke checks that are too specialized for the normal PR fast path. | Smoke evidence artifacts |
 | Copilot Setup Steps | `copilot-setup-steps.yml` | Copilot setup, relevant pushes/PRs, manual | Validates the GitHub Copilot hosted setup path for repository dependencies. | None |
 
@@ -49,8 +52,9 @@ When local CPU, memory, disk, package restore, or MSBuild lock contention makes 
 push the branch and use `Targeted Test` from the GitHub Actions tab or dispatch it with `gh`.
 Use the GitHub-hosted targeted lane as the preferred remote proof tool before retrying broad local
 scripts. The .NET lane requires a repo-relative test project under `tests/` and a non-empty
-`dotnet_filter` with a positive class, method, trait, or fully qualified name selector; leave
-solution-level, negative-only, and broad CI filters on the normal CI workflow.
+`dotnet_filter` with a positive class, method, trait, or fully qualified name selector when
+`mode=dotnet-filtered`; leave solution-level, negative-only, and broad CI filters on the normal CI
+workflow. Non-.NET modes are selected with the `mode` input and run only whitelisted commands.
 After timed-out generation, build, or test attempts, run
 `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
 shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
@@ -59,19 +63,32 @@ validation.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `
+  -f mode=dotnet-filtered `
   -f runner=ubuntu-latest `
   -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj `
   -f dotnet_filter="FullyQualifiedName~ReportPackWorkflowServiceTests"
 
 gh workflow run targeted-test.yml --ref <branch> `
+  -f mode=wpf-dev-loop `
   -f runner=windows-latest `
-  -f dotnet_project=tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj `
-  -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests" `
-  -f enable_full_wpf_build=true
+  -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests"
+
+gh workflow run targeted-test.yml --ref <branch> `
+  -f mode=browser-workstation `
+  -f runner=ubuntu-latest
+
+gh workflow run targeted-test.yml --ref <branch> `
+  -f mode=wpf-route `
+  -f runner=windows-latest `
+  -f wpf_route=operator-inbox
 ```
 
 ```powershell
 bash scripts/ci.sh
+bash scripts/ci.sh --lane verify-dotnet
+bash scripts/ci.sh --lane verify-browser
+bash scripts/ci.sh --lane verify-docs
+bash scripts/ci.sh --lane verify-workflows
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format whitespace Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 python3 build/scripts/ci/check-warning-suppressions.py
@@ -99,6 +116,7 @@ Windows desktop validation:
 dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration&FullyQualifiedName!~Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore -Filter "Category!=Integration&FullyQualifiedName!~Integration"
 ```
 
 Publish smoke:
@@ -121,6 +139,7 @@ Workflow hygiene:
 
 ```powershell
 python build/scripts/ci/check-workflow-hygiene.py
+python build/scripts/ci/check-lane-manifest.py --summary
 ```
 
 Documentation automation:
@@ -143,8 +162,9 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 
 - All workflows use repository-relative paths.
 - Default token permissions are read-only.
-- Manual screenshot and manual-generation workflows are artifact-only; repository writes should be
-  made from a reviewed local or PR workflow, not from those capture jobs.
+- Manual screenshot-capture workflows never push commits directly; any repository write is proposed
+  through a reviewed `peter-evans/create-pull-request` PR (always for the web capture, and for the
+  desktop capture only when dispatched with `commit: true`).
 - PR and branch workflows cancel superseded runs.
 - Build/test workflows use explicit restore, build, and test phases; the CI .NET lane aggregates per-project test results before failing so each run reports all broken configured test slices.
 - Test lanes that enable hang diagnostics upload uniquely named evidence artifacts for reruns so passing and failing runs both leave inspectable logs.

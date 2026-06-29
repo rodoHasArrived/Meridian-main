@@ -1036,7 +1036,13 @@ report-pack workflow records after create, submit, approve, publish, reject, res
 mutations, and `ReportPackRunReadService` projects both sources into the shared
 `WorkstationReportingPayload`. Browser and WPF Reporting surfaces should consume those recent-run
 rows for true template, schedule, attempt, approval, publication, evidence-bundle, restatement, and
-drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads. Generic
+drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads. Recent-run
+rows now expose run-series/version metadata, latest generated/latest approved pointers, retry
+reason, and changed/added/removed report-writer line counts from the retained Reporting manifest.
+The same service also projects `DailyWork` items for due packages, blocked packages, approvals,
+delivery failures, restatements, readiness warnings, and evidence gaps; browser and WPF Reporting
+cockpits should use those items as the first decision queue instead of locally rescoring readiness.
+Generic
 run audit trails are exposed through `/api/fund-structure/reporting/runs/{runId}/audit` with the
 same governed template access policy used by retained grid artifacts, so private or restricted run
 actors, timestamps, notes, and report-writer dataset source evidence do not leak through audit
@@ -1248,6 +1254,17 @@ shared service instead of client code.
 The same normalization assigns each retained line a Financial Record Explorer id and
 `/api/workstation/financial-record-explorers/{explorerId}` href so browser and WPF clients can open
 the source-backed ledger, portfolio, or Security & Instrument Explorer without deriving routes.
+That retained report-line provenance also backs the Security Master Passport Workbench's
+closed-period restatement path: `ReportPackRestatementCandidateResolver` implements the
+application-layer `IRestatementCandidateResolver`, so when a governed reference-data edit publishes
+into a locked accounting period it locates the published packs that consumed the edited security
+(by retained `SecurityMasterId`/`SecurityDefinitionId` or a security-kind provenance source, scoped
+to the impacted fund profile) and surfaces them as governed restatement candidates the operator
+approves through `Restate(...)`. It is the registered default; `NullRestatementCandidateResolver`
+remains the no-op fallback for hosts without a report-pack backend. Matching is precise — an
+untieable published pack is left to the period-aware resolver's hard-closed default-deny
+manual-locate path rather than surfaced as a false candidate — and candidates are deduplicated by
+report across affected ledger books.
 Generated governed report packs enrich line-level provenance with display labels,
 source-system tags, related ledger and journal evidence IDs, line amounts, latest evidence
 timestamps, and API routes back to run continuity, ledger trial-balance, reconciliation, and

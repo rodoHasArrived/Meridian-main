@@ -211,6 +211,34 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
   workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts
 } as const;
 
+/**
+ * Passport Workbench governed-write routes. Each carries a `{securityId:guid}` path segment that is
+ * authoritative server-side, so the helpers substitute it explicitly rather than relying on the body.
+ */
+function securityMasterWorkbenchPath(route: string, securityId: string): string {
+  return route.replace("{securityId:guid}", encodeURIComponent(securityId));
+}
+
+export function securityMasterWorkbenchFieldEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchField, securityId);
+}
+
+export function securityMasterWorkbenchResolveConflictEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchResolveConflict, securityId);
+}
+
+export function securityMasterWorkbenchSubmitEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchSubmit, securityId);
+}
+
+export function securityMasterWorkbenchApproveEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchApprove, securityId);
+}
+
+export function securityMasterWorkbenchPublishEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchPublish, securityId);
+}
+
 export const REFERENCE_DATA_API_ENDPOINTS = {
   edgarFiler: UI_API_ROUTES.ReferenceDataEdgarFiler,
   edgarFacts: UI_API_ROUTES.ReferenceDataEdgarFacts,

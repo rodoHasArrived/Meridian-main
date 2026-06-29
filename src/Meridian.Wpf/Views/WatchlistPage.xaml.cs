@@ -19,8 +19,20 @@ public partial class WatchlistPage : Page
         DataContext = _viewModel;
     }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _viewModel.StartAsync();
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.StartAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Watchlist page failed to load.", ex);
+        }
+    }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
         _viewModel.Stop();

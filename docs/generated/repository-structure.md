@@ -995,6 +995,8 @@ Meridian-main
 │   ├── BOTTLENECK_REPORT.md
 │   └── run-bottleneck-benchmarks.sh
 ├── build
+│   ├── ci
+│   │   └── lane-manifest.json
 │   ├── dotnet
 │   │   ├── DocGenerator
 │   │   │   ├── DocGenerator.csproj
@@ -1052,9 +1054,11 @@ Meridian-main
 │       │   ├── promptfoo-adapter.py
 │       │   └── promptfoo_adapter.py
 │       ├── ci
+│       │   ├── check-lane-manifest.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
-│       │   └── run-dotnet-ci-tests.py
+│       │   ├── run-dotnet-ci-tests.py
+│       │   └── summarize-ci-artifacts.py
 │       ├── docs
 │       │   ├── tests
 │       │   │   ├── test_check_ai_handoff.py
@@ -1725,6 +1729,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   ├── runbook-template-registry-modernization-plan.md
+│   │   ├── security-master-passport-workbench.md
 │   │   ├── sfo-mvp-implementation-design.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-accounting-impact-model.md
@@ -2792,12 +2797,21 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── AssetClassValidatorRegistry.cs
 │   │   │   ├── CorporateActionCommandService.cs
+│   │   │   ├── CoverageInvalidationHandler.cs
 │   │   │   ├── DataVendorEntitlementService.cs
 │   │   │   ├── EdgarIngestOrchestrator.cs
 │   │   │   ├── FileSecurityValidationSnapshotStore.cs
+│   │   │   ├── IAffectedLedgerBookResolver.cs
 │   │   │   ├── IEdgarIngestOrchestrator.cs
+│   │   │   ├── ILedgerPeriodLockReader.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
+│   │   │   ├── IMultiAssetCoverageInvalidator.cs
+│   │   │   ├── IPeriodAwareRestatementResolver.cs
+│   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
+│   │   │   ├── ISecurityMasterRevisionPublishedHandler.cs
+│   │   │   ├── ISecurityMasterRevisionStore.cs
+│   │   │   ├── ISecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── IUflProjectionRebuilder.cs
@@ -2808,6 +2822,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
+│   │   │   ├── SecurityMasterConcurrencyException.cs
+│   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandService.cs
@@ -2822,9 +2838,13 @@ Meridian-main
 │   │   │   ├── SecurityMasterPricingService.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
 │   │   │   ├── SecurityMasterProjectionWarmupService.cs
+│   │   │   ├── SecurityMasterPublishFailedException.cs
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterRebuildOrchestrator.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.cs
+│   │   │   ├── SecurityMasterWorkbenchOptions.cs
+│   │   │   ├── SecurityProjectionRebuildHandler.cs
 │   │   │   ├── SecurityResolver.cs
 │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   ├── SecurityValidationService.cs
@@ -3234,6 +3254,7 @@ Meridian-main
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── ResearchBriefingDtos.cs
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   ├── StatementReconciliationDtos.cs
 │   │   │   ├── StrategyBriefingDtos.cs
@@ -4589,6 +4610,10 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── coverage-passport-drill-in.test.tsx
+│   │   │   │   │   │   ├── coverage-passport-drill-in.tsx
+│   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.test.ts
+│   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.ts
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
@@ -4616,6 +4641,12 @@ Meridian-main
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
 │   │   │   │   │   │   ├── security-details-tracker.view-model.ts
+│   │   │   │   │   │   ├── security-passport-editor-launcher.test.tsx
+│   │   │   │   │   │   ├── security-passport-editor-launcher.tsx
+│   │   │   │   │   │   ├── security-passport-editor.test.tsx
+│   │   │   │   │   │   ├── security-passport-editor.tsx
+│   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
+│   │   │   │   │   │   ├── security-passport-editor.view-model.ts
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
@@ -4680,7 +4711,9 @@ Meridian-main
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api
 │   │   │   │   │   │   ├── covered-call.api.test.ts
-│   │   │   │   │   │   └── covered-call.api.ts
+│   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── security-master-workbench.api.test.ts
+│   │   │   │   │   │   └── security-master-workbench.api.ts
 │   │   │   │   │   ├── covered-call
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
@@ -4777,6 +4810,15 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
+│   │   │   │   │   ├── reporting-screen.branding-access.tsx
+│   │   │   │   │   ├── reporting-screen.delivery-history.tsx
+│   │   │   │   │   ├── reporting-screen.exports-runner.tsx
+│   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
+│   │   │   │   │   ├── reporting-screen.report-writer.tsx
+│   │   │   │   │   ├── reporting-screen.run-status-modules.tsx
+│   │   │   │   │   ├── reporting-screen.schedule-management.tsx
+│   │   │   │   │   ├── reporting-screen.shared-components.tsx
+│   │   │   │   │   ├── reporting-screen.template-lifecycle.tsx
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
@@ -5073,6 +5115,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.PlotTool.cs
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
+│   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -5167,8 +5210,12 @@ Meridian-main
 │   │   │   ├── ReportingScheduleService.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportPackDeliveryService.cs
+│   │   │   ├── ReportPackRestatementCandidateResolver.cs
 │   │   │   ├── ReportPackRunReadService.cs
+│   │   │   ├── ReportPackSecurityLineIndex.cs
+│   │   │   ├── ReportPackSecurityLineMatcher.cs
 │   │   │   ├── ReportPackValidationService.cs
+│   │   │   ├── ReportPeriodRange.cs
 │   │   │   ├── ReportWriterDatasetSourceService.cs
 │   │   │   ├── ReportWriterGridArtifactService.cs
 │   │   │   ├── RiskRuleRuntimeService.cs
@@ -5625,6 +5672,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterViewModel.Sections.cs
 │   │   │   ├── SecurityMasterViewModel.Services.cs
 │   │   │   ├── SecurityMasterViewModel.TextHelpers.cs
+│   │   │   ├── SecurityPassportEditorViewModel.cs
 │   │   │   ├── ServiceManagerViewModel.cs
 │   │   │   ├── SettingsViewModel.AssetProfiles.cs
 │   │   │   ├── SettingsViewModel.cs
@@ -5813,6 +5861,10 @@ Meridian-main
 │   │   │   ├── SecretInputControl.xaml.cs
 │   │   │   ├── SecurityMasterPage.xaml
 │   │   │   ├── SecurityMasterPage.xaml.cs
+│   │   │   ├── SecurityPassportEditorPage.xaml
+│   │   │   ├── SecurityPassportEditorPage.xaml.cs
+│   │   │   ├── SecurityPassportEditorView.xaml
+│   │   │   ├── SecurityPassportEditorView.xaml.cs
 │   │   │   ├── ServiceManagerPage.xaml
 │   │   │   ├── ServiceManagerPage.xaml.cs
 │   │   │   ├── SettingsPage.xaml
@@ -6045,6 +6097,7 @@ Meridian-main
 │   ├── Meridian.Tests
 │   │   ├── Application
 │   │   │   ├── Auth
+│   │   │   │   ├── RolePermissionsTests.cs
 │   │   │   │   └── ScopedAccessServiceTests.cs
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
@@ -6592,6 +6645,17 @@ Meridian-main
 │   │   │   ├── PositionLimitRuleTests.cs
 │   │   │   └── RiskIntegrationTests.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── Workbench
+│   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
+│   │   │   │   ├── LedgerBookAffectedResolverTests.cs
+│   │   │   │   ├── LedgerPeriodLockReaderTests.cs
+│   │   │   │   ├── PeriodAwareRestatementResolverTests.cs
+│   │   │   │   ├── PublishedRevisionHandlerTests.cs
+│   │   │   │   ├── ReportPackRestatementCandidateResolverTests.cs
+│   │   │   │   ├── ReportPackSecurityLineIndexTests.cs
+│   │   │   │   ├── ReportPeriodRangeTests.cs
+│   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
+│   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
@@ -6779,6 +6843,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterInstrumentPassportTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
@@ -7020,6 +7086,7 @@ Meridian-main
 │   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterEditViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── SecurityPassportEditorViewModelTests.cs
 │   │   │   ├── ServiceManagerViewModelTests.cs
 │   │   │   ├── SettingsViewModelAssetProfileTests.cs
 │   │   │   ├── SettingsViewModelOperationsControlTests.cs
@@ -7113,6 +7180,7 @@ Meridian-main
 │   │   ├── test_check_program_state_consistency.py
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_summary.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
@@ -7129,8 +7197,10 @@ Meridian-main
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_workspace_catalog_ts.py
 │   │   ├── test_golden_path_validation_workflow.py
+│   │   ├── test_lane_manifest.py
 │   │   ├── test_live_execution_controls_route_consistency.py
 │   │   ├── test_maintenance_full_workflow.py
+│   │   ├── test_meridian_ci_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
 │   │   ├── test_mixed_credit_status_set.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
@@ -7154,6 +7224,7 @@ Meridian-main
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── test_web_workstation_installer.py
+│   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   └── test_wpf_msix_manifest.py
 │   ├── coverlet.runsettings

@@ -22,9 +22,17 @@ public static class FeatureCapabilityCatalog
         new("desktop.settings.workflow-library", "Workflow library", "Reusable workflow catalog and action launch surface in Settings.", true, false)
     ];
 
+    public static IReadOnlyList<FeatureCapabilityDescriptor> Reporting { get; } =
+    [
+        new("desktop.reporting.workspace", "Reporting workspace", "Governed report-pack review, delivery posture, publication evidence, and line-provenance surfaces.", true, true),
+        new("desktop.reporting.review-workbench", "Reporting review workbench", "Approval, rejection, publication, restatement, and retained evidence review surfaces.", true, false),
+        new("desktop.reporting.delivery-readiness", "Reporting delivery readiness", "Schedule due work, delivery blockers, failure evidence, and readiness warnings.", true, false)
+    ];
+
     public static IReadOnlyList<FeatureCapabilityDescriptor> All { get; } =
         Trading
             .Concat(Data)
+            .Concat(Reporting)
             .Concat(Settings)
             .GroupBy(static capability => capability.CapabilityKey, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())

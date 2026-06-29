@@ -3,8 +3,20 @@ name: Targeted Test
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: Curated hosted validation mode.
+        required: true
+        type: choice
+        default: dotnet-filtered
+        options:
+          - dotnet-filtered
+          - browser-workstation
+          - docs-source
+          - wpf-dev-loop
+          - wpf-route
+          - desktop-smoke
       runner:
-        description: GitHub-hosted runner.
+        description: GitHub-hosted runner. Use windows-latest for WPF/desktop modes.
         required: true
         type: choice
         default: ubuntu-latest
@@ -16,12 +28,13 @@ on:
         required: true
         default: Release
       dotnet_project:
-        description: Repo-relative .NET test project path under tests/.
-        required: true
+        description: Repo-relative .NET test project path under tests/ for dotnet-filtered mode.
+        required: false
         default: tests/Meridian.Tests/Meridian.Tests.csproj
       dotnet_filter:
-        description: dotnet test --filter expression for the exact failing slice.
-        required: true
+        description: dotnet test --filter expression for dotnet-filtered mode, or optional WPF dev-loop override.
+        required: false
+        default: ""
       enable_windows_targeting:
         description: Pass EnableWindowsTargeting=true to dotnet.
         required: true
@@ -32,12 +45,20 @@ on:
         required: true
         type: boolean
         default: false
+      wpf_route:
+        description: WPF route script to run in wpf-route mode.
+        required: true
+        type: choice
+        default: position-blotter
+        options:
+          - position-blotter
+          - operator-inbox
 
 permissions:
   contents: read
 
 concurrency:
-  group: targeted-test-${{ github.ref }}-${{ inputs.runner }}-${{ github.run_id }}
+  group: targeted-test-${{ github.ref }}-${{ inputs.mode }}-${{ inputs.runner }}-${{ github.run_id }}
   cancel-in-progress: false
 
 env:
@@ -50,7 +71,7 @@ env:
 
 jobs:
   targeted:
-    name: targeted-dotnet on ${{ inputs.runner }}
+    name: targeted-${{ inputs.mode }} on ${{ inputs.runner }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 60
 
@@ -62,11 +83,27 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
+        if: inputs.mode == 'dotnet-filtered' || inputs.mode == 'wpf-dev-loop' || inputs.mode == 'wpf-route' || inputs.mode == 'desktop-smoke'
         uses: actions/setup-dotnet@v5.2.0
         with:
           global-json-file: global.json
 
+      - name: Set up Node.js
+        if: inputs.mode == 'browser-workstation'
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Set up Python
+        if: inputs.mode == 'docs-source'
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
       - name: Cache NuGet packages
+        if: inputs.mode == 'dotnet-filtered' || inputs.mode == 'wpf-dev-loop' || inputs.mode == 'wpf-route' || inputs.mode == 'desktop-smoke'
         uses: actions/cache@v5.0.5
         with:
           path: ~/.nuget/packages
@@ -75,7 +112,31 @@ jobs:
             ${{ runner.os }}-nuget-targeted-
             ${{ runner.os }}-nuget-
 
+      - name: Validate selected mode
+        shell: pwsh
+        env:
+          TARGET_MODE: ${{ inputs.mode }}
+          TARGET_RUNNER: ${{ inputs.runner }}
+          DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+        run: |
+          $mode = $env:TARGET_MODE.Trim()
+          $runner = $env:TARGET_RUNNER.Trim()
+          $filter = $env:DOTNET_FILTER.Trim()
+
+          $windowsModes = @('wpf-dev-loop', 'wpf-route', 'desktop-smoke')
+          if ($windowsModes -contains $mode -and $runner -ne 'windows-latest') {
+            throw "Mode '$mode' requires runner=windows-latest."
+          }
+          $ubuntuModes = @('browser-workstation', 'docs-source')
+          if ($ubuntuModes -contains $mode -and $runner -ne 'ubuntu-latest') {
+            throw "Mode '$mode' requires runner=ubuntu-latest."
+          }
+          if ($mode -eq 'dotnet-filtered' -and $filter -eq '') {
+            throw "dotnet_filter is required so Targeted Test runs the exact failing slice instead of a broad test project."
+          }
+
       - name: Run targeted .NET tests
+        if: inputs.mode == 'dotnet-filtered'
         shell: pwsh
         env:
           DOTNET_PROJECT: ${{ inputs.dotnet_project }}
@@ -96,9 +157,6 @@ jobs:
           }
           if ($configuration -notmatch '^[A-Za-z0-9._-]+$') {
             throw "Unsupported configuration '$configuration'."
-          }
-          if ($filter -eq '') {
-            throw "dotnet_filter is required so Targeted Test runs the exact failing slice instead of a broad test project."
           }
           if ($filter -notmatch '^[A-Za-z0-9_ .,:&|!<>=~()''"+\-\[\]\\/]+$') {
             throw "Unsupported dotnet_filter '$filter'. Use a normal dotnet test filter expression for the failing slice."
@@ -139,26 +197,110 @@ jobs:
           & dotnet @testArgs @props
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Run browser workstation validation
+        if: inputs.mode == 'browser-workstation'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix src/Meridian.Ui/dashboard ci --include=optional
+          npm --prefix src/Meridian.Ui/dashboard run test
+          npm --prefix src/Meridian.Ui/dashboard run build
+          mkdir -p artifacts/targeted-browser
+          cp -R src/Meridian.Ui/dashboard/dist artifacts/targeted-browser/dist
+
+      - name: Run docs/source validation
+        if: inputs.mode == 'docs-source'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 build/scripts/docs/validate-roadmap-registry.py --summary
+          python3 build/scripts/docs/validate-source-readmes.py --summary
+          python3 build/scripts/docs/scan-source-todos.py --summary
+          python3 build/scripts/docs/render-roadmap-docs.py --summary
+          python3 build/scripts/docs/render-source-docs.py --summary
+          git diff -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src --exit-code
+          mkdir -p artifacts/targeted-docs
+          cp docs/status/ROADMAP_SUMMARY.md artifacts/targeted-docs/ROADMAP_SUMMARY.md
+
+      - name: Run WPF development validation
+        if: inputs.mode == 'wpf-dev-loop'
+        shell: pwsh
+        env:
+          DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+        run: |
+          $devArgs = @{
+            Restore = $true
+            OutputRoot = 'artifacts/wpf-validation/targeted-dev-loop'
+          }
+          if (-not [string]::IsNullOrWhiteSpace($env:DOTNET_FILTER)) {
+            $devArgs.Filter = $env:DOTNET_FILTER
+          }
+          & scripts/dev/validate-wpf-dev.ps1 @devArgs
+
+      - name: Run WPF route validation
+        if: inputs.mode == 'wpf-route'
+        shell: pwsh
+        env:
+          WPF_ROUTE: ${{ inputs.wpf_route }}
+        run: |
+          if ($env:WPF_ROUTE -eq 'position-blotter') {
+            & scripts/dev/validate-position-blotter-route.ps1 -OutputRoot 'artifacts/wpf-validation/targeted-position-blotter-route'
+          } elseif ($env:WPF_ROUTE -eq 'operator-inbox') {
+            & scripts/dev/validate-operator-inbox-route.ps1 -OutputRoot 'artifacts/wpf-validation/targeted-operator-inbox-route'
+          } else {
+            throw "Unsupported wpf_route '$env:WPF_ROUTE'."
+          }
+
+      - name: Run desktop smoke publish
+        if: inputs.mode == 'desktop-smoke'
+        shell: pwsh
+        run: |
+          dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj -r win-x64 /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj `
+            -c Release `
+            -r win-x64 `
+            --no-restore `
+            --self-contained false `
+            -o artifacts/publish/targeted-desktop-smoke `
+            /p:EnableWindowsTargeting=true `
+            /p:EnableFullWpfBuild=true `
+            /p:WindowsPackageType=None `
+            /p:PublishReadyToRun=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $exe = "artifacts/publish/targeted-desktop-smoke/Meridian.Desktop.exe"
+          if (-not (Test-Path $exe)) {
+            throw "Expected desktop executable not found: $exe"
+          }
+
       - name: Write summary
         if: always()
         shell: pwsh
         env:
+          SUMMARY_MODE: ${{ inputs.mode }}
           SUMMARY_RUNNER: ${{ inputs.runner }}
           SUMMARY_DOTNET_PROJECT: ${{ inputs.dotnet_project }}
           SUMMARY_DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+          SUMMARY_WPF_ROUTE: ${{ inputs.wpf_route }}
         run: |
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### Targeted test run"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### Targeted hosted validation"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Mode: $env:SUMMARY_MODE"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Runner: $env:SUMMARY_RUNNER"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- .NET project: $env:SUMMARY_DOTNET_PROJECT"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- .NET filter: $env:SUMMARY_DOTNET_FILTER"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- WPF route: $env:SUMMARY_WPF_ROUTE"
 
-      - name: Upload targeted test artifacts
+      - name: Upload targeted validation artifacts
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: targeted-test-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
+          name: targeted-${{ inputs.mode }}-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/test-results/targeted-dotnet/
+            artifacts/targeted-browser/
+            artifacts/targeted-docs/
+            artifacts/wpf-validation/
+            artifacts/publish/targeted-desktop-smoke/
           if-no-files-found: ignore
           retention-days: 14

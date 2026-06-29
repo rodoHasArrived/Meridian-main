@@ -14,7 +14,7 @@ public sealed class ReportingOrchestrationServiceTests
     private static readonly DateTimeOffset FixedNow = new(2026, 5, 1, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task ExecuteAsync_IsDeterministicForSameContract()
+    public async Task ExecuteAsync_VersionsRerunsForSameContract()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
         var contract = new ReportingJobContract("job-1", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
@@ -22,9 +22,14 @@ public sealed class ReportingOrchestrationServiceTests
         var first = await sut.ExecuteAsync(contract, CancellationToken.None);
         var second = await sut.ExecuteAsync(contract, CancellationToken.None);
 
-        first.RunId.Should().Be(second.RunId);
-        first.Artifacts.Should().Equal(second.Artifacts);
-        first.Sections.Select(s => s.Hash).Should().Equal(second.Sections.Select(s => s.Hash));
+        first.RunId.Should().Be("job-1-20260501");
+        second.RunId.Should().Be("job-1-20260501-v2");
+        first.RunSeriesId.Should().Be("job-1-20260501");
+        second.RunSeriesId.Should().Be(first.RunSeriesId);
+        first.RunAttemptOrdinal.Should().Be(1);
+        second.RunAttemptOrdinal.Should().Be(2);
+        second.PriorRunId.Should().Be(first.RunId);
+        first.Sections.Select(s => s.Lineage.DatasetSnapshotId).Should().Equal(second.Sections.Select(s => s.Lineage.DatasetSnapshotId));
         first.Sections.Should().OnlyContain(s => s.Lineage.DatasetSnapshotId == s.DatasetSnapshotId && s.Lineage.ReconciliationCheckpointId == s.ReconciliationCheckpointId);
     }
 
@@ -103,6 +108,72 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_RetainsReportWriterLineDiffsForRerunAttempts()
+    {
+        var template = new ReportingTemplateMetadata(
+            "writer-comparison-template",
+            ReportingTemplateFamily.CustomReport,
+            "Writer Comparison Template",
+            "1.0.0",
+            ["comparison"],
+            System.Collections.Immutable.ImmutableDictionary<string, string>.Empty,
+            ReportWriterGrids:
+            [
+                new ReportWriterGridDefinitionDto(
+                    "sector-pnl",
+                    "Sector P&L",
+                    ReportWriterGridKindDto.Detail,
+                    RowFields: ["sector"],
+                    Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")])
+            ]);
+        var sut = new ReportingOrchestrationService(new SingleTemplateCatalog(template), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var first = await sut.ExecuteAsync(
+            new ReportingJobContract(
+                "writer-rerun",
+                template.TemplateId,
+                new DateOnly(2026, 5, 7),
+                ReportingRunTrigger.AdHoc,
+                0,
+                "alice",
+                FixedNow,
+                DatasetRows:
+                [
+                    new Dictionary<string, string> { ["sector"] = "Technology", ["pnl"] = "10" },
+                    new Dictionary<string, string> { ["sector"] = "Rates", ["pnl"] = "5" }
+                ]),
+            CancellationToken.None);
+
+        var second = await sut.ExecuteAsync(
+            new ReportingJobContract(
+                "writer-rerun",
+                template.TemplateId,
+                new DateOnly(2026, 5, 7),
+                ReportingRunTrigger.AdHoc,
+                0,
+                "alice",
+                FixedNow.AddMinutes(2),
+                DatasetRows:
+                [
+                    new Dictionary<string, string> { ["sector"] = "Technology", ["pnl"] = "12" },
+                    new Dictionary<string, string> { ["sector"] = "Credit", ["pnl"] = "4" }
+                ],
+                RetryReason: "corrected portfolio marks"),
+            CancellationToken.None);
+
+        second.RunId.Should().Be("writer-rerun-20260507-v2");
+        second.PriorRunId.Should().Be(first.RunId);
+        second.RetryReason.Should().Be("corrected portfolio marks");
+        var diff = second.ReportWriterGridDiffs.Should().ContainSingle().Subject;
+        diff.GridId.Should().Be("sector-pnl");
+        diff.ChangedRowCount.Should().Be(1);
+        diff.AddedRowCount.Should().Be(1);
+        diff.RemovedRowCount.Should().Be(1);
+        diff.Rows.Should().Contain(row => row.RowKey == "Technology" && row.State == ReportWriterDiffRowStateDto.Changed);
+        diff.Rows.Should().Contain(row => row.RowKey == "Credit" && row.State == ReportWriterDiffRowStateDto.Added);
+        diff.Rows.Should().Contain(row => row.RowKey == "Rates" && row.State == ReportWriterDiffRowStateDto.Removed);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_PersistsFailedManifestAfterRetriesExhausted()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new AlwaysFailingRenderer(), () => FixedNow);
@@ -162,5 +233,15 @@ public sealed class ReportingOrchestrationServiceTests
     {
         public ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt)
             => throw new InvalidOperationException("renderer unavailable");
+    }
+
+    private sealed class SingleTemplateCatalog(ReportingTemplateMetadata template) : IReportingTemplateCatalog
+    {
+        public ReportingTemplateMetadata Get(string templateId) =>
+            string.Equals(template.TemplateId, templateId, StringComparison.OrdinalIgnoreCase)
+                ? template
+                : throw new KeyNotFoundException($"Unknown reporting template '{templateId}'.");
+
+        public IReadOnlyList<ReportingTemplateMetadata> ListTemplates() => [template];
     }
 }

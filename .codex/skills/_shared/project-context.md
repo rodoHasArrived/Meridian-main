@@ -141,7 +141,7 @@ pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
@@ -156,8 +156,9 @@ it or the checkout is intentionally operating there, but PR-ready publishing sho
 allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
-tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
-`tests/` plus `dotnet_filter` to keep the remote run scoped to the failing slice.
+tool before retrying broad local scripts. Select a whitelisted `mode`; for .NET slices, use
+`mode=dotnet-filtered` with a repo-relative test project under `tests/` plus `dotnet_filter` to keep
+the remote run scoped to the failing slice.
 After a timed-out generation, build, or test attempt, run
 `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
 shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or

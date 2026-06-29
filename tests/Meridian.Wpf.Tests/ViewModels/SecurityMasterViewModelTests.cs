@@ -978,6 +978,182 @@ public sealed class SecurityMasterViewModelTests
         condition().Should().BeTrue();
     }
 
+    [Fact]
+    public void OpenPassportEditor_HydratesEditorFromLoadedTrustSnapshot()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("aaaaaaaa-9999-9999-9999-999999999999");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => CreateTrustSnapshot(securityId)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            viewModel.OpenPassportEditorCommand.CanExecute(null).Should().BeFalse("no trust snapshot is loaded yet");
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            viewModel.OpenPassportEditorCommand.CanExecute(null).Should().BeTrue();
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // The editor is hydrated from the selected security's snapshot, so its governed writes are
+            // wired to the real passport (securityId + optimistic-concurrency version) rather than the
+            // disabled unloaded state.
+            viewModel.IsPassportEditorOpen.Should().BeTrue();
+            viewModel.PassportEditor.SecurityId.Should().Be(securityId);
+            viewModel.PassportEditor.Version.Should().Be(4);
+            viewModel.PassportEditor.AssetClass.Should().Be("Equity");
+            viewModel.PassportEditor.HasLoadedPassport.Should().BeTrue();
+
+            viewModel.ClosePassportEditorCommand.Execute(null);
+            viewModel.IsPassportEditorOpen.Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void OpenPassportEditor_ReopeningSameSecurity_PreservesInProgressDraft()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("aaaaaaaa-8888-8888-8888-888888888888");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => CreateTrustSnapshot(securityId)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // Simulate a saved draft on the open editor.
+            var revisionId = Guid.NewGuid();
+            viewModel.PassportEditor.RevisionId = revisionId;
+            viewModel.PassportEditor.RevisionState = SecurityMasterRevisionStateDto.Draft;
+
+            viewModel.ClosePassportEditorCommand.Execute(null);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // Reopening the same security must not discard the in-progress draft.
+            viewModel.IsPassportEditorOpen.Should().BeTrue();
+            viewModel.PassportEditor.RevisionId.Should().Be(revisionId);
+            viewModel.PassportEditor.RevisionState.Should().Be(SecurityMasterRevisionStateDto.Draft);
+            viewModel.PassportEditor.SubmitCommand.CanExecute(null).Should().BeTrue("the saved draft is still submittable");
+        });
+    }
+
+    [Fact]
+    public void OpenPassportEditor_ReopeningSameSecurity_PreservesUnsavedFieldEdits()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("dddddddd-4444-4444-4444-444444444444");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (id, _) => CreateTrustSnapshot(id)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+            var editor = viewModel.PassportEditor;
+
+            // Operator types an edit but has not saved a draft yet (RevisionId still null).
+            editor.FieldPath = "EconomicDefinition.Coupon";
+            editor.Justification = "vendor confirmation";
+
+            // Clicking Edit Passport again for the same security must not discard the unsaved edit.
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            viewModel.PassportEditor.Should().BeSameAs(editor);
+            viewModel.PassportEditor.FieldPath.Should().Be("EconomicDefinition.Coupon");
+            viewModel.PassportEditor.Justification.Should().Be("vendor confirmation");
+        });
+    }
+
+    [Fact]
+    public void OpenPassportEditor_DifferentSecurity_BuildsFreshEditorInstance()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityA = Guid.Parse("aaaaaaaa-1111-1111-1111-111111111111");
+            var securityB = Guid.Parse("bbbbbbbb-2222-2222-2222-222222222222");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (id, _) => CreateTrustSnapshot(id)
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityA);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+            var editorForA = viewModel.PassportEditor;
+            editorForA.SecurityId.Should().Be(securityA);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityB);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // A different security must get a fresh editor so a prior security's inputs or in-flight write
+            // result can never bleed onto it.
+            viewModel.PassportEditor.Should().NotBeSameAs(editorForA);
+            viewModel.PassportEditor.SecurityId.Should().Be(securityB);
+        });
+    }
+
+    [Fact]
+    public void OpenPassportEditor_SameSecurityNoDraft_RefreshesToCurrentVersion()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("cccccccc-3333-3333-3333-333333333333");
+            var version = 4L;
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (id, _) =>
+                {
+                    var snapshot = CreateTrustSnapshot(id);
+                    return snapshot with { EconomicDefinition = snapshot.EconomicDefinition with { Version = version } };
+                }
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+            viewModel.PassportEditor.Version.Should().Be(4);
+
+            viewModel.ClosePassportEditorCommand.Execute(null);
+            version = 5;
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            viewModel.OpenPassportEditorCommand.Execute(null);
+
+            // With no in-progress draft, reopening the same security refreshes to the current version, so
+            // the editor never posts a stale ExpectedVersion.
+            viewModel.PassportEditor.Version.Should().Be(5);
+        });
+    }
+
     private static SecurityMasterViewModel CreateViewModel(
         NavigationService navigation,
         StubWorkstationSecurityMasterApiClient snapshotClient,
@@ -1675,6 +1851,22 @@ public sealed class SecurityMasterViewModelTests
             LastBulkRequest = request;
             return Task.FromResult(ApiResponse<BulkResolveSecurityMasterConflictsResult>.Ok(BulkResolveResult));
         }
+
+        // Passport Workbench governed-write methods are not exercised by these tests.
+        public Task<ApiResponse<SecurityMasterEditResultDto>> UpdateFieldAsync(Guid securityId, UpdateSecurityFieldRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterConflictResolutionDto>> ResolveConflictAsync(Guid securityId, ResolveSourceConflictRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterConflictResolutionDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterEditResultDto>> SubmitRevisionAsync(Guid securityId, SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterEditResultDto>> ApproveRevisionAsync(Guid securityId, ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));
+
+        public Task<ApiResponse<SecurityMasterPublishResultDto>> PublishRevisionAsync(Guid securityId, PublishSecurityMasterRevisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<SecurityMasterPublishResultDto>.Fail("not supported in stub", 501));
     }
 
     private sealed class StubSecurityMasterRuntimeStatus : ISecurityMasterRuntimeStatus

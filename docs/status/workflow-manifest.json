@@ -389,17 +389,26 @@
       "requiredPrerequisites": [
         "Branch pushed to GitHub",
         "GitHub CLI authenticated or manual Actions UI access",
-        "Repo-relative .NET test project under tests/",
-        "Specific dotnet test filter for the failing class, method, or trait"
+        "Curated Targeted Test mode selected",
+        "Repo-relative .NET test project under tests/ and specific filter when mode=dotnet-filtered",
+        "windows-latest runner when running WPF or desktop modes"
       ],
       "executionCommands": [
         {
           "shell": "pwsh",
-          "command": "gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\""
+          "command": "gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\""
+        },
+        {
+          "shell": "pwsh",
+          "command": "gh workflow run targeted-test.yml --ref <branch> -f mode=wpf-dev-loop -f runner=windows-latest -f dotnet_filter=\"FullyQualifiedName~DesktopWorkflowScriptTests\""
         }
       ],
       "expectedArtifacts": [
-        "artifacts/test-results/targeted-dotnet"
+        "artifacts/test-results/targeted-dotnet",
+        "artifacts/targeted-browser",
+        "artifacts/targeted-docs",
+        "artifacts/wpf-validation",
+        "artifacts/publish/targeted-desktop-smoke"
       ],
       "validationChecks": [
         {
@@ -407,7 +416,7 @@
           "command": "test -f .github/workflows/targeted-test.yml"
         },
         {
-          "name": "Targeted Test requires project path and filter",
+          "name": "Targeted Test validates curated modes",
           "command": "python -m unittest tests.scripts.test_targeted_test_workflow"
         }
       ],
@@ -420,7 +429,11 @@
           "retainLatest": 20
         },
         "canonicalOutputRoots": [
-          "artifacts/test-results/targeted-dotnet"
+          "artifacts/test-results/targeted-dotnet",
+          "artifacts/targeted-browser",
+          "artifacts/targeted-docs",
+          "artifacts/wpf-validation",
+          "artifacts/publish/targeted-desktop-smoke"
         ],
         "driftChecks": {
           "enforceMissing": false,

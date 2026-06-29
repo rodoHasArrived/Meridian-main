@@ -1106,14 +1106,22 @@ public sealed class ReportPackWorkflowService
 
     private readonly ConcurrentDictionary<Guid, ReportPackWorkflowRecordDto> _records = new();
     private readonly IReportPackWorkflowRecordStore? _store;
+    private readonly IReportPackSecurityLineIndex? _securityLineIndex;
 
-    public ReportPackWorkflowService(IReportPackWorkflowRecordStore? store = null)
+    public ReportPackWorkflowService(
+        IReportPackWorkflowRecordStore? store = null,
+        IReportPackSecurityLineIndex? securityLineIndex = null)
     {
         _store = store;
+        _securityLineIndex = securityLineIndex;
         foreach (var record in _store?.Load() ?? [])
         {
             _records[record.ReportId] = record;
         }
+
+        // Backfill the derived security→report-line index from the loaded records (the workflow records
+        // are the source of truth), so the index is current on first use after a process start/upgrade.
+        _securityLineIndex?.Rebuild(_records.Values);
     }
 
     public ReportPackWorkflowRecordDto Create(
@@ -1139,8 +1147,7 @@ public sealed class ReportPackWorkflowService
             , null,
             NormalizeLineProvenance(lineProvenance),
             AccessPolicy: normalizedAccessPolicy);
-        _records[id] = record;
-        PersistRecords();
+        SaveAndIndex(record);
         return record;
     }
 
@@ -1178,8 +1185,7 @@ public sealed class ReportPackWorkflowService
             UpdatedAt = now,
             AuditTrail = record.AuditTrail.Append(new ReportPackAuditEventDto(now, actor, target.ToString().ToLowerInvariant(), record.State, target, note)).ToArray()
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1200,8 +1206,7 @@ public sealed class ReportPackWorkflowService
                 rejectedAt,
                 evidenceLinks is null ? null : NormalizeEvidenceLinks(evidenceLinks))
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1246,8 +1251,7 @@ public sealed class ReportPackWorkflowService
             Version = transitioned.Version + 1,
             Restatement = new ReportPackRestatementMetadataDto(reasonCode, approver, priorVersionReportId, changedLines, evidenceLinks)
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1262,7 +1266,10 @@ public sealed class ReportPackWorkflowService
         IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks,
         string? note = null,
         ReportBrandingThemeDto? brandingTheme = null,
-        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator,
+        string? signedOffRole = null,
+        string? signOffReason = null,
+        string? signOffContext = null)
     {
         EnsureHumanOrigin(actionOrigin, "publish reports");
         ArgumentException.ThrowIfNullOrWhiteSpace(signedOffBy);
@@ -1292,10 +1299,13 @@ public sealed class ReportPackWorkflowService
                 signedOffBy.Trim(),
                 DateTimeOffset.UtcNow,
                 NormalizeEvidenceLinks(evidenceLinks),
-                NormalizePublicationBrandingTheme(brandingTheme))
+                NormalizePublicationBrandingTheme(brandingTheme),
+                SignedOffRole: NormalizeWorkflowOptional(signedOffRole) ?? role.Trim(),
+                SignOffReason: NormalizeWorkflowOptional(signOffReason) ?? NormalizeWorkflowOptional(note),
+                SignOffContext: NormalizeWorkflowOptional(signOffContext) ?? BuildPublicationSignOffContext(actor, role, actionOrigin),
+                ActionOrigin: actionOrigin)
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1340,6 +1350,71 @@ public sealed class ReportPackWorkflowService
             .Take(Math.Clamp(limit, 1, 200))
             .ToArray();
 
+    /// <summary>
+    /// Every retained report-pack record scoped to a fund profile, newest period first. Unlike
+    /// <see cref="ListRecords"/> this is intentionally uncapped: callers that locate restatement
+    /// candidates for a closed-period reference-data edit must see the full set of the fund's published
+    /// packs, since a silently dropped pack would be a missed restatement.
+    /// </summary>
+    public IReadOnlyList<ReportPackWorkflowRecordDto> ListRecordsForFundProfile(string fundProfileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
+        var key = fundProfileId.Trim();
+        return OrderFundRecords(
+            _records.Values.Where(record => string.Equals(record.FundProfileId, key, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// The report packs in a fund profile whose retained report-line provenance references
+    /// <paramref name="securityId"/>. When a security→report-line index is wired this is an O(matches)
+    /// lookup; otherwise it falls back to the full fund scan filtered by the shared matcher, preserving
+    /// behaviour. Callers apply their own state gating (e.g. only Published/Restated packs).
+    /// </summary>
+    public IReadOnlyList<ReportPackWorkflowRecordDto> ListRecordsForSecurityInFund(Guid securityId, string fundProfileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
+        var key = fundProfileId.Trim();
+
+        if (_securityLineIndex is not null)
+        {
+            var matches = new List<ReportPackWorkflowRecordDto>();
+            foreach (var entry in _securityLineIndex.LookupByFund(securityId, key))
+            {
+                if (_records.TryGetValue(entry.ReportId, out var record))
+                {
+                    matches.Add(record);
+                }
+            }
+
+            return OrderFundRecords(matches);
+        }
+
+        return OrderFundRecords(
+            _records.Values.Where(record =>
+                string.Equals(record.FundProfileId, key, StringComparison.OrdinalIgnoreCase)
+                && ReportPackSecurityLineMatcher.RecordReferencesSecurity(record, securityId)));
+    }
+
+    private static IReadOnlyList<ReportPackWorkflowRecordDto> OrderFundRecords(IEnumerable<ReportPackWorkflowRecordDto> records) =>
+        records
+            .OrderByDescending(static record => record.Period, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(static record => record.Version)
+            .ThenBy(static record => record.ReportId)
+            .ToArray();
+
+    private void SaveAndIndex(ReportPackWorkflowRecordDto record)
+    {
+        // Single chokepoint for every report-pack mutation. Update the authoritative record map and the
+        // derived security→report-line index together BEFORE persisting, so the two in-memory views stay
+        // consistent even if PersistRecords throws. (Persisting between them would, on a write failure,
+        // leave the index permanently missing a record _records already has — a silent restatement
+        // candidate miss, since the index-backed lookup no longer scans _records.) PersistRecords runs
+        // last because it serializes the current _records snapshot.
+        _records[record.ReportId] = record;
+        _securityLineIndex?.Upsert(record);
+        PersistRecords();
+    }
+
     private void PersistRecords()
     {
         _store?.Save(_records.Values.ToArray());
@@ -1353,19 +1428,40 @@ public sealed class ReportPackWorkflowService
             target == ReportPackWorkflowStateDto.InReview ||
             target == ReportPackWorkflowStateDto.Validated ||
             target == ReportPackWorkflowStateDto.PendingApproval
-                ? normalized is "operator" or "reviewer" or "validator" or "admin"
+                ? IsReportingReviewRole(normalized) || IsReportingOperationsRole(normalized)
                 : target switch
                 {
-                    ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
-                    ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
-                    ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
-                    ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
+                    ReportPackWorkflowStateDto.Rejected => IsReportingReviewRole(normalized) || IsReportingApprovalRole(normalized),
+                    ReportPackWorkflowStateDto.Approved => IsReportingApprovalRole(normalized),
+                    ReportPackWorkflowStateDto.Published => IsReportingPublicationRole(normalized),
+                    ReportPackWorkflowStateDto.Restated => IsReportingApprovalRole(normalized),
                     ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
                     _ => true
                 };
         if (!allowed)
             throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
     }
+
+    private static bool IsReportingOperationsRole(string normalized) =>
+        normalized is "operator" or "validator" or "admin" or "accounting" or "fundaccountant" or "reportinganalyst" or "controller";
+
+    private static bool IsReportingReviewRole(string normalized) =>
+        normalized is "reviewer" or "admin" or "accounting" or "fundaccountant" or "reportinganalyst" or "controller" or "compliance";
+
+    private static bool IsReportingApprovalRole(string normalized) =>
+        normalized is "approver" or "admin" or "accounting" or "controller" or "compliance";
+
+    private static bool IsReportingPublicationRole(string normalized) =>
+        normalized is "publisher" or "admin" or "accounting" or "controller";
+
+    private static string BuildPublicationSignOffContext(
+        string actor,
+        string role,
+        OperationsActionOriginDto actionOrigin) =>
+        $"Published by {actor.Trim()} as {role.Trim()} via {actionOrigin}.";
+
+    private static string? NormalizeWorkflowOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance) =>
         lineProvenance?

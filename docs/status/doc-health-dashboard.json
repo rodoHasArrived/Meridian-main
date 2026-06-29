@@ -1,11 +1,11 @@
 {
-  "total_files": 533,
-  "total_lines": 85497,
-  "orphaned_count": 203,
+  "total_files": 534,
+  "total_lines": 86330,
+  "orphaned_count": 204,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 199,
-  "average_lines": 160.4,
+  "average_lines": 161.7,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -138,6 +138,7 @@
     "docs/plans/quantscript-l3-multiinstance-round2-roadmap.md",
     "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
     "docs/plans/runbook-template-registry-modernization-plan.md",
+    "docs/plans/security-master-passport-workbench.md",
     "docs/plans/sfo-mvp-implementation-design.md",
     "docs/plans/trading-workstation-migration-blueprint.md",
     "docs/plans/ufl-accounting-impact-model.md",
@@ -1008,7 +1009,7 @@
     },
     {
       "path": "docs/ai/assistant-workflow-contract.md",
-      "line_count": 640,
+      "line_count": 639,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1128,7 +1129,7 @@
     },
     {
       "path": "docs/ai/codex/quickstart.md",
-      "line_count": 259,
+      "line_count": 261,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1136,7 +1137,7 @@
     },
     {
       "path": "docs/ai/codex/README.md",
-      "line_count": 409,
+      "line_count": 410,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1288,7 +1289,7 @@
     },
     {
       "path": "docs/ai/tooling/README.md",
-      "line_count": 184,
+      "line_count": 185,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2024,7 +2025,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 227,
+      "line_count": 229,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2128,7 +2129,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7171,
+      "line_count": 7242,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2136,7 +2137,7 @@
     },
     {
       "path": "docs/generated/workflow-command-reference.md",
-      "line_count": 128,
+      "line_count": 129,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2152,7 +2153,7 @@
     },
     {
       "path": "docs/HELP.md",
-      "line_count": 245,
+      "line_count": 246,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2783,6 +2784,14 @@
       "stale": false
     },
     {
+      "path": "docs/plans/security-master-passport-workbench.md",
+      "line_count": 722,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/plans/sfo-mvp-implementation-design.md",
       "line_count": 16,
       "has_heading": true,
@@ -3048,7 +3057,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 175,
+      "line_count": 186,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3624,7 +3633,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 161,
+      "line_count": 162,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4272,7 +4281,7 @@
     },
     {
       "path": "src/Meridian.Reporting/README.md",
-      "line_count": 136,
+      "line_count": 140,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4312,7 +4321,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 1808,
+      "line_count": 1825,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

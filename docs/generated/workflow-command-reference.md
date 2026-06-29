@@ -97,13 +97,14 @@
 ## targeted-test
 
 - Owners: @developer-experience, @ci-platform
-- Expected artifacts: artifacts/test-results/targeted-dotnet
+- Expected artifacts: artifacts/test-results/targeted-dotnet, artifacts/targeted-browser, artifacts/targeted-docs, artifacts/wpf-validation, artifacts/publish/targeted-desktop-smoke
 - Owner lane: Developer Experience
 - Refresh trigger: manual GitHub Actions Targeted Test dispatch
-- Canonical output roots: artifacts/test-results/targeted-dotnet
+- Canonical output roots: artifacts/test-results/targeted-dotnet, artifacts/targeted-browser, artifacts/targeted-docs, artifacts/wpf-validation, artifacts/publish/targeted-desktop-smoke
 - Retention: workflow-artifact-retention (maxAgeDays=14, retainLatest=20)
 - Commands:
-  - `gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
+  - `gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
+  - `gh workflow run targeted-test.yml --ref <branch> -f mode=wpf-dev-loop -f runner=windows-latest -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests"`
 
 ## robinhood-options-smoke
 

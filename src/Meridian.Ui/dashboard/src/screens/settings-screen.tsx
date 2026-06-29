@@ -55,6 +55,7 @@ import { cn } from "@/lib/utils";
 import {
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel,
+  useRobinhoodConnectionViewModel,
   useSettingsRecentEventsSelectionViewModel,
   type SettingsAlpacaCredentialFieldState,
   type SettingsProfileAuthenticationStep,
@@ -131,6 +132,7 @@ interface SettingsScreenProps {
   accounting?: AccountingWorkspaceResponse | null;
   reporting?: ReportingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  robinhoodConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
@@ -562,6 +564,9 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   if (normalizedHash === "backend-capability-coverage") {
     return "diagnostics";
   }
+  if (normalizedHash === "robinhood-provider-setup") {
+    return "brokerage";
+  }
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
 }
 
@@ -656,6 +661,7 @@ export function SettingsScreen({
   accounting = null,
   reporting = null,
   brokerageConnection = null,
+  robinhoodConnection = null,
   providerConnections = null,
   providerRoutingConnections = null,
   providerRoutingBindings = null,
@@ -685,6 +691,7 @@ export function SettingsScreen({
     accounting,
     reporting,
     brokerageConnection,
+    robinhoodConnection,
     providerConnections,
     providerRoutingConnections,
     providerRoutingBindings,
@@ -704,6 +711,14 @@ export function SettingsScreen({
     onRefresh,
     canClear: vm.alpacaConnectionPanel.canClear
   });
+  const robinhoodForm = useRobinhoodConnectionViewModel({
+    onRefresh,
+    canConnect: vm.robinhoodConnectionPanel.canConnect && vm.robinhoodConnectionPanel.isConfigured,
+    canDisconnect: vm.robinhoodConnectionPanel.canDisconnect
+  });
+  // The status endpoint returns authorizationUrl only on the connect response, so prefer the
+  // URL the form retained over the (post-refresh null) panel value for the manual fallback link.
+  const robinhoodAuthorizationUrl = robinhoodForm.authorizationUrl ?? vm.robinhoodConnectionPanel.authorizationUrl;
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
   const inferredTaskView = useMemo(() => inferSettingsTaskView({
     overview,
@@ -4394,6 +4409,119 @@ export function SettingsScreen({
                 </div>
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+      ) : null}
+
+      {showBrokerageSection ? (
+      <Card
+        id="robinhood-provider-setup"
+        className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.robinhoodConnectionPanel.statusTone])}
+      >
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Brokerage connection</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Robinhood (read-only)
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.robinhoodConnectionPanel.statusDetail}</CardDescription>
+            </div>
+            <Badge variant={vm.robinhoodConnectionPanel.badgeVariant} dot={vm.robinhoodConnectionPanel.statusTone === "success"}>
+              {vm.robinhoodConnectionPanel.stateLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+          <div className="grid gap-3">
+            {!vm.robinhoodConnectionPanel.isConfigured ? (
+              <div className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+                Read-only Robinhood requires an authorized aggregation provider. Set the ROBINHOOD_BROKERAGE_* OAuth
+                environment variables.
+              </div>
+            ) : null}
+            {vm.robinhoodConnectionPanel.warnings.length > 0 ? (
+              <div className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+                {vm.robinhoodConnectionPanel.warnings[0]}
+              </div>
+            ) : null}
+            {robinhoodAuthorizationUrl && vm.robinhoodConnectionPanel.canConnect ? (
+              <div className="rounded-md border border-primary/35 bg-primary/10 px-3 py-2 text-xs leading-5">
+                <p className="leading-5">Complete authorization in the opened tab to finish connecting Robinhood.</p>
+                <a
+                  href={robinhoodAuthorizationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 font-medium text-primary underline"
+                >
+                  Open authorization page
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                </a>
+              </div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={robinhoodForm.connect}
+                disabled={
+                  robinhoodForm.busy
+                  || !vm.robinhoodConnectionPanel.canConnect
+                  || !vm.robinhoodConnectionPanel.isConfigured
+                }
+                busy={robinhoodForm.busyAction === "connect"}
+                busyLabel="Connecting Robinhood"
+              >
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                Connect Robinhood
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={robinhoodForm.disconnect}
+                disabled={robinhoodForm.busy || !vm.robinhoodConnectionPanel.canDisconnect}
+                busy={robinhoodForm.busyAction === "disconnect"}
+                busyLabel="Disconnecting Robinhood"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                Disconnect
+              </Button>
+              {robinhoodForm.actionMessage ? (
+                <div
+                  role={robinhoodForm.statusRole}
+                  aria-live={robinhoodForm.statusRole === "alert" ? "assertive" : "polite"}
+                  className={robinhoodForm.statusClassName}
+                >
+                  <div>{robinhoodForm.actionMessage}</div>
+                  {robinhoodForm.actionDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {robinhoodForm.actionDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <div className="flex flex-wrap gap-2">
+              <SettingsChip label="Provider" value={vm.robinhoodConnectionPanel.providerLabel} />
+            </div>
+            <dl className="grid gap-2">
+              <SettingsFieldRow
+                label="Account"
+                value={vm.robinhoodConnectionPanel.accountLabel}
+                tone={vm.robinhoodConnectionPanel.statusTone === "success" ? "success" : "muted"}
+              />
+              <SettingsFieldRow label="Connected" value={vm.robinhoodConnectionPanel.connectedAtLabel} tone="muted" />
+              <SettingsFieldRow label="Expires" value={vm.robinhoodConnectionPanel.expiresAtLabel} tone="muted" />
+              <SettingsFieldRow label="Scopes" value={vm.robinhoodConnectionPanel.scopesLabel} tone="muted" />
+            </dl>
           </div>
         </CardContent>
       </Card>

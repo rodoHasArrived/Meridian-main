@@ -95,7 +95,7 @@ const reporting: GovernanceReportingSummary = {
   ],
   recentRuns: [
     {
-      runId: "investor-monthly-statement-20260501",
+      runId: "investor-monthly-statement-20260501-v2",
       templateId: "investor-monthly-statement",
       family: "InvestorStatement",
       status: "InReview",
@@ -111,7 +111,7 @@ const reporting: GovernanceReportingSummary = {
           gridId: "sector-pivot",
           title: "Sector Pivot",
           kind: "Pivot",
-          artifact: "report-writer://investor-monthly-statement-20260501/grids/sector-pivot",
+          artifact: "report-writer://investor-monthly-statement-20260501-v2/grids/sector-pivot",
           dimensionCount: 2,
           metricCount: 2,
           formulaCount: 1
@@ -120,9 +120,21 @@ const reporting: GovernanceReportingSummary = {
       reportWriterDatasetSourceId: "portfolio-reporting-cuts",
       reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
       reportWriterDatasetRowCount: 2,
+      runSeriesId: "investor-monthly-statement-20260501",
+      runAttemptOrdinal: 2,
+      priorRunId: "investor-monthly-statement-20260501",
+      retryReason: "corrected portfolio marks",
+      latestGeneratedRunId: "investor-monthly-statement-20260501-v2",
+      latestApprovedRunId: "investor-monthly-statement-20260501",
+      isLatestGenerated: true,
+      isLatestApproved: false,
+      comparisonSummary: "1 changed, 1 added, 0 removed lines compared with investor-monthly-statement-20260501.",
+      changedLineCount: 1,
+      addedLineCount: 1,
+      removedLineCount: 0,
       drilldownLinks: [
         {
-          id: "investor-monthly-statement-20260501:evidence",
+          id: "investor-monthly-statement-20260501-v2:evidence",
           kind: "evidence",
           label: "Evidence bundle",
           href: "/api/fund-structure/report-packs/report-1/evidence-bundle",
@@ -131,10 +143,10 @@ const reporting: GovernanceReportingSummary = {
           source: "ReportPackWorkflow"
         },
         {
-          id: "investor-monthly-statement-20260501:audit",
+          id: "investor-monthly-statement-20260501-v2:audit",
           kind: "audit",
           label: "Approval audit trail",
-          href: "reporting-run://investor-monthly-statement-20260501/audit",
+          href: "reporting-run://investor-monthly-statement-20260501-v2/audit",
           method: "GET",
           isBrowserNavigable: false,
           source: "ReportingOrchestration"
@@ -142,10 +154,10 @@ const reporting: GovernanceReportingSummary = {
       ],
       nextActions: [
         {
-          id: "investor-monthly-statement-20260501:approve",
+          id: "investor-monthly-statement-20260501-v2:approve",
           kind: "approval",
           label: "Approve reporting run",
-          href: "reporting-run://investor-monthly-statement-20260501/approval/approve",
+          href: "reporting-run://investor-monthly-statement-20260501-v2/approval/approve",
           method: "POST",
           isEnabled: true,
           disabledReason: null,
@@ -233,6 +245,10 @@ const restatedReporting: GovernanceReportingSummary = {
         evidenceHash: "sha256:restated123",
         signedOffBy: "reporting-ops",
         signedOffAt: "2026-05-28T15:20:00Z",
+        signedOffRole: "Controller",
+        signOffReason: "Approved NAV correction package.",
+        signOffContext: "Authenticated actor 'reporting-ops' with role 'Controller' approved publication via HumanOperator.",
+        actionOrigin: "HumanOperator",
         evidenceLinks: [
           {
             evidenceId: "evidence-nav-total",
@@ -350,8 +366,16 @@ describe("useReportingScreenViewModel", () => {
       writerGridSummary: "No report-writer grids"
     });
     expect(result.current.runStatusRows[0]).toMatchObject({
-      id: "investor-monthly-statement-20260501",
+      id: "investor-monthly-statement-20260501-v2",
       status: "InReview",
+      runSeriesLabel: "investor-monthly-statement-20260501",
+      runAttemptLabel: "Version 2",
+      latestGeneratedLabel: "Latest generated",
+      latestApprovedLabel: "Latest approved: investor-monthly-statement-20260501",
+      priorRunLabel: "investor-monthly-statement-20260501",
+      retryReasonLabel: "corrected portfolio marks",
+      comparisonSummary: "1 changed, 1 added, 0 removed lines compared with investor-monthly-statement-20260501.",
+      changedLineLabel: "1 changed · 1 added · 0 removed",
       lineageSummary: "2/2 sections linked",
       generatedGridLabel: "1 generated grid with 1 formula",
       generatedGridNames: ["Sector Pivot (Pivot, 2d/2m/1f)"],
@@ -359,11 +383,11 @@ describe("useReportingScreenViewModel", () => {
       generatedGridArtifacts: [
         expect.objectContaining({
           label: "Sector Pivot (Pivot)",
-          jsonHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot",
-          csvHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=csv",
-          pdfHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=pdf",
-          xlsHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xls",
-          xlsxHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xlsx"
+          jsonHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot",
+          csvHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=csv",
+          pdfHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=pdf",
+          xlsHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=xls",
+          xlsxHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501-v2/report-writer-grids/sector-pivot?format=xlsx"
         })
       ],
       datasetSourceLabel: "Portfolio reporting cuts (2 rows)",
@@ -781,6 +805,9 @@ describe("useReportingScreenViewModel", () => {
     });
     expect(result.current.workflowTaskPanel?.publicationReview.fields).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "Signed off by", value: "reporting-ops" }),
+      expect.objectContaining({ label: "Signed-off role", value: "Controller" }),
+      expect.objectContaining({ label: "Sign-off reason", value: "Approved NAV correction package." }),
+      expect.objectContaining({ label: "Sign-off context", value: "Authenticated actor 'reporting-ops' with role 'Controller' approved publication via HumanOperator." }),
       expect.objectContaining({ label: "Evidence hash", value: "sha256:restated123" }),
       expect.objectContaining({ label: "Manifest path", value: "vault/report-packs/manifest-restated-1.json" }),
       expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" }),

@@ -54,14 +54,14 @@ EXCLUDED_FILE_PATTERNS = (
     "*.backup-*",
     "*_wpftmp.csproj",
 )
-EXCLUDED_FILE_NAMES = {
-    "appsettings.json",
-}
 EXCLUDED_ROOT_FILE_NAMES = {
     "package-lock.json",
 }
 EXCLUDED_FILE_NAMES = {
     "appsettings.json",
+    # Runtime scheduler artifact (present only while a session has a cron scheduled); excluding it keeps
+    # the generated tree deterministic across local and CI checkouts.
+    "scheduled_tasks.lock",
 }
 REPOSITORY_DISPLAY_NAME = "Meridian-main"
 STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"

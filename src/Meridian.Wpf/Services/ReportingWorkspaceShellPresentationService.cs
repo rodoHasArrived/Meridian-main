@@ -126,8 +126,34 @@ public static class ReportingWorkspaceShellPresentationService
         var workflowCount = reporting.WorkflowRecords?.Count ?? 0;
         var themeCount = reporting.BrandingThemes?.Count ?? 0;
         var accessScope = reporting.AccessAudit?.Summary ?? "workspace access policy";
+        var dailyWork = reporting.DailyWork ?? [];
+        var blockedDailyWork = dailyWork.Count(IsBlockedDailyWork);
+        var reviewDailyWork = dailyWork.Count(IsReviewDailyWork);
+        var duePackageCount = dailyWork.Count(static item => string.Equals(item.Kind, "due-package", StringComparison.OrdinalIgnoreCase));
+        var approvalCount = dailyWork.Count(static item => string.Equals(item.Kind, "approval-needed", StringComparison.OrdinalIgnoreCase));
 
-        return
+        var items = new List<WorkspaceQueueItem>
+        {
+            new()
+            {
+                Title = "Daily reporting cockpit",
+                Detail = dailyWork.Count > 0
+                    ? $"{dailyWork.Count} daily reporting item(s): {duePackageCount} due package(s), {approvalCount} approval(s), {blockedDailyWork} blocked, and {reviewDailyWork} needing review before delivery."
+                    : "No due packages, blocked packages, approval requests, delivery failures, restatements, readiness warnings, or evidence gaps are queued.",
+                StatusLabel = blockedDailyWork > 0 ? "Blocked" : reviewDailyWork > 0 ? "Review" : "Clear",
+                CountLabel = dailyWork.Count > 0 ? $"{dailyWork.Count} item(s)" : "0 items",
+                Tone = blockedDailyWork > 0 ? WorkspaceTone.Danger : reviewDailyWork > 0 ? WorkspaceTone.Warning : WorkspaceTone.Success,
+                IsBlocked = blockedDailyWork > 0,
+                PrimaryActionId = "ReportRunStatus",
+                PrimaryActionLabel = "Open Cockpit",
+                SecondaryActionId = "FundReportPack",
+                SecondaryActionLabel = "Report Packs",
+                AutomationName = "Reporting daily cockpit decision"
+            }
+        };
+
+        items.AddRange(BuildDailyWorkReviewItems(dailyWork));
+        items.AddRange(
         [
             new WorkspaceQueueItem
             {
@@ -215,8 +241,145 @@ public static class ReportingWorkspaceShellPresentationService
                 SecondaryActionLabel = "Audit",
                 AutomationName = "Reporting access branding audit decision"
             }
-        ];
+        ]);
+
+        return items;
     }
+
+    private static IReadOnlyList<WorkspaceQueueItem> BuildDailyWorkReviewItems(
+        IReadOnlyList<WorkstationReportingDailyWorkItemDto> dailyWork) =>
+        dailyWork
+            .Where(static item => !string.IsNullOrWhiteSpace(item.Kind))
+            .GroupBy(static item => NormalizeDailyWorkKind(item.Kind), StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static group => DailyWorkCategoryRank(group.Key))
+            .ThenBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(BuildDailyWorkReviewItem)
+            .ToArray();
+
+    private static WorkspaceQueueItem BuildDailyWorkReviewItem(
+        IGrouping<string, WorkstationReportingDailyWorkItemDto> group)
+    {
+        var orderedItems = group
+            .OrderBy(DailyWorkToneRank)
+            .ThenBy(static item => item.DueAtUtc ?? DateTimeOffset.MaxValue)
+            .ThenBy(static item => item.Title, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var first = orderedItems[0];
+        var evidenceGapCount = orderedItems.Sum(static item => item.EvidenceGaps?.Count ?? 0);
+        var hasBlockedItem = orderedItems.Any(IsBlockedDailyWork);
+        var hasReviewItem = orderedItems.Any(IsReviewDailyWork) || evidenceGapCount > 0;
+        var title = DailyWorkCategoryTitle(group.Key);
+        var statusLabel = DailyWorkCategoryStatus(group.Key, hasBlockedItem, hasReviewItem);
+
+        return new WorkspaceQueueItem
+        {
+            Title = title,
+            Detail = BuildDailyWorkReviewDetail(orderedItems, evidenceGapCount),
+            StatusLabel = statusLabel,
+            CountLabel = evidenceGapCount > 0
+                ? $"{orderedItems.Length} item(s), {evidenceGapCount} gap(s)"
+                : $"{orderedItems.Length} item(s)",
+            Tone = hasBlockedItem ? WorkspaceTone.Danger : hasReviewItem ? WorkspaceTone.Warning : WorkspaceTone.Info,
+            IsBlocked = hasBlockedItem,
+            PrimaryActionId = "ReportRunStatus",
+            PrimaryActionLabel = first.PrimaryActionLabel,
+            SecondaryActionId = DailyWorkSecondaryActionId(group.Key),
+            SecondaryActionLabel = DailyWorkSecondaryActionLabel(group.Key),
+            AutomationName = $"Reporting {group.Key} decision"
+        };
+    }
+
+    private static string BuildDailyWorkReviewDetail(
+        IReadOnlyList<WorkstationReportingDailyWorkItemDto> items,
+        int evidenceGapCount)
+    {
+        var first = items[0];
+        var due = first.DueAtUtc is null
+            ? null
+            : $" Due {first.DueAtUtc:yyyy-MM-dd HH:mm} UTC.";
+        var owner = string.IsNullOrWhiteSpace(first.Owner)
+            ? null
+            : $" Owner: {first.Owner}.";
+        var gaps = evidenceGapCount > 0
+            ? $" {evidenceGapCount} retained evidence/provenance gap(s) require review."
+            : null;
+        var context = first.Context is { Count: > 0 }
+            ? $" Context: {string.Join(", ", first.Context.Take(3))}."
+            : null;
+        var additional = items.Count > 1
+            ? $" {items.Count - 1} additional item(s) share this queue."
+            : null;
+
+        return $"{first.Title}: {first.Detail}{owner}{due}{gaps}{context}{additional}";
+    }
+
+    private static string NormalizeDailyWorkKind(string kind) =>
+        kind.Equals("readiness-warning", StringComparison.OrdinalIgnoreCase)
+            ? "evidence-gap"
+            : kind;
+
+    private static int DailyWorkCategoryRank(string kind) => kind switch
+    {
+        "blocked-package" => 0,
+        "delivery-failure" => 1,
+        "approval-needed" => 2,
+        "due-package" => 3,
+        "restatement" => 4,
+        "evidence-gap" => 5,
+        _ => 9
+    };
+
+    private static int DailyWorkToneRank(WorkstationReportingDailyWorkItemDto item) =>
+        item.Tone.Equals("danger", StringComparison.OrdinalIgnoreCase)
+            ? 0
+            : item.Tone.Equals("warning", StringComparison.OrdinalIgnoreCase)
+                ? 1
+                : 2;
+
+    private static string DailyWorkCategoryTitle(string kind) => kind switch
+    {
+        "approval-needed" => "Approval review queue",
+        "blocked-package" => "Blocked package queue",
+        "delivery-failure" => "Delivery readiness queue",
+        "due-package" => "Due package queue",
+        "restatement" => "Restatement review queue",
+        "evidence-gap" => "Evidence and provenance gaps",
+        _ => "Reporting work queue"
+    };
+
+    private static string DailyWorkCategoryStatus(string kind, bool hasBlockedItem, bool hasReviewItem) => kind switch
+    {
+        "approval-needed" => "Approvals",
+        "blocked-package" => "Blocked",
+        "delivery-failure" => "Delivery review",
+        "due-package" => "Due packages",
+        "restatement" => "Restatements",
+        "evidence-gap" => hasBlockedItem ? "Blocked evidence" : "Evidence review",
+        _ => hasBlockedItem ? "Blocked" : hasReviewItem ? "Review" : "Ready"
+    };
+
+    private static string DailyWorkSecondaryActionId(string kind) => kind switch
+    {
+        "approval-needed" or "delivery-failure" or "evidence-gap" or "restatement" => "FundAuditTrail",
+        _ => "FundReportPack"
+    };
+
+    private static string DailyWorkSecondaryActionLabel(string kind) => kind switch
+    {
+        "approval-needed" => "Audit",
+        "delivery-failure" => "Evidence",
+        "evidence-gap" => "Provenance",
+        "restatement" => "Audit",
+        _ => "Report Pack"
+    };
+
+    private static bool IsBlockedDailyWork(WorkstationReportingDailyWorkItemDto item) =>
+        string.Equals(item.Tone, "danger", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(item.Kind, "blocked-package", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(item.Kind, "delivery-failure", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsReviewDailyWork(WorkstationReportingDailyWorkItemDto item) =>
+        string.Equals(item.Tone, "warning", StringComparison.OrdinalIgnoreCase);
 
     public static WorkspaceCommandGroup BuildCommandGroup(bool hasFund) => hasFund
         ? new WorkspaceCommandGroup

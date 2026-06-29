@@ -60,8 +60,9 @@ Use this lane whenever the task creates or updates an agent or skill package.
    capacity, restore, or MSBuild locks block proof, run `python build/python/cli/buildctl.py
    validation-status --summary`, then `dotnet build-server shutdown`; stop only abandoned
    repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this
-   checkout, then push the branch and use GitHub Actions `Targeted Test` with the same
-   repo-relative .NET test project under `tests/` plus filter before retrying broad local scripts.
+   checkout, then push the branch and use GitHub Actions `Targeted Test` with a whitelisted `mode`.
+   Use `mode=dotnet-filtered` with the same repo-relative .NET test project under `tests/` plus
+   filter before retrying broad local scripts for .NET slices.
    For performance-sensitive paths, explicitly address allocation and async blocking risks.
 4. **Report & route:** summarize traceability, list validation commands and outcomes, update AI catalogs, and run `score_eval.py` to produce the rubric report.
 
@@ -78,7 +79,7 @@ dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true
 
 # Hosted fallback when local validation is unreliable
-gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 
 # Gate 3: AI catalog routing when updating docs or catalogs
 python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py \

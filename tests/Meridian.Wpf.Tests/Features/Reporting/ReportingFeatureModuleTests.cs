@@ -33,9 +33,13 @@ public sealed class ReportingFeatureModuleTests
     }
 
     [Fact]
-    public void DeclareCapabilities_ReturnsNoFeatureCapabilityKeys()
+    public void DeclareCapabilities_ReturnsReportingFeatureCapabilityKeys()
     {
-        DesktopFeatureModuleTestAssertions.AssertNoCapabilities(new ReportingFeatureModule());
+        DesktopFeatureModuleTestAssertions.AssertCapabilityKeys(
+            new ReportingFeatureModule(),
+            "desktop.reporting.workspace",
+            "desktop.reporting.review-workbench",
+            "desktop.reporting.delivery-readiness");
     }
 
     [Fact]

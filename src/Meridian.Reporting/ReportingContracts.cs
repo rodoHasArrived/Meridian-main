@@ -74,7 +74,12 @@ public sealed record ReportingOutputManifest(
     int? ReportWriterDatasetRowCount = null,
     string? BrandingThemeId = null,
     ReportBrandingThemeDto? BrandingTheme = null,
-    ReportAccessPolicyDto? AccessPolicy = null);
+    ReportAccessPolicyDto? AccessPolicy = null,
+    string? RunSeriesId = null,
+    int? RunAttemptOrdinal = null,
+    string? PriorRunId = null,
+    string? RetryReason = null,
+    ImmutableArray<ReportWriterGridDiffDto> ReportWriterGridDiffs = default);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
@@ -107,7 +112,8 @@ public sealed record ReportingJobContract(
     string? ReportWriterDatasetSourceLabel = null,
     string? BrandingThemeId = null,
     ReportBrandingThemeDto? BrandingTheme = null,
-    ReportAccessPolicyDto? AccessPolicy = null);
+    ReportAccessPolicyDto? AccessPolicy = null,
+    string? RetryReason = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,

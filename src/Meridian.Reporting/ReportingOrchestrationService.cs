@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
 
@@ -42,6 +43,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private readonly ConcurrentDictionary<string, ReportingOutputManifest> manifests = new();
     private readonly ConcurrentDictionary<string, object> auditLocks = new();
     private readonly ConcurrentDictionary<string, List<ReportingRunAuditEntry>> audits = new();
+    private readonly ConcurrentDictionary<string, byte> reservedRunIds = new(StringComparer.OrdinalIgnoreCase);
 
     public ReportingOrchestrationService(IReportingTemplateCatalog catalog)
         : this(catalog, new DeterministicReportingSectionRenderer(), () => DateTimeOffset.UtcNow)
@@ -68,90 +70,108 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             throw new ArgumentOutOfRangeException(nameof(contract), "MaxRetries must be zero or greater.");
         }
 
-        var runId = BuildRunId(contract);
+        var version = AllocateRunVersion(contract);
+        var runId = version.RunId;
         Exception? lastError = null;
 
-        for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
+            for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
             {
-                var template = catalog.Get(contract.TemplateId);
-                var sections = template.Sections
-                    .Select(section => renderer.RenderSection(runId, contract, template, section, attempt))
-                    .ToImmutableArray();
-                var gridArtifacts = BuildReportWriterGridArtifacts(runId, template);
-                var renderedReportWriterGrids = ReportWriterGridEngine
-                    .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
-                    .ToImmutableArray();
-                var reportWriterDatasetRowCount = template.ReportWriterGrids is { Count: > 0 }
-                    ? contract.DatasetRows?.Count ?? 0
-                    : (int?)null;
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var template = catalog.Get(contract.TemplateId);
+                    var sections = template.Sections
+                        .Select(section => renderer.RenderSection(runId, contract, template, section, attempt))
+                        .ToImmutableArray();
+                    var gridArtifacts = BuildReportWriterGridArtifacts(runId, template);
+                    var renderedReportWriterGrids = ReportWriterGridEngine
+                        .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
+                        .ToImmutableArray();
+                    var reportWriterDatasetRowCount = template.ReportWriterGrids is { Count: > 0 }
+                        ? contract.DatasetRows?.Count ?? 0
+                        : (int?)null;
+                    var reportWriterGridDiffs = BuildReportWriterGridDiffs(version.PriorManifest, renderedReportWriterGrids);
 
-                var manifest = new ReportingOutputManifest(
-                    runId,
-                    contract.TemplateId,
-                    contract.AsOfDate,
-                    ReportingRunStatus.Draft,
-                    sections,
-                    new[]
-                    {
-                        $"{runId}.manifest.json",
-                        $"{runId}.pdf"
-                    }
-                    .Concat(gridArtifacts)
-                    .ToImmutableArray(),
-                    attempt,
-                    contract.Trigger,
-                    contract.ScheduleId,
-                    ReportWriterGrids: BuildReportWriterGridArtifactMetadata(runId, template).ToImmutableArray(),
-                    RenderedReportWriterGrids: renderedReportWriterGrids,
-                    ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
-                    ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
-                    ReportWriterDatasetRowCount: reportWriterDatasetRowCount,
-                    BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
-                    BrandingTheme: contract.BrandingTheme,
-                    AccessPolicy: contract.AccessPolicy);
+                    var manifest = new ReportingOutputManifest(
+                        runId,
+                        contract.TemplateId,
+                        contract.AsOfDate,
+                        ReportingRunStatus.Draft,
+                        sections,
+                        new[]
+                        {
+                            $"{runId}.manifest.json",
+                            $"{runId}.pdf"
+                        }
+                        .Concat(gridArtifacts)
+                        .ToImmutableArray(),
+                        attempt,
+                        contract.Trigger,
+                        contract.ScheduleId,
+                        ReportWriterGrids: BuildReportWriterGridArtifactMetadata(runId, template).ToImmutableArray(),
+                        RenderedReportWriterGrids: renderedReportWriterGrids,
+                        ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
+                        ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+                        ReportWriterDatasetRowCount: reportWriterDatasetRowCount,
+                        BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+                        BrandingTheme: contract.BrandingTheme,
+                        AccessPolicy: contract.AccessPolicy,
+                        RunSeriesId: version.RunSeriesId,
+                        RunAttemptOrdinal: version.RunAttemptOrdinal,
+                        PriorRunId: version.PriorManifest?.RunId,
+                        RetryReason: NormalizeOptional(contract.RetryReason),
+                        ReportWriterGridDiffs: reportWriterGridDiffs);
 
-                manifests[runId] = manifest;
-                AppendAudit(
-                    runId,
-                    "RunGenerated",
-                    contract.RequestedBy,
-                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}");
-                await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
-                return manifest;
+                    manifests[runId] = manifest;
+                    AppendAudit(
+                        runId,
+                        "RunGenerated",
+                        contract.RequestedBy,
+                        $"trigger={contract.Trigger}; attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; priorRun={version.PriorManifest?.RunId ?? "none"}; retryReason={manifest.RetryReason ?? "none"}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}; changedLines={reportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount)}; addedLines={reportWriterGridDiffs.Sum(static diff => diff.AddedRowCount)}; removedLines={reportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount)}");
+                    await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
+                    return manifest;
+                }
+                catch (Exception ex) when (attempt <= contract.MaxRetries)
+                {
+                    lastError = ex;
+                    AppendAudit(runId, "RunRetry", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={NormalizeOptional(contract.RetryReason) ?? "none"}; error={ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                    var failed = new ReportingOutputManifest(
+                        runId,
+                        contract.TemplateId,
+                        contract.AsOfDate,
+                        ReportingRunStatus.Failed,
+                        [],
+                        [],
+                        attempt,
+                        contract.Trigger,
+                        contract.ScheduleId,
+                        ex.Message,
+                        ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
+                        ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+                        ReportWriterDatasetRowCount: contract.DatasetRows?.Count,
+                        BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+                        BrandingTheme: contract.BrandingTheme,
+                        AccessPolicy: contract.AccessPolicy,
+                        RunSeriesId: version.RunSeriesId,
+                        RunAttemptOrdinal: version.RunAttemptOrdinal,
+                        PriorRunId: version.PriorManifest?.RunId,
+                        RetryReason: NormalizeOptional(contract.RetryReason));
+                    manifests[runId] = failed;
+                    AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={failed.RetryReason ?? "none"}; error={ex.Message}");
+                    await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
+                    throw new InvalidOperationException($"Reporting run failed after {attempt} attempts.", lastError);
+                }
             }
-            catch (Exception ex) when (attempt <= contract.MaxRetries)
-            {
-                lastError = ex;
-                AppendAudit(runId, "RunRetry", contract.RequestedBy, $"attempt={attempt}; error={ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                lastError = ex;
-                var failed = new ReportingOutputManifest(
-                    runId,
-                    contract.TemplateId,
-                    contract.AsOfDate,
-                    ReportingRunStatus.Failed,
-                    [],
-                    [],
-                    attempt,
-                    contract.Trigger,
-                    contract.ScheduleId,
-                    ex.Message,
-                    ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
-                    ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
-                    ReportWriterDatasetRowCount: contract.DatasetRows?.Count,
-                    BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
-                    BrandingTheme: contract.BrandingTheme,
-                    AccessPolicy: contract.AccessPolicy);
-                manifests[runId] = failed;
-                AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; error={ex.Message}");
-                await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
-                throw new InvalidOperationException($"Reporting run failed after {attempt} attempts.", lastError);
-            }
+        }
+        finally
+        {
+            reservedRunIds.TryRemove(runId, out _);
         }
 
         throw new InvalidOperationException($"Reporting run failed after {contract.MaxRetries + 1} attempts.", lastError);
@@ -178,7 +198,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 RequestedBy: schedule.RequestedBy,
                 RequestedAtUtc: nowUtc,
                 CronExpression: schedule.CronExpression,
-                ScheduleId: schedule.ScheduleId);
+                ScheduleId: schedule.ScheduleId,
+                RetryReason: $"scheduled due run for {schedule.CronExpression}");
             generated.Add(await ExecuteAsync(contract, cancellationToken).ConfigureAwait(false));
         }
 
@@ -286,14 +307,92 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     grid.Formulas?.Count ?? 0);
             });
 
-    private static string BuildRunId(ReportingJobContract contract)
+    private ReportingRunVersionPlan AllocateRunVersion(ReportingJobContract contract)
+    {
+        var runSeriesId = BuildRunSeriesId(contract);
+        var priorRuns = ListKnownManifests()
+            .Where(manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(ResolveRunAttemptOrdinal)
+            .ThenByDescending(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var nextOrdinal = priorRuns.Length == 0
+            ? 1
+            : priorRuns.Max(ResolveRunAttemptOrdinal) + 1;
+        while (true)
+        {
+            var runId = BuildRunId(runSeriesId, nextOrdinal);
+            if (reservedRunIds.TryAdd(runId, 0))
+            {
+                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, priorRuns.FirstOrDefault());
+            }
+
+            nextOrdinal++;
+        }
+    }
+
+    private IReadOnlyList<ReportingOutputManifest> ListKnownManifests()
+    {
+        IEnumerable<ReportingOutputManifest> stored = runStore is null
+            ? []
+            : runStore.ListRuns(200).Select(static snapshot => snapshot.Manifest);
+        return manifests.Values
+            .Concat(stored)
+            .GroupBy(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
+    private static ImmutableArray<ReportWriterGridDiffDto> BuildReportWriterGridDiffs(
+        ReportingOutputManifest? priorManifest,
+        ImmutableArray<ReportWriterGridRenderDto> currentGrids)
+    {
+        if (priorManifest is null ||
+            currentGrids.IsDefaultOrEmpty ||
+            priorManifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        var priorByGridId = priorManifest.RenderedReportWriterGrids
+            .Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId))
+            .GroupBy(static grid => grid.GridId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
+        var diffs = ImmutableArray.CreateBuilder<ReportWriterGridDiffDto>();
+        foreach (var current in currentGrids.Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId)))
+        {
+            if (priorByGridId.TryGetValue(current.GridId, out var prior))
+            {
+                diffs.Add(ReportSnapshotDiffEngine.Diff(prior, current));
+            }
+        }
+
+        return diffs.ToImmutable();
+    }
+
+    private static string BuildRunSeriesId(ReportingJobContract contract)
         => $"{contract.JobId}-{contract.AsOfDate:yyyyMMdd}";
+
+    private static string BuildRunId(string runSeriesId, int runAttemptOrdinal)
+        => runAttemptOrdinal <= 1 ? runSeriesId : $"{runSeriesId}-v{runAttemptOrdinal}";
+
+    private static string ResolveRunSeriesId(ReportingOutputManifest manifest)
+        => NormalizeOptional(manifest.RunSeriesId) ?? manifest.RunId;
+
+    private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest)
+        => manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
 
     private static string? NormalizeOptional(string? value)
     {
         var normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
+
+    private sealed record ReportingRunVersionPlan(
+        string RunSeriesId,
+        int RunAttemptOrdinal,
+        string RunId,
+        ReportingOutputManifest? PriorManifest);
 }
 
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer

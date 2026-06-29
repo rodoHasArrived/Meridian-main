@@ -20,6 +20,16 @@ public partial class ServiceManagerPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.InitializeAsync();
+        try
+        {
+            await _viewModel.InitializeAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Service Manager page failed to load.", ex);
+        }
     }
 }

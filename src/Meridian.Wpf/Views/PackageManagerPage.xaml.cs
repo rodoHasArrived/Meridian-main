@@ -31,8 +31,20 @@ public partial class PackageManagerPage : Page
         PackageToInput.Text = today.ToString("yyyy-MM-dd");
     }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _viewModel.LoadAsync();
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.LoadAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Package Manager page failed to load.", ex);
+        }
+    }
 
     private async void RefreshPackages_Click(object sender, RoutedEventArgs e) =>
         await _viewModel.RefreshPackagesCommand.ExecuteAsync(null);

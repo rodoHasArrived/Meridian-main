@@ -418,6 +418,7 @@ public static class OperationsWorkflowContractMatrix
         "gate-posture-refreshed",
         "security-master-resolved",
         "security-master-override-approved",
+        "security-master-field-edit-approved",
         "ledger-draft-built",
         "ledger-draft-validated",
         "ledger-posted",

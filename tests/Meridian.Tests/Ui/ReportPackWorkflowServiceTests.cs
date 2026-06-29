@@ -104,11 +104,12 @@ public sealed class ReportPackWorkflowServiceTests
         approved!.State.Should().Be(ReportPackWorkflowStateDto.Approved);
 
         var publishRequest = new ReportPackPublishRequestDto(
-            "controller",
+            "browser-workstation",
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
             [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")],
+            Note: "Approved by controller.",
             BrandingTheme: new ReportBrandingThemeDto(
                 "investor-board",
                 "Investor Board",
@@ -124,6 +125,10 @@ public sealed class ReportPackWorkflowServiceTests
         published.Should().NotBeNull();
         published!.State.Should().Be(ReportPackWorkflowStateDto.Published);
         published.Publication.Should().NotBeNull();
+        published.Publication!.SignedOffBy.Should().Be("controller.admin");
+        published.Publication.SignedOffRole.Should().Be(nameof(UserRole.Admin));
+        published.Publication.SignOffReason.Should().Be("Approved by controller.");
+        published.Publication.SignOffContext.Should().Contain("caller supplied signer 'browser-workstation'");
         published.Publication!.BrandingTheme.Should().NotBeNull();
         published.Publication.BrandingTheme!.ThemeId.Should().Be("investor-board");
         published.Publication.BrandingTheme.FirmName.Should().Be("Northstar Capital");
@@ -185,7 +190,10 @@ public sealed class ReportPackWorkflowServiceTests
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"),
+            signedOffRole: nameof(UserRole.Controller),
+            signOffReason: "Approved by controller.",
+            signOffContext: "Authenticated actor 'publisher' with role 'Controller' approved publication.");
         var client = app.GetTestClient();
 
         var response = await client.PostAsJsonAsync(
@@ -1551,7 +1559,10 @@ public sealed class ReportPackWorkflowServiceTests
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"),
+            signedOffRole: nameof(UserRole.Controller),
+            signOffReason: "Approved by controller.",
+            signOffContext: "Authenticated actor 'publisher' with role 'Controller' approved publication.");
         workflow.Restate(
             published.ReportId,
             "approver",
@@ -1714,7 +1725,10 @@ public sealed class ReportPackWorkflowServiceTests
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"),
+            signedOffRole: nameof(UserRole.Controller),
+            signOffReason: "Approved by controller.",
+            signOffContext: "Authenticated actor 'publisher' with role 'Controller' approved publication.");
         var restated = workflow.Restate(
             published.ReportId,
             "approver",
@@ -1809,6 +1823,9 @@ public sealed class ReportPackWorkflowServiceTests
         attempt.Package.PublicationManifestId.Should().Be("manifest-1");
         attempt.Package.PublicationRetainedManifestPath.Should().Be("vault/report-packs/manifest-1.json");
         attempt.Package.PublicationSignedOffBy.Should().Be("controller");
+        attempt.Package.PublicationSignedOffRole.Should().Be(nameof(UserRole.Controller));
+        attempt.Package.PublicationSignOffReason.Should().Be("Approved by controller.");
+        attempt.Package.PublicationSignOffContext.Should().Be("Authenticated actor 'publisher' with role 'Controller' approved publication.");
         attempt.Package.PublicationEvidenceLinks.Should().NotBeNull().And.HaveCount(10);
         attempt.Package.LineProvenance.Should().NotBeNull().And.ContainSingle(line =>
             line.LineKey == "trial-balance.cash" &&
@@ -1859,6 +1876,10 @@ public sealed class ReportPackWorkflowServiceTests
         var csvArtifact = attempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Csv);
         var csv = System.Text.Encoding.UTF8.GetString(service.GetArtifact(published.ReportId, attempt.AttemptId, csvArtifact.ArtifactName, token).Content);
         csv.Should().Contain("publicationManifestId,manifest-1");
+        csv.Should().Contain("publicationSignedOffBy,controller");
+        csv.Should().Contain($"publicationSignedOffRole,{nameof(UserRole.Controller)}");
+        csv.Should().Contain("publicationSignOffReason,Approved by controller.");
+        csv.Should().Contain("publicationSignOffContext,Authenticated actor 'publisher' with role 'Controller' approved publication.");
         csv.Should().Contain("publicationEvidenceLinkCount,10");
         csv.Should().Contain("lineProvenanceCount,1");
         csv.Should().Contain("lineProvenance[0].lineKey,trial-balance.cash");
@@ -2676,6 +2697,94 @@ public sealed class ReportPackWorkflowServiceTests
         plan.ReadinessSummary.Should().Contain("Delivery mode EvidenceVault is not compatible with Board portal");
         plan.LastDeliveryArtifactCount.Should().Be(1);
         plan.LastDeliveryIntegritySummary.Should().Be("1 artifact retained.");
+    }
+
+    [Fact]
+    public void ReportPackRunReadService_ProjectsDailyCockpitWorkItems()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var workflow = new ReportPackWorkflowService();
+        var approval = workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-06",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "fund-accountant",
+            [CompleteLineProvenance("trial-balance.cash", "cash-evidence")]);
+        workflow.Transition(approval.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        var blocked = workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-06",
+            new VersionedReportTemplateIdDto("investor-statement", 1),
+            "fund-accountant",
+            [CompleteLineProvenance("trial-balance.nav", "nav-evidence")]);
+        workflow.Transition(blocked.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Reject(blocked.ReportId, "NAV tie-out evidence is missing.", "fund-controller", nameof(UserRole.Controller));
+
+        var schedule = new ReportingScheduleRecordDto(
+            "sched-board-daily",
+            "board-pack",
+            "0 8 * * *",
+            new DateOnly(2026, 6, 30),
+            now.AddHours(-1),
+            1,
+            "fund-accountant",
+            ReportingScheduleStateDto.Active,
+            now.AddDays(-2),
+            now.AddDays(-1),
+            DeliveryTargets:
+            [
+                new ReportingScheduleDeliveryTargetDto(
+                    "unknown-distribution",
+                    [GovernanceReportArtifactFormatDto.Pdf],
+                    ReportPackDeliveryModeDto.SecurePortal)
+            ]);
+        var deliveryAttempt = new ReportPackDeliveryAttemptDto(
+            Guid.NewGuid(),
+            blocked.ReportId,
+            "board-reporting-committee",
+            "Board reporting committee",
+            "Board",
+            "Board portal",
+            ReportPackDeliveryStateDto.Failed,
+            now.AddMinutes(-30),
+            "delivery-operator",
+            2,
+            "delivery-ref-2",
+            FailureReason: "Portal upload rejected the retained package.");
+        var deliveryService = new ReportPackDeliveryService(
+            workflow,
+            new InMemoryReportPackDeliveryRecordStore([deliveryAttempt]));
+        var scheduleService = new ReportingScheduleService(
+            new ReportingOrchestrationService(new DefaultReportingTemplateCatalog()),
+            new InMemoryReportingScheduleStore([schedule]));
+
+        var payload = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            workflowService: workflow,
+            deliveryService: deliveryService,
+            scheduleService: scheduleService)
+            .BuildPayload();
+
+        payload.DailyWork.Should().NotBeNullOrEmpty();
+        payload.DailyWork!.Should().Contain(item =>
+            item.Kind == "approval-needed" &&
+            item.Title.Contains("board-pack", StringComparison.OrdinalIgnoreCase));
+        payload.DailyWork.Should().Contain(item =>
+            item.Kind == "blocked-package" &&
+            item.Detail == "NAV tie-out evidence is missing.");
+        payload.DailyWork.Should().Contain(item =>
+            item.Kind == "delivery-failure" &&
+            item.Detail == "Portal upload rejected the retained package.");
+        payload.DailyWork.Should().Contain(item =>
+            item.Kind == "due-package" &&
+            item.WorkItemId == "due-package:sched-board-daily");
+        payload.DailyWork.Should().Contain(item =>
+            item.Kind == "evidence-gap" &&
+            item.Title == "Readiness warning: board-pack" &&
+            item.EvidenceGaps != null &&
+            item.EvidenceGaps.Count > 0);
     }
 
     [Fact]
@@ -4124,7 +4233,7 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task Endpoint_RunRestrictedCustomTemplate_WhenRoleProfileMatchesGroup_CreatesAdHocRun()
     {
         await using var app = await CreateFundStructureAppAsync(
-            UserRole.TradeDesk,
+            UserRole.ReportingAnalyst,
             "viewer.user",
             roleProfileName: "ops-control");
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
@@ -4246,7 +4355,7 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_ReportingRunAuditTrail_WhenCallerCannotAccessTemplate_ReturnsForbidden()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "viewer.user");
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
         var draft = registry.CreateDraft(
             new ReportTemplateDraftRequestDto(
@@ -4414,7 +4523,7 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_ReportWriterGridArtifact_WhenCallerCannotAccessTemplate_ReturnsForbidden()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "viewer.user");
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
         var draft = registry.CreateDraft(
             new ReportTemplateDraftRequestDto(
@@ -4468,7 +4577,7 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_RunPrivateTemplate_WhenCallerIsNotOwner_ReturnsForbidden()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "viewer.user");
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
         var draft = registry.CreateDraft(
             new ReportTemplateDraftRequestDto(
@@ -4499,7 +4608,7 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task Endpoint_ScheduleRestrictedCustomTemplate_WhenRoleProfileMatchesGroup_CreatesScheduleAndRun()
     {
         await using var app = await CreateFundStructureAppAsync(
-            UserRole.TradeDesk,
+            UserRole.ReportingAnalyst,
             "viewer.user",
             roleProfileName: "ops-control");
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
@@ -4560,7 +4669,7 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_SchedulePrivateTemplate_WhenCallerIsNotOwner_ReturnsForbiddenForCreateAndRun()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "viewer.user");
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
         var draft = registry.CreateDraft(
             new ReportTemplateDraftRequestDto(
@@ -4610,7 +4719,7 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task Endpoint_CreateDraft_WithSessionCompanyAndRoleProfile_DefaultsTenantAwareAccessPolicy()
     {
         await using var app = await CreateFundStructureAppAsync(
-            UserRole.TradeDesk,
+            UserRole.ReportingAnalyst,
             "viewer.user",
             roleProfileName: "reporting-ops",
             companyId: "company-alpha");
@@ -4638,7 +4747,7 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_DeliveryCommands_PrivateReportPack_WhenCallerIsOwner_AllowsDelivery()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "owner.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.FundAccountant, "owner.user");
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var approved = CreateApprovedPack(
             workflow,
@@ -4674,14 +4783,14 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_DeliveryCommands_RestrictedReportPack_WhenRoleMatchesGroup_AllowsDelivery()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.FundAccountant, "viewer.user");
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var approved = CreateApprovedPack(
             workflow,
             [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
             accessPolicy: new ReportAccessPolicyDto(
                 ReportAccessModeDto.Restricted,
-                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, UserRole.TradeDesk.ToString())]));
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, UserRole.FundAccountant.ToString())]));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -4712,7 +4821,7 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public async Task Endpoint_DeliveryCommands_PrivateReportPack_WhenCallerIsNotOwner_ReturnsForbidden()
     {
-        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        await using var app = await CreateFundStructureAppAsync(UserRole.FundAccountant, "viewer.user");
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var approved = CreateApprovedPack(
             workflow,
@@ -5280,5 +5389,25 @@ public sealed class ReportPackWorkflowServiceTests
             new PortfolioReadService(),
             new NavAttributionService(securityMaster),
             new ReportGenerationService(securityMaster));
+    }
+
+    private sealed class InMemoryReportingScheduleStore(IReadOnlyList<ReportingScheduleRecordDto> schedules)
+        : IReportingScheduleStore
+    {
+        public IReadOnlyList<ReportingScheduleRecordDto> Load() => schedules;
+
+        public void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules)
+        {
+        }
+    }
+
+    private sealed class InMemoryReportPackDeliveryRecordStore(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        : IReportPackDeliveryRecordStore
+    {
+        public IReadOnlyList<ReportPackDeliveryAttemptDto> Load() => attempts;
+
+        public void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        {
+        }
     }
 }

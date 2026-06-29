@@ -26,6 +26,16 @@ public partial class SymbolStoragePage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.LoadAsync();
+        try
+        {
+            await _viewModel.LoadAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Symbol Storage page failed to load.", ex);
+        }
     }
 }

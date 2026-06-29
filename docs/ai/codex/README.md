@@ -218,8 +218,9 @@ command discovery in [`../../start/README.md`](../../start/README.md),
 [`../../HELP.md`](../../HELP.md), and route-specific docs instead of copying long command
 catalogs into assistant shims.
 When local machine capacity is the validation blocker, use the manual GitHub-hosted
-`Targeted Test` workflow from `.github/workflows/targeted-test.yml` with the same narrow
-repo-relative .NET test project and filter before retrying broad local scripts.
+`Targeted Test` workflow from `.github/workflows/targeted-test.yml` with a whitelisted `mode`;
+use `mode=dotnet-filtered` with the same narrow repo-relative .NET test project and filter for
+.NET slices before retrying broad local scripts.
 
 For rendered browser workstation verification, use the Codex Browser plugin only after the local
 dashboard route or file-backed preview is available. Keep it to unauthenticated local/public pages

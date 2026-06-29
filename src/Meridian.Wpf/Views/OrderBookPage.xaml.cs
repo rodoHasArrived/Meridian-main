@@ -32,8 +32,20 @@ public partial class OrderBookPage : Page
         Unloaded += OnPageUnloaded;
     }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _viewModel.ActivateAsync();
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.ActivateAsync();
+        }
+        catch (System.OperationCanceledException)
+        {
+        }
+        catch (System.Exception ex)
+        {
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Order Book page failed to load.", ex);
+        }
+    }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
