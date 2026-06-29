@@ -87,4 +87,65 @@ describe("SecurityPassportEditor", () => {
     renderEditor({});
     expect(screen.getByRole("button", { name: /publish/i })).toBeDisabled();
   });
+
+  it("accepts a source conflict with the policy winner and no deviation acknowledgement", async () => {
+    const user = userEvent.setup();
+    const resolveConflict = vi.fn().mockResolvedValue({
+      conflictId: "k1",
+      policyWinnerSource: "golden-copy",
+      chosenWinnerSource: "golden-copy",
+      isPolicyDeviation: false,
+      reason: "Accepted the recommended policy winner.",
+      newVersion: 8
+    });
+    render(
+      <SecurityPassportEditor
+        securityId={SECURITY_ID}
+        symbol="ACME"
+        version={7}
+        service={{ resolveConflict }}
+        conflicts={[{ conflictId: "k1", fieldLabel: "Coupon", policyWinnerSource: "golden-copy", challengerSource: "vendor-a", severity: "High" }]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^accept$/i }));
+
+    await waitFor(() => expect(resolveConflict).toHaveBeenCalledTimes(1));
+    const [, input] = resolveConflict.mock.calls[0];
+    expect(input).toMatchObject({ conflictId: "k1", chosenWinnerSource: "golden-copy", acknowledgePolicyDeviation: false, expectedVersion: 7 });
+  });
+
+  it("requires acknowledgement before an override deviation can resolve", async () => {
+    const user = userEvent.setup();
+    const resolveConflict = vi.fn().mockResolvedValue({
+      conflictId: "k1",
+      policyWinnerSource: "golden-copy",
+      chosenWinnerSource: "vendor-a",
+      isPolicyDeviation: true,
+      reason: "Vendor is correct.",
+      newVersion: 8
+    });
+    render(
+      <SecurityPassportEditor
+        securityId={SECURITY_ID}
+        symbol="ACME"
+        version={7}
+        service={{ resolveConflict }}
+        conflicts={[{ conflictId: "k1", fieldLabel: "Coupon", policyWinnerSource: "golden-copy", challengerSource: "vendor-a", severity: "High" }]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /override/i }));
+    await user.type(screen.getByLabelText(/reason \(required\)/i), "Vendor is correct.");
+
+    // Deviation (challenger != policy winner) without acknowledgement keeps Resolve disabled.
+    expect(screen.getByRole("button", { name: /^resolve$/i })).toBeDisabled();
+
+    await user.click(screen.getByRole("checkbox", { name: /acknowledge deviation/i }));
+    expect(screen.getByRole("button", { name: /^resolve$/i })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: /^resolve$/i }));
+    await waitFor(() => expect(resolveConflict).toHaveBeenCalledTimes(1));
+    expect(resolveConflict.mock.calls[0][1]).toMatchObject({ chosenWinnerSource: "vendor-a", acknowledgePolicyDeviation: true });
+  });
 });

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildConflictRows,
   buildPassportActions,
   buildPassportStateBadge,
   buildTrustPosture,
   buildWorkbenchErrorBanner,
+  validateConflictOverride,
   type PassportLifecycleAction
 } from "@/components/meridian/security-passport-editor.view-model";
 
@@ -76,6 +78,49 @@ describe("workbench error banner", () => {
   it("surfaces the server message for unprocessable edits", () => {
     const banner = buildWorkbenchErrorBanner({ kind: "unprocessable", message: "Justification is required." });
     expect(banner.message).toBe("Justification is required.");
+  });
+});
+
+describe("conflict rows", () => {
+  const conflicts = [
+    { conflictId: "c1", fieldLabel: "Coupon", policyWinnerSource: "golden-copy", challengerSource: "vendor-a", severity: "High" },
+    { conflictId: "c2", fieldLabel: "Maturity", policyWinnerSource: "golden-copy", challengerSource: "vendor-b", severity: "Low", isResolved: true }
+  ];
+
+  it("classifies severity and disables resolved rows", () => {
+    const rows = buildConflictRows(conflicts, { isBusy: false });
+    expect(rows[0].severityTone).toBe("high");
+    expect(rows[0].canAct).toBe(true);
+    expect(rows[1].canAct).toBe(false);
+  });
+
+  it("disables all rows while busy", () => {
+    const rows = buildConflictRows(conflicts, { isBusy: true });
+    expect(rows.every((r) => !r.canAct)).toBe(true);
+  });
+});
+
+describe("conflict override validation", () => {
+  it("requires a reason", () => {
+    const result = validateConflictOverride({ chosenWinnerSource: "golden-copy", policyWinnerSource: "golden-copy", reason: "", acknowledgeDeviation: false });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain("reason");
+  });
+
+  it("requires acknowledgement when deviating from the policy winner", () => {
+    const result = validateConflictOverride({ chosenWinnerSource: "vendor-a", policyWinnerSource: "golden-copy", reason: "Vendor is correct.", acknowledgeDeviation: false });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain("deviation");
+  });
+
+  it("accepts an acknowledged deviation with a reason", () => {
+    const result = validateConflictOverride({ chosenWinnerSource: "vendor-a", policyWinnerSource: "golden-copy", reason: "Vendor is correct.", acknowledgeDeviation: true });
+    expect(result.valid).toBe(true);
+  });
+
+  it("accepts the policy winner with a reason and no acknowledgement", () => {
+    const result = validateConflictOverride({ chosenWinnerSource: "golden-copy", policyWinnerSource: "golden-copy", reason: "Confirmed.", acknowledgeDeviation: false });
+    expect(result.valid).toBe(true);
   });
 });
 

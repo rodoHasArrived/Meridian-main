@@ -616,9 +616,13 @@ PR3 browser UI, PR4 WPF parity.
       effective-from · justification) wired to Save Draft, a lifecycle action bar (Save Draft → Submit →
       Approve → Publish) whose enablement is driven by the pure view-model (Publish stays disabled until
       Approved), and a `role="alert"` banner that renders a non-destructive **Reload passport** action on a
-      stale-version 409. The client is injectable for testing. The coverage-panel entry point
-      (`buildMultiAssetCoveragePanel()` row → editor) and the richer tabs/source-conflicts grid are the
-      next slice.
+      stale-version 409. The client is injectable for testing. A **Source conflicts** section renders each
+      conflict (field · severity · policy winner · challenger) with **Accept** (resolve to the policy
+      winner) and **Override…** (inline form: winning source · reason · acknowledge-deviation) wired to
+      `resolveSourceConflict`; the override is gated client-side by `validateConflictOverride` (reason
+      required; acknowledgement required when deviating from the policy winner — mirroring the server's
+      422). The coverage-panel entry point (`buildMultiAssetCoveragePanel()` row → editor) and the
+      remaining read tabs (Economics/Venues/History) are the next slice.
 - [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
 
 ### Phase 5 — Tests

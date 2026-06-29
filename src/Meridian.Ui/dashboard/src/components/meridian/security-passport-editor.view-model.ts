@@ -145,6 +145,91 @@ export function buildWorkbenchErrorBanner(error: WorkbenchWriteError): PassportB
   }
 }
 
+export type PassportSeverityTone = "high" | "medium" | "low" | "none";
+
+export interface PassportConflictInput {
+  conflictId: string;
+  fieldLabel: string;
+  policyWinnerSource: string;
+  challengerSource: string;
+  severity?: string | null;
+  isResolved?: boolean;
+}
+
+export interface PassportConflictRowViewModel {
+  conflictId: string;
+  fieldLabel: string;
+  policyWinnerSource: string;
+  challengerSource: string;
+  severityTone: PassportSeverityTone;
+  severityLabel: string;
+  /** False when resolved or while a write is in flight. */
+  canAct: boolean;
+}
+
+function classifySeverity(severity: string | null | undefined): { tone: PassportSeverityTone; label: string } {
+  const normalized = (severity ?? "").trim().toLowerCase();
+  if (normalized === "critical" || normalized === "high") {
+    return { tone: "high", label: severity ?? "High" };
+  }
+  if (normalized === "medium") {
+    return { tone: "medium", label: severity ?? "Medium" };
+  }
+  if (normalized === "low") {
+    return { tone: "low", label: severity ?? "Low" };
+  }
+  return { tone: "none", label: severity ?? "None" };
+}
+
+export function buildConflictRows(
+  conflicts: readonly PassportConflictInput[],
+  context: { isBusy: boolean }
+): PassportConflictRowViewModel[] {
+  return conflicts.map((conflict) => {
+    const severity = classifySeverity(conflict.severity);
+    return {
+      conflictId: conflict.conflictId,
+      fieldLabel: conflict.fieldLabel,
+      policyWinnerSource: conflict.policyWinnerSource,
+      challengerSource: conflict.challengerSource,
+      severityTone: severity.tone,
+      severityLabel: severity.label,
+      canAct: !conflict.isResolved && !context.isBusy
+    };
+  });
+}
+
+export interface ConflictOverrideValidation {
+  valid: boolean;
+  /** When invalid, the single blocking reason; null when valid. */
+  reason: string | null;
+}
+
+/**
+ * Client-side guard for the override form (UX only — the server re-validates). A reason is always
+ * required, and choosing a winner other than the policy winner requires acknowledging the deviation,
+ * mirroring the server's policy-deviation-unacknowledged (422) rule.
+ */
+export function validateConflictOverride(input: {
+  chosenWinnerSource: string;
+  policyWinnerSource: string;
+  reason: string;
+  acknowledgeDeviation: boolean;
+}): ConflictOverrideValidation {
+  if (input.chosenWinnerSource.trim().length === 0) {
+    return { valid: false, reason: "Choose a winning source." };
+  }
+  if (input.reason.trim().length === 0) {
+    return { valid: false, reason: "A reason is required to resolve a source conflict." };
+  }
+  const isDeviation =
+    input.chosenWinnerSource.trim().toLowerCase() !== input.policyWinnerSource.trim().toLowerCase();
+  if (isDeviation && !input.acknowledgeDeviation) {
+    return { valid: false, reason: "Acknowledge the policy deviation to override the recommended winner." };
+  }
+  return { valid: true, reason: null };
+}
+
 export function buildTrustPosture(posture: string | null | undefined): PassportTrustPostureViewModel {
   const normalized = (posture ?? "").trim().toLowerCase();
   if (normalized === "blocked" || normalized === "critical") {

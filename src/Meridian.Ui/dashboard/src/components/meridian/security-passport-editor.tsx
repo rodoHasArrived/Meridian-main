@@ -9,6 +9,7 @@ import {
   approveSecurityMasterRevision as defaultApprove,
   classifyWorkbenchWriteError,
   publishSecurityMasterRevision as defaultPublish,
+  resolveSourceConflict as defaultResolveConflict,
   submitSecurityMasterRevision as defaultSubmit,
   updateSecurityField as defaultUpdateField,
   type SecurityMasterEditResult,
@@ -16,18 +17,23 @@ import {
   type SecurityMasterRevisionState
 } from "@/lib/api/security-master-workbench.api";
 import {
+  buildConflictRows,
   buildPassportActions,
   buildPassportStateBadge,
   buildTrustPosture,
   buildWorkbenchErrorBanner,
+  validateConflictOverride,
   type PassportBannerViewModel,
+  type PassportConflictInput,
   type PassportLifecycleAction,
+  type PassportSeverityTone,
   type PassportStateTone
 } from "./security-passport-editor.view-model";
 
 /** Injectable workbench client so the editor can be unit-tested without the network. */
 export interface SecurityPassportWorkbenchService {
   updateField: typeof defaultUpdateField;
+  resolveConflict: typeof defaultResolveConflict;
   submit: typeof defaultSubmit;
   approve: typeof defaultApprove;
   publish: typeof defaultPublish;
@@ -35,6 +41,7 @@ export interface SecurityPassportWorkbenchService {
 
 const defaultService: SecurityPassportWorkbenchService = {
   updateField: defaultUpdateField,
+  resolveConflict: defaultResolveConflict,
   submit: defaultSubmit,
   approve: defaultApprove,
   publish: defaultPublish
@@ -55,9 +62,24 @@ export interface SecurityPassportEditorProps {
   version: number;
   trustPosture?: string | null;
   fundProfileId?: string | null;
+  /** Unresolved source conflicts for this passport, rendered in the Source conflicts section. */
+  conflicts?: PassportConflictInput[];
   service?: Partial<SecurityPassportWorkbenchService>;
   /** Invoked when the operator chooses to reload after a stale-version conflict. */
   onReloadRequested?: (toVersion: number | null) => void;
+}
+
+const SEVERITY_VARIANT: Record<PassportSeverityTone, "danger" | "warning" | "outline"> = {
+  high: "danger",
+  medium: "warning",
+  low: "outline",
+  none: "outline"
+};
+
+interface OverrideDraft {
+  chosenWinnerSource: string;
+  reason: string;
+  acknowledgeDeviation: boolean;
 }
 
 interface WorkingRevision {
@@ -87,6 +109,7 @@ export function SecurityPassportEditor({
   version,
   trustPosture,
   fundProfileId,
+  conflicts = [],
   service,
   onReloadRequested
 }: SecurityPassportEditorProps) {
@@ -95,6 +118,14 @@ export function SecurityPassportEditor({
   const [revision, setRevision] = useState<WorkingRevision | null>(null);
   const [isBusy, setBusy] = useState(false);
   const [banner, setBanner] = useState<PassportBannerViewModel | null>(null);
+  const [liveVersion, setLiveVersion] = useState(version);
+  const [resolvedConflictIds, setResolvedConflictIds] = useState<readonly string[]>([]);
+  const [overrideConflictId, setOverrideConflictId] = useState<string | null>(null);
+  const [overrideDraft, setOverrideDraft] = useState<OverrideDraft>({
+    chosenWinnerSource: "",
+    reason: "",
+    acknowledgeDeviation: false
+  });
 
   const [fieldPath, setFieldPath] = useState("");
   const [newValue, setNewValue] = useState("");
@@ -111,11 +142,20 @@ export function SecurityPassportEditor({
   const hasPendingEdit = fieldPath.trim().length > 0 && justification.trim().length > 0;
   const stateBadge = buildPassportStateBadge(revision?.state ?? null);
   const trust = buildTrustPosture(trustPosture);
-  const expectedVersion = revision?.version ?? version;
+  const expectedVersion = revision?.version ?? liveVersion;
 
   const actions = useMemo(
     () => buildPassportActions({ state: revision?.state ?? null, hasPendingEdit, isBusy }),
     [revision?.state, hasPendingEdit, isBusy]
+  );
+
+  const conflictRows = useMemo(
+    () =>
+      buildConflictRows(
+        conflicts.map((c) => ({ ...c, isResolved: c.isResolved || resolvedConflictIds.includes(c.conflictId) })),
+        { isBusy }
+      ),
+    [conflicts, resolvedConflictIds, isBusy]
   );
 
   const run = useCallback(
@@ -189,6 +229,36 @@ export function SecurityPassportEditor({
       setRevision({ revisionId: result.revisionId, state: "Published", version: result.newVersion });
     });
   }, [run, client, securityId, revision]);
+
+  const resolveConflict = useCallback(
+    (conflictId: string, chosenWinnerSource: string, reason: string, acknowledgeDeviation: boolean) => {
+      void run(async () => {
+        const result = await client.resolveConflict(securityId, {
+          conflictId,
+          expectedVersion,
+          chosenWinnerSource,
+          reason,
+          acknowledgePolicyDeviation: acknowledgeDeviation
+        });
+        setLiveVersion(result.newVersion);
+        setResolvedConflictIds((ids) => (ids.includes(conflictId) ? ids : [...ids, conflictId]));
+        setOverrideConflictId(null);
+      });
+    },
+    [run, client, securityId, expectedVersion]
+  );
+
+  const handleAcceptConflict = useCallback(
+    (conflict: PassportConflictInput) => {
+      resolveConflict(conflict.conflictId, conflict.policyWinnerSource, "Accepted the recommended policy winner.", false);
+    },
+    [resolveConflict]
+  );
+
+  const openOverride = useCallback((conflict: PassportConflictInput) => {
+    setOverrideConflictId(conflict.conflictId);
+    setOverrideDraft({ chosenWinnerSource: conflict.challengerSource, reason: "", acknowledgeDeviation: false });
+  }, []);
 
   const actionHandlers: Record<PassportLifecycleAction, () => void> = {
     "save-draft": handleSaveDraft,
@@ -276,6 +346,90 @@ export function SecurityPassportEditor({
               />
             </label>
           </fieldset>
+        ) : null}
+
+        {conflictRows.length > 0 ? (
+          <section className="space-y-2" aria-label="Source conflicts">
+            <h3 className="text-sm font-medium">Source conflicts</h3>
+            <ul className="space-y-2">
+              {conflictRows.map((row) => {
+                const overrideOpen = overrideConflictId === row.conflictId;
+                const validation = validateConflictOverride({
+                  chosenWinnerSource: overrideDraft.chosenWinnerSource,
+                  policyWinnerSource: row.policyWinnerSource,
+                  reason: overrideDraft.reason,
+                  acknowledgeDeviation: overrideDraft.acknowledgeDeviation
+                });
+                return (
+                  <li key={row.conflictId} className="rounded-md border px-3 py-2 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{row.fieldLabel}</span>
+                      <Badge variant={SEVERITY_VARIANT[row.severityTone]}>{row.severityLabel}</Badge>
+                      <span className="text-muted-foreground">
+                        winner <code>{row.policyWinnerSource}</code> · challenger <code>{row.challengerSource}</code>
+                      </span>
+                      <div className="ml-auto flex gap-2">
+                        <Button type="button" size="sm" variant="secondary" disabled={!row.canAct} onClick={() => handleAcceptConflict(row)}>
+                          Accept
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" disabled={!row.canAct} onClick={() => openOverride(row)}>
+                          Override…
+                        </Button>
+                      </div>
+                    </div>
+                    {overrideOpen ? (
+                      <div className="mt-2 space-y-2 border-t pt-2" aria-label={`Override ${row.fieldLabel}`}>
+                        <label className="space-y-1 text-sm block">
+                          <span className="text-muted-foreground">Winning source</span>
+                          <Input
+                            value={overrideDraft.chosenWinnerSource}
+                            onChange={(e) => setOverrideDraft((d) => ({ ...d, chosenWinnerSource: e.target.value }))}
+                          />
+                        </label>
+                        <label className="space-y-1 text-sm block">
+                          <span className="text-muted-foreground">Reason (required)</span>
+                          <Input
+                            value={overrideDraft.reason}
+                            onChange={(e) => setOverrideDraft((d) => ({ ...d, reason: e.target.value }))}
+                          />
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={overrideDraft.acknowledgeDeviation}
+                            onChange={(e) => setOverrideDraft((d) => ({ ...d, acknowledgeDeviation: e.target.checked }))}
+                          />
+                          <span>Acknowledge deviation from the policy winner</span>
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={!validation.valid || isBusy}
+                            title={validation.reason ?? undefined}
+                            onClick={() =>
+                              resolveConflict(
+                                row.conflictId,
+                                overrideDraft.chosenWinnerSource.trim(),
+                                overrideDraft.reason.trim(),
+                                overrideDraft.acknowledgeDeviation
+                              )
+                            }
+                          >
+                            Resolve
+                          </Button>
+                          <Button type="button" size="sm" variant="ghost" onClick={() => setOverrideConflictId(null)}>
+                            Cancel
+                          </Button>
+                          {!validation.valid ? <span className="text-xs text-muted-foreground">{validation.reason}</span> : null}
+                        </div>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         ) : null}
 
         <div className="flex flex-wrap gap-2">
