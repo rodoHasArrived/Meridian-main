@@ -1106,14 +1106,22 @@ public sealed class ReportPackWorkflowService
 
     private readonly ConcurrentDictionary<Guid, ReportPackWorkflowRecordDto> _records = new();
     private readonly IReportPackWorkflowRecordStore? _store;
+    private readonly IReportPackSecurityLineIndex? _securityLineIndex;
 
-    public ReportPackWorkflowService(IReportPackWorkflowRecordStore? store = null)
+    public ReportPackWorkflowService(
+        IReportPackWorkflowRecordStore? store = null,
+        IReportPackSecurityLineIndex? securityLineIndex = null)
     {
         _store = store;
+        _securityLineIndex = securityLineIndex;
         foreach (var record in _store?.Load() ?? [])
         {
             _records[record.ReportId] = record;
         }
+
+        // Backfill the derived security→report-line index from the loaded records (the workflow records
+        // are the source of truth), so the index is current on first use after a process start/upgrade.
+        _securityLineIndex?.Rebuild(_records.Values);
     }
 
     public ReportPackWorkflowRecordDto Create(
@@ -1139,8 +1147,7 @@ public sealed class ReportPackWorkflowService
             , null,
             NormalizeLineProvenance(lineProvenance),
             AccessPolicy: normalizedAccessPolicy);
-        _records[id] = record;
-        PersistRecords();
+        SaveAndIndex(record);
         return record;
     }
 
@@ -1178,8 +1185,7 @@ public sealed class ReportPackWorkflowService
             UpdatedAt = now,
             AuditTrail = record.AuditTrail.Append(new ReportPackAuditEventDto(now, actor, target.ToString().ToLowerInvariant(), record.State, target, note)).ToArray()
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1200,8 +1206,7 @@ public sealed class ReportPackWorkflowService
                 rejectedAt,
                 evidenceLinks is null ? null : NormalizeEvidenceLinks(evidenceLinks))
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1246,8 +1251,7 @@ public sealed class ReportPackWorkflowService
             Version = transitioned.Version + 1,
             Restatement = new ReportPackRestatementMetadataDto(reasonCode, approver, priorVersionReportId, changedLines, evidenceLinks)
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1301,8 +1305,7 @@ public sealed class ReportPackWorkflowService
                 SignOffContext: NormalizeWorkflowOptional(signOffContext) ?? BuildPublicationSignOffContext(actor, role, actionOrigin),
                 ActionOrigin: actionOrigin)
         };
-        _records[reportId] = next;
-        PersistRecords();
+        SaveAndIndex(next);
         return next;
     }
 
@@ -1357,12 +1360,59 @@ public sealed class ReportPackWorkflowService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
         var key = fundProfileId.Trim();
-        return _records.Values
-            .Where(record => string.Equals(record.FundProfileId, key, StringComparison.OrdinalIgnoreCase))
+        return OrderFundRecords(
+            _records.Values.Where(record => string.Equals(record.FundProfileId, key, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// The report packs in a fund profile whose retained report-line provenance references
+    /// <paramref name="securityId"/>. When a security→report-line index is wired this is an O(matches)
+    /// lookup; otherwise it falls back to the full fund scan filtered by the shared matcher, preserving
+    /// behaviour. Callers apply their own state gating (e.g. only Published/Restated packs).
+    /// </summary>
+    public IReadOnlyList<ReportPackWorkflowRecordDto> ListRecordsForSecurityInFund(Guid securityId, string fundProfileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
+        var key = fundProfileId.Trim();
+
+        if (_securityLineIndex is not null)
+        {
+            var matches = new List<ReportPackWorkflowRecordDto>();
+            foreach (var entry in _securityLineIndex.LookupByFund(securityId, key))
+            {
+                if (_records.TryGetValue(entry.ReportId, out var record))
+                {
+                    matches.Add(record);
+                }
+            }
+
+            return OrderFundRecords(matches);
+        }
+
+        return OrderFundRecords(
+            _records.Values.Where(record =>
+                string.Equals(record.FundProfileId, key, StringComparison.OrdinalIgnoreCase)
+                && ReportPackSecurityLineMatcher.RecordReferencesSecurity(record, securityId)));
+    }
+
+    private static IReadOnlyList<ReportPackWorkflowRecordDto> OrderFundRecords(IEnumerable<ReportPackWorkflowRecordDto> records) =>
+        records
             .OrderByDescending(static record => record.Period, StringComparer.OrdinalIgnoreCase)
             .ThenByDescending(static record => record.Version)
             .ThenBy(static record => record.ReportId)
             .ToArray();
+
+    private void SaveAndIndex(ReportPackWorkflowRecordDto record)
+    {
+        // Single chokepoint for every report-pack mutation. Update the authoritative record map and the
+        // derived security→report-line index together BEFORE persisting, so the two in-memory views stay
+        // consistent even if PersistRecords throws. (Persisting between them would, on a write failure,
+        // leave the index permanently missing a record _records already has — a silent restatement
+        // candidate miss, since the index-backed lookup no longer scans _records.) PersistRecords runs
+        // last because it serializes the current _records snapshot.
+        _records[record.ReportId] = record;
+        _securityLineIndex?.Upsert(record);
+        PersistRecords();
     }
 
     private void PersistRecords()

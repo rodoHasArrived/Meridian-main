@@ -32,12 +32,18 @@ namespace Meridian.Ui.Shared.Services;
 /// candidate the operator could not act on. Such a match is instead logged for manual attention rather
 /// than silently dropped. Supporting repeated restatement is a deferred report-pack workflow change.</para>
 ///
+/// <para><b>Lookup.</b> Candidate records are located through
+/// <see cref="ReportPackWorkflowService.ListRecordsForSecurityInFund"/>, which uses the durable
+/// security→report-line index (<see cref="IReportPackSecurityLineIndex"/>) for an O(matches) lookup and
+/// falls back to a full fund scan when no index is wired. The membership rule is the shared
+/// <see cref="ReportPackSecurityLineMatcher"/>, so the index and this resolver agree on exactly which
+/// lines reference the security.</para>
+///
 /// <para><b>Deferred</b> to later slices: repeated-restatement workflow support (so an already-restated
 /// pack can be re-restated instead of only logged); narrowing candidates to the specific reporting
 /// period covering the edit's effective date (the pack <c>Period</c> is a free-form label, so
 /// period-precise filtering is not yet safe and over-inclusion stays operator-reviewed); soft-closed
-/// governed-adjustment posting; and a durable security→report-line index that would replace this
-/// per-fund scan.</para>
+/// governed-adjustment posting; and exposing the index's cross-fund lookup on a public surface.</para>
 /// </summary>
 public sealed class ReportPackRestatementCandidateResolver : IRestatementCandidateResolver
 {
@@ -78,7 +84,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
 
         var candidates = new List<RestatementCandidateDto>();
         var hasNonActionableMatches = false;
-        foreach (var record in _reportPackWorkflow.ListRecordsForFundProfile(fundProfileId))
+        foreach (var record in _reportPackWorkflow.ListRecordsForSecurityInFund(securityId, fundProfileId))
         {
             ct.ThrowIfCancellationRequested();
 
@@ -154,7 +160,7 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
         }
 
         return provenance
-            .Where(line => LineReferencesSecurity(line, securityId))
+            .Where(line => ReportPackSecurityLineMatcher.LineReferencesSecurity(line, securityId))
             .Select(line => new ReportPackChangedLineDto(
                 LineKey: line.LineKey,
                 PreviousValue: line.ReportValue ?? string.Empty,
@@ -168,18 +174,4 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
                         Source: string.IsNullOrWhiteSpace(line.SourceKind) ? "report-line-provenance" : line.SourceKind)]))
             .ToArray();
     }
-
-    private static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, Guid securityId)
-        => MatchesSecurity(line.SecurityMasterId, securityId)
-           || MatchesSecurity(line.SecurityDefinitionId, securityId)
-           || (ContainsToken(line.SourceKind, "security") && MatchesSecurity(line.SourceId, securityId));
-
-    private static bool MatchesSecurity(string? value, Guid securityId)
-        => !string.IsNullOrWhiteSpace(value)
-           && Guid.TryParse(value, out var parsed)
-           && parsed == securityId;
-
-    private static bool ContainsToken(string? value, string token)
-        => !string.IsNullOrWhiteSpace(value)
-           && value.Contains(token, StringComparison.OrdinalIgnoreCase);
 }
