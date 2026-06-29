@@ -48,6 +48,7 @@ public static class StorageProfilePresets
                 Policies = options.Policies,
                 GenerateManifests = true,
                 EmbedChecksum = options.EmbedChecksum,
+                DedupFlushOnWrite = options.DedupFlushOnWrite,
                 PartitionStrategy = options.PartitionStrategy ?? new PartitionStrategy(PartitionDimension.Date, PartitionDimension.Symbol, Tertiary: null, DateGranularity: DatePartition.Daily)
             }),
         new StorageProfilePreset(
@@ -70,6 +71,7 @@ public static class StorageProfilePresets
                 Policies = options.Policies,
                 GenerateManifests = false,
                 EmbedChecksum = options.EmbedChecksum,
+                DedupFlushOnWrite = options.DedupFlushOnWrite,
                 PartitionStrategy = options.PartitionStrategy ?? new PartitionStrategy(PartitionDimension.Symbol, PartitionDimension.EventType, Tertiary: null, DateGranularity: DatePartition.Hourly)
             }),
         new StorageProfilePreset(
@@ -102,6 +104,7 @@ public static class StorageProfilePresets
                 Policies = options.Policies,
                 GenerateManifests = true,
                 EmbedChecksum = true,
+                DedupFlushOnWrite = options.DedupFlushOnWrite,
                 PartitionStrategy = options.PartitionStrategy ?? new PartitionStrategy(PartitionDimension.Date, PartitionDimension.Source, Tertiary: null, DateGranularity: DatePartition.Monthly)
             })
     };

@@ -194,26 +194,40 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
         }
 
-        // Not a duplicate — record it
+        // Not a duplicate — record it. The cache is updated optimistically so concurrent
+        // in-flight checks observe the entry immediately, then rolled back if the durable
+        // write fails so the event is retried rather than silently treated as a duplicate.
         _cache[key] = nowTicks;
         var ledgerLine = CreateLedgerLine(key, nowTicks);
 
         // Persist to disk (serialize access). Under strict durability, flush the write
         // before reporting the event as new so a crash cannot drop the dedup record
         // after the event was already emitted downstream.
-        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        var lockAcquired = false;
         try
         {
+            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+            lockAcquired = true;
             await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
             await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
             if (_flushOnWrite)
             {
-                await _writer.FlushAsync(ct).ConfigureAwait(false);
+                await _writer!.FlushAsync(ct).ConfigureAwait(false);
             }
+        }
+        catch
+        {
+            // Persistence failed (cancellation, disk error, disk-full, ...). Undo the optimistic
+            // cache insert so a retry re-processes the event instead of dropping it as a duplicate.
+            _cache.TryRemove(key, out _);
+            throw;
         }
         finally
         {
-            _writeLock.Release();
+            if (lockAcquired)
+            {
+                _writeLock.Release();
+            }
         }
 
         return false;

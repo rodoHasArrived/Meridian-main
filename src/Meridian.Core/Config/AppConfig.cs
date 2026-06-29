@@ -135,7 +135,13 @@ public sealed record StorageConfig(
     // Explicit list of storage sink plugin IDs to activate (e.g., ["jsonl", "parquet"]).
     // When non-empty, overrides EnableParquetSink and drives dynamic sink composition.
     // </summary>
-    List<string>? Sinks = null
+    List<string>? Sinks = null,
+
+    // <summary>
+    // Whether the deduplication ledger flushes each new-event write before reporting the
+    // event as new (strict crash durability at the cost of hot-path throughput). Default false.
+    // </summary>
+    bool DedupFlushOnWrite = false
 );
 
 /// <summary>

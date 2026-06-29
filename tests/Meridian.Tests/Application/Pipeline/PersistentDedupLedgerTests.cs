@@ -143,6 +143,26 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         flushedLines.Should().ContainSingle();
     }
 
+    [Fact]
+    public async Task IsDuplicateAsync_PersistenceFails_RollsBackCacheSoEventIsNotDropped()
+    {
+        var evt = CreateTradeEvent("NVDA", 1);
+
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _firstLedger.InitializeAsync();
+
+        // Force the persistence path to fail with a cancelled token. The optimistic cache
+        // insert must be rolled back so the event is not silently treated as a duplicate.
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+        var act = async () => await _firstLedger.IsDuplicateAsync(evt, cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        // Re-checking the same event with a live token must still report it as new (not dropped).
+        var seenAfterFailure = await _firstLedger.IsDuplicateAsync(evt, CancellationToken.None);
+        seenAfterFailure.Should().BeFalse();
+    }
+
     private static MarketEvent CreateTradeEvent(string symbol, long sequence)
     {
         var trade = new Trade(
