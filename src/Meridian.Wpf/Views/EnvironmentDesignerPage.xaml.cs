@@ -94,9 +94,14 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
         }
         catch (System.OperationCanceledException)
         {
+            // Allow a later navigation to retry the load instead of latching empty.
+            _isLoaded = false;
         }
         catch (System.Exception ex)
         {
+            // Reset the re-entry guard so a transient load failure can recover on
+            // the next navigation rather than leaving the page permanently empty.
+            _isLoaded = false;
             global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Environment Designer page failed to load.", ex);
         }
     }
