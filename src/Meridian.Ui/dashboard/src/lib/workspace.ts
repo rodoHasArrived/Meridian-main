@@ -39,9 +39,13 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingEvidence: "/accounting/evidence",
   reporting: "/reporting",
   reportingOperationsRecord: "/reporting/operations-record",
+  reportingReportBuilder: "/reporting/report-builder",
+  reportingRunStatus: "/reporting/run-status",
+  reportingDeliveryEvidence: "/reporting/delivery-evidence",
   reportingReportPacks: "/reporting/report-packs",
   reportingEvidence: "/reporting/evidence",
   reportingExports: "/reporting/exports",
+  reportingGovernance: "/reporting/governance",
   strategy: "/strategy",
   strategyDesigner: "/strategy/designer",
   strategyFormulaWorkbench: "/strategy/formula-workbench",
@@ -95,7 +99,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   FundExceptionWorkbench: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
   FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting,
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-  FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+  FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder,
   FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accountingLedger,
   FundJournalEntryWorkbench: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
   CapitalAccountWorkbench: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
@@ -106,7 +110,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   ProviderTrust: WORKSTATION_ROUTE_CATALOG.dataProviders,
   ResearchShell: WORKSTATION_ROUTE_CATALOG.strategy,
   ReportingShell: WORKSTATION_ROUTE_CATALOG.reporting,
-  ReportPackApproval: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+  ReportPackApproval: WORKSTATION_ROUTE_CATALOG.reportingGovernance,
   RunRisk: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
   SecurityMaster: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
   SettingsShell: WORKSTATION_ROUTE_CATALOG.settings,
@@ -316,6 +320,10 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
 
   if (!isLegacyWorkspaceKey(firstSegment)) {
     return null;
+  }
+
+  if (firstSegment === "overview") {
+    return `/${search}${hash}`;
   }
 
   const suffix = pathname.slice(`/${firstSegment}`.length);

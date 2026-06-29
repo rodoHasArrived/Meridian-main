@@ -3,29 +3,29 @@ import {
   ArrowRight,
   AlertTriangle,
   Bell,
-  ChevronDown,
-  GitBranch,
   LoaderCircle,
   Menu,
-  Search,
-  X
+  Search
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import {
   buildAppShellViewState,
   isAppShellEditableShortcutTarget,
-  readOperatingScopeFromSearch,
-  removeOperatingScopeFromSearch,
   resolveAppShellCommandPaletteShortcut,
-  type AppShellWorkflowContinuityViewModel,
-  type AppShellOperatingScopeInput,
-  type AppShellTrustStripState,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
+import {
+  readOperatingScopeFromSearch,
+  removeOperatingScopeFromSearch,
+  type AppShellOperatingScopeInput
+} from "@/lib/app-shell-operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { WorkstationTrustStrip } from "@/components/meridian/workstation-trust-strip";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { DailyControlTowerScreen } from "@/screens/daily-control-tower-screen";
 import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -357,7 +357,7 @@ function AppShell() {
               <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes>
-                  <Route path="/" element={<Navigate to="/trading" replace />} />
+                  <Route path="/" element={<DailyControlTowerScreen viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip} />} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
                       strategy={strategy}
@@ -573,13 +573,17 @@ function buildWorkspaceBreadcrumbItems(
   workspace: WorkspaceSummary,
   navigate: ReturnType<typeof useNavigate>
 ): BreadcrumbItem[] {
+  if (pathname === "/") {
+    return [{ label: "Workstation", current: true }];
+  }
+
   const routeLabel = resolveRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
     {
       label: "Workstation",
-      onClick: () => navigate("/trading")
+      onClick: () => navigate("/")
     },
     {
       label: workspace.label,
@@ -627,155 +631,6 @@ function formatRouteSegmentLabel(segment: string): string {
   )).join(" ");
 }
 
-function WorkflowContinuityDock({
-  viewModel,
-  onClearOperatingContext
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-  onClearOperatingContext?: () => void;
-}) {
-  const visibleSteps = viewModel.steps.filter((step) => step.active || step.next);
-  const dockSteps = visibleSteps.length > 0 ? visibleSteps : viewModel.steps.slice(0, 2);
-  const decision = viewModel.decisionBrief;
-
-  return (
-    <section
-      className="workflow-continuity-dock"
-      aria-label={viewModel.ariaLabel}
-      aria-describedby="workflow-continuity-screenreader-summary"
-    >
-      <p id="workflow-continuity-screenreader-summary" className="sr-only">
-        {viewModel.title}. {viewModel.summary} Current route {viewModel.routeLabel}. Next action: {viewModel.nextActionLabel}.
-      </p>
-      <div className="workflow-continuity-context">
-        <div className="flex min-w-0 items-center gap-2">
-          <GitBranch className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-          <div className="min-w-0">
-            <div className="eyebrow-label">{viewModel.contextLabel}</div>
-            <h2 className="workflow-continuity-title">{viewModel.title}</h2>
-          </div>
-        </div>
-        <p className="workflow-continuity-summary">{viewModel.summary}</p>
-        <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
-          <span>{viewModel.contextValue}</span>
-          <span>{viewModel.routeLabel}</span>
-          {viewModel.operatingScope.hasScope && viewModel.clearSubjectAriaLabel && onClearOperatingContext ? (
-            <button
-              type="button"
-              className="workflow-continuity-clear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              onClick={onClearOperatingContext}
-              aria-label={viewModel.clearSubjectAriaLabel}
-              title={viewModel.clearSubjectAriaLabel}
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-          ) : null}
-        </div>
-        {viewModel.operatingScope.items.length > 0 ? (
-          <dl className="workflow-continuity-scope" aria-label={viewModel.operatingScope.label}>
-            {viewModel.operatingScope.items.map((item) => (
-              <div key={item.id} className="workflow-continuity-scope-chip" aria-label={item.ariaLabel}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-      </div>
-
-      <article
-        className={cn(
-          "workflow-continuity-decision",
-          `workflow-continuity-decision-${decision.statusTone}`
-        )}
-        aria-labelledby="workflow-decision-title"
-      >
-        <div className="workflow-continuity-decision-copy">
-          <div className="workflow-continuity-decision-head">
-            <span className="eyebrow-label">{decision.label}</span>
-            <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
-          </div>
-          <h3 id="workflow-decision-title">{decision.title}</h3>
-          <p>{decision.summary}</p>
-          <div className="workflow-continuity-decision-reason">
-            <span>{decision.reasonLabel}</span>
-            <span>{decision.reason}</span>
-          </div>
-          {decision.evidenceLabel ? (
-            <span className="workflow-continuity-decision-evidence">{decision.evidenceLabel}</span>
-          ) : null}
-        </div>
-        <Button asChild variant="default" size="sm" className="workflow-continuity-decision-action">
-          <Link to={decision.actionHref} aria-label={decision.actionAriaLabel}>
-            <span>{decision.actionLabel}</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
-      </article>
-
-      <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
-        {dockSteps.map((step) => (
-          <Link
-            key={step.id}
-            to={step.href}
-            aria-label={step.ariaLabel}
-            aria-current={step.active ? "step" : undefined}
-            className={cn(
-              "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-              `workflow-continuity-step-${step.statusTone}`,
-              step.active && "workflow-continuity-step-active",
-              step.next && "workflow-continuity-step-next"
-            )}
-          >
-            <span className="workflow-continuity-step-label">{step.label}</span>
-            <span className="workflow-continuity-step-description">{step.description}</span>
-            <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-          </Link>
-        ))}
-      </nav>
-
-      <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
-        <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
-          <span>{viewModel.nextActionLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </Button>
-
-      <details
-        className="workflow-continuity-operator-flow"
-        aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
-      >
-        <summary>
-          <span>
-            <span className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</span>
-            <span className="workflow-continuity-summary">{viewModel.primaryOperatorFlowSummary}</span>
-          </span>
-          <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
-        </summary>
-        <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
-          {viewModel.primaryOperatorFlowSteps.map((step) => (
-            <Link
-              key={step.id}
-              to={step.href}
-              aria-label={step.ariaLabel}
-              aria-current={step.active ? "step" : undefined}
-              className={cn(
-                "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                `workflow-continuity-step-${step.statusTone}`,
-                step.active && "workflow-continuity-step-active"
-              )}
-            >
-              <span className="workflow-continuity-step-label">{step.label}</span>
-              <span className="workflow-continuity-step-description">{step.description}</span>
-              <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-            </Link>
-          ))}
-        </nav>
-      </details>
-    </section>
-  );
-}
-
 class RouteErrorBoundary extends Component<
   { children: ReactNode; routeKey: string },
   { hasError: boolean; routeKey: string }
@@ -809,9 +664,9 @@ class RouteErrorBoundary extends Component<
       return (
         <RouteRecoveryPanel
           title="Workbench route failed"
-          detail="Meridian could not render this route. Return to Trading or retry after refreshing live data."
-          actionLabel="Open Trading"
-          actionHref="/trading"
+          detail="Meridian could not render this route. Return to the Daily Control Tower or retry after refreshing live data."
+          actionLabel="Open Daily Control Tower"
+          actionHref="/"
         />
       );
     }
@@ -825,8 +680,8 @@ function NotFoundScreen() {
     <RouteRecoveryPanel
       title="Workbench route not found"
       detail="The requested workstation route is not available in this Meridian build."
-      actionLabel="Open Trading"
-      actionHref="/trading"
+      actionLabel="Open Daily Control Tower"
+      actionHref="/"
     />
   );
 }
@@ -973,48 +828,6 @@ function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShell
   return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
 }
 
-function WorkstationTrustStrip({
-  viewModel
-}: {
-  viewModel: AppShellTrustStripState;
-}) {
-  return (
-    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
-      {viewModel.items.map((item) => {
-        const content = (
-          <>
-            <span className="workstation-trust-label">{item.label}</span>
-            <span className="workstation-trust-value">{item.value}</span>
-            <span className="sr-only">
-              {item.detail}
-              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
-            </span>
-          </>
-        );
-
-        return item.href ? (
-          <Link
-            key={item.id}
-            to={item.href}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
-          >
-            {content}
-          </Link>
-        ) : (
-          <span
-            key={item.id}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={item.ariaLabel}
-          >
-            {content}
-          </span>
-        );
-      })}
-    </section>
-  );
-}
-
 function PriceAlertsBell() {
   const { unacknowledgedCount } = usePriceAlerts();
   const hasUnread = unacknowledgedCount > 0;
@@ -1044,7 +857,7 @@ function PriceAlertsBell() {
 
 function LegacyWorkspaceRedirect() {
   const location = useLocation();
-  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
+  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/"} replace />;
 }
 
 function WorkspaceRouteFallback({ title }: { title: string }) {

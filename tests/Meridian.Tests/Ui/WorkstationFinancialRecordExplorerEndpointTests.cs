@@ -387,7 +387,8 @@ public sealed partial class WorkstationEndpointsTests
                 "Operator-created saved view for ledger review.",
                 "Cash",
                 [new("account-type", "Account Type", "Asset")],
-                ["accountName", "balance"]),
+                ["accountName", "balance"],
+                "ledger:selected:cash"),
             ServerJsonOptions);
 
         saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -395,13 +396,15 @@ public sealed partial class WorkstationEndpointsTests
         saved.Should().NotBeNull();
         saved!.IsSystem.Should().BeFalse();
         saved.ColumnIds.Should().Equal(["accountName", "balance"]);
+        saved.SelectedRecordId.Should().Be("ledger:selected:cash");
 
         using var payload = await ReadJsonAsync(client, "/api/workstation/financial-record-explorers/ledger");
         payload.RootElement.GetProperty("savedViews").EnumerateArray().Should().Contain(view =>
             view.GetProperty("viewId").GetString() == saved.ViewId &&
             view.GetProperty("label").GetString() == "Material trial-balance view" &&
             !view.GetProperty("isSystem").GetBoolean() &&
-            view.GetProperty("columnIds").EnumerateArray().Select(column => column.GetString()).SequenceEqual(new[] { "accountName", "balance" }));
+            view.GetProperty("columnIds").EnumerateArray().Select(column => column.GetString()).SequenceEqual(new[] { "accountName", "balance" }) &&
+            view.GetProperty("selectedRecordId").GetString() == "ledger:selected:cash");
     }
 
     [Fact]
@@ -445,6 +448,46 @@ public sealed partial class WorkstationEndpointsTests
         scoped.SummaryItems.Should().Contain(item =>
             item.Label == "Visible records" &&
             item.Value == scoped.Rows.Count.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldRestoreSavedViewSelectedRecord()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-selected-record-view", withBreaks: false));
+
+        var full = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger",
+            ServerJsonOptions);
+        full.Should().NotBeNull();
+        full!.Rows.Should().HaveCountGreaterThan(1);
+        var targetRow = full.Rows.Last();
+
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "Selected ledger row",
+                "Server-applied saved view with selected proof row.",
+                "",
+                [],
+                ["accountName", "balance"],
+                targetRow.RecordId),
+            ServerJsonOptions);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
+        saved.Should().NotBeNull();
+        saved!.SelectedRecordId.Should().Be(targetRow.RecordId);
+
+        var scoped = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?viewId={Uri.EscapeDataString(saved.ViewId)}",
+            ServerJsonOptions);
+
+        scoped.Should().NotBeNull();
+        scoped!.Rows.Should().Contain(row => row.RecordId == targetRow.RecordId);
+        scoped.SelectedRecord!.RecordId.Should().Be(targetRow.RecordId);
+        scoped.SavedViews.Single(view => view.ViewId == saved.ViewId).SelectedRecordId.Should().Be(targetRow.RecordId);
     }
 
     [Fact]

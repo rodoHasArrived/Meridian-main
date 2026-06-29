@@ -272,6 +272,7 @@ export interface FinancialRecordExplorerSavedViewDto {
   filters: FinancialRecordExplorerFilterDto[];
   searchText: string;
   columnIds?: string[] | null;
+  selectedRecordId?: string | null;
 }
 
 export interface FinancialRecordExplorerSummaryItemDto {
@@ -374,6 +375,7 @@ export interface FinancialRecordExplorerSavedViewSaveRequestDto {
   searchText: string;
   filters: FinancialRecordExplorerFilterDto[];
   columnIds?: string[] | null;
+  selectedRecordId?: string | null;
 }
 
 export type LedgerMappingSource =

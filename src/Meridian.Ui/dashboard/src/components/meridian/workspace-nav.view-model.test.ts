@@ -180,9 +180,11 @@ describe("workspace nav view model", () => {
     expect(reporting?.subItems.map((item) => item.route)).toEqual([
       "/reporting",
       "/reporting/operations-record",
-      "/reporting/report-packs",
-      "/reporting/evidence",
-      "/reporting/exports"
+      "/reporting/report-builder",
+      "/reporting/run-status",
+      "/reporting/delivery-evidence",
+      "/reporting/exports",
+      "/reporting/governance"
     ]);
     expect(reporting?.subItems.find((item) => item.route === "/reporting/operations-record")).toMatchObject({
       label: "Operations record",

@@ -12,7 +12,7 @@ import {
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput,
   type AppShellOperatingScopeState
-} from "@/app-shell.view-model";
+} from "@/lib/app-shell-operating-scope";
 import type {
   WorkflowAction,
   WorkflowDefinition,
@@ -177,22 +177,34 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord
   },
   {
-    id: "reporting-report-packs",
-    label: "Report packs",
-    description: "Open approval-ready report packet review and governed outputs.",
-    route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
+    id: "reporting-report-builder",
+    label: "Report Builder",
+    description: "Author governed templates, report-writer grids, previews, and report-pack outputs.",
+    route: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder
   },
   {
-    id: "reporting-evidence",
-    label: "Evidence workbench",
-    description: "Inspect packet completeness, stale evidence, and lineage.",
-    route: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+    id: "reporting-run-status",
+    label: "Run Status",
+    description: "Review generated runs, retry posture, approval state, lineage, and executable next actions.",
+    route: WORKSTATION_ROUTE_CATALOG.reportingRunStatus
+  },
+  {
+    id: "reporting-delivery-evidence",
+    label: "Delivery Evidence",
+    description: "Inspect retained delivery proof, publication attempts, restatements, and schedule evidence.",
+    route: WORKSTATION_ROUTE_CATALOG.reportingDeliveryEvidence
   },
   {
     id: "reporting-exports",
     label: "Exports",
     description: "Run on-demand reports and review generated export run posture.",
     route: WORKSTATION_ROUTE_CATALOG.reportingExports
+  },
+  {
+    id: "reporting-governance",
+    label: "Governance",
+    description: "Review access scope, report-pack workflow records, approvals, and audit links before release.",
+    route: WORKSTATION_ROUTE_CATALOG.reportingGovernance
   },
   {
     id: "strategy-quant-lab",

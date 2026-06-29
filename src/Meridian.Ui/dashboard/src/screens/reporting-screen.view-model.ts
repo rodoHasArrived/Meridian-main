@@ -1991,7 +1991,7 @@ function buildLoadingState(pathname: string): ReportingLoadingState {
     title,
     detail: "Waiting for governed report-pack and export evidence.",
     badgeLabel: "Loading",
-    routeLabel: isReportPackRoute(pathname) ? "Report packs" : "Reporting"
+    routeLabel: reportingRouteLabel(pathname)
   };
 }
 
@@ -2337,7 +2337,29 @@ function buildWorkflowBackendLink({
 
 function isReportPackRoute(pathname: string): boolean {
   const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || WORKSTATION_ROUTE_CATALOG.reporting;
-  return normalized === WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
+  return normalized === WORKSTATION_ROUTE_CATALOG.reportingReportBuilder ||
+    normalized === WORKSTATION_ROUTE_CATALOG.reportingReportPacks ||
+    normalized === WORKSTATION_ROUTE_CATALOG.reportingGovernance;
+}
+
+function reportingRouteLabel(pathname: string): string {
+  const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || WORKSTATION_ROUTE_CATALOG.reporting;
+  switch (normalized) {
+    case WORKSTATION_ROUTE_CATALOG.reportingReportBuilder:
+    case WORKSTATION_ROUTE_CATALOG.reportingReportPacks:
+      return "Report Builder";
+    case WORKSTATION_ROUTE_CATALOG.reportingRunStatus:
+      return "Run Status";
+    case WORKSTATION_ROUTE_CATALOG.reportingDeliveryEvidence:
+    case WORKSTATION_ROUTE_CATALOG.reportingEvidence:
+      return "Delivery Evidence";
+    case WORKSTATION_ROUTE_CATALOG.reportingExports:
+      return "Exports";
+    case WORKSTATION_ROUTE_CATALOG.reportingGovernance:
+      return "Governance";
+    default:
+      return "Reporting";
+  }
 }
 
 function defaultReportPackProfileId(reporting: GovernanceReportingSummary, pathname: string): string | null {

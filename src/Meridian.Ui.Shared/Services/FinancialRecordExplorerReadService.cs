@@ -131,9 +131,10 @@ public sealed class FinancialRecordExplorerReadService
 
         var filters = NormalizeFilters(request.Filters);
         var searchText = request.SearchText?.Trim() ?? string.Empty;
-        if (filters.Count == 0 && string.IsNullOrWhiteSpace(searchText))
+        var selectedRecordId = request.SelectedRecordId?.Trim() ?? string.Empty;
+        if (filters.Count == 0 && string.IsNullOrWhiteSpace(searchText) && string.IsNullOrWhiteSpace(selectedRecordId))
         {
-            throw new InvalidOperationException("Saved view requires a search term or at least one filter.");
+            throw new InvalidOperationException("Saved view requires a search term, filter, or selected record.");
         }
 
         var view = new FinancialRecordExplorerSavedViewDto(
@@ -144,7 +145,8 @@ public sealed class FinancialRecordExplorerReadService
             IsActive: false,
             Filters: filters,
             SearchText: searchText,
-            ColumnIds: NormalizeColumnIds(request.ColumnIds));
+            ColumnIds: NormalizeColumnIds(request.ColumnIds),
+            SelectedRecordId: selectedRecordId);
 
         return await _savedViewStore.SaveAsync(tenantId, normalized, view, ct).ConfigureAwait(false);
     }
@@ -557,7 +559,7 @@ public sealed class FinancialRecordExplorerReadService
             filters,
             columns,
             scoped.Rows,
-            scoped.Rows.FirstOrDefault()?.Detail,
+            scoped.SelectedRecord,
             proofActions,
             string.Equals(explorerId, SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase)
                 ? BuildSecurityInstrumentGraph(scoped.Rows)
@@ -574,7 +576,7 @@ public sealed class FinancialRecordExplorerReadService
             SavedViews = scoped.SavedViews,
             SummaryItems = scoped.SummaryItems,
             Rows = scoped.Rows,
-            SelectedRecord = scoped.Rows.FirstOrDefault()?.Detail,
+            SelectedRecord = scoped.SelectedRecord,
             RecordGraph = string.Equals(explorer.ExplorerId, ReportLineProvenanceExplorerId, StringComparison.OrdinalIgnoreCase)
                 ? BuildReportLineProvenanceGraph(scoped.Rows)
                 : string.Equals(explorer.ExplorerId, SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase)
@@ -586,7 +588,8 @@ public sealed class FinancialRecordExplorerReadService
     private static (
         IReadOnlyList<FinancialRecordExplorerSavedViewDto> SavedViews,
         IReadOnlyList<FinancialRecordExplorerSummaryItemDto> SummaryItems,
-        IReadOnlyList<FinancialRecordExplorerRowDto> Rows) ApplyExplorerQuery(
+        IReadOnlyList<FinancialRecordExplorerRowDto> Rows,
+        FinancialRecordExplorerSelectedRecordDto? SelectedRecord) ApplyExplorerQuery(
             IReadOnlyList<FinancialRecordExplorerSavedViewDto> savedViews,
             IReadOnlyList<FinancialRecordExplorerSummaryItemDto> summaryItems,
             IReadOnlyList<FinancialRecordExplorerRowDto> rows,
@@ -594,7 +597,7 @@ public sealed class FinancialRecordExplorerReadService
     {
         if (query is null)
         {
-            return (savedViews, summaryItems, rows);
+            return (savedViews, summaryItems, rows, rows.FirstOrDefault()?.Detail);
         }
 
         var requestedViewId = query.ViewId?.Trim() ?? string.Empty;
@@ -612,7 +615,7 @@ public sealed class FinancialRecordExplorerReadService
 
         if (selectedView is null && string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
         {
-            return (savedViews, summaryItems, rows);
+            return (savedViews, summaryItems, rows, rows.FirstOrDefault()?.Detail);
         }
 
         var activeSavedViews = string.IsNullOrWhiteSpace(requestedViewId)
@@ -629,7 +632,25 @@ public sealed class FinancialRecordExplorerReadService
                 .Where(row => RowMatchesFilters(row, filters) && RowMatchesSearch(row, searchText))
                 .ToArray();
         var scopedSummary = BuildScopedSummary(summaryItems, rows.Count, scopedRows.Length, requestedViewId, searchText, filters);
-        return (activeSavedViews, scopedSummary, scopedRows);
+        return (activeSavedViews, scopedSummary, scopedRows, ResolveSelectedRecord(scopedRows, selectedView?.SelectedRecordId));
+    }
+
+    private static FinancialRecordExplorerSelectedRecordDto? ResolveSelectedRecord(
+        IReadOnlyList<FinancialRecordExplorerRowDto> rows,
+        string? selectedRecordId)
+    {
+        if (!string.IsNullOrWhiteSpace(selectedRecordId))
+        {
+            var trimmed = selectedRecordId.Trim();
+            var selected = rows.FirstOrDefault(row =>
+                string.Equals(row.RecordId, trimmed, StringComparison.OrdinalIgnoreCase));
+            if (selected is not null)
+            {
+                return selected.Detail;
+            }
+        }
+
+        return rows.FirstOrDefault()?.Detail;
     }
 
     private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildScopedSummary(

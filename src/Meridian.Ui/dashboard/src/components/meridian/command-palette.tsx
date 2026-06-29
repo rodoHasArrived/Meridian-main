@@ -9,7 +9,8 @@ import {
   type CommandPaletteFocusBoundary,
   type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
-import { COMMAND_PALETTE_DIALOG_ID, type AppShellOperatingScopeInput } from "@/app-shell.view-model";
+import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
+import type { AppShellOperatingScopeInput } from "@/lib/app-shell-operating-scope";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 

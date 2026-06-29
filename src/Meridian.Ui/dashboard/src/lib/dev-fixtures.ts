@@ -1100,6 +1100,35 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
         route: "/reporting/report-packs?recipient=board"
       }
     ],
+    dailyWork: [
+      {
+        workItemId: "delivery-failure:board-portal-demo",
+        kind: "delivery-failure",
+        title: "Delivery failure: Board portal",
+        statusLabel: "Failed",
+        detail: "Board package upload was rejected until the retained manifest is attached.",
+        tone: "danger",
+        owner: "fund-controller",
+        dueAtUtc: "2026-05-03T20:00:00Z",
+        primaryActionLabel: "Review delivery",
+        primaryActionHref: "/reporting?deliveryAttempt=board-portal-demo",
+        evidenceGaps: ["Retained delivery failure evidence is missing from the board package."],
+        context: ["Board portal", "InvestorStatement"]
+      },
+      {
+        workItemId: "approval-needed:investor-statement-demo",
+        kind: "approval-needed",
+        title: "Approval needed: InvestorStatement",
+        statusLabel: "Pending approval",
+        detail: "Controller approval is required before board distribution.",
+        tone: "warning",
+        owner: "controller",
+        dueAtUtc: null,
+        primaryActionLabel: "Review approval",
+        primaryActionHref: "/reporting?reportPack=investor-statement-demo",
+        context: ["InvestorStatement", "2026-05"]
+      }
+    ],
     pnlSlices: [
       {
         sliceId: "pnl:daily",

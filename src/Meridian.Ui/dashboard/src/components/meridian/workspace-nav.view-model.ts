@@ -3,7 +3,7 @@ import {
   buildOperatingScopeFromSearch,
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput
-} from "@/app-shell.view-model";
+} from "@/lib/app-shell-operating-scope";
 import { canonicalizeWorkspaceSummaries, isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
@@ -90,11 +90,13 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
+    { label: "Daily cockpit", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
     { label: "Operations record", route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord },
-    { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
-    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },
-    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports }
+    { label: "Report Builder", route: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder },
+    { label: "Run Status", route: WORKSTATION_ROUTE_CATALOG.reportingRunStatus },
+    { label: "Delivery Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingDeliveryEvidence },
+    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports },
+    { label: "Governance", route: WORKSTATION_ROUTE_CATALOG.reportingGovernance }
   ],
   strategy: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.strategy, match: "exact" },

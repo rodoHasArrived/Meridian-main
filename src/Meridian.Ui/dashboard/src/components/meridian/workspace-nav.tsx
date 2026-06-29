@@ -12,7 +12,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { cn } from "@/lib/utils";
-import type { AppShellOperatingScopeInput } from "@/app-shell.view-model";
+import type { AppShellOperatingScopeInput } from "@/lib/app-shell-operating-scope";
 import type { WorkspaceKey } from "@/types";
 
 const icons: Record<WorkspaceKey, typeof RadioTower> = {

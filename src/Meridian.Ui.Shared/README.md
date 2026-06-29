@@ -108,9 +108,10 @@ The report-line provenance builder emits an explicit instrument -> position or t
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
 workstation data root. Saved views are keyed by the authenticated workstation tenant and explorer
-id, so operator filters created in one tenant do not appear in another tenant's Financial Record
-Explorer session. Missing projections return empty or blocked DTO state with disabled actions and
-reasons, not synthetic operational balances.
+id, and they retain the selected record id with the saved search, filters, and columns so applying a
+view reopens the same proof row when it remains visible. Operator filters created in one tenant do
+not appear in another tenant's Financial Record Explorer session. Missing projections return empty
+or blocked DTO state with disabled actions and reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
 to shared browser/WPF routes. Keep those endpoints as permission and HTTP adapters; instrument

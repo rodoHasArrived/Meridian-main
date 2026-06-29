@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface WorkspaceFilterBarOption {
@@ -19,6 +19,7 @@ export function WorkspaceFilterBar({
   label,
   searchLabel = "Search",
   searchValue,
+  onSearchChange,
   options = [],
   fields = [],
   actions,
@@ -27,6 +28,7 @@ export function WorkspaceFilterBar({
   label: string;
   searchLabel?: string;
   searchValue?: string;
+  onSearchChange?: (value: string) => void;
   options?: WorkspaceFilterBarOption[];
   fields?: WorkspaceFilterBarField[];
   actions?: ReactNode;
@@ -36,7 +38,15 @@ export function WorkspaceFilterBar({
     <section className={cn("workspace-filter-bar", className)} aria-label={label}>
       <div className="workspace-filter-search" role="search" aria-label={searchLabel}>
         <Search className="h-3.5 w-3.5" aria-hidden="true" />
-        <span>{searchValue ?? searchLabel}</span>
+        <input
+          type="search"
+          value={searchValue ?? ""}
+          readOnly={!onSearchChange}
+          aria-label={searchLabel}
+          placeholder={searchValue ? undefined : searchLabel}
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-xs text-foreground outline-none placeholder:text-muted-foreground"
+          onChange={(event) => onSearchChange?.(event.target.value)}
+        />
       </div>
       {options.length > 0 ? (
         <div className="workspace-filter-segments" role="list" aria-label={`${label} filters`}>
@@ -87,12 +97,82 @@ export function WorkspaceTabStrip({
   onSelect?: (id: string) => void;
   className?: string;
 }) {
+  const selectedIndex = tabs.findIndex((tab) => tab.selected);
+  const activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+  const rendersNavigationLinks = tabs.length > 0 && tabs.every((tab) => tab.href) && !onSelect;
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const tabElements = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]'));
+    const currentIndex = tabElements.indexOf(event.target as HTMLElement);
+    if (currentIndex < 0 || tabElements.length === 0) {
+      return;
+    }
+
+    let nextIndex: number | null = null;
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        nextIndex = (currentIndex + 1) % tabElements.length;
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        nextIndex = (currentIndex - 1 + tabElements.length) % tabElements.length;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = tabElements.length - 1;
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        onSelect?.(tabs[currentIndex]?.id);
+        return;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    tabElements[nextIndex]?.focus();
+    onSelect?.(tabs[nextIndex]?.id);
+  }
+
+  if (rendersNavigationLinks) {
+    return (
+      <nav className={cn("workspace-tab-strip", className)} aria-label={label}>
+        {tabs.map((tab, index) => {
+          const selected = Boolean(tab.selected) || (selectedIndex < 0 && index === 0);
+
+          return (
+            <a
+              key={tab.id}
+              href={tab.href}
+              className={cn("workspace-tab", selected && "active")}
+              aria-current={selected ? "location" : undefined}
+              aria-controls={tab.panelId}
+            >
+              <span>{tab.label}</span>
+            </a>
+          );
+        })}
+      </nav>
+    );
+  }
+
   return (
-    <div className={cn("workspace-tab-strip", className)} role="tablist" aria-label={label}>
-      {tabs.map((tab) => {
-        const selected = Boolean(tab.selected);
+    <div
+      className={cn("workspace-tab-strip", className)}
+      role="tablist"
+      aria-label={label}
+      aria-orientation="horizontal"
+      onKeyDown={handleKeyDown}
+    >
+      {tabs.map((tab, index) => {
+        const selected = Boolean(tab.selected) || (selectedIndex < 0 && index === 0);
         const className = cn("workspace-tab", selected && "active");
         const content = <span>{tab.label}</span>;
+        const tabIndex = index === activeIndex ? 0 : -1;
 
         return tab.href ? (
           <a
@@ -102,6 +182,8 @@ export function WorkspaceTabStrip({
             role="tab"
             aria-selected={selected}
             aria-controls={tab.panelId}
+            tabIndex={tabIndex}
+            onClick={() => onSelect?.(tab.id)}
           >
             {content}
           </a>
@@ -113,6 +195,7 @@ export function WorkspaceTabStrip({
             role="tab"
             aria-selected={selected}
             aria-controls={tab.panelId}
+            tabIndex={tabIndex}
             onClick={() => onSelect?.(tab.id)}
           >
             {content}

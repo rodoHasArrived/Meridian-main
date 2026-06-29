@@ -37,6 +37,11 @@ public sealed class WpfReportingWorkspaceShellTests
         xamlSource.Should().Contain("WriterSummaryText");
         xamlSource.Should().Contain("ApprovalSummaryText");
         xamlSource.Should().Contain("DeliverySummaryText");
+        xamlSource.Should().Contain("ReportingCompactActionChrome");
+        xamlSource.Should().Contain("ReportingCompactActionSummaryText");
+        xamlSource.Should().NotContain("WorkspaceEvidenceStripReporting");
+        xamlSource.Should().NotContain("Use this cockpit to decide whether current reporting output");
+        xamlSource.Should().NotContain("Style=\"{StaticResource PageTitleStyle}\"");
 
         pageSource.Should().Contain("ViewModel.RefreshAsync()");
         pageSource.Should().Contain("ViewModel.Start()");

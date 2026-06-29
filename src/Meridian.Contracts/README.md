@@ -202,10 +202,12 @@ approve-result and NAV-support evidence without rebuilding it from timeline, clo
 report-output fragments.
 Financial Record Explorer DTOs under `Workstation/FinancialRecordExplorerDtos.cs` define the shared
 ledger, portfolio, Security & Instrument, and report-line provenance explorer contract consumed by
-both browser and WPF. The report-line provenance payload uses the same row, proof-action,
-relationship, and graph DTOs to expose the retained instrument, position or transaction,
-reconciliation, journal, report-line, evidence, and audit-link chain without adding browser- or
-desktop-specific contract shapes.
+both browser and WPF. Saved-view DTOs carry search, filters, visible columns, and the selected
+record id so persisted operator views can reopen the same proof drawer rather than only the same row
+set. The report-line provenance payload uses the same row, proof-action, relationship, and graph
+DTOs to expose the retained instrument, position or transaction, reconciliation, journal,
+report-line, evidence, and audit-link chain without adding browser- or desktop-specific contract
+shapes.
 Accounting configuration workspaces expose a computed `AccountingRulesStudioDto` beside the raw
 posting-rule, version, approval, dry-run, and regression-test DTOs. Browser and WPF clients should
 render rule counts, generated-posting coverage, effective-dated rule posture, saved-test coverage,

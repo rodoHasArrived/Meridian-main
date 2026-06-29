@@ -55,6 +55,13 @@ Current dense-row detail consumers covered by regression tests include Portfolio
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
 Security Master lots.
 
+Shared workstation primitives keep search and route-task navigation semantics explicit. The
+`WorkspaceFilterBar` search affordance renders a real search input even when it is read-only, and
+`WorkspaceTabStrip` renders hash-linked task strips as navigation links instead of ARIA tabs unless
+the caller supplies stateful tab selection behavior. Stateful tab strips expose a horizontal
+tablist with a single tabbable selected tab, Arrow/Home/End focus movement, Enter/Space activation,
+and controlled selection callbacks.
+
 ## Important workflows
 
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
@@ -168,10 +175,19 @@ source origin/fingerprint, and decision note so browser recovery posture matches
 Fund Ledger detail panel without reimplementing casework rules.
 Accounting reconciliation narratives use canonical Accounting review language while retained
 Governance view-model names remain compatibility seams.
+The Financial Record Explorer Number Passport projection lives in
+`src/lib/financial-record-passport.ts`, the compact reusable rendering surface lives in
+`src/components/meridian/financial-record-number-passport.tsx`, and the selected-record proof drawer
+lives in `src/components/meridian/financial-record-proof-drawer.tsx` so browser record drawers render
+the same source, freshness, reconciliation, approval, report-usage, blocker, evidence-packet, and
+audit-trail facets for ledger, security, portfolio, and report-line explorer records.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
-validation, or case-state rules.
+validation, or case-state rules. The route-owned reconciliation casework panel in
+`src/screens/accounting-reconciliation-casework-panel.tsx` owns the statement-run table,
+queue-detail selection, comparison panel, calibration summary, and overview queue card so
+`AccountingScreen` remains a workstream coordinator over the shared reconciliation view model.
 The Accounting external-GL panel renders the shared accounting-system reconciliation evidence
 packages for external import, Meridian ledger support, and GL tie-out posture when the API returns
 them, keeping package readiness and required actions service-owned rather than deriving package
@@ -180,7 +196,8 @@ The panel also renders provider-by-provider import posture from the shared Accou
 catalog, so QuickBooks, Xero, NetSuite, and fixture providers show read-only import capabilities,
 credential state, retained mapping-profile coverage, and live-posting-disabled posture before an
 operator prepares a guarded export package.
-The same panel now reads external GL mapping profiles from the shared AccountingSystem endpoint,
+The route-owned external GL panel in `src/screens/accounting-system-reconciliation-panel.tsx`
+reads external GL mapping profiles from the shared AccountingSystem endpoint,
 shows certified account and dimension coverage beside the reconciliation, and posts guarded export
 package requests with mapping, reconciliation, fund, period, and evidence context. It can also post
 the retained export package id, reviewer notes, and evidence to the shared export certification
@@ -201,14 +218,31 @@ request wiring remains a follow-on workflow.
 The Accounting workspace workflow launch strip is derived from the Accounting view model and shared
 route catalog, covering setup, journal entries, ledger review, reconciliation, exception casework,
 Security Master readiness, approvals, and retained evidence packaging without browser-local close
-state.
+state. The same entry surface exposes route-aware Accounting task modes for Close Cockpit,
+Reconciliation Casework, Ledger Explorer, Journal Entry, Capital Accounts, Rules, Security Master,
+and Evidence so operators can move from close triage into the focused Accounting route that owns the
+next decision. `/accounting` and `/accounting/operations-continuity` resolve to Close Cockpit,
+`/accounting/ledger` owns Ledger Explorer and trial-balance proof, and `/accounting/evidence` owns
+retained Accounting evidence and reporting export controls; route-only heavy sections no longer
+render or fetch on unrelated Accounting workstreams. Accounting task-mode routing and workstream
+resolution now live in
+`src/lib/accounting-task-modes.ts`, the Accounting/Reporting loading-route state lives in
+`src/lib/accounting-loading-view-state.ts`, and the reusable strip lives in
+`src/components/meridian/accounting-task-mode-strip.tsx` so `AccountingScreen` can keep moving
+toward route-owned workflow sections. The workflow launch
+surface now lives in `src/screens/accounting-workflow-launch-panel.tsx`, and the exception casework
+surface lives in `src/screens/accounting-operational-exception-workbench-panel.tsx`, keeping route
+launch paths, queue metrics, owner/SLA/comment/audit labels, and
+approval/reconciliation/evidence/audit handoffs as focused projections over the shared Accounting
+view model.
 The Accounting Configure workstream at `/accounting/configure` renders the shared Accounting Rules
 Studio from `AccountingRulesStudioDto`, `PostingRuleDto`, `RuleDryRunResultDto`, and rule-test suite
 DTOs: server-computed rule counts, promotion queues, activation readiness, effective dates,
 priority, dimensional scope, event predicates, grouped `All`/`Any` predicates, formulas, allocations, generated posting metadata,
 retained versions, promotion approvals, dry-run preview results, saved regression cases, and
-regression test-case results are browser projections over the shared configuration service rather
-than client-local rule logic. Operators can duplicate the selected posting rule into a
+regression test-case results are browser projections from
+`src/screens/accounting-configuration-panel.tsx` over the shared configuration service rather than
+client-local rule logic. Operators can duplicate the selected posting rule into a
 promotion-gated draft through the shared posting-rule upsert endpoint; the browser clears carried
 approval state, retains browser evidence links, selects the returned draft rule, and lets service
 validation/audit own the canonical workspace state. Rule mutation, promotion approval, and
@@ -361,8 +395,9 @@ and retained evidence routes, and show generated reversal/rebook drafts as separ
 of mutating posted entries. The workbench also renders a lifecycle checklist for draft version,
 validation, evidence, submission, approval, posting, reversal, rebook, close-lock, and transition
 audit posture so operators can see which server-owned gate is ready or blocked before acting.
-The Accounting close/report package cockpit reads the shared close-management period plan and
-accounting report-package history endpoints, showing checklist dependencies, sign-offs,
+The Accounting close/report package cockpit in
+`src/screens/accounting-close-report-package-panel.tsx` reads the shared close-management period
+plan and accounting report-package history endpoints, showing checklist dependencies, sign-offs,
 materiality, close-calendar milestones, period-lock posture, late adjustments, package
 certification, investor statement counts, realized gain/loss, NAV, statement-line provenance,
 export artifact certification state, restatement state, validation issues, and retained evidence
@@ -453,8 +488,17 @@ the existing Security Master lane instead of restoring the old static Data workb
 renders the server-provided report-line chain for instrument, position or transaction,
 reconciliation, journal, report line, evidence, and audit links; React must not rebuild that
 lineage locally.
-Saved views post back through the shared saved-view endpoint only after a material filter/search
-change, and blocked or empty DTOs keep proof actions disabled with the server-provided reason.
+The shared proof drawer also renders a compact Number Passport from the selected record DTO facts,
+proof actions, Used In/Impacts relationships, row source/status, and record graph so source,
+freshness, reconciliation, approvals, report usage, blockers, evidence packet, and audit-trail
+posture stay service-owned. Financial Record Explorer rows are keyboard-selectable with Enter or
+Space and expose `aria-selected` plus `aria-controls` to the active proof drawer.
+Saved views post back through the shared saved-view endpoint only after an operator-provided name
+and a material view/search/filter/column/selected-record change, preserving the selected proof row alongside search,
+filters, and visible columns. Browser share links persist explorer-scoped view, search, filter,
+selected-column, and selected-record state so context from one Financial Record Explorer cannot
+leak into another explorer route. Blocked or empty DTOs keep proof actions disabled with the
+server-provided reason.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -521,7 +565,8 @@ server-owned readiness, category completeness, retained evidence counts, local r
 actions instead of stitching package state together in React.
 The Accounting approvals workstream at `/accounting/approvals` reads the same operations-continuity
 workflow list/detail payload and posts approve/reject decisions through the shared approval
-endpoints, keeping signer, report-pack, blocker, and audit-trail evidence server-owned.
+endpoints from `src/screens/accounting-approvals-workstream.tsx`, keeping signer, report-pack,
+blocker, and audit-trail evidence server-owned while `AccountingScreen` routes the focused task mode.
 The bootstrap hook also fetches the shared workflow-summary endpoint and passes the active
 `fundAccountId` from route or stored shell scope when that account scope is present, allowing the
 Accounting Closeout strip to project source-backed Operations Continuity exceptions, approval
@@ -604,6 +649,27 @@ evidence packet distribution labels follow the same canonical root naming.
 The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
 does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+The browser Reporting landing experience keeps the Daily reporting cockpit first, then exposes
+WPF-aligned task modes for Daily cockpit, Report Builder, Run Status, Delivery Evidence, Exports,
+and Governance so operators can move from queue triage into the focused route that owns the next
+decision. The focused browser routes are `/reporting`, `/reporting/report-builder`,
+`/reporting/run-status`, `/reporting/delivery-evidence`, `/reporting/exports`, and
+`/reporting/governance`; legacy report-pack hash anchors still resolve as active aliases while
+operator navigation moves to the route-owned modes. When daily queues are active, `/reporting`
+stays on the cockpit and task-mode launch surface instead of rendering the generic broad workbench
+underneath. Canonical focused routes render only their owned Reporting sections, while legacy
+report-pack and evidence aliases keep the broad Reporting workbench for retained links. The
+cockpit model groups daily work into the
+same decision queues as `ReportingWorkspaceShellPresentationService` before showing individual work
+items: blocked package, delivery readiness, approval review, due package, restatement, and
+evidence/provenance queues each retain owner, affected output, next action, and proof support through
+the shared Number Passport facets for source, freshness, reconciliation, approvals, report usage,
+blockers, evidence packet, and audit trail. The
+daily cockpit rendering lives in `src/components/meridian/reporting-daily-cockpit.tsx`, Reporting
+task-mode routing now lives in `src/lib/reporting-task-modes.ts`, and the reusable strip lives in
+`src/components/meridian/reporting-task-mode-strip.tsx`. Route-local Reporting chips, highlights,
+cut metrics, and display formatters live in `src/screens/reporting-screen.presentation.tsx` so
+`ReportingScreen` can keep moving toward route-owned workflow sections.
 The Reporting workspace also renders the shared `AccessAudit` summary from `WorkstationReportingPayload`,
 showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
 packs, schedules, deliveries, and structured exports. React displays the service-owned denial
@@ -837,7 +903,10 @@ sorts by `contributionAbsPercent`, and omits generated contribution fields from 
 shared renderer remains the source of truth for signed and absolute contribution percentages. That trace displays input/output and
 filtered-input row counts, source fields, metric source mappings, formula expressions/dependencies,
 and filter lineage from the shared renderer. Grid calculation, formula evaluation, filter application,
-approval, and retained template truth remain server/shared-service owned.
+approval, and retained template truth remain server/shared-service owned. Report-writer request and
+bounded preview-row construction lives in `src/screens/reporting-screen.report-writer-requests.ts`
+so `ReportingScreen` remains route orchestration instead of owning the full report-writer compiler
+shim.
 Approved report-writer template runs and schedules can also choose one of those retained dataset
 sources; the browser sends `datasetSourceId` for on-demand and scheduled report-writer automation
 instead of embedding raw source rows in every request. Recent-run cards render the resolved source
@@ -904,6 +973,35 @@ The app shell workflow-continuity dock now also projects the design-document pri
 workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
 `Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
 while the primary strip anchors every workspace to the financial-operations flow.
+The root workstation route `/` now renders a Daily Control Tower from the same shell continuity
+model instead of redirecting to Trading, showing blocked or review items, owner workspace, affected
+output, next action, supporting proof, trust posture, linked context, and recent evidence before an
+operator opens a task workspace. Its hero decision card now exposes the same decision facts as a
+compact first-screen strip: blocked state, owner, affected output, next action, and supporting proof.
+The route body lives in `src/screens/daily-control-tower-screen.tsx`, the route-owned queue/proof
+projection lives in `src/lib/daily-control-tower.ts`, and the shell continuity strip lives in
+`src/components/meridian/workflow-continuity-dock.tsx`; `app.tsx` owns shell routing, trust strip
+handoff, and workflow-continuity state wiring rather than those full layouts. The shell also treats
+the Daily Control Tower as the workstation home target for the root breadcrumb, unknown-route
+recovery, route-failure recovery, and the legacy `/overview` alias instead of sending those paths
+back to Trading.
+The masthead and Daily Control Tower both render shell trust posture through
+`src/components/meridian/workstation-trust-strip.tsx`, using compact masthead chrome and a
+detail-rich Daily Control Tower card list from the same view model. The Daily Control Tower blocked
+output queue now renders each row's supporting evidence through the shared Number Passport renderer
+from `src/components/meridian/number-passport.tsx`, exposing source, freshness, reconciliation,
+approvals, report usage, blockers, evidence packet, and audit trail before an operator opens the
+owning route.
+Operating-scope query parsing, route carry-forward, clear-link generation, and workspace-specific
+scope filtering live in `src/lib/app-shell-operating-scope.ts` so the app shell, command palette,
+workspace navigation, evidence workbench, and route-level workflow models share one route-context
+contract instead of importing that policy from `app-shell.view-model.ts`.
+Shell workflow route catalogs now live in `src/lib/app-shell-workflow-catalog.ts`: the primary
+Import/Validate/Reconcile/Investigate/Approve/Report flow, continuity trail definitions, and demo
+fixture route path are static catalog data. `src/lib/app-shell-workflow-continuity.ts` owns the
+continuity view-model projection, decision brief, ranked focus items, linked context, evidence
+timeline, and loaded-state summaries, while `app-shell.view-model.ts` wires shell status, trust
+strip, route focus, and loaded workspace state into that route-level builder.
 Accounting Closeout keeps the design-document Financial Operations lane in the app-shell continuity
 dock with Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support while the browser `AccountingScreen` focuses on the owned ledger, reconciliation,
@@ -932,19 +1030,23 @@ The same `/accounting/ledger` route is the first browser implementation of the s
 Record Explorer pattern from the design document. It wraps the existing shared trial-balance,
 ledger-line, reconciliation, evidence-packet, audit-packet, and report-usage read models with
 explorer scope, saved-view labels, filter chips, summary signals, and proof drill-through actions
-without creating a separate browser ledger state or adding new root navigation.
+without creating a separate browser ledger state or adding new root navigation. Its route-owned
+rendering surface now lives in `src/screens/accounting-ledger-explorer-panel.tsx`, keeping
+trial-balance selection, General Ledger account filtering, basis bridge, Transaction Lab preview,
+and report-export handoff close to the Ledger Explorer task mode while `AccountingScreen` remains a
+workstream coordinator.
 That shared explorer shell also wraps `/portfolio` and `/accounting/security-master`: Portfolio
 anchors open holdings, selected run evidence, brokerage posture, and coverage proof to the existing
 Portfolio view model, while Security Master anchors instrument search, identity evidence, conflicts,
 schedules, lots, and trading controls to the Accounting-owned Security Master view model.
 
-The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned. The same passport now renders the endpoint-owned operations workbench panels for identity, provider evidence, terms, readiness, and handoff so browser code does not calculate valuation, ledger, reconciliation, close, or report readiness locally.
+The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned. The same passport now renders the endpoint-owned operations workbench panels for identity, provider evidence, terms, readiness, and handoff so browser code does not calculate valuation, ledger, reconciliation, close, or report readiness locally. Route-owned Security Master panels for reference-source coverage, cash-flow schedules, open-lot read models, corporate actions, instrument passport, and trading parameters live in `src/screens/accounting-security-master-panels.tsx` so the main Accounting screen remains a route/workstream coordinator over the shared Security Master view model.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source
 evidence attachments, treasury-context readiness, save draft, validate, attach-evidence API wiring,
 and submit approval commands
-from the shared DTOs while versioning, validation, persistence, private-capital fund-event context,
+from `src/screens/accounting-manual-journal-entry-workbench-panel.tsx` and the shared DTOs while versioning, validation, persistence, private-capital fund-event context,
 evidence gating, dimensional accounting normalization, period-lock enforcement, selected
 ledger-book mutation checks, authenticated tenant/company scoping, and approval handoff remain
 server-owned. Browser route `fundProfileId` and `ledgerBookId` values now flow into the shared
@@ -981,8 +1083,10 @@ execution-deferred posture. `/accounting/capital-accounts` consumes
 `getCapitalAccountWorkbench` from the shared capital-account workbench endpoint so React renders
 investor-level capital-account evidence, governed allocation policy traces, approval and replay
 inputs, statement/restatement changed-line lineage, audit drill-through rows, and
-live-versus-planned capability labels without browser-local accounting rules. The same workbench
-now promotes source-backed fund-event command-center rows from the investor-account records, keeping
+live-versus-planned capability labels without browser-local accounting rules. The route rendering
+now lives in `src/screens/accounting-capital-account-workbench-panel.tsx`, keeping the private-capital
+task mode as a focused projection over the shared Accounting view model. The same workbench now
+promotes source-backed fund-event command-center rows from the investor-account records, keeping
 command-center, activity, and evidence routes visible beside partner capital tie-out posture.
 Browser report-output rows prefer the server-built direct report-output route before falling back to
 the aggregate report route. The React view model preserves
@@ -1012,7 +1116,8 @@ The Accounting entry screen now includes a CFO / Controller close command center
 ready, blocked, and at-risk close posture from the latest operations-continuity workflow, retained
 accounting-record evidence, reconciliation breaks, approvals, external GL provider warnings,
 multi-asset valuation readiness, report-pack readiness, and close-package sign-off state. React
-renders the shared status, metrics, blockers, and action rows without adding browser-local close
+renders the shared status, metrics, blockers, and action rows from the route-owned
+`src/screens/accounting-close-command-center-panel.tsx` surface without adding browser-local close
 rules. Shared FINOPS queue rows preserve server-owned status, owner, due/SLA, severity, blocker
 type, close/report impact, evidence, action, and local route labels in the browser blocker panel.
 External GL provider warnings compare read-only provider evidence against Meridian-owned

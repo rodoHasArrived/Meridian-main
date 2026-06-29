@@ -208,9 +208,193 @@ describe("App", () => {
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
   });
 
-  it("redirects the root route to trading", async () => {
+  it("renders the daily control tower as the root workstation route", () => {
+    mockWorkstationData({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "trading",
+        commandCount: 7
+      },
+      overview,
+      trading: {
+        readiness: {
+          acceptanceGates: [
+            {
+              gateId: "replay-gate",
+              label: "Replay audit",
+              status: "Blocked",
+              detail: "Replay evidence is stale for the active paper session."
+            }
+          ],
+          workItems: [
+            {
+              workItemId: "brokerage-sync",
+              kind: "BrokerageSync",
+              label: "Brokerage sync failed",
+              detail: "Account sync failed after the last provider heartbeat.",
+              tone: "Critical",
+              createdAt: "2026-05-14T20:00:00Z",
+              runId: null,
+              fundAccountId: "fund-1",
+              auditReference: "audit-1",
+              workspace: "portfolio",
+              targetRoute: "/portfolio/brokerage-sync",
+              targetPageTag: "BrokerageSync"
+            },
+            {
+              workItemId: "report-pack",
+              kind: "ReportPackApproval",
+              label: "Report pack approval waiting",
+              detail: "Monthly board pack still needs an operator sign-off.",
+              tone: "Warning",
+              createdAt: "2026-05-14T21:00:00Z",
+              runId: "run-1",
+              fundAccountId: null,
+              auditReference: "audit-2",
+              workspace: "reporting",
+              targetRoute: "/reporting/report-packs",
+              targetPageTag: "ReportPackApproval"
+            }
+          ],
+          controls: {
+            circuitBreakerOpen: false
+          },
+          replay: null,
+          brokerageSync: null
+        }
+      } as unknown as TradingWorkspaceResponse,
+      data: {
+        providers: [
+          {
+            provider: "Alpaca",
+            status: "Warning",
+            capability: "paper",
+            latency: "120ms",
+            note: "Paper endpoint returned intermittent quote gaps.",
+            recommendedAction: "Review paper provider posture."
+          }
+        ],
+        backfills: [],
+        exports: []
+      } as unknown as DataWorkspaceResponse,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
     renderWithRouter(<App />, { initialEntries: ["/"] });
-    await waitFor(() => expect(screen.getByRole("heading", { name: "Trading Workstation" })).toBeInTheDocument());
+
+    expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument();
+    expect(screen.getAllByText("Resolve Brokerage sync failed").length).toBeGreaterThan(0);
+    expect(document.title).toBe("Daily Control Tower - Meridian");
+    const breadcrumb = screen.getByLabelText("Breadcrumb");
+    expect(within(breadcrumb).getByText("Workstation")).toHaveAttribute("aria-current", "page");
+    expect(within(breadcrumb).queryByText("Trading")).not.toBeInTheDocument();
+
+    const facts = screen.getByLabelText("Daily control tower decision facts");
+    expect(within(facts).getByText("Blocked state")).toBeInTheDocument();
+    expect(within(facts).getByText("Owner")).toBeInTheDocument();
+    expect(within(facts).getAllByRole("link", {
+      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+    expect(within(facts).getByText("Affected output")).toBeInTheDocument();
+    expect(within(facts).getByText("Next action")).toBeInTheDocument();
+    expect(within(facts).getByText("Supporting proof")).toBeInTheDocument();
+    expect(within(facts).getByText("Brokerage sync failed / 2026-05-14 20:00 UTC")).toBeInTheDocument();
+
+    const table = screen.getByRole("table", { name: "Daily control tower blocked output queue" });
+    expect(within(table).getByText("Owner")).toBeInTheDocument();
+    expect(within(table).getByText("Affected output")).toBeInTheDocument();
+    expect(within(table).getByText("Next action")).toBeInTheDocument();
+    expect(within(table).getByText("Proof")).toBeInTheDocument();
+    expect(within(table).getByText("Settings: Brokerage sync failed")).toBeInTheDocument();
+    expect(within(table).getAllByRole("link", {
+      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+    expect(within(table).getAllByRole("link", {
+      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Audit: audit-1. 2026-05-14 20:00 UTC. Open evidence."
+    }).length).toBeGreaterThan(0);
+
+    const trust = screen.getByLabelText("Daily control tower trust strip");
+    expect(within(trust).getByText("Mode")).toBeInTheDocument();
+    expect(within(trust).getByText("Paper")).toBeInTheDocument();
+    expect(within(trust).getByText("Source")).toBeInTheDocument();
+    expect(within(trust).getByText("Connected")).toBeInTheDocument();
+  });
+
+  it("uses the Workstation breadcrumb as a daily control tower home link", async () => {
+    const user = userEvent.setup();
+    mockWorkstationData({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "portfolio",
+        commandCount: 7
+      },
+      overview,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
+
+    await user.click(screen.getByRole("button", { name: "Workstation" }));
+
+    expect(await screen.findByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument();
+    expect(document.title).toBe("Daily Control Tower - Meridian");
+    expect(within(screen.getByLabelText("Breadcrumb")).queryByText("Portfolio")).not.toBeInTheDocument();
+  });
+
+  it("returns unknown workstation routes to the daily control tower", async () => {
+    const user = userEvent.setup();
+    mockWorkstationData({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "trading",
+        commandCount: 7
+      },
+      overview,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/unknown-route"] });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Workbench route not found");
+    const recoveryLink = screen.getByRole("link", { name: "Open Daily Control Tower" });
+    expect(recoveryLink).toHaveAttribute("href", "/");
+
+    await user.click(recoveryLink);
+
+    expect(await screen.findByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument();
+  });
+
+  it("redirects the legacy overview route to the daily control tower", async () => {
+    mockWorkstationData({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "trading",
+        commandCount: 7
+      },
+      overview,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/overview"] });
+
+    expect(await screen.findByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument();
+    expect(document.title).toBe("Daily Control Tower - Meridian");
   });
 
   it("renders build, environment, data-source, and provider trust in the masthead", () => {

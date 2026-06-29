@@ -746,6 +746,44 @@ function withReportTemplate(template: ReportingTemplateMetadata): AccountingWork
   };
 }
 
+function withDailyReportingWork(): AccountingWorkspaceResponse {
+  return {
+    ...accounting,
+    reporting: {
+      ...accounting.reporting,
+      dailyWork: [
+        {
+          workItemId: "approval-needed:monthly",
+          kind: "approval-needed",
+          title: "Approval needed: Monthly pack",
+          statusLabel: "Pending approval",
+          detail: "Controller approval is required before delivery.",
+          tone: "warning",
+          owner: "controller",
+          dueAtUtc: null,
+          primaryActionLabel: "Review approval",
+          primaryActionHref: "/reporting?approval=monthly",
+          context: ["Monthly pack", "2026-06"]
+        },
+        {
+          workItemId: "delivery-failure:board",
+          kind: "delivery-failure",
+          title: "Delivery failure: Board portal",
+          statusLabel: "Failed",
+          detail: "Secure portal rejected the package.",
+          tone: "danger",
+          owner: "fund-controller",
+          dueAtUtc: "2026-06-30T15:00:00Z",
+          primaryActionLabel: "Review delivery",
+          primaryActionHref: "/reporting?deliveryAttempt=board",
+          evidenceGaps: ["No retained delivery evidence."],
+          context: ["board", "Secure portal"]
+        }
+      ]
+    }
+  };
+}
+
 function withPrivateCapitalReportReview(): AccountingWorkspaceResponse {
   const evidenceCategories = [
     {
@@ -1331,12 +1369,144 @@ describe("ReportingScreen", () => {
     expect(screen.getByLabelText("Route Reporting")).toBeInTheDocument();
   });
 
-  it("renders route-aware loading copy for report packs", () => {
-    renderWithRouter(<ReportingScreen data={null} />, { initialEntries: ["/reporting/report-packs"] });
+  it("renders route-aware loading copy for report builder", () => {
+    renderWithRouter(<ReportingScreen data={null} />, { initialEntries: ["/reporting/report-builder"] });
 
     const loading = screen.getByRole("status", { name: "Loading Reporting" });
     expect(loading).toHaveAttribute("aria-busy", "true");
-    expect(screen.getByLabelText("Route Report packs")).toBeInTheDocument();
+    expect(screen.getByLabelText("Route Report Builder")).toBeInTheDocument();
+  });
+
+  it("lands active Reporting queues on the daily cockpit instead of the generic workbench context", () => {
+    renderWithRouter(<ReportingScreen data={withDailyReportingWork()} />, { initialEntries: ["/reporting"] });
+
+    const cockpit = screen.getByRole("region", { name: "Daily reporting cockpit" });
+    const taskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
+    expect(cockpit).toHaveAttribute("id", "daily-reporting-cockpit");
+    expect(cockpit.compareDocumentPosition(taskModes) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(screen.queryByRole("region", { name: "Reporting workbench context" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Governed export workbench")).not.toBeInTheDocument();
+
+    expect(within(taskModes).getByRole("link", { name: /Open Daily cockpit reporting mode/i })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(within(taskModes).getByRole("link", { name: /Open Report Builder reporting mode/i })).toHaveAttribute(
+      "href",
+      "/reporting/report-builder"
+    );
+    expect(within(taskModes).getByRole("link", { name: /Open Run Status reporting mode/i })).toHaveAttribute(
+      "href",
+      "/reporting/run-status"
+    );
+    expect(within(taskModes).getByRole("link", { name: /Open Delivery Evidence reporting mode/i })).toHaveAttribute(
+      "href",
+      "/reporting/delivery-evidence"
+    );
+    expect(within(taskModes).getAllByText("Recommended").length).toBeGreaterThan(0);
+
+    const decisionQueues = within(cockpit).getByRole("list", { name: "Daily reporting decision queues" });
+    const dailyWork = within(cockpit).getByRole("list", { name: "Daily reporting work" });
+    expect(decisionQueues.compareDocumentPosition(dailyWork) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+
+    const deliveryQueue = within(decisionQueues).getByRole("listitem", {
+      name: /Delivery readiness queue/i
+    });
+    const approvalQueue = within(decisionQueues).getByRole("listitem", {
+      name: /Approval review queue/i
+    });
+    expect(deliveryQueue.compareDocumentPosition(approvalQueue) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(within(deliveryQueue).getAllByText("Delivery review").length).toBeGreaterThan(0);
+    expect(within(deliveryQueue).getByText("1 item(s), 1 gap(s)")).toBeInTheDocument();
+    expect(within(deliveryQueue).getAllByText("Board portal").length).toBeGreaterThan(0);
+    expect(within(deliveryQueue).getAllByText("Review delivery").length).toBeGreaterThan(0);
+    const deliveryQueuePassport = within(deliveryQueue).getByLabelText("Delivery readiness queue Number Passport");
+    expect(within(deliveryQueuePassport).getByRole("heading", { name: "Number Passport" })).toBeInTheDocument();
+    expect(within(deliveryQueuePassport).getByText("Evidence Packet")).toBeInTheDocument();
+    expect(within(deliveryQueuePassport).getByRole("link", { name: "Open evidence packet for Board portal" })).toHaveAttribute("href", "/reporting?deliveryAttempt=board");
+    expect(deliveryQueuePassport).toHaveTextContent("No retained delivery evidence.");
+
+    const delivery = within(dailyWork).getByRole("listitem", {
+      name: /Delivery failure: Delivery failure: Board portal/i
+    });
+    const approval = within(dailyWork).getByRole("listitem", {
+      name: /Approval needed: Approval needed: Monthly pack/i
+    });
+
+    expect(delivery.compareDocumentPosition(approval) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(within(delivery).getByText("Affected output")).toBeInTheDocument();
+    expect(within(delivery).getAllByText("Board portal").length).toBeGreaterThan(0);
+    expect(within(delivery).getByText("Next action")).toBeInTheDocument();
+    expect(within(delivery).getAllByText("Review delivery").length).toBeGreaterThan(0);
+    expect(within(delivery).getByText("Proof")).toBeInTheDocument();
+    const deliveryPassport = within(delivery).getByLabelText("Delivery failure: Board portal Number Passport");
+    expect(within(deliveryPassport).getByText("Evidence Packet")).toBeInTheDocument();
+    expect(within(deliveryPassport).getByRole("link", { name: "Open evidence packet for Board portal" })).toHaveAttribute("href", "/reporting?deliveryAttempt=board");
+    expect(deliveryPassport).toHaveTextContent("No retained delivery evidence.");
+  });
+
+  it("selects focused Reporting task modes from subroutes and preserves legacy hashes", () => {
+    const { unmount } = renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/governance"] });
+
+    const taskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
+    expect(within(taskModes).getByRole("link", { name: /Open Governance reporting mode/i })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(within(taskModes).getByRole("link", { name: /Open Report Builder reporting mode/i })).not.toHaveAttribute(
+      "aria-current"
+    );
+    expect(screen.getByRole("region", { name: "Reporting access audit" })).toHaveAttribute("id", "reporting-governance");
+
+    unmount();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-packs#reporting-governance"] });
+    const legacyTaskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
+    expect(within(legacyTaskModes).getByRole("link", { name: /Open Governance reporting mode/i })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+  });
+
+  it("limits the canonical Run Status route to run-status sections", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/run-status"] });
+
+    const taskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
+    expect(within(taskModes).getByRole("link", { name: /Open Run Status reporting mode/i })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByText("Governed report templates")).toBeInTheDocument();
+    expect(screen.getByText("Report run audit and lineage")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Structured reporting exports" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Exports report runner" })).not.toBeInTheDocument();
+  });
+
+  it("limits the canonical Exports route to export sections", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
+
+    const taskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
+    expect(within(taskModes).getByRole("link", { name: /Open Exports reporting mode/i })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("region", { name: "Exports report runner" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Governed report templates")).not.toBeInTheDocument();
+  });
+
+  it("keeps the legacy report-pack alias broad while selecting Report Builder", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-packs"] });
+
+    const taskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
+    expect(within(taskModes).getByRole("link", { name: /Open Report Builder reporting mode/i })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("region", { name: "Reporting access audit" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
+    expect(screen.getByText("Governed report templates")).toBeInTheDocument();
   });
 
   it("renders private-capital fund event report readiness from the shared workbench projection", () => {
@@ -1407,7 +1577,7 @@ describe("ReportingScreen", () => {
     expect(within(explorer).getByText("Source records")).toBeInTheDocument();
     expect(within(explorer).getByText("Reconciliations")).toBeInTheDocument();
     expect(within(explorer).getByText("Journals")).toBeInTheDocument();
-    expect(within(explorer).getByText("Approvals")).toBeInTheDocument();
+    expect(within(explorer).getAllByText("Approvals").length).toBeGreaterThan(0);
     expect(within(explorer).getByText("Audit links")).toBeInTheDocument();
     expect(within(explorer).getByText("Restatements")).toBeInTheDocument();
     expect(within(explorer).getAllByText("Instrument").length).toBeGreaterThan(0);

@@ -608,6 +608,10 @@ Accounting, Portfolio, Reporting, and Settings/Admin cockpit home decisions bind
 collections through `WorkspaceDecisionQueueControl`, preserving existing page tags while reusing
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
+Reporting shell now opens on compact action chrome (`ReportingCompactActionChrome`) instead of a
+large page-level hero, keeping report-pack, run-status, export, and preset commands beside the
+shared `SummarySnapshotDetailText` while the daily reporting cockpit queue remains the primary
+workbench surface.
 
 ## Diagrams
 

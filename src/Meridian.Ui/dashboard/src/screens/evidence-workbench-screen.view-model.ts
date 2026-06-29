@@ -15,7 +15,7 @@ import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
   type AppShellOperatingScopeState
-} from "@/app-shell.view-model";
+} from "@/lib/app-shell-operating-scope";
 import {
   evidenceWorkbenchPath,
   normalizeLocalWorkstationRoute,

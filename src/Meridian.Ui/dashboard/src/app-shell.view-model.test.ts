@@ -5,11 +5,11 @@ import {
   buildAppShellViewState,
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
-  appendOperatingScopeToRoute,
   normalizeWorkspace,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
+import { appendOperatingScopeToRoute } from "@/lib/app-shell-operating-scope";
 import type { SessionInfo } from "@/types";
 
 const emptyPayload: AppShellWorkspacePayload = {
@@ -37,7 +37,7 @@ const sessionPayload: AppShellWorkspacePayload = {
 
 describe("app shell view model", () => {
   it("uses canonical Strategy helper names for shell continuity internals", () => {
-    const source = readFileSync(resolve(process.cwd(), "src/app-shell.view-model.ts"), "utf8");
+    const source = readFileSync(resolve(process.cwd(), "src/lib/app-shell-workflow-continuity.ts"), "utf8");
 
     expect(source).toContain("buildStrategyContinuityStatus");
     expect(source).toContain("buildOperatorFocusCandidateFromStrategyRun");
@@ -142,6 +142,24 @@ describe("app shell view model", () => {
     expect(state.statusPanel).toMatchObject({
       id: "workstation-shell-status-loading",
       tone: "loading"
+    });
+  });
+
+  it("announces the root route as the Daily Control Tower", () => {
+    const state = buildAppShellViewState({
+      pathname: "/",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.routeFocus).toMatchObject({
+      routeKey: "/",
+      announcement: "Daily Control Tower loaded.",
+      documentTitle: "Daily Control Tower - Meridian",
+      targetElementId: null,
+      fallbackElementId: "workbench-content"
     });
   });
 
@@ -363,7 +381,7 @@ describe("app shell view model", () => {
       ["reconcile", "Reconcile", false, "/accounting/reconciliation?symbol=AAPL"],
       ["investigate", "Investigate", false, "/portfolio?symbol=AAPL"],
       ["approve", "Approve", false, "/accounting/approvals?symbol=AAPL"],
-      ["report", "Report", false, "/reporting/report-packs?symbol=AAPL"]
+      ["report", "Report", false, "/reporting/report-builder?symbol=AAPL"]
     ]);
   });
 
@@ -390,7 +408,7 @@ describe("app shell view model", () => {
       ["trading-cockpit", "/trading?symbol=MSFT"],
       ["portfolio-exposure", "/portfolio?symbol=MSFT"],
       ["reconciliation", "/accounting/reconciliation?symbol=MSFT"],
-      ["report-packs", "/reporting/report-packs?symbol=MSFT"]
+      ["report-packs", "/reporting/report-builder?symbol=MSFT"]
     ]);
 
     const dataState = buildAppShellViewState({
@@ -439,7 +457,7 @@ describe("app shell view model", () => {
       ["trading-cockpit", "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
       ["portfolio-exposure", "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
       ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
-      ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
+      ["report-packs", "/reporting/report-builder?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     ]);
   });
 
@@ -1100,7 +1118,7 @@ describe("app shell view model", () => {
     ])).toEqual([
       ["Brokerage sync failed", "/settings#alpaca-provider-setup", "Settings", "Fix provider setup", "blocked"],
       ["Replay audit", "/trading/readiness", "Trading", "Open readiness", "blocked"],
-      ["Report pack approval waiting", "/reporting/report-packs", "Reporting", "Open report packs", "review"]
+      ["Report pack approval waiting", "/reporting/governance", "Reporting", "Open Governance", "review"]
     ]);
     expect(state.workflowContinuity.operatorFocusCommandItems.map((item) => item.label)).toEqual([
       "Brokerage sync failed",
@@ -1132,7 +1150,7 @@ describe("app shell view model", () => {
       item.route,
       item.tone
     ])).toEqual([
-      ["Report pack approval waiting", "Reporting", "2026-05-14 21:00 UTC", "/reporting/report-packs", "review"],
+      ["Report pack approval waiting", "Reporting", "2026-05-14 21:00 UTC", "/reporting/governance", "review"],
       ["Brokerage sync failed", "Settings", "2026-05-14 20:00 UTC", "/settings#alpaca-provider-setup", "blocked"]
     ]);
     expect(state.workflowContinuity.evidenceTimelineItems[0].ariaLabel)

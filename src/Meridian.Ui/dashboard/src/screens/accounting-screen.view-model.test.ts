@@ -2250,6 +2250,7 @@ describe("accounting-screen view model", () => {
       ariaLabel: "Accounting workflow launch paths"
     });
     expect(state.steps.map((step) => step.href)).toEqual([
+      "/accounting",
       "/accounting/configure",
       "/accounting/journal-entries",
       "/accounting/capital-accounts",
@@ -2258,7 +2259,7 @@ describe("accounting-screen view model", () => {
       "/accounting/exceptions",
       "/accounting/security-master",
       "/accounting/approvals",
-      "/reporting/evidence"
+      "/accounting/evidence"
     ]);
     expect(state.steps.find((step) => step.id === "reconciliation")).toMatchObject({
       metricLabel: "Open breaks",
@@ -2276,7 +2277,7 @@ describe("accounting-screen view model", () => {
       "/accounting/reconciliation",
       "/accounting/journal-entries",
       "/accounting/approvals",
-      "/reporting/evidence"
+      "/accounting/evidence"
     ]);
     expect(state.actionRows.find((action) => action.id === "evidence")).toMatchObject({
       label: "Attach evidence",
@@ -3722,12 +3723,14 @@ describe("accounting-screen view model", () => {
     expect(resolveAccountingWorkstream("/accounting/exceptions")).toBe("exceptions");
     expect(resolveAccountingWorkstream("/accounting/approvals")).toBe("approvals");
     expect(resolveAccountingWorkstream("/accounting/capital-accounts")).toBe("capital-accounts");
-    expect(resolveAccountingWorkstream("/accounting")).toBe("ledger");
+    expect(resolveAccountingWorkstream("/accounting")).toBe("close-cockpit");
+    expect(resolveAccountingWorkstream("/accounting/operations-continuity")).toBe("close-cockpit");
     expect(resolveAccountingWorkstream("/accounting/ledger")).toBe("ledger");
+    expect(resolveAccountingWorkstream("/accounting/evidence")).toBe("evidence");
     expect(resolveAccountingWorkstream("/reporting")).toBe("reporting");
     expect(resolveAccountingWorkstream("/governance/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/governance/reconciliation")).toBe("reconciliation");
-    expect(resolveAccountingWorkstream("/governance")).toBe("ledger");
+    expect(resolveAccountingWorkstream("/governance")).toBe("close-cockpit");
 
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");

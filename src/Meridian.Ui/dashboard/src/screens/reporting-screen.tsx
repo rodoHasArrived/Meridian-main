@@ -9,6 +9,7 @@ import { FinancialRecordExplorerShell } from "@/components/meridian/financial-re
 import { MetricCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
+import { ReportingTaskModeStrip } from "@/components/meridian/reporting-task-mode-strip";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
@@ -32,7 +33,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/reporting-periods";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { buildReportingTaskModes, resolveReportingRouteFocusMode } from "@/lib/reporting-task-modes";
 import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   resolveReportPackProfileKeyCommand,
@@ -43,9 +44,7 @@ import {
   type ReportingScheduleDeliveryPlanRow,
   type ReportingScheduleRow,
   type ReportingTemplateLifecycleActionRow,
-  type ReportingTemplateRow,
-  type ReportingWriterGridRow,
-  type ReportingWriterToken
+  type ReportingTemplateRow
 } from "@/screens/reporting-screen.view-model";
 import { ReportingPrivateCapitalReadinessPanel } from "@/screens/reporting-screen.private-capital-readiness";
 import {
@@ -64,20 +63,21 @@ import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delive
 import {
   ReportWriterDesignerGrid,
   ReportingReportWriterSection,
-  formatReportWriterFilterOperator,
-  isBlankFilterOperator,
-  normalizeReportWriterFilterOperator,
-  normalizeReportWriterGridKind,
-  normalizeReportWriterPreviewDatasetProfile,
-  normalizeReportWriterTopNText,
-  parseReportWriterTopN,
-  useReportingReportWriter,
-  type ReportWriterChartDraft,
-  type ReportWriterDraftSettings,
-  type ReportWriterDropZone,
-  type ReportWriterFormatRuleDraft,
-  type ReportWriterPreviewDatasetProfile
+  useReportingReportWriter
 } from "@/screens/reporting-screen.report-writer";
+import {
+  buildRenderReportTemplateRequest,
+  buildReportTemplateDraftRequest
+} from "@/screens/reporting-screen.report-writer-requests";
+import {
+  ReportingChip,
+  ReportingCutMetric,
+  ReportingHighlight,
+  formatHeatMapWidth,
+  formatReportingDateRange,
+  formatReportingMoney,
+  formatReportingPercent
+} from "@/screens/reporting-screen.presentation";
 import {
   ReportingScheduleManagementPanel,
   reportingScheduleArtifactFormats,
@@ -104,17 +104,7 @@ import type {
   ReportPackDeliveryFailureRequest,
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
-  ReportTemplateDraftRequest,
-  ReportWriterAggregateFunction,
-  ReportWriterChartDefinition,
-  ReportWriterFilterDefinition,
-  ReportWriterFilterOperator,
-  ReportWriterFormatRule,
-  ReportWriterGridDefinition,
-  ReportWriterGridKind,
   ReportingRunRequest,
-  ReportWriterMetricDefinition,
-  RenderReportTemplateRequest,
   ReportingScheduleUpsertRequest,
   ReportingWorkflowEvidenceLink
 } from "@/types";
@@ -132,6 +122,7 @@ const structuredExportDownloadFormats = [
 ] as const;
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const defaultExportsReportRunRequester = "browser-workstation";
+
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "profile",
@@ -176,7 +167,7 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 ];
 
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
-  const { pathname } = useLocation();
+  const { hash, pathname } = useLocation();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
@@ -241,6 +232,41 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const isRefreshingLivePortfolioViews = livePortfolioRefreshStatus?.state === "running";
   const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
+  const reportingTaskModes = buildReportingTaskModes({
+    pathname,
+    hash,
+    hubModel,
+    templateCount: vm.templateRows.length,
+    runCount: vm.runStatusRows.length,
+    writerGridCount: writerGrids.length,
+    deliveryPlanCount: vm.scheduleDeliveryPlanRows.length,
+    structuredExportCount: data?.reporting.structuredExports?.length ?? 0,
+    workflowCount: data?.reporting.workflowRecords?.length ?? 0,
+    accessSummary: vm.accessAudit.postureLabel
+  });
+  const reportingRouteFocusMode = resolveReportingRouteFocusMode({ pathname, hash });
+  const hasDailyReportingQueue = reportingRouteFocusMode === "cockpit" &&
+    (hubModel.decisionQueues.length > 0 || hubModel.dailyWork.length > 0);
+  const showBroadReportingSections = reportingRouteFocusMode === "legacy-broad" ||
+    (reportingRouteFocusMode === "cockpit" && !hasDailyReportingQueue);
+  const showReportBuilderSections = showBroadReportingSections ||
+    reportingRouteFocusMode === "report-builder";
+  const showRunStatusSections = showBroadReportingSections ||
+    reportingRouteFocusMode === "run-status";
+  const showDeliveryEvidenceSections = showBroadReportingSections ||
+    reportingRouteFocusMode === "delivery-evidence";
+  const showExportsSections = showBroadReportingSections ||
+    reportingRouteFocusMode === "exports";
+  const showGovernanceSections = showBroadReportingSections ||
+    reportingRouteFocusMode === "governance";
+  const showSourceReportingSections = showReportBuilderSections;
+  const showBrandingSections = showReportBuilderSections || showGovernanceSections;
+  const showReportLineProvenanceSections = showDeliveryEvidenceSections || showGovernanceSections;
+  const showReportReadinessSections = showDeliveryEvidenceSections || showGovernanceSections;
+  const showReportPackWorkflowSections = showReportBuilderSections ||
+    showDeliveryEvidenceSections ||
+    showGovernanceSections;
+  const showExportProfileSections = showReportBuilderSections;
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const scheduleModel: ReportingScheduleManagementModel = {
     scheduleSummary: vm.scheduleSummary,
@@ -983,45 +1009,52 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
 
   return (
     <div className="space-y-8">
-      <section
-        role="region"
-        aria-label="Reporting workbench context"
-        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
-      >
-        <div className="min-w-0">
-          <div className="eyebrow-label">Reporting lane</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            Governed export workbench
-          </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Report packs, export routes, and review evidence stay in one cockpit so governed output can be
-            checked before it leaves Reporting.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {vm.workbenchActions.map((action) => (
-            <Button key={action.id} asChild variant="outline" size="sm">
-              <Link to={action.href} aria-label={action.ariaLabel}>
-                <Network className="h-4 w-4" aria-hidden="true" />
-                {action.label}
-              </Link>
-            </Button>
-          ))}
-          {vm.workbenchChips.map((chip) => (
-            <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricCard key={metric.id} {...metric} />
-        ))}
-      </section>
-
       <ReportingHub model={hubModel} />
 
-      <section role="region" aria-label="Reporting access audit">
+      <ReportingTaskModeStrip modes={reportingTaskModes} />
+
+      {showBroadReportingSections ? (
+        <section
+          role="region"
+          aria-label="Reporting workbench context"
+          className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+        >
+          <div className="min-w-0">
+            <div className="eyebrow-label">Reporting lane</div>
+            <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+              Governed export workbench
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+              Report packs, export routes, and review evidence stay in one cockpit so governed output can be
+              checked before it leaves Reporting.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {vm.workbenchActions.map((action) => (
+              <Button key={action.id} asChild variant="outline" size="sm">
+                <Link to={action.href} aria-label={action.ariaLabel}>
+                  <Network className="h-4 w-4" aria-hidden="true" />
+                  {action.label}
+                </Link>
+              </Button>
+            ))}
+            {vm.workbenchChips.map((chip) => (
+              <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {showBroadReportingSections ? (
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {data.metrics.map((metric) => (
+            <MetricCard key={metric.id} {...metric} />
+          ))}
+        </section>
+      ) : null}
+
+      {showGovernanceSections ? (
+        <section id="reporting-governance" role="region" aria-label="Reporting access audit" className="scroll-mt-6">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1062,9 +1095,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </CardContent>
         </Card>
-      </section>
+        </section>
+      ) : null}
 
-      {data.reporting.reportLineProvenanceExplorer ? (
+      {showReportLineProvenanceSections && data.reporting.reportLineProvenanceExplorer ? (
         <FinancialRecordExplorerShell
           className="report-line-provenance-explorer"
           explorerLabel="Report-line provenance"
@@ -1081,7 +1115,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </FinancialRecordExplorerShell>
       ) : null}
 
-      {(data.reporting.portfolioCuts ?? []).length > 0 ? (
+      {showSourceReportingSections && (data.reporting.portfolioCuts ?? []).length > 0 ? (
         <section role="region" aria-label="Portfolio reporting cuts">
           <Card className="panel-surface">
             <CardHeader>
@@ -1124,7 +1158,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.livePortfolioViews ?? []).length > 0 ? (
+      {showSourceReportingSections && (data.reporting.livePortfolioViews ?? []).length > 0 ? (
         <section role="region" aria-label="Live portfolio views">
           <Card className="panel-surface">
             <CardHeader>
@@ -1238,7 +1272,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.pnlSlices ?? []).length > 0 ? (
+      {showSourceReportingSections && (data.reporting.pnlSlices ?? []).length > 0 ? (
         <section role="region" aria-label="P&L slicing">
           <Card className="panel-surface">
             <CardHeader>
@@ -1293,7 +1327,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.analyticsRows ?? []).length > 0 ? (
+      {showSourceReportingSections && (data.reporting.analyticsRows ?? []).length > 0 ? (
         <section role="region" aria-label="Top-N and contribution analytics">
           <Card className="panel-surface">
             <CardHeader>
@@ -1365,7 +1399,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.crossFundConsolidations ?? []).length > 0 ? (
+      {showSourceReportingSections && (data.reporting.crossFundConsolidations ?? []).length > 0 ? (
         <section role="region" aria-label="Cross-fund consolidations">
           <Card className="panel-surface">
             <CardHeader>
@@ -1422,8 +1456,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.structuredExports ?? []).length > 0 ? (
-        <section role="region" aria-label="Structured reporting exports">
+      {showExportsSections && (data.reporting.structuredExports ?? []).length > 0 ? (
+        <section id="structured-exports" role="region" aria-label="Structured reporting exports" className="scroll-mt-6">
           <Card className="panel-surface">
             <CardHeader>
               <div className="eyebrow-label">Structured exports</div>
@@ -1567,79 +1601,86 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      <ReportingBrandingAccessPanel
-        themes={data.reporting.brandingThemes ?? []}
-        draft={brandingDraft}
-        status={brandingPackStatus}
-        runningBrandingThemeId={runningBrandingThemeId}
-        reportingFundProfileId={reportingFundProfileId}
-        onDraftChange={updateBrandingDraft}
-        onPreviewTheme={handlePreviewBrandedPack}
-        onGenerateTheme={handleGenerateBrandedPack}
-        onPreviewCustom={handlePreviewCustomBrandedPack}
-        onGenerateCustom={handleGenerateCustomBrandedPack}
-      />
-
-      {writerGrids.length > 0 ? (
-        <ReportingReportWriterSection>
-          {writerGrids.map((grid) => (
-            <ReportWriterDesignerGrid
-              key={grid.id}
-              grid={grid}
-              settings={getWriterDraftSettings(grid)}
-              customFormula={getWriterCustomFormula(grid)}
-              chartDraft={getWriterChartDraft(grid)}
-              formatRules={getWriterFormatRules(grid)}
-              datasetSources={reportWriterDatasetSources}
-              isSaving={savingWriterDraftId === grid.id}
-              isPreviewing={previewingWriterDraftId === grid.id}
-              preview={writerPreviewByGridId[grid.id] ?? null}
-              previousPreview={writerPreviousPreviewByGridId[grid.id] ?? null}
-              getZoneTokens={getWriterZoneTokens}
-              onTokenDragStart={handleWriterTokenDragStart}
-              onZoneDrop={handleWriterZoneDrop}
-              onTokenRemove={removeWriterZoneToken}
-              onTokenMove={moveWriterZoneToken}
-              onReset={resetWriterGrid}
-              onSettingsChange={updateWriterDraftSetting}
-              onCustomFormulaChange={updateWriterCustomFormula}
-              customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
-              onCustomDatasetChange={updateWriterCustomDataset}
-              onChartDraftChange={updateWriterChartDraft}
-              onFormatRuleAdd={addWriterFormatRule}
-              onFormatRuleRemove={removeWriterFormatRule}
-              onFormatRuleChange={updateWriterFormatRule}
-              onPreview={previewWriterGrid}
-              onSave={saveWriterGridDraft}
-            />
-          ))}
-          {writerPreviewStatus ? (
-            <div className="mt-3 xl:col-span-2">
-              <ReportingCommandStatusView status={writerPreviewStatus} />
-            </div>
-          ) : null}
-          {writerDraftStatus ? (
-            <div className="mt-3 xl:col-span-2">
-              <ReportingCommandStatusView status={writerDraftStatus} />
-            </div>
-          ) : null}
-        </ReportingReportWriterSection>
+      {showBrandingSections ? (
+        <ReportingBrandingAccessPanel
+          themes={data.reporting.brandingThemes ?? []}
+          draft={brandingDraft}
+          status={brandingPackStatus}
+          runningBrandingThemeId={runningBrandingThemeId}
+          reportingFundProfileId={reportingFundProfileId}
+          onDraftChange={updateBrandingDraft}
+          onPreviewTheme={handlePreviewBrandedPack}
+          onGenerateTheme={handleGenerateBrandedPack}
+          onPreviewCustom={handlePreviewCustomBrandedPack}
+          onGenerateCustom={handleGenerateCustomBrandedPack}
+        />
       ) : null}
 
-      <ExportsReportRunner
-        draft={exportsRunDraft}
-        templates={vm.templateRows}
-        selectedTemplate={selectedExportsTemplate}
-        datasetSources={reportWriterDatasetSources}
-        recentRuns={exportsRunRows}
-        status={templateRunStatus}
-        runningTemplateRunId={runningTemplateRunId}
-        defaultRequester={defaultExportsReportRunRequester}
-        onDraftChange={updateExportsReportRunDraft}
-        onRun={() => void handleExportsReportRun()}
-      />
+      {showReportBuilderSections && writerGrids.length > 0 ? (
+        <div id="report-builder" className="scroll-mt-6">
+          <ReportingReportWriterSection>
+            {writerGrids.map((grid) => (
+              <ReportWriterDesignerGrid
+                key={grid.id}
+                grid={grid}
+                settings={getWriterDraftSettings(grid)}
+                customFormula={getWriterCustomFormula(grid)}
+                chartDraft={getWriterChartDraft(grid)}
+                formatRules={getWriterFormatRules(grid)}
+                datasetSources={reportWriterDatasetSources}
+                isSaving={savingWriterDraftId === grid.id}
+                isPreviewing={previewingWriterDraftId === grid.id}
+                preview={writerPreviewByGridId[grid.id] ?? null}
+                previousPreview={writerPreviousPreviewByGridId[grid.id] ?? null}
+                getZoneTokens={getWriterZoneTokens}
+                onTokenDragStart={handleWriterTokenDragStart}
+                onZoneDrop={handleWriterZoneDrop}
+                onTokenRemove={removeWriterZoneToken}
+                onTokenMove={moveWriterZoneToken}
+                onReset={resetWriterGrid}
+                onSettingsChange={updateWriterDraftSetting}
+                onCustomFormulaChange={updateWriterCustomFormula}
+                customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
+                onCustomDatasetChange={updateWriterCustomDataset}
+                onChartDraftChange={updateWriterChartDraft}
+                onFormatRuleAdd={addWriterFormatRule}
+                onFormatRuleRemove={removeWriterFormatRule}
+                onFormatRuleChange={updateWriterFormatRule}
+                onPreview={previewWriterGrid}
+                onSave={saveWriterGridDraft}
+              />
+            ))}
+            {writerPreviewStatus ? (
+              <div className="mt-3 xl:col-span-2">
+                <ReportingCommandStatusView status={writerPreviewStatus} />
+              </div>
+            ) : null}
+            {writerDraftStatus ? (
+              <div className="mt-3 xl:col-span-2">
+                <ReportingCommandStatusView status={writerDraftStatus} />
+              </div>
+            ) : null}
+          </ReportingReportWriterSection>
+        </div>
+      ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+      {showExportsSections ? (
+        <ExportsReportRunner
+          draft={exportsRunDraft}
+          templates={vm.templateRows}
+          selectedTemplate={selectedExportsTemplate}
+          datasetSources={reportWriterDatasetSources}
+          recentRuns={exportsRunRows}
+          status={templateRunStatus}
+          runningTemplateRunId={runningTemplateRunId}
+          defaultRequester={defaultExportsReportRunRequester}
+          onDraftChange={updateExportsReportRunDraft}
+          onRun={() => void handleExportsReportRun()}
+        />
+      ) : null}
+
+      {showRunStatusSections ? (
+        <section id="run-status" className="grid scroll-mt-6 gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Template families</div>
@@ -1910,37 +1951,42 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </CardContent>
         </Card>
-      </section>
+        </section>
+      ) : null}
 
-      <ReportingPrivateCapitalReadinessPanel data={data} />
+      {showReportReadinessSections ? (
+        <ReportingPrivateCapitalReadinessPanel data={data} />
+      ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <ReportingScheduleManagementPanel
-          model={scheduleModel}
-          scheduleDraft={scheduleDraft}
-          distributionOptions={scheduleDistributionOptions}
-          datasetSources={reportWriterDatasetSources}
-          status={scheduleActionStatus}
-          runningScheduleActionId={runningScheduleActionId}
-          onDraftChange={updateScheduleDraft}
-          onToggleFormat={toggleScheduleDraftFormat}
-          onStageTarget={stageScheduleDraftDeliveryTarget}
-          onRemoveTarget={removeScheduleDraftDeliveryTarget}
-          onSaveDraft={saveScheduleDraft}
-          onRunDue={handleRunDueSchedules}
-          onScheduleAction={handleScheduleAction}
-          onSchedulePlanRun={handleSchedulePlanRun}
-        />
+      {showDeliveryEvidenceSections ? (
+        <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+          <ReportingScheduleManagementPanel
+            model={scheduleModel}
+            scheduleDraft={scheduleDraft}
+            distributionOptions={scheduleDistributionOptions}
+            datasetSources={reportWriterDatasetSources}
+            status={scheduleActionStatus}
+            runningScheduleActionId={runningScheduleActionId}
+            onDraftChange={updateScheduleDraft}
+            onToggleFormat={toggleScheduleDraftFormat}
+            onStageTarget={stageScheduleDraftDeliveryTarget}
+            onRemoveTarget={removeScheduleDraftDeliveryTarget}
+            onSaveDraft={saveScheduleDraft}
+            onRunDue={handleRunDueSchedules}
+            onScheduleAction={handleScheduleAction}
+            onSchedulePlanRun={handleSchedulePlanRun}
+          />
 
-        <ReportingDeliveryHistoryPanel
-          deliveryAttempts={data.reporting.deliveryAttempts ?? []}
-          deliveryFailureStatus={deliveryFailureStatus}
-          runningDeliveryFailureId={runningDeliveryFailureId}
-          onRecordDeliveryFailure={handleRecordDeliveryFailure}
-        />
-      </section>
+          <ReportingDeliveryHistoryPanel
+            deliveryAttempts={data.reporting.deliveryAttempts ?? []}
+            deliveryFailureStatus={deliveryFailureStatus}
+            runningDeliveryFailureId={runningDeliveryFailureId}
+            onRecordDeliveryFailure={handleRecordDeliveryFailure}
+          />
+        </section>
+      ) : null}
 
-      {vm.workflowTaskPanel ? (
+      {showReportPackWorkflowSections && vm.workflowTaskPanel ? (
         <section
           role="region"
           aria-label={vm.workflowTaskPanel.regionLabel}
@@ -2346,7 +2392,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      {showReportPackWorkflowSections ? (
+        <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Reporting Lane</div>
@@ -2441,9 +2488,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             )}
           </CardContent>
         </Card>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+      {showExportProfileSections ? (
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2636,34 +2685,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </div>
         </aside>
-      </section>
-    </div>
-  );
-}
-
-function ReportingHighlight({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
-      <div className="font-semibold">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
-function ReportingChip({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="toolbar-chip" aria-label={`${label} ${value}`}>
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono text-foreground">{value}</span>
-    </div>
-  );
-}
-
-function ReportingCutMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
-      <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -2922,608 +2945,6 @@ function formatReportPackPreviewDetails(result: Awaited<ReturnType<typeof previe
   ];
 }
 
-function buildReportTemplateDraftRequest(
-  grid: ReportingWriterGridRow,
-  settings: ReportWriterDraftSettings,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
-): ReportTemplateDraftRequest {
-  const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings);
-  return {
-    name: normalizeDraftText(settings.name, `${grid.templateId}-draft`),
-    displayName: normalizeDraftText(settings.displayName, `${grid.title} Draft`),
-    sections: [],
-    parameters: [],
-    family: grid.family || "CustomReport",
-    basedOnVersion: parseReportTemplateVersion(grid.templateVersion),
-    rationale: `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
-    grids: [gridDefinition],
-    accessPolicy: buildReportAccessPolicy(settings)
-  };
-}
-
-function buildRenderReportTemplateRequest(
-  grid: ReportingWriterGridRow,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
-  settings: ReportWriterDraftSettings,
-  customDatasetRows: Record<string, string>[] | null = null,
-  chartDraft?: ReportWriterChartDraft | null,
-  formatRules?: ReportWriterFormatRuleDraft[] | null
-): RenderReportTemplateRequest {
-  const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings, chartDraft, formatRules);
-  return {
-    templateId: {
-      name: grid.templateId,
-      version: parseReportTemplateVersion(grid.templateVersion) ?? 1
-    },
-    parameters: {
-      period: "preview-period",
-      asOfDate: "preview-as-of",
-      preview: "browser-report-writer",
-      previewDataset: settings.previewDataset
-    },
-    datasetRows: customDatasetRows ?? buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
-    grids: [gridDefinition]
-  };
-}
-
-function buildReportWriterGridDefinition(
-  grid: ReportingWriterGridRow,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
-  settings: ReportWriterDraftSettings,
-  chartDraft?: ReportWriterChartDraft | null,
-  formatRules?: ReportWriterFormatRuleDraft[] | null
-): ReportWriterGridDefinition {
-  const kind = normalizeReportWriterGridKind(settings.gridKind);
-  const metrics = normalizeWriterMetrics(zones.metrics, kind);
-  return {
-    gridId: grid.gridId,
-    title: grid.title,
-    kind,
-    rowFields: normalizeStringList(zones.rowFields.map(resolveWriterFieldName)),
-    columnFields: normalizeStringList(zones.columnFields.map(resolveWriterFieldName)),
-    metrics,
-    formulas: normalizeWriterFormulas(zones.formulas),
-    topN: kind === "TopN" ? parseReportWriterTopN(settings.topN) : null,
-    sortBy: kind === "Contribution" ? "contributionAbsPercent" : grid.sortBy,
-    sortDescending: grid.sortDescending,
-    filters: buildWriterFilters(settings),
-    formatRules: buildWriterFormatRules(formatRules),
-    chart: buildWriterChartDefinition(chartDraft)
-  };
-}
-
-function buildWriterFormatRules(drafts: ReportWriterFormatRuleDraft[] | null | undefined): ReportWriterFormatRule[] | null {
-  if (!drafts || drafts.length === 0) return null;
-  const valid = drafts.filter((d) => d.column.trim().length > 0);
-  if (valid.length === 0) return null;
-  return valid.map((d) => ({
-    column: d.column.trim(),
-    operator: d.operator,
-    value: d.value || null,
-    style: d.style
-  }));
-}
-
-function buildWriterChartDefinition(draft: ReportWriterChartDraft | null | undefined): ReportWriterChartDefinition | null {
-  if (!draft?.enabled || !draft.categoryField.trim()) return null;
-  const valueColumns = draft.valueColumns
-    .split(",")
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0);
-  if (valueColumns.length === 0) return null;
-  return { type: draft.type, categoryField: draft.categoryField.trim(), valueColumns };
-}
-
-function buildReportWriterPreviewRows(
-  grid: ReportWriterGridDefinition,
-  profile: ReportWriterPreviewDatasetProfile
-): Record<string, string>[] {
-  const dimensionFields = normalizeStringList([
-    ...(grid.rowFields ?? []),
-    ...(grid.columnFields ?? [])
-  ]);
-  const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
-  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)))
-    .filter((field) => grid.kind !== "Contribution" || !isGeneratedContributionField(field));
-  const numericFields = normalizeStringList([
-    ...metricSourceFields,
-    ...formulaFields,
-    ...(grid.sortBy ? [grid.sortBy] : [])
-  ]).filter((field) =>
-    !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase())
-    && (grid.kind !== "Contribution" || !isGeneratedContributionField(field)));
-  const fields = normalizeStringList([...dimensionFields, ...numericFields]);
-  const filters = grid.filters ?? [];
-  const filterFields = normalizeStringList(filters.map((filter) => filter.field));
-
-  if (fields.length === 0 && filterFields.length === 0) {
-    return [{ previewDataset: profile, previewRow: "1" }, { previewDataset: profile, previewRow: "2" }];
-  }
-
-  return Array.from({ length: 4 }, (_, index) => {
-    const row: Record<string, string> = { previewDataset: profile };
-    for (const field of dimensionFields) {
-      row[field] = previewDimensionValue(field, index, profile);
-    }
-
-    for (const field of numericFields) {
-      row[field] = grid.kind === "Contribution" && isPnlLikeField(field)
-        ? previewContributionPnlValue(index, profile)
-        : previewNumericValue(field, index, profile);
-    }
-
-    for (const filter of filters) {
-      if (!filter.field) {
-        continue;
-      }
-
-      row[filter.field] = previewFilterValue(filter, index, profile);
-    }
-
-    return row;
-  });
-}
-
-function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTemplateDraftRequest["accessPolicy"] {
-  if (settings.accessMode === "CompanyWide") {
-    return {
-      mode: "CompanyWide",
-      allowOwnerAccess: true
-    };
-  }
-
-  const principalId = normalizeDraftText(settings.principalId, "browser-workstation");
-  const principalKind = settings.accessMode === "Private" ? "User" : settings.principalKind;
-  return {
-    mode: settings.accessMode,
-    ownerPrincipalId: settings.accessMode === "Private" ? principalId : null,
-    principals: [
-      {
-        kind: principalKind,
-        principalId,
-        displayName: principalId
-      }
-    ],
-    allowOwnerAccess: true
-  };
-}
-
-function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
-  const field = normalizeDraftText(settings.filterField, "");
-  if (!field) {
-    return null;
-  }
-
-  const operator = normalizeReportWriterFilterOperator(settings.filterOperator);
-  const value = isBlankFilterOperator(operator)
-    ? null
-    : normalizeDraftText(settings.filterValue, "");
-  if (!isBlankFilterOperator(operator) && !value) {
-    return null;
-  }
-
-  return [
-    {
-      field,
-      operator,
-      value,
-      label: isBlankFilterOperator(operator)
-        ? `${field} ${formatReportWriterFilterOperator(operator)}`
-        : `${field} ${formatReportWriterFilterOperator(operator)} ${value}`
-    }
-  ];
-}
-
-function normalizeWriterMetrics(
-  tokens: ReportingWriterToken[],
-  gridKind: ReportWriterGridKind | null = null
-): ReportWriterMetricDefinition[] {
-  const metrics = tokens
-    .map(tokenToMetricDefinition)
-    .filter((metric): metric is ReportWriterMetricDefinition => Boolean(metric));
-  const deduped = dedupeBy(metrics, (metric) => metric.name.toLowerCase());
-  return gridKind === "Contribution" ? preferContributionMetric(deduped) : deduped;
-}
-
-function tokenToMetricDefinition(token: ReportingWriterToken): ReportWriterMetricDefinition | null {
-  if (token.kind === "formula") {
-    return null;
-  }
-
-  const sourceField = normalizeDraftText(token.sourceField ?? token.fieldName ?? token.label, "");
-  if (!sourceField) {
-    return null;
-  }
-
-  const name = normalizeIdentifierToken(token.name ?? sourceField, sourceField);
-  return {
-    name,
-    sourceField,
-    function: normalizeAggregateFunction(token.function),
-    label: token.kind === "metric" ? token.label : sourceField
-  };
-}
-
-function preferContributionMetric(metrics: ReportWriterMetricDefinition[]): ReportWriterMetricDefinition[] {
-  const contributionIndex = metrics.findIndex((metric) =>
-    isPnlLikeField(metric.name)
-    || isPnlLikeField(metric.sourceField)
-    || isPnlLikeField(metric.label));
-  if (contributionIndex <= 0) {
-    return metrics;
-  }
-
-  const next = [...metrics];
-  const [contributionMetric] = next.splice(contributionIndex, 1);
-  next.unshift(contributionMetric);
-  return next;
-}
-
-function normalizeWriterFormulas(tokens: ReportingWriterToken[]) {
-  const formulas = tokens
-    .map(tokenToFormulaDefinition)
-    .filter((formula): formula is NonNullable<ReturnType<typeof tokenToFormulaDefinition>> => Boolean(formula));
-  return dedupeBy(formulas, (formula) => formula.name.toLowerCase());
-}
-
-function tokenToFormulaDefinition(token: ReportingWriterToken) {
-  if (token.kind === "metric") {
-    const metricName = normalizeIdentifierToken(token.name ?? token.label, "");
-    return metricName
-      ? {
-          name: `${metricName}Formula`,
-          expression: `{${metricName}}`,
-          label: `${token.label} formula`
-        }
-      : null;
-  }
-
-  if (token.kind === "field") {
-    const field = normalizeDraftText(token.fieldName ?? token.sourceField ?? token.label, "");
-    return field
-      ? {
-          name: normalizeIdentifierToken(field, "fieldFormula"),
-          expression: `{${field}}`,
-          label: field
-        }
-      : null;
-  }
-
-  const name = normalizeIdentifierToken(token.name ?? token.label, "");
-  const expression = normalizeDraftText(token.expression ?? token.detail, "");
-  return name && expression
-    ? {
-        name,
-        expression,
-        label: token.label
-      }
-    : null;
-}
-
-function resolveWriterFieldName(token: ReportingWriterToken): string {
-  return normalizeDraftText(token.fieldName ?? token.sourceField ?? token.name ?? token.label, "");
-}
-
-function extractReportWriterFormulaFields(expression: string | null | undefined): string[] {
-  if (!expression) {
-    return [];
-  }
-
-  const fields: string[] = [];
-  let position = 0;
-  while (position < expression.length) {
-    const current = expression[position];
-    if (isReportWriterIdentifierStart(current)) {
-      const identifierStart = position;
-      const identifier = readReportWriterIdentifier(expression, position);
-      position += identifier.length;
-      const nextToken = skipReportWriterWhitespace(expression, position);
-      if (identifier.toLowerCase() === "total" && expression[nextToken] === "(") {
-        const totalArgument = readReportWriterFunctionFieldArgument(expression, nextToken + 1);
-        if (totalArgument) {
-          fields.push(totalArgument.field);
-          position = totalArgument.nextPosition;
-          continue;
-        }
-      }
-
-      if (isReportWriterFormulaFunction(identifier) && expression[nextToken] === "(") {
-        position = nextToken + 1;
-        continue;
-      }
-
-      fields.push(identifier);
-      position = identifierStart + Math.max(identifier.length, 1);
-      continue;
-    }
-
-    if (current !== "{") {
-      position += 1;
-      continue;
-    }
-
-    const end = expression.indexOf("}", position + 1);
-    if (end < 0) {
-      break;
-    }
-
-    const field = expression.slice(position + 1, end).trim();
-    if (field) {
-      fields.push(field);
-    }
-
-    position = end + 1;
-  }
-
-  return normalizeStringList(fields);
-}
-
-function readReportWriterFunctionFieldArgument(
-  expression: string,
-  argumentStart: number
-): { field: string; nextPosition: number } | null {
-  const start = skipReportWriterWhitespace(expression, argumentStart);
-  if (start >= expression.length) {
-    return null;
-  }
-
-  if (expression[start] === "{") {
-    const closeBrace = expression.indexOf("}", start + 1);
-    if (closeBrace < 0) {
-      return null;
-    }
-
-    const closeParen = skipReportWriterWhitespace(expression, closeBrace + 1);
-    if (expression[closeParen] !== ")") {
-      return null;
-    }
-
-    const field = expression.slice(start + 1, closeBrace).trim();
-    return field ? { field, nextPosition: closeParen + 1 } : null;
-  }
-
-  const close = expression.indexOf(")", start);
-  if (close < 0) {
-    return null;
-  }
-
-  const field = expression.slice(start, close).trim();
-  return field ? { field, nextPosition: close + 1 } : null;
-}
-
-function readReportWriterIdentifier(expression: string, start: number): string {
-  let position = start;
-  while (position < expression.length && isReportWriterIdentifierPart(expression[position])) {
-    position += 1;
-  }
-
-  return expression.slice(start, position);
-}
-
-function skipReportWriterWhitespace(expression: string, position: number): number {
-  while (position < expression.length && /\s/.test(expression[position])) {
-    position += 1;
-  }
-
-  return position;
-}
-
-function isReportWriterIdentifierStart(value: string | undefined): boolean {
-  return Boolean(value && /[A-Za-z_]/.test(value));
-}
-
-function isReportWriterIdentifierPart(value: string | undefined): boolean {
-  return Boolean(value && /[A-Za-z0-9_.-]/.test(value));
-}
-
-function isReportWriterFormulaFunction(identifier: string): boolean {
-  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round"].includes(identifier.toLowerCase());
-}
-
-function isGeneratedContributionField(field: string | null | undefined): boolean {
-  const normalized = normalizeIdentifierToken(field ?? "", "").toLowerCase();
-  return normalized === "contributionpercent" || normalized === "contributionabspercent";
-}
-
-function isPnlLikeField(field: string | null | undefined): boolean {
-  const normalized = (field ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
-  return normalized.includes("pnl") || normalized.includes("profitloss");
-}
-
-function previewDimensionValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("sector")) {
-      return ["Operating expense", "Capital activity", "Financing", "Revenue"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["Close accrual", "Investor activity", "Cash financing", "Management fee"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Beta", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["GL-6000", "GL-3100", "GL-2100", "GL-4100"][index] ?? "Ledger line";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("sector")) {
-      return ["Cash", "Settlement", "Financing", "Reserve"][index] ?? "Cash";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["T+0 liquidity", "T+1 settlement", "Credit facility", "Operating reserve"][index] ?? "Cash ladder";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Alpha", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["USD sweep", "Broker receivable", "Credit draw", "Reserve cash"][index] ?? "Cash bucket";
-    }
-  }
-
-  if (normalized.includes("sector")) {
-    return ["Technology", "Technology", "Rates", "Credit"][index] ?? "Other";
-  }
-
-  if (normalized.includes("strategy")) {
-    return ["Core", "Growth", "Rates", "Credit"][index] ?? "Core";
-  }
-
-  if (normalized.includes("fund")) {
-    return ["Fund A", "Fund A", "Fund B", "Fund B"][index] ?? "Fund A";
-  }
-
-  if (normalized.includes("region")) {
-    return ["North America", "Europe", "Asia Pacific", "North America"][index] ?? "North America";
-  }
-
-  if (normalized.includes("security") || normalized.includes("asset")) {
-    return ["ABC Corp", "XYZ Fund", "UST 10Y", "Cash USD"][index] ?? "Position";
-  }
-
-  return `${formatPreviewFieldLabel(field)} ${(index % 2) + 1}`;
-}
-
-function previewNumericValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["25", "-7", "4", "12"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["350", "150", "500", "225"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["250", "125", "80", "60"][index] ?? "0";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["1", "0", "-1", "0"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["1250", "900", "650", "300"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["1200", "875", "600", "275"][index] ?? "0";
-    }
-  }
-
-  if (normalized.includes("pnl") || normalized.includes("p&l")) {
-    return ["10", "5", "-2", "4"][index] ?? "0";
-  }
-
-  if (normalized.includes("cash") || normalized.includes("liquidity")) {
-    return ["1000", "750", "400", "250"][index] ?? "0";
-  }
-
-  if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-    return ["100", "50", "75", "25"][index] ?? "0";
-  }
-
-  if (normalized.includes("percent") || normalized.includes("pct")) {
-    return ["12.5", "8.25", "-3.5", "6"][index] ?? "0";
-  }
-
-  return String((index + 1) * 10);
-}
-
-function previewContributionPnlValue(index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  if (profile === "ledgerFacts") {
-    return ["150", "-50", "0", "25"][index] ?? "0";
-  }
-
-  if (profile === "cashLadder") {
-    return ["12", "-4", "0", "2"][index] ?? "0";
-  }
-
-  return ["150", "-50", "0", "25"][index] ?? "0";
-}
-
-function previewFilterValue(
-  filter: ReportWriterFilterDefinition,
-  index: number,
-  profile: ReportWriterPreviewDatasetProfile
-): string {
-  const operator = normalizeReportWriterFilterOperator(filter.operator);
-  const value = filter.value ?? "";
-  if (operator === "IsBlank") {
-    return index === 0 ? "" : previewDimensionValue(filter.field, index, profile);
-  }
-
-  if (operator === "IsNotBlank") {
-    return index === 0 ? previewDimensionValue(filter.field, index, profile) : "";
-  }
-
-  if (["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(operator)) {
-    const numeric = Number.parseFloat(value);
-    if (Number.isFinite(numeric)) {
-      return index < 2 ? String(numeric + 10 + index) : String(numeric - 10 - index);
-    }
-  }
-
-  if (operator === "Contains") {
-    return index < 2 ? `Preview ${value} ${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "StartsWith") {
-    return index < 2 ? `${value}${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "EndsWith") {
-    return index < 2 ? `Preview ${index + 1}${value}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "NotEquals") {
-    return index < 2 ? `${value}-alternate-${index + 1}` : value;
-  }
-
-  return index < 2 ? value : previewDimensionValue(filter.field, index, profile);
-}
-
-function formatPreviewFieldLabel(field: string): string {
-  const spaced = field
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .trim();
-  if (!spaced) {
-    return "Value";
-  }
-
-  return spaced.replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function normalizeAggregateFunction(value: ReportWriterAggregateFunction | string | null | undefined): ReportWriterAggregateFunction {
-  switch ((value ?? "").toString().toLowerCase()) {
-    case "count":
-      return "Count";
-    case "average":
-      return "Average";
-    case "min":
-      return "Min";
-    case "max":
-      return "Max";
-    default:
-      return "Sum";
-  }
-}
-
-function normalizeStringList(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
-}
-
 function normalizeDraftText(value: string | null | undefined, fallback: string): string {
   const normalized = value?.trim();
   return normalized || fallback;
@@ -3534,54 +2955,6 @@ function normalizeIdentifierToken(value: string | null | undefined, fallback: st
     .replace(/[^A-Za-z0-9_.-]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return normalized || fallback;
-}
-
-function parseReportTemplateVersion(version: string): number | null {
-  const first = version.split(".", 1)[0];
-  const parsed = Number.parseInt(first, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
-  const seen = new Set<string>();
-  const output: T[] = [];
-  for (const item of items) {
-    const key = keySelector(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      output.push(item);
-    }
-  }
-
-  return output;
-}
-
-function formatReportingMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
-    }).format(value);
-  } catch {
-    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-  }
-}
-
-function formatReportingDateRange(startDate: string, endDate: string): string {
-  return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
-}
-
-function formatReportingPercent(value: number): string {
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
-}
-
-function formatHeatMapWidth(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) {
-    return "2%";
-  }
-
-  return `${Math.min(100, Math.max(2, value))}%`;
 }
 
 function resolveReportingFundProfileId(reporting: AccountingWorkspaceResponse["reporting"] | null): string | null {

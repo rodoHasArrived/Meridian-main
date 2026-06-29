@@ -71,6 +71,8 @@ import {
   WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath
 } from "@/lib/workspace";
+import type { AccountingLoadingViewState } from "@/lib/accounting-loading-view-state";
+import type { AccountingWorkstream } from "@/lib/accounting-task-modes";
 import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
 import { formatBytes, formatCount, formatCurrency, formatCurrencyWithCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
@@ -231,9 +233,24 @@ export type {
   CalibrationSummaryViewModel,
   CalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
+export type {
+  AccountingLoadingActionViewModel,
+  AccountingLoadingStatusItemViewModel,
+  AccountingLoadingViewState
+} from "@/lib/accounting-loading-view-state";
+export {
+  buildAccountingLoadingViewState,
+  buildGovernanceLoadingViewState
+} from "@/lib/accounting-loading-view-state";
+export type {
+  AccountingWorkstream,
+  GovernanceWorkstream
+} from "@/lib/accounting-task-modes";
+export {
+  resolveAccountingWorkstream,
+  resolveGovernanceWorkstream
+} from "@/lib/accounting-task-modes";
 
-export type AccountingWorkstream = "ledger" | "configure" | "journal-entries" | "capital-accounts" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
-export type GovernanceWorkstream = AccountingWorkstream;
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
@@ -2158,37 +2175,6 @@ export interface AccountingCashFlowViewState {
   statusAnnouncement: string;
 }
 
-export interface AccountingLoadingViewState {
-  role: "status";
-  ariaBusy: true;
-  ariaLive: "polite";
-  titleId: string;
-  detailId: string;
-  eyebrow: string;
-  title: string;
-  detail: string;
-  routeLabel: string;
-  workstreamLabel: string;
-  statusItemsLabel: string;
-  statusItems: AccountingLoadingStatusItemViewModel[];
-  actionsLabel: string;
-  actions: AccountingLoadingActionViewModel[];
-}
-
-export interface AccountingLoadingStatusItemViewModel {
-  id: string;
-  label: string;
-  detail: string;
-}
-
-export interface AccountingLoadingActionViewModel {
-  id: string;
-  label: string;
-  detail: string;
-  href: string;
-  ariaLabel: string;
-}
-
 export interface ReportingProfileBadgeViewModel {
   label: string;
   tone: "primary" | "success" | "warning" | "muted";
@@ -3114,125 +3100,6 @@ export function useGovernanceCashFlowViewModel(
   workstream: AccountingWorkstream
 ) {
   return useAccountingCashFlowViewModel(cashFlow, pathname, workstream);
-}
-
-export function buildAccountingLoadingViewState(pathname: string): AccountingLoadingViewState {
-  const workspaceLabel = pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting) ? "Reporting" : "Accounting";
-  const slug = workspaceLabel.toLowerCase();
-  const workstream = workspaceLabel === "Accounting" ? resolveAccountingWorkstream(pathname) : "reporting";
-  const workstreamLabel = workstream === "security-master"
-    ? "Security Master"
-    : workstream.charAt(0).toUpperCase() + workstream.slice(1).replace("-", " ");
-  const accountingStatusItems: AccountingLoadingStatusItemViewModel[] = [
-    {
-      id: "ledger-reconciliation",
-      label: "Ledger and reconciliation",
-      detail: "Loading close metrics, reconciliation runs, open breaks, cash-flow evidence, and trial-balance rows."
-    },
-    {
-      id: "approvals-exceptions",
-      label: "Approvals and exceptions",
-      detail: "Preparing dedicated approval and exception workstreams from close-control data."
-    },
-    {
-      id: "security-reporting",
-      label: "Security and reporting evidence",
-      detail: "Loading Security Master coverage, report profiles, external GL evidence, and retained report-pack context."
-    }
-  ];
-  const reportingStatusItems: AccountingLoadingStatusItemViewModel[] = [
-    {
-      id: "report-packs",
-      label: "Report packs",
-      detail: "Loading governed report-pack runs, retained manifests, and evidence-bundle readiness."
-    },
-    {
-      id: "approvals",
-      label: "Approval context",
-      detail: "Preparing accounting approval and exception handoffs for report evidence review."
-    },
-    {
-      id: "exports",
-      label: "Export setup",
-      detail: "Loading profile, recipient, dictionary, and loader-script state."
-    }
-  ];
-  const accountingActions: AccountingLoadingActionViewModel[] = [
-    {
-      id: "continuity",
-      label: "Open continuity",
-      detail: "Review close workflow gates while workspace data finishes loading.",
-      href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
-      ariaLabel: "Open Accounting operations continuity while Accounting loads"
-    },
-    {
-      id: "entity-setup",
-      label: "Entity setup",
-      detail: "Configure fund structure, account context, and setup evidence.",
-      href: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
-      ariaLabel: "Open Accounting entity setup while Accounting loads"
-    },
-    {
-      id: "provider-posture",
-      label: "Provider posture",
-      detail: "Check source and provider diagnostics before relying on fresh close data.",
-      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
-      ariaLabel: "Open Data provider posture while Accounting loads"
-    },
-    {
-      id: "report-evidence",
-      label: "Report evidence",
-      detail: "Open retained report-pack evidence for close and audit review.",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-      ariaLabel: "Open Reporting evidence while Accounting loads"
-    }
-  ];
-  const reportingActions: AccountingLoadingActionViewModel[] = [
-    {
-      id: "report-evidence",
-      label: "Report evidence",
-      detail: "Open retained report-pack evidence and manifests.",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-      ariaLabel: "Open Reporting evidence while Reporting loads"
-    },
-    {
-      id: "approvals",
-      label: "Accounting approvals",
-      detail: "Review close approvals linked to reporting release.",
-      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
-      ariaLabel: "Open Accounting approvals while Reporting loads"
-    },
-    {
-      id: "exceptions",
-      label: "Exceptions",
-      detail: "Review exception evidence that may block report release.",
-      href: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
-      ariaLabel: "Open Accounting exceptions while Reporting loads"
-    }
-  ];
-
-  return {
-    role: "status",
-    ariaBusy: true,
-    ariaLive: "polite",
-    titleId: `${slug}-workspace-loading-title`,
-    detailId: `${slug}-workspace-loading-detail`,
-    eyebrow: `${workspaceLabel} workspace data`,
-    title: `Loading ${workspaceLabel}`,
-    detail: workspaceLabel === "Reporting"
-      ? "Waiting for report-pack, governed export, and approval summaries from workspace data."
-      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from workspace data.",
-    routeLabel: pathname,
-    workstreamLabel,
-    statusItemsLabel: `${workspaceLabel} workspace data loading`,
-    statusItems: workspaceLabel === "Reporting" ? reportingStatusItems : accountingStatusItems,
-    actionsLabel: `${workspaceLabel} actions available while loading`,
-    actions: workspaceLabel === "Reporting" ? reportingActions : accountingActions
-  };
-}
-
-export function buildGovernanceLoadingViewState(pathname: string): AccountingLoadingViewState {
-  return buildAccountingLoadingViewState(pathname);
 }
 
 export function useAccountingReportingViewModel(
@@ -11814,46 +11681,6 @@ export function useReconciliationResolveDialogViewModel(
   };
 }
 
-export function resolveAccountingWorkstream(pathname: string): AccountingWorkstream {
-  if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting)) {
-    return "reporting";
-  }
-
-  if (pathname.includes("/configure")) {
-    return "configure";
-  }
-
-  if (pathname.includes("/journal-entries")) {
-    return "journal-entries";
-  }
-
-  if (pathname.includes("/capital-accounts")) {
-    return "capital-accounts";
-  }
-
-  if (pathname.includes("/reconciliation")) {
-    return "reconciliation";
-  }
-
-  if (pathname.includes("/exceptions")) {
-    return "exceptions";
-  }
-
-  if (pathname.includes("/security-master")) {
-    return "security-master";
-  }
-
-  if (pathname.includes("/approvals")) {
-    return "approvals";
-  }
-
-  return "ledger";
-}
-
-export function resolveGovernanceWorkstream(pathname: string): AccountingWorkstream {
-  return resolveAccountingWorkstream(pathname);
-}
-
 export function resolveSelectedReconciliation(
   queue: AccountingWorkspaceResponse["reconciliationQueue"],
   selectedRunId: string | null
@@ -13110,6 +12937,17 @@ export function buildAccountingWorkflowLaunchViewState({
   const workflowStatusLabel = closeCommandCenter?.statusLabel ?? (openBreakCount > 0 ? "Review" : "Ready");
   const steps: AccountingWorkflowStepViewModel[] = [
     buildAccountingWorkflowStep({
+      id: "close-cockpit",
+      label: "Close cockpit",
+      caption: "Blocked close work, owner, output, next action, and proof.",
+      href: WORKSTATION_ROUTE_CATALOG.accounting,
+      metricLabel: "Close",
+      metricValue: closeCommandCenter?.statusLabel ?? "Loading",
+      statusLabel: workflowStatusLabel,
+      tone: workflowStatusTone,
+      workstream
+    }),
+    buildAccountingWorkflowStep({
       id: "configure",
       label: "Set up books",
       caption: "Books, chart, templates, and posting controls.",
@@ -13200,10 +13038,10 @@ export function buildAccountingWorkflowLaunchViewState({
       workstream
     }),
     buildAccountingWorkflowStep({
-      id: "reporting",
+      id: "evidence",
       label: "Package evidence",
       caption: "Report packs, retained manifests, exports, and audit output.",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      href: WORKSTATION_ROUTE_CATALOG.accountingEvidence,
       metricLabel: reportPackMetric?.label ?? "Profiles",
       metricValue: reportPackMetric?.value ?? String(data.reporting.profileCount),
       statusLabel: reportPackMetric?.tone === "success" ? "Ready" : "Evidence review",
@@ -13240,7 +13078,7 @@ export function buildAccountingWorkflowLaunchViewState({
       id: "evidence",
       label: sourceGapCount > 0 ? "Attach evidence" : "Open evidence",
       detail: sourceGapCount > 0 ? `${formatCount(sourceGapCount, "source gap")} are visible in close readiness.` : "Inspect retained accounting-record evidence and report manifests.",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      href: WORKSTATION_ROUTE_CATALOG.accountingEvidence,
       ariaLabel: "Open retained accounting record evidence",
       tone: sourceGapCount > 0 ? "warning" : reportPackMetric?.tone ?? "default"
     }
@@ -13297,6 +13135,10 @@ function buildAccountingWorkflowStep({
 }
 
 function accountingWorkflowStepLabel(workstream: AccountingWorkstream): string {
+  if (workstream === "close-cockpit") {
+    return "Close cockpit";
+  }
+
   if (workstream === "journal-entries") {
     return "Journal entries";
   }
@@ -13307,6 +13149,10 @@ function accountingWorkflowStepLabel(workstream: AccountingWorkstream): string {
 
   if (workstream === "security-master") {
     return "Security Master";
+  }
+
+  if (workstream === "evidence") {
+    return "Evidence";
   }
 
   return workstream.charAt(0).toUpperCase() + workstream.slice(1).replace("-", " ");
@@ -16759,6 +16605,10 @@ function trialBalanceBasisTone(basis: AccountingBasisKind): AccountingTrialBalan
 }
 
 function cashFlowContextLabel(workstream: AccountingWorkstream): string {
+  if (workstream === "close-cockpit") {
+    return "Close cockpit context";
+  }
+
   if (workstream === "reporting") {
     return "Reporting packet context";
   }
@@ -16777,6 +16627,10 @@ function cashFlowContextLabel(workstream: AccountingWorkstream): string {
 
   if (workstream === "approvals") {
     return "Approval context";
+  }
+
+  if (workstream === "evidence") {
+    return "Evidence context";
   }
 
   return "Ledger context";

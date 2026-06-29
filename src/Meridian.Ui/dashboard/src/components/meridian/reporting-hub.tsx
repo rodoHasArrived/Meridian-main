@@ -1,7 +1,8 @@
-import { AlertTriangle, ArrowUpRight, FileText } from "lucide-react";
+import { ArrowUpRight, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReportingDailyCockpit } from "@/components/meridian/reporting-daily-cockpit";
 import { cn } from "@/lib/utils";
 import type { ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
 
@@ -26,7 +27,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
   }
 
   return (
-    <section role="region" aria-label="Daily reporting cockpit" className={className}>
+    <section id="daily-reporting-cockpit" role="region" aria-label="Daily reporting cockpit" className={className}>
       <Card className="panel-surface">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -38,7 +39,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant={model.dailyWork.length > 0 ? "warning" : "success"}>{model.dailyWorkSummaryLabel}</Badge>
+              <Badge variant={model.decisionQueues.length > 0 ? "warning" : "success"}>{model.decisionQueueSummaryLabel}</Badge>
               {model.cards.length > 0 ? (
                 <Badge variant={model.attentionCount > 0 ? "warning" : "success"}>{model.summaryLabel}</Badge>
               ) : null}
@@ -46,68 +47,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
-          {model.dailyWork.length > 0 ? (
-            <ul className="grid gap-3 lg:grid-cols-2" aria-label="Daily reporting work">
-              {model.dailyWork.map((item) => (
-                <li
-                  key={item.workItemId}
-                  aria-label={item.ariaLabel}
-                  className="flex min-h-40 flex-col gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        <AlertTriangle className={cn("h-3.5 w-3.5", toneClasses[item.tone])} aria-hidden="true" />
-                        {item.kindLabel}
-                      </div>
-                      <div className="mt-1 break-words text-sm font-semibold text-foreground">{item.title}</div>
-                    </div>
-                    <Badge variant={item.badgeVariant}>{item.statusLabel}</Badge>
-                  </div>
-                  <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.dueLabel ? <Badge variant="outline">{item.dueLabel}</Badge> : null}
-                    <Badge variant="outline">{item.owner}</Badge>
-                    {item.context.slice(0, 3).map((context) => (
-                      <Badge key={context} variant="outline">{context}</Badge>
-                    ))}
-                  </div>
-                  {item.evidenceGaps.length > 0 ? (
-                    <ul className="grid gap-1 text-xs leading-5 text-warning" aria-label={`${item.title} evidence gaps`}>
-                      {item.evidenceGaps.slice(0, 2).map((gap) => (
-                        <li key={gap}>{gap}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  <div className="mt-auto flex flex-wrap gap-2 pt-1">
-                    {item.primaryActionHref ? (
-                      <Button asChild variant="outline" size="sm">
-                        <a href={item.primaryActionHref} aria-label={`${item.primaryActionLabel}: ${item.title}`}>
-                          <FileText className="h-4 w-4" aria-hidden="true" />
-                          {item.primaryActionLabel}
-                          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                        </a>
-                      </Button>
-                    ) : (
-                      <Badge variant="outline">{item.primaryActionLabel}</Badge>
-                    )}
-                    {item.secondaryActionHref && item.secondaryActionLabel ? (
-                      <Button asChild variant="ghost" size="sm">
-                        <a href={item.secondaryActionHref} aria-label={`${item.secondaryActionLabel}: ${item.title}`}>
-                          {item.secondaryActionLabel}
-                          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                        </a>
-                      </Button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm text-muted-foreground">
-              No due packages, approvals, delivery failures, restatements, or evidence gaps are queued.
-            </div>
-          )}
+          <ReportingDailyCockpit model={model} />
 
           {model.cards.length > 0 ? (
             <div className="space-y-3">
