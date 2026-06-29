@@ -1347,6 +1347,24 @@ public sealed class ReportPackWorkflowService
             .Take(Math.Clamp(limit, 1, 200))
             .ToArray();
 
+    /// <summary>
+    /// Every retained report-pack record scoped to a fund profile, newest period first. Unlike
+    /// <see cref="ListRecords"/> this is intentionally uncapped: callers that locate restatement
+    /// candidates for a closed-period reference-data edit must see the full set of the fund's published
+    /// packs, since a silently dropped pack would be a missed restatement.
+    /// </summary>
+    public IReadOnlyList<ReportPackWorkflowRecordDto> ListRecordsForFundProfile(string fundProfileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
+        var key = fundProfileId.Trim();
+        return _records.Values
+            .Where(record => string.Equals(record.FundProfileId, key, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static record => record.Period, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(static record => record.Version)
+            .ThenBy(static record => record.ReportId)
+            .ToArray();
+    }
+
     private void PersistRecords()
     {
         _store?.Save(_records.Values.ToArray());

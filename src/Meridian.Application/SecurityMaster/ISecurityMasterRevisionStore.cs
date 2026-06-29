@@ -15,9 +15,10 @@ public interface ISecurityMasterRevisionStore
     Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default);
 
     /// <summary>
-    /// Creates a Draft revision carrying the field-edit metadata (path, effective date, justification)
-    /// so a later publish can emit the correct effective-from and changed-field set for downstream
-    /// (period-aware / restatement) impact analysis instead of defaulting to publish time.
+    /// Creates a Draft revision carrying the field-edit metadata (path, effective date, justification,
+    /// and the optional fund-profile scope) so a later publish can emit the correct effective-from and
+    /// changed-field set, and resolve the scoped downstream impact, for period-aware / restatement
+    /// analysis instead of defaulting to publish time and an unscoped (empty) impact.
     /// </summary>
     Task<SecurityMasterRevisionRecord> CreateDraftAsync(
         Guid securityId,
@@ -25,6 +26,7 @@ public interface ISecurityMasterRevisionStore
         string fieldPath,
         DateTimeOffset fieldEffectiveFrom,
         string fieldJustification,
+        string? fundProfileId = null,
         CancellationToken ct = default);
 
     /// <summary>Returns the revision, or <c>null</c> when no revision with that id exists.</summary>
@@ -57,7 +59,8 @@ public sealed record SecurityMasterRevisionRecord(
     Guid? WorkflowId = null,
     string? FieldPath = null,
     DateTimeOffset? FieldEffectiveFrom = null,
-    string? FieldJustification = null);
+    string? FieldJustification = null,
+    string? FundProfileId = null);
 
 /// <summary>
 /// Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision
@@ -84,7 +87,7 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
     private readonly ConcurrentDictionary<Guid, SecurityMasterRevisionRecord> _revisions = new();
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
-        => CreateDraftCore(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null);
+        => CreateDraftCore(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null);
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
         Guid securityId,
@@ -92,15 +95,17 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         string fieldPath,
         DateTimeOffset fieldEffectiveFrom,
         string fieldJustification,
+        string? fundProfileId = null,
         CancellationToken ct = default)
-        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification);
+        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId);
 
     private Task<SecurityMasterRevisionRecord> CreateDraftCore(
         Guid securityId,
         string actor,
         string? fieldPath,
         DateTimeOffset? fieldEffectiveFrom,
-        string? fieldJustification)
+        string? fieldJustification,
+        string? fundProfileId)
     {
         var now = DateTimeOffset.UtcNow;
         var record = new SecurityMasterRevisionRecord(
@@ -113,7 +118,8 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
             WorkflowId: null,
             FieldPath: fieldPath,
             FieldEffectiveFrom: fieldEffectiveFrom,
-            FieldJustification: fieldJustification);
+            FieldJustification: fieldJustification,
+            FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim());
         _revisions[record.RevisionId] = record;
         return Task.FromResult(record);
     }

@@ -89,6 +89,23 @@ public sealed class PeriodAwareRestatementResolverTests
     }
 
     [Fact]
+    public async Task SoftClosedPeriod_NonActionableMatch_FlagsManualRestatement()
+    {
+        // A soft-closed book whose only match is non-actionable (e.g. already-restated, which the workflow
+        // cannot re-restate) must still be flagged for manual follow-up rather than reported as no
+        // restatement. The soft-closed arm does not default-deny, so this relies on the resolver's
+        // HasNonActionableMatches signal.
+        var resolver = NewResolver(
+            new FakeLockReader(_ => LedgerPeriodStatusDto.SoftClosed),
+            new FakeCandidateResolver([], hasNonActionableMatches: true));
+
+        var decision = await resolver.ResolveAsync(Event(affectedBooks: [BookA]));
+
+        decision.RestatementRequired.Should().BeTrue("a soft-closed non-actionable match still needs manual follow-up");
+        decision.Candidates.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task MultipleBooks_OneHardClosed_AggregatesToRestatementRequired()
     {
         var lockReader = new FakeLockReader(book => book == BookB ? LedgerPeriodStatusDto.HardClosed : LedgerPeriodStatusDto.Open);
@@ -97,6 +114,20 @@ public sealed class PeriodAwareRestatementResolverTests
         var decision = await resolver.ResolveAsync(Event(affectedBooks: [BookA, BookB]));
 
         decision.RestatementRequired.Should().BeTrue("any hard-closed affected book forces a restatement proposal");
+    }
+
+    [Fact]
+    public async Task MultipleBooks_SameFundCandidate_IsDeduplicatedByReport()
+    {
+        // The candidate resolver locates fund-scoped published packs, so the same report surfaces from
+        // every affected book; the decision must collapse them to one proposal per report.
+        var candidate = Candidate();
+        var resolver = NewResolver(new FakeLockReader(_ => LedgerPeriodStatusDto.HardClosed), Candidates(candidate));
+
+        var decision = await resolver.ResolveAsync(Event(affectedBooks: [BookA, BookB]));
+
+        decision.RestatementRequired.Should().BeTrue();
+        decision.Candidates.Should().ContainSingle().Which.Should().Be(candidate);
     }
 
     // ---- helpers ------------------------------------------------------------------------------
@@ -159,10 +190,17 @@ public sealed class PeriodAwareRestatementResolverTests
     private sealed class FakeCandidateResolver : IRestatementCandidateResolver
     {
         private readonly IReadOnlyList<RestatementCandidateDto> _candidates;
-        public FakeCandidateResolver(IReadOnlyList<RestatementCandidateDto> candidates) => _candidates = candidates;
+        private readonly bool _hasNonActionableMatches;
 
-        public Task<IReadOnlyList<RestatementCandidateDto>> ResolveAsync(
-            Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList<string> changedFields, CancellationToken ct = default)
-            => Task.FromResult(_candidates);
+        public FakeCandidateResolver(IReadOnlyList<RestatementCandidateDto> candidates, bool hasNonActionableMatches = false)
+        {
+            _candidates = candidates;
+            _hasNonActionableMatches = hasNonActionableMatches;
+        }
+
+        public Task<RestatementCandidateResult> ResolveAsync(
+            Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList<string> changedFields,
+            string? fundProfileId, CancellationToken ct = default)
+            => Task.FromResult(new RestatementCandidateResult(_candidates, _hasNonActionableMatches));
     }
 }

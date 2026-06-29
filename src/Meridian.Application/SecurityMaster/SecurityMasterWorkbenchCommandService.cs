@@ -125,8 +125,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
         // (submit → approve → publish) is anchored to a real, server-issued revision id, and publish
         // can later emit the correct effective-date and changed-field set for downstream impact
         // analysis rather than defaulting to publish time.
+        // Persist the edit's optional fund-profile scope on the draft so publish can resolve a SCOPED
+        // downstream impact (and therefore real affected ledger books + restatement candidates). Without
+        // it, publish falls back to an unscoped impact whose empty affected-book set short-circuits the
+        // period-aware restatement path to "no restatement".
         var revision = await _revisions.CreateDraftAsync(
-            request.SecurityId, request.Actor, request.FieldPath, request.EffectiveFrom, request.Justification, ct)
+            request.SecurityId, request.Actor, request.FieldPath, request.EffectiveFrom, request.Justification,
+            request.FundProfileId, ct)
             .ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -406,8 +411,13 @@ public sealed class SecurityMasterWorkbenchCommandService : ISecurityMasterWorkb
 
         var currentVersion = await GetCurrentVersionAsync(request.SecurityId, ct).ConfigureAwait(false);
 
+        // Scope the downstream-impact computation to the fund profile the edit was made under (carried
+        // on the draft revision), so affected ledger books and report-pack restatement candidates can be
+        // resolved. A null/blank scope (edit made without a fund context) yields an unscoped impact and
+        // the period-aware path reports no restatement — the cross-fund/multi-fund activation case is a
+        // later slice.
         var snapshot = await _queryService
-            .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: null, ct)
+            .GetTrustSnapshotAsync(request.SecurityId, fundProfileId: revision.FundProfileId, ct)
             .ConfigureAwait(false);
 
         var downstreamImpact = snapshot?.DownstreamImpact ?? EmptyDownstreamImpact();
