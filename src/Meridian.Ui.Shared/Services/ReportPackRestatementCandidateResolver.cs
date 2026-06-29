@@ -39,11 +39,16 @@ namespace Meridian.Ui.Shared.Services;
 /// <see cref="ReportPackSecurityLineMatcher"/>, so the index and this resolver agree on exactly which
 /// lines reference the security.</para>
 ///
+/// <para><b>Period narrowing.</b> A pack whose reporting period falls entirely before the edit's
+/// effective date cannot be affected by it and is dropped (via <see cref="ReportPeriodRange"/>). This is
+/// fail-open: only unambiguous ISO period labels (year, year-month, year-month-day) are parsed; fiscal
+/// P/Q labels and free text are kept, so narrowing reduces over-inclusion without ever causing a silent
+/// miss.</para>
+///
 /// <para><b>Deferred</b> to later slices: repeated-restatement workflow support (so an already-restated
-/// pack can be re-restated instead of only logged); narrowing candidates to the specific reporting
-/// period covering the edit's effective date (the pack <c>Period</c> is a free-form label, so
-/// period-precise filtering is not yet safe and over-inclusion stays operator-reviewed); soft-closed
-/// governed-adjustment posting; and exposing the index's cross-fund lookup on a public surface.</para>
+/// pack can be re-restated instead of only logged); soft-closed governed-adjustment posting; exposing
+/// the index's cross-fund lookup on a public surface; and a canonical period identifier that would let
+/// the narrowing parse fiscal period/quarter labels exactly.</para>
 /// </summary>
 public sealed class ReportPackRestatementCandidateResolver : IRestatementCandidateResolver
 {
@@ -94,6 +99,15 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             var isPublished = record.State == ReportPackWorkflowStateDto.Published;
             var isRestated = record.State == ReportPackWorkflowStateDto.Restated;
             if (!isPublished && !isRestated)
+            {
+                continue;
+            }
+
+            // Period narrowing (fail-open): a pack whose reporting period falls entirely before the
+            // edit's effective date cannot be affected by it, so it is neither an actionable candidate
+            // nor a manual-follow-up signal. A period label this layer cannot confidently parse (fiscal
+            // P/Q numbers, free text) is kept, so the narrowing never introduces a silent miss.
+            if (ReportPeriodRange.IsEntirelyBefore(record.Period, effectiveDate))
             {
                 continue;
             }

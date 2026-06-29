@@ -174,6 +174,70 @@ public sealed class ReportPackRestatementCandidateResolverTests
         indexed.HasNonActionableMatches.Should().BeTrue("the Restated same-fund pack is a non-actionable match");
     }
 
+    [Fact]
+    public async Task PackForPeriodBeforeEffectiveDate_IsExcluded()
+    {
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2025-12", SecurityLine("nav.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().BeEmpty("a period entirely before the edit's effective date is unaffected");
+        result.HasNonActionableMatches.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PackForCoveringPeriod_IsCandidate()
+    {
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2026-03", SecurityLine("nav.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().ContainSingle("the period covers the effective date");
+    }
+
+    [Fact]
+    public async Task PackForPeriodAfterEffectiveDate_IsCandidate()
+    {
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2026-06", SecurityLine("nav.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().ContainSingle("a corrected value flows forward into later published periods");
+    }
+
+    [Fact]
+    public async Task PackForUnparseablePeriod_IsKept()
+    {
+        // Fail-open: a fiscal/free-form period the narrowing cannot interpret must stay a candidate.
+        var resolver = NewResolver(
+            PublishedPack(FundProfileId, "2026-P03", SecurityLine("nav.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task RestatedPackForPeriodBeforeEffectiveDate_IsNotEvenFlagged()
+    {
+        // An out-of-range pack is dropped before the already-Restated handling, so it raises no manual signal.
+        var resolver = NewResolver(
+            PackInState(ReportPackWorkflowStateDto.Restated, FundProfileId, "2025-12", SecurityLine("old.line", SecurityId)));
+
+        var result = await resolver.ResolveAsync(
+            SecurityId, LedgerBookId, EffectiveDate, ["EconomicDefinition.Coupon"], FundProfileId);
+
+        result.Candidates.Should().BeEmpty();
+        result.HasNonActionableMatches.Should().BeFalse("a period before the edit is unaffected, so no manual follow-up");
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     private static ReportPackRestatementCandidateResolver NewResolver(params ReportPackWorkflowRecordDto[] seedRecords)
