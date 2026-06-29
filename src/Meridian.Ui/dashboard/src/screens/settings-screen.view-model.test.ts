@@ -5,7 +5,8 @@ import {
   buildAlpacaConnectionCommandState,
   buildSettingsRecentEventsSelectionViewModel,
   buildSettingsScreenViewModel,
-  useAlpacaConnectionFormViewModel
+  useAlpacaConnectionFormViewModel,
+  useRobinhoodConnectionViewModel
 } from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
@@ -62,6 +63,24 @@ const alpacaConnection: BrokerageConnectionStatus = {
   externalAccountId: "PA123",
   verifiedAt: "2026-05-07T11:50:00Z",
   maskedKeyId: "********1234"
+};
+
+const robinhoodConnection: BrokerageConnectionStatus = {
+  providerId: "robinhood",
+  displayName: "Robinhood",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:50:00Z",
+  expiresAt: "2026-06-07T11:50:00Z",
+  lastError: null,
+  warnings: [],
+  scopes: ["positions:read", "balances:read"],
+  environment: null,
+  externalAccountId: "RH-987",
+  verifiedAt: null,
+  maskedKeyId: null
 };
 
 const providerConnections: ProviderConnectionRow[] = [
@@ -719,6 +738,98 @@ describe("buildSettingsScreenViewModel", () => {
       actionHref: "/trading/readiness",
       actionAriaLabel: "Open Trading readiness after Alpaca account verification"
     });
+  });
+
+  it("derives a connected Robinhood OAuth panel", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      robinhoodConnection
+    });
+
+    expect(vm.robinhoodConnectionPanel).toMatchObject({
+      providerLabel: "Robinhood",
+      stateLabel: "Connected",
+      statusTone: "success",
+      accountLabel: "RH-987",
+      scopesLabel: "positions:read, balances:read",
+      authorizationUrl: null,
+      isConfigured: true,
+      canConnect: false,
+      canDisconnect: true
+    });
+    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("2026-05-07T11:50:00Z");
+    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("2026-06-07T11:50:00Z");
+    expect(vm.robinhoodConnectionPanel.statusDetail).toContain("Robinhood account RH-987");
+    expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("Alpaca");
+    expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("/v2/account");
+  });
+
+  it("flags a degraded Robinhood panel with a danger tone", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      robinhoodConnection: {
+        ...robinhoodConnection,
+        state: "Degraded",
+        isConnected: false,
+        lastError: "Aggregation provider rejected the refresh token."
+      }
+    });
+
+    expect(vm.robinhoodConnectionPanel.statusTone).toBe("danger");
+    expect(vm.robinhoodConnectionPanel.badgeVariant).toBe("danger");
+    expect(vm.robinhoodConnectionPanel.statusDetail).toBe("Aggregation provider rejected the refresh token.");
+  });
+
+  it("derives an unconfigured Robinhood panel that blocks connect and disconnect", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      robinhoodConnection: {
+        ...robinhoodConnection,
+        state: "NotConfigured",
+        isConfigured: false,
+        isConnected: false,
+        connectedAt: null,
+        expiresAt: null,
+        externalAccountId: null,
+        scopes: []
+      }
+    });
+
+    expect(vm.robinhoodConnectionPanel).toMatchObject({
+      stateLabel: "Not configured",
+      statusTone: "default",
+      accountLabel: "Not linked",
+      connectedAtLabel: "Not connected",
+      expiresAtLabel: "No expiry recorded",
+      scopesLabel: "No scopes granted",
+      isConfigured: false,
+      canConnect: true,
+      canDisconnect: false
+    });
+    expect(vm.robinhoodConnectionPanel.statusDetail).toContain("ROBINHOOD_BROKERAGE_");
+    expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("Alpaca");
+  });
+
+  it("surfaces a pending Robinhood authorization URL", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      robinhoodConnection: {
+        ...robinhoodConnection,
+        state: "AuthorizationPending",
+        isConnected: false,
+        authorizationUrl: "https://aggregator.example/oauth/authorize?token=abc"
+      }
+    });
+
+    expect(vm.robinhoodConnectionPanel.authorizationUrl).toBe(
+      "https://aggregator.example/oauth/authorize?token=abc"
+    );
+    expect(vm.robinhoodConnectionPanel.statusTone).toBe("warning");
+    expect(vm.robinhoodConnectionPanel.canConnect).toBe(true);
   });
 
   it("builds profile authentication posture from session and brokerage authority", () => {
@@ -1472,6 +1583,117 @@ describe("buildSettingsScreenViewModel", () => {
       "secretKey: Secret key must include the paper account scope."
     ]);
     expect(result.current.statusRole).toBe("alert");
+  });
+
+  it("opens the Robinhood authorization URL and refreshes on connect", async () => {
+    const startConnection = vi.fn().mockResolvedValue({
+      ...robinhoodConnection,
+      state: "AuthorizationPending",
+      isConnected: false,
+      authorizationUrl: "https://aggregator.example/oauth/authorize?token=abc"
+    });
+    const openAuthorizationUrl = vi.fn();
+    const onRefresh = vi.fn();
+    const { result } = renderHook(() => useRobinhoodConnectionViewModel({
+      canConnect: true,
+      canDisconnect: false,
+      startConnection,
+      openAuthorizationUrl,
+      onRefresh
+    }));
+
+    await act(async () => {
+      await result.current.connect();
+    });
+
+    expect(startConnection).toHaveBeenCalledTimes(1);
+    expect(openAuthorizationUrl).toHaveBeenCalledWith("https://aggregator.example/oauth/authorize?token=abc");
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(result.current.busy).toBe(false);
+    expect(result.current.actionTone).toBe("success");
+    expect(result.current.actionMessage).toContain("opened tab");
+  });
+
+  it("ignores Robinhood connect when connect is not permitted", async () => {
+    const startConnection = vi.fn();
+    const { result } = renderHook(() => useRobinhoodConnectionViewModel({
+      canConnect: false,
+      canDisconnect: true,
+      startConnection
+    }));
+
+    await act(async () => {
+      await result.current.connect();
+    });
+
+    expect(startConnection).not.toHaveBeenCalled();
+  });
+
+  it("revokes the Robinhood connection and refreshes on disconnect", async () => {
+    const revokeConnection = vi.fn().mockResolvedValue({
+      ...robinhoodConnection,
+      state: "Disconnected",
+      isConnected: false
+    });
+    const onRefresh = vi.fn();
+    const { result } = renderHook(() => useRobinhoodConnectionViewModel({
+      canConnect: false,
+      canDisconnect: true,
+      revokeConnection,
+      onRefresh
+    }));
+
+    await act(async () => {
+      await result.current.disconnect();
+    });
+
+    expect(revokeConnection).toHaveBeenCalledTimes(1);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(result.current.actionTone).toBe("success");
+    expect(result.current.actionMessage).toBe("Robinhood connection revoked.");
+  });
+
+  it("ignores Robinhood disconnect when disconnect is not permitted", async () => {
+    const revokeConnection = vi.fn();
+    const onRefresh = vi.fn();
+    const { result } = renderHook(() => useRobinhoodConnectionViewModel({
+      canConnect: true,
+      canDisconnect: false,
+      revokeConnection,
+      onRefresh
+    }));
+
+    await act(async () => {
+      await result.current.disconnect();
+    });
+
+    expect(revokeConnection).not.toHaveBeenCalled();
+    expect(onRefresh).not.toHaveBeenCalled();
+    expect(result.current.busy).toBe(false);
+  });
+
+  it("reports Robinhood connect failures without throwing", async () => {
+    const startConnection = vi.fn().mockRejectedValue(
+      new ApiError({
+        path: "/api/brokerage-connections/robinhood/connect",
+        status: 502,
+        detail: "Robinhood connect failed.",
+        validationIssues: []
+      })
+    );
+    const { result } = renderHook(() => useRobinhoodConnectionViewModel({
+      canConnect: true,
+      canDisconnect: false,
+      startConnection
+    }));
+
+    await act(async () => {
+      await result.current.connect();
+    });
+
+    expect(result.current.actionTone).toBe("danger");
+    expect(result.current.statusRole).toBe("alert");
+    expect(result.current.busy).toBe(false);
   });
 });
 

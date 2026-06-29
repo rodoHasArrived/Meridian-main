@@ -5,6 +5,7 @@ import {
   getDataWorkspace,
   getAccountingWorkspace,
   getAlpacaConnectionStatus,
+  getRobinhoodConnectionStatus,
   getLedgerMappingWorkbench,
   getOperationsApprovalPolicyMatrix,
   getOperationsCloseCalendar,
@@ -74,6 +75,7 @@ type RefreshDataKey =
   | "accounting"
   | "reporting"
   | "brokerageConnection"
+  | "robinhoodConnection"
   | "providerConnections"
   | "providerReadiness"
   | "providerRoutingConnections"
@@ -124,6 +126,7 @@ interface WorkstationDataState {
   accounting: AccountingWorkspaceResponse | null;
   reporting: ReportingWorkspaceResponse | null;
   brokerageConnection: BrokerageConnectionStatus | null;
+  robinhoodConnection: BrokerageConnectionStatus | null;
   providerConnections: ProviderConnectionRow[] | null;
   providerReadiness: ProviderReadinessSummary | null;
   providerRoutingConnections: ProviderRoutingConnection[] | null;
@@ -162,6 +165,7 @@ const initialState: WorkstationDataState = {
   accounting: null,
   reporting: null,
   brokerageConnection: null,
+  robinhoodConnection: null,
   providerConnections: null,
   providerReadiness: null,
   providerRoutingConnections: null,
@@ -631,6 +635,12 @@ function createRefreshEntries(
     { key: "accounting", category: "workspace", workspaceKeys: ["accounting"], promise: getAccountingWorkspace(requestOptions) },
     { key: "reporting", category: "workspace", workspaceKeys: ["reporting"], promise: getReportingWorkspace(requestOptions) },
     { key: "brokerageConnection", category: "workspace", workspaceKeys: ["portfolio"], promise: getAlpacaConnectionStatus(requestOptions) },
+    {
+      key: "robinhoodConnection",
+      category: "workspace",
+      workspaceKeys: ["settings", "portfolio"],
+      promise: getRobinhoodConnectionStatus(requestOptions)
+    },
     { key: "providerConnections", category: "workspace", workspaceKeys: ["settings", "data"], promise: getProviderConnections(requestOptions) },
     { key: "providerReadiness", category: "workspace", workspaceKeys: ["settings", "data"], promise: getProviderReadiness(requestOptions) },
     { key: "providerRoutingConnections", category: "workspace", workspaceKeys: ["settings"], promise: getProviderRoutingConnections(requestOptions) },
@@ -786,6 +796,9 @@ function assignRefreshValue(state: WorkstationDataState, key: RefreshDataKey, va
       break;
     case "brokerageConnection":
       state.brokerageConnection = value as BrokerageConnectionStatus;
+      break;
+    case "robinhoodConnection":
+      state.robinhoodConnection = value as BrokerageConnectionStatus;
       break;
     case "providerConnections":
       state.providerConnections = value as ProviderConnectionRow[];

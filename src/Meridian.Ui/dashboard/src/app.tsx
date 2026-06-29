@@ -104,6 +104,7 @@ function AppShell() {
     accounting,
     reporting,
     brokerageConnection,
+    robinhoodConnection,
     providerConnections,
     providerReadiness,
     providerRoutingConnections,
@@ -422,6 +423,7 @@ function AppShell() {
                       accounting={accounting}
                       reporting={reporting}
                       brokerageConnection={brokerageConnection}
+                      robinhoodConnection={robinhoodConnection}
                       providerConnections={providerConnections}
                       providerRoutingConnections={providerRoutingConnections}
                       providerRoutingBindings={providerRoutingBindings}

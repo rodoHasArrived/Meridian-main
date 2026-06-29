@@ -32,6 +32,7 @@ vi.mock("@/lib/api", () => ({
   getDataWorkspace: vi.fn(),
   getAccountingWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
+  getRobinhoodConnectionStatus: vi.fn(),
   getProviderConnections: vi.fn(),
   getProviderReadiness: vi.fn(),
   getProviderRoutingBindings: vi.fn(),
@@ -66,6 +67,7 @@ type Deferred<T> = {
 
 const requests: Record<string, Deferred<unknown>[]> = {
   brokerageConnection: [],
+  robinhoodConnection: [],
   brokeragePortfolio: [],
   data: [],
   accounting: [],
@@ -107,6 +109,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getAccountingWorkspace).mockImplementation(() => track<AccountingWorkspaceResponse>("accounting"));
     vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<ReportingWorkspaceResponse>("reporting"));
     vi.mocked(api.getAlpacaConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("brokerageConnection"));
+    vi.mocked(api.getRobinhoodConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("robinhoodConnection"));
     vi.mocked(api.getProviderConnections).mockImplementation(() => track<ProviderConnectionRow[]>("providerConnections"));
     vi.mocked(api.getProviderReadiness).mockImplementation(() => track<ProviderReadinessSummary>("providerReadiness"));
     vi.mocked(api.getProviderRoutingConnections).mockImplementation(() => track<ProviderRoutingConnection[]>("providerRoutingConnections"));
@@ -270,6 +273,7 @@ describe("useWorkstationData", () => {
         "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>"
       ));
       resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
+      resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", 0, { marker: "robinhood" } as unknown as BrokerageConnectionStatus);
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
       resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("reporting-html-404"));
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
@@ -697,6 +701,7 @@ describe("useWorkstationData", () => {
       resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
       resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
+      resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", 0, { marker: "robinhood" } as unknown as BrokerageConnectionStatus);
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
       resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("partial-failure"));
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
@@ -954,6 +959,7 @@ function resolveSecondaryRefreshBatch(index: number, marker: string) {
   resolveRequest<DataWorkspaceResponse>("data", index, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
   resolveRequest<ReportingWorkspaceResponse>("reporting", index, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", index, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", index, { marker: `${marker} robinhood` } as unknown as BrokerageConnectionStatus);
   resolveRequest<ProviderConnectionRow[]>("providerConnections", index, []);
   resolveRequest<ProviderReadinessSummary>("providerReadiness", index, buildProviderReadiness(marker));
   resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", index, []);
@@ -991,6 +997,7 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<AccountingWorkspaceResponse>("accounting", defaultIndex, { marker: `${marker} accounting` } as unknown as AccountingWorkspaceResponse);
   resolveRequest<ReportingWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", defaultIndex, { marker: `${marker} robinhood` } as unknown as BrokerageConnectionStatus);
   resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
   resolveRequest<ProviderReadinessSummary>("providerReadiness", defaultIndex, buildProviderReadiness(marker));
   resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
