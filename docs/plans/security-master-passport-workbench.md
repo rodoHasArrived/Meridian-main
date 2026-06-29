@@ -314,10 +314,18 @@ POST /api/security-master/{securityId:guid}/workbench/resolve-conflict
 
 POST /api/security-master/{securityId:guid}/workbench/submit
   Body: SubmitSecurityMasterRevisionRequest → 200: SecurityMasterEditResultDto
+  422: { "error": "workflow-required" }   # governed submit must name an approval workflow (a
+                                          # workflow-less submit would strand the revision in Submitted)
+  409: { "error": "revision-state-conflict", ... } | { "error": "version-conflict", currentVersion }
+
+POST /api/security-master/{securityId:guid}/workbench/approve
+  Body: ApproveSecurityMasterRevisionRequest → 200: SecurityMasterEditResultDto
+  409: { "error": "revision-state-conflict", ... }
 
 POST /api/security-master/{securityId:guid}/workbench/publish
   Body: PublishSecurityMasterRevisionRequest → 200: SecurityMasterPublishResultDto
-  403: { "error": "approval-required" }
+  409: { "error": "revision-state-conflict", ... }   # publish-before-approved / unknown revision
+  500: { "error": "publish-side-effect-failed", ... } # durable append; handlers idempotent; retry-safe
 ```
 
 ## Component Design
@@ -574,10 +582,31 @@ PR3 browser UI, PR4 WPF parity.
 - [ ] DI registration (ordered handler collection).
 
 ### Phase 4 — Endpoints + UI
-- [ ] New partial `WorkstationEndpoints.SecurityMasterWorkbench.cs` mapping the 4 routes.
+- [x] New partial `WorkstationEndpoints.SecurityMasterWorkbench.cs` mapping the routes (field,
+      resolve-conflict, submit, **approve**, publish — approve added so the UI can drive the full
+      field→submit→approve→publish lifecycle through one cohesive surface). Each route requires
+      `ModifySecurityMaster`, is tenant-scoped, and the path `securityId` overrides the request body so a
+      mismatched body can never target another security. The **acting principal is server-derived** from
+      the session (`EndpointAuthorization.TryResolveActor`, 401 if unresolved) and overwrites the body
+      `Actor` on every route; on approve it also overwrites `Reviewer` (the caller *is* the reviewer), so a
+      caller cannot post the assigned reviewer's name to record/bypass approval as that person — the
+      approval gate's reviewer-match and the submit-time reviewer-independence check run against trusted
+      identity (`Reviewer` on submit stays body-supplied: it is the assignment of who must approve). Domain
+      failures map via a shared
+      `ExecuteWorkbenchAsync` helper: stale version → **409** `{ version-conflict, currentVersion }`;
+      invalid lifecycle transition (incl. publish-before-approved / unknown revision) → **409**
+      `{ revision-state-conflict }`; rejected invariant (justification / policy-deviation / non-candidate
+      winner) → **422**; publish side-effect failure → **500** (durable append, idempotent handlers,
+      retry-safe). *Mapping note:* the original sketch listed publish-before-approved as `403`; it now
+      surfaces as `409`, because the same approval precondition (`EnsureRevisionInStateAsync`) also covers
+      unknown/foreign revisions, and a 409 "refetch the revision and retry" is the coherent client
+      behaviour for all three. The conflict-resolution `422` covers the unacknowledged-policy-deviation case.
+- [x] `SecurityMasterWorkbenchOptions` bound from the `SecurityMasterWorkbench` configuration section
+      (`AddOptions<…>().Configure<IConfiguration>(…)`), so the conflict-authority policy's
+      `IOptionsMonitor` ranks the deployment's real source systems and hot-reloads.
 - [ ] Browser `security-passport-editor.tsx` extending `security-details-tracker.tsx`; entry point
-      from `buildMultiAssetCoveragePanel()` row.
-- [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`.
+      from `buildMultiAssetCoveragePanel()` row. *(Follow-up slice — backend write surface lands first.)*
+- [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
 
 ### Phase 5 — Tests
 - [ ] All unit tests above (~22) green; ≥80% on new code.

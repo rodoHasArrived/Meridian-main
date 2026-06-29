@@ -5026,6 +5026,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.PlotTool.cs
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
+│   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -6741,6 +6742,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterInstrumentPassportTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
+│   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs

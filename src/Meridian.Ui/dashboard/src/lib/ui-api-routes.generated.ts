@@ -293,6 +293,7 @@ export const UI_API_ROUTES = {
   SecurityMasterWorkbenchField: "/api/security-master/{securityId:guid}/workbench/field",
   SecurityMasterWorkbenchResolveConflict: "/api/security-master/{securityId:guid}/workbench/resolve-conflict",
   SecurityMasterWorkbenchSubmit: "/api/security-master/{securityId:guid}/workbench/submit",
+  SecurityMasterWorkbenchApprove: "/api/security-master/{securityId:guid}/workbench/approve",
   SecurityMasterWorkbenchPublish: "/api/security-master/{securityId:guid}/workbench/publish",
   SecurityMasterImport: "/api/security-master/import",
   SecurityMasterIngestStatus: "/api/security-master/ingest/status",

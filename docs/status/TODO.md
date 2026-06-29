@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **196**
+Total items: **197**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -43,11 +43,11 @@ Total items: **196**
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 530 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 32 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 117 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4231 | `NOTE` | ❌ | note: "Paper adapter routing is available.", |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4243 | `NOTE` | ❌ | note: "Realtime subscriptions are steady.", |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4255 | `NOTE` | ❌ | note: "Replay queue is elevated but within tolerance.", |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4367 | `NOTE` | ❌ | Note: note, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4450 | `NOTE` | ❌ | Note: note, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4235 | `NOTE` | ❌ | note: "Paper adapter routing is available.", |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4247 | `NOTE` | ❌ | note: "Realtime subscriptions are steady.", |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4259 | `NOTE` | ❌ | note: "Replay queue is elevated but within tolerance.", |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4371 | `NOTE` | ❌ | Note: note, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4454 | `NOTE` | ❌ | Note: note, |
 | `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | 1974 | `NOTE` | ❌ | Note: "Provider-ledger reconciliation break signed off.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 240 | `NOTE` | ❌ | Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2047 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
@@ -193,6 +193,7 @@ Total items: **196**
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 418 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 112 | `NOTE` | ❌ | Note: "Approved by controller.", |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 1757 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
+| `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 111 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 179 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
 | `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 85 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |

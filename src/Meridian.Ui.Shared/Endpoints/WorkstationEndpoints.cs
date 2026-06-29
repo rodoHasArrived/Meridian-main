@@ -91,6 +91,10 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationStrategyBriefing")
         .Produces<StrategyBriefingDto>(200);
 
+        // Governed Security Master write surface lives under /api/security-master (not /api/workstation),
+        // so it maps its own tenant-scoped group directly on the app.
+        MapSecurityMasterWorkbenchEndpoints(app, jsonOptions);
+
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
