@@ -623,7 +623,16 @@ PR3 browser UI, PR4 WPF parity.
       required; acknowledgement required when deviating from the policy winner — mirroring the server's
       422). The coverage-panel entry point (`buildMultiAssetCoveragePanel()` row → editor) and the
       remaining read tabs (Economics/Venues/History) are the next slice.
-- [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
+- [x] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml` — desktop parity over the
+      same command DTOs. The ViewModel (`BindableBase`/CommunityToolkit) exposes field-edit + approval
+      inputs and `[RelayCommand]` lifecycle commands whose `CanExecute` mirrors the browser gating
+      (Save Draft needs a pending edit; Submit/Approve/Publish gate on Draft/Submitted/Approved; all
+      disabled while busy). Writes go through `IWorkstationSecurityMasterApiClient` (extended with the five
+      workbench POSTs); a shared `ClassifyWorkbenchError` maps 409 version-conflict / revision-state,
+      422 workflow-required / unprocessable, and 401/403 into an operator banner (reload hint on a stale
+      version). No WPF-local governance rules — the server re-validates. Registered in the Accounting
+      feature module; ViewModel unit tests cover the error matrix, Publish-disabled-until-Approved, the
+      save-draft happy path, and the version-conflict banner.
 
 ### Phase 5 — Tests
 - [ ] All unit tests above (~22) green; ≥80% on new code.
