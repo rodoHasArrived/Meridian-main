@@ -391,6 +391,7 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
                 ? auditStore
                 : sp.GetRequiredService<FileAccountingConfigurationStore>());
+        services.TryAddSingleton<IFundProfileTenantGuard, AccountingHistoryFundProfileTenantGuard>();
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
