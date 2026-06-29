@@ -5133,6 +5133,7 @@ Meridian-main
 │   │   │   ├── ReportingScheduleService.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportPackDeliveryService.cs
+│   │   │   ├── ReportPackRestatementCandidateResolver.cs
 │   │   │   ├── ReportPackRunReadService.cs
 │   │   │   ├── ReportPackValidationService.cs
 │   │   │   ├── ReportWriterDatasetSourceService.cs
@@ -6570,6 +6571,7 @@ Meridian-main
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
 │   │   │   │   ├── PeriodAwareRestatementResolverTests.cs
 │   │   │   │   ├── PublishedRevisionHandlerTests.cs
+│   │   │   │   ├── ReportPackRestatementCandidateResolverTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs

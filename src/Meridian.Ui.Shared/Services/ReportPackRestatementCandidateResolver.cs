@@ -123,9 +123,8 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             return [];
         }
 
-        var securityKey = securityId.ToString("D");
         return provenance
-            .Where(line => LineReferencesSecurity(line, securityKey))
+            .Where(line => LineReferencesSecurity(line, securityId))
             .Select(line => new ReportPackChangedLineDto(
                 LineKey: line.LineKey,
                 PreviousValue: line.ReportValue ?? string.Empty,
@@ -140,15 +139,15 @@ public sealed class ReportPackRestatementCandidateResolver : IRestatementCandida
             .ToArray();
     }
 
-    private static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, string securityKey)
-        => MatchesSecurity(line.SecurityMasterId, securityKey)
-           || MatchesSecurity(line.SecurityDefinitionId, securityKey)
-           || (ContainsToken(line.SourceKind, "security") && MatchesSecurity(line.SourceId, securityKey));
+    private static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, Guid securityId)
+        => MatchesSecurity(line.SecurityMasterId, securityId)
+           || MatchesSecurity(line.SecurityDefinitionId, securityId)
+           || (ContainsToken(line.SourceKind, "security") && MatchesSecurity(line.SourceId, securityId));
 
-    private static bool MatchesSecurity(string? value, string securityKey)
+    private static bool MatchesSecurity(string? value, Guid securityId)
         => !string.IsNullOrWhiteSpace(value)
            && Guid.TryParse(value, out var parsed)
-           && parsed.ToString("D").Equals(securityKey, StringComparison.OrdinalIgnoreCase);
+           && parsed == securityId;
 
     private static bool ContainsToken(string? value, string token)
         => !string.IsNullOrWhiteSpace(value)
