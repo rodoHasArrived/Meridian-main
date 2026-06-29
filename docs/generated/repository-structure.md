@@ -4624,7 +4624,9 @@ Meridian-main
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api
 │   │   │   │   │   │   ├── covered-call.api.test.ts
-│   │   │   │   │   │   └── covered-call.api.ts
+│   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── security-master-workbench.api.test.ts
+│   │   │   │   │   │   └── security-master-workbench.api.ts
 │   │   │   │   │   ├── covered-call
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts

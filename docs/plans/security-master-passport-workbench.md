@@ -604,8 +604,13 @@ PR3 browser UI, PR4 WPF parity.
 - [x] `SecurityMasterWorkbenchOptions` bound from the `SecurityMasterWorkbench` configuration section
       (`AddOptions<…>().Configure<IConfiguration>(…)`), so the conflict-authority policy's
       `IOptionsMonitor` ranks the deployment's real source systems and hot-reloads.
-- [ ] Browser `security-passport-editor.tsx` extending `security-details-tracker.tsx`; entry point
-      from `buildMultiAssetCoveragePanel()` row. *(Follow-up slice — backend write surface lands first.)*
+- [~] Browser `security-passport-editor.tsx` extending `security-details-tracker.tsx`; entry point
+      from `buildMultiAssetCoveragePanel()` row. **Slice 1 (client foundation) landed:**
+      `lib/api/security-master-workbench.api.ts` typed client for the five governed-write routes
+      (server-derived identity omitted from request inputs; path `securityId` passed explicitly) plus
+      `classifyWorkbenchWriteError` mapping the 409 `version-conflict`/`revision-state-conflict`, 422
+      `workflow-required`/`unprocessable`, and 401/403 responses into a discriminated recovery hint for
+      the reload-banner / workflow-prompt UX. The editor component + coverage-panel entry are the next slice.
 - [ ] WPF `SecurityPassportEditorViewModel` + `SecurityPassportEditorPage.xaml`. *(Follow-up slice.)*
 
 ### Phase 5 — Tests
