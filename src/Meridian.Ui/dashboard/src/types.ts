@@ -8784,9 +8784,21 @@ export interface SecurityMasterOpenLotReadModel {
   provenanceHistory: SecurityMasterOpenLotProvenance[];
 }
 
+/**
+ * Minimal projection of the economic-definition drill-in carried by the trust snapshot. The full DTO
+ * has more fields; the dashboard surfaces only the passport version (the governed-write concurrency
+ * token) and the asset class / currency the editor header needs.
+ */
+export interface SecurityMasterTrustSnapshotEconomicDefinition {
+  version: number;
+  assetClass: string;
+  currency: string;
+}
+
 export interface SecurityMasterTrustSnapshot {
   securityId: string;
   retrievedAtUtc: string;
+  economicDefinition?: SecurityMasterTrustSnapshotEconomicDefinition | null;
   scheduleSummary?: SecurityMasterScheduleSummary | null;
   lotModel?: SecurityMasterLotModel | null;
   scheduleBook?: SecurityMasterScheduleBook | null;

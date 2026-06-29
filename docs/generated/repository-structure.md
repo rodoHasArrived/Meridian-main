@@ -4533,6 +4533,10 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── coverage-passport-drill-in.test.tsx
+│   │   │   │   │   │   ├── coverage-passport-drill-in.tsx
+│   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.test.ts
+│   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.ts
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
@@ -4560,6 +4564,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
 │   │   │   │   │   │   ├── security-details-tracker.view-model.ts
+│   │   │   │   │   │   ├── security-passport-editor-launcher.test.tsx
+│   │   │   │   │   │   ├── security-passport-editor-launcher.tsx
 │   │   │   │   │   │   ├── security-passport-editor.test.tsx
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
