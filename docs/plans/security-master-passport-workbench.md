@@ -392,10 +392,14 @@ POST /api/security-master/{securityId:guid}/workbench/publish
   protects *durable accounting books* (the only ledger surface carrying a period lock), which are keyed
   by fund profile, so a fund-scoped impact with reported ledger exposure resolves to that fund's books
   (fund-book granularity); the set is empty when the impact reports no ledger exposure, has no fund
-  scope, or no durable ledger backend is registered (the store is an optional dependency). Still
-  deferred to later slices: narrowing to the specific posting books that referenced the security (via
-  journal-line dimensions), cross-fund expansion for unscoped impacts, and the soft-closed governed
-  adjustment poster (`IGovernedLedgerAdjustmentPoster`). The report-pack `IRestatementCandidateResolver`
+  scope, or no durable ledger backend is registered (the store is an optional dependency). Publish
+  scopes the impact to the fund captured on the draft revision (the fund the operator edited under) and
+  deliberately accepts **no** caller-supplied fund scope on the publish request — a publisher must not be
+  able to resolve impact for a fund the operator did not edit under, which would disclose another scope's
+  affected books/candidates. Still deferred to later slices: narrowing to the specific posting books that
+  referenced the security (via journal-line dimensions), publish-time re-scoping and cross-fund (multi-held)
+  expansion for unscoped impacts — both gated on tenant-scoped holdings discovery — and the soft-closed
+  governed adjustment poster (`IGovernedLedgerAdjustmentPoster`). The report-pack `IRestatementCandidateResolver`
   is now implemented (`ReportPackRestatementCandidateResolver`, report-line-provenance backed); only
   period-precise candidate narrowing and a durable security→report-line index remain as refinements.
 

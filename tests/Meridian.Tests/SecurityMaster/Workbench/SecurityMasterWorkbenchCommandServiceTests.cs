@@ -608,23 +608,11 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task Publish_ScopesImpactToRequestFundProfile_OverridingTheDraftScope()
+    public async Task Publish_ScopesImpactToDraftFundScope()
     {
         var harness = new Harness(currentVersion: 5);
-        var revisionId = await harness.SeedFieldEditRevisionWithFundAsync("fund-from-edit");
-
-        await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
-            SecurityId, revisionId, "ops.analyst", "approver.independent", FundProfileId: "fund-explicit"));
-
-        harness.QueryService.Verify(
-            q => q.GetTrustSnapshotAsync(SecurityId, "fund-explicit", It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task Publish_FallsBackToDraftFundScope_WhenRequestScopeOmitted()
-    {
-        var harness = new Harness(currentVersion: 5);
+        // The fund scope is captured on the draft at edit time; publish reuses it and accepts no
+        // caller-supplied override, so impact resolution targets the fund the operator edited under.
         var revisionId = await harness.SeedFieldEditRevisionWithFundAsync("fund-from-edit");
 
         await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
@@ -636,15 +624,15 @@ public sealed class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task Publish_BlankScopes_ResolveToUnscopedNull()
+    public async Task Publish_BlankDraftScope_ResolvesToUnscopedNull()
     {
         var harness = new Harness(currentVersion: 5);
-        // No fund on the draft revision; a whitespace request scope must normalize to null (unscoped).
+        // No fund captured on the draft revision → publish resolves an unscoped (null) impact.
         var revisionId = await harness.SeedFieldEditRevisionAsync(
             "EconomicDefinition.Coupon", new DateTimeOffset(2026, 3, 15, 0, 0, 0, TimeSpan.Zero), "Corrected coupon.");
 
         await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
-            SecurityId, revisionId, "ops.analyst", "approver.independent", FundProfileId: "   "));
+            SecurityId, revisionId, "ops.analyst", "approver.independent"));
 
         harness.QueryService.Verify(
             q => q.GetTrustSnapshotAsync(SecurityId, null, It.IsAny<CancellationToken>()),
