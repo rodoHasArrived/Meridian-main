@@ -170,6 +170,39 @@ public sealed class ReportPackSecurityLineIndexTests
     }
 
     [Fact]
+    public void ReferencedSecurityIds_KeepsAllZeroDefinitionId_WhenMasterMissing()
+    {
+        // Regression: a failed SecurityMasterId parse must not suppress an all-zeros (Guid.Empty)
+        // SecurityDefinitionId. Otherwise ReferencedSecurityIds stops being the exact reverse of
+        // LineReferencesSecurity and the index silently misses a record the full scan still matches.
+        var line = new ReportPackLineProvenanceDto(
+            LineKey: "nav.line",
+            SourceKind: "report",
+            SourceId: "n/a",
+            EvidenceId: "ev-1",
+            SecurityMasterId: null,
+            SecurityDefinitionId: Guid.Empty.ToString("D"));
+
+        ReportPackSecurityLineMatcher.ReferencedSecurityIds(line).Should().Contain(Guid.Empty);
+        ReportPackSecurityLineMatcher.LineReferencesSecurity(line, Guid.Empty).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ReferencedSecurityIds_DedupesRepeatedSecurityId()
+    {
+        // Master, definition, and security-kind source all the same id → yielded once.
+        var line = new ReportPackLineProvenanceDto(
+            LineKey: "nav.line",
+            SourceKind: "security-master",
+            SourceId: SecurityA.ToString("D"),
+            EvidenceId: "ev-1",
+            SecurityMasterId: SecurityA.ToString("D"),
+            SecurityDefinitionId: SecurityA.ToString("D"));
+
+        ReportPackSecurityLineMatcher.ReferencedSecurityIds(line).Should().ContainSingle().Which.Should().Be(SecurityA);
+    }
+
+    [Fact]
     public void NonSecurityKindSource_DoesNotReferenceSecurityBySourceId()
     {
         // A ledger-kind source whose id happens to be a guid must NOT be treated as a security reference.

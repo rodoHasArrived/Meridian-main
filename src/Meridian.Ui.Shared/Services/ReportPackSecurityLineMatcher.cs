@@ -38,20 +38,25 @@ public static class ReportPackSecurityLineMatcher
     {
         ArgumentNullException.ThrowIfNull(line);
 
-        if (TryParseSecurity(line.SecurityMasterId, out var fromMaster))
+        // Dedupe on successfully-parsed ids only. Comparing against the out-variables would wrongly
+        // suppress a legitimate all-zeros (Guid.Empty) definition id whenever an earlier source failed
+        // to parse (its out-variable also defaults to Guid.Empty) — which would make this the inexact
+        // reverse of LineReferencesSecurity and silently drop that record from the index.
+        var seen = new HashSet<Guid>();
+
+        if (TryParseSecurity(line.SecurityMasterId, out var fromMaster) && seen.Add(fromMaster))
         {
             yield return fromMaster;
         }
 
-        if (TryParseSecurity(line.SecurityDefinitionId, out var fromDefinition) && fromDefinition != fromMaster)
+        if (TryParseSecurity(line.SecurityDefinitionId, out var fromDefinition) && seen.Add(fromDefinition))
         {
             yield return fromDefinition;
         }
 
         if (ContainsToken(line.SourceKind, "security")
             && TryParseSecurity(line.SourceId, out var fromSource)
-            && fromSource != fromMaster
-            && fromSource != fromDefinition)
+            && seen.Add(fromSource))
         {
             yield return fromSource;
         }
