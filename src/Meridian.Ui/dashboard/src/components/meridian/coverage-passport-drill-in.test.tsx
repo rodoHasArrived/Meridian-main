@@ -71,4 +71,21 @@ describe("CoveragePassportDrillIn", () => {
 
     await waitFor(() => expect(screen.getByText(/could not load equity securities/i)).toBeInTheDocument());
   });
+
+  it("retries a failed lazy load when Try again is clicked", async () => {
+    const user = userEvent.setup();
+    const loadSecurities = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce(securities);
+    render(<CoveragePassportDrillIn assetClass="Equity" loadSecurities={loadSecurities} />);
+
+    await user.click(screen.getByRole("button", { name: /edit passports/i }));
+    await waitFor(() => expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: /try again/i }));
+
+    await waitFor(() => expect(screen.getByRole("button", { name: /acme corp · acme/i })).toBeInTheDocument());
+    expect(loadSecurities).toHaveBeenCalledTimes(2);
+  });
 });

@@ -51,19 +51,20 @@ export function CoveragePassportDrillIn({
   const [fetched, setFetched] = useState<readonly SecurityMasterEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
-  // Tracks the asset class we have already requested, so toggling local loading state does not re-fetch
-  // or cancel the in-flight request.
-  const requestedAssetClassRef = useRef<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
+  // Guards against a concurrent in-flight request; `fetched` (set only on success) is the "already
+  // loaded" signal, so a failed or cancelled load can be retried.
+  const loadingRef = useRef(false);
 
   const load = loadSecurities ?? defaultLoadAssetClassSecurities;
 
-  // Lazily fetch the asset-class securities the first time the drill-in is expanded.
+  // Lazily fetch the asset-class securities the first time the drill-in is expanded (and on retry).
   useEffect(() => {
-    if (!isLazy || !expanded || requestedAssetClassRef.current === assetClass) {
+    if (!isLazy || !expanded || fetched !== null || loadingRef.current) {
       return;
     }
 
-    requestedAssetClassRef.current = assetClass;
+    loadingRef.current = true;
     let cancelled = false;
     setLoading(true);
     setFailed(false);
@@ -74,21 +75,31 @@ export function CoveragePassportDrillIn({
         }
       })
       .catch(() => {
+        // Leave `fetched` null so a later expand or retry re-requests instead of caching an empty list.
         if (!cancelled) {
           setFailed(true);
-          setFetched([]);
         }
       })
       .finally(() => {
+        loadingRef.current = false;
         if (!cancelled) {
           setLoading(false);
         }
       });
 
     return () => {
+      // Collapsing/unmounting mid-flight: drop the in-flight markers so loading never sticks and a
+      // later expand re-requests.
       cancelled = true;
+      loadingRef.current = false;
+      setLoading(false);
     };
-  }, [isLazy, expanded, assetClass, load]);
+  }, [isLazy, expanded, fetched, assetClass, load, reloadNonce]);
+
+  const retryLoad = () => {
+    setFailed(false);
+    setReloadNonce((nonce) => nonce + 1);
+  };
 
   const effectiveSecurities = isLazy ? fetched : securities;
   const rows = useMemo(
@@ -120,7 +131,18 @@ export function CoveragePassportDrillIn({
           {loading ? (
             <p className="text-xs text-muted-foreground">Loading {assetClass} securities…</p>
           ) : failed ? (
-            <p className="text-xs text-destructive">Could not load {assetClass} securities. Try again.</p>
+            <p className="text-xs text-destructive">
+              Could not load {assetClass} securities.{" "}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-auto p-0 text-xs underline"
+                onClick={retryLoad}
+              >
+                Try again
+              </Button>
+            </p>
           ) : rows.length === 0 ? (
             <p className="text-xs text-muted-foreground">No {assetClass} securities are available to edit.</p>
           ) : (
