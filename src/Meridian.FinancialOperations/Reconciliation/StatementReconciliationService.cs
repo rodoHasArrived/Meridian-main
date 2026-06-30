@@ -32,7 +32,7 @@ public sealed class StatementReconciliationService
         ct.ThrowIfCancellationRequested();
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         var profileId = mappingProfileId;
-        if (RequiresCanonicalStatementSchema(normalizedSourceKind))
+        if (UsesCanonicalSchema(normalizedSourceKind, profileId))
         {
             var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, profileId);
             profileId = profile.ProfileId;
@@ -120,9 +120,17 @@ public sealed class StatementReconciliationService
         || string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal)
         || string.Equals(normalizedSourceKind, "sample-broker", StringComparison.Ordinal);
 
+    // A source is parsed through the canonical, mapping-profile-driven path when its kind always
+    // requires the canonical schema, OR when the caller explicitly selects a mapping profile.
+    // The latter makes operator-supplied ('local') statements reconcilable via a chosen profile,
+    // while a 'local' source with no profile keeps its lenient raw-passthrough behavior.
+    private static bool UsesCanonicalSchema(string normalizedSourceKind, string? mappingProfileId) =>
+        RequiresCanonicalStatementSchema(normalizedSourceKind)
+        || !string.IsNullOrWhiteSpace(mappingProfileId);
+
     private ExternalStatementCaseIntakeResult CreateExternalStatementCases(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
-        if (!RequiresCanonicalStatementSchema(normalizedSourceKind))
+        if (!UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
             var content = File.ReadAllText(sourcePath);
             var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
