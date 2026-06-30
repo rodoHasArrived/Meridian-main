@@ -368,7 +368,10 @@ targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`, `Ex
 `ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local
 reporting logic. The Reporting shell default pane set and command surface now include
 `ReportLineProvenanceExplorer`, matching the browser `/reporting/evidence` route for report-line
-evidence and provenance review.
+evidence and provenance review. Its home chrome stays compact: the Daily Reporting Cockpit strip
+puts the shared summary text, writer, approval, and delivery posture beside direct report-pack, run
+status, evidence, and export routes before the decision queue instead of rendering a separate
+page-level hero.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured

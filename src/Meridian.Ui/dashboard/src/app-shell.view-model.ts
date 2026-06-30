@@ -8,7 +8,10 @@ import {
   workspaceForPath,
   workspacePath
 } from "@/lib/workspace";
+import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
+import { buildAccountingOperatorFocusItems } from "@/screens/accounting-screen.operator-focus";
+import { buildReportingOperatorFocusItems } from "@/screens/reporting-screen.operator-focus";
 import packageJson from "../package.json";
 import type {
   DataBackfillRecord,
@@ -20,7 +23,6 @@ import type {
   WorkspaceWorkflowSummary,
   OperatorWorkItem,
   PortfolioWorkspaceResponse,
-  ReconciliationBreakQueueItem,
   StrategyRunRecord,
   StrategyWorkspaceResponse,
   SessionInfo,
@@ -1782,11 +1784,6 @@ function buildCloseSupportContinuityStatus({ payload }: WorkflowContinuityStatus
     : { label: "Waiting", tone: "pending" };
 }
 
-interface OperatorFocusCandidate extends AppShellOperatorFocusItem {
-  sourcePriority: number;
-  sourceIndex: number;
-}
-
 interface OperatorFocusViewModel {
   summary: string;
   emptyText: string;
@@ -1946,8 +1943,11 @@ function buildOperatorFocusViewModel(
     ...buildTradingFocusItems(context),
     ...buildDataFocusItems(context),
     ...buildPortfolioFocusItems(context),
-    ...buildAccountingFocusItems(context),
-    ...buildReportingFocusItems(context),
+    ...buildAccountingOperatorFocusItems({
+      accounting: context.payload.accounting,
+      workflowSummary: context.payload.workflowSummary
+    }),
+    ...buildReportingOperatorFocusItems(context.payload.reporting),
     ...buildStrategyFocusItems(context)
   ]).sort(compareOperatorFocusCandidates);
 
@@ -2169,117 +2169,6 @@ function buildPortfolioFocusItems({ payload }: WorkflowContinuityStatusContext):
   })];
 }
 
-function buildAccountingFocusItems(context: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
-  const { payload } = context;
-  const accounting = payload.accounting;
-  const workflowSummaryItem = buildAccountingWorkflowSummaryFocusItem(context);
-  const reviewedAutomationItem = buildReviewedAutomationFocusItem(context);
-
-  return [
-    workflowSummaryItem,
-    reviewedAutomationItem,
-    ...((accounting?.breakQueue ?? [])
-      .map((item, index) => buildOperatorFocusCandidateFromBreak(item, index))
-      .filter((item): item is OperatorFocusCandidate => Boolean(item))),
-    ...((accounting?.reconciliationQueue ?? [])
-      .filter((row) => row.openBreakCount > 0)
-      .map((row, index) => buildOperatorFocusCandidate({
-        id: `reconciliation-run:${row.runId}`,
-        label: `${row.strategyName} reconciliation open`,
-        detail: `${formatCount(row.openBreakCount, "open break")} across ${formatCount(row.breakCount, "total break")}. Status: ${row.reconciliationStatus}.`,
-        route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-        workspaceLabel: "Accounting",
-        actionLabel: "Open reconciliation",
-        tone: row.reconciliationStatus === "SecurityCoverageOpen" ? "blocked" : "review",
-        sourcePriority: 13,
-        sourceIndex: index
-      }))),
-    accounting?.cashFlow?.tone === "danger" || accounting?.cashFlow?.tone === "warning"
-      ? buildOperatorFocusCandidate({
-          id: "cash-flow-variance",
-          label: "Cash-flow variance open",
-          detail: accounting.cashFlow.summary,
-          route: WORKSTATION_ROUTE_CATALOG.accounting,
-          workspaceLabel: "Accounting",
-          actionLabel: "Open ledger",
-          tone: accounting.cashFlow.tone === "danger" ? "blocked" : "review",
-          sourcePriority: 14,
-          sourceIndex: 0
-        })
-      : null
-  ].filter((item): item is OperatorFocusCandidate => Boolean(item));
-}
-
-function buildAccountingWorkflowSummaryFocusItem({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate | null {
-  const summary = getAccountingWorkflowSummary(payload.workflowSummary);
-  if (!summary || !isFinancialOperationsWorkflowSummary(summary) || !summary.primaryBlocker?.isBlocking) {
-    return null;
-  }
-
-  return buildOperatorFocusCandidate({
-    id: `financial-operations:${summary.primaryBlocker.code}`,
-    label: summary.primaryBlocker.label,
-    detail: summary.primaryBlocker.detail || summary.statusDetail,
-    route: workflowTargetPath(summary.nextAction?.targetPageTag, summary.workspaceId) ?? WORKSTATION_ROUTE_CATALOG.accounting,
-    workspaceLabel: summary.workspaceTitle || "Accounting",
-    actionLabel: summary.nextAction?.label || "Open Accounting",
-    tone: workflowSummaryToneToContinuityTone(summary.statusTone, summary.primaryBlocker),
-    sourcePriority: 11,
-    sourceIndex: 0
-  });
-}
-
-function buildReviewedAutomationFocusItem({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate | null {
-  const summary = getAccountingWorkflowSummary(payload.workflowSummary);
-  if (!summary || !isFinancialOperationsWorkflowSummary(summary) || summary.primaryBlocker?.isBlocking) {
-    return null;
-  }
-
-  const automation = summary.evidence?.find((badge) => normalizeWorkflowText(badge.label) === "reviewed automation");
-  if (!automation || !isReviewTone(automation.tone)) {
-    return null;
-  }
-
-  return buildOperatorFocusCandidate({
-    id: "financial-operations:reviewed-automation",
-    label: "Reviewed automation requires operator review",
-    detail: `${automation.value}; automation can suggest, classify, extract, match, summarize, draft, and flag, but cannot approve, post, publish, release payments, or erase evidence.`,
-    route: workflowTargetPath(summary.nextAction?.targetPageTag, summary.workspaceId) ?? WORKSTATION_ROUTE_CATALOG.accounting,
-    workspaceLabel: summary.workspaceTitle || "Accounting",
-    actionLabel: summary.nextAction?.label || "Review automation",
-    tone: "review",
-    sourcePriority: 12,
-    sourceIndex: 0
-  });
-}
-
-function isReviewTone(tone: string | null | undefined): boolean {
-  const normalized = normalizeWorkflowText(tone);
-  return normalized === "warning" || normalized === "review" || normalized === "reviewrequired";
-}
-
-function buildReportingFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
-  const reporting = payload.reporting;
-  if (!reporting) {
-    return [];
-  }
-
-  const distributions = getReportPackDistributions(reporting.reporting);
-  return distributions.length === 0
-    ? [buildOperatorFocusCandidate({
-        id: "reporting:missing-report-pack-distribution",
-        label: "Report-pack recipient missing",
-        detail: "No governed report-pack distribution recipients are loaded for approval-ready output review.",
-        route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
-        workspaceLabel: "Reporting",
-        actionLabel: "Open report packs",
-        tone: "review",
-        sourcePriority: 30,
-        sourceIndex: 0
-      })]
-    : [];
-}
-
 function buildStrategyFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
   const strategy = payload.strategy;
   if (!strategy) {
@@ -2378,27 +2267,6 @@ function buildOperatorFocusCandidateFromBackfill(
   });
 }
 
-function buildOperatorFocusCandidateFromBreak(
-  item: ReconciliationBreakQueueItem,
-  index: number
-): OperatorFocusCandidate | null {
-  if (item.status !== "Open" && item.status !== "InReview") {
-    return null;
-  }
-
-  return buildOperatorFocusCandidate({
-    id: `break:${item.breakId}`,
-    label: `${item.category} break ${item.status === "Open" ? "open" : "in review"}`,
-    detail: item.recommendedAction ?? item.explainabilitySummary ?? item.reason,
-    route: normalizeLocalWorkstationRoute(item.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-    workspaceLabel: "Accounting",
-    actionLabel: "Open break queue",
-    tone: item.status === "Open" ? "blocked" : "review",
-    sourcePriority: 12,
-    sourceIndex: index
-  });
-}
-
 function buildOperatorFocusCandidateFromStrategyRun(
   run: StrategyRunRecord,
   index: number
@@ -2418,31 +2286,6 @@ function buildOperatorFocusCandidateFromStrategyRun(
     sourcePriority: 35,
     sourceIndex: index
   });
-}
-
-function buildOperatorFocusCandidate({
-  id,
-  label,
-  detail,
-  route,
-  workspaceLabel,
-  actionLabel,
-  tone,
-  sourcePriority,
-  sourceIndex
-}: Omit<OperatorFocusCandidate, "ariaLabel">): OperatorFocusCandidate {
-  return {
-    id,
-    label,
-    detail,
-    route,
-    workspaceLabel,
-    actionLabel,
-    tone,
-    sourcePriority,
-    sourceIndex,
-    ariaLabel: `${workspaceLabel}: ${label}. ${detail} ${actionLabel}.`
-  };
 }
 
 function routeForOperatorWorkItem(item: OperatorWorkItem): string {

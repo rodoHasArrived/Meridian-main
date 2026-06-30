@@ -1,6 +1,8 @@
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Adapters.Finnhub;
@@ -10,6 +12,7 @@ using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Meridian.Infrastructure.Adapters.TwelveData;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -26,7 +29,16 @@ public static class ProviderCapabilityDescriptorCatalog
         new("ib", Historical: typeof(IBHistoricalDataProvider)),
         new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider)),
         new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider)),
+        new(
+            "robinhood",
+            typeof(RobinhoodMarketDataClient),
+            typeof(RobinhoodHistoricalDataProvider),
+            typeof(RobinhoodSymbolSearchProvider),
+            Options: typeof(RobinhoodOptionsChainProvider),
+            Brokerage: typeof(RobinhoodBrokerageGateway)),
+        new("edgar", Search: typeof(EdgarSymbolSearchProvider)),
         new("tiingo", Historical: typeof(TiingoHistoricalDataProvider)),
+        new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider)),
         new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored)),
         new("stooq", Historical: typeof(StooqHistoricalDataProvider)),
         new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider)),

@@ -266,8 +266,8 @@ public sealed class TierMigrationService : ITierMigrationService
                 _ => ""
             };
 
-            if (!targetPath.EndsWith(ext))
-                targetPath = targetPath.TrimEnd(".jsonl".ToCharArray()) + ".jsonl" + ext;
+            if (!targetPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                targetPath = ApplyCompressionExtension(targetPath, ext);
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
@@ -326,6 +326,14 @@ public sealed class TierMigrationService : ITierMigrationService
         await CopyFileAsync(source, target, tierConfig, ct);
 
         // Verification of compressed files would need decompression.
+    }
+
+    private static string ApplyCompressionExtension(string targetPath, string extension)
+    {
+        if (targetPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            return targetPath;
+
+        return targetPath + extension;
     }
 
     private long EstimateSavings(FileInfo file, TierConfig source, TierConfig target)

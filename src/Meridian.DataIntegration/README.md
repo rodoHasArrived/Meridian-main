@@ -63,9 +63,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   configuration, calibration datasets/snapshots/governance, and F# validation-stage counters used
   by ingestion, routing, diagnostics, and Application/UI adapters.
 - `Monitoring/DataQuality/` - provider data-quality analyzers, freshness SLA monitor, quality
-  report generator, gap/sequence/anomaly/completeness/latency trackers, and liquidity-aware
-  quality thresholds used by ingestion, backfill remediation, health, and shared endpoint
-  adapters.
+  report generator, gap/sequence/anomaly/completeness/latency trackers, cross-provider
+  trade/quote discrepancy comparison, and liquidity-aware quality thresholds used by ingestion,
+  backfill remediation, health, and shared endpoint adapters.
 - `Testing/DepthBufferSelfTests.cs` and `Testing/SampleDataGenerator.cs` - built-in
   depth-buffer integrity self-tests and deterministic sample market-event generation used by
   Application diagnostics adapters.
@@ -120,10 +120,12 @@ compatibility checks, and validation-stage counters live in this module. Connect
 monitoring and connection-status notification over the Contracts-owned monitoring webhook sink,
 provider latency histograms, provider metrics snapshot contracts, provider degradation
 scoring/config, and provider calibration datasets/snapshots also live here so routing,
-diagnostics, browser, and desktop surfaces consume a single provider-trust model. Application
-pipeline, backfill remediation, Prometheus, health, daily-summary, and UI Shared endpoint adapters consume
-`Meridian.DataIntegration.Monitoring` and `Meridian.DataIntegration.Monitoring.DataQuality`
-instead of keeping provider trust primitives in the application layer.
+diagnostics, browser, and desktop surfaces consume a single provider-trust model.
+`CrossProviderComparisonService` emits trade price/volume and quote bid/ask discrepancy signals
+for provider-trust consumers. Application pipeline, backfill remediation, Prometheus, health,
+daily-summary, and UI Shared endpoint adapters consume `Meridian.DataIntegration.Monitoring` and
+`Meridian.DataIntegration.Monitoring.DataQuality` instead of keeping provider trust primitives in
+the application layer.
 
 ## Diagrams
 

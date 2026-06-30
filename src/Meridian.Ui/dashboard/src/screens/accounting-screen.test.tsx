@@ -2967,7 +2967,7 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "Current Accounting route" })).toHaveValue("Accounting / Close Cockpit");
+    expect(screen.getByRole("searchbox", { name: "Current Accounting route" })).toHaveValue("Accounting / Close Cockpit");
     const navigator = screen.getByRole("region", { name: "Accounting recovery navigator" });
     expect(within(navigator).getByRole("link", { name: "Reconciliation Casework" })).toHaveAttribute("href", "/accounting/reconciliation");
     expect(within(navigator).getByRole("link", { name: "Journal Entry" })).toHaveAttribute("href", "/accounting/journal-entries");

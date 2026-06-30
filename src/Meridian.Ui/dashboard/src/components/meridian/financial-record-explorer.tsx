@@ -193,14 +193,17 @@ export function FinancialRecordExplorerShell({
     }
 
     const selectedView = dtoMode.savedViews.find((view) => view.viewId === selectedViewId);
-    const filters = selectedView?.filters ?? dtoMode.filters;
+    const filters = sharedFilterState.length > 0 ? selectedFilters : selectedView?.filters ?? dtoMode.filters;
+    const savedViewDescription = searchText.trim()
+      ? `Search: ${searchText.trim()}`
+      : sharedFilterState.length > 0
+        ? "Saved from shared explorer link."
+        : `Saved from ${selectedView?.label ?? "current explorer filters"}.`;
     setSaving(true);
     try {
       await onSaveView({
         label: trimmedViewName,
-        description: searchText.trim()
-          ? `Search: ${searchText.trim()}`
-          : `Saved from ${selectedView?.label ?? "current explorer filters"}.`,
+        description: savedViewDescription,
         searchText,
         filters,
         columnIds: selectedView?.columnIds ?? []
@@ -358,10 +361,12 @@ function resolveSharedFilters(
   ];
 
   return filters.map((filter) => {
-    const candidate = candidateFilters.find((item) => item.filterId === filter.filterId);
+    const filterId = filter.filterId.toLowerCase();
+    const candidate = candidateFilters.find((item) => item.filterId.toLowerCase() === filterId);
+    const candidateColumn = explorer.columns.find((column) => column.columnId.toLowerCase() === filterId);
     return {
       filterId: filter.filterId,
-      label: candidate?.label ?? filter.filterId,
+      label: candidate?.label ?? candidateColumn?.header ?? filter.filterId,
       value: filter.value,
       operator: candidate?.operator ?? "equals",
       tone: candidate?.tone ?? "Info"

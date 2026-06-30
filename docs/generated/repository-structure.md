@@ -3626,6 +3626,7 @@ Meridian-main
 │   │   │   ├── BrokerReconciliationFeedModels.cs
 │   │   │   ├── CanonicalReconciliationEngine.cs
 │   │   │   ├── FileReconciliationDecisionJournal.cs
+│   │   │   ├── FileStatementReconciliationCheckpointStore.cs
 │   │   │   ├── ReconciliationContextContracts.cs
 │   │   │   ├── ReconciliationContractCatalog.cs
 │   │   │   ├── ReconciliationContracts.cs
@@ -4557,6 +4558,7 @@ Meridian-main
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.cs
+│   │   │   ├── FileReconciliationRunRepository.cs
 │   │   │   ├── GovernanceExceptionService.cs
 │   │   │   ├── IAggregatePortfolioService.cs
 │   │   │   ├── InMemoryReconciliationRunRepository.cs
@@ -6234,6 +6236,7 @@ Meridian-main
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   ├── CanonicalReconciliationMatchingEngineTests.cs
+│   │   │   │   ├── FileStatementReconciliationCheckpointStoreTests.cs
 │   │   │   │   ├── StatementMatchingEngineTests.cs
 │   │   │   │   ├── StatementReconciliationContextAdapterTests.cs
 │   │   │   │   ├── StatementReconciliationOrchestratorTests.cs
@@ -6262,6 +6265,7 @@ Meridian-main
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
+│   │   │   ├── FileReconciliationRunRepositoryTests.cs
 │   │   │   ├── OperationsContinuityPostgresRoundTripTests.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs

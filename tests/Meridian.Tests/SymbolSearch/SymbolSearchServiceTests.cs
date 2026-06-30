@@ -10,7 +10,7 @@ namespace Meridian.Tests.SymbolSearch;
 
 /// <summary>
 /// Unit tests for the SymbolSearchService class.
-/// Tests symbol search, details lookup, and FIGI integration.
+/// Tests symbol search, details lookup, FIGI integration, and provider payload drift handling.
 /// </summary>
 public class SymbolSearchServiceTests : IDisposable
 {
@@ -170,6 +170,41 @@ public class SymbolSearchServiceTests : IDisposable
 
         result.Results.Should().ContainSingle();
         result.Results[0].Symbol.Should().Be("MSFT");
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderSymbolSearchPayloadDrift_DropsMalformedRowsAndPreservesValidMatches()
+    {
+        var driftingProvider = new Mock<ISymbolSearchProvider>();
+        driftingProvider.Setup(p => p.Name).Returns("openfigi");
+        driftingProvider.Setup(p => p.Priority).Returns(1);
+        driftingProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        driftingProvider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(null!, "Malformed mapping without ticker", "NASDAQ", "Stock", "US", "USD", "openfigi", 99),
+                new SymbolSearchResult("   ", "Blank symbol from upstream drift", "NASDAQ", "Stock", "US", "USD", "openfigi", 98)
+            ]);
+
+        var stableProvider = new Mock<ISymbolSearchProvider>();
+        stableProvider.Setup(p => p.Name).Returns("finnhub");
+        stableProvider.Setup(p => p.Priority).Returns(2);
+        stableProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        stableProvider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", "finnhub", 90)
+            ]);
+
+        _service = new SymbolSearchService(
+            [driftingProvider.Object, stableProvider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().ContainSingle();
+        result.Results[0].Symbol.Should().Be("MSFT");
+        result.Results[0].Source.Should().Be("finnhub");
+        result.Sources.Should().BeEquivalentTo(["finnhub"], "malformed provider rows should not be counted as contributing sources");
     }
 
     [Fact]

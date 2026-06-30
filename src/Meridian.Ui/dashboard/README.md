@@ -1048,6 +1048,10 @@ workspace with explicit loading posture.
 Shared workstation primitives render visual search context as read-only textboxes and shared tab
 strips use roving focus with Arrow, Home, and End keys, so route-owned filters and inspector tabs do
 not need screen-local keyboard handling.
+The app shell keeps cross-workspace ranking and disclosure chrome centralized, while Accounting and
+Reporting operator-focus candidate construction lives in route-named modules so close, break,
+automation, and report-pack recipient state can evolve with their owning routes instead of
+accumulating in `app-shell.view-model.ts`.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
 Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
 Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is

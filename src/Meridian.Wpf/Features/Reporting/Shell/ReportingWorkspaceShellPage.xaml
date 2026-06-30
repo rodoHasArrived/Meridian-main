@@ -38,96 +38,110 @@
                       HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
                 <Border Style="{StaticResource SectionCardStyle}"
-                        Margin="0,0,0,16"
+                        Margin="0,0,0,12"
                         AutomationProperties.AutomationId="WorkspaceEvidenceStripReporting">
-                    <Grid>
+                    <Grid AutomationProperties.AutomationId="ReportingCompactChrome">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.55*" />
-                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="1.1*" />
+                            <ColumnDefinition Width="1.05*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal">
-                                <Border Width="44"
-                                        Height="44"
-                                        CornerRadius="14"
+                                <Border Width="34"
+                                        Height="34"
+                                        CornerRadius="10"
                                         Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
                                         BorderBrush="{StaticResource InfoColorBrush}"
                                         BorderThickness="1">
                                     <TextBlock Text="&#xE8A5;"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                               FontSize="24"
+                                               FontSize="18"
                                                Foreground="{StaticResource InfoColorBrush}"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Center" />
                                 </Border>
-                                <StackPanel Margin="12,0,0,0">
-                                    <TextBlock Text="Reporting Workspace"
-                                               Style="{StaticResource PageTitleStyle}" />
-                                    <TextBlock Text="Report writer grids, branded report packs, scheduled distribution, dashboards, exports, approval gates, and lineage status stay visible together."
-                                               Style="{StaticResource CardDescriptionStyle}"
+                                <StackPanel Margin="10,0,0,0">
+                                    <TextBlock Text="Daily Reporting Cockpit"
+                                               Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding SummarySnapshotDetailText}"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </StackPanel>
-
-                            <TextBlock Text="Use this cockpit to decide whether current reporting output is ready for review, blocked by data quality, waiting on scheduled delivery, or due for export-pack preset changes."
-                                       Margin="0,18,0,0"
-                                       FontSize="13"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <Border Grid.Column="1"
-                                Margin="16,0,0,0"
-                                Padding="16,14"
-                                CornerRadius="12"
-                                Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Current Handoff"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                <TextBlock Text="Report pack readiness"
-                                           Margin="0,8,0,0"
-                                           FontSize="16"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="{Binding SummarySnapshotDetailText}"
-                                           Margin="0,6,0,0"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           TextWrapping="Wrap" />
-                                <WrapPanel Margin="0,14,0,0">
-                                    <Button Content="Report Pack"
-                                            Tag="FundReportPack"
-                                            Click="OnNavigateButtonClick"
-                                            Style="{StaticResource SecondaryButtonStyle}"
-                                            Margin="0,0,8,8" />
-                                    <Button Content="Run Status"
-                                            Tag="ReportRunStatus"
-                                            Click="OnNavigateButtonClick"
-                                            Style="{StaticResource GhostButtonStyle}"
-                                            Margin="0,0,8,8" />
-                                    <Button Content="Evidence"
-                                            Tag="ReportLineProvenanceExplorer"
-                                            Click="OnNavigateButtonClick"
-                                            Style="{StaticResource GhostButtonStyle}"
-                                            Margin="0,0,8,8" />
-                                    <Button Content="Exports"
-                                            Tag="AnalysisExport"
-                                            Click="OnNavigateButtonClick"
-                                            Style="{StaticResource GhostButtonStyle}"
-                                            Margin="0,0,8,8" />
-                                    <Button Content="Presets"
-                                            Tag="ExportPresets"
-                                            Click="OnNavigateButtonClick"
-                                            Style="{StaticResource GhostButtonStyle}"
-                                            Margin="0,0,8,8" />
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
+                        <UniformGrid Grid.Column="1"
+                                     Columns="3"
+                                     Margin="16,0,16,0"
+                                     AutomationProperties.AutomationId="ReportingCompactSummaryStrip">
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}"
+                                    Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="Writer"
+                                               FontSize="10"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding WriterSummaryText}"
+                                               Margin="0,4,0,0"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}"
+                                    Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="Approvals"
+                                               FontSize="10"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding ApprovalSummaryText}"
+                                               Margin="0,4,0,0"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource WarningColorBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Delivery"
+                                               FontSize="10"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding DeliverySummaryText}"
+                                               Margin="0,4,0,0"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource SuccessColorBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <WrapPanel Grid.Column="2"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center">
+                            <Button Content="Report Pack"
+                                    Tag="FundReportPack"
+                                    Click="OnNavigateButtonClick"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Run Status"
+                                    Tag="ReportRunStatus"
+                                    Click="OnNavigateButtonClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Evidence"
+                                    Tag="ReportLineProvenanceExplorer"
+                                    Click="OnNavigateButtonClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Exports"
+                                    Tag="AnalysisExport"
+                                    Click="OnNavigateButtonClick"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                        </WrapPanel>
                     </Grid>
                 </Border>
 
@@ -157,32 +171,6 @@
 
                     <StackPanel Grid.Column="2"
                                 AutomationProperties.AutomationId="WorkspaceInspectorHostReporting">
-                        <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
-                            <StackPanel>
-                                <TextBlock Text="Summary Snapshot" Style="{StaticResource CardHeaderStyle}" />
-                                <UniformGrid Columns="3" Margin="0,12,0,0">
-                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Writer" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="{Binding WriterSummaryText}" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Approvals" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="{Binding ApprovalSummaryText}" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                        <StackPanel>
-                                            <TextBlock Text="Delivery" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="{Binding DeliverySummaryText}" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource SuccessColorBrush}" />
-                                        </StackPanel>
-                                    </Border>
-                                </UniformGrid>
-                            </StackPanel>
-                        </Border>
-
                         <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="Decision Links" Style="{StaticResource CardHeaderStyle}" />

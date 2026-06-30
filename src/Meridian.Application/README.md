@@ -207,6 +207,9 @@ and UI presentation concerns in their owning layers.
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
   results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
+  Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
+  deterministic request and retained execution-history entry; data-quality and quality-alert
+  remediation paths remain single-symbol signals.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot

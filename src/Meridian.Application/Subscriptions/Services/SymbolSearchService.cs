@@ -200,10 +200,14 @@ public sealed class SymbolSearchService : IDisposable
         // Aggregate results
         foreach (var (provider, results) in providerResults)
         {
-            if (results.Count > 0)
+            var validResults = results
+                .Where(static r => !string.IsNullOrWhiteSpace(r.Symbol))
+                .ToList();
+
+            if (validResults.Count > 0)
             {
                 sources.Add(provider);
-                allResults.AddRange(results);
+                allResults.AddRange(validResults);
             }
         }
 
@@ -252,8 +256,8 @@ public sealed class SymbolSearchService : IDisposable
         return response;
     }
 
-    private static string NormalizeSymbolKey(string symbol)
-        => symbol.Trim().ToUpperInvariant();
+    private static string NormalizeSymbolKey(string? symbol)
+        => symbol?.Trim().ToUpperInvariant() ?? string.Empty;
 
     /// <summary>
     /// Get detailed information about a specific symbol.
@@ -445,7 +449,7 @@ public sealed class SymbolSearchService : IDisposable
     }
 
     private static SymbolSearchResult NormalizeResultSymbol(SymbolSearchResult result)
-        => result with { Symbol = result.Symbol.Trim().ToUpperInvariant() };
+        => result with { Symbol = NormalizeSymbolKey(result.Symbol) };
 
     /// <summary>
     /// Clear the search and details cache.

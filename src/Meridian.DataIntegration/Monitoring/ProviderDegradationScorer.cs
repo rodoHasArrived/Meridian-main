@@ -401,14 +401,17 @@ public sealed class ProviderDegradationScorer : IDisposable
                         score.ConnectionScore, score.LatencyScore,
                         score.ErrorRateScore, score.ReconnectScore);
 
-                    try
+                    if (!wasDegrade)
                     {
-                        OnProviderDegraded?.Invoke(new ProviderDegradedEvent(
-                            score.ProviderName, score.CompositeScore, DateTimeOffset.UtcNow));
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.Error(ex, "Error in provider degraded event handler");
+                        try
+                        {
+                            OnProviderDegraded?.Invoke(new ProviderDegradedEvent(
+                                score.ProviderName, score.CompositeScore, DateTimeOffset.UtcNow));
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error(ex, "Error in provider degraded event handler");
+                        }
                     }
 
                     _previouslyDegraded[score.ProviderName] = true;

@@ -61,6 +61,10 @@ mode:
   the recorded checkpoint, and emits warning signals when checkpoint bar-count evidence is missing.
 - Fresh runs without the resume flag clear matching-granularity checkpoints before writing new
   checkpoint evidence; they do not clear checkpoints recorded for another granularity.
+- Automatic gap-analyzer remediation batches same-provider, same-window scan gaps into one
+  deterministic request with symbols normalized to uppercase and sorted lexically before execution
+  history is retained. Data-quality and quality-alert triggers remain single-symbol remediation
+  signals.
 
 ## Execution commands
 
@@ -100,7 +104,9 @@ workflow enforces timers end to end:
   require same-business-day owner assignment and a retained runbook entry.
 - Attempt: auto-remediation may run when the gap exceeds the configured minimum duration/size and is
   not under symbol/provider cooldown. Duplicate triggers are suppressed by idempotency; transient
-  provider failures may retry with the same remediation key.
+  provider failures may retry with the same remediation key. Same-provider, same-window scan gaps
+  share a batched remediation key so operators can audit one execution against the affected symbol
+  set.
 - Fallback: cross-provider repair must use the configured provider priority/fallback order and must
   preserve the original source/provider evidence for audit comparison.
 - Prove: a gap is not closed until the rerun has execution history, per-symbol validation signals,

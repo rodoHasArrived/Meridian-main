@@ -41,8 +41,12 @@ describe("app shell view model", () => {
 
     expect(source).toContain("buildStrategyContinuityStatus");
     expect(source).toContain("buildOperatorFocusCandidateFromStrategyRun");
+    expect(source).toContain("buildAccountingOperatorFocusItems");
+    expect(source).toContain("buildReportingOperatorFocusItems");
     expect(source).not.toContain("buildResearchContinuityStatus");
     expect(source).not.toContain("buildOperatorFocusCandidateFromResearchRun");
+    expect(source).not.toContain("function buildAccountingFocusItems");
+    expect(source).not.toContain("function buildReportingFocusItems");
   });
 
   it("normalizes route paths to workspace keys", () => {

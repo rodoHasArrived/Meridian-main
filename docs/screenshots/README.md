@@ -25,6 +25,11 @@ matching route/page manifest entry fails validation instead of being accepted as
 unproven capture. Manifest capture paths must also resolve to the requested output PNG, so an older
 or different run cannot satisfy the evidence gate by reusing the expected filename.
 
+The maintained browser catalog in `scripts/dev/web-screenshot-routes.json` is expected to cover the
+active workstation page surface: every non-legacy path in `WORKSTATION_ROUTE_CATALOG`, the
+workstation root route, and every explicit non-redirect `<Route>` in the dashboard app shell. Update
+the route definition and fixture-backed wait evidence together when adding a new browser page.
+
 ## Desktop WPF screenshot index
 
 The maintained desktop WPF coverage index lives at
