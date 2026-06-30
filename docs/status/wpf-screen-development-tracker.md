@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `4cf62201bb7e`
+- Source fingerprint: `cdcc9e98aa71`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `92`
 - Open automated tasks: `0`
@@ -372,7 +372,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundAuditTrail (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-audit-trail.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
 
 #### Security and instrument explorer (`SecurityInstrumentExplorer`)
 
@@ -398,7 +398,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as FundReportPack (FundLedgerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-fund-report-pack.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
 
 #### Report run status (`ReportRunStatus`)
 
@@ -406,7 +406,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as ReportRunStatus (DashboardPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-run-status.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, +2 more.
 
 #### Reporting dashboard (`Dashboard`)
 
@@ -422,7 +422,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as AnalysisExport (AnalysisExportPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-analysis-export.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, +4 more.
 
 #### Report-line provenance (`ReportLineProvenanceExplorer`)
 
@@ -430,7 +430,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as ReportLineProvenanceExplorer (FinancialRecordExplorerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-report-line-provenance-explorer.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more.
 
 #### Analysis export wizard (`AnalysisExportWizard`)
 
