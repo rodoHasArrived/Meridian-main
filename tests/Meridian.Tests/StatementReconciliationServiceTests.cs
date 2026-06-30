@@ -355,4 +355,57 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAsync_LocalStatement_WithProfile_ProducesTypedCollections()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+                "LOC-1,SPY,10,500,0,position,2026-05-29",
+                "LOC-1,,0,0,125.25,cash,2026-05-29"
+            ]);
+
+            var result = await svc.ImportAsync(
+                "local", filePath, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, CancellationToken.None);
+
+            // With a profile, a 'local' source is normalized into typed collections rather than
+            // returned as raw rows.
+            Assert.Equal(2, result.RowCount);
+            Assert.Single(result.Positions);
+            Assert.Single(result.CashBalances);
+            Assert.Equal(10m, result.Positions[0].Quantity);
+            Assert.Equal(125.25m, result.CashBalances[0].Amount);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task ImportAsync_LocalStatement_WithoutProfile_RemainsRawRowCount()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // Backward compatibility: no profile means the lenient raw passthrough is preserved.
+            await File.WriteAllLinesAsync(filePath, ["header", "row1", "row2"]);
+
+            var result = await svc.ImportAsync("local", filePath, CancellationToken.None);
+
+            Assert.Equal(2, result.RowCount);
+            Assert.Empty(result.Positions);
+            Assert.Empty(result.CashBalances);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }

@@ -7,16 +7,6 @@ namespace Meridian.FinancialOperations.Reconciliation;
 public sealed class StatementReconciliationService
 {
     private readonly StatementBreakClassifier _breakClassifier = new();
-    private static readonly string[] CanonicalStatementColumns =
-    [
-        "account",
-        "symbol",
-        "quantity",
-        "price",
-        "cashAmount",
-        "activityType",
-        "tradeDate"
-    ];
     private readonly StatementMappingProfileRegistry _mappingProfiles;
 
     public StatementReconciliationService(StatementMappingProfileRegistry? mappingProfiles = null)
@@ -42,13 +32,16 @@ public sealed class StatementReconciliationService
         return Task.FromResult($"Statement source '{normalizedSourceKind}:{sourcePath}' passed local file accessibility checks{profileSuffix}.");
     }
 
-    public async Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, CancellationToken ct)
+    public Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, CancellationToken ct) =>
+        ImportAsync(sourceKind, sourcePath, mappingProfileId: null, ct: ct);
+
+    public async Task<NormalizedStatementImportResult> ImportAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct)
     {
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         ct.ThrowIfCancellationRequested();
-        if (RequiresCanonicalStatementSchema(normalizedSourceKind))
+        if (UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
-            return await ReadNormalizedStatementImportAsync(normalizedSourceKind, sourcePath, ct).ConfigureAwait(false);
+            return await ReadNormalizedStatementImportAsync(normalizedSourceKind, sourcePath, mappingProfileId, ct).ConfigureAwait(false);
         }
 
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
@@ -148,15 +141,17 @@ public sealed class StatementReconciliationService
             cases);
     }
 
-    private static async Task<NormalizedStatementImportResult> ReadNormalizedStatementImportAsync(
+    private async Task<NormalizedStatementImportResult> ReadNormalizedStatementImportAsync(
         string normalizedSourceKind,
         string sourcePath,
+        string? mappingProfileId,
         CancellationToken ct)
     {
-        ValidateCanonicalStatementHeader(sourcePath);
+        var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, mappingProfileId);
+        var header = File.ReadLines(sourcePath).First().Split(',', StringSplitOptions.TrimEntries);
 
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
-        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
+        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var positions = new List<StatementPosition>();
         var cashBalances = new List<StatementCashBalance>();
         var transactions = new List<StatementTransaction>();
@@ -241,30 +236,47 @@ public sealed class StatementReconciliationService
         ParsedStatementLine ParseCanonicalStatementLine(string line, int currentRowNumber)
         {
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length < CanonicalStatementColumns.Length)
+            if (parts.Length < header.Length)
             {
-                throw new InvalidDataException($"Statement row {currentRowNumber} has {parts.Length} columns; expected at least {CanonicalStatementColumns.Length}.");
+                throw new InvalidDataException($"Statement row {currentRowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
             }
 
-            var account = parts[0];
-            var symbol = parts[1];
-            var quantity = decimal.Parse(parts[2], CultureInfo.InvariantCulture);
-            var price = decimal.Parse(parts[3], CultureInfo.InvariantCulture);
-            var cashAmount = decimal.Parse(parts[4], CultureInfo.InvariantCulture);
-            var activityType = parts[5];
-            var tradeDate = DateOnly.Parse(parts[6], CultureInfo.InvariantCulture);
-            var sourceRow = CreateSourceRowReference(importId, currentRowNumber, line, CreateRawSnapshot(importId, normalizedSourceKind, sourcePath, currentRowNumber, line, parts));
-            var snapshot = sourceRow.RawSnapshot;
-            var securityId = GetOptional(parts, 9);
-            var unresolvedIdentifier = GetOptional(parts, 10) ?? (string.IsNullOrWhiteSpace(symbol) ? null : symbol);
-            var currency = GetOptional(parts, 11) ?? "USD";
-            var marketValue = GetOptionalDecimal(parts, 12) ?? price * quantity;
-            var settlementDate = GetOptionalDate(parts, 13);
-            var amount = GetOptionalDecimal(parts, 14) ?? (cashAmount == 0m ? marketValue : cashAmount);
-            var feesCommission = GetOptionalDecimal(parts, 15) ?? 0m;
-            var externalReference = GetOptional(parts, 16);
-            var externalAccountId = GetOptional(parts, 8) ?? account;
-            var accountId = GetOptional(parts, 7) ?? account;
+            var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
+            var account = mapped.GetRequired(StatementCanonicalField.Account, currentRowNumber);
+            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber));
+            var rowKind = ToStatementRowKind(activityType);
+            var symbol = rowKind == StatementRowKind.CashBalance
+                ? mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty
+                : mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber);
+            var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
+            var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, currentRowNumber);
+            var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, currentRowNumber);
+            var tradeDate = mapped.GetRequiredDate(StatementCanonicalField.TradeDate, currentRowNumber);
+            var settlementDate = mapped.GetOptionalDate(StatementCanonicalField.SettlementDate);
+            var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
+            var marketValue = mapped.GetOptionalDecimal(StatementCanonicalField.MarketValue) ?? price * quantity;
+            var amount = mapped.GetOptionalDecimal(StatementCanonicalField.Amount) ?? (cashAmount == 0m ? marketValue : cashAmount);
+            var feesCommission = mapped.GetOptionalDecimal(StatementCanonicalField.FeesCommission) ?? 0m;
+            var externalReference = mapped.GetOptional(StatementCanonicalField.ExternalReference)
+                ?? mapped.GetOptional(StatementCanonicalField.ExternalTransactionId);
+            var securityId = mapped.GetOptional(StatementCanonicalField.SecurityId);
+            var unresolvedIdentifier = mapped.GetOptional(StatementCanonicalField.UnresolvedIdentifier)
+                ?? (string.IsNullOrWhiteSpace(symbol) ? null : symbol);
+            var accountId = mapped.GetOptional(StatementCanonicalField.AccountId) ?? account;
+            var externalAccountId = mapped.GetOptional(StatementCanonicalField.ExternalAccountId) ?? account;
+
+            var snapshot = mapped.ToCanonicalSnapshot();
+            snapshot["importId"] = importId;
+            snapshot["sourceKind"] = normalizedSourceKind;
+            snapshot["sourcePath"] = sourcePath;
+            snapshot["mappingProfileId"] = profile.ProfileId;
+            snapshot["account"] = account;
+            snapshot["symbol"] = symbol;
+            snapshot["activityType"] = activityType;
+            snapshot["tradeDate"] = tradeDate.ToString("O");
+            snapshot["rowNumber"] = currentRowNumber.ToString(CultureInfo.InvariantCulture);
+            snapshot["rawLine"] = line;
+            var sourceRow = CreateSourceRowReference(importId, currentRowNumber, line, snapshot);
             var security = new StatementSecurityReference(importId, currentRowNumber, sourceRow.SourceRowHash, snapshot, securityId, unresolvedIdentifier, currency);
 
             return new ParsedStatementLine(
@@ -362,22 +374,6 @@ public sealed class StatementReconciliationService
     }
 
 
-    private static void ValidateCanonicalStatementHeader(string sourcePath)
-    {
-        var header = File.ReadLines(sourcePath).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(header))
-        {
-            throw new InvalidDataException("Statement source file is empty.");
-        }
-
-        var actual = header.Split(',', StringSplitOptions.TrimEntries);
-        EnsureUniqueStatementHeaderColumns(actual, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
-        if (!CanonicalCsvHeaderPrefixMatches(actual))
-        {
-            throw new InvalidDataException("Statement source must use the canonical external statement header: account,symbol,quantity,price,cashAmount,activityType,tradeDate.");
-        }
-    }
-
     private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
         var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
@@ -458,68 +454,6 @@ public sealed class StatementReconciliationService
         string line,
         IReadOnlyDictionary<string, string> rawSnapshot)
         => new(importId, rowNumber, DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}"), rawSnapshot);
-
-    private static IReadOnlyDictionary<string, string> CreateRawSnapshot(
-        string importId,
-        string normalizedSourceKind,
-        string sourcePath,
-        int rowNumber,
-        string line,
-        string[] parts)
-    {
-        var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["importId"] = importId,
-            ["sourceKind"] = normalizedSourceKind,
-            ["sourcePath"] = sourcePath,
-            ["account"] = parts[0],
-            ["symbol"] = parts[1],
-            ["quantity"] = parts[2],
-            ["price"] = parts[3],
-            ["cashAmount"] = parts[4],
-            ["activityType"] = parts[5],
-            ["tradeDate"] = parts[6],
-            ["rowNumber"] = rowNumber.ToString(),
-            ["rawLine"] = line
-        };
-
-        AddOptional(snapshot, "accountId", parts, 7);
-        AddOptional(snapshot, "externalAccountId", parts, 8);
-        AddOptional(snapshot, "securityId", parts, 9);
-        AddOptional(snapshot, "unresolvedIdentifier", parts, 10);
-        AddOptional(snapshot, "currency", parts, 11);
-        AddOptional(snapshot, "marketValue", parts, 12);
-        AddOptional(snapshot, "settlementDate", parts, 13);
-        AddOptional(snapshot, "amount", parts, 14);
-        AddOptional(snapshot, "feesCommission", parts, 15);
-        AddOptional(snapshot, "externalReference", parts, 16);
-        return snapshot;
-    }
-
-    private static void AddOptional(Dictionary<string, string> snapshot, string key, string[] parts, int index)
-    {
-        var value = GetOptional(parts, index);
-        if (value is not null)
-        {
-            snapshot[key] = value;
-        }
-    }
-
-    private static string? GetOptional(string[] parts, int index)
-    {
-        if (parts.Length <= index || string.IsNullOrWhiteSpace(parts[index]))
-        {
-            return null;
-        }
-
-        return parts[index];
-    }
-
-    private static decimal? GetOptionalDecimal(string[] parts, int index) =>
-        GetOptional(parts, index) is { } value ? decimal.Parse(value, CultureInfo.InvariantCulture) : null;
-
-    private static DateOnly? GetOptionalDate(string[] parts, int index) =>
-        GetOptional(parts, index) is { } value ? DateOnly.Parse(value, CultureInfo.InvariantCulture) : null;
 
     private static StatementRowKind ToStatementRowKind(string activityType)
     {
