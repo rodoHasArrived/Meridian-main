@@ -439,7 +439,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 accounting_policy_version,
                 description,
                 created_at,
-                updated_at)
+                updated_at,
+                tenant_id)
             values (
                 @ledger_book_id,
                 @fund_profile_id,
@@ -452,7 +453,14 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 @accounting_policy_version,
                 @description,
                 @created_at,
-                @updated_at)
+                @updated_at,
+                -- SEC-005 slice 4c-ii: stamp the owning tenant from the authoritative fund_profile_tenancy
+                -- registry (joined on the normalized fund key) so new books carry their partition tenant.
+                -- An unbound fund resolves null and stays fail-open until it is claimed. tenant_id is left
+                -- out of the on-conflict update below, so an already-stamped book keeps its first owner.
+                (select t.tenant_id
+                 from {Qualified("fund_profile_tenancy")} t
+                 where t.fund_profile_id = lower(trim(@fund_profile_id))))
             on conflict (ledger_book_id) do update
             set fund_profile_id = excluded.fund_profile_id,
                 fund_structure_node_id = excluded.fund_structure_node_id,
@@ -1141,7 +1149,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 opened_at,
                 closed_at,
                 optimistic_version,
-                updated_at)
+                updated_at,
+                tenant_id)
             values (
                 @period_id,
                 @ledger_book_id,
@@ -1154,7 +1163,13 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 @opened_at,
                 @closed_at,
                 @optimistic_version,
-                now());
+                now(),
+                -- SEC-005 slice 4c-ii: a period inherits its ledger book's partition tenant (matching the
+                -- 4c-i backfill). A period with no ledger_book_id, or a book not yet stamped, resolves null
+                -- and stays fail-open.
+                (select b.tenant_id
+                 from {Qualified("ledger_books")} b
+                 where b.ledger_book_id = @ledger_book_id));
             """;
         AddPeriodParameters(command, period);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
