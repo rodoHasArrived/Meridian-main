@@ -176,7 +176,15 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<IReconciliationRunRepository>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
+            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            return new FileReconciliationRunRepository(
+                Path.Combine(resolvedDataRoot, "workstation"),
+                sp.GetRequiredService<ILogger<FileReconciliationRunRepository>>());
+        });
         services.AddSingleton<ReconciliationProjectionService>();
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();

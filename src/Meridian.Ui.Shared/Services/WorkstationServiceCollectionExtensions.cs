@@ -375,7 +375,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
 
-        services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.TryAddSingleton<IReconciliationRunRepository>(sp =>
+            new FileReconciliationRunRepository(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileReconciliationRunRepository>>()));
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
         services.TryAddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
         services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();

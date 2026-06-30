@@ -1,0 +1,133 @@
+using FluentAssertions;
+using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Services;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Meridian.Tests.Application;
+
+public sealed class FileReconciliationRunRepositoryTests : IDisposable
+{
+    private readonly string _dataRoot = Path.Combine(Path.GetTempPath(), $"meridian-recon-runs-{Guid.NewGuid():N}");
+
+    [Fact]
+    public async Task SaveAsync_PersistsAcrossNewInstance()
+    {
+        var detail = BuildDetail("recon-1", "run-1", DateTimeOffset.UtcNow);
+
+        var first = CreateRepository();
+        await first.SaveAsync(detail);
+
+        var reopened = CreateRepository();
+        var loaded = await reopened.GetByIdAsync("recon-1");
+
+        loaded.Should().NotBeNull();
+        loaded!.Summary.RunId.Should().Be("run-1");
+        loaded.Summary.ReconciliationRunId.Should().Be("recon-1");
+    }
+
+    [Fact]
+    public async Task GetLatestForRunAsync_ReturnsMostRecentByCreatedAt()
+    {
+        var repository = CreateRepository();
+        var older = BuildDetail("recon-older", "run-1", DateTimeOffset.UtcNow.AddHours(-2));
+        var newer = BuildDetail("recon-newer", "run-1", DateTimeOffset.UtcNow);
+        await repository.SaveAsync(older);
+        await repository.SaveAsync(newer);
+
+        var latest = await repository.GetLatestForRunAsync("run-1");
+
+        latest.Should().NotBeNull();
+        latest!.Summary.ReconciliationRunId.Should().Be("recon-newer");
+    }
+
+    [Fact]
+    public async Task GetHistoryForRunAsync_ReturnsSummariesNewestFirst()
+    {
+        var repository = CreateRepository();
+        await repository.SaveAsync(BuildDetail("recon-a", "run-1", DateTimeOffset.UtcNow.AddHours(-1)));
+        await repository.SaveAsync(BuildDetail("recon-b", "run-1", DateTimeOffset.UtcNow));
+        await repository.SaveAsync(BuildDetail("recon-other", "run-2", DateTimeOffset.UtcNow));
+
+        var history = await repository.GetHistoryForRunAsync("run-1");
+
+        history.Should().HaveCount(2);
+        history[0].ReconciliationRunId.Should().Be("recon-b");
+        history[1].ReconciliationRunId.Should().Be("recon-a");
+    }
+
+    [Fact]
+    public async Task SaveAsync_OverwritesExistingRunWithSameId()
+    {
+        var repository = CreateRepository();
+        await repository.SaveAsync(BuildDetail("recon-1", "run-1", DateTimeOffset.UtcNow, breakCount: 0));
+        await repository.SaveAsync(BuildDetail("recon-1", "run-1", DateTimeOffset.UtcNow, breakCount: 5));
+
+        var reopened = CreateRepository();
+        var loaded = await reopened.GetByIdAsync("recon-1");
+
+        loaded.Should().NotBeNull();
+        loaded!.Summary.BreakCount.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task SaveAsync_MergesWritesFromSeparateInstancesSharingTheSameFile()
+    {
+        // Two instances pointing at the same data directory (e.g. browser workstation + WPF desktop).
+        var instanceA = CreateRepository();
+        var instanceB = CreateRepository();
+
+        await instanceA.SaveAsync(BuildDetail("recon-a", "run-1", DateTimeOffset.UtcNow));
+        // instanceB loaded before A's write; SaveAsync must re-read the snapshot so A's run survives.
+        await instanceB.SaveAsync(BuildDetail("recon-b", "run-2", DateTimeOffset.UtcNow));
+
+        var reopened = CreateRepository();
+        (await reopened.GetByIdAsync("recon-a")).Should().NotBeNull();
+        (await reopened.GetByIdAsync("recon-b")).Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ReflectsRunSavedByAnotherInstanceAfterAnEarlierRead()
+    {
+        var reader = CreateRepository();
+        // Prime the reader with an earlier read so a stale cache (if any) would be populated.
+        (await reader.GetByIdAsync("recon-x")).Should().BeNull();
+
+        var writer = CreateRepository();
+        await writer.SaveAsync(BuildDetail("recon-x", "run-1", DateTimeOffset.UtcNow));
+
+        // The reader must observe the run written by the other instance, not a cached empty view.
+        (await reader.GetByIdAsync("recon-x")).Should().NotBeNull();
+    }
+
+    private FileReconciliationRunRepository CreateRepository()
+        => new(_dataRoot, NullLogger<FileReconciliationRunRepository>.Instance);
+
+    private static ReconciliationRunDetail BuildDetail(
+        string reconciliationRunId,
+        string runId,
+        DateTimeOffset createdAt,
+        int breakCount = 0)
+        => new(
+            new ReconciliationRunSummary(
+                ReconciliationRunId: reconciliationRunId,
+                RunId: runId,
+                CreatedAt: createdAt,
+                PortfolioAsOf: createdAt,
+                LedgerAsOf: createdAt,
+                MatchCount: 3,
+                BreakCount: breakCount,
+                OpenBreakCount: breakCount,
+                HasTimingDrift: false,
+                AmountTolerance: 0.01m,
+                MaxAsOfDriftMinutes: 10),
+            Matches: [],
+            Breaks: []);
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_dataRoot))
+        {
+            Directory.Delete(_dataRoot, recursive: true);
+        }
+    }
+}
