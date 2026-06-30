@@ -143,7 +143,8 @@ public static class AccountingSystemEndpoints
         .WithName("GetAccountingProductionCertificationProfile")
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
             AccountingProductionCertificationProfileUpsertRequestDto request,
@@ -246,7 +247,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingMigrationRunArtifacts")
         .Produces<AccountingMigrationRunArtifactListDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
             AccountingMigrationRunArtifactUpsertRequestDto request,
@@ -315,7 +317,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingMigrationWorkerPlans")
         .Produces<AccountingMigrationRunWorkerPlanListDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationWorkerPlans, async (
             AccountingMigrationRunWorkerPlanUpsertRequestDto request,
@@ -403,7 +406,9 @@ public static class AccountingSystemEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountingSystemImport")
-        .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK);
+        .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemReconciliationLatest, async (
             string? providerId,
@@ -430,7 +435,9 @@ public static class AccountingSystemEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountingSystemReconciliation")
-        .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK);
+        .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemMappingProfiles, async (
             string? providerId,
@@ -457,7 +464,9 @@ public static class AccountingSystemEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListAccountingSystemMappingProfiles")
-        .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMappingProfiles, async (
             AccountingSystemMappingProfileUpsertRequestDto request,
@@ -536,7 +545,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingSystemExportPackages")
         .Produces<IReadOnlyList<ExternalGlExportPackageDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemExportPackages, async (
             AccountingSystemExportPackageRequestDto request,

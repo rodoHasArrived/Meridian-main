@@ -43,11 +43,11 @@ Total items: **200**
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 530 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 32 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 117 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4235 | `NOTE` | ❌ | note: "Paper adapter routing is available.", |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4247 | `NOTE` | ❌ | note: "Realtime subscriptions are steady.", |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4259 | `NOTE` | ❌ | note: "Replay queue is elevated but within tolerance.", |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4371 | `NOTE` | ❌ | Note: note, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4454 | `NOTE` | ❌ | Note: note, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4245 | `NOTE` | ❌ | note: "Paper adapter routing is available.", |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4257 | `NOTE` | ❌ | note: "Realtime subscriptions are steady.", |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4269 | `NOTE` | ❌ | note: "Replay queue is elevated but within tolerance.", |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4381 | `NOTE` | ❌ | Note: note, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 4464 | `NOTE` | ❌ | Note: note, |
 | `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | 1974 | `NOTE` | ❌ | Note: "Provider-ledger reconciliation break signed off.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 240 | `NOTE` | ❌ | Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2047 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |

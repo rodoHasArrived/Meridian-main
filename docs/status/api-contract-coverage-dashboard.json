@@ -77,91 +77,91 @@
     {
       "method": "POST",
       "path": "/api/accounting-system/production-certification-profile",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:148",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:149",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/migration-runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:188",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:189",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/migration-run-artifacts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:224",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:225",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/migration-run-artifacts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:251",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:253",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/migration-worker-plans",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:291",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:293",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/migration-worker-plans",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:320",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:323",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/import/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:357",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:360",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/import/latest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:381",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:384",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/reconciliation/latest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:408",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:413",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/mapping-profiles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:435",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:442",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/mapping-profiles",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:462",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:471",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/export-packages",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:509",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:518",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/export-packages",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:541",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:551",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/accounting-system/export-packages/{exportPackageId}/manifest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:588",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:598",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/accounting-system/export-packages/certification",
-      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:626",
+      "source": "src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:636",
       "documented": true
     },
     {
@@ -3533,13 +3533,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2518",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2528",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2639",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2649",
       "documented": true
     }
   ],
