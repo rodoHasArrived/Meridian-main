@@ -26,12 +26,17 @@ public sealed class AnalysisExportService
 
     private async Task<(bool Success, string? ErrorMessage, T? Data)> PostApiAsync<T>(string endpoint, object body, CancellationToken ct) where T : class
     {
+        // Observe cancellation deterministically before dispatching: a pre-cancelled token
+        // must always surface as OperationCanceledException rather than racing on whether the
+        // underlying HTTP client happens to throw or return a failed response.
+        ct.ThrowIfCancellationRequested();
         var response = await ApiClientService.Instance.PostWithResponseAsync<T>(endpoint, body, ct);
         return (response.Success, response.ErrorMessage, response.Data);
     }
 
     private async Task<(bool Success, string? ErrorMessage, T? Data)> GetApiAsync<T>(string endpoint, CancellationToken ct) where T : class
     {
+        ct.ThrowIfCancellationRequested();
         var response = await ApiClientService.Instance.GetWithResponseAsync<T>(endpoint, ct);
         return (response.Success, response.ErrorMessage, response.Data);
     }
