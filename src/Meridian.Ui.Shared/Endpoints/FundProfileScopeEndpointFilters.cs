@@ -36,21 +36,34 @@ public static class FundProfileScopeEndpointFilters
         EndpointFilterDelegate next)
     {
         var httpContext = context.HttpContext;
-        var fundProfileId = httpContext.Request.Query[FundProfileQueryKey].ToString();
-        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        var fundProfileIds = httpContext.Request.Query[FundProfileQueryKey];
+        if (fundProfileIds.Count > 0)
         {
             var guard = httpContext.RequestServices.GetService<IFundProfileTenantGuard>();
             if (guard is not null)
             {
                 var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
-                var decision = await guard
-                    .EvaluateAsync(tenant, fundProfileId, httpContext.RequestAborted)
-                    .ConfigureAwait(false);
-                if (!decision.IsAllowed)
+
+                // Evaluate EVERY supplied fundProfileId value, not the joined StringValues: a polluted
+                // query such as ?fundProfileId=foreign&fundProfileId=mine would otherwise join to
+                // "foreign,mine" (which the guard fails open on) while the handler's string parameter binds
+                // to a single value — a gate bypass. Deny if any supplied scope is positively foreign.
+                foreach (var fundProfileId in fundProfileIds)
                 {
-                    return Results.Problem(
-                        "The requested fund profile is not accessible to the current tenant.",
-                        statusCode: StatusCodes.Status403Forbidden);
+                    if (string.IsNullOrWhiteSpace(fundProfileId))
+                    {
+                        continue;
+                    }
+
+                    var decision = await guard
+                        .EvaluateAsync(tenant, fundProfileId, httpContext.RequestAborted)
+                        .ConfigureAwait(false);
+                    if (!decision.IsAllowed)
+                    {
+                        return Results.Problem(
+                            "The requested fund profile is not accessible to the current tenant.",
+                            statusCode: StatusCodes.Status403Forbidden);
+                    }
                 }
             }
         }

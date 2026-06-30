@@ -46,6 +46,25 @@ public sealed class FundProfileScopeEndpointFilterTests
     }
 
     [Fact]
+    public async Task MultipleFundProfiles_DeniesWhenAnyValueIsForeign()
+    {
+        // Query-parameter pollution: ?fundProfileId=fund-other&fundProfileId=fund-mine. The handler's
+        // string parameter would bind to a single value, so the filter must evaluate EVERY supplied value
+        // (not the comma-joined StringValues) and refuse when any is positively foreign.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), "fund-other", Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("owned by another tenant"));
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), "fund-mine", Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Allow("own fund"));
+        await using var app = await CreateAppAsync(guard);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-other&fundProfileId=fund-mine");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task BlankFundProfile_SkipsGuard_AndIsAllowed()
     {
         var guard = Substitute.For<IFundProfileTenantGuard>();
