@@ -3231,8 +3231,6 @@ Meridian-main
 │   │   │   └── MarketDataQuery.cs
 │   │   ├── StrategyEngine
 │   │   │   └── StrategyEngineContracts.cs
-│   │   ├── Tenancy
-│   │   │   └── FundProfileTenancy.cs
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
@@ -3626,6 +3624,7 @@ Meridian-main
 │   │   │   ├── BrokerReconciliationFeedModels.cs
 │   │   │   ├── CanonicalReconciliationEngine.cs
 │   │   │   ├── FileReconciliationDecisionJournal.cs
+│   │   │   ├── FileStatementReconciliationCheckpointStore.cs
 │   │   │   ├── ReconciliationContextContracts.cs
 │   │   │   ├── ReconciliationContractCatalog.cs
 │   │   │   ├── ReconciliationContracts.cs
@@ -4386,8 +4385,7 @@ Meridian-main
 │   │   │   │   ├── V_ledger_015__accounting_configuration_ledger_book_scope.sql
 │   │   │   │   ├── V_ledger_016__accounting_configuration_tenant_company_scope.sql
 │   │   │   │   ├── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
-│   │   │   │   ├── V_ledger_018__accounting_audit_fund_lower_index.sql
-│   │   │   │   └── V_ledger_019__fund_profile_tenancy.sql
+│   │   │   │   └── V_ledger_018__accounting_audit_fund_lower_index.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
@@ -4396,7 +4394,6 @@ Meridian-main
 │   │   │   ├── LedgerPeriodPostingGuard.cs
 │   │   │   ├── LedgerStoreExtensions.cs
 │   │   │   ├── PostgresAccountingConfigurationStore.cs
-│   │   │   ├── PostgresFundProfileTenancyRegistry.cs
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   └── PostgresLedgerJournalStore.cs
 │   │   ├── Maintenance
@@ -4557,6 +4554,7 @@ Meridian-main
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.cs
+│   │   │   ├── FileReconciliationRunRepository.cs
 │   │   │   ├── GovernanceExceptionService.cs
 │   │   │   ├── IAggregatePortfolioService.cs
 │   │   │   ├── InMemoryReconciliationRunRepository.cs
@@ -5032,6 +5030,7 @@ Meridian-main
 │   │   ├── Endpoints
 │   │   │   ├── Compliance
 │   │   │   │   └── ComplianceEndpoints.cs
+│   │   │   ├── AccountingHistoryFundProfileTenantGuard.cs
 │   │   │   ├── AccountingSystemEndpoints.cs
 │   │   │   ├── AdminEndpoints.cs
 │   │   │   ├── AnalyticsEndpoints.cs
@@ -5103,7 +5102,6 @@ Meridian-main
 │   │   │   ├── ProviderModuleEndpoints.cs
 │   │   │   ├── ProviderRoutingEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
-│   │   │   ├── RegistryFundProfileTenantGuard.cs
 │   │   │   ├── ReplayEndpoints.cs
 │   │   │   ├── ResilienceEndpoints.cs
 │   │   │   ├── RiskEndpoints.cs
@@ -5189,7 +5187,6 @@ Meridian-main
 │   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
-│   │   │   ├── FileFundProfileTenancyRegistry.cs
 │   │   │   ├── FinancialRecordExplorerReadService.cs
 │   │   │   ├── FinancialRecordExplorerSavedViewStore.cs
 │   │   │   ├── FundAccountCloseReadinessService.cs
@@ -6234,6 +6231,7 @@ Meridian-main
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   ├── CanonicalReconciliationMatchingEngineTests.cs
+│   │   │   │   ├── FileStatementReconciliationCheckpointStoreTests.cs
 │   │   │   │   ├── StatementMatchingEngineTests.cs
 │   │   │   │   ├── StatementReconciliationContextAdapterTests.cs
 │   │   │   │   ├── StatementReconciliationOrchestratorTests.cs
@@ -6262,6 +6260,7 @@ Meridian-main
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
+│   │   │   ├── FileReconciliationRunRepositoryTests.cs
 │   │   │   ├── OperationsContinuityPostgresRoundTripTests.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
@@ -6483,7 +6482,6 @@ Meridian-main
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── FinnhubSymbolSearchProviderTests.cs
-│   │   │   │   ├── FredHistoricalDataProviderTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -6496,7 +6494,6 @@ Meridian-main
 │   │   │   │   ├── IBSimulationClientContractTests.cs
 │   │   │   │   ├── IBSimulationClientTests.cs
 │   │   │   │   ├── MarketDataClientContractTests.cs
-│   │   │   │   ├── NasdaqDataLinkHistoricalDataProviderTests.cs
 │   │   │   │   ├── NYSECredentialAndRateLimitTests.cs
 │   │   │   │   ├── NyseMarketDataClientContractTests.cs
 │   │   │   │   ├── NyseMarketDataClientTests.cs
@@ -6780,7 +6777,6 @@ Meridian-main
 │   │   │   ├── StrategyRunReadServiceTests.cs
 │   │   │   └── StrategyRunStoreTests.cs
 │   │   ├── SymbolSearch
-│   │   │   ├── OpenFigiClientAmbiguityTests.cs
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
 │   │   ├── TestData
@@ -6809,6 +6805,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── AccountingConfigurationServiceTests.cs
+│   │   │   ├── AccountingHistoryFundProfileTenantGuardTests.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
@@ -6835,7 +6832,6 @@ Meridian-main
 │   │   │   ├── ExportEndpointsTests.cs
 │   │   │   ├── FamilyOfficeContractTests.cs
 │   │   │   ├── FamilyOfficeReadServiceTests.cs
-│   │   │   ├── FileFundProfileTenancyRegistryTests.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
 │   │   │   ├── FundOpsCloseLaneScenarioTests.cs
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
@@ -6857,7 +6853,6 @@ Meridian-main
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
-│   │   │   ├── RegistryFundProfileTenantGuardTests.cs
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
