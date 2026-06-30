@@ -144,8 +144,10 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
             $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // The post-commit claim must use a request-independent token so a client disconnect after the
+        // write commits cannot cancel the bind and leave the fund unbound (SEC-005).
         await registry.Received(1).BindAsync(
-            "fund-caller", "tenant-test", Arg.Any<string?>(), Arg.Any<CancellationToken>());
+            "fund-caller", "tenant-test", Arg.Any<string?>(), CancellationToken.None);
     }
 
     [Fact]

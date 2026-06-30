@@ -85,8 +85,12 @@ public static partial class WorkstationEndpoints
             return await ExecuteWorkbenchAsync(
                 () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted),
                 jsonOptions,
+                // The ownership claim runs after the write has committed, so it deliberately does NOT
+                // observe context.RequestAborted: a client disconnect/timeout between commit and bind
+                // would otherwise cancel the bind and leave the committed fund unbound (and unbound funds
+                // fail open on reads, so another tenant could later claim or see its impact).
                 onSuccess: _ => ClaimFundOwnershipAsync(
-                    fundRegistry, tenantContext, request.FundProfileId, context.RequestAborted)).ConfigureAwait(false);
+                    fundRegistry, tenantContext, request.FundProfileId, CancellationToken.None)).ConfigureAwait(false);
         })
         .WithName("SecurityMasterWorkbenchField")
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
@@ -257,8 +261,11 @@ public static partial class WorkstationEndpoints
     /// <summary>
     /// Claims the fund profile for the caller's tenant after a governed write succeeds (trust-on-first-use,
     /// SEC-005). Binding only on success means a failed or rejected write can never squat a fund id and
-    /// block the tenant that later performs the first real write. Best-effort: an unavailable registry
-    /// never fails a committed edit, and the deployment boundary remains the control until the next bind.
+    /// block the tenant that later performs the first real write. This runs <em>after</em> the write has
+    /// committed, so the caller passes a token that is independent of the HTTP request (a client disconnect
+    /// must not leave the committed fund unbound), and every failure — including a cancellation — is
+    /// swallowed: ownership bookkeeping is best-effort and must never turn a committed edit into a client
+    /// error. The deployment boundary remains the control until the next successful bind.
     /// </summary>
     private static async Task ClaimFundOwnershipAsync(
         IFundProfileTenancyRegistry? registry,
@@ -275,10 +282,10 @@ public static partial class WorkstationEndpoints
         {
             await registry.BindAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, ct).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception)
         {
-            // Ownership bookkeeping is best-effort; never fail a committed edit because the registry is
-            // unavailable.
+            // Ownership bookkeeping is best-effort and post-commit: never fail (or cancel out of) a
+            // committed edit because the registry is unavailable.
         }
     }
 
