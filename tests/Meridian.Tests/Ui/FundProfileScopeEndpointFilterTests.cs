@@ -94,7 +94,51 @@ public sealed class FundProfileScopeEndpointFilterTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    private static async Task<WebApplication> CreateAppAsync(IFundProfileTenantGuard? guard)
+    [Fact]
+    public async Task WithoutReadPermission_SkipsOwnershipEvaluation_NoOracle()
+    {
+        // The filter runs before the route's own permission check. A caller lacking read permission must
+        // NOT receive the ownership verdict (a foreign-fund 403 here vs an own-fund fall-through would leak
+        // cross-tenant ownership); the ownership check is skipped so the route's own gate decides uniformly.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("owned by another tenant"));
+        await using var app = await CreateAppAsync(
+            guard,
+            callerPermission: UserPermission.ViewSecurityMaster,
+            requiredReadPermissions: [UserPermission.AdminMaintenance, UserPermission.ManageDirectLending]);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-other");
+
+        // The probe has no permission gate of its own, so falling through yields 200 — proving the filter
+        // did not evaluate (and therefore did not leak) ownership for an unauthorized caller.
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await guard.DidNotReceive().EvaluateAsync(
+            Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task WithReadPermission_StillEvaluatesOwnership()
+    {
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), "fund-other", Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("owned by another tenant"));
+        await using var app = await CreateAppAsync(
+            guard,
+            callerPermission: UserPermission.AdminMaintenance,
+            requiredReadPermissions: [UserPermission.AdminMaintenance, UserPermission.ManageDirectLending]);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-other");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        IFundProfileTenantGuard? guard,
+        UserPermission? callerPermission = null,
+        UserPermission[]? requiredReadPermissions = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -107,11 +151,23 @@ public sealed class FundProfileScopeEndpointFilterTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            if (callerPermission is not null)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = callerPermission.Value;
+            }
+
             await next();
         });
 
-        app.MapGet("/probe", () => Results.Ok(new { ok = true }))
-            .RequireFundProfileTenantScope();
+        var probe = app.MapGet("/probe", () => Results.Ok(new { ok = true }));
+        if (requiredReadPermissions is { Length: > 0 })
+        {
+            probe.RequireFundProfileTenantScope(requiredReadPermissions);
+        }
+        else
+        {
+            probe.RequireFundProfileTenantScope();
+        }
 
         await app.StartAsync();
         return app;

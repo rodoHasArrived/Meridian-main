@@ -45,7 +45,7 @@ public static class LedgerEndpoints
             return Results.Json(books, jsonOptions);
         })
         .WithName("ListLedgerBooks")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<LedgerBookDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -171,7 +171,7 @@ public static class LedgerEndpoints
             return Results.Json(periods, jsonOptions);
         })
         .WithName("ListLedgerPeriods")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<LedgerPeriodDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -470,7 +470,7 @@ public static class LedgerEndpoints
                 jsonOptions);
         })
         .WithName("GetLedgerCrossPeriodTrialBalanceReport")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<LedgerCrossPeriodTrialBalanceReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -529,7 +529,7 @@ public static class LedgerEndpoints
                 jsonOptions);
         })
         .WithName("GetLedgerCrossPeriodPnlReport")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<LedgerCrossPeriodPnlReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -558,7 +558,7 @@ public static class LedgerEndpoints
             return Results.Json(workspace, jsonOptions);
         })
         .WithName("GetAccountingConfiguration")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -989,7 +989,7 @@ public static class LedgerEndpoints
             return Results.Json(audit, jsonOptions);
         })
         .WithName("ListAccountingConfigurationAudit")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1445,7 +1445,7 @@ public static class LedgerEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListLedgerAccountingReportPackages")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<AccountingReportPackageBundleDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1517,7 +1517,7 @@ public static class LedgerEndpoints
             return Results.Json(workbench, jsonOptions);
         })
         .WithName("GetManualJournalEntryWorkbench")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<ManualJournalEntryWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1549,7 +1549,7 @@ public static class LedgerEndpoints
                 jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalActivity")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalActivityProjectionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1590,7 +1590,7 @@ public static class LedgerEndpoints
             return Results.Json(record, jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalFundEventRecord")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalFundEventLedgerRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1631,7 +1631,7 @@ public static class LedgerEndpoints
             return Results.Json(commandCenter, jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalFundEventCommandCenter")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalFundEventCommandCenterDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1692,7 +1692,7 @@ public static class LedgerEndpoints
             return Results.Json(subledgers[0], jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalCapitalAccountSubledger")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalCapitalAccountSubledgerDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1763,7 +1763,7 @@ public static class LedgerEndpoints
             return Results.Json(reportOutputs[0], jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalReportOutput")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalReportOutputDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1811,7 +1811,7 @@ public static class LedgerEndpoints
             return Results.Json(workbench, jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalCapitalAccountWorkbench")
-        .RequireFundProfileTenantScope()
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<CapitalAccountWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)

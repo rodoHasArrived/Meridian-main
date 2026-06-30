@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,18 +25,37 @@ public static class FundProfileScopeEndpointFilters
     /// <summary>
     /// Adds the fund-profile tenant ownership gate to a fund-scoped read endpoint. The gate reads the
     /// <c>fundProfileId</c> query value and denies only a fund positively owned by another tenant.
+    ///
+    /// <para>Pass the route's read permission(s) so the ownership check runs <b>only</b> for callers who can
+    /// already read this route. Endpoint filters execute before the route delegate's own permission check,
+    /// so without this an unauthorized caller would receive the ownership 403 for a foreign fund but fall
+    /// through to the handler's plain 403 for an own/unbound fund — distinguishing cross-tenant ownership to
+    /// callers who should see neither. When no permissions are supplied the check always runs (the route has
+    /// no read gate to defer to).</para>
     /// </summary>
-    public static RouteHandlerBuilder RequireFundProfileTenantScope(this RouteHandlerBuilder builder)
+    public static RouteHandlerBuilder RequireFundProfileTenantScope(
+        this RouteHandlerBuilder builder,
+        params UserPermission[] readPermissions)
     {
-        builder.AddEndpointFilter(EnforceFundProfileScopeAsync);
+        builder.AddEndpointFilter((context, next) => EnforceFundProfileScopeAsync(context, next, readPermissions));
         return builder;
     }
 
     private static async ValueTask<object?> EnforceFundProfileScopeAsync(
         EndpointFilterInvocationContext context,
-        EndpointFilterDelegate next)
+        EndpointFilterDelegate next,
+        UserPermission[] readPermissions)
     {
         var httpContext = context.HttpContext;
+
+        // Defer to the route's own permission 403 for callers who cannot read it: evaluating ownership here
+        // would otherwise let an unauthorized caller distinguish a foreign fund (this filter's 403) from an
+        // own/unbound fund (the handler's 403), leaking cross-tenant ownership.
+        if (readPermissions.Length > 0 && !EndpointAuthorization.HasAnyPermission(httpContext, readPermissions))
+        {
+            return await next(context).ConfigureAwait(false);
+        }
+
         var fundProfileIds = httpContext.Request.Query[FundProfileQueryKey];
         if (fundProfileIds.Count > 0)
         {
