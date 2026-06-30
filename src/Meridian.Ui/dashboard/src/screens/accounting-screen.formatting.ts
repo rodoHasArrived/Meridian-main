@@ -32,6 +32,15 @@ export function formatCurrencyWithCode(value: number, currency: string, signed =
   return code ? `${amount} ${code}` : amount;
 }
 
+export function formatCurrencyForCode(value: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency || "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
 export function formatSignedCurrency(value: number): string {
   if (value === 0) {
     return "$0";

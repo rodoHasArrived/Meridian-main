@@ -1,6 +1,7 @@
 import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import "@/styles/accounting-screen.css";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -39,11 +40,14 @@ import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, Close
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
-  buildAccountingLoadingViewState,
   buildAccountingTaskMode,
+  resolveAccountingWorkstream,
+  type AccountingWorkstream
+} from "@/screens/accounting-screen.task-mode-view-model";
+import {
+  buildAccountingLoadingViewState,
   buildCloseCommandCenterViewState,
   buildAccountingWorkflowLaunchViewState,
-  resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingCloseReportPackageViewModel,
   useCapitalAccountWorkbenchViewModel,
@@ -59,7 +63,6 @@ import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-mo
 import type {
   CalibrationProfileRowViewModel,
   CalibrationSummaryViewModel,
-  AccountingWorkstream,
   AccountingConfigurationViewModel,
   AccountingRulesStudioPromotionReadinessViewModel,
   CapitalAccountWorkbenchViewModel,
@@ -420,7 +423,9 @@ function ReconciliationComparisonPane({
   side,
   lines,
   selection,
-  onSelect
+  onSelect,
+  scrollRef,
+  onScroll
 }: {
   heading: string;
   ariaLabel: string;
@@ -428,6 +433,8 @@ function ReconciliationComparisonPane({
   lines: ReconciliationLineItemViewModel[];
   selection: ReconciliationComparisonSelection;
   onSelect: (matchKey: string, side: ReconciliationComparisonSide) => void;
+  scrollRef?: React.Ref<HTMLDivElement>;
+  onScroll?: () => void;
 }) {
   const { matched, timing, breaks } = useMemo(() => {
     let matchedCount = 0;
@@ -455,7 +462,7 @@ function ReconciliationComparisonPane({
           {breaks > 0 && <span className="reconcile-chip is-break">{`${breaks} break${breaks > 1 ? "s" : ""}`}</span>}
         </span>
       </div>
-      <div className="reconcile-pane-scroll">
+      <div className="reconcile-pane-scroll" ref={scrollRef} onScroll={onScroll}>
         <table className="reconcile-table" aria-label={ariaLabel}>
           <thead>
             <tr>
@@ -508,11 +515,23 @@ function ReconciliationComparisonPane({
 
 function ReconciliationComparisonPanel({ view }: { view: ReconciliationComparisonViewState }) {
   const [selection, setSelection] = useState<ReconciliationComparisonSelection>(null);
+  const statementScrollRef = useRef<HTMLDivElement>(null);
+  const ledgerScrollRef = useRef<HTMLDivElement>(null);
 
   const handleSelect = (matchKey: string, side: ReconciliationComparisonSide) => {
     setSelection((previous) =>
       previous && previous.matchKey === matchKey && previous.side === side ? null : { matchKey, side }
     );
+  };
+
+  // Keep the two panes vertically aligned: mirror the scroll position of whichever side moves.
+  // The equality guard stops the mirrored scroll from echoing back into an infinite loop.
+  const syncScroll = (source: ReconciliationComparisonSide) => {
+    const from = (source === "statement" ? statementScrollRef : ledgerScrollRef).current;
+    const to = (source === "statement" ? ledgerScrollRef : statementScrollRef).current;
+    if (from && to && to.scrollTop !== from.scrollTop) {
+      to.scrollTop = from.scrollTop;
+    }
   };
 
   return (
@@ -536,6 +555,8 @@ function ReconciliationComparisonPanel({ view }: { view: ReconciliationCompariso
           lines={view.statementLines}
           selection={selection}
           onSelect={handleSelect}
+          scrollRef={statementScrollRef}
+          onScroll={() => syncScroll("statement")}
         />
         <ReconciliationComparisonPane
           heading={view.ledgerHeading}
@@ -544,6 +565,8 @@ function ReconciliationComparisonPanel({ view }: { view: ReconciliationCompariso
           lines={view.ledgerLines}
           selection={selection}
           onSelect={handleSelect}
+          scrollRef={ledgerScrollRef}
+          onScroll={() => syncScroll("ledger")}
         />
       </div>
 
