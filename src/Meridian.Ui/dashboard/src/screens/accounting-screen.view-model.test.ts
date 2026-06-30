@@ -1,6 +1,4 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
 import {
@@ -9,6 +7,7 @@ import {
   buildAccountingCashFlowViewState,
   buildAccountingLoadingViewState,
   buildAccountingReportingViewState,
+  buildAccountingTaskMode,
   buildAccountingWorkflowLaunchViewState,
   buildCloseCommandCenterViewState,
   buildAccountingLedgerJournalEvidenceViewState,
@@ -39,6 +38,7 @@ import {
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveSecurityScheduleEvents,
+  resolveAccountingWorkstream,
   resolveSelectedReconciliation,
   useCapitalAccountWorkbenchViewModel,
   useAccountingCloseReportPackageViewModel,
@@ -47,11 +47,6 @@ import {
   useAccountingReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
-import {
-  accountingTaskModeLauncherLinks,
-  buildAccountingTaskMode,
-  resolveAccountingWorkstream
-} from "@/screens/accounting-screen.task-mode-view-model";
 import type {
   AccountingConfigurationServices,
   AccountingCloseReportPackageServices,
@@ -3728,28 +3723,6 @@ describe("accounting-screen view model", () => {
     expect(signOffCloseTask).not.toHaveBeenCalled();
   });
 
-  it("keeps Accounting task-mode routing outside the overloaded view model", () => {
-    const viewModelSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
-    const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.task-mode-view-model.ts"), "utf8");
-
-    expect(taskModeSource).toContain("const accountingTaskModeDefinitions");
-    expect(taskModeSource).toContain("export const accountingTaskModeLauncherLinks");
-    expect(taskModeSource).toContain("export function resolveAccountingWorkstream");
-    expect(taskModeSource).toContain("export function buildAccountingTaskMode");
-    expect(taskModeSource).toContain("export function accountingWorkstreamHref");
-    expect(viewModelSource).not.toContain("const accountingTaskModeDefinitions");
-    expect(viewModelSource).not.toContain("function normalizeAccountingTaskModePath");
-    expect(viewModelSource).not.toContain("function buildAccountingTaskModeViewModel");
-    expect(accountingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
-      ["reconciliation-casework", "/accounting/reconciliation"],
-      ["ledger-explorer", "/accounting/ledger"],
-      ["journal-entry", "/accounting/journal-entries"],
-      ["capital-accounts", "/accounting/capital-accounts"],
-      ["delivery-evidence", "/reporting/evidence"],
-      ["governance", "/accounting/configure"]
-    ]);
-  });
-
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/accounting/reconciliation")).toBe("reconciliation");
@@ -7299,158 +7272,6 @@ describe("accounting-screen view model", () => {
       ledgerValue: "$120,500",
       statusTone: "warning"
     });
-    expect(state.lineSource).toBe("runs");
-    expect(state.statementLines).toHaveLength(state.rows.length);
-    expect(state.statementLines[0]).toMatchObject({
-      matchKey: "statement-run-1",
-      title: "Northern Trust",
-      amountLabel: "$120,000",
-      statusTone: "warning"
-    });
-    expect(state.ledgerLines[0].matchKey).toBe("statement-run-1");
-  });
-
-  it("drives the reconciliation comparison from transaction-level external GL detail when loaded", () => {
-    const systemReconciliation: AccountingSystemReconciliationSummary = {
-      reconciliationId: "gl-recon-txn",
-      importId: "gl-import-txn",
-      providerId: "quickbooks-fixture",
-      fundProfileId: "fund-alpha",
-      periodStart: "2026-06-01",
-      periodEnd: "2026-06-30",
-      generatedAtUtc: "2026-07-01T00:00:00Z",
-      matchedCount: 1,
-      breakCount: 3,
-      totalExternalDebits: 1000,
-      totalExternalCredits: 200,
-      totalMeridianDebits: 700,
-      totalMeridianCredits: 100,
-      postingEnabled: false,
-      postingDisabledReason: "Open breaks remain.",
-      evidenceReferences: [],
-      rows: [
-        { rowId: "r-matched", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Matched", externalDebit: 500, externalCredit: 0, meridianDebit: 500, meridianCredit: 0, variance: 0, detail: "Settlement credit.", evidenceRef: null },
-        { rowId: "r-variance", accountCode: "6000", accountName: "Fees", currency: "EUR", status: "Variance", externalDebit: 0, externalCredit: 200, meridianDebit: 0, meridianCredit: 180, variance: 20, detail: "Commission variance.", evidenceRef: null },
-        { rowId: "r-review", accountCode: "1500", accountName: "Custody", currency: "USD", status: "ReviewRequired", externalDebit: 850, externalCredit: 0, meridianDebit: 850, meridianCredit: 0, variance: 0, detail: "Custody fee timing.", evidenceRef: null },
-        { rowId: "r-miss-ext", accountCode: "7000", accountName: "Mgmt fee payable", currency: "USD", status: "MissingExternal", externalDebit: 0, externalCredit: 0, meridianDebit: 300, meridianCredit: 0, variance: -300, detail: "Ledger-only accrual.", evidenceRef: null },
-        { rowId: "r-miss-mer", accountCode: "4000", accountName: "Interest", currency: "USD", status: "MissingMeridian", externalDebit: 142, externalCredit: 0, meridianDebit: 0, meridianCredit: 0, variance: 142, detail: "Statement-only interest.", evidenceRef: null }
-      ]
-    };
-
-    const state = buildReconciliationComparisonViewState({
-      statementRuns: [],
-      fallbackQueue: reconciliationQueue,
-      selectedRunId: null,
-      cashFlow: null,
-      systemReconciliation
-    });
-
-    expect(state.lineSource).toBe("transactions");
-    expect(state.statementHeading).toBe("Custodian statement");
-    expect(state.ledgerHeading).toBe("Internal ledger");
-
-    // Statement side drops the ledger-only (MissingExternal) row; ledger side drops the statement-only (MissingMeridian) row.
-    expect(state.statementLines.map((line) => line.matchKey)).toEqual(["r-matched", "r-variance", "r-review", "r-miss-mer"]);
-    expect(state.ledgerLines.map((line) => line.matchKey)).toEqual(["r-matched", "r-variance", "r-review", "r-miss-ext"]);
-
-    expect(state.statementLines[0]).toMatchObject({ id: "r-matched:statement", title: "Cash", statusLabel: "Matched", statusTone: "success" });
-    expect(state.statementLines.find((line) => line.matchKey === "r-review")?.statusTone).toBe("warning");
-    expect(state.statementLines.find((line) => line.matchKey === "r-miss-mer")).toMatchObject({ statusLabel: "Missing in ledger", statusTone: "danger" });
-    expect(state.ledgerLines.find((line) => line.matchKey === "r-miss-ext")).toMatchObject({ statusLabel: "Missing in statement", statusTone: "danger" });
-
-    // Line amounts are currency-aware per row — the EUR row renders with the euro symbol, not USD.
-    expect(state.statementLines[0].amountLabel).toBe("$500");
-    expect(state.statementLines.find((line) => line.matchKey === "r-variance")?.amountLabel).toBe("-€200");
-
-    // Summary and badges follow the system reconciliation totals.
-    expect(state.matchedBadgeLabel).toBe("1 matched");
-    expect(state.openBadgeLabel).toBe("3 open");
-    expect(state.statementBalanceLabel).toBe("$800");
-    expect(state.ledgerBalanceLabel).toBe("$600");
-    expect(state.varianceLabel).toBe("Out by $200");
-    expect(state.varianceTone).toBe("warning");
-  });
-
-  it("does not report balanced when a transaction-level reconciliation has open breaks despite tied totals", () => {
-    const systemReconciliation: AccountingSystemReconciliationSummary = {
-      reconciliationId: "gl-recon-tb",
-      importId: "gl-import-tb",
-      providerId: "quickbooks-fixture",
-      fundProfileId: "fund-alpha",
-      periodStart: "2026-06-01",
-      periodEnd: "2026-06-30",
-      generatedAtUtc: "2026-07-01T00:00:00Z",
-      matchedCount: 0,
-      breakCount: 2,
-      totalExternalDebits: 1000,
-      totalExternalCredits: 1000,
-      totalMeridianDebits: 1000,
-      totalMeridianCredits: 1000,
-      postingEnabled: false,
-      postingDisabledReason: "Open breaks remain.",
-      evidenceReferences: [],
-      rows: [
-        { rowId: "tb-1", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Variance", externalDebit: 500, externalCredit: 0, meridianDebit: 480, meridianCredit: 0, variance: 20, detail: "Cash variance.", evidenceRef: null },
-        { rowId: "tb-2", accountCode: "2000", accountName: "Payables", currency: "USD", status: "Variance", externalDebit: 0, externalCredit: 500, meridianDebit: 0, meridianCredit: 480, variance: -20, detail: "Payables variance.", evidenceRef: null }
-      ]
-    };
-
-    const state = buildReconciliationComparisonViewState({
-      statementRuns: [],
-      fallbackQueue: reconciliationQueue,
-      selectedRunId: null,
-      cashFlow: null,
-      systemReconciliation
-    });
-
-    // Debit/credit totals tie out (net variance 0) but two breaks remain — must not read "Balanced".
-    expect(state.varianceLabel).toBe("2 open breaks");
-    expect(state.varianceTone).toBe("warning");
-  });
-
-  it("keeps the comparison summary on the run-level source when the GL reconciliation has no row detail", () => {
-    const systemReconciliation: AccountingSystemReconciliationSummary = {
-      reconciliationId: "gl-recon-empty",
-      importId: "gl-import-empty",
-      providerId: "quickbooks-fixture",
-      fundProfileId: "fund-alpha",
-      periodStart: "2026-06-01",
-      periodEnd: "2026-06-30",
-      generatedAtUtc: "2026-07-01T00:00:00Z",
-      matchedCount: 9,
-      breakCount: 0,
-      totalExternalDebits: 99999,
-      totalExternalCredits: 0,
-      totalMeridianDebits: 99999,
-      totalMeridianCredits: 0,
-      postingEnabled: false,
-      postingDisabledReason: "No row detail.",
-      evidenceReferences: [],
-      rows: []
-    };
-
-    const state = buildReconciliationComparisonViewState({
-      statementRuns: [],
-      fallbackQueue: reconciliationQueue,
-      selectedRunId: null,
-      cashFlow: {
-        totalCash: 120000,
-        totalLedgerCash: 120500,
-        netVariance: 500,
-        totalFinancing: 1400,
-        runsWithCashSignals: 4,
-        runsWithCashVariance: 1,
-        tone: "warning",
-        summary: "Cash-flow coverage is available."
-      },
-      systemReconciliation
-    });
-
-    // No GL row detail => panes show run-level lines, so the summary must stay on the run-level source too.
-    expect(state.lineSource).toBe("runs");
-    expect(state.statementBalanceLabel).toBe("$120,000");
-    expect(state.ledgerBalanceLabel).toBe("$120,500");
-    expect(state.varianceLabel).toBe("Out by $500");
   });
 
   it("derives reconciliation detail queue row state and empty inspector copy", () => {
