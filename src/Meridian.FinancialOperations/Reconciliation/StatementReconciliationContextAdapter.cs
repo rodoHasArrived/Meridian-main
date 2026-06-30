@@ -20,7 +20,7 @@ public sealed class StatementReconciliationContextAdapter(StatementReconciliatio
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var import = await service.ImportAsync(request.SourceKind, request.SourcePath, cancellationToken).ConfigureAwait(false);
+        var import = await service.ImportAsync(request.SourceKind, request.SourcePath, request.MappingProfileId, cancellationToken).ConfigureAwait(false);
         return new DataIntegrationIngestionResult(import.ImportId, import.SourceKind, import.SourcePath, import.RowCount);
     }
 
