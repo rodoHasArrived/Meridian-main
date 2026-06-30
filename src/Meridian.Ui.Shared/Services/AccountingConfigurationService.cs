@@ -807,8 +807,10 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 CorrelationId = string.IsNullOrWhiteSpace(testCase.Request.CorrelationId)
                     ? request.CorrelationId
                     : testCase.Request.CorrelationId,
-                TenantId = testCase.Request.TenantId ?? request.TenantId,
-                CompanyId = testCase.Request.CompanyId ?? request.CompanyId
+                // SEC-005 slice 4: the server-resolved tenant on the parent request is authoritative; a
+                // body-supplied per-test-case tenant/company must not override it.
+                TenantId = request.TenantId,
+                CompanyId = request.CompanyId
             };
             var dryRun = await DryRunPostingRuleAsync(dryRunRequest, ct).ConfigureAwait(false);
             var assertionIssues = EvaluateRuleTestCaseAssertions(testCase, dryRun);

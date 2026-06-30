@@ -17,7 +17,7 @@ Total items: **200**
 | `config/appsettings.sample.json` | 396 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
-| `docs/operators/provider-backfill-operations.md` | 85 | `NOTE` | ❌ | > Note: in examples above, use lowercase `dotnet` command. |
+| `docs/operators/provider-backfill-operations.md` | 89 | `NOTE` | ❌ | > Note: in examples above, use lowercase `dotnet` command. |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 22 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 289 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
 | `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 841 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
@@ -52,10 +52,10 @@ Total items: **200**
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 240 | `NOTE` | ❌ | Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2047 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2101 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 193 | `NOTE` | ❌ | note: "Heartbeat delayed" |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 544 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1076 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 364 | `NOTE` | ❌ | note: "Heartbeat delayed" |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 715 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 790 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1247 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 219 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 375 | `NOTE` | ❌ | note: "Credential check failed" |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 619 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -89,9 +89,9 @@ Total items: **200**
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.ts` | 154 | `NOTE` | ❌ | note: asString(raw.note) ?? null |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/types.ts` | 11 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/types.ts` | 30 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 498 | `NOTE` | ❌ | note: "Coupon posted." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 518 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 8426 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 503 | `NOTE` | ❌ | note: "Coupon posted." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 523 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 8605 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 80 | `NOTE` | ❌ | note: string; |
@@ -156,10 +156,10 @@ Total items: **200**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 3582 | `NOTE` | ❌ | note: "Delivered from browser Reporting workspace.", |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 3605 | `NOTE` | ❌ | note: "Published from browser Reporting workspace." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 3704 | `NOTE` | ❌ | note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`, |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 192 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 506 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 379 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 1856 | `NOTE` | ❌ | note: plan.note, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 195 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 528 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 384 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 1853 | `NOTE` | ❌ | note: plan.note, |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1295 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1303 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1313 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
