@@ -1874,6 +1874,14 @@ public static class LedgerEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
+                    // SEC-005 slice 4a: scrub the nested draft's client-supplied tenant scope too — the
+                    // service resolves the persisted scope as request.TenantId ?? request.Draft.TenantId,
+                    // so the server-resolved tenant must overwrite the nested body value, not just the outer.
+                    Draft = request.Draft with
+                    {
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
+                    },
                     ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
