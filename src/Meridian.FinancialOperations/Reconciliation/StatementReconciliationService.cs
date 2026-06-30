@@ -132,8 +132,14 @@ public sealed class StatementReconciliationService
 
         var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath, mappingProfileId);
         var (matches, cases) = MatchRows(rows);
+        // Compute the import id from the resolved profile and file content, identical to the import
+        // path (and to ReadCanonicalStatementRows for non-empty files), so import and reconcile/intake
+        // refer to the same run even for a valid but empty (header-only) statement.
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
+        var canonicalContent = File.ReadAllText(sourcePath);
+        var canonicalImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{canonicalContent}");
         return new ExternalStatementCaseIntakeResult(
-            rows.Count == 0 ? DeterministicFingerprint.Compute($"{normalizedSourceKind}|{mappingProfileId}|{sourcePath}") : rows[0].RawSnapshot["importId"],
+            canonicalImportId,
             normalizedSourceKind,
             sourcePath,
             rows.Count,

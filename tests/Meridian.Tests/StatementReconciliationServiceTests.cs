@@ -568,4 +568,32 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAndCaseIntake_EmptyProfiledStatement_ShareImportId()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // Valid header, no data rows: import and intake must still refer to the same run id.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate"
+            ]);
+
+            var import = await svc.ImportAsync(
+                "local", filePath, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, CancellationToken.None);
+            var intake = await svc.CreateExternalStatementCasesAsync(
+                "local", filePath, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, CancellationToken.None);
+
+            Assert.Equal(0, import.RowCount);
+            Assert.Equal(0, intake.RowCount);
+            Assert.Equal(import.ImportId, intake.ImportId);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }
