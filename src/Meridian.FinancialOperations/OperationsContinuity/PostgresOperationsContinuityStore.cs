@@ -3,6 +3,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Ledger;
 using Npgsql;
@@ -21,15 +22,25 @@ public sealed class PostgresOperationsContinuityStore :
     private readonly ITransactionalLedgerJournalStore _ledgerJournalStore;
     private readonly IOperationsStatusDerivationService _statusDerivation;
 
+    // SEC-005 slice 4c: ambient caller-tenant resolver. Optional so existing construction sites (tests,
+    // non-web hosts) keep compiling and stay fail-open; the workstation host injects an
+    // IHttpContextAccessor-backed implementation. Null (no tenant in scope) => reads are not scoped.
+    private readonly IFundScopeTenantAccessor? _tenantAccessor;
+
     public PostgresOperationsContinuityStore(
         LedgerJournalStoreOptions options,
         ITransactionalLedgerJournalStore ledgerJournalStore,
-        IOperationsStatusDerivationService statusDerivation)
+        IOperationsStatusDerivationService statusDerivation,
+        IFundScopeTenantAccessor? tenantAccessor = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _ledgerJournalStore = ledgerJournalStore ?? throw new ArgumentNullException(nameof(ledgerJournalStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
+        _tenantAccessor = tenantAccessor;
     }
+
+    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
+    private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
 
     public async Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default)
     {
@@ -51,9 +62,19 @@ public sealed class PostgresOperationsContinuityStore :
             $"""
             select workflow_json::text
             from {Qualified("operations_continuity_workflows")}
-            where workflow_id = @workflow_id;
+            where workflow_id = @workflow_id
             """;
         command.Parameters.AddWithValue("workflow_id", workflowId);
+        // SEC-005 slice 4c: scope by the workflow's stamped tenant_id so a foreign workflow GUID resolves to
+        // not-found rather than leaking the workflow. Fail-open for a tenantless caller / unbound workflow.
+        var callerTenant = ResolveCallerTenant();
+        if (TenantReadPredicate.ShouldFilter(callerTenant))
+        {
+            command.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            command.Parameters.AddWithValue(
+                TenantReadPredicate.ParameterName,
+                TenantReadPredicate.NormalizeParameter(callerTenant!));
+        }
 
         var json = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
         return json is null ? null : DeserializeWorkflow(json, workflowId);
@@ -98,6 +119,19 @@ public sealed class PostgresOperationsContinuityStore :
         {
             command.CommandText += " and derived_status = @derived_status";
             command.Parameters.AddWithValue("derived_status", status.Value.ToString());
+        }
+
+        // SEC-005 slice 4c: scope by the workflow's stamped tenant_id, closing the slice-3b residual where
+        // the close-cockpit / workflow-summary reach this store by fund_account_id / ledgerBookId without a
+        // fund_profile_id. Fail-open — applied only for a tenant-scoped caller; a null-tenant (unbound)
+        // workflow or a tenantless caller passes, so single-company-per-deployment behavior is unchanged.
+        var callerTenant = ResolveCallerTenant();
+        if (TenantReadPredicate.ShouldFilter(callerTenant))
+        {
+            command.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            command.Parameters.AddWithValue(
+                TenantReadPredicate.ParameterName,
+                TenantReadPredicate.NormalizeParameter(callerTenant!));
         }
 
         command.CommandText += " order by updated_at_utc desc, workflow_id;";
@@ -329,7 +363,8 @@ public sealed class PostgresOperationsContinuityStore :
                 created_at_utc,
                 updated_at_utc,
                 workflow_json,
-                updated_at)
+                updated_at,
+                tenant_id)
             values (
                 @workflow_id,
                 @fund_account_id,
@@ -341,7 +376,13 @@ public sealed class PostgresOperationsContinuityStore :
                 @created_at_utc,
                 @updated_at_utc,
                 cast(@workflow_json as jsonb),
-                now())
+                now(),
+                -- SEC-005 slice 4c: inherit the partition tenant from the workflow's ledger book (stamped by
+                -- V_ledger_020 from the authoritative registry). A workflow with no book / an unbound book
+                -- resolves null and stays fail-open until it is attributed.
+                (select b.tenant_id
+                 from {Qualified("ledger_books")} b
+                 where b.ledger_book_id = @tenant_ledger_book_id))
             on conflict (workflow_id) do update
             set fund_account_id = excluded.fund_account_id,
                 period_id = excluded.period_id,
@@ -352,7 +393,10 @@ public sealed class PostgresOperationsContinuityStore :
                 created_at_utc = excluded.created_at_utc,
                 updated_at_utc = excluded.updated_at_utc,
                 workflow_json = excluded.workflow_json,
-                updated_at = now()
+                updated_at = now(),
+                -- Preserve an already-stamped owner (first-owner-wins) but fill a null from the re-resolved
+                -- book tenant, so a workflow first saved while its book was unbound is stamped on a later save.
+                tenant_id = coalesce(operations_continuity_workflows.tenant_id, excluded.tenant_id)
             where operations_continuity_workflows.version < excluded.version;
             """;
         command.Parameters.AddWithValue("workflow_id", workflow.WorkflowId);
@@ -365,6 +409,7 @@ public sealed class PostgresOperationsContinuityStore :
         command.Parameters.AddWithValue("created_at_utc", workflow.CreatedAtUtc.UtcDateTime);
         command.Parameters.AddWithValue("updated_at_utc", workflow.UpdatedAtUtc.UtcDateTime);
         command.Parameters.AddWithValue("workflow_json", JsonSerializer.Serialize(workflow, JsonOptions));
+        command.Parameters.AddWithValue("tenant_ledger_book_id", (object?)workflow.LedgerBookId ?? DBNull.Value);
 
         var affected = await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         if (affected != 1)

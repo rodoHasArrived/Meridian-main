@@ -1,24 +1,25 @@
-namespace Meridian.Storage.Ledger;
+namespace Meridian.Contracts.Tenancy;
 
 /// <summary>
 /// SEC-005 slice 4c-ii read-predicate decision. Centralizes the rule for whether a fund-scoped read
 /// should filter by the stamped <c>tenant_id</c> column, and the SQL fragment that does so, so the
-/// fail-open branch is unit-testable without a database.
+/// fail-open branch is unit-testable without a database and is shared across every fund-scoped store
+/// (ledger, operations-continuity, …) rather than re-derived per store.
 /// </summary>
 /// <remarks>
-/// The Postgres ledger suite is skipped in CI (no database), so an over-filtering regression — a
-/// predicate wrongly applied to a tenantless caller, or a normalization mismatch — would otherwise
-/// ship uncaught and make legitimate single-company data vanish. Keeping the decision here lets the
-/// highest-risk branch (tenantless caller ⇒ no filter) be proven in CI.
+/// The Postgres stores' integration suites are skipped in CI (no database), so an over-filtering
+/// regression — a predicate wrongly applied to a tenantless caller, or a normalization mismatch —
+/// would otherwise ship uncaught and make legitimate single-company data vanish. Keeping the decision
+/// here lets the highest-risk branch (tenantless caller ⇒ no filter) be proven in CI.
 ///
 /// Semantics: a row is visible when its <c>tenant_id</c> IS NULL (unbound/legacy — fail-open) OR
 /// equals the caller's tenant. The predicate is emitted ONLY when the caller has a resolved tenant;
 /// a tenantless caller (single-company deployment, or the legacy tenantless admin profile) gets no
 /// predicate at all, so every row passes and behavior is identical under one-company-per-deployment.
 /// The comparison uses <c>lower(trim(...))</c> on both sides to match the write-side stamp and
-/// <c>FundProfileOwnership.IsHeldBy</c> (trimmed, case-insensitive).
+/// <see cref="FundProfileOwnership.IsHeldBy"/> (trimmed, case-insensitive).
 /// </remarks>
-internal static class TenantReadPredicate
+public static class TenantReadPredicate
 {
     /// <summary>The conventional bind-parameter name for the caller's tenant.</summary>
     public const string ParameterName = "caller_tenant";

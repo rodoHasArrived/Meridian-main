@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Storage.Ledger;
+using Meridian.Contracts.Tenancy;
 
 namespace Meridian.Tests.Storage;
 
