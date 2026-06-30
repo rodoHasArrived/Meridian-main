@@ -732,6 +732,11 @@ public static class LedgerEndpoints
             }
 
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service.PreviewTemplateAsync(request with
             {
                 Actor = ResolveMutationActor(context, request.Actor),
@@ -761,6 +766,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service.DryRunPostingRuleAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
@@ -796,6 +806,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildCandidateAsync(request with
                     {
@@ -876,6 +891,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildProjectionSetAsync(request with
                     {
@@ -913,6 +933,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service.ExecuteRuleTestCasesAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
@@ -2130,6 +2155,33 @@ public static class LedgerEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
+
+    /// <summary>
+    /// Tenant isolation (SEC-005 slice 3) for body-supplied fund scopes on POST read/preview routes the
+    /// query-string <see cref="FundProfileScopeEndpointFilters"/> filter cannot see. Returns true (allow)
+    /// for a blank fund or an unavailable guard (fail open); denies only a fund the registry positively
+    /// attributes to another tenant. Call it after the route's permission check so an unauthorized caller
+    /// never receives an ownership verdict.
+    /// </summary>
+    private static async Task<bool> IsBodyFundScopeAccessibleAsync(
+        HttpContext context,
+        WorkstationTenantContext tenant,
+        string? fundProfileId)
+    {
+        if (string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return true;
+        }
+
+        var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
+        if (guard is null)
+        {
+            return true;
+        }
+
+        var decision = await guard.EvaluateAsync(tenant, fundProfileId, context.RequestAborted).ConfigureAwait(false);
+        return decision.IsAllowed;
+    }
 
     private static bool HasLedgerMutationPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
