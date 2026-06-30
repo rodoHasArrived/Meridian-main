@@ -439,7 +439,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 accounting_policy_version,
                 description,
                 created_at,
-                updated_at)
+                updated_at,
+                tenant_id)
             values (
                 @ledger_book_id,
                 @fund_profile_id,
@@ -452,7 +453,14 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 @accounting_policy_version,
                 @description,
                 @created_at,
-                @updated_at)
+                @updated_at,
+                -- SEC-005 slice 4c-ii: stamp the owning tenant from the authoritative fund_profile_tenancy
+                -- registry (joined on the normalized fund key) so new books carry their partition tenant.
+                -- An unbound fund resolves null and stays fail-open until it is claimed. tenant_id is left
+                -- out of the on-conflict update below, so an already-stamped book keeps its first owner.
+                (select t.tenant_id
+                 from {Qualified("fund_profile_tenancy")} t
+                 where t.fund_profile_id = lower(trim(@fund_profile_id))))
             on conflict (ledger_book_id) do update
             set fund_profile_id = excluded.fund_profile_id,
                 fund_structure_node_id = excluded.fund_structure_node_id,
@@ -463,7 +471,12 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 accounting_policy_id = excluded.accounting_policy_id,
                 accounting_policy_version = excluded.accounting_policy_version,
                 description = excluded.description,
-                updated_at = excluded.updated_at
+                updated_at = excluded.updated_at,
+                -- SEC-005 slice 4c-ii: preserve an already-stamped owner (first-owner-wins) but FILL a null
+                -- tenant from the re-resolved registry value, so a book first saved while its fund was
+                -- unbound is stamped on the next save after the fund is claimed (excluded.tenant_id is the
+                -- VALUES subquery above), rather than staying fail-open until a backfill.
+                tenant_id = coalesce(ledger_books.tenant_id, excluded.tenant_id)
             returning ledger_book_id,
                       fund_profile_id,
                       fund_structure_node_id,
@@ -1141,7 +1154,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 opened_at,
                 closed_at,
                 optimistic_version,
-                updated_at)
+                updated_at,
+                tenant_id)
             values (
                 @period_id,
                 @ledger_book_id,
@@ -1154,7 +1168,18 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 @opened_at,
                 @closed_at,
                 @optimistic_version,
-                now());
+                now(),
+                -- SEC-005 slice 4c-ii: resolve the period's partition tenant from the AUTHORITATIVE
+                -- fund_profile_tenancy registry via its ledger book's fund, not the book's cached tenant_id
+                -- column. A book saved before its fund was claimed has a null tenant_id (BindAsync does not
+                -- backfill books), so copying b.tenant_id would leave a period created after the claim
+                -- fail-open; joining the registry through b.fund_profile_id stamps it correctly. Only a
+                -- genuinely unbound fund (no registry row) or absent book yields null and stays fail-open.
+                (select t.tenant_id
+                 from {Qualified("ledger_books")} b
+                 join {Qualified("fund_profile_tenancy")} t
+                   on t.fund_profile_id = lower(trim(b.fund_profile_id))
+                 where b.ledger_book_id = @ledger_book_id));
             """;
         AddPeriodParameters(command, period);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
@@ -1182,7 +1207,18 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 opened_at = @opened_at,
                 closed_at = @closed_at,
                 optimistic_version = @optimistic_version,
-                updated_at = now()
+                updated_at = now(),
+                -- SEC-005 slice 4c-ii: the book can change on this update — re-resolve the period's tenant
+                -- from the authoritative registry via the (new) book's fund (not the book's cached tenant_id,
+                -- which may be a stale null), and FILL a null while preserving an existing tenant when the
+                -- fund is genuinely unbound, so a period moved onto a claimed fund stops being fail-open.
+                tenant_id = coalesce(
+                    (select t.tenant_id
+                     from {Qualified("ledger_books")} b
+                     join {Qualified("fund_profile_tenancy")} t
+                       on t.fund_profile_id = lower(trim(b.fund_profile_id))
+                     where b.ledger_book_id = @ledger_book_id),
+                    tenant_id)
             where period_id = @period_id
               and optimistic_version = @expected_version;
             """;
