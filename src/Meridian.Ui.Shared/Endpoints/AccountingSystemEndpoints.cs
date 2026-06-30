@@ -407,6 +407,7 @@ public static class AccountingSystemEndpoints
         })
         .WithName("GetLatestAccountingSystemImport")
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemReconciliationLatest, async (
@@ -435,6 +436,7 @@ public static class AccountingSystemEndpoints
         })
         .WithName("GetLatestAccountingSystemReconciliation")
         .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemMappingProfiles, async (
@@ -463,6 +465,7 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingSystemMappingProfiles")
         .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMappingProfiles, async (

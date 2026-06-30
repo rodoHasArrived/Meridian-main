@@ -21,14 +21,14 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Method | Route | Status | Source |
 |---|---|---|---|
-| `GET` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:515` |
-| `POST` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:548` |
-| `POST` | `/api/accounting-system/export-packages/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:633` |
-| `GET` | `/api/accounting-system/export-packages/{exportPackageId}/manifest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:595` |
+| `GET` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:518` |
+| `POST` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:551` |
+| `POST` | `/api/accounting-system/export-packages/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:636` |
+| `GET` | `/api/accounting-system/export-packages/{exportPackageId}/manifest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:598` |
 | `GET` | `/api/accounting-system/import/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:384` |
 | `POST` | `/api/accounting-system/import/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:360` |
-| `GET` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:440` |
-| `POST` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:468` |
+| `GET` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:442` |
+| `POST` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:471` |
 | `GET` | `/api/accounting-system/migration-run-artifacts` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:225` |
 | `POST` | `/api/accounting-system/migration-run-artifacts` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:253` |
 | `POST` | `/api/accounting-system/migration-runs` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:189` |
@@ -38,7 +38,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/accounting-system/production-certification-profile` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:149` |
 | `POST` | `/api/accounting-system/production-readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:35` |
 | `GET` | `/api/accounting-system/providers` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:20` |
-| `GET` | `/api/accounting-system/reconciliation/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:412` |
+| `GET` | `/api/accounting-system/reconciliation/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:413` |
 | `GET` | `/api/accounting-system/tenant-administration-profile` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:58` |
 | `POST` | `/api/accounting-system/tenant-administration-profile` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:82` |
 | `POST` | `/api/admin/cleanup/execute` | Documented | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:272` |
