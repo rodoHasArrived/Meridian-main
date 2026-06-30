@@ -7272,6 +7272,72 @@ describe("accounting-screen view model", () => {
       ledgerValue: "$120,500",
       statusTone: "warning"
     });
+    expect(state.lineSource).toBe("runs");
+    expect(state.statementLines).toHaveLength(state.rows.length);
+    expect(state.statementLines[0]).toMatchObject({
+      matchKey: "statement-run-1",
+      title: "Northern Trust",
+      amountLabel: "$120,000",
+      statusTone: "warning"
+    });
+    expect(state.ledgerLines[0].matchKey).toBe("statement-run-1");
+  });
+
+  it("drives the reconciliation comparison from transaction-level external GL detail when loaded", () => {
+    const systemReconciliation: AccountingSystemReconciliationSummary = {
+      reconciliationId: "gl-recon-txn",
+      importId: "gl-import-txn",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "fund-alpha",
+      periodStart: "2026-06-01",
+      periodEnd: "2026-06-30",
+      generatedAtUtc: "2026-07-01T00:00:00Z",
+      matchedCount: 1,
+      breakCount: 3,
+      totalExternalDebits: 1000,
+      totalExternalCredits: 200,
+      totalMeridianDebits: 700,
+      totalMeridianCredits: 100,
+      postingEnabled: false,
+      postingDisabledReason: "Open breaks remain.",
+      evidenceReferences: [],
+      rows: [
+        { rowId: "r-matched", accountCode: "1100", accountName: "Cash", currency: "USD", status: "Matched", externalDebit: 500, externalCredit: 0, meridianDebit: 500, meridianCredit: 0, variance: 0, detail: "Settlement credit.", evidenceRef: null },
+        { rowId: "r-variance", accountCode: "6000", accountName: "Fees", currency: "USD", status: "Variance", externalDebit: 0, externalCredit: 200, meridianDebit: 0, meridianCredit: 180, variance: 20, detail: "Commission variance.", evidenceRef: null },
+        { rowId: "r-review", accountCode: "1500", accountName: "Custody", currency: "USD", status: "ReviewRequired", externalDebit: 850, externalCredit: 0, meridianDebit: 850, meridianCredit: 0, variance: 0, detail: "Custody fee timing.", evidenceRef: null },
+        { rowId: "r-miss-ext", accountCode: "7000", accountName: "Mgmt fee payable", currency: "USD", status: "MissingExternal", externalDebit: 0, externalCredit: 0, meridianDebit: 300, meridianCredit: 0, variance: -300, detail: "Ledger-only accrual.", evidenceRef: null },
+        { rowId: "r-miss-mer", accountCode: "4000", accountName: "Interest", currency: "USD", status: "MissingMeridian", externalDebit: 142, externalCredit: 0, meridianDebit: 0, meridianCredit: 0, variance: 142, detail: "Statement-only interest.", evidenceRef: null }
+      ]
+    };
+
+    const state = buildReconciliationComparisonViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      cashFlow: null,
+      systemReconciliation
+    });
+
+    expect(state.lineSource).toBe("transactions");
+    expect(state.statementHeading).toBe("Custodian statement");
+    expect(state.ledgerHeading).toBe("Internal ledger");
+
+    // Statement side drops the ledger-only (MissingExternal) row; ledger side drops the statement-only (MissingMeridian) row.
+    expect(state.statementLines.map((line) => line.matchKey)).toEqual(["r-matched", "r-variance", "r-review", "r-miss-mer"]);
+    expect(state.ledgerLines.map((line) => line.matchKey)).toEqual(["r-matched", "r-variance", "r-review", "r-miss-ext"]);
+
+    expect(state.statementLines[0]).toMatchObject({ id: "r-matched:statement", title: "Cash", statusLabel: "Matched", statusTone: "success" });
+    expect(state.statementLines.find((line) => line.matchKey === "r-review")?.statusTone).toBe("warning");
+    expect(state.statementLines.find((line) => line.matchKey === "r-miss-mer")).toMatchObject({ statusLabel: "Missing in ledger", statusTone: "danger" });
+    expect(state.ledgerLines.find((line) => line.matchKey === "r-miss-ext")).toMatchObject({ statusLabel: "Missing in statement", statusTone: "danger" });
+
+    // Summary and badges follow the system reconciliation totals.
+    expect(state.matchedBadgeLabel).toBe("1 matched");
+    expect(state.openBadgeLabel).toBe("3 open");
+    expect(state.statementBalanceLabel).toBe("$800");
+    expect(state.ledgerBalanceLabel).toBe("$600");
+    expect(state.varianceLabel).toBe("Out by $200");
+    expect(state.varianceTone).toBe("warning");
   });
 
   it("derives reconciliation detail queue row state and empty inspector copy", () => {

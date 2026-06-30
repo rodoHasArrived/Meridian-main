@@ -130,7 +130,9 @@ import type {
   AccountingSystemImportDetail,
   AccountingSystemMappingProfileUpsertRequest,
   AccountingSystemProvider,
+  AccountingSystemReconciliationRow,
   AccountingSystemReconciliationSummary,
+  AccountingSystemReconciliationStatus,
   ExternalGlMappingProfile,
   AccountingRulesStudioPromotionQueueItem,
   AccountingRulesStudioRuleRow,
@@ -2114,7 +2116,17 @@ export interface ReconciliationComparisonRowViewModel {
   ledgerMeta: string;
   ledgerValue: string;
   statusLabel: string;
-  statusTone: "success" | "warning";
+  statusTone: "success" | "warning" | "danger";
+}
+
+export interface ReconciliationLineItemViewModel {
+  id: string;
+  matchKey: string;
+  title: string;
+  meta: string;
+  amountLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger";
 }
 
 export interface ReconciliationComparisonViewState {
@@ -2129,6 +2141,12 @@ export interface ReconciliationComparisonViewState {
   varianceLabel: string;
   varianceTone: "success" | "warning";
   rows: ReconciliationComparisonRowViewModel[];
+  /** Per-line statement side. Transaction-level when an external GL reconciliation is loaded, else one line per run. */
+  statementLines: ReconciliationLineItemViewModel[];
+  /** Per-line ledger side, paired with statementLines by matchKey for cross-highlighting. */
+  ledgerLines: ReconciliationLineItemViewModel[];
+  /** "transactions" when driven by AccountingSystemReconciliationRow detail; "runs" for the run-level fallback. */
+  lineSource: "transactions" | "runs";
   ariaLabel: string;
 }
 
@@ -11289,7 +11307,8 @@ function newClientId(): string {
 export function useAccountingReconciliationViewModel(
   data: AccountingWorkspaceResponse | null,
   workstream: AccountingWorkstream,
-  services: AccountingReconciliationServices = defaultAccountingReconciliationServices
+  services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
+  systemReconciliation: AccountingSystemReconciliationSummary | null = null
 ) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
@@ -11628,9 +11647,10 @@ export function useAccountingReconciliationViewModel(
       statementRuns,
       fallbackQueue: reconciliationQueue,
       selectedRunId,
-      cashFlow: data?.cashFlow ?? null
+      cashFlow: data?.cashFlow ?? null,
+      systemReconciliation
     }),
-    [data?.cashFlow, reconciliationQueue, selectedRunId, statementRuns]
+    [data?.cashFlow, reconciliationQueue, selectedRunId, statementRuns, systemReconciliation]
   );
   const exceptionWorkbench = useMemo(
     () => buildOperationalExceptionWorkbenchState({
@@ -12054,6 +12074,49 @@ interface ReconciliationComparisonBuildInput {
   fallbackQueue: AccountingWorkspaceResponse["reconciliationQueue"];
   selectedRunId: string | null;
   cashFlow: AccountingCashFlowSummary | null;
+  /** Latest external GL reconciliation. When present, drives the panes with transaction-level line detail. */
+  systemReconciliation?: AccountingSystemReconciliationSummary | null;
+}
+
+const SYSTEM_RECONCILIATION_TONE: Record<AccountingSystemReconciliationStatus, "success" | "warning" | "danger"> = {
+  Matched: "success",
+  ReviewRequired: "warning",
+  Variance: "danger",
+  MissingExternal: "danger",
+  MissingMeridian: "danger"
+};
+
+function describeSystemReconciliationStatus(status: AccountingSystemReconciliationStatus): string {
+  switch (status) {
+    case "Matched":
+      return "Matched";
+    case "ReviewRequired":
+      return "Review";
+    case "Variance":
+      return "Variance";
+    case "MissingExternal":
+      return "Missing in statement";
+    case "MissingMeridian":
+      return "Missing in ledger";
+  }
+}
+
+function buildSystemReconciliationLine(
+  row: AccountingSystemReconciliationRow,
+  side: "statement" | "ledger"
+): ReconciliationLineItemViewModel {
+  const amount = side === "statement"
+    ? row.externalDebit - row.externalCredit
+    : row.meridianDebit - row.meridianCredit;
+  return {
+    id: `${row.rowId}:${side}`,
+    matchKey: row.rowId,
+    title: row.accountName || row.accountCode,
+    meta: [row.accountCode, row.currency, row.detail].map((part) => part?.trim()).filter(Boolean).join(" · "),
+    amountLabel: formatSignedCurrency(amount),
+    statusLabel: describeSystemReconciliationStatus(row.status),
+    statusTone: SYSTEM_RECONCILIATION_TONE[row.status]
+  };
 }
 
 export function buildReconciliationStatementRunsViewState({
@@ -12112,7 +12175,8 @@ export function buildReconciliationComparisonViewState({
   statementRuns,
   fallbackQueue,
   selectedRunId,
-  cashFlow
+  cashFlow,
+  systemReconciliation = null
 }: ReconciliationComparisonBuildInput): ReconciliationComparisonViewState {
   const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
     ? []
@@ -12163,25 +12227,85 @@ export function buildReconciliationComparisonViewState({
       ledgerMeta,
       ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
       statusLabel,
-      statusTone: openCount > 0 || statusLabel === "BreaksOpen" || statusLabel === "SecurityCoverageOpen" ? "warning" : "success"
+      statusTone: statusLabel === "SecurityCoverageOpen"
+        ? "danger"
+        : openCount > 0 || statusLabel === "BreaksOpen"
+          ? "warning"
+          : "success"
     };
   });
-  const matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
-  const openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
-  const variance = cashFlow?.netVariance ?? 0;
+  // Transaction-level line detail comes from the latest external GL reconciliation when loaded.
+  // Each row carries both a statement (external) and ledger (Meridian) side keyed by rowId, so the
+  // two panes cross-highlight by matchKey. MissingExternal / MissingMeridian rows are one-sided.
+  const systemRows = systemReconciliation?.rows ?? [];
+  const hasTransactionLines = systemRows.length > 0;
+
+  const statementLines: ReconciliationLineItemViewModel[] = hasTransactionLines
+    ? systemRows
+      .filter((row) => row.status !== "MissingExternal")
+      .map((row) => buildSystemReconciliationLine(row, "statement"))
+    : rows.map((row) => ({
+      id: `${row.id}:statement`,
+      matchKey: row.id,
+      title: row.statementTitle,
+      meta: row.statementMeta,
+      amountLabel: row.statementValue,
+      statusLabel: row.statusLabel,
+      statusTone: row.statusTone
+    }));
+
+  const ledgerLines: ReconciliationLineItemViewModel[] = hasTransactionLines
+    ? systemRows
+      .filter((row) => row.status !== "MissingMeridian")
+      .map((row) => buildSystemReconciliationLine(row, "ledger"))
+    : rows.map((row) => ({
+      id: `${row.id}:ledger`,
+      matchKey: row.id,
+      title: row.ledgerTitle,
+      meta: row.ledgerMeta,
+      amountLabel: row.ledgerValue,
+      statusLabel: row.statusLabel,
+      statusTone: row.statusTone
+    }));
+
+  // Summary + badges follow the active line source so the panes and totals agree.
+  let matchedCount: number;
+  let openCount: number;
+  let statementBalanceLabel: string;
+  let ledgerBalanceLabel: string;
+  let variance: number;
+
+  if (systemReconciliation) {
+    const statementBalance = systemReconciliation.totalExternalDebits - systemReconciliation.totalExternalCredits;
+    const ledgerBalance = systemReconciliation.totalMeridianDebits - systemReconciliation.totalMeridianCredits;
+    matchedCount = systemReconciliation.matchedCount;
+    openCount = systemReconciliation.breakCount;
+    statementBalanceLabel = formatCurrency(statementBalance);
+    ledgerBalanceLabel = formatCurrency(ledgerBalance);
+    variance = statementBalance - ledgerBalance;
+  } else {
+    matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
+    openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
+    statementBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded";
+    ledgerBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded";
+    variance = cashFlow?.netVariance ?? 0;
+  }
 
   return {
     title: "Cash reconciliation - broker statement vs. ledger",
     subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
-    statementHeading: "Statement",
-    ledgerHeading: "Ledger",
+    statementHeading: hasTransactionLines ? "Custodian statement" : "Statement",
+    ledgerHeading: hasTransactionLines ? "Internal ledger" : "Ledger",
     matchedBadgeLabel: `${matchedCount.toLocaleString()} matched`,
     openBadgeLabel: `${openCount.toLocaleString()} open`,
-    statementBalanceLabel: cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded",
-    ledgerBalanceLabel: cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded",
-    varianceLabel: variance === 0 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`,
-    varianceTone: variance === 0 ? "success" : "warning",
+    statementBalanceLabel,
+    ledgerBalanceLabel,
+    varianceLabel: Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`,
+    varianceTone: Math.abs(variance) < 0.005 ? "success" : "warning",
     rows,
+    statementLines,
+    ledgerLines,
+    lineSource: hasTransactionLines ? "transactions" : "runs",
     ariaLabel: "Cash reconciliation broker statement versus ledger comparison"
   };
 }
