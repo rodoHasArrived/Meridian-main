@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
 
 export type StrategyFormulaWorkbenchMode = "visual" | "formula" | "code";
@@ -207,7 +208,12 @@ export function StrategyFormulaWorkbench({
                 </button>
               ))}
             </div>
-            <div className="row-detail-panel">
+            <DenseRowDetailPanel
+              id="strategy-formula-compiled-preview-panel"
+              ariaLabel="Compiled strategy formula preview"
+              className="row-detail-panel"
+              selectedSourceLabel="Compiled preview"
+            >
               <div className="head">Compiled preview</div>
               <div className="body">
                 <pre
@@ -217,7 +223,7 @@ export function StrategyFormulaWorkbench({
                   {compiledLines.join("\n")}
                 </pre>
               </div>
-            </div>
+            </DenseRowDetailPanel>
             <Button type="button" variant="secondary" className="w-full" aria-label="Run local strategy formula preview">
               <PlayCircle className="h-4 w-4" aria-hidden="true" />
               <span className="ml-1.5">Preview run</span>

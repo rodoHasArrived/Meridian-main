@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
-import type { KeyboardEvent, ReactNode } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import "@/styles/workspace-primitives.css";
 
 export interface WorkspaceFilterBarOption {
   id: string;
@@ -94,7 +95,20 @@ export function WorkspaceTabStrip({
   className?: string;
 }) {
   const selectedIndex = tabs.findIndex((tab) => tab.selected);
+  const defaultFocusableTabId = tabs[selectedIndex >= 0 ? selectedIndex : 0]?.id ?? null;
+  const [focusableTabId, setFocusableTabId] = useState<string | null>(defaultFocusableTabId);
+
+  useEffect(() => {
+    setFocusableTabId(defaultFocusableTabId);
+  }, [defaultFocusableTabId]);
+
   const focusTabAtIndex = (currentTarget: HTMLElement, index: number) => {
+    const tab = tabs[index] ?? null;
+    if (!tab) {
+      return;
+    }
+
+    setFocusableTabId(tab.id);
     const tabElements = Array.from(
       currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []
     );
@@ -152,7 +166,7 @@ export function WorkspaceTabStrip({
         const selected = Boolean(tab.selected);
         const className = cn("workspace-tab", selected && "active");
         const content = <span>{tab.label}</span>;
-        const tabIndex = selected || (selectedIndex < 0 && index === 0) ? 0 : -1;
+        const tabIndex = tab.id === focusableTabId ? 0 : -1;
 
         return tab.href ? (
           <a
@@ -164,6 +178,7 @@ export function WorkspaceTabStrip({
             aria-controls={tab.panelId}
             aria-current={selected ? "page" : undefined}
             tabIndex={tabIndex}
+            onFocus={() => setFocusableTabId(tab.id)}
             onKeyDown={(event) => handleTabKeyDown(event, index, tab.id, tab.href)}
           >
             {content}
@@ -177,6 +192,7 @@ export function WorkspaceTabStrip({
             aria-selected={selected}
             aria-controls={tab.panelId}
             tabIndex={tabIndex}
+            onFocus={() => setFocusableTabId(tab.id)}
             onKeyDown={(event) => handleTabKeyDown(event, index, tab.id, tab.href)}
             onClick={() => onSelect?.(tab.id)}
           >

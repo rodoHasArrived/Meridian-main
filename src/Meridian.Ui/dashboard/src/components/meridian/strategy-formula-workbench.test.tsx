@@ -69,6 +69,7 @@ describe("StrategyFormulaWorkbench", () => {
     await user.click(within(fieldList).getByRole("button", { name: "Insert RATING" }));
 
     expect(screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Strategy formula source" }).value).toContain("RATING");
+    expect(screen.getByRole("region", { name: "Compiled strategy formula preview" })).toBeInTheDocument();
     expect(screen.getByTestId("strategy-formula-compiled-preview")).toHaveTextContent("fields: RATING");
   });
 

@@ -1,45 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-
-const accountingTaskModeLinks = [
-  {
-    id: "reconciliation-casework",
-    label: "Reconciliation Casework",
-    description: "Review statement runs, open breaks, owners, evidence, and resolution actions.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
-  },
-  {
-    id: "ledger-explorer",
-    label: "Ledger Explorer",
-    description: "Inspect trial balance, journal support, proof links, report usage, and audit history.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingLedger
-  },
-  {
-    id: "journal-entry",
-    label: "Journal Entry",
-    description: "Draft governed manual entries, validate balancing, attach proof, and submit approvals.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
-  },
-  {
-    id: "capital-accounts",
-    label: "Capital Accounts",
-    description: "Trace investor capital activity, allocation evidence, statements, and report readiness.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
-  },
-  {
-    id: "delivery-evidence",
-    label: "Delivery Evidence",
-    description: "Open retained report packs, manifests, exports, and audit-ready output support.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-  },
-  {
-    id: "governance",
-    label: "Governance",
-    description: "Configure books, posting controls, Security Master readiness, and activation gates.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
-  }
-] as const;
+import { accountingTaskModeLauncherLinks } from "@/screens/accounting-screen.task-mode-view-model";
 
 export function AccountingTaskModeLauncher() {
   return (
@@ -58,7 +19,7 @@ export function AccountingTaskModeLauncher() {
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-        {accountingTaskModeLinks.map((mode) => (
+        {accountingTaskModeLauncherLinks.map((mode) => (
           <Link
             key={mode.id}
             to={mode.href}

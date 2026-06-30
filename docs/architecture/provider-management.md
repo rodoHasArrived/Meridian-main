@@ -50,8 +50,9 @@ UI / API Layer
                                 │              Finnhub, AlphaVantage, NasdaqDataLink,
                                 │              IB, StockSharp
                                 │   (base: BaseHistoricalDataProvider)
-                                └── Symbol Search: Alpaca, Finnhub, Polygon,
-                                                   OpenFIGI, StockSharp
+                                └── Symbol Search: Alpaca, AlphaVantage,
+                                                   Finnhub, Polygon, Tiingo,
+                                                   TwelveData, OpenFIGI, StockSharp
                                     (base: BaseSymbolSearchProvider)
 ```
 
@@ -220,12 +221,14 @@ All locations relative to `src/Meridian.Infrastructure/Adapters/`.
 |----------|-------|-----------|-------------|------------------|
 | Alpaca | `AlpacaHistoricalDataProvider` | With account | 200/min | Bars, trades, quotes, auctions, intraday |
 | Polygon | `PolygonHistoricalDataProvider` | Limited | Varies | Bars, trades, quotes, aggregates |
-| Tiingo | `TiingoHistoricalDataProvider` | Yes | 500/hour | Daily bars, adjusted prices |
+| Tiingo | `TiingoHistoricalDataProvider`, `TiingoSymbolSearchProvider`, `TiingoCorporateActionProvider` | Yes | 50/hour | Daily bars, adjusted prices, utilities symbol search, adjusted-EOD dividend/split extraction |
 | Yahoo Finance | `YahooFinanceHistoricalDataProvider` | Yes | Unofficial | Daily bars |
 | Stooq | `StooqHistoricalDataProvider` | Yes | Low | Daily bars |
-| Finnhub | `FinnhubHistoricalDataProvider` | Yes | 60/min | Daily bars |
-| Alpha Vantage | `AlphaVantageHistoricalDataProvider` | Yes | 5/min | Daily bars |
-| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider` | Limited | Varies | Various |
+| Finnhub | `FinnhubHistoricalDataProvider` | Yes | 60/min | Daily and intraday bars |
+| FRED | `FredHistoricalDataProvider`, `FredSymbolSearchProvider` | Yes | 120/min | Economic series observations mapped to synthetic daily bars, credential-gated series search |
+| Alpha Vantage | `AlphaVantageHistoricalDataProvider`, `AlphaVantageSymbolSearchProvider`, `AlphaVantageCorporateActionProvider` | Yes | 5/min | Daily bars, intraday bars, keyword symbol search, adjusted-daily dividend/split extraction |
+| Twelve Data | `TwelveDataHistoricalDataProvider`, `TwelveDataSymbolSearchProvider`, `TwelveDataCorporateActionProvider` | Yes | 8/min | Daily bars, credential-gated `/symbol_search` discovery, paid-plan `/dividends` and `/splits` corporate actions |
+| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider`, `NasdaqDataLinkCorporateActionProvider` | Limited | Varies | Time-series datasets, adjusted dataset dividend/split extraction |
 | Interactive Brokers | `IBHistoricalDataProvider` | With account | IB pacing | All types |
 | StockSharp | `StockSharpHistoricalDataProvider` | With account | Varies | Multi-exchange |
 
@@ -238,12 +241,15 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 | Provider | Class | Filterable | Exchanges | Rate Limit |
 |----------|-------|------------|-----------|------------|
 | Alpaca | `AlpacaSymbolSearchProviderRefactored` | Yes | US, Crypto | 200/min |
+| Alpha Vantage | `AlphaVantageSymbolSearchProvider` | Yes | Region-scoped global keyword results | 5/min |
+| Tiingo | `TiingoSymbolSearchProvider` | Yes | Tiingo utilities search results with client-side asset/exchange filtering | 50/hour |
+| Twelve Data | `TwelveDataSymbolSearchProvider` | Yes | `/symbol_search` results with client-side asset/exchange filtering | 8/min |
 | Finnhub | `FinnhubSymbolSearchProviderRefactored` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
 | OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
 | StockSharp | `StockSharpSymbolSearchProvider` | No | Multi-exchange | Varies |
 
-All located under `src/Meridian.Infrastructure/Adapters/Core/`.
+Located under `src/Meridian.Infrastructure/Adapters/` provider folders.
 
 ---
 
@@ -394,6 +400,9 @@ architecture supports the following deterministic semantics:
   unset, it uses the configured backfill job concurrency.
 - `SymbolPriorities` sort symbols by lower numeric priority first, with case-insensitive keys.
   Without priorities, serial execution (`MaxConcurrentSymbols=1`) preserves input order.
+- Cost preview and execution trim symbols, drop blanks, and de-duplicate symbols case-insensitively
+  while preserving the first-seen order and spelling, preventing duplicate provider fetches from
+  casing or whitespace variants in the same request.
 - Concurrent multi-symbol runs do not guarantee completion order. Treat per-symbol validation
   signals, execution history, and checkpoints as the evidence boundary instead of task completion
   sequence.
@@ -409,6 +418,14 @@ attempts, suppresses duplicate completed attempts by idempotency key, and allows
 to retry. Cross-provider fallback and promotion-grade closure remain operator-governed: the run is
 not considered remediated until execution history, per-symbol validation signals, and a follow-up
 gap or quality check prove the affected interval acceptable for the blocked downstream workflow.
+For bounded daily backfill checks, `CrossSourceBackfillReconciliationService` can compare a
+baseline provider against one or more comparison providers and retain structured price/volume drift,
+missing-session, and provider-error evidence. Batch reconciliation normalizes symbols to uppercase,
+de-duplicates them, preserves first-seen request order, and returns per-symbol evidence so operators
+can audit a multi-symbol remediation without inferring order from provider completion timing. The
+result also emits a closure decision and ordered review-symbol list so clean evidence is explicitly
+separated from provider-error or discrepancy blockers. It is proof material for the
+operator-governed closure flow, not autonomous SLA enforcement.
 
 ### Rate Limiting
 
@@ -495,7 +512,13 @@ Computes a composite health/degradation score (0.0 = fully healthy, 1.0 = fully 
 
 **Events:** `OnProviderDegraded`, `OnProviderRecovered`
 
-**Key APIs:** `GetScore(providerName)`, `GetAllScores()`, `GetProvidersByHealth()`, `IsDegraded(providerName)`
+**Key APIs:** `GetScore(providerName)`, `GetAllScores()`, `GetProvidersByHealth()`, `IsDegraded(providerName)`.
+Score discovery includes providers seen through connection health, latency histograms, or error
+tracking so latency-only secondary-provider evidence is visible in health rankings.
+When a provider has no streaming connection signal, scoring switches to a request-only mode and
+rebalances across available latency and error-rate evidence. This keeps severe historical-provider
+latency or request-failure telemetry from being capped below the degradation threshold simply
+because the provider is not a streaming adapter.
 
 Provider degradation calibration datasets, incident windows, kernel profiles, calibration
 snapshots, promotion gate policy, governance workflow, and calibration report generation also live

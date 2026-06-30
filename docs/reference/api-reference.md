@@ -365,9 +365,14 @@ This table is intentionally **path-first** to support API documentation validati
 |--------|-------|-------------|
 | GET | `/api/backfill/providers` | List available providers |
 | GET | `/api/backfill/status` | Last backfill status |
+| POST | `/api/backfill/cost-estimate` | Estimate provider API calls, quota impact, wall-clock time, and adaptive partition windows |
 | POST | `/api/backfill/run` | Execute backfill |
 | POST | `/api/backfill/run/preview` | Preview backfill (dry run) |
 | GET | `/api/backfill/progress` | Current operation progress |
+
+Cost-estimate responses include per-provider `PartitionStrategy` and `AdaptivePartitions` values
+for estimator-planned intraday or large-range windows. Treat these fields as planning evidence;
+execution history, checkpoints, and follow-up quality/gap checks remain the completion proof.
 
 ### Backfill Checkpoints (`/api/backfill/checkpoints/*`)
 

@@ -159,6 +159,57 @@ public sealed class ProviderDegradationScorerTests : IDisposable
     }
 
     [Fact]
+    public void GetAllScores_IncludesLatencyOnlyProviderEvidence()
+    {
+        // Arrange
+        for (var i = 0; i < 100; i++)
+        {
+            _latencyService.RecordLatency(" LatencyOnly ", 1500.0);
+        }
+
+        // Act
+        var scores = _scorer.GetAllScores();
+
+        // Assert
+        var score = scores.Should()
+            .ContainSingle(s => s.ProviderName == "latencyonly")
+            .Subject;
+        score.P95LatencyMs.Should().BeGreaterThan(ProviderDegradationConfig.Default.LatencyThresholdMs);
+        score.LatencyScore.Should().BeGreaterThan(0);
+        score.CompositeScore.Should().BeApproximately(score.LatencyScore, 0.0001);
+        score.IsDegraded.Should().BeTrue("severe request-only latency evidence must be routable even when no streaming connection is registered");
+        score.Decision.Trace.Metadata.Should().ContainKey("scoring-mode").WhoseValue.Should().Be("request-only");
+        score.Decision.Reasons.Should().Contain(r => r.RuleId == "provider-degradation.latency-p95");
+    }
+
+    [Fact]
+    public void Scenario_RequestOnlyProviderFailures_DegradeHistoricalProviderWithoutStreamingConnection()
+    {
+        // Arrange - free-tier historical providers often expose request errors without a streaming connection lifecycle.
+        for (var i = 0; i < 50; i++)
+        {
+            _scorer.RecordError(" AlphaVantage ", "rate_limit");
+        }
+
+        // Act
+        var score = _scorer.GetScore("alphavantage");
+
+        // Assert
+        score.ProviderName.Should().Be("alphavantage");
+        score.IsConnected.Should().BeFalse();
+        score.ErrorRate.Should().Be(1.0);
+        score.ErrorRateScore.Should().Be(1.0);
+        score.CompositeScore.Should().Be(1.0);
+        score.IsDegraded.Should().BeTrue("request-only providers should not need streaming health evidence before severe provider errors affect routing");
+        score.Decision.Trace.Metadata.Should().ContainKey("scoring-mode").WhoseValue.Should().Be("request-only");
+        var errorReason = score.Decision.Reasons.Should()
+            .ContainSingle(reason => reason.RuleId == "provider-degradation.error-rate")
+            .Subject;
+        errorReason.Weight.Should().Be(1.0);
+        errorReason.EvidenceRefs.Should().Contain("coefficient:1.0000");
+    }
+
+    [Fact]
     public void GetProvidersByHealth_ReturnsOrderedList()
     {
         // Arrange
@@ -177,6 +228,40 @@ public sealed class ProviderDegradationScorerTests : IDisposable
         var healthyIndex = ranked.ToList().IndexOf("healthy");
         var degradedIndex = ranked.ToList().IndexOf("degraded");
         healthyIndex.Should().BeLessThan(degradedIndex);
+    }
+
+    [Fact]
+    public void Scenario_ProviderIdentityVariants_CombineHealthLatencyAndErrorSignals()
+    {
+        // Arrange
+        _healthMonitor.RegisterConnection("alpaca-conn", " Alpaca ");
+        _healthMonitor.MarkDisconnected("alpaca-conn", "simulated feed outage");
+
+        for (var i = 0; i < 100; i++)
+        {
+            _latencyService.RecordLatency("ALPACA", 1500.0);
+        }
+
+        for (var i = 0; i < 80; i++)
+        {
+            _scorer.RecordError(" alpaca ", "timeout");
+        }
+
+        for (var i = 0; i < 20; i++)
+        {
+            _scorer.RecordSuccess("ALPACA");
+        }
+
+        // Act
+        var score = _scorer.GetScore("alpaca");
+
+        // Assert
+        score.ProviderName.Should().Be("alpaca");
+        score.IsConnected.Should().BeFalse();
+        score.P95LatencyMs.Should().BeGreaterThan(0);
+        score.ErrorRate.Should().BeGreaterThan(0.5);
+        score.IsDegraded.Should().BeTrue("provider identity variants should not fragment degradation evidence");
+        _scorer.GetProvidersByHealth().Should().Contain("alpaca");
     }
 
     [Fact]

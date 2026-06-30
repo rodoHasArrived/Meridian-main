@@ -18,7 +18,7 @@ This is the canonical operator lane for historical data backfill operations and 
 Use this sequence for controlled backfill execution:
 
 1. Configure provider credentials and priorities for all intended providers.
-2. Run preview before execution and capture the preview evidence.
+2. Run preview or cost estimate before execution and capture the preview evidence.
 3. Run scoped backfill jobs (single symbol or small batches first).
 4. Monitor status/progress APIs until completion or bounded retries.
 5. Run quality check and gap report before archival or downstream promotion.
@@ -29,6 +29,7 @@ Use this sequence for controlled backfill execution:
 - `GET /api/backfill/status`
 - `GET /api/backfill/progress`
 - `POST /api/backfill/run/preview`
+- `POST /api/backfill/cost-estimate`
 - `POST /api/backfill/run`
 - `GET /api/backfill/executions`
 - `GET /api/backfill/statistics`
@@ -55,6 +56,9 @@ mode:
 - When `SymbolPriorities` is supplied, lower numeric priority values process first. Priority keys are
   matched case-insensitively.
 - When no symbol priorities are supplied and concurrency is `1`, input symbol order is preserved.
+- Cost preview and execution trim symbols, drop blanks, and de-duplicate symbols case-insensitively
+  while preserving the first-seen order and spelling, so repeated symbols do not create duplicate
+  provider calls or validation rows.
 - When concurrency is greater than `1`, completion order is not a stable ordering contract. Use
   per-symbol validation signals and checkpoints rather than task completion order as evidence.
 - `ResumeFromCheckpoint=true` skips fully covered symbols, advances partial symbols to the day after
@@ -90,6 +94,10 @@ Before accepting outputs, run:
 
 - backfill gap report (`dotnet run -- --gap-report ...`)
 - quality report (`dotnet run -- --quality-report <symbol>`)
+- bounded cross-source daily backfill reconciliation when an alternate provider is part of the
+  acceptance evidence; batch reconciliation normalizes symbols to uppercase, de-duplicates them,
+  preserves first-seen request order, filters comparison bars to the requested symbol, and reports
+  clean/drift/symbol-mismatch/error posture per symbol
 - review execution history/lineage before promoting archive/parquet transitions.
 
 ## Gap-remediation SLA posture
@@ -110,7 +118,9 @@ workflow enforces timers end to end:
 - Fallback: cross-provider repair must use the configured provider priority/fallback order and must
   preserve the original source/provider evidence for audit comparison.
 - Prove: a gap is not closed until the rerun has execution history, per-symbol validation signals,
-  and a follow-up gap/quality check showing the affected interval is acceptable for the downstream
+  bounded cross-source reconciliation evidence when fallback data is used, no wrong-symbol fallback
+  rows in the accepted evidence set, a retained closure decision with ordered review symbols, and a
+  follow-up gap/quality check showing the affected interval is acceptable for the downstream
   workflow.
 - Escalate: if provider fallback cannot close the interval, attach the failed execution evidence and
   route the exception to provider readiness, reconciliation, or reporting owners according to the
@@ -129,6 +139,17 @@ workflow enforces timers end to end:
 - Honor rate-limit pressure by widening intervals rather than forcing retries.
 - Use incremental backfill windows when a full range is high risk.
 - Escalate unresolved critical breaks only with evidence attached.
+
+### Cost-estimate and execution partition planning
+
+- `POST /api/backfill/cost-estimate` returns per-provider `PartitionStrategy` and
+  `AdaptivePartitions` entries for estimator-planned provider windows.
+- Bounded long intraday or multi-year daily runs execute through the same adaptive windows so
+  provider calls stay aligned with the previewed plan.
+- Review adaptive partitions before long runs. They are planning and execution-shape evidence for
+  quota, wall-clock, and batching expectations, not completion proof.
+- Retain execution history, checkpoint evidence, and follow-up quality/gap checks as the proof that
+  each affected interval was accepted for downstream workflows.
 
 ## Mandatory evidence
 

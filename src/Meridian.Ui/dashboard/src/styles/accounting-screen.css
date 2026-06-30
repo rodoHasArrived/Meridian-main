@@ -1,0 +1,531 @@
+/* Accounting route-owned workstation styling. Keep imported from accounting-screen.tsx. */
+
+.accounting-reference-panel,
+.accounting-draft-rail {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  border: 1px solid #d8dde5;
+  border-radius: 8px;
+  background: #f3f5f8;
+  color: #20242a;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(21, 35, 48, 0.08);
+}
+
+.accounting-journal-panel {
+  padding: 1.125rem;
+}
+
+.accounting-reference-heading {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.accounting-reference-kicker {
+  margin: 0;
+  color: #65717f;
+  font-size: 0.75rem;
+  font-weight: 760;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.accounting-reference-subtitle {
+  margin: 0.25rem 0 0;
+  color: #65717f;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.accounting-reference-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.accounting-reference-badge,
+.accounting-reference-balance-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  border: 1px solid #cbd4de;
+  border-radius: 5px;
+  background: #ffffff;
+  padding: 0.125rem 0.5rem;
+  color: #343a42;
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 760;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.accounting-reference-badge-success,
+.accounting-reference-balance-badge.is-balanced {
+  border-color: #2f8f79;
+  background: #e8f6f1;
+  color: #23715f;
+}
+
+.accounting-reference-badge-warning {
+  border-color: #b88939;
+  background: #fbf3df;
+  color: #8a6420;
+}
+
+.accounting-reference-balance-badge {
+  gap: 0.375rem;
+  min-height: 2rem;
+  padding-inline: 0.75rem;
+}
+
+.accounting-reference-balance-badge span[aria-hidden="true"] {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.accounting-reference-balance-badge.is-out {
+  border-color: #b25367;
+  background: #fae8ed;
+  color: #963c50;
+}
+
+/* ── Split-pane reconciliation (statement vs. ledger) ──────────────────────
+   Two synchronized panes with per-row status bars (matched / timing / break),
+   per-pane chips, and cross-highlighting on selection. Mirrors the design
+   system's Split Pane Reconciliation template, mapped to --ws-* tokens.
+──────────────────────────────────────────────────────────────────────────*/
+.accounting-reconciliation-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--ws-border, #d7dce2);
+  border-radius: 8px;
+  background: var(--ws-surface, #ffffff);
+  box-shadow: var(--ws-shadow, 0 1px 1px rgba(0, 0, 0, 0.08));
+}
+
+.reconcile-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.reconcile-pane + .reconcile-pane {
+  border-left: 1px solid var(--ws-border, #d7dce2);
+}
+
+.reconcile-pane-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--ws-border, #d7dce2);
+  background: var(--ws-surface-subtle, #f5f7fa);
+  padding: 0.5rem 0.8125rem;
+}
+
+.reconcile-pane-title {
+  color: var(--ws-text-muted, #59636f);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reconcile-pane-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.3125rem;
+}
+
+.reconcile-chip {
+  border: 1px solid;
+  border-radius: var(--radius-chip, 4px);
+  padding: 0.0625rem 0.4375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reconcile-chip.is-ok {
+  border-color: var(--state-healthy-bd);
+  background: var(--state-healthy-bg);
+  color: var(--state-healthy-fg);
+}
+
+.reconcile-chip.is-timing {
+  border-color: var(--state-warn-bd);
+  background: var(--state-warn-bg);
+  color: var(--state-warn-fg);
+}
+
+.reconcile-chip.is-break {
+  border-color: var(--state-danger-bd);
+  background: var(--state-danger-bg);
+  color: var(--state-danger-fg);
+}
+
+.reconcile-pane-scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.reconcile-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reconcile-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--ws-border, #d7dce2);
+  background: var(--ws-surface, #ffffff);
+  padding: 0.375rem 0.75rem;
+  color: var(--ws-text-muted, #59636f);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reconcile-table th.num {
+  text-align: right;
+}
+
+.reconcile-table tbody tr {
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.reconcile-table td {
+  position: relative;
+  border-top: 1px solid var(--ws-border, #d7dce2);
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+}
+
+.reconcile-table td:first-child {
+  padding-left: 0.8125rem;
+}
+
+.reconcile-table td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--ws-border-strong, #b8c2cc);
+}
+
+.reconcile-table tr.is-matched td:first-child::before {
+  background: var(--state-healthy-fg);
+}
+
+.reconcile-table tr.is-timing td:first-child::before {
+  background: var(--state-warn-fg);
+}
+
+.reconcile-table tr.is-break td:first-child::before {
+  background: var(--state-danger-fg);
+}
+
+.reconcile-table tr.is-timing td {
+  background: var(--state-warn-bg);
+}
+
+.reconcile-table tr.is-break td {
+  background: var(--state-danger-bg);
+}
+
+.reconcile-table tbody tr:hover td {
+  background: var(--ws-row-hover, #f1f4f7);
+}
+
+.reconcile-table tr.is-selected td {
+  background: var(--state-paper-bg) !important;
+}
+
+.reconcile-table tr.is-cross-lit td {
+  background: var(--state-paper-bg) !important;
+  outline: 1px dashed var(--ws-accent, #2f6f8f);
+  outline-offset: -1px;
+}
+
+.reconcile-table tr.is-selected td:first-child::before,
+.reconcile-table tr.is-cross-lit td:first-child::before {
+  background: var(--ws-accent, #2f6f8f) !important;
+}
+
+.reconcile-table tbody tr:focus-visible {
+  outline: 2px solid var(--ws-accent, #2f6f8f);
+  outline-offset: -2px;
+}
+
+.reconcile-row-title {
+  overflow: hidden;
+  color: var(--ws-text, #22272e);
+  font-size: 0.8125rem;
+  font-weight: 620;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reconcile-row-meta {
+  overflow: hidden;
+  margin-top: 0.25rem;
+  color: var(--ws-text-muted, #59636f);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reconcile-table td.num {
+  color: var(--ws-text, #22272e);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.8125rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.reconcile-empty {
+  padding: 1.25rem 0.875rem;
+  color: var(--ws-text-muted, #59636f);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.accounting-balance-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #d8dde5;
+  border-radius: 7px;
+  background: #f6f8fb;
+  padding: 0.875rem 1rem;
+}
+
+.accounting-balance-strip span {
+  display: block;
+  color: #65717f;
+  font-size: 0.6875rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.accounting-balance-strip strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: #20242a;
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.95rem;
+  font-weight: 640;
+}
+
+.accounting-draft-button {
+  width: 100%;
+  border: 1px solid #d8dde5;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.75rem;
+  text-align: left;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.accounting-draft-button:hover,
+.accounting-draft-button.is-active {
+  border-color: #176fa3;
+  background: #f1f7fb;
+  box-shadow: inset 3px 0 0 #176fa3;
+}
+
+.accounting-journal-header-grid {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.75fr) minmax(9rem, 0.75fr) minmax(16rem, 1.6fr);
+  gap: 0.75rem 1rem;
+  border: 1px solid #d8dde5;
+  border-radius: 7px;
+  background: #f6f8fb;
+  padding: 0.875rem 1rem;
+}
+
+.accounting-journal-header-grid label,
+.accounting-journal-table label {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.accounting-journal-header-grid span {
+  color: #65717f;
+  font-size: 0.6875rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.accounting-journal-header-grid input,
+.accounting-journal-table input,
+.accounting-journal-table select {
+  min-width: 0;
+  min-height: 2.25rem;
+  width: 100%;
+  border: 1px solid #d8dde5;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #20242a;
+  padding: 0 0.65rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.accounting-journal-header-grid input:focus,
+.accounting-journal-table input:focus,
+.accounting-journal-table select:focus {
+  border-color: #176fa3;
+  box-shadow: 0 0 0 2px rgba(23, 111, 163, 0.16);
+}
+
+.accounting-journal-table-wrap {
+  overflow: auto;
+  border: 1px solid #d8dde5;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.accounting-journal-table {
+  width: 100%;
+  min-width: 58rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #20242a;
+  font-size: 0.875rem;
+}
+
+.accounting-journal-table th {
+  border-bottom: 1px solid #d8dde5;
+  background: #ffffff;
+  padding: 0.7rem 0.875rem;
+  color: #65717f;
+  font-size: 0.6875rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.accounting-journal-table td {
+  border-bottom: 1px solid #d8dde5;
+  padding: 0.55rem 0.875rem;
+  vertical-align: top;
+}
+
+.accounting-journal-table th:nth-child(2),
+.accounting-journal-table th:nth-child(3),
+.accounting-journal-table td:nth-child(2),
+.accounting-journal-table td:nth-child(3) {
+  width: 10rem;
+  text-align: right;
+}
+
+.accounting-journal-table tr.is-selected td {
+  background: #f1f7fb;
+}
+
+.accounting-journal-support-button {
+  display: block;
+  width: 100%;
+  border: 1px solid #d8dde5;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+}
+
+.accounting-journal-support-button:hover {
+  border-color: #176fa3;
+  background: #f1f7fb;
+}
+
+.accounting-journal-total-row td {
+  border-top: 2px solid #aab5c2;
+  background: #f6f8fb;
+  color: #20242a;
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-weight: 700;
+}
+
+.accounting-journal-total-row td:first-child {
+  color: #65717f;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.accounting-journal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid #d8dde5;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 0.75rem 1rem;
+}
+
+@media (max-width: 900px) {
+  .accounting-reference-heading,
+  .accounting-journal-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .accounting-reference-badges {
+    justify-content: flex-start;
+  }
+
+  .accounting-reconciliation-split,
+  .accounting-balance-strip,
+  .accounting-journal-header-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reconcile-pane + .reconcile-pane {
+    border-left: 0;
+    border-top: 1px solid var(--ws-border, #d7dce2);
+  }
+}
+

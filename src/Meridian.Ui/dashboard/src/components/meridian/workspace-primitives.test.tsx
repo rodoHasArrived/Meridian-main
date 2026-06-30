@@ -77,12 +77,23 @@ describe("workspace primitives", () => {
     overview.focus();
     fireEvent.keyDown(overview, { key: "ArrowRight" });
     expect(diagnostics).toHaveFocus();
+    expect(overview).toHaveAttribute("tabindex", "-1");
+    expect(diagnostics).toHaveAttribute("tabindex", "0");
 
     fireEvent.keyDown(diagnostics, { key: "End" });
     expect(history).toHaveFocus();
+    expect(diagnostics).toHaveAttribute("tabindex", "-1");
+    expect(history).toHaveAttribute("tabindex", "0");
 
     fireEvent.keyDown(history, { key: "Home" });
     expect(overview).toHaveFocus();
+    expect(overview).toHaveAttribute("tabindex", "0");
+    expect(history).toHaveAttribute("tabindex", "-1");
+
+    fireEvent.keyDown(overview, { key: "ArrowLeft" });
+    expect(history).toHaveFocus();
+    expect(history).toHaveAttribute("tabindex", "0");
+    expect(overview).toHaveAttribute("tabindex", "-1");
   });
 
   it("activates focused button tabs with Enter and Space", () => {

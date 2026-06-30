@@ -4,6 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NumberPassport } from "@/components/meridian/number-passport";
 import { cn } from "@/lib/utils";
+import {
+  buildShareableExplorerHref,
+  buildShareableExplorerStateSummary,
+  readSharedExplorerViewState,
+  resolveSharedFilters,
+  resolveSharedRecordId,
+  resolveSharedViewId
+} from "@/components/meridian/financial-record-explorer.view-state";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerFilterDto,
@@ -38,18 +46,6 @@ export interface FinancialRecordExplorerAction {
   label: string;
   href?: string | null;
   ariaLabel?: string;
-}
-
-interface SharedExplorerFilterState {
-  filterId: string;
-  value: string;
-}
-
-interface SharedExplorerViewState {
-  viewId: string | null;
-  searchText: string | null;
-  recordId: string | null;
-  filters: SharedExplorerFilterState[];
 }
 
 export function FinancialRecordExplorerShell({
@@ -92,7 +88,7 @@ export function FinancialRecordExplorerShell({
     : savedViews, [dtoMode?.savedViews, savedViews]);
   const normalizedViewKey = normalizedViews.map((view) => view.id).join("|");
   const activeSavedView = normalizedViews.find((view) => view.active) ?? normalizedViews[0] ?? null;
-  const sharedViewState = useMemo(() => readSharedExplorerViewState(dtoMode), [dtoMode?.explorerId]);
+  const sharedViewState = useMemo(() => readSharedExplorerViewState(dtoMode, getCurrentExplorerSearch()), [dtoMode?.explorerId]);
   const initialViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
   const initialRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []) ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
   const [selectedViewId, setSelectedViewId] = useState(initialViewId);
@@ -174,7 +170,21 @@ export function FinancialRecordExplorerShell({
   const headerTitle = dtoMode?.title ?? title;
   const headerDescription = dtoMode?.description ?? description;
   const shareViewId = sharedFilterState.length > 0 && !sharedViewState.viewId ? "" : selectedViewId;
-  const shareHref = buildShareableExplorerHref(dtoMode, shareViewId, searchText, selectedFilters, selectedRecordShareId);
+  const shareSavedViewLabel = shareViewId ? selectedDtoSavedView?.label ?? activeSavedView?.label ?? null : null;
+  const shareStateSummary = buildShareableExplorerStateSummary({
+    savedViewLabel: shareSavedViewLabel,
+    searchText,
+    selectedFilters,
+    selectedRow
+  });
+  const shareHref = buildShareableExplorerHref({
+    explorer: dtoMode,
+    selectedViewId: shareViewId,
+    searchText,
+    selectedFilters,
+    selectedRecordId: selectedRecordShareId,
+    currentHref: getCurrentExplorerHref()
+  });
 
   useEffect(() => {
     if (!dtoMode || typeof window === "undefined" || shareHref === "#") {
@@ -230,9 +240,9 @@ export function FinancialRecordExplorerShell({
           <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
           {dtoMode ? (
             <Button asChild size="sm" variant="outline">
-              <a href={shareHref} aria-label={`Share ${headerTitle} saved view`}>
+              <a href={shareHref} aria-label={`Share ${headerTitle} evidence state: ${shareStateSummary}`}>
                 <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
-                Share view
+                Share state
               </a>
             </Button>
           ) : null}
@@ -301,115 +311,12 @@ export function FinancialRecordExplorerShell({
   );
 }
 
-function readSharedExplorerViewState(explorer: FinancialRecordExplorerDto | null): SharedExplorerViewState {
-  if (!explorer || typeof window === "undefined") {
-    return { viewId: null, searchText: null, recordId: null, filters: [] };
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const explorerId = params.get("frexExplorer");
-  if (explorerId && explorerId !== explorer.explorerId) {
-    return { viewId: null, searchText: null, recordId: null, filters: [] };
-  }
-
-  return {
-    viewId: params.get("frexView"),
-    searchText: params.get("frexSearch"),
-    recordId: params.get("frexRecord"),
-    filters: readSharedFilterState(params)
-  };
+function getCurrentExplorerSearch(): string {
+  return typeof window === "undefined" ? "" : window.location.search;
 }
 
-function readSharedFilterState(params: URLSearchParams): SharedExplorerFilterState[] {
-  return params.getAll("frexFilter")
-    .map((value) => {
-      const separatorIndex = value.indexOf(":");
-      if (separatorIndex <= 0) {
-        return null;
-      }
-
-      const filterId = value.slice(0, separatorIndex).trim();
-      const filterValue = value.slice(separatorIndex + 1).trim();
-      return filterId && filterValue ? { filterId, value: filterValue } : null;
-    })
-    .filter((value): value is SharedExplorerFilterState => Boolean(value));
-}
-
-function resolveSharedViewId(viewId: string | null, views: FinancialRecordExplorerSavedView[]): string | null {
-  if (!viewId) {
-    return null;
-  }
-
-  return views.some((view) => view.id === viewId) ? viewId : null;
-}
-
-function resolveSharedRecordId(recordId: string | null, rows: FinancialRecordExplorerRowDto[]): string | null {
-  if (!recordId) {
-    return null;
-  }
-
-  return rows.some((row) => row.recordId === recordId) ? recordId : null;
-}
-
-function resolveSharedFilters(
-  filters: SharedExplorerFilterState[],
-  explorer: FinancialRecordExplorerDto
-): FinancialRecordExplorerFilterDto[] {
-  const candidateFilters = [
-    ...explorer.filters,
-    ...explorer.savedViews.flatMap((view) => view.filters)
-  ];
-
-  return filters.map((filter) => {
-    const filterId = filter.filterId.toLowerCase();
-    const candidate = candidateFilters.find((item) => item.filterId.toLowerCase() === filterId);
-    const candidateColumn = explorer.columns.find((column) => column.columnId.toLowerCase() === filterId);
-    return {
-      filterId: filter.filterId,
-      label: candidate?.label ?? candidateColumn?.header ?? filter.filterId,
-      value: filter.value,
-      operator: candidate?.operator ?? "equals",
-      tone: candidate?.tone ?? "Info"
-    };
-  });
-}
-
-function buildShareableExplorerHref(
-  explorer: FinancialRecordExplorerDto | null,
-  selectedViewId: string,
-  searchText: string,
-  selectedFilters: FinancialRecordExplorerFilterDto[],
-  selectedRecordId: string
-): string {
-  if (!explorer || typeof window === "undefined") {
-    return "#";
-  }
-
-  const url = new URL(window.location.href);
-  ["frexExplorer", "frexView", "frexSearch", "frexFilter", "frexRecord"].forEach((key) => {
-    url.searchParams.delete(key);
-  });
-
-  url.searchParams.set("frexExplorer", explorer.explorerId);
-  if (selectedViewId) {
-    url.searchParams.set("frexView", selectedViewId);
-  }
-
-  if (searchText.trim()) {
-    url.searchParams.set("frexSearch", searchText.trim());
-  }
-
-  selectedFilters.forEach((filter) => {
-    if (filter.filterId.trim() && filter.value.trim()) {
-      url.searchParams.append("frexFilter", `${filter.filterId.trim()}:${filter.value.trim()}`);
-    }
-  });
-
-  if (selectedRecordId) {
-    url.searchParams.set("frexRecord", selectedRecordId);
-  }
-
-  return `${url.pathname}${url.search}${url.hash}`;
+function getCurrentExplorerHref(): string {
+  return typeof window === "undefined" ? "" : window.location.href;
 }
 
 function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[] }) {

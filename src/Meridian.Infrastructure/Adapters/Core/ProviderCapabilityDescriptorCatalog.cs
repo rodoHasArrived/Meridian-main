@@ -37,13 +37,13 @@ public static class ProviderCapabilityDescriptorCatalog
             Options: typeof(RobinhoodOptionsChainProvider),
             Brokerage: typeof(RobinhoodBrokerageGateway)),
         new("edgar", Search: typeof(EdgarSymbolSearchProvider)),
-        new("tiingo", Historical: typeof(TiingoHistoricalDataProvider)),
-        new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider)),
+        new("tiingo", Historical: typeof(TiingoHistoricalDataProvider), Search: typeof(TiingoSymbolSearchProvider), CorporateActions: typeof(TiingoCorporateActionProvider)),
+        new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider), Search: typeof(TwelveDataSymbolSearchProvider), CorporateActions: typeof(TwelveDataCorporateActionProvider)),
         new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored)),
         new("stooq", Historical: typeof(StooqHistoricalDataProvider)),
-        new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider)),
-        new("fred", Historical: typeof(FredHistoricalDataProvider)),
-        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider))
+        new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider), Search: typeof(AlphaVantageSymbolSearchProvider), CorporateActions: typeof(AlphaVantageCorporateActionProvider)),
+        new("fred", Historical: typeof(FredHistoricalDataProvider), Search: typeof(FredSymbolSearchProvider)),
+        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider))
     ];
 }
 

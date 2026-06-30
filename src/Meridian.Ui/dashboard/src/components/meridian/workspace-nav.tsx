@@ -10,9 +10,10 @@ import {
   WalletCards
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import "@/styles/workspace-nav.css";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { cn } from "@/lib/utils";
-import type { AppShellOperatingScopeInput } from "@/app-shell.view-model";
+import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { WorkspaceKey } from "@/types";
 
 const icons: Record<WorkspaceKey, typeof RadioTower> = {

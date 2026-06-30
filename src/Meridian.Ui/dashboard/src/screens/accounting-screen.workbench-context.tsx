@@ -5,7 +5,7 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   AccountingTaskModeViewModel,
   AccountingWorkstream
-} from "@/screens/accounting-screen.view-model";
+} from "@/screens/accounting-screen.task-mode-view-model";
 import type { WorkspaceSummary } from "@/types";
 
 export interface AccountingChipViewModel {

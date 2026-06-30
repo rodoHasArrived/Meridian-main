@@ -12,7 +12,7 @@ import {
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput,
   type AppShellOperatingScopeState
-} from "@/app-shell.view-model";
+} from "@/app-shell.operating-scope";
 import type {
   WorkflowAction,
   WorkflowDefinition,

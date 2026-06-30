@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
@@ -6,6 +8,7 @@ import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel
 } from "@/screens/reporting-screen.view-model";
+import { reportingTaskModeLauncherLinks } from "@/screens/reporting-screen.task-mode-view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
 
 const reporting: GovernanceReportingSummary = {
@@ -294,6 +297,25 @@ function buildExportResult(profileId: string, jobId = `export-${profileId}`): Ex
 }
 
 describe("useReportingScreenViewModel", () => {
+  it("keeps Reporting task-mode routing outside the broad reporting view model", () => {
+    const viewModelSource = readFileSync(resolve(process.cwd(), "src/screens/reporting-screen.view-model.ts"), "utf8");
+    const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/reporting-screen.task-mode-view-model.ts"), "utf8");
+
+    expect(taskModeSource).toContain("const reportingTaskModeDefinitions");
+    expect(taskModeSource).toContain("export const reportingTaskModeLauncherLinks");
+    expect(taskModeSource).toContain("export function buildReportingTaskMode");
+    expect(taskModeSource).toContain("export function isReportPackRoute");
+    expect(viewModelSource).not.toContain("const reportingTaskModeDefinitions");
+    expect(viewModelSource).not.toContain("function normalizeReportingPathname");
+    expect(reportingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
+      ["report-builder", "/reporting/report-builder"],
+      ["run-status", "/reporting/run-status"],
+      ["delivery-evidence", "/reporting/report-packs"],
+      ["exports", "/reporting/exports"],
+      ["governance", "/reporting/governance"]
+    ]);
+  });
+
   it("returns profile rows from reporting data", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.hasRows).toBe(true);

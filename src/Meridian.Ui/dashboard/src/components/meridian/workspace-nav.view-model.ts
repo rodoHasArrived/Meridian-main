@@ -3,7 +3,7 @@ import {
   buildOperatingScopeFromSearch,
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput
-} from "@/app-shell.view-model";
+} from "@/app-shell.operating-scope";
 import { canonicalizeWorkspaceSummaries, isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 

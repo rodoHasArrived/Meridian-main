@@ -5,6 +5,7 @@ import {
   focusDenseRowDetailPanel
 } from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
+import "@/styles/ui-kit-primitives.css";
 
 export interface ToolbarStripItem {
   id: string;

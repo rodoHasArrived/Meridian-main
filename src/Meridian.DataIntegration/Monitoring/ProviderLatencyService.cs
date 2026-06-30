@@ -37,13 +37,11 @@ public sealed class ProviderLatencyService : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RecordLatency(string provider, double latencyMs, string? symbol = null)
     {
-        if (_isDisposed || string.IsNullOrEmpty(provider))
+        if (_isDisposed || !ProviderMonitoringIdentity.TryNormalize(provider, out var normalizedProvider))
             return;
         if (latencyMs < 0)
             return;
 
-        // Normalize provider name to lowercase for consistent API output
-        var normalizedProvider = provider.ToLowerInvariant();
         var tracker = _providers.GetOrAdd(normalizedProvider, p => new ProviderLatencyTracker(p, _config));
         tracker.Record(latencyMs, symbol);
     }
@@ -62,7 +60,11 @@ public sealed class ProviderLatencyService : IDisposable
     /// </summary>
     public ProviderLatencyHistogram? GetHistogram(string provider)
     {
-        var normalizedProvider = provider.ToLowerInvariant();
+        if (!ProviderMonitoringIdentity.TryNormalize(provider, out var normalizedProvider))
+        {
+            return null;
+        }
+
         return _providers.TryGetValue(normalizedProvider, out var tracker) ? tracker.GetHistogram() : null;
     }
 
@@ -148,7 +150,11 @@ public sealed class ProviderLatencyService : IDisposable
     /// </summary>
     public void Reset(string provider)
     {
-        var normalizedProvider = provider.ToLowerInvariant();
+        if (!ProviderMonitoringIdentity.TryNormalize(provider, out var normalizedProvider))
+        {
+            return;
+        }
+
         _providers.TryRemove(normalizedProvider, out _);
     }
 

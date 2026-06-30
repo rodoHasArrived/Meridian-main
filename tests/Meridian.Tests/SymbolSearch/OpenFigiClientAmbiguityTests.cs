@@ -90,7 +90,7 @@ public sealed class OpenFigiClientAmbiguityTests
         results.Should().HaveCount(2);
         results.Select(r => r.Ticker).Should().OnlyContain(ticker => ticker == "AAPL");
         results.Select(r => r.CompositeFigi).Should().OnlyContain(figi => figi == "BBG000B9Y5X2");
-        results.Select(r => r.ExchangeCode).Should().Equal("UW", "US");
+        results.Select(r => r.ExchangeCode).Should().Equal("US", "UW");
 
         observedRequest.Should().NotBeNull();
         observedRequest!.Method.Should().Be(HttpMethod.Post);
@@ -108,7 +108,7 @@ public sealed class OpenFigiClientAmbiguityTests
     }
 
     [Fact]
-    public async Task EnrichWithFigiAsync_AmbiguousMapping_UsesFirstReturnedCandidateDeterministically()
+    public async Task EnrichWithFigiAsync_AmbiguousMapping_PrefersSearchResultExchange()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(AmbiguousAaplMappingResponse));
@@ -116,7 +116,7 @@ public sealed class OpenFigiClientAmbiguityTests
         using var client = new OpenFigiClient(ApiKey, httpClient);
         var searchResults = new[]
         {
-            new SymbolSearchResult("AAPL", "Apple Inc.", "NASDAQ", "Common Stock", null, null, "finnhub")
+            new SymbolSearchResult("AAPL", "Apple Inc.", "US", "Common Stock", null, null, "finnhub")
         };
 
         var enriched = await client.EnrichWithFigiAsync(searchResults, cts.Token);
@@ -124,8 +124,7 @@ public sealed class OpenFigiClientAmbiguityTests
         enriched.Should().ContainSingle();
         enriched[0].Symbol.Should().Be("AAPL");
         enriched[0].Source.Should().Be("finnhub");
-        enriched[0].Figi.Should().Be("BBG000B9XRY4",
-            "OpenFIGI ambiguity is deterministic today but still depends on upstream candidate ordering");
+        enriched[0].Figi.Should().Be("BBG000QNH748");
         enriched[0].CompositeFigi.Should().Be("BBG000B9Y5X2");
         handler.CallCount.Should().Be(1);
     }
@@ -152,8 +151,8 @@ public sealed class OpenFigiClientAmbiguityTests
             ct: cts.Token);
 
         results.Should().ContainSingle();
-        results[0].Figi.Should().Be("BBG000B9XRY4");
-        results[0].ExchangeCode.Should().Be("UW");
+        results[0].Figi.Should().Be("BBG000QNH748");
+        results[0].ExchangeCode.Should().Be("US");
 
         observedRequest.Should().NotBeNull();
         observedRequest!.RequestUri.Should().NotBeNull();

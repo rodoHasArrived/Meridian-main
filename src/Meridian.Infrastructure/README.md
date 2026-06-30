@@ -48,10 +48,30 @@ Read-only normalized brokerage adapters can also pass through provider corporate
 events in activity snapshots, allowing downstream reconciliation to retain split, dividend,
 amortization, paydown, and factor evidence without storing provider credentials or rebuilding
 vendor-specific payloads in the workstation layer.
-Provider corporate-action backfill adapters, including Polygon, append retained actions through the
-Contracts-owned `ISecurityMasterCorporateActionCommandService` seam so Infrastructure keeps vendor
+Provider corporate-action backfill adapters, including Polygon retained actions, Alpha Vantage
+adjusted-daily dividend/split extraction, Nasdaq Data Link dataset dividend/split extraction,
+Tiingo adjusted-EOD dividend/split extraction, and Twelve Data paid-plan fundamentals
+dividend/split extraction, append retained actions through the Contracts-owned
+`ISecurityMasterCorporateActionCommandService` seam so Infrastructure keeps vendor
 transport concerns here while Application owns validation, append ordering, and structured audit
 metadata.
+Alpha Vantage symbol search is implemented as an opt-in `ISymbolSearchProvider` over the
+credential-gated `SYMBOL_SEARCH` endpoint so its constrained free-tier quota is not consumed unless
+the Alpha Vantage backfill family is explicitly enabled.
+Twelve Data symbol search is implemented as a credential-gated `ISymbolSearchProvider` over the
+`/symbol_search` discovery endpoint. It reuses `TWELVEDATA_API_KEY`, keeps Twelve Data's
+8-request/minute free-tier pacing, and applies asset/exchange filtering client-side.
+Tiingo symbol search is implemented as a credential-gated `ISymbolSearchProvider` over the
+`/tiingo/utilities/search` endpoint. It reuses `TIINGO_API_TOKEN`, keeps Tiingo's
+50-request/hour pacing, skips malformed or inactive rows, and applies asset/exchange filtering
+client-side.
+FRED symbol search is implemented as a credential-gated `ISymbolSearchProvider` over the official
+`series/search` endpoint. It reuses `FRED_API_KEY`, keeps FRED's 120-request/minute pacing, maps
+economic series IDs as reference-discovery results, and applies asset/exchange filtering
+client-side.
+OpenFIGI symbol/reference-data enrichment prefers exchange-scoped mapping candidates when callers
+provide an exchange hint, while preserving upstream ordering as the fallback when no exchange can be
+normalized.
 The Plaid adapter family owns only vendor transport and file-backed connection persistence:
 link-token, public-token exchange, balances, transaction sync, investments, identity, webhooks,
 and sandbox-transfer calls are mapped into contract DTOs before shared workstation services attach

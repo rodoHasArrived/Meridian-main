@@ -1,0 +1,114 @@
+.command-palette-shell {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: rgba(13, 23, 34, 0.98);
+  padding: 1rem;
+  box-shadow: var(--shadow-float);
+  animation: commandPalettePanelIn 160ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.command-palette-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.command-palette-chip,
+.command-palette-route,
+.command-palette-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0 0.5rem;
+  border: 1px solid rgba(31, 52, 76, 0.95);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 16, 26, 0.82);
+  color: #d6e1eb;
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.command-palette-command {
+  box-shadow: var(--shadow-panel);
+}
+
+.command-palette-group {
+  margin-bottom: 0.5rem;
+}
+
+.command-palette-group-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.375rem 0.25rem 0.25rem;
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.command-palette-status {
+  border-color: rgba(42, 178, 212, 0.28);
+  background: rgba(42, 178, 212, 0.10);
+  color: var(--cyan-primary);
+}
+
+.command-palette-status-blocked {
+  border-color: rgba(222, 88, 120, 0.38);
+  background: rgba(222, 88, 120, 0.12);
+  color: #ff8faa;
+}
+
+.command-palette-status-review {
+  border-color: rgba(214, 158, 56, 0.38);
+  background: var(--state-warn-bg);
+  color: #f7ca54;
+}
+
+.command-palette-status-ready {
+  border-color: rgba(67, 230, 167, 0.34);
+  background: rgba(67, 230, 167, 0.10);
+  color: #43e6a7;
+}
+
+.command-palette-status-neutral {
+  border-color: rgba(31, 52, 76, 0.95);
+  background: rgba(8, 16, 26, 0.82);
+  color: var(--fg-muted);
+}
+
+.command-palette-shell {
+  border: 1px solid var(--ws-border);
+  background: var(--ws-surface);
+  color: var(--ws-text);
+  box-shadow: var(--ws-shadow);
+}
+
+.command-palette-chip,
+.command-palette-route,
+.command-palette-status {
+  border-color: var(--ws-border);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-text-muted);
+  box-shadow: none;
+}
+
+@keyframes commandPalettePanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

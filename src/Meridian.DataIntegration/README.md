@@ -121,6 +121,13 @@ monitoring and connection-status notification over the Contracts-owned monitorin
 provider latency histograms, provider metrics snapshot contracts, provider degradation
 scoring/config, and provider calibration datasets/snapshots also live here so routing,
 diagnostics, browser, and desktop surfaces consume a single provider-trust model.
+Provider health, latency, and degradation scoring normalize provider names for lookup and scoring
+so case or whitespace variants cannot split trust signals for the same upstream provider.
+Provider degradation score discovery includes providers observed only through latency histograms, so
+health rankings do not omit secondary providers before a connection or error tracker is registered.
+For request-only providers that have no streaming connection health signal, degradation scoring
+rebalances across the available latency and error-rate evidence so severe historical-provider
+failures are still routable instead of being capped below the global degradation threshold.
 `CrossProviderComparisonService` emits trade price/volume and quote bid/ask discrepancy signals
 for provider-trust consumers. Application pipeline, backfill remediation, Prometheus, health,
 daily-summary, and UI Shared endpoint adapters consume `Meridian.DataIntegration.Monitoring` and
