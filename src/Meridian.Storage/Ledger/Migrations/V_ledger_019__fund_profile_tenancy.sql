@@ -25,15 +25,16 @@ create index if not exists ix_fund_profile_tenancy_tenant
 -- tenant_id added later in V_ledger_017 and only filled when a workspace matched) have audit rows that
 -- carry only company_id. Treating company-attributed history as ownership matches the removed audit
 -- guard. Only the 'all'/null unscoped sentinels are skipped, so genuinely unscoped funds stay claimable.
--- fund_profile_id is lowered to match the application's case-insensitive normalization.
+-- fund_profile_id is lower-trimmed to match the application's normalization (Trim().ToLowerInvariant()),
+-- so a legacy row like " fund-x " is keyed the same as a "fund-x" lookup.
 insert into __SCHEMA__.fund_profile_tenancy (fund_profile_id, tenant_id, company_id)
 select fund_profile_id, owner_tenant, company_id
 from (
-    select lower(fund_profile_id) as fund_profile_id,
+    select lower(trim(fund_profile_id)) as fund_profile_id,
            coalesce(nullif(tenant_id, 'all'), nullif(company_id, 'all')) as owner_tenant,
            coalesce(company_id, 'all') as company_id,
            row_number() over (
-               partition by lower(fund_profile_id)
+               partition by lower(trim(fund_profile_id))
                order by recorded_at_utc asc, audit_event_id asc) as rn
     from __SCHEMA__.accounting_action_audit_events
     where coalesce(nullif(tenant_id, 'all'), nullif(company_id, 'all')) is not null
