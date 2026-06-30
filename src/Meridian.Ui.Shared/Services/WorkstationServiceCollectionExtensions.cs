@@ -17,6 +17,7 @@ using Meridian.Contracts.Etl;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -391,7 +392,11 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
                 ? auditStore
                 : sp.GetRequiredService<FileAccountingConfigurationStore>());
-        services.TryAddSingleton<IFundProfileTenantGuard, AccountingHistoryFundProfileTenantGuard>();
+        services.TryAddSingleton<FileFundProfileTenancyRegistry>(sp =>
+            new FileFundProfileTenancyRegistry(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "tenancy", "fund-profile-tenancy.json")));
+        services.TryAddSingleton<IFundProfileTenancyRegistry>(sp => sp.GetRequiredService<FileFundProfileTenancyRegistry>());
+        services.TryAddSingleton<IFundProfileTenantGuard, RegistryFundProfileTenantGuard>();
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();

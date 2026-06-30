@@ -28,6 +28,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.Historical;
 using Meridian.Domain.Reconciliation;
@@ -191,6 +192,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresAccountingConfigurationStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
+            services.AddSingleton<PostgresFundProfileTenancyRegistry>();
+            services.AddSingleton<IFundProfileTenancyRegistry>(sp => sp.GetRequiredService<PostgresFundProfileTenancyRegistry>());
             services.AddSingleton<LedgerMigrationRunner>();
             services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
             services.AddSingleton<PostgresOperationsContinuityStore>();
