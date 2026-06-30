@@ -12112,7 +12112,10 @@ function buildSystemReconciliationLine(
     id: `${row.rowId}:${side}`,
     matchKey: row.rowId,
     title: row.accountName || row.accountCode,
-    meta: [row.accountCode, row.currency, row.detail].map((part) => part?.trim()).filter(Boolean).join(" · "),
+    meta: (row.accountName ? [row.accountCode, row.currency, row.detail] : [row.currency, row.detail])
+      .map((part) => part?.trim())
+      .filter(Boolean)
+      .join(" · "),
     amountLabel: formatSignedCurrency(amount),
     statusLabel: describeSystemReconciliationStatus(row.status),
     statusTone: SYSTEM_RECONCILIATION_TONE[row.status]

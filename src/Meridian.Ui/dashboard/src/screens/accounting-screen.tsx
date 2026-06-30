@@ -429,9 +429,21 @@ function ReconciliationComparisonPane({
   selection: ReconciliationComparisonSelection;
   onSelect: (matchKey: string, side: ReconciliationComparisonSide) => void;
 }) {
-  const matched = lines.filter((line) => line.statusTone === "success").length;
-  const timing = lines.filter((line) => line.statusTone === "warning").length;
-  const breaks = lines.filter((line) => line.statusTone === "danger").length;
+  const { matched, timing, breaks } = useMemo(() => {
+    let matchedCount = 0;
+    let timingCount = 0;
+    let breaksCount = 0;
+    for (const line of lines) {
+      if (line.statusTone === "success") {
+        matchedCount++;
+      } else if (line.statusTone === "warning") {
+        timingCount++;
+      } else if (line.statusTone === "danger") {
+        breaksCount++;
+      }
+    }
+    return { matched: matchedCount, timing: timingCount, breaks: breaksCount };
+  }, [lines]);
 
   return (
     <div className="reconcile-pane">
