@@ -6916,6 +6916,7 @@ Meridian-main
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
+│   │   │   ├── AccountingSystemEndpointsFundScopeTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs

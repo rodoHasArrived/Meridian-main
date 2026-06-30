@@ -163,7 +163,13 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetFinancialOperationsCommandCenter")
         .Produces<FinancialOperationsCommandCenterDto>(200)
-        .Produces(403);
+        .Produces(403)
+        .RequireFundProfileTenantScope(
+            UserPermission.ViewDirectLending,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
             OperationsCloseCalendarItemUpsertRequestDto? request,
