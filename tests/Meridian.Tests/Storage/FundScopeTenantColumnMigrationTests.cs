@@ -19,10 +19,11 @@ public sealed class FundScopeTenantColumnMigrationTests
         var sql = ReadMigration();
 
         sql.Should().Contain("alter table __SCHEMA__.ledger_books");
-        sql.Should().Contain("add column if not exists tenant_id text null");
         sql.Should().Contain("alter table __SCHEMA__.accounting_periods");
-        // Re-runnable: the column add is guarded, so replaying the script cannot fail on an existing column.
-        sql.Should().Contain("add column if not exists");
+        // Both tables must add the column, and each add must be guarded so replaying the script cannot fail
+        // on an existing column — assert the exact count so an omitted/renamed second add is caught.
+        CountOf(sql, "add column if not exists tenant_id text null").Should().Be(
+            2, "both ledger_books and accounting_periods must idempotently add the tenant_id column");
     }
 
     [Fact]
@@ -50,9 +51,14 @@ public sealed class FundScopeTenantColumnMigrationTests
 
         sql.Should().Contain("create index if not exists ix_ledger_books_tenant");
         sql.Should().Contain("create index if not exists ix_accounting_periods_tenant");
-        // Partial indexes over the populated rows only.
-        sql.Should().Contain("where tenant_id is not null");
+        // Both indexes must be partial (over populated rows only) — assert the exact count so an index that
+        // accidentally drops the partial filter is caught.
+        CountOf(sql, "where tenant_id is not null").Should().Be(
+            2, "both tenant indexes must be partial (where tenant_id is not null)");
     }
+
+    private static int CountOf(string haystack, string needle)
+        => haystack.Split(needle, StringSplitOptions.None).Length - 1;
 
     private static string ReadMigration()
     {
