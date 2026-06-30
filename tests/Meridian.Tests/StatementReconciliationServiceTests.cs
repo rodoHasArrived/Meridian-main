@@ -464,4 +464,30 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task CreateExternalStatementCasesAsync_SymbolLessFeeRow_ParsesWithoutError()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // Case intake must accept symbol-less fee rows just like the import path, so a local+profile
+            // file does not import successfully but then throw during reconciliation.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+                "EXT-1,,0,0,-9.99,fee,2026-05-29"
+            ]);
+
+            var intake = await svc.CreateExternalStatementCasesAsync(
+                "local", filePath, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, CancellationToken.None);
+
+            Assert.Equal(1, intake.RowCount);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }

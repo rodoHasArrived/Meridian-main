@@ -329,9 +329,9 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            var symbol = rowKind == StatementRowKind.CashBalance
-                ? mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty
-                : mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
+            // Symbol is optional (account-level cash/fee/dividend rows omit it), consistent with the
+            // import path; required numeric/date fields are still enforced below.
+            var symbol = mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
