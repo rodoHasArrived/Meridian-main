@@ -162,9 +162,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<PersistentDedupLedger>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var ledger = new PersistentDedupLedger(
-                Path.Combine(storageOptions.RootPath, "_dedup"),
-                flushOnWrite: storageOptions.DedupFlushOnWrite);
+            var ledger = new PersistentDedupLedger(Path.Combine(storageOptions.RootPath, "_dedup"));
             ledger.InitializeAsync().GetAwaiter().GetResult();
             return ledger;
         });

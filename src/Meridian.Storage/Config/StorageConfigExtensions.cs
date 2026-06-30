@@ -23,8 +23,7 @@ public static class StorageConfigExtensions
             RetentionDays = config.RetentionDays,
             MaxTotalBytes = config.MaxTotalMegabytes is null ? null : config.MaxTotalMegabytes * 1024L * 1024L,
             EnableParquetSink = config.EnableParquetSink,
-            ActiveSinks = config.Sinks,
-            DedupFlushOnWrite = config.DedupFlushOnWrite
+            ActiveSinks = config.Sinks
         };
 
         return StorageProfilePresets.ApplyProfile(config.Profile, options);

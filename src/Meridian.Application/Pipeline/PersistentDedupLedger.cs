@@ -24,7 +24,6 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     private readonly string _ledgerPath;
     private readonly TimeSpan _entryTtl;
     private readonly int _maxInMemoryEntries;
-    private readonly bool _flushOnWrite;
 
     // In-memory cache: composite key → expiry timestamp
     private readonly ConcurrentDictionary<string, long> _cache = new(StringComparer.Ordinal);
@@ -56,24 +55,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// </summary>
     public long TotalDuplicates => Interlocked.Read(ref _totalDuplicates);
 
-    /// <param name="flushOnWrite">
-    /// When true, the ledger flushes each new-event write to the OS before
-    /// <see cref="IsDuplicateAsync"/> reports the event as new. This closes the
-    /// application-crash window where an event is emitted downstream but its dedup
-    /// record is still buffered (and would be lost on crash, re-admitting the event
-    /// as new on restart). It serializes a flush on the hot path per new event, so it
-    /// trades throughput for at-most-once durability and defaults to false.
-    /// </param>
     public PersistentDedupLedger(
         string ledgerDirectory,
         TimeSpan? entryTtl = null,
-        int maxInMemoryEntries = 500_000,
-        bool flushOnWrite = false)
+        int maxInMemoryEntries = 500_000)
     {
         _ledgerPath = Path.Combine(ledgerDirectory, "dedup_ledger.jsonl");
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
         _maxInMemoryEntries = maxInMemoryEntries;
-        _flushOnWrite = flushOnWrite;
         Directory.CreateDirectory(ledgerDirectory);
         WarmHashPath();
         WarmPrefixCache();
@@ -194,40 +183,20 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
         }
 
-        // Not a duplicate — record it. The cache is updated optimistically so concurrent
-        // in-flight checks observe the entry immediately, then rolled back if the durable
-        // write fails so the event is retried rather than silently treated as a duplicate.
+        // Not a duplicate — record it
         _cache[key] = nowTicks;
         var ledgerLine = CreateLedgerLine(key, nowTicks);
 
-        // Persist to disk (serialize access). Under strict durability, flush the write
-        // before reporting the event as new so a crash cannot drop the dedup record
-        // after the event was already emitted downstream.
-        var lockAcquired = false;
+        // Persist to disk (fire-and-forget the write, but serialize access)
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
-            lockAcquired = true;
             await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
             await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
-            if (_flushOnWrite)
-            {
-                await _writer!.FlushAsync(ct).ConfigureAwait(false);
-            }
-        }
-        catch
-        {
-            // Persistence failed (cancellation, disk error, disk-full, ...). Undo the optimistic
-            // cache insert so a retry re-processes the event instead of dropping it as a duplicate.
-            _cache.TryRemove(key, out _);
-            throw;
         }
         finally
         {
-            if (lockAcquired)
-            {
-                _writeLock.Release();
-            }
+            _writeLock.Release();
         }
 
         return false;
