@@ -184,7 +184,10 @@ internal sealed class StatementMappedCsvRow
             return null;
         }
 
-        return value;
+        // Treat a blank/whitespace mapped value the same as a missing one so callers' default
+        // fallbacks (e.g. currency -> "USD", accountId -> account) apply to blank or omitted
+        // optional columns, matching the prior positional importer.
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     public decimal GetRequiredDecimal(StatementCanonicalField field, int rowNumber) =>

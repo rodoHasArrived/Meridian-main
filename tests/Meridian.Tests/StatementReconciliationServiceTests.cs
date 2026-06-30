@@ -514,4 +514,31 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAsync_BlankOptionalColumns_ApplyDefaults()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // Optional columns present but blank must fall back to their defaults (currency -> USD,
+            // accountId -> account), not become empty strings.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate,accountId,currency",
+                "EXT-1,SPY,10,500,0,position,2026-05-29,,"
+            ]);
+
+            var result = await svc.ImportAsync("broker", filePath, CancellationToken.None);
+
+            var position = Assert.Single(result.Positions);
+            Assert.Equal("USD", position.Currency);
+            Assert.Equal("EXT-1", position.AccountId);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }
