@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2576 / 7201** items documented (**35.8%**) &mdash; Grade: **F**
+**2586 / 7219** items documented (**35.8%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 35.8%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2455 | 6706 | 36.6% | F |
+| Public Classes / Interfaces | 2465 | 6724 | 36.7% | F |
 | API Endpoints | 107 | 348 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,10 +23,19 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4251 undocumented)
+### Public Classes / Interfaces (4259 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
+| `BackfillPartitionEstimate` | `src/Meridian.Application/Backfill/BackfillPartitionPlanner.cs:147` |
+| `CrossSourceBackfillReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:427` |
+| `CrossSourceBackfillBatchReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:436` |
+| `CrossSourceBackfillReconciliationResult` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:445` |
+| `CrossSourceBackfillBatchReconciliationResult` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:465` |
+| `CrossSourceBackfillClosureStatus` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:479` |
+| `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:487` |
+| `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:544` |
+| `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:557` |
 | `BackfillExecutionHistory` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:250` |
 | `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:407` |
 | `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:427` |
@@ -68,16 +77,7 @@
 | `SecurityMasterOperationalEvidenceItem` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:21` |
 | `ISecurityMasterOperationalReadinessService` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:33` |
 | `NullSecurityValidationGateService` | `src/Meridian.Application/SecurityMaster/SecurityValidationGateService.cs:160` |
-| `ISecurityValidationService` | `src/Meridian.Application/SecurityMaster/SecurityValidationService.cs:8` |
-| `NullSecurityValidationService` | `src/Meridian.Application/SecurityMaster/SecurityValidationService.cs:731` |
-| `NullUflProjectionRebuilder` | `src/Meridian.Application/SecurityMaster/UflProjectionRebuilder.cs:42` |
-| `DetectedProvider` | `src/Meridian.Application/Services/AutoConfigurationService.cs:21` |
-| `AutoConfigResult` | `src/Meridian.Application/Services/AutoConfigurationService.cs:34` |
-| `ConfigPresetInfo` | `src/Meridian.Application/Services/AutoConfigurationService.cs:967` |
-| `FirstTimeConfigOptions` | `src/Meridian.Application/Services/AutoConfigurationService.cs:977` |
-| `SymbolPreset` | `src/Meridian.Application/Services/AutoConfigurationService.cs:1001` |
-| `WizardResult` | `src/Meridian.Application/Services/ConfigurationWizard.cs:314` |
-| ... and 4201 more | |
+| ... and 4209 more | |
 
 ### API Endpoints (241 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4251 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4259 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 241 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

@@ -131,7 +131,11 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationWorkflowSummary")
         .Produces<OperatorWorkflowHomeSummary>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        // No route-level read permission to defer to, so the ownership gate always evaluates the
+        // fundProfileId query value (SEC-005 slice 3b).
+        .RequireFundProfileTenantScope();
 
         group.MapGet("/workflows", (HttpContext context) =>
         {
@@ -639,7 +643,13 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsPrivateCapitalCloseCockpit")
         .Produces<PrivateCapitalCloseCockpitDto>(200)
-        .Produces(403);
+        .Produces(403)
+        .RequireFundProfileTenantScope(
+            UserPermission.ViewDirectLending,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ManageDirectLending,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
             OperationsCloseCalendarItemUpsertRequestDto? request,

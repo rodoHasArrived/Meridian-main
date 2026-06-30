@@ -45,8 +45,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             var result = await service.AssessAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -92,8 +92,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
-                TenantId = tenantContext.TenantId ?? request.Profile.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             var trustedRequest = request with
             {
@@ -143,7 +143,8 @@ public static class AccountingSystemEndpoints
         .WithName("GetAccountingProductionCertificationProfile")
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
             AccountingProductionCertificationProfileUpsertRequestDto request,
@@ -158,8 +159,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
-                TenantId = tenantContext.TenantId ?? request.Profile.TenantId ?? string.Empty,
-                CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId ?? string.Empty
+                TenantId = tenantContext.TenantId ?? string.Empty,
+                CompanyId = tenantContext.CompanyId ?? string.Empty
             };
             var trustedRequest = request with
             {
@@ -201,8 +202,8 @@ public static class AccountingSystemEndpoints
                 var trustedRequest = request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var result = await service.ExecuteAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -246,7 +247,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingMigrationRunArtifacts")
         .Produces<AccountingMigrationRunArtifactListDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
             AccountingMigrationRunArtifactUpsertRequestDto request,
@@ -263,8 +265,8 @@ public static class AccountingSystemEndpoints
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var trustedArtifact = request.Artifact with
                 {
-                    TenantId = tenantContext.TenantId ?? request.Artifact.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.Artifact.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var trustedRequest = request with
                 {
@@ -315,7 +317,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingMigrationWorkerPlans")
         .Produces<AccountingMigrationRunWorkerPlanListDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationWorkerPlans, async (
             AccountingMigrationRunWorkerPlanUpsertRequestDto request,
@@ -334,8 +337,8 @@ public static class AccountingSystemEndpoints
                 _ = ResolveMutationActor(context, request.Actor);
                 var trustedPlan = request.Plan with
                 {
-                    TenantId = tenantContext.TenantId ?? request.Plan.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.Plan.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var result = await store.UpsertAsync(trustedPlan, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -368,8 +371,8 @@ public static class AccountingSystemEndpoints
             var previewRequest = request with
             {
                 PersistPreview = request.PersistPreview,
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             var result = await service.ImportAsync(previewRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -403,7 +406,9 @@ public static class AccountingSystemEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountingSystemImport")
-        .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK);
+        .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemReconciliationLatest, async (
             string? providerId,
@@ -430,7 +435,9 @@ public static class AccountingSystemEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountingSystemReconciliation")
-        .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK);
+        .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemMappingProfiles, async (
             string? providerId,
@@ -457,7 +464,9 @@ public static class AccountingSystemEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListAccountingSystemMappingProfiles")
-        .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMappingProfiles, async (
             AccountingSystemMappingProfileUpsertRequestDto request,
@@ -472,8 +481,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             try
             {
@@ -536,7 +545,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingSystemExportPackages")
         .Produces<IReadOnlyList<ExternalGlExportPackageDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemExportPackages, async (
             AccountingSystemExportPackageRequestDto request,
@@ -551,8 +561,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             try
             {
@@ -639,8 +649,8 @@ public static class AccountingSystemEndpoints
                 var trustedRequest = request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var result = await service.CertifyExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null
