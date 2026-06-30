@@ -92,6 +92,17 @@ public sealed class FileFundProfileTenancyRegistryTests : IDisposable
             .Should().ThrowAsync<ArgumentException>();
     }
 
+    [Fact]
+    public async Task EmptySnapshotFile_IsTreatedAsEmptyRegistry()
+    {
+        await File.WriteAllTextAsync(_path, string.Empty);
+        var registry = new FileFundProfileTenancyRegistry(_path);
+
+        (await registry.ResolveAsync("fund-x")).Should().BeNull();
+        var owner = await registry.BindAsync("fund-x", "tenant-acme");
+        owner.IsHeldBy("tenant-acme").Should().BeTrue();
+    }
+
     public void Dispose()
     {
         if (File.Exists(_path))

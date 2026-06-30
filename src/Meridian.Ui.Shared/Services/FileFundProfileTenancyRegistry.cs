@@ -104,8 +104,9 @@ public sealed class FileFundProfileTenancyRegistry : IFundProfileTenancyRegistry
     private async Task<TenancySnapshot> ReadWithoutLockAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
+        if (!File.Exists(_snapshotPath) || new FileInfo(_snapshotPath).Length == 0)
         {
+            // A missing or empty (e.g. truncated) snapshot is an empty registry, not a crash.
             return TenancySnapshot.Empty;
         }
 

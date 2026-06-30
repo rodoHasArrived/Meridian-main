@@ -98,8 +98,16 @@ public sealed class PostgresFundProfileTenancyRegistry : IFundProfileTenancyRegi
         }
 
         var connection = new NpgsqlConnection(_options.ConnectionString);
-        await connection.OpenAsync(ct).ConfigureAwait(false);
-        return connection;
+        try
+        {
+            await connection.OpenAsync(ct).ConfigureAwait(false);
+            return connection;
+        }
+        catch
+        {
+            await connection.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
     }
 
     private string Qualified(string tableName)
@@ -134,7 +142,8 @@ public sealed class PostgresFundProfileTenancyRegistry : IFundProfileTenancyRegi
 
         foreach (var c in value)
         {
-            if (!char.IsLetterOrDigit(c) && c != '_')
+            var isAsciiAlphanumeric = c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9');
+            if (!isAsciiAlphanumeric && c != '_')
             {
                 throw new InvalidOperationException($"Invalid PostgreSQL identifier '{value}'.");
             }

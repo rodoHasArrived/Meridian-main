@@ -15,3 +15,26 @@ create table if not exists __SCHEMA__.fund_profile_tenancy (
 
 create index if not exists ix_fund_profile_tenancy_tenant
     on __SCHEMA__.fund_profile_tenancy(tenant_id, registered_at_utc desc);
+
+-- Backfill ownership from existing tenant-attributed accounting audit history so a shared deployment
+-- that already has data does not let the first caller after upgrade claim a fund another tenant already
+-- used. For each fund the earliest real-tenant audit event is treated as the first owner; the 'all'
+-- (unscoped) sentinel and null tenant are excluded so genuinely unscoped funds stay claimable on first
+-- use. fund_profile_id is lowered to match the application's case-insensitive normalization.
+insert into __SCHEMA__.fund_profile_tenancy (fund_profile_id, tenant_id, company_id)
+select fund_profile_id, tenant_id, company_id
+from (
+    select lower(fund_profile_id) as fund_profile_id,
+           tenant_id,
+           coalesce(company_id, 'all') as company_id,
+           row_number() over (
+               partition by lower(fund_profile_id)
+               order by recorded_at_utc asc, audit_event_id asc) as rn
+    from __SCHEMA__.accounting_action_audit_events
+    where tenant_id is not null
+      and tenant_id <> 'all'
+      and fund_profile_id is not null
+      and length(trim(fund_profile_id)) > 0
+) ranked
+where rn = 1
+on conflict (fund_profile_id) do nothing;
