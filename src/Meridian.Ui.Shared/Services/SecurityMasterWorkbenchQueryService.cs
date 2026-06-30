@@ -82,6 +82,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         ct.ThrowIfCancellationRequested();
         var nowUtc = DateTimeOffset.UtcNow;
 
+        // Tenant isolation (SEC-005): sanitize the operator-supplied fund scope ONCE here so every
+        // fund-scoped evidence path the snapshot and its instrument passport fan out to — downstream
+        // impact, open lots, Clearwater pricing (golden-copy/hierarchy), and entitlement applicability —
+        // is unscoped for a fund owned by another tenant, not just runs/lots. Own/blank funds and registry
+        // uncertainty pass through unchanged (fail open to the single-company-per-deployment boundary).
+        fundProfileId = await SanitizeFundScopeAsync(fundProfileId, ct).ConfigureAwait(false);
+
         var detailTask = _queryService.GetByIdAsync(securityId, ct);
         var historyTask = _queryService.GetHistoryAsync(new SecurityHistoryRequest(securityId, 50), ct);
         var economicTask = _queryService.GetEconomicDefinitionByIdAsync(securityId, ct);
@@ -2258,6 +2265,25 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             // Fail open to the deployment boundary rather than dropping restatement impact on uncertainty.
             return true;
         }
+    }
+
+    /// <summary>
+    /// Sanitizes an operator-supplied fund scope for tenant isolation (SEC-005): returns the fund unchanged
+    /// when it is blank, owned by the caller's tenant, unbound/legacy, or accessibility cannot be decided
+    /// (fail open), and returns <c>null</c> — i.e. treat the request as unscoped — when the registry
+    /// positively attributes the fund to a different tenant. Used at the snapshot/passport entry so a
+    /// foreign fund never reaches any fund-scoped evidence path.
+    /// </summary>
+    private async Task<string?> SanitizeFundScopeAsync(string? fundProfileId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return fundProfileId;
+        }
+
+        return await IsFundAccessibleToCurrentTenantAsync(fundProfileId, ct).ConfigureAwait(false)
+            ? fundProfileId
+            : null;
     }
 
     /// <summary>

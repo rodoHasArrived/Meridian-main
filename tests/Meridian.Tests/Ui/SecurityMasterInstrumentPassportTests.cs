@@ -144,12 +144,13 @@ public sealed class SecurityMasterInstrumentPassportTests
         var snapshot = await service.GetTrustSnapshotAsync(securityId, "fund-b");
 
         snapshot.Should().NotBeNull();
-        snapshot!.DownstreamImpact.IsScoped.Should().BeTrue();
+        // The foreign fund scope is sanitized to unscoped at the snapshot entry, so EVERY fund-scoped
+        // evidence path (impact, lots, passport pricing/entitlement) is unscoped — no cross-tenant data.
+        snapshot!.DownstreamImpact.IsScoped.Should().BeFalse("a foreign fund scope is sanitized to unscoped");
         snapshot.DownstreamImpact.MatchedRunCount.Should().Be(0, "a foreign fund's runs are withheld");
         snapshot.DownstreamImpact.Severity.Should().Be(
             SecurityMasterImpactSeverity.Unknown,
-            "a foreign scope must read as withheld/unknown, not None — so low-risk gates (bulk resolve) do not treat it as safe");
-        snapshot.DownstreamImpact.Summary.Should().Contain("withheld");
+            "a foreign scope must read as unknown, not None — so low-risk gates (bulk resolve) do not treat it as safe");
     }
 
     [Fact]
