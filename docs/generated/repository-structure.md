@@ -6847,7 +6847,6 @@ Meridian-main
 │   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── PositionSnapshotStoreTests.cs
-│   │   │   ├── PostgresLedgerStoreTenantStampingTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
