@@ -2640,7 +2640,10 @@ Meridian-main
 │   │   │   ├── AutoGapRemediationService.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
+│   │   │   ├── BackfillPartitionPlanner.cs
 │   │   │   ├── BackfillRequest.cs
+│   │   │   ├── BackfillSymbolNormalizer.cs
+│   │   │   ├── CrossSourceBackfillReconciliationService.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
 │   │   │   └── IBackfillExecutionGateway.cs
@@ -3438,6 +3441,7 @@ Meridian-main
 │   │   │   ├── ProviderDegradationScorer.cs
 │   │   │   ├── ProviderLatencyService.cs
 │   │   │   ├── ProviderMetricsStatus.cs
+│   │   │   ├── ProviderMonitoringIdentity.cs
 │   │   │   ├── SchemaValidationService.cs
 │   │   │   ├── SpreadMonitor.cs
 │   │   │   ├── TickSizeValidator.cs
@@ -3799,7 +3803,9 @@ Meridian-main
 │   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
-│   │   │   │   └── AlphaVantageHistoricalDataProvider.cs
+│   │   │   │   ├── AlphaVantageCorporateActionProvider.cs
+│   │   │   │   ├── AlphaVantageHistoricalDataProvider.cs
+│   │   │   │   └── AlphaVantageSymbolSearchProvider.cs
 │   │   │   ├── Core
 │   │   │   │   ├── Backfill
 │   │   │   │   │   ├── BackfillJobManager.cs
@@ -3852,7 +3858,8 @@ Meridian-main
 │   │   │   │   ├── FinnhubHistoricalDataProvider.cs
 │   │   │   │   └── FinnhubSymbolSearchProviderRefactored.cs
 │   │   │   ├── Fred
-│   │   │   │   └── FredHistoricalDataProvider.cs
+│   │   │   │   ├── FredHistoricalDataProvider.cs
+│   │   │   │   └── FredSymbolSearchProvider.cs
 │   │   │   ├── InteractiveBrokers
 │   │   │   │   ├── ContractFactory.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.cs
@@ -3870,6 +3877,7 @@ Meridian-main
 │   │   │   │   ├── IBMarketDataClient.cs
 │   │   │   │   └── IBSimulationClient.cs
 │   │   │   ├── NasdaqDataLink
+│   │   │   │   ├── NasdaqDataLinkCorporateActionProvider.cs
 │   │   │   │   └── NasdaqDataLinkHistoricalDataProvider.cs
 │   │   │   ├── NYSE
 │   │   │   │   ├── NYSEDataSource.cs
@@ -3912,13 +3920,17 @@ Meridian-main
 │   │   │   │   ├── BrokerAdapterTemplate.cs
 │   │   │   │   └── TemplateBrokerageGateway.cs
 │   │   │   ├── Tiingo
-│   │   │   │   └── TiingoHistoricalDataProvider.cs
+│   │   │   │   ├── TiingoCorporateActionProvider.cs
+│   │   │   │   ├── TiingoHistoricalDataProvider.cs
+│   │   │   │   └── TiingoSymbolSearchProvider.cs
 │   │   │   ├── TradeStation
 │   │   │   │   └── TradeStationPayloadMappers.cs
 │   │   │   ├── Tradier
 │   │   │   │   └── TradierCanonicalMappers.cs
 │   │   │   ├── TwelveData
-│   │   │   │   └── TwelveDataHistoricalDataProvider.cs
+│   │   │   │   ├── TwelveDataCorporateActionProvider.cs
+│   │   │   │   ├── TwelveDataHistoricalDataProvider.cs
+│   │   │   │   └── TwelveDataSymbolSearchProvider.cs
 │   │   │   └── YahooFinance
 │   │   │       └── YahooFinanceHistoricalDataProvider.cs
 │   │   ├── Contracts
@@ -4646,6 +4658,8 @@ Meridian-main
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.tsx
+│   │   │   │   │   │   ├── financial-record-explorer.view-state.test.ts
+│   │   │   │   │   │   ├── financial-record-explorer.view-state.ts
 │   │   │   │   │   │   ├── historical-chart.test.tsx
 │   │   │   │   │   │   ├── historical-chart.tsx
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
@@ -4682,6 +4696,7 @@ Meridian-main
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
+│   │   │   │   │   │   ├── workflow-continuity-dock.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -4792,25 +4807,33 @@ Meridian-main
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
 │   │   │   │   │   ├── accounting-screen.close-cockpit-panels.tsx
+│   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
+│   │   │   │   │   ├── accounting-screen.linked-context.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
 │   │   │   │   │   ├── accounting-screen.styles.ts
+│   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.task-modes.tsx
 │   │   │   │   │   ├── accounting-screen.test.tsx
 │   │   │   │   │   ├── accounting-screen.tsx
 │   │   │   │   │   ├── accounting-screen.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.view-model.ts
 │   │   │   │   │   ├── accounting-screen.workbench-context.tsx
+│   │   │   │   │   ├── accounting-screen.workflow-continuity.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
+│   │   │   │   │   ├── data-screen.evidence-timeline.ts
+│   │   │   │   │   ├── data-screen.linked-context.ts
+│   │   │   │   │   ├── data-screen.operator-focus.ts
 │   │   │   │   │   ├── data-screen.security-master.ts
 │   │   │   │   │   ├── data-screen.test.tsx
 │   │   │   │   │   ├── data-screen.tsx
 │   │   │   │   │   ├── data-screen.view-model.test.ts
 │   │   │   │   │   ├── data-screen.view-model.ts
+│   │   │   │   │   ├── data-screen.workflow-continuity.ts
 │   │   │   │   │   ├── evidence-workbench-screen.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
@@ -4836,10 +4859,14 @@ Meridian-main
 │   │   │   │   │   ├── overview-screen.tsx
 │   │   │   │   │   ├── overview-screen.view-model.test.ts
 │   │   │   │   │   ├── overview-screen.view-model.ts
+│   │   │   │   │   ├── portfolio-screen.evidence-timeline.ts
+│   │   │   │   │   ├── portfolio-screen.linked-context.ts
+│   │   │   │   │   ├── portfolio-screen.operator-focus.ts
 │   │   │   │   │   ├── portfolio-screen.test.tsx
 │   │   │   │   │   ├── portfolio-screen.tsx
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── portfolio-screen.workflow-continuity.ts
 │   │   │   │   │   ├── price-alerts-screen.test.tsx
 │   │   │   │   │   ├── price-alerts-screen.tsx
 │   │   │   │   │   ├── price-alerts-screen.view-model.test.ts
@@ -4851,12 +4878,14 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.delivery-history.tsx
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
+│   │   │   │   │   ├── reporting-screen.linked-context.ts
 │   │   │   │   │   ├── reporting-screen.operator-focus.ts
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
 │   │   │   │   │   ├── reporting-screen.run-status-modules.tsx
 │   │   │   │   │   ├── reporting-screen.schedule-management.tsx
 │   │   │   │   │   ├── reporting-screen.shared-components.tsx
+│   │   │   │   │   ├── reporting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── reporting-screen.task-modes.tsx
 │   │   │   │   │   ├── reporting-screen.template-lifecycle.tsx
 │   │   │   │   │   ├── reporting-screen.test.tsx
@@ -4864,44 +4893,72 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
 │   │   │   │   │   ├── reporting-screen.view-model.ts
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
+│   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
 │   │   │   │   │   ├── settings-admin-operations-console.tsx
 │   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
+│   │   │   │   │   ├── settings-screen.workflow-continuity.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
 │   │   │   │   │   ├── strategy-formula-workbench-screen.test.tsx
 │   │   │   │   │   ├── strategy-formula-workbench-screen.tsx
+│   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
+│   │   │   │   │   ├── strategy-screen.operator-focus.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
 │   │   │   │   │   ├── strategy-screen.tsx
 │   │   │   │   │   ├── strategy-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-screen.view-model.ts
+│   │   │   │   │   ├── strategy-screen.workflow-continuity.ts
 │   │   │   │   │   ├── today-panel.view-model.test.ts
 │   │   │   │   │   ├── today-panel.view-model.ts
+│   │   │   │   │   ├── trading-screen.evidence-timeline.ts
+│   │   │   │   │   ├── trading-screen.linked-context.ts
+│   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
+│   │   │   │   │   ├── trading-screen.workflow-continuity.ts
 │   │   │   │   │   ├── w4-acceptance-parity.test.ts
 │   │   │   │   │   ├── watchlist-screen.test.tsx
 │   │   │   │   │   ├── watchlist-screen.tsx
 │   │   │   │   │   ├── watchlist-screen.view-model.test.ts
 │   │   │   │   │   └── watchlist-screen.view-model.ts
 │   │   │   │   ├── styles
-│   │   │   │   │   └── index.css
+│   │   │   │   │   ├── accounting-screen.css
+│   │   │   │   │   ├── app-shell.css
+│   │   │   │   │   ├── command-palette.css
+│   │   │   │   │   ├── dense-row-detail-accessibility.css
+│   │   │   │   │   ├── index.css
+│   │   │   │   │   ├── ui-kit-primitives.css
+│   │   │   │   │   ├── workflow-continuity-dock.css
+│   │   │   │   │   ├── workspace-nav.css
+│   │   │   │   │   └── workspace-primitives.css
 │   │   │   │   ├── test
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   └── provider-setup.ts
+│   │   │   │   ├── app-shell.command-palette.ts
+│   │   │   │   ├── app-shell.development-fixture-notice.ts
 │   │   │   │   ├── app-shell.evidence-timeline.ts
+│   │   │   │   ├── app-shell.linked-context.ts
+│   │   │   │   ├── app-shell.operating-scope.ts
 │   │   │   │   ├── app-shell.operator-focus.ts
+│   │   │   │   ├── app-shell.route-focus.ts
+│   │   │   │   ├── app-shell.status-panel.ts
+│   │   │   │   ├── app-shell.trust-strip.ts
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
+│   │   │   │   ├── app-shell.workflow-continuity-types.ts
+│   │   │   │   ├── app-shell.workflow-continuity-view-model.ts
+│   │   │   │   ├── app-shell.workflow-continuity.ts
+│   │   │   │   ├── app-shell.workflow-routing.ts
 │   │   │   │   ├── app.test.tsx
 │   │   │   │   ├── app.tsx
 │   │   │   │   ├── design-system-contract.test.ts
@@ -6153,6 +6210,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillWorkerServiceTests.cs
 │   │   │   │   ├── CompositeHistoricalDataProviderTests.cs
+│   │   │   │   ├── CrossSourceBackfillReconciliationServiceTests.cs
 │   │   │   │   ├── GapBackfillServiceTests.cs
 │   │   │   │   ├── HistoricalProviderContractTests.cs
 │   │   │   │   ├── ParallelBackfillServiceTests.cs
@@ -6512,13 +6570,17 @@ Meridian-main
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
+│   │   │   │   ├── AlphaVantageCorporateActionProviderTests.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProviderTests.cs
+│   │   │   │   ├── AlphaVantageSymbolSearchProviderTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
 │   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
+│   │   │   │   ├── FinnhubHistoricalDataProviderTests.cs
 │   │   │   │   ├── FinnhubSymbolSearchProviderTests.cs
 │   │   │   │   ├── FredHistoricalDataProviderTests.cs
+│   │   │   │   ├── FredSymbolSearchProviderTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -6531,6 +6593,7 @@ Meridian-main
 │   │   │   │   ├── IBSimulationClientContractTests.cs
 │   │   │   │   ├── IBSimulationClientTests.cs
 │   │   │   │   ├── MarketDataClientContractTests.cs
+│   │   │   │   ├── NasdaqDataLinkCorporateActionProviderTests.cs
 │   │   │   │   ├── NasdaqDataLinkHistoricalDataProviderTests.cs
 │   │   │   │   ├── NYSECredentialAndRateLimitTests.cs
 │   │   │   │   ├── NyseMarketDataClientContractTests.cs
@@ -6564,9 +6627,13 @@ Meridian-main
 │   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
 │   │   │   │   ├── SyntheticProviderTestHarness.cs
 │   │   │   │   ├── TemplateBrokerageGatewayTests.cs
+│   │   │   │   ├── TiingoCorporateActionProviderTests.cs
 │   │   │   │   ├── TiingoHistoricalDataProviderTests.cs
+│   │   │   │   ├── TiingoSymbolSearchProviderTests.cs
 │   │   │   │   ├── TradeStationPayloadMappersTests.cs
+│   │   │   │   ├── TwelveDataCorporateActionProviderTests.cs
 │   │   │   │   ├── TwelveDataHistoricalDataProviderTests.cs
+│   │   │   │   ├── TwelveDataSymbolSearchProviderTests.cs
 │   │   │   │   ├── WebSocketProviderBaseTests.cs
 │   │   │   │   └── YahooFinanceHistoricalDataProviderTests.cs
 │   │   │   ├── Resilience

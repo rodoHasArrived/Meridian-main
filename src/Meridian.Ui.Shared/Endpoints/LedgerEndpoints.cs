@@ -746,8 +746,8 @@ public static class LedgerEndpoints
             var result = await service.PreviewTemplateAsync(request with
             {
                 Actor = ResolveMutationActor(context, request.Actor),
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -780,8 +780,8 @@ public static class LedgerEndpoints
                 var result = await service.DryRunPostingRuleAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -821,8 +821,8 @@ public static class LedgerEndpoints
                     .BuildCandidateAsync(request with
                     {
                         Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -858,8 +858,8 @@ public static class LedgerEndpoints
                     .PostCandidateAsync(request with
                     {
                         Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -906,8 +906,8 @@ public static class LedgerEndpoints
                     .BuildProjectionSetAsync(request with
                     {
                         Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -947,8 +947,8 @@ public static class LedgerEndpoints
                 var result = await service.ExecuteRuleTestCasesAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1377,8 +1377,8 @@ public static class LedgerEndpoints
                     .BuildPackageAsync(request with
                     {
                         Actor = actor,
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -1420,8 +1420,8 @@ public static class LedgerEndpoints
                     .CertifyPackageAsync(request with
                     {
                         Actor = actor,
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1872,8 +1872,16 @@ public static class LedgerEndpoints
                 var result = await service.SaveDraftAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId,
+                    // SEC-005 slice 4a: scrub the nested draft's client-supplied tenant scope too — the
+                    // service resolves the persisted scope as request.TenantId ?? request.Draft.TenantId,
+                    // so the server-resolved tenant must overwrite the nested body value, not just the outer.
+                    Draft = request.Draft with
+                    {
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
+                    },
                     ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -1919,8 +1927,8 @@ public static class LedgerEndpoints
                 var result = await service.ValidateDraftAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1954,8 +1962,8 @@ public static class LedgerEndpoints
                 var result = await service.SubmitApprovalAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId,
                     ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -1996,8 +2004,8 @@ public static class LedgerEndpoints
                 var result = await service.AttachEvidenceAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId,
                     ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -2039,8 +2047,8 @@ public static class LedgerEndpoints
                     .ApplyLifecycleActionAsync(request with
                     {
                         Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId,
                         ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
@@ -2234,8 +2242,8 @@ public static class LedgerEndpoints
         return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId ?? request.TenantId,
-            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
     }
@@ -2248,8 +2256,8 @@ public static class LedgerEndpoints
         return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId ?? request.TenantId,
-            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
     }
@@ -2262,8 +2270,8 @@ public static class LedgerEndpoints
         return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId ?? request.TenantId,
-            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
     }
@@ -2276,8 +2284,8 @@ public static class LedgerEndpoints
         return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId ?? request.TenantId,
-            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
     }
@@ -2290,8 +2298,8 @@ public static class LedgerEndpoints
         return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId ?? request.TenantId,
-            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
     }
@@ -2304,8 +2312,8 @@ public static class LedgerEndpoints
         return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId ?? request.TenantId,
-            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
     }

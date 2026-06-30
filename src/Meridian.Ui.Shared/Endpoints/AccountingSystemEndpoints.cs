@@ -45,8 +45,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             var result = await service.AssessAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -92,8 +92,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
-                TenantId = tenantContext.TenantId ?? request.Profile.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             var trustedRequest = request with
             {
@@ -158,8 +158,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
-                TenantId = tenantContext.TenantId ?? request.Profile.TenantId ?? string.Empty,
-                CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId ?? string.Empty
+                TenantId = tenantContext.TenantId ?? string.Empty,
+                CompanyId = tenantContext.CompanyId ?? string.Empty
             };
             var trustedRequest = request with
             {
@@ -201,8 +201,8 @@ public static class AccountingSystemEndpoints
                 var trustedRequest = request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var result = await service.ExecuteAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -263,8 +263,8 @@ public static class AccountingSystemEndpoints
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var trustedArtifact = request.Artifact with
                 {
-                    TenantId = tenantContext.TenantId ?? request.Artifact.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.Artifact.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var trustedRequest = request with
                 {
@@ -334,8 +334,8 @@ public static class AccountingSystemEndpoints
                 _ = ResolveMutationActor(context, request.Actor);
                 var trustedPlan = request.Plan with
                 {
-                    TenantId = tenantContext.TenantId ?? request.Plan.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.Plan.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var result = await store.UpsertAsync(trustedPlan, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -368,8 +368,8 @@ public static class AccountingSystemEndpoints
             var previewRequest = request with
             {
                 PersistPreview = request.PersistPreview,
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             var result = await service.ImportAsync(previewRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -472,8 +472,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             try
             {
@@ -551,8 +551,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = tenantContext.TenantId ?? request.TenantId,
-                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                TenantId = tenantContext.TenantId,
+                CompanyId = tenantContext.CompanyId
             };
             try
             {
@@ -639,8 +639,8 @@ public static class AccountingSystemEndpoints
                 var trustedRequest = request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
                 };
                 var result = await service.CertifyExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null

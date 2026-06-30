@@ -2123,25 +2123,25 @@
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1898",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1906",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/submit-approval",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1938",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1946",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/evidence",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1980",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1988",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2022",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2030",
       "documented": true
     },
     {
