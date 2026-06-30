@@ -883,6 +883,7 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
+│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -3937,7 +3938,6 @@ Meridian-main
 │   │   ├── Meridian.Infrastructure.csproj
 │   │   ├── NoOpMarketDataClient.cs
 │   │   └── README.md
-│   ├── Meridian.Infrastructure.CppTrader
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
 │   │   │   └── AssetOperationsReadService.cs
@@ -4383,7 +4383,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_014__journal_leg_dimensions.sql
 │   │   │   │   ├── V_ledger_015__accounting_configuration_ledger_book_scope.sql
 │   │   │   │   ├── V_ledger_016__accounting_configuration_tenant_company_scope.sql
-│   │   │   │   └── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
+│   │   │   │   ├── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
+│   │   │   │   └── V_ledger_018__accounting_audit_fund_lower_index.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
@@ -5021,6 +5022,7 @@ Meridian-main
 │   │   ├── Endpoints
 │   │   │   ├── Compliance
 │   │   │   │   └── ComplianceEndpoints.cs
+│   │   │   ├── AccountingHistoryFundProfileTenantGuard.cs
 │   │   │   ├── AccountingSystemEndpoints.cs
 │   │   │   ├── AdminEndpoints.cs
 │   │   │   ├── AnalyticsEndpoints.cs
@@ -5066,6 +5068,7 @@ Meridian-main
 │   │   │   ├── HealthEndpoints.cs
 │   │   │   ├── HistoricalEndpoints.cs
 │   │   │   ├── IBEndpoints.cs
+│   │   │   ├── IFundProfileTenantGuard.cs
 │   │   │   ├── IngestionJobEndpoints.cs
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.cs
@@ -6787,6 +6790,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── AccountingConfigurationServiceTests.cs
+│   │   │   ├── AccountingHistoryFundProfileTenantGuardTests.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
@@ -7255,8 +7259,7 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   ├── shared-pattern-suggest.ps1
-│   │   └── test-gap-scan.ps1
+│   │   └── shared-pattern-suggest.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

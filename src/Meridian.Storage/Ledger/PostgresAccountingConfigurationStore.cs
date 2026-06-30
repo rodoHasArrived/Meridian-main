@@ -191,7 +191,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
         if (!string.IsNullOrWhiteSpace(fundProfileId))
         {
-            command.CommandText += " and fund_profile_id = @fund_profile_id";
+            // FundProfileId is matched case-insensitively everywhere it is consumed (the file store's
+            // audit list and the publish-time run resolver both use OrdinalIgnoreCase), so the audit
+            // query must too — otherwise a case-variant fund (e.g. FUND-X vs fund-x) is wrongly treated
+            // as having no history, which would let the tenant guard mis-classify a foreign fund as
+            // unknown.
+            command.CommandText += " and lower(fund_profile_id) = lower(@fund_profile_id)";
             command.Parameters.AddWithValue("fund_profile_id", fundProfileId.Trim());
         }
 

@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "891434225e3b",
+  "sourceFingerprint": "4cf62201bb7e",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 92,
@@ -2773,6 +2773,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
@@ -2814,7 +2815,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +69 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +70 more."
         }
       ],
       "openTaskCount": 0
@@ -3230,6 +3231,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterEditViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelAssetProfileTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunPortfolioViewModelTests.cs",
@@ -3251,7 +3253,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +22 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +23 more."
         }
       ],
       "openTaskCount": 0

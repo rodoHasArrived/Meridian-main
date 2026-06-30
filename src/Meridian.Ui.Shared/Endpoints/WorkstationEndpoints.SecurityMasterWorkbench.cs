@@ -37,7 +37,8 @@ public static partial class WorkstationEndpoints
             Guid securityId,
             UpdateSecurityFieldRequest? request,
             HttpContext context,
-            [FromServices] ISecurityMasterWorkbenchCommandService? service) =>
+            [FromServices] ISecurityMasterWorkbenchCommandService? service,
+            [FromServices] IFundProfileTenantGuard? fundGuard) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster))
             {
@@ -57,6 +58,23 @@ public static partial class WorkstationEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            // Defense-in-depth tenant guard: a body-supplied fund profile is persisted on the draft and
+            // later scopes downstream restatement impact, so refuse one that demonstrably belongs to a
+            // different company before it is stored. The guard never denies an own/unknown fund (no
+            // false-deny); the single-company-per-deployment boundary remains the primary control. See
+            // docs/security/security-remediation-backlog.md (SEC-005).
+            if (fundGuard is not null && !string.IsNullOrWhiteSpace(request.FundProfileId))
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var fundDecision = await fundGuard
+                    .EvaluateAsync(tenantContext, request.FundProfileId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (!fundDecision.IsAllowed)
+                {
+                    return EndpointHelpers.Forbidden();
+                }
             }
 
             // The acting principal is server-derived from the session, never trusted from the body.
