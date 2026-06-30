@@ -31,7 +31,8 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        Directory.CreateDirectory(dataDirectory);
+        // AtomicFileWriter.WriteAsync creates the destination directory, and the read path guards
+        // on File.Exists, so no directory I/O is needed in the constructor.
         _snapshotPath = Path.Combine(dataDirectory, "reconciliation-runs.json");
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
@@ -124,13 +125,17 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
 
         try
         {
-            await using var stream = File.OpenRead(_snapshotPath);
+            // FileShare.ReadWrite | Delete lets AtomicFileWriter's write-temp-then-rename replace the
+            // snapshot concurrently without a sharing violation on Windows.
+            await using var stream = new FileStream(
+                _snapshotPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             var snapshot = await JsonSerializer.DeserializeAsync<ReconciliationRunSnapshot>(stream, _jsonOptions, ct).ConfigureAwait(false);
             var loaded = snapshot?.Runs ?? [];
             _runs = loaded
                 .Where(static run => !string.IsNullOrWhiteSpace(run.Summary.ReconciliationRunId))
                 .GroupBy(static run => run.Summary.ReconciliationRunId, StringComparer.Ordinal)
-                .ToDictionary(static group => group.Key, static group => group.Last(), StringComparer.Ordinal);
+                // Snapshot is persisted newest-first, so First() keeps the most recent run per id.
+                .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.Ordinal);
         }
         catch (JsonException ex)
         {

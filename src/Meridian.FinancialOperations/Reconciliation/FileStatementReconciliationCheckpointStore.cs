@@ -31,9 +31,9 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _logger = logger;
 
-        var directory = Path.Combine(dataRoot, "reconciliation");
-        Directory.CreateDirectory(directory);
-        _snapshotPath = Path.Combine(directory, "statement-checkpoints.json");
+        // AtomicFileWriter.WriteAsync creates the destination directory, and the read path guards
+        // on File.Exists, so no directory I/O is needed in the constructor.
+        _snapshotPath = Path.Combine(dataRoot, "reconciliation", "statement-checkpoints.json");
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
@@ -83,12 +83,16 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
 
         try
         {
-            await using var stream = File.OpenRead(_snapshotPath);
+            // FileShare.ReadWrite | Delete lets AtomicFileWriter's write-temp-then-rename replace the
+            // snapshot concurrently without a sharing violation on Windows.
+            await using var stream = new FileStream(
+                _snapshotPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             var snapshot = await JsonSerializer.DeserializeAsync<CheckpointSnapshot>(stream, _jsonOptions, ct).ConfigureAwait(false);
             var loaded = snapshot?.Checkpoints ?? [];
             _checkpoints = loaded
                 .GroupBy(static checkpoint => checkpoint.AccountId)
-                .ToDictionary(static group => group.Key, static group => group.Last());
+                // Snapshot is persisted newest-first, so First() keeps the most recent checkpoint per account.
+                .ToDictionary(static group => group.Key, static group => group.First());
         }
         catch (JsonException ex)
         {
