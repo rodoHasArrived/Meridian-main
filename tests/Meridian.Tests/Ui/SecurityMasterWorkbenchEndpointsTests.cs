@@ -127,14 +127,17 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
     }
 
     [Fact]
-    public async Task Field_OnSuccessfulWrite_ClaimsFundOwnershipForCallerTenant()
+    public async Task Field_ReservesFundOwnershipBeforeWrite_ForCallerTenant()
     {
-        // Trust-on-first-use (SEC-005 slice 2): a successful governed write binds the body-supplied fund
-        // to the caller's resolved session tenant so a later cross-tenant caller is positively rejected.
+        // Trust-on-first-use as a write PRECONDITION (SEC-005 slice 4b): before the governed write commits,
+        // the body-supplied fund is atomically claimed for the caller's resolved session tenant. The
+        // first-owner-wins claim returns the caller as the holder, so the write proceeds.
         var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
         service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
             .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
         var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.BindAsync("fund-caller", "tenant-test", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-caller", "tenant-test", null));
         await using var app = await CreateAppAsync(
             service, UserPermission.ModifySecurityMaster, fundRegistry: registry);
         var client = app.GetTestClient();
@@ -144,21 +147,25 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
             $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        // The post-commit claim must use a request-independent token so a client disconnect after the
-        // write commits cannot cancel the bind and leave the fund unbound (SEC-005).
-        await registry.Received(1).BindAsync(
-            "fund-caller", "tenant-test", Arg.Any<string?>(), CancellationToken.None);
+        // The reservation is taken before the write, and only after it confirms the caller holds the fund
+        // is the write attempted.
+        Received.InOrder(() =>
+        {
+            registry.BindAsync("fund-caller", "tenant-test", Arg.Any<string?>(), Arg.Any<CancellationToken>());
+            service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
+        });
     }
 
     [Fact]
-    public async Task Field_OnFailedWrite_DoesNotClaimFundOwnership()
+    public async Task Field_WhenFundOwnedByAnotherTenant_Returns403_WithoutWriting()
     {
-        // Binding only on success: a write that throws must never squat the fund id, otherwise a failed
-        // attempt would block the tenant that later performs the first real write.
+        // The race the precondition closes (SEC-005 slice 4b): the atomic first-owner-wins claim reports the
+        // fund is already held by a DIFFERENT tenant, so this caller is rejected before it can commit
+        // fund-scoped data under a fund it does not own.
         var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
-        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
-            .Throws(new SecurityMasterConcurrencyException(Guid.NewGuid(), expectedVersion: 3, currentVersion: 7));
         var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.BindAsync("fund-caller", "tenant-test", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-caller", "tenant-rival", null));
         await using var app = await CreateAppAsync(
             service, UserPermission.ModifySecurityMaster, fundRegistry: registry);
         var client = app.GetTestClient();
@@ -167,16 +174,40 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         using var response = await client.PostAsJsonAsync(
             $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        await registry.DidNotReceive().BindAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().UpdateSecurityFieldAsync(
+            Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Field_WithBlankFundProfile_DoesNotClaimOwnership()
+    public async Task Field_OnRegistryFailure_FailsOpen_AndStillWrites()
     {
-        // No fund scope to claim: a blank fund must not bind (and a registry failure must not break the
-        // unscoped edit path that the platform has always supported).
+        // The deployment boundary remains the control: a transient registry failure during the reservation
+        // must not block a legitimate edit (mirrors the read-side guard's fail-open posture).
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.BindAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("registry unavailable"));
+        await using var app = await CreateAppAsync(
+            service, UserPermission.ModifySecurityMaster, fundRegistry: registry);
+        var client = app.GetTestClient();
+
+        var body = FieldRequest(Guid.NewGuid()) with { FundProfileId = "fund-caller" };
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).UpdateSecurityFieldAsync(
+            Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Field_WithBlankFundProfile_DoesNotReserveOwnership()
+    {
+        // No fund scope to reserve: a blank fund must not bind (and the unscoped edit path the platform has
+        // always supported must keep working without ever touching the registry).
         var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
         service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
             .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
