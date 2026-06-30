@@ -136,6 +136,15 @@
   color: #255B75;
 }
 
+.workspace-tab-panel {
+  min-width: 0;
+}
+
+.workspace-tab-panel:focus-visible {
+  outline: 2px solid var(--cyan-focus);
+  outline-offset: 2px;
+}
+
 .workspace-inspector-head {
   display: flex;
   align-items: flex-start;
