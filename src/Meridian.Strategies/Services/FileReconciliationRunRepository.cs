@@ -45,8 +45,11 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            _runs![detail.Summary.ReconciliationRunId] = detail;
+            // Re-read the latest persisted snapshot before rewriting so runs written by another
+            // process (e.g. the WPF desktop and the browser workstation sharing a data root) are
+            // not dropped. This shrinks the cross-process lost-update window to the write itself.
+            _runs = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            _runs[detail.Summary.ReconciliationRunId] = detail;
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
         }
         finally
@@ -111,16 +114,13 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
     }
 
     private async Task EnsureLoadedAsync(CancellationToken ct)
-    {
-        if (_runs is not null)
-        {
-            return;
-        }
+        => _runs ??= await ReadSnapshotAsync(ct).ConfigureAwait(false);
 
+    private async Task<Dictionary<string, ReconciliationRunDetail>> ReadSnapshotAsync(CancellationToken ct)
+    {
         if (!File.Exists(_snapshotPath))
         {
-            _runs = new Dictionary<string, ReconciliationRunDetail>(StringComparer.Ordinal);
-            return;
+            return new Dictionary<string, ReconciliationRunDetail>(StringComparer.Ordinal);
         }
 
         try
@@ -131,7 +131,7 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
                 _snapshotPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             var snapshot = await JsonSerializer.DeserializeAsync<ReconciliationRunSnapshot>(stream, _jsonOptions, ct).ConfigureAwait(false);
             var loaded = snapshot?.Runs ?? [];
-            _runs = loaded
+            return loaded
                 .Where(static run => !string.IsNullOrWhiteSpace(run.Summary.ReconciliationRunId))
                 .GroupBy(static run => run.Summary.ReconciliationRunId, StringComparer.Ordinal)
                 // Snapshot is persisted newest-first, so First() keeps the most recent run per id.
@@ -140,7 +140,7 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         catch (JsonException ex)
         {
             _logger.LogWarning(ex, "Discarding corrupt reconciliation run snapshot at {Path}; starting empty.", _snapshotPath);
-            _runs = new Dictionary<string, ReconciliationRunDetail>(StringComparer.Ordinal);
+            return new Dictionary<string, ReconciliationRunDetail>(StringComparer.Ordinal);
         }
     }
 

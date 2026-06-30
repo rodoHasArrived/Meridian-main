@@ -69,6 +69,22 @@ public sealed class FileReconciliationRunRepositoryTests : IDisposable
         loaded!.Summary.BreakCount.Should().Be(5);
     }
 
+    [Fact]
+    public async Task SaveAsync_MergesWritesFromSeparateInstancesSharingTheSameFile()
+    {
+        // Two instances pointing at the same data directory (e.g. browser workstation + WPF desktop).
+        var instanceA = CreateRepository();
+        var instanceB = CreateRepository();
+
+        await instanceA.SaveAsync(BuildDetail("recon-a", "run-1", DateTimeOffset.UtcNow));
+        // instanceB loaded before A's write; SaveAsync must re-read the snapshot so A's run survives.
+        await instanceB.SaveAsync(BuildDetail("recon-b", "run-2", DateTimeOffset.UtcNow));
+
+        var reopened = CreateRepository();
+        (await reopened.GetByIdAsync("recon-a")).Should().NotBeNull();
+        (await reopened.GetByIdAsync("recon-b")).Should().NotBeNull();
+    }
+
     private FileReconciliationRunRepository CreateRepository()
         => new(_dataRoot, NullLogger<FileReconciliationRunRepository>.Instance);
 

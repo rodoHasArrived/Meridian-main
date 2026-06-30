@@ -58,8 +58,10 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            _checkpoints![checkpoint.AccountId] = checkpoint;
+            // Re-read the latest persisted snapshot before rewriting so checkpoints written by
+            // another process are not dropped, shrinking the cross-process lost-update window.
+            _checkpoints = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            _checkpoints[checkpoint.AccountId] = checkpoint;
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
         }
         finally
@@ -69,16 +71,13 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
     }
 
     private async Task EnsureLoadedAsync(CancellationToken ct)
-    {
-        if (_checkpoints is not null)
-        {
-            return;
-        }
+        => _checkpoints ??= await ReadSnapshotAsync(ct).ConfigureAwait(false);
 
+    private async Task<Dictionary<Guid, StatementReconciliationCheckpoint>> ReadSnapshotAsync(CancellationToken ct)
+    {
         if (!File.Exists(_snapshotPath))
         {
-            _checkpoints = new Dictionary<Guid, StatementReconciliationCheckpoint>();
-            return;
+            return new Dictionary<Guid, StatementReconciliationCheckpoint>();
         }
 
         try
@@ -89,7 +88,7 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
                 _snapshotPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             var snapshot = await JsonSerializer.DeserializeAsync<CheckpointSnapshot>(stream, _jsonOptions, ct).ConfigureAwait(false);
             var loaded = snapshot?.Checkpoints ?? [];
-            _checkpoints = loaded
+            return loaded
                 .GroupBy(static checkpoint => checkpoint.AccountId)
                 // Snapshot is persisted newest-first, so First() keeps the most recent checkpoint per account.
                 .ToDictionary(static group => group.Key, static group => group.First());
@@ -97,7 +96,7 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
         catch (JsonException ex)
         {
             _logger?.LogWarning(ex, "Discarding corrupt statement reconciliation checkpoint snapshot at {Path}; starting empty.", _snapshotPath);
-            _checkpoints = new Dictionary<Guid, StatementReconciliationCheckpoint>();
+            return new Dictionary<Guid, StatementReconciliationCheckpoint>();
         }
     }
 

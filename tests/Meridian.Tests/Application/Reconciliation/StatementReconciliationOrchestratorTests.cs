@@ -183,4 +183,49 @@ public sealed class StatementReconciliationOrchestratorTests
             File.Delete(path);
         }
     }
+
+    [Fact]
+    public async Task RunAsync_WithResume_DoesNotReuseCheckpointForDifferentSource()
+    {
+        var accountId = Guid.NewGuid();
+        var store = new InMemoryStatementReconciliationCheckpointStore();
+        var service = new StatementReconciliationService();
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
+
+        var firstPath = Path.GetTempFileName();
+        var secondPath = Path.GetTempFileName();
+        await File.WriteAllLinesAsync(firstPath,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+            "A1,QQQ,5,400,0,position,2026-05-29"
+        ]);
+        await File.WriteAllLinesAsync(secondPath,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+            "A1,QQQ,5,400,0,position,2026-05-29",
+            "A1,SPY,3,500,0,position,2026-05-29"
+        ]);
+
+        try
+        {
+            var first = await orchestrator.RunAsync(accountId, "broker", firstPath, resume: false, CancellationToken.None);
+            Assert.Equal(StatementReconciliationStage.Completed, first.CurrentStage);
+            Assert.Equal(1, first.ImportedRowCount);
+
+            // Resume requested for the same account but a different statement source: the prior
+            // checkpoint must not be reused, so the new statement is fully reprocessed.
+            var second = await orchestrator.RunAsync(accountId, "broker", secondPath, resume: true, CancellationToken.None);
+
+            Assert.Equal(secondPath, second.SourcePath);
+            Assert.Equal(StatementReconciliationStage.Completed, second.CurrentStage);
+            Assert.Equal(2, second.ImportedRowCount);
+            Assert.NotEqual(first.ImportId, second.ImportId);
+        }
+        finally
+        {
+            File.Delete(firstPath);
+            File.Delete(secondPath);
+        }
+    }
 }
