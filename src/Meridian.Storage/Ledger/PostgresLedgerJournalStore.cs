@@ -471,7 +471,12 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 accounting_policy_id = excluded.accounting_policy_id,
                 accounting_policy_version = excluded.accounting_policy_version,
                 description = excluded.description,
-                updated_at = excluded.updated_at
+                updated_at = excluded.updated_at,
+                -- SEC-005 slice 4c-ii: preserve an already-stamped owner (first-owner-wins) but FILL a null
+                -- tenant from the re-resolved registry value, so a book first saved while its fund was
+                -- unbound is stamped on the next save after the fund is claimed (excluded.tenant_id is the
+                -- VALUES subquery above), rather than staying fail-open until a backfill.
+                tenant_id = coalesce(ledger_books.tenant_id, excluded.tenant_id)
             returning ledger_book_id,
                       fund_profile_id,
                       fund_structure_node_id,
@@ -1197,7 +1202,16 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 opened_at = @opened_at,
                 closed_at = @closed_at,
                 optimistic_version = @optimistic_version,
-                updated_at = now()
+                updated_at = now(),
+                -- SEC-005 slice 4c-ii: a period inherits its ledger book's tenant, and the book can change on
+                -- this update — re-resolve from the (new) book and FILL a null, preserving any existing tenant
+                -- when the book is not yet stamped, so a period attached to an unbound book and later moved to
+                -- a stamped one stops being fail-open instead of keeping its stale/null tenant.
+                tenant_id = coalesce(
+                    (select b.tenant_id
+                     from {Qualified("ledger_books")} b
+                     where b.ledger_book_id = @ledger_book_id),
+                    tenant_id)
             where period_id = @period_id
               and optimistic_version = @expected_version;
             """;
