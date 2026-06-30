@@ -85,13 +85,6 @@ import {
   type CalibrationSummaryViewModel,
   type CalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
-import {
-  accountingWorkstreamHref,
-  buildAccountingTaskMode,
-  resolveAccountingWorkstream,
-  type AccountingTaskModeViewModel,
-  type AccountingWorkstream
-} from "./accounting-screen.task-mode-view-model";
 import type {
   AccountingBasisKind,
   AccountingCertificationState,
@@ -240,19 +233,17 @@ export type {
   CalibrationSummaryViewModel,
   CalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
-export {
-  accountingWorkstreamHref,
-  buildAccountingTaskMode,
-  resolveAccountingWorkstream,
-  resolveGovernanceWorkstream
-} from "./accounting-screen.task-mode-view-model";
-export type {
-  AccountingTaskModeId,
-  AccountingTaskModeViewModel,
-  AccountingWorkstream,
-  GovernanceWorkstream
-} from "./accounting-screen.task-mode-view-model";
 
+export type AccountingWorkstream = "ledger" | "configure" | "journal-entries" | "capital-accounts" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
+export type GovernanceWorkstream = AccountingWorkstream;
+export type AccountingTaskModeId =
+  | "close-cockpit"
+  | "reconciliation-casework"
+  | "ledger-explorer"
+  | "journal-entry"
+  | "capital-accounts"
+  | "delivery-evidence"
+  | "governance";
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
@@ -2451,6 +2442,16 @@ export interface AccountingWorkflowStepViewModel {
   statusLabel: string;
   tone: AccountingToolingTone;
   isActive: boolean;
+  ariaLabel: string;
+}
+
+export interface AccountingTaskModeViewModel {
+  id: AccountingTaskModeId;
+  label: string;
+  description: string;
+  routeLabel: string;
+  href: string;
+  workstream: AccountingWorkstream;
   ariaLabel: string;
 }
 
@@ -11852,6 +11853,161 @@ export function useReconciliationResolveDialogViewModel(
   };
 }
 
+export function resolveAccountingWorkstream(pathname: string): AccountingWorkstream {
+  if (pathname.startsWith(`${WORKSTATION_ROUTE_CATALOG.accounting}/reporting`)) {
+    return "reporting";
+  }
+
+  if (pathname.includes("/configure")) {
+    return "configure";
+  }
+
+  if (pathname.includes("/journal-entries")) {
+    return "journal-entries";
+  }
+
+  if (pathname.includes("/capital-accounts")) {
+    return "capital-accounts";
+  }
+
+  if (pathname.includes("/reconciliation")) {
+    return "reconciliation";
+  }
+
+  if (pathname.includes("/exceptions")) {
+    return "exceptions";
+  }
+
+  if (pathname.includes("/security-master")) {
+    return "security-master";
+  }
+
+  if (pathname.includes("/approvals")) {
+    return "approvals";
+  }
+
+  return "ledger";
+}
+
+export function buildAccountingTaskMode(pathname: string): AccountingTaskModeViewModel {
+  const normalizedPath = normalizeAccountingTaskModePath(pathname);
+  const workstream = resolveAccountingWorkstream(normalizedPath);
+
+  if (normalizedPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedPath === "/governance" || workstream === "approvals") {
+    return buildAccountingTaskModeViewModel({
+      id: "close-cockpit",
+      label: "Close Cockpit",
+      description: "Daily close posture, blockers, owners, affected outputs, next actions, and retained proof stay first for Accounting operators.",
+      routeLabel: "Close Cockpit",
+      href: WORKSTATION_ROUTE_CATALOG.accounting,
+      workstream
+    });
+  }
+
+  if (workstream === "reconciliation" || workstream === "exceptions") {
+    return buildAccountingTaskModeViewModel({
+      id: "reconciliation-casework",
+      label: "Reconciliation Casework",
+      description: "Statement runs, open breaks, owners, evidence, comments, and resolution actions stay grouped for case handling.",
+      routeLabel: "Reconciliation Casework",
+      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+      workstream
+    });
+  }
+
+  if (workstream === "journal-entries") {
+    return buildAccountingTaskModeViewModel({
+      id: "journal-entry",
+      label: "Journal Entry",
+      description: "Manual journal drafting, validation, evidence attachment, and approval submission stay in one governed task mode.",
+      routeLabel: "Journal Entry",
+      href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
+      workstream
+    });
+  }
+
+  if (workstream === "capital-accounts") {
+    return buildAccountingTaskModeViewModel({
+      id: "capital-accounts",
+      label: "Capital Accounts",
+      description: "Investor capital activity, allocation proof, statement lineage, and report-output readiness stay connected.",
+      routeLabel: "Capital Accounts",
+      href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
+      workstream
+    });
+  }
+
+  if (workstream === "configure" || workstream === "security-master") {
+    return buildAccountingTaskModeViewModel({
+      id: "governance",
+      label: "Governance",
+      description: "Books, posting controls, Security Master readiness, source coverage, and activation gates stay in governed setup paths.",
+      routeLabel: "Governance",
+      href: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
+      workstream
+    });
+  }
+
+  if (workstream === "reporting") {
+    return buildAccountingTaskModeViewModel({
+      id: "delivery-evidence",
+      label: "Delivery Evidence",
+      description: "Accounting evidence routes into governed report packs, retained manifests, exports, and audit-ready output support.",
+      routeLabel: "Delivery Evidence",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      workstream
+    });
+  }
+
+  return buildAccountingTaskModeViewModel({
+    id: "ledger-explorer",
+    label: "Ledger Explorer",
+    description: "Meridian-owned trial balance, journal support, reconciliation posture, report usage, and proof drill-through stay together.",
+    routeLabel: "Ledger Explorer",
+    href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+    workstream
+  });
+}
+
+function normalizeAccountingTaskModePath(pathname: string): string {
+  const path = pathname.split("?")[0]?.split("#")[0]?.trim() || WORKSTATION_ROUTE_CATALOG.accounting;
+  if (path.length > 1 && path.endsWith("/")) {
+    return path.slice(0, -1).toLowerCase();
+  }
+
+  return path.toLowerCase();
+}
+
+function buildAccountingTaskModeViewModel({
+  id,
+  label,
+  description,
+  routeLabel,
+  href,
+  workstream
+}: {
+  id: AccountingTaskModeId;
+  label: string;
+  description: string;
+  routeLabel: string;
+  href: string;
+  workstream: AccountingWorkstream;
+}): AccountingTaskModeViewModel {
+  return {
+    id,
+    label,
+    description,
+    routeLabel,
+    href,
+    workstream,
+    ariaLabel: `Accounting task mode ${label}`
+  };
+}
+
+export function resolveGovernanceWorkstream(pathname: string): AccountingWorkstream {
+  return resolveAccountingWorkstream(pathname);
+}
+
 export function resolveSelectedReconciliation(
   queue: AccountingWorkspaceResponse["reconciliationQueue"],
   selectedRunId: string | null
@@ -13379,6 +13535,30 @@ export function buildAccountingWorkflowLaunchViewState({
     actionRows,
     liveRegionText: `Accounting workflow ${workflowStatusLabel}. ${activeStepLabel} active. ${formatCount(openBreakCount, "open break")}.`
   };
+}
+
+function accountingWorkstreamHref(workstream: AccountingWorkstream): string {
+  switch (workstream) {
+    case "configure":
+      return WORKSTATION_ROUTE_CATALOG.accountingConfigure;
+    case "journal-entries":
+      return WORKSTATION_ROUTE_CATALOG.accountingJournalEntries;
+    case "capital-accounts":
+      return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
+    case "reconciliation":
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
+    case "exceptions":
+      return WORKSTATION_ROUTE_CATALOG.accountingExceptions;
+    case "security-master":
+      return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
+    case "approvals":
+      return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
+    case "reporting":
+      return `${WORKSTATION_ROUTE_CATALOG.accounting}/reporting`;
+    case "ledger":
+    default:
+      return WORKSTATION_ROUTE_CATALOG.accountingLedger;
+  }
 }
 
 function buildAccountingWorkflowStep({
