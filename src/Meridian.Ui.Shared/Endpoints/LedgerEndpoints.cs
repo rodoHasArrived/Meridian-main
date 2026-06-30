@@ -117,6 +117,12 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             try
             {
                 var assessment = await service.AssessRolloutAsync(request, context.RequestAborted).ConfigureAwait(false);
@@ -1362,6 +1368,11 @@ public static class LedgerEndpoints
             {
                 var actor = ResolveMutationActor(context, request.Actor);
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildPackageAsync(request with
                     {
@@ -1900,6 +1911,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.Draft.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service.ValidateDraftAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
