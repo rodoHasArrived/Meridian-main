@@ -1105,6 +1105,9 @@ palette overlay rules.
 Workspace filter bar, tab strip, inspector host, and document canvas primitive styles live in
 `src/styles/workspace-primitives.css`, imported by `workspace-primitives.tsx`, so the global
 workstation stylesheet does not own primitive-specific accessibility surface styling.
+`WorkspaceTabStrip` emits stable tab ids from each panel id or an explicit `tabId`, and
+`WorkspaceTabPanel` centralizes `role="tabpanel"`, `aria-labelledby`, focus, and hidden-state
+semantics for route tabs that expose richer keyboard behavior.
 Shared toolbar strip, dense data table, and entity-summary primitive styles live in
 `src/styles/ui-kit-primitives.css`, imported by `ui-kit-primitives.tsx`, keeping dense table
 keyboard/accessibility behavior and visual ownership in the same component module.
