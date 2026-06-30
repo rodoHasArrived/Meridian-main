@@ -345,6 +345,13 @@ public sealed class StatementReconciliationService
             var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
             var feesCommission = mapped.GetOptional(StatementCanonicalField.FeesCommission);
             var externalTransactionId = mapped.GetOptional(StatementCanonicalField.ExternalTransactionId);
+            // Economic amount, derived consistently with the import path: prefer an explicit mapped
+            // amount, then a non-zero cash amount, then market value (or price * quantity), so a row
+            // carrying its value in the optional amount column is not classified as zero on intake.
+            var amount = mapped.GetOptionalDecimal(StatementCanonicalField.Amount)
+                ?? (cashAmount == 0m
+                    ? mapped.GetOptionalDecimal(StatementCanonicalField.MarketValue) ?? price * quantity
+                    : cashAmount);
             var rowFingerprint = DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{line}");
             var rawSnapshot = mapped.ToCanonicalSnapshot();
             rawSnapshot["importId"] = importId;
@@ -371,7 +378,7 @@ public sealed class StatementReconciliationService
                 rowKind,
                 symbol,
                 quantity,
-                cashAmount == 0m ? price * quantity : cashAmount,
+                amount,
                 new DateTimeOffset(tradeDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
                 currency,
                 rowFingerprint,

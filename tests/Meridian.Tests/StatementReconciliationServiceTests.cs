@@ -541,4 +541,31 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ReconcileAsync_FeeRow_WithAmountColumn_SurfacesMaterialCase()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // The fee carries its value in the amount column with cashAmount=0. Case intake must use
+            // the mapped amount so the material break is surfaced; if it derived a zero amount the
+            // break would be classified as immaterial and no case would be created.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate,amount",
+                "EXT-1,,0,0,0,fee,2026-05-29,-50"
+            ]);
+
+            var result = await svc.ReconcileAsync(
+                "local", filePath, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, CancellationToken.None);
+
+            Assert.Equal(1, result.UnresolvedCount);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }
