@@ -490,4 +490,28 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAsync_SymbolLessPositionRow_Throws()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // A position row must carry a security identifier; a blank one is a mapping error and must
+            // be rejected rather than auto-matched as a high-confidence position.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+                "EXT-1,,10,500,0,position,2026-05-29"
+            ]);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                svc.ImportAsync("broker", filePath, CancellationToken.None));
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }

@@ -246,10 +246,13 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, currentRowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            // Symbol is optional for import: account-level cash, fee, and dividend rows legitimately
-            // omit it, matching the prior positional importer (the numeric/date canonical fields below
-            // remain required).
-            var symbol = mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
+            // Position rows must carry a security identifier (MatchRows auto-matches positions
+            // without re-checking the symbol, so a blank one would become a false high-confidence
+            // match instead of a security-mapping break). Account-level cash/fee/dividend and other
+            // activity rows may omit it, matching the prior positional importer.
+            var symbol = rowKind == StatementRowKind.Position
+                ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber)
+                : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, currentRowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, currentRowNumber);
@@ -329,9 +332,11 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            // Symbol is optional (account-level cash/fee/dividend rows omit it), consistent with the
-            // import path; required numeric/date fields are still enforced below.
-            var symbol = mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
+            // Position rows must carry a security identifier (see import path); account-level
+            // cash/fee/dividend and other activity rows may omit it. Kept consistent across both paths.
+            var symbol = rowKind == StatementRowKind.Position
+                ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber)
+                : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
