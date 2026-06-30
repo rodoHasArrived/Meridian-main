@@ -57,7 +57,7 @@ internal sealed class AccountingHistoryFundProfileTenantGuard : IFundProfileTena
             _logger.LogWarning(
                 ex,
                 "Fund-profile tenant guard could not read accounting history for {FundProfileId}; allowing (deployment boundary remains the control).",
-                fund);
+                fund.Replace('\n', ' ').Replace('\r', ' '));
             return FundProfileTenantDecision.Allow("Fund-profile tenant authority unavailable; deferring to deployment boundary.");
         }
 
