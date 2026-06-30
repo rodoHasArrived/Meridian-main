@@ -10,7 +10,8 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// reconciliation checkpoints to a JSON snapshot using atomic writes. A checkpoint records the
 /// last completed stage of an import/reconcile run; persisting it is what makes
 /// <see cref="StatementReconciliationOrchestrator"/> resumable across process restarts and crashes,
-/// which the in-memory store cannot guarantee.
+/// which the in-memory store cannot guarantee. Every operation reads the current snapshot from disk
+/// (no in-memory cache), so a checkpoint advanced by another process remains visible to reads.
 /// </summary>
 public sealed class FileStatementReconciliationCheckpointStore : IStatementReconciliationCheckpointStore
 {
@@ -21,8 +22,6 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-
-    private Dictionary<Guid, StatementReconciliationCheckpoint>? _checkpoints;
 
     public FileStatementReconciliationCheckpointStore(
         string dataRoot,
@@ -42,8 +41,8 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            return _checkpoints!.GetValueOrDefault(accountId);
+            var checkpoints = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            return checkpoints.GetValueOrDefault(accountId);
         }
         finally
         {
@@ -58,20 +57,17 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Re-read the latest persisted snapshot before rewriting so checkpoints written by
-            // another process are not dropped, shrinking the cross-process lost-update window.
-            _checkpoints = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-            _checkpoints[checkpoint.AccountId] = checkpoint;
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            // Read-modify-write the latest persisted snapshot so checkpoints written by another
+            // process are not dropped, shrinking the cross-process lost-update window.
+            var checkpoints = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            checkpoints[checkpoint.AccountId] = checkpoint;
+            await PersistSnapshotAsync(checkpoints, ct).ConfigureAwait(false);
         }
         finally
         {
             _gate.Release();
         }
     }
-
-    private async Task EnsureLoadedAsync(CancellationToken ct)
-        => _checkpoints ??= await ReadSnapshotAsync(ct).ConfigureAwait(false);
 
     private async Task<Dictionary<Guid, StatementReconciliationCheckpoint>> ReadSnapshotAsync(CancellationToken ct)
     {
@@ -100,11 +96,11 @@ public sealed class FileStatementReconciliationCheckpointStore : IStatementRecon
         }
     }
 
-    private async Task PersistSnapshotAsync(CancellationToken ct)
+    private async Task PersistSnapshotAsync(Dictionary<Guid, StatementReconciliationCheckpoint> checkpoints, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var snapshot = new CheckpointSnapshot(
-            _checkpoints!.Values
+            checkpoints.Values
                 .OrderByDescending(static checkpoint => checkpoint.UpdatedAtUtc)
                 .ToArray());
         var json = JsonSerializer.Serialize(snapshot, _jsonOptions);

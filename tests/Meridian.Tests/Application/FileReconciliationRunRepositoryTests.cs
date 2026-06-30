@@ -85,6 +85,20 @@ public sealed class FileReconciliationRunRepositoryTests : IDisposable
         (await reopened.GetByIdAsync("recon-b")).Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task GetByIdAsync_ReflectsRunSavedByAnotherInstanceAfterAnEarlierRead()
+    {
+        var reader = CreateRepository();
+        // Prime the reader with an earlier read so a stale cache (if any) would be populated.
+        (await reader.GetByIdAsync("recon-x")).Should().BeNull();
+
+        var writer = CreateRepository();
+        await writer.SaveAsync(BuildDetail("recon-x", "run-1", DateTimeOffset.UtcNow));
+
+        // The reader must observe the run written by the other instance, not a cached empty view.
+        (await reader.GetByIdAsync("recon-x")).Should().NotBeNull();
+    }
+
     private FileReconciliationRunRepository CreateRepository()
         => new(_dataRoot, NullLogger<FileReconciliationRunRepository>.Instance);
 

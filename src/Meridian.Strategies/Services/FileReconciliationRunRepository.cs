@@ -10,7 +10,9 @@ namespace Meridian.Strategies.Services;
 /// File-backed <see cref="IReconciliationRunRepository"/> that persists reconciliation run
 /// details to a JSON snapshot using atomic writes, so completed runs and their history survive
 /// process restarts. Replaces <see cref="InMemoryReconciliationRunRepository"/> for production
-/// workstation hosting while preserving identical query semantics.
+/// workstation hosting while preserving identical query semantics. Every operation reads the
+/// current snapshot from disk (no in-memory cache), so runs written by another process sharing the
+/// same data directory remain visible to reads.
 /// </summary>
 public sealed class FileReconciliationRunRepository : IReconciliationRunRepository
 {
@@ -21,8 +23,6 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-
-    private Dictionary<string, ReconciliationRunDetail>? _runs;
 
     public FileReconciliationRunRepository(
         string dataDirectory,
@@ -45,12 +45,11 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Re-read the latest persisted snapshot before rewriting so runs written by another
-            // process (e.g. the WPF desktop and the browser workstation sharing a data root) are
-            // not dropped. This shrinks the cross-process lost-update window to the write itself.
-            _runs = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-            _runs[detail.Summary.ReconciliationRunId] = detail;
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            // Read-modify-write the latest persisted snapshot so runs written by another process
+            // (e.g. the WPF desktop and the browser workstation sharing a data root) are not dropped.
+            var runs = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            runs[detail.Summary.ReconciliationRunId] = detail;
+            await PersistSnapshotAsync(runs, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -65,8 +64,8 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            return _runs!.GetValueOrDefault(reconciliationRunId);
+            var runs = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            return runs.GetValueOrDefault(reconciliationRunId);
         }
         finally
         {
@@ -81,8 +80,8 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            return _runs!.Values
+            var runs = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            return runs.Values
                 .Where(run => string.Equals(run.Summary.RunId, runId, StringComparison.Ordinal))
                 .OrderByDescending(static run => run.Summary.CreatedAt)
                 .FirstOrDefault();
@@ -100,8 +99,8 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            return _runs!.Values
+            var runs = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+            return runs.Values
                 .Where(run => string.Equals(run.Summary.RunId, runId, StringComparison.Ordinal))
                 .OrderByDescending(static run => run.Summary.CreatedAt)
                 .Select(static run => run.Summary)
@@ -112,9 +111,6 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
             _gate.Release();
         }
     }
-
-    private async Task EnsureLoadedAsync(CancellationToken ct)
-        => _runs ??= await ReadSnapshotAsync(ct).ConfigureAwait(false);
 
     private async Task<Dictionary<string, ReconciliationRunDetail>> ReadSnapshotAsync(CancellationToken ct)
     {
@@ -144,11 +140,11 @@ public sealed class FileReconciliationRunRepository : IReconciliationRunReposito
         }
     }
 
-    private async Task PersistSnapshotAsync(CancellationToken ct)
+    private async Task PersistSnapshotAsync(Dictionary<string, ReconciliationRunDetail> runs, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var snapshot = new ReconciliationRunSnapshot(
-            _runs!.Values
+            runs.Values
                 .OrderByDescending(static run => run.Summary.CreatedAt)
                 .ToArray());
         var json = JsonSerializer.Serialize(snapshot, _jsonOptions);
