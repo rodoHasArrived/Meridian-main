@@ -1961,28 +1961,49 @@ Meridian-main
 │   │   │   └── wpf-workspaces.png
 │   │   ├── web
 │   │   │   ├── web-accounting-approvals.png
+│   │   │   ├── web-accounting-capital-accounts.png
+│   │   │   ├── web-accounting-configure.png
+│   │   │   ├── web-accounting-entity-setup.png
+│   │   │   ├── web-accounting-evidence-workbench.png
 │   │   │   ├── web-accounting-exceptions.png
 │   │   │   ├── web-accounting-external-gl-reconciliation.png
+│   │   │   ├── web-accounting-journal-entries.png
+│   │   │   ├── web-accounting-ledger.png
+│   │   │   ├── web-accounting-operations-continuity.png
 │   │   │   ├── web-accounting-reconciliation.png
 │   │   │   ├── web-accounting-security-master.png
 │   │   │   ├── web-accounting-workspace.png
+│   │   │   ├── web-daily-control-tower.png
+│   │   │   ├── web-data-alerts.png
 │   │   │   ├── web-data-backfills.png
+│   │   │   ├── web-data-evidence-workbench.png
 │   │   │   ├── web-data-live-quotes.png
+│   │   │   ├── web-data-providers.png
 │   │   │   ├── web-data-watchlist.png
 │   │   │   ├── web-data-workspace.png
 │   │   │   ├── web-operator-readiness-console.png
 │   │   │   ├── web-overview-workspace.png
 │   │   │   ├── web-portfolio-attribution.png
 │   │   │   ├── web-portfolio-brokerage-sync.png
+│   │   │   ├── web-portfolio-family-office.png
 │   │   │   ├── web-portfolio-workspace.png
 │   │   │   ├── web-reporting-evidence-workbench.png
 │   │   │   ├── web-reporting-exports.png
+│   │   │   ├── web-reporting-governance.png
+│   │   │   ├── web-reporting-operations-record.png
+│   │   │   ├── web-reporting-report-builder.png
 │   │   │   ├── web-reporting-report-packs.png
+│   │   │   ├── web-reporting-run-status.png
 │   │   │   ├── web-reporting-workspace.png
+│   │   │   ├── web-settings-alpaca-provider-setup.png
+│   │   │   ├── web-settings-backend-capability-coverage.png
+│   │   │   ├── web-settings-diagnostic-endpoints.png
 │   │   │   ├── web-settings-integrations.png
 │   │   │   ├── web-settings-preferences.png
 │   │   │   ├── web-settings-workspace.png
+│   │   │   ├── web-strategy-covered-call.png
 │   │   │   ├── web-strategy-designer.png
+│   │   │   ├── web-strategy-formula-workbench.png
 │   │   │   ├── web-strategy-lab.png
 │   │   │   ├── web-strategy-promotions.png
 │   │   │   ├── web-strategy-quant-lab.png
@@ -4770,12 +4791,16 @@ Meridian-main
 │   │   │   │   │   └── workstation-endpoints.ts
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
+│   │   │   │   │   ├── accounting-screen.close-cockpit-panels.tsx
 │   │   │   │   │   ├── accounting-screen.formatting.ts
+│   │   │   │   │   ├── accounting-screen.operator-focus.ts
 │   │   │   │   │   ├── accounting-screen.styles.ts
+│   │   │   │   │   ├── accounting-screen.task-modes.tsx
 │   │   │   │   │   ├── accounting-screen.test.tsx
 │   │   │   │   │   ├── accounting-screen.tsx
 │   │   │   │   │   ├── accounting-screen.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.view-model.ts
+│   │   │   │   │   ├── accounting-screen.workbench-context.tsx
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -4826,16 +4851,19 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.delivery-history.tsx
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
+│   │   │   │   │   ├── reporting-screen.operator-focus.ts
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
 │   │   │   │   │   ├── reporting-screen.run-status-modules.tsx
 │   │   │   │   │   ├── reporting-screen.schedule-management.tsx
 │   │   │   │   │   ├── reporting-screen.shared-components.tsx
+│   │   │   │   │   ├── reporting-screen.task-modes.tsx
 │   │   │   │   │   ├── reporting-screen.template-lifecycle.tsx
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
 │   │   │   │   │   ├── reporting-screen.view-model.ts
+│   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── settings-admin-operations-console.tsx
 │   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
@@ -4870,6 +4898,8 @@ Meridian-main
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   └── provider-setup.ts
+│   │   │   │   ├── app-shell.evidence-timeline.ts
+│   │   │   │   ├── app-shell.operator-focus.ts
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
 │   │   │   │   ├── app.test.tsx
@@ -6755,6 +6785,7 @@ Meridian-main
 │   │   │   ├── StorageProfilePresetsTests.cs
 │   │   │   ├── StorageSinkRegistryTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
+│   │   │   ├── TierMigrationServiceTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
 │   │   │   └── WriteAheadLogTests.cs
