@@ -1,6 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
 import {
@@ -3729,8 +3728,8 @@ describe("accounting-screen view model", () => {
   });
 
   it("keeps Accounting task-mode routing outside the overloaded view model", () => {
-    const viewModelSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
-    const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.task-mode-view-model.ts"), "utf8");
+    const viewModelSource = readFileSync(new URL("./accounting-screen.view-model.ts", import.meta.url), "utf8");
+    const taskModeSource = readFileSync(new URL("./accounting-screen.task-mode-view-model.ts", import.meta.url), "utf8");
 
     expect(taskModeSource).toContain("const accountingTaskModeDefinitions");
     expect(taskModeSource).toContain("export const accountingTaskModeLauncherLinks");
