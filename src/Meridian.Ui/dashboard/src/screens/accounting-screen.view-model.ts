@@ -73,7 +73,7 @@ import {
 } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
-import { formatBytes, formatCount, formatCurrency, formatCurrencyWithCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatCurrencyWithCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
   buildCalibrationSummaryViewState,
   type CalibrationProfileDetailViewModel,
@@ -85,6 +85,13 @@ import {
   type CalibrationSummaryViewModel,
   type CalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
+import {
+  accountingWorkstreamHref,
+  buildAccountingTaskMode,
+  resolveAccountingWorkstream,
+  type AccountingTaskModeViewModel,
+  type AccountingWorkstream
+} from "./accounting-screen.task-mode-view-model";
 import type {
   AccountingBasisKind,
   AccountingCertificationState,
@@ -130,7 +137,9 @@ import type {
   AccountingSystemImportDetail,
   AccountingSystemMappingProfileUpsertRequest,
   AccountingSystemProvider,
+  AccountingSystemReconciliationRow,
   AccountingSystemReconciliationSummary,
+  AccountingSystemReconciliationStatus,
   ExternalGlMappingProfile,
   AccountingRulesStudioPromotionQueueItem,
   AccountingRulesStudioRuleRow,
@@ -231,17 +240,19 @@ export type {
   CalibrationSummaryViewModel,
   CalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
+export {
+  accountingWorkstreamHref,
+  buildAccountingTaskMode,
+  resolveAccountingWorkstream,
+  resolveGovernanceWorkstream
+} from "./accounting-screen.task-mode-view-model";
+export type {
+  AccountingTaskModeId,
+  AccountingTaskModeViewModel,
+  AccountingWorkstream,
+  GovernanceWorkstream
+} from "./accounting-screen.task-mode-view-model";
 
-export type AccountingWorkstream = "ledger" | "configure" | "journal-entries" | "capital-accounts" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
-export type GovernanceWorkstream = AccountingWorkstream;
-export type AccountingTaskModeId =
-  | "close-cockpit"
-  | "reconciliation-casework"
-  | "ledger-explorer"
-  | "journal-entry"
-  | "capital-accounts"
-  | "delivery-evidence"
-  | "governance";
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
@@ -2114,7 +2125,17 @@ export interface ReconciliationComparisonRowViewModel {
   ledgerMeta: string;
   ledgerValue: string;
   statusLabel: string;
-  statusTone: "success" | "warning";
+  statusTone: "success" | "warning" | "danger";
+}
+
+export interface ReconciliationLineItemViewModel {
+  id: string;
+  matchKey: string;
+  title: string;
+  meta: string;
+  amountLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger";
 }
 
 export interface ReconciliationComparisonViewState {
@@ -2129,6 +2150,12 @@ export interface ReconciliationComparisonViewState {
   varianceLabel: string;
   varianceTone: "success" | "warning";
   rows: ReconciliationComparisonRowViewModel[];
+  /** Per-line statement side. Transaction-level when an external GL reconciliation is loaded, else one line per run. */
+  statementLines: ReconciliationLineItemViewModel[];
+  /** Per-line ledger side, paired with statementLines by matchKey for cross-highlighting. */
+  ledgerLines: ReconciliationLineItemViewModel[];
+  /** "transactions" when driven by AccountingSystemReconciliationRow detail; "runs" for the run-level fallback. */
+  lineSource: "transactions" | "runs";
   ariaLabel: string;
 }
 
@@ -2424,16 +2451,6 @@ export interface AccountingWorkflowStepViewModel {
   statusLabel: string;
   tone: AccountingToolingTone;
   isActive: boolean;
-  ariaLabel: string;
-}
-
-export interface AccountingTaskModeViewModel {
-  id: AccountingTaskModeId;
-  label: string;
-  description: string;
-  routeLabel: string;
-  href: string;
-  workstream: AccountingWorkstream;
   ariaLabel: string;
 }
 
@@ -11289,7 +11306,8 @@ function newClientId(): string {
 export function useAccountingReconciliationViewModel(
   data: AccountingWorkspaceResponse | null,
   workstream: AccountingWorkstream,
-  services: AccountingReconciliationServices = defaultAccountingReconciliationServices
+  services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
+  systemReconciliation: AccountingSystemReconciliationSummary | null = null
 ) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
@@ -11628,9 +11646,10 @@ export function useAccountingReconciliationViewModel(
       statementRuns,
       fallbackQueue: reconciliationQueue,
       selectedRunId,
-      cashFlow: data?.cashFlow ?? null
+      cashFlow: data?.cashFlow ?? null,
+      systemReconciliation
     }),
-    [data?.cashFlow, reconciliationQueue, selectedRunId, statementRuns]
+    [data?.cashFlow, reconciliationQueue, selectedRunId, statementRuns, systemReconciliation]
   );
   const exceptionWorkbench = useMemo(
     () => buildOperationalExceptionWorkbenchState({
@@ -11833,161 +11852,6 @@ export function useReconciliationResolveDialogViewModel(
   };
 }
 
-export function resolveAccountingWorkstream(pathname: string): AccountingWorkstream {
-  if (pathname.startsWith(`${WORKSTATION_ROUTE_CATALOG.accounting}/reporting`)) {
-    return "reporting";
-  }
-
-  if (pathname.includes("/configure")) {
-    return "configure";
-  }
-
-  if (pathname.includes("/journal-entries")) {
-    return "journal-entries";
-  }
-
-  if (pathname.includes("/capital-accounts")) {
-    return "capital-accounts";
-  }
-
-  if (pathname.includes("/reconciliation")) {
-    return "reconciliation";
-  }
-
-  if (pathname.includes("/exceptions")) {
-    return "exceptions";
-  }
-
-  if (pathname.includes("/security-master")) {
-    return "security-master";
-  }
-
-  if (pathname.includes("/approvals")) {
-    return "approvals";
-  }
-
-  return "ledger";
-}
-
-export function buildAccountingTaskMode(pathname: string): AccountingTaskModeViewModel {
-  const normalizedPath = normalizeAccountingTaskModePath(pathname);
-  const workstream = resolveAccountingWorkstream(normalizedPath);
-
-  if (normalizedPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedPath === "/governance" || workstream === "approvals") {
-    return buildAccountingTaskModeViewModel({
-      id: "close-cockpit",
-      label: "Close Cockpit",
-      description: "Daily close posture, blockers, owners, affected outputs, next actions, and retained proof stay first for Accounting operators.",
-      routeLabel: "Close Cockpit",
-      href: WORKSTATION_ROUTE_CATALOG.accounting,
-      workstream
-    });
-  }
-
-  if (workstream === "reconciliation" || workstream === "exceptions") {
-    return buildAccountingTaskModeViewModel({
-      id: "reconciliation-casework",
-      label: "Reconciliation Casework",
-      description: "Statement runs, open breaks, owners, evidence, comments, and resolution actions stay grouped for case handling.",
-      routeLabel: "Reconciliation Casework",
-      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-      workstream
-    });
-  }
-
-  if (workstream === "journal-entries") {
-    return buildAccountingTaskModeViewModel({
-      id: "journal-entry",
-      label: "Journal Entry",
-      description: "Manual journal drafting, validation, evidence attachment, and approval submission stay in one governed task mode.",
-      routeLabel: "Journal Entry",
-      href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
-      workstream
-    });
-  }
-
-  if (workstream === "capital-accounts") {
-    return buildAccountingTaskModeViewModel({
-      id: "capital-accounts",
-      label: "Capital Accounts",
-      description: "Investor capital activity, allocation proof, statement lineage, and report-output readiness stay connected.",
-      routeLabel: "Capital Accounts",
-      href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
-      workstream
-    });
-  }
-
-  if (workstream === "configure" || workstream === "security-master") {
-    return buildAccountingTaskModeViewModel({
-      id: "governance",
-      label: "Governance",
-      description: "Books, posting controls, Security Master readiness, source coverage, and activation gates stay in governed setup paths.",
-      routeLabel: "Governance",
-      href: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
-      workstream
-    });
-  }
-
-  if (workstream === "reporting") {
-    return buildAccountingTaskModeViewModel({
-      id: "delivery-evidence",
-      label: "Delivery Evidence",
-      description: "Accounting evidence routes into governed report packs, retained manifests, exports, and audit-ready output support.",
-      routeLabel: "Delivery Evidence",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-      workstream
-    });
-  }
-
-  return buildAccountingTaskModeViewModel({
-    id: "ledger-explorer",
-    label: "Ledger Explorer",
-    description: "Meridian-owned trial balance, journal support, reconciliation posture, report usage, and proof drill-through stay together.",
-    routeLabel: "Ledger Explorer",
-    href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
-    workstream
-  });
-}
-
-function normalizeAccountingTaskModePath(pathname: string): string {
-  const path = pathname.split("?")[0]?.split("#")[0]?.trim() || WORKSTATION_ROUTE_CATALOG.accounting;
-  if (path.length > 1 && path.endsWith("/")) {
-    return path.slice(0, -1).toLowerCase();
-  }
-
-  return path.toLowerCase();
-}
-
-function buildAccountingTaskModeViewModel({
-  id,
-  label,
-  description,
-  routeLabel,
-  href,
-  workstream
-}: {
-  id: AccountingTaskModeId;
-  label: string;
-  description: string;
-  routeLabel: string;
-  href: string;
-  workstream: AccountingWorkstream;
-}): AccountingTaskModeViewModel {
-  return {
-    id,
-    label,
-    description,
-    routeLabel,
-    href,
-    workstream,
-    ariaLabel: `Accounting task mode ${label}`
-  };
-}
-
-export function resolveGovernanceWorkstream(pathname: string): AccountingWorkstream {
-  return resolveAccountingWorkstream(pathname);
-}
-
 export function resolveSelectedReconciliation(
   queue: AccountingWorkspaceResponse["reconciliationQueue"],
   selectedRunId: string | null
@@ -12054,6 +11918,52 @@ interface ReconciliationComparisonBuildInput {
   fallbackQueue: AccountingWorkspaceResponse["reconciliationQueue"];
   selectedRunId: string | null;
   cashFlow: AccountingCashFlowSummary | null;
+  /** Latest external GL reconciliation. When present, drives the panes with transaction-level line detail. */
+  systemReconciliation?: AccountingSystemReconciliationSummary | null;
+}
+
+const SYSTEM_RECONCILIATION_TONE: Record<AccountingSystemReconciliationStatus, "success" | "warning" | "danger"> = {
+  Matched: "success",
+  ReviewRequired: "warning",
+  Variance: "danger",
+  MissingExternal: "danger",
+  MissingMeridian: "danger"
+};
+
+function describeSystemReconciliationStatus(status: AccountingSystemReconciliationStatus): string {
+  switch (status) {
+    case "Matched":
+      return "Matched";
+    case "ReviewRequired":
+      return "Review";
+    case "Variance":
+      return "Variance";
+    case "MissingExternal":
+      return "Missing in statement";
+    case "MissingMeridian":
+      return "Missing in ledger";
+  }
+}
+
+function buildSystemReconciliationLine(
+  row: AccountingSystemReconciliationRow,
+  side: "statement" | "ledger"
+): ReconciliationLineItemViewModel {
+  const amount = side === "statement"
+    ? row.externalDebit - row.externalCredit
+    : row.meridianDebit - row.meridianCredit;
+  return {
+    id: `${row.rowId}:${side}`,
+    matchKey: row.rowId,
+    title: row.accountName || row.accountCode,
+    meta: (row.accountName ? [row.accountCode, row.currency, row.detail] : [row.currency, row.detail])
+      .map((part) => part?.trim())
+      .filter(Boolean)
+      .join(" · "),
+    amountLabel: formatCurrencyForCode(amount, row.currency),
+    statusLabel: describeSystemReconciliationStatus(row.status),
+    statusTone: SYSTEM_RECONCILIATION_TONE[row.status]
+  };
 }
 
 export function buildReconciliationStatementRunsViewState({
@@ -12112,7 +12022,8 @@ export function buildReconciliationComparisonViewState({
   statementRuns,
   fallbackQueue,
   selectedRunId,
-  cashFlow
+  cashFlow,
+  systemReconciliation = null
 }: ReconciliationComparisonBuildInput): ReconciliationComparisonViewState {
   const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
     ? []
@@ -12163,25 +12074,98 @@ export function buildReconciliationComparisonViewState({
       ledgerMeta,
       ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
       statusLabel,
-      statusTone: openCount > 0 || statusLabel === "BreaksOpen" || statusLabel === "SecurityCoverageOpen" ? "warning" : "success"
+      statusTone: statusLabel === "SecurityCoverageOpen"
+        ? "danger"
+        : openCount > 0 || statusLabel === "BreaksOpen"
+          ? "warning"
+          : "success"
     };
   });
-  const matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
-  const openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
-  const variance = cashFlow?.netVariance ?? 0;
+  // Transaction-level line detail comes from the latest external GL reconciliation when loaded.
+  // Each row carries both a statement (external) and ledger (Meridian) side keyed by rowId, so the
+  // two panes cross-highlight by matchKey. MissingExternal / MissingMeridian rows are one-sided.
+  const systemRows = systemReconciliation?.rows ?? [];
+  const hasTransactionLines = systemRows.length > 0;
+
+  const statementLines: ReconciliationLineItemViewModel[] = hasTransactionLines
+    ? systemRows
+      .filter((row) => row.status !== "MissingExternal")
+      .map((row) => buildSystemReconciliationLine(row, "statement"))
+    : rows.map((row) => ({
+      id: `${row.id}:statement`,
+      matchKey: row.id,
+      title: row.statementTitle,
+      meta: row.statementMeta,
+      amountLabel: row.statementValue,
+      statusLabel: row.statusLabel,
+      statusTone: row.statusTone
+    }));
+
+  const ledgerLines: ReconciliationLineItemViewModel[] = hasTransactionLines
+    ? systemRows
+      .filter((row) => row.status !== "MissingMeridian")
+      .map((row) => buildSystemReconciliationLine(row, "ledger"))
+    : rows.map((row) => ({
+      id: `${row.id}:ledger`,
+      matchKey: row.id,
+      title: row.ledgerTitle,
+      meta: row.ledgerMeta,
+      amountLabel: row.ledgerValue,
+      statusLabel: row.statusLabel,
+      statusTone: row.statusTone
+    }));
+
+  // Summary + badges follow the active line source so the panes and totals agree.
+  let matchedCount: number;
+  let openCount: number;
+  let statementBalanceLabel: string;
+  let ledgerBalanceLabel: string;
+  let varianceLabel: string;
+  let varianceTone: "success" | "warning";
+
+  if (hasTransactionLines && systemReconciliation) {
+    const summaryCurrency = systemReconciliation.rows[0]?.currency || "USD";
+    const statementBalance = systemReconciliation.totalExternalDebits - systemReconciliation.totalExternalCredits;
+    const ledgerBalance = systemReconciliation.totalMeridianDebits - systemReconciliation.totalMeridianCredits;
+    const netVariance = statementBalance - ledgerBalance;
+    // Open breaks keep the reconciliation out of balance even when debit/credit totals tie out —
+    // e.g. a trial balance with offsetting row-level breaks nets to zero but is not reconciled.
+    const balanced = systemReconciliation.breakCount === 0 && Math.abs(netVariance) < 0.005;
+    matchedCount = systemReconciliation.matchedCount;
+    openCount = systemReconciliation.breakCount;
+    statementBalanceLabel = formatCurrencyForCode(statementBalance, summaryCurrency);
+    ledgerBalanceLabel = formatCurrencyForCode(ledgerBalance, summaryCurrency);
+    varianceTone = balanced ? "success" : "warning";
+    varianceLabel = balanced
+      ? "Balanced"
+      : Math.abs(netVariance) >= 0.005
+        ? `Out by ${formatCurrencyForCode(Math.abs(netVariance), summaryCurrency)}`
+        : `${openCount.toLocaleString()} open break${openCount === 1 ? "" : "s"}`;
+  } else {
+    matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
+    openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
+    statementBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded";
+    ledgerBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded";
+    const variance = cashFlow?.netVariance ?? 0;
+    varianceTone = Math.abs(variance) < 0.005 ? "success" : "warning";
+    varianceLabel = Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`;
+  }
 
   return {
     title: "Cash reconciliation - broker statement vs. ledger",
     subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
-    statementHeading: "Statement",
-    ledgerHeading: "Ledger",
+    statementHeading: hasTransactionLines ? "Custodian statement" : "Statement",
+    ledgerHeading: hasTransactionLines ? "Internal ledger" : "Ledger",
     matchedBadgeLabel: `${matchedCount.toLocaleString()} matched`,
     openBadgeLabel: `${openCount.toLocaleString()} open`,
-    statementBalanceLabel: cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded",
-    ledgerBalanceLabel: cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded",
-    varianceLabel: variance === 0 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`,
-    varianceTone: variance === 0 ? "success" : "warning",
+    statementBalanceLabel,
+    ledgerBalanceLabel,
+    varianceLabel,
+    varianceTone,
     rows,
+    statementLines,
+    ledgerLines,
+    lineSource: hasTransactionLines ? "transactions" : "runs",
     ariaLabel: "Cash reconciliation broker statement versus ledger comparison"
   };
 }
@@ -13395,30 +13379,6 @@ export function buildAccountingWorkflowLaunchViewState({
     actionRows,
     liveRegionText: `Accounting workflow ${workflowStatusLabel}. ${activeStepLabel} active. ${formatCount(openBreakCount, "open break")}.`
   };
-}
-
-function accountingWorkstreamHref(workstream: AccountingWorkstream): string {
-  switch (workstream) {
-    case "configure":
-      return WORKSTATION_ROUTE_CATALOG.accountingConfigure;
-    case "journal-entries":
-      return WORKSTATION_ROUTE_CATALOG.accountingJournalEntries;
-    case "capital-accounts":
-      return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
-    case "reconciliation":
-      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
-    case "exceptions":
-      return WORKSTATION_ROUTE_CATALOG.accountingExceptions;
-    case "security-master":
-      return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
-    case "approvals":
-      return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
-    case "reporting":
-      return `${WORKSTATION_ROUTE_CATALOG.accounting}/reporting`;
-    case "ledger":
-    default:
-      return WORKSTATION_ROUTE_CATALOG.accountingLedger;
-  }
 }
 
 function buildAccountingWorkflowStep({

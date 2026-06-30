@@ -25,7 +25,7 @@ internal sealed record HostedBrokerageGatewayRuntimeSurface(
 
 internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
 {
-    private static readonly string[] ExpectedGatewayIds = ["alpaca", "ib", "ibkr", "stocksharp"];
+    private static readonly string[] ExpectedGatewayIds = ["alpaca", "ib", "ibkr", "robinhood", "stocksharp"];
 
     internal static IReadOnlyList<HostedBrokerageGatewayRuntimeSurface> Build(IServiceProvider services)
     {
@@ -92,6 +92,10 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
         if (gatewayId.Equals("stocksharp", StringComparison.OrdinalIgnoreCase))
         {
             notes.Add("Optional StockSharp gateway is available only when the runtime adapter type is loadable.");
+        }
+        if (gatewayId.Equals("robinhood", StringComparison.OrdinalIgnoreCase))
+        {
+            notes.Add("Robinhood is an unofficial broker API surface and still requires bounded broker-session evidence for readiness claims.");
         }
 
         return new HostedBrokerageGatewayRuntimeSurface(
@@ -179,6 +183,7 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
         {
             "alpaca" => "Alpaca Markets",
             "ib" or "ibkr" => "Interactive Brokers",
+            "robinhood" => "Robinhood (unofficial)",
             "stocksharp" => "StockSharp",
             _ => gatewayId
         };

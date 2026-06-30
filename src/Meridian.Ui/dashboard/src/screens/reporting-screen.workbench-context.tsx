@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import type {
   ReportingChipViewModel,
-  ReportingTaskModeViewModel,
   ReportingWorkbenchAction
 } from "@/screens/reporting-screen.view-model";
+import type { ReportingTaskModeViewModel } from "@/screens/reporting-screen.task-mode-view-model";
 
 export interface ReportingWorkbenchContextProps {
   taskMode: ReportingTaskModeViewModel;

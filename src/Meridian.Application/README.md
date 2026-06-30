@@ -209,7 +209,21 @@ and UI presentation concerns in their owning layers.
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
-  remediation paths remain single-symbol signals.
+  remediation paths remain single-symbol signals. `BackfillCostEstimator` exposes adaptive
+  partition plans for intraday and multi-year daily ranges so preview and cost-estimate callers can
+  size provider windows before execution, and `HistoricalBackfillService` executes bounded requests
+  through the same plan before writing per-symbol validation signals and checkpoints. Cost previews
+  and execution normalize multi-symbol requests by trimming, dropping blanks, and de-duplicating
+  case-insensitively while preserving the first-seen order and spelling, so provider calls and
+  evidence rows cannot be duplicated by casing or whitespace variants.
+  `CrossSourceBackfillReconciliationService` compares bounded daily bars across a baseline provider
+  and one or more comparison providers for one symbol or a de-duplicated multi-symbol batch. Batch
+  reconciliation normalizes symbols to uppercase, preserves the first-seen request order, and
+  returns per-symbol price/volume drift, missing-session, symbol-mismatch, provider-error,
+  closure-status, and ordered review-symbol evidence for data-confidence workflows without promoting
+  it to full cross-provider SLA enforcement. Provider responses for the wrong symbol are retained as
+  review-required contamination evidence and filtered out of the matching bar set so same-date
+  fallback data cannot falsely close the requested symbol.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot

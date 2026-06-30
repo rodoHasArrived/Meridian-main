@@ -4,9 +4,14 @@ using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
+using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Adapters.TwelveData;
+using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Configuration;
@@ -120,17 +125,37 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     }
 
     [Fact]
+    public void Scenario_BrokerageExperimentGate_MapperOnlyBrokersDoNotAdvertiseRuntimeDescriptors()
+    {
+        string[] mapperOnlyBrokerageProviderIds =
+        [
+            "tradier",
+            "tradestation"
+        ];
+
+        var descriptorsById = ProviderCapabilityDescriptorCatalog.Descriptors
+            .ToDictionary(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase);
+        var descriptorImplementations = ProviderCapabilityDescriptorCatalog.Descriptors
+            .SelectMany(static descriptor => descriptor.Implementations())
+            .Select(static implementation => implementation.FullName ?? implementation.Name)
+            .ToArray();
+
+        descriptorsById.Keys.Should().NotContain(mapperOnlyBrokerageProviderIds,
+            "mapper-only brokerage assets must not become runtime provider capabilities without concrete adapters and lifecycle evidence");
+        descriptorImplementations.Should().NotContain(
+            implementation => implementation.Contains(".Adapters.Tradier.", StringComparison.OrdinalIgnoreCase) ||
+                              implementation.Contains(".Adapters.TradeStation.", StringComparison.OrdinalIgnoreCase),
+            "mapper-only brokerage assets must not enter the capability descriptor catalog until they implement shared runtime provider contracts");
+    }
+
+    [Fact]
     public void Scenario_RuntimeCapabilityDrift_FreeTierBackfillProvidersRemainFailClosed()
     {
         string[] inventoryOnlyBackfillProviders =
         [
-            "alphavantage",
             "finnhub",
             "fred",
-            "nasdaq",
             "stooq",
-            "tiingo",
-            "twelvedata",
             "yahoo"
         ];
 
@@ -151,6 +176,70 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
                 "inventory/backfill provider '{0}' must not advertise brokerage readiness without a dedicated provider implementation and evidence",
                 providerId);
         }
+
+        var tiingo = descriptorsById["tiingo"];
+        tiingo.Historical.Should().Be(typeof(TiingoHistoricalDataProvider));
+        tiingo.Search.Should().Be(typeof(TiingoSymbolSearchProvider));
+        tiingo.CorporateActions.Should().Be(typeof(TiingoCorporateActionProvider));
+        tiingo.Streaming.Should().BeNull(
+            "Tiingo has no dedicated streaming provider implementation in the runtime catalog");
+        tiingo.Brokerage.Should().BeNull(
+            "Tiingo is a data provider and must not advertise brokerage readiness");
+
+        var alphaVantage = descriptorsById["alphavantage"];
+        alphaVantage.Historical.Should().Be(typeof(AlphaVantageHistoricalDataProvider));
+        alphaVantage.Search.Should().Be(typeof(AlphaVantageSymbolSearchProvider));
+        alphaVantage.CorporateActions.Should().Be(typeof(AlphaVantageCorporateActionProvider));
+        alphaVantage.Streaming.Should().BeNull(
+            "Alpha Vantage has no dedicated streaming provider implementation in the runtime catalog");
+        alphaVantage.Brokerage.Should().BeNull(
+            "Alpha Vantage is a data provider and must not advertise brokerage readiness");
+
+        var nasdaq = descriptorsById["nasdaq"];
+        nasdaq.Historical.Should().Be(typeof(NasdaqDataLinkHistoricalDataProvider));
+        nasdaq.CorporateActions.Should().Be(typeof(NasdaqDataLinkCorporateActionProvider));
+        nasdaq.Streaming.Should().BeNull(
+            "Nasdaq Data Link has no dedicated streaming provider implementation in the runtime catalog");
+        nasdaq.Brokerage.Should().BeNull(
+            "Nasdaq Data Link is a data provider and must not advertise brokerage readiness");
+
+        var fred = descriptorsById["fred"];
+        fred.Historical.Should().Be(typeof(FredHistoricalDataProvider));
+        fred.Search.Should().Be(typeof(FredSymbolSearchProvider));
+        fred.Streaming.Should().BeNull(
+            "FRED has no dedicated streaming provider implementation in the runtime catalog");
+        fred.CorporateActions.Should().BeNull(
+            "FRED economic-series search is reference discovery, not corporate-action readiness");
+        fred.Brokerage.Should().BeNull(
+            "FRED is a research data provider and must not advertise brokerage readiness");
+
+        var twelveData = descriptorsById["twelvedata"];
+        twelveData.Historical.Should().Be(typeof(TwelveDataHistoricalDataProvider));
+        twelveData.Search.Should().Be(typeof(TwelveDataSymbolSearchProvider));
+        twelveData.CorporateActions.Should().Be(typeof(TwelveDataCorporateActionProvider));
+        twelveData.Streaming.Should().BeNull(
+            "Twelve Data has no dedicated streaming provider implementation in the runtime catalog");
+        twelveData.Brokerage.Should().BeNull(
+            "Twelve Data is a data provider and must not advertise brokerage readiness");
+    }
+
+    [Fact]
+    public void Scenario_UnsupportedYahooStreaming_RuntimeCatalogKeepsHistoricalFallbackOnly()
+    {
+        var descriptorsById = ProviderCapabilityDescriptorCatalog.Descriptors
+            .ToDictionary(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+        descriptorsById.Keys.Should().Contain("yahoo");
+        var yahoo = descriptorsById["yahoo"];
+        yahoo.Historical.Should().Be(typeof(YahooFinanceHistoricalDataProvider));
+        yahoo.Streaming.Should().BeNull(
+            "Yahoo Finance has no dedicated IMarketDataClient implementation or reconnect/runtime evidence");
+        yahoo.Search.Should().BeNull(
+            "Yahoo Finance is not a symbol-search provider in the runtime catalog");
+        yahoo.CorporateActions.Should().BeNull(
+            "Yahoo adjusted-bar event extraction is historical evidence, not a registered ICorporateActionProvider");
+        yahoo.Brokerage.Should().BeNull(
+            "Yahoo Finance is a data fallback and must never advertise brokerage readiness");
     }
 
     private static void RegisterInterfacesFromDescriptors(IServiceCollection services)

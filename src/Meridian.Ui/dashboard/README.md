@@ -30,6 +30,12 @@ instead of introducing one-off screen styling.
 ## Key folders and files
 
 - `src/` - React/TypeScript workstation source.
+- `src/app-shell.command-palette.ts` - app-shell command-palette trigger and keyboard shortcut view models.
+- `src/app-shell.development-fixture-notice.ts` - app-shell no-host demo-data notice and evidence path view models.
+- `src/app-shell.route-focus.ts` - app-shell route announcement, document title, and hash-target focus view models.
+- `src/app-shell.status-panel.ts` - app-shell bootstrap, degraded workspace, and recovery status view models.
+- `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
+- `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
@@ -1046,17 +1052,65 @@ The app shell exposes the active route as a named workbench landmark and marks t
 during bootstrap or refresh, so skip-link and screen-reader users land on the current operator
 workspace with explicit loading posture.
 Shared workstation primitives render visual search context as read-only textboxes and shared tab
-strips use roving focus with Arrow, Home, and End keys, so route-owned filters and inspector tabs do
-not need screen-local keyboard handling.
-The app shell keeps cross-workspace ranking and disclosure chrome centralized, while Accounting and
-Reporting operator-focus candidate construction lives in route-named modules so close, break,
-automation, and report-pack recipient state can evolve with their owning routes instead of
-accumulating in `app-shell.view-model.ts`.
+strips move focus and the active tab stop with Arrow, Home, and End keys, so route-owned filters and
+inspector tabs do not need screen-local keyboard handling.
+The app shell keeps cross-workspace ranking and disclosure chrome centralized, while workspace
+linked-context builders, workspace operator-focus candidate construction, workspace
+evidence-timeline projection, workflow-continuity trail definitions, trail selection, active-route
+matching, primary workflow routing, operating-scope route/query helpers, and workspace
+workflow-continuity status builders live outside the shell so quote, exposure, close, break,
+automation, reconciliation, provider, run, and report-pack recipient state can evolve with their
+owning routes instead of accumulating in `app-shell.view-model.ts`.
+The shell workflow-continuity view model now lives in
+`app-shell.workflow-continuity-view-model.ts`; `app-shell.view-model.ts` imports it as a coordinator
+boundary instead of importing each route-specific continuity, linked-context, operator-focus, and
+evidence-timeline helper directly.
+Workflow-continuity view-model contracts live in `app-shell.workflow-continuity-types.ts`, so the
+route coordinator no longer owns the cross-workspace workflow, decision brief, focus, linked
+context, and evidence timeline type definitions that are implemented by the workflow-continuity
+builder.
+The shell command-palette trigger, route-focus announcement model, no-host demo-data notice, status
+panel, and trust strip live in `app-shell.command-palette.ts`, `app-shell.route-focus.ts`,
+`app-shell.development-fixture-notice.ts`, `app-shell.status-panel.ts`, and
+`app-shell.trust-strip.ts`, keeping keyboard shortcut semantics, active-route focus copy, demo
+evidence-path steps, bootstrap recovery copy, failed-workspace items, build/mode posture, source
+posture, and provider posture out of the route coordinator while preserving the same app-shell
+view-state contract for React.
+The rendered workflow-continuity dock lives in
+`components/meridian/workflow-continuity-dock.tsx` with its stylesheet in
+`src/styles/workflow-continuity-dock.css`, leaving `app.tsx` to compose routes, shell chrome, route
+recovery, and the global workstation stylesheet while the dock owns its accessible links,
+operating-scope chips, and primary-operator-flow disclosure.
+Workspace navigation rail and drawer styles live in `src/styles/workspace-nav.css`, imported by
+`components/meridian/workspace-nav.tsx`, so root-workspace routing, preserved operating-scope chips,
+expand/collapse controls, status badges, and responsive drawer variants stay with the navigation
+component instead of the global workstation stylesheet.
+App-shell frame, skip-link, masthead, command-search trigger, trust-strip, session card, startup
+status, status-strip, and workbench scroll styles live in `src/styles/app-shell.css`, imported by
+`app.tsx`, so the global workstation stylesheet no longer owns root shell chrome.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
 Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
 Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
 Governance. Accounting only resolves its internal reporting workstream under `/accounting/reporting`,
 keeping close/accounting tasks distinct from governed report-output tasks.
+The Accounting task-mode route resolver, mode catalog, and launcher links live in
+`accounting-screen.task-mode-view-model.ts` so task-mode IA can evolve without adding more route
+state to `accounting-screen.view-model.ts`.
+Accounting-specific split-pane, reference-panel, and journal-entry workstation styles live in
+`src/styles/accounting-screen.css`, imported by `accounting-screen.tsx`, keeping route styling out of
+the shared workstation stylesheet.
+Command palette shell, chip, status, and group styles live in `src/styles/command-palette.css`,
+imported after shared tokens in `main.tsx`, so the global workstation stylesheet no longer owns the
+palette overlay rules.
+Workspace filter bar, tab strip, inspector host, and document canvas primitive styles live in
+`src/styles/workspace-primitives.css`, imported by `workspace-primitives.tsx`, so the global
+workstation stylesheet does not own primitive-specific accessibility surface styling.
+Shared toolbar strip, dense data table, and entity-summary primitive styles live in
+`src/styles/ui-kit-primitives.css`, imported by `ui-kit-primitives.tsx`, keeping dense table
+keyboard/accessibility behavior and visual ownership in the same component module.
+Dense row-detail panel styles live in `src/styles/dense-row-detail-accessibility.css`, imported by
+`dense-row-detail-accessibility.tsx`, so row/detail focus handoff, labelled regions, selected-source
+badges, and panel chrome stay owned by the accessibility primitive instead of the global stylesheet.
 Reporting exposes route-owned task modes as Daily Reporting Cockpit, Report Builder, Run Status,
 Delivery Evidence, Exports, and Governance. `/reporting` is the Daily Reporting Cockpit landing
 route and stops at the daily decision queue plus focused task-mode links instead of rendering the
@@ -1066,14 +1120,20 @@ approval workflow panel while presenting as Delivery Evidence, `/reporting/expor
 export artifacts, and `/reporting/governance` owns access, approval, lifecycle, and audit controls.
 Each queued daily item exposes blocked status, owner, affected output, next action, and proof or
 evidence posture so browser Reporting matches the WPF cockpit decision model.
+The Reporting task-mode resolver, report-pack route detector, and launcher links live in
+`reporting-screen.task-mode-view-model.ts`, keeping the daily-cockpit IA out of the broader
+reporting view model.
 Financial Record Explorer drawers now render the shared Number Passport component for the selected
 record, carrying source, freshness, reconciliation, approvals, report usage, blockers, evidence
 packet, and audit-trail facts through the Accounting, Portfolio, Security Instrument, and Reporting
 provenance surfaces. DTO-backed explorers also restore `frexExplorer`, `frexView`, `frexSearch`,
-`frexFilter`, and `frexRecord` query state, emit a `Share view` link for the selected saved view,
-search, explicit filters, and proof record, and require operators to supply stable saved-view names
-instead of timestamp-only labels, keeping browser FREX review URLs portable without duplicating
-saved-view storage in React.
+`frexFilter`, and `frexRecord` query state, emit a `Share state` link whose accessible name names
+the selected saved view, search text, explicit filters, and proof record when present, and require
+operators to supply stable saved-view names instead of timestamp-only labels, keeping browser FREX
+review URLs portable without duplicating saved-view storage in React.
+FREX route-query parsing, filter restoration, share-link serialization, and accessible share-state
+summaries live in `financial-record-explorer.view-state.ts` so the React shell stays focused on DTO
+rendering and Number Passport proof presentation.
 
 ## Diagrams
 

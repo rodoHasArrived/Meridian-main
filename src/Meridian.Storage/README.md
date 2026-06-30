@@ -95,9 +95,11 @@ decisions, while Application consumes those services through the shared contract
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
 for historical analysis, backtesting, and paper-validation preparation. The `Archival` preset keeps
-long-retention evidence moving through hot, warm, cold, and archive tiers. `Config/StorageConfigExtensions.cs`
-keeps the shared AppConfig storage section-to-`StorageOptions` mapping in the same project that owns
-the durable storage option types and profile presets.
+long-retention evidence moving through hot, warm, cold, and archive tiers. Tier migration verifies
+copied payload checksums before deleting source evidence when a rollover is configured to move
+rather than copy files. `Config/StorageConfigExtensions.cs` keeps the shared AppConfig storage
+section-to-`StorageOptions` mapping in the same project that owns the durable storage option types
+and profile presets.
 
 Canonical symbol resolution is Storage-owned because it wraps the durable symbol registry and its
 identifier indexes. Application composition registers the Storage implementation behind

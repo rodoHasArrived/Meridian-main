@@ -40,15 +40,16 @@ auth-required startup rejects non-HTTPS bindings unless
 `AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
 separately from the service.
 
-Hosted brokerage composition registers concrete Alpaca and Interactive Brokers gateways by keyed
-runtime ID (`alpaca`, `ib`, `ibkr`) and registers StockSharp only when the connector runtime type is
-present. `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted registration surface for
-Alpaca, Interactive Brokers, the `ibkr` alias, and optional StockSharp: concrete gateway type,
-declared gateway id, runtime-key match status, account/portfolio/activity sync support,
-order-modification and partial-fill capability, supported asset classes, validation issues, and
-missing-runtime notes. This is offline DI/runtime surface validation; it does not connect to live
-broker APIs or prove credentialed trading readiness. Do not add placeholder StockSharp services
-when the connector package is absent. Host order routing remains paper-first by default: brokerage
+Hosted brokerage composition registers concrete Alpaca, Interactive Brokers, and Robinhood gateways
+by keyed runtime ID (`alpaca`, `ib`, `ibkr`, `robinhood`) and registers StockSharp only when the
+connector runtime type is present. `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted
+registration surface for Alpaca, Interactive Brokers, the `ibkr` alias, Robinhood, and optional
+StockSharp: concrete gateway type, declared gateway id, runtime-key match status,
+account/portfolio/activity sync support, order-modification and partial-fill capability, supported
+asset classes, validation issues, and missing-runtime notes. This is offline DI/runtime surface
+validation; it does not connect to live broker APIs or prove credentialed trading readiness. Do not
+add placeholder StockSharp services when the connector package is absent. Host order routing remains
+paper-first by default: brokerage
 execution resolves to paper gateways unless live execution is explicitly enabled, and Paper -> Live
 promotion claims must be tied to execution-governance audit or manual-override evidence before they
 are presented as readiness evidence.

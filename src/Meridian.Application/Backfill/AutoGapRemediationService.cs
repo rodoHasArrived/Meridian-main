@@ -161,8 +161,7 @@ public sealed class AutoGapRemediationService : IDisposable
                          candidate.Provider,
                          candidate.From,
                          candidate.To,
-                         candidate.Source,
-                         candidate.Reason))
+                         candidate.Source))
                      .OrderBy(static group => group.Key.From)
                      .ThenBy(static group => group.Key.To)
                      .ThenBy(static group => group.Key.Provider, StringComparer.OrdinalIgnoreCase))
@@ -172,6 +171,7 @@ public sealed class AutoGapRemediationService : IDisposable
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(static symbol => symbol, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+            var gapSize = group.Sum(static candidate => Math.Max(candidate.GapSize, 1));
 
             await EnqueueRemediationAsync(
                 symbols,
@@ -179,8 +179,8 @@ public sealed class AutoGapRemediationService : IDisposable
                 group.Key.To,
                 group.Key.Provider,
                 group.Key.Source,
-                group.Key.Reason,
-                group.Sum(static candidate => Math.Max(candidate.GapSize, 1)),
+                BuildBatchedReason(group.Select(static candidate => candidate.Reason)),
+                gapSize,
                 ct).ConfigureAwait(false);
         }
     }
@@ -324,6 +324,22 @@ public sealed class AutoGapRemediationService : IDisposable
     private static string BuildIdempotencyKey(IReadOnlyList<string> symbols, string provider, DateOnly from, DateOnly to)
         => $"{string.Join(",", symbols)}|{provider.ToLowerInvariant()}|{from:yyyy-MM-dd}|{to:yyyy-MM-dd}";
 
+    private static string BuildBatchedReason(IEnumerable<string> reasons)
+    {
+        var distinctReasons = reasons
+            .Where(static reason => !string.IsNullOrWhiteSpace(reason))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static reason => reason, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return distinctReasons.Length switch
+        {
+            0 => "batch",
+            1 => distinctReasons[0],
+            _ => string.Join("|", distinctReasons)
+        };
+    }
+
     private static bool IsCoolingDown(ConcurrentDictionary<string, DateTimeOffset> state, string key, TimeSpan cooldown, DateTimeOffset now)
         => state.TryGetValue(key, out var lastAttempt) && (now - lastAttempt) < cooldown;
 
@@ -390,6 +406,5 @@ public sealed class AutoGapRemediationService : IDisposable
         string Provider,
         DateOnly From,
         DateOnly To,
-        AutoRemediationTriggerSource Source,
-        string Reason);
+        AutoRemediationTriggerSource Source);
 }

@@ -59,10 +59,10 @@ public sealed class ProviderDegradationScorer : IDisposable
     /// </summary>
     public void RecordError(string providerName, string errorType)
     {
-        if (_isDisposed || string.IsNullOrEmpty(providerName))
+        if (_isDisposed || !ProviderMonitoringIdentity.TryNormalize(providerName, out var normalizedProvider))
             return;
 
-        var tracker = _errorTrackers.GetOrAdd(providerName, _ => new ProviderErrorTracker(_config.ErrorWindowSeconds));
+        var tracker = _errorTrackers.GetOrAdd(normalizedProvider, _ => new ProviderErrorTracker(_config.ErrorWindowSeconds));
         tracker.RecordError(errorType);
     }
 
@@ -71,10 +71,10 @@ public sealed class ProviderDegradationScorer : IDisposable
     /// </summary>
     public void RecordSuccess(string providerName)
     {
-        if (_isDisposed || string.IsNullOrEmpty(providerName))
+        if (_isDisposed || !ProviderMonitoringIdentity.TryNormalize(providerName, out var normalizedProvider))
             return;
 
-        var tracker = _errorTrackers.GetOrAdd(providerName, _ => new ProviderErrorTracker(_config.ErrorWindowSeconds));
+        var tracker = _errorTrackers.GetOrAdd(normalizedProvider, _ => new ProviderErrorTracker(_config.ErrorWindowSeconds));
         tracker.RecordSuccess();
     }
 
@@ -84,11 +84,16 @@ public sealed class ProviderDegradationScorer : IDisposable
     /// </summary>
     public ProviderDegradationScore GetScore(string providerName)
     {
-        var connectionStatus = _healthMonitor.GetConnectionStatusByProvider(providerName);
-        var latencyHistogram = _latencyService.GetHistogram(providerName);
-        _errorTrackers.TryGetValue(providerName, out var errorTracker);
+        if (!ProviderMonitoringIdentity.TryNormalize(providerName, out var normalizedProvider))
+        {
+            return ComputeScore(providerName ?? string.Empty, null, null, null);
+        }
 
-        return ComputeScore(providerName, connectionStatus, latencyHistogram, errorTracker);
+        var connectionStatus = _healthMonitor.GetConnectionStatusByProvider(normalizedProvider);
+        var latencyHistogram = _latencyService.GetHistogram(normalizedProvider);
+        _errorTrackers.TryGetValue(normalizedProvider, out var errorTracker);
+
+        return ComputeScore(normalizedProvider, connectionStatus, latencyHistogram, errorTracker);
     }
 
     /// <summary>
@@ -100,9 +105,26 @@ public sealed class ProviderDegradationScorer : IDisposable
         var providerNames = new HashSet<string>();
 
         foreach (var conn in healthSnapshot.Connections)
-            providerNames.Add(conn.ProviderName);
+        {
+            if (ProviderMonitoringIdentity.TryNormalize(conn.ProviderName, out var normalizedProvider))
+            {
+                providerNames.Add(normalizedProvider);
+            }
+        }
+        foreach (var histogram in _latencyService.GetAllHistograms())
+        {
+            if (ProviderMonitoringIdentity.TryNormalize(histogram.Provider, out var normalizedProvider))
+            {
+                providerNames.Add(normalizedProvider);
+            }
+        }
         foreach (var key in _errorTrackers.Keys)
-            providerNames.Add(key);
+        {
+            if (ProviderMonitoringIdentity.TryNormalize(key, out var normalizedProvider))
+            {
+                providerNames.Add(normalizedProvider);
+            }
+        }
 
         var scores = new List<ProviderDegradationScore>();
         foreach (var name in providerNames)
@@ -139,7 +161,6 @@ public sealed class ProviderDegradationScorer : IDisposable
         ProviderLatencyHistogram? latencyHistogram,
         ProviderErrorTracker? errorTracker)
     {
-        var decisionReasons = new List<DecisionReason>(capacity: 4);
         // Component 1: Connection health (0.0 = healthy, 1.0 = disconnected)
         double connectionScore = 0.0;
         if (connectionStatus.HasValue)
@@ -148,40 +169,11 @@ public sealed class ProviderDegradationScorer : IDisposable
             if (!conn.IsConnected)
             {
                 connectionScore = 1.0;
-                var connectionContribution = connectionScore * _config.ConnectionWeight;
-                decisionReasons.Add(new DecisionReason(
-                    RuleId: "provider-degradation.connection-connectivity",
-                    Weight: connectionContribution,
-                    ReasonCode: "CONNECTION_DISCONNECTED",
-                    HumanExplanation: "Provider connection is disconnected.",
-                    Severity: DecisionSeverity.Critical,
-                    EvidenceRefs:
-                    [
-                        $"provider:{providerName}",
-                        $"component-score:{connectionScore:F4}",
-                        $"coefficient:{_config.ConnectionWeight:F4}"
-                    ]));
             }
             else
             {
                 // Missed heartbeats contribute to degradation
                 connectionScore = Math.Min(1.0, conn.MissedHeartbeats / (double)_config.MaxMissedHeartbeatsForFullDegradation);
-                if (connectionScore > 0)
-                {
-                    var connectionContribution = connectionScore * _config.ConnectionWeight;
-                    decisionReasons.Add(new DecisionReason(
-                        RuleId: "provider-degradation.connection-heartbeats",
-                        Weight: connectionContribution,
-                        ReasonCode: "MISSED_HEARTBEATS",
-                        HumanExplanation: $"Provider missed {conn.MissedHeartbeats} heartbeat(s).",
-                        Severity: DecisionSeverity.Warning,
-                        EvidenceRefs:
-                        [
-                            $"provider:{providerName}",
-                            $"component-score:{connectionScore:F4}",
-                            $"coefficient:{_config.ConnectionWeight:F4}"
-                        ]));
-                }
             }
         }
 
@@ -194,19 +186,6 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 latencyScore = Math.Min(1.0,
                     (p95 - _config.LatencyThresholdMs) / (_config.LatencyMaxMs - _config.LatencyThresholdMs));
-                var latencyContribution = latencyScore * _config.LatencyWeight;
-                decisionReasons.Add(new DecisionReason(
-                    RuleId: "provider-degradation.latency-p95",
-                    Weight: latencyContribution,
-                    ReasonCode: "LATENCY_P95_HIGH",
-                    HumanExplanation: $"P95 latency {p95:F1}ms exceeded threshold {_config.LatencyThresholdMs:F1}ms.",
-                    Severity: DecisionSeverity.Warning,
-                    EvidenceRefs:
-                    [
-                        $"p95-latency-ms:{p95:F1}",
-                        $"component-score:{latencyScore:F4}",
-                        $"coefficient:{_config.LatencyWeight:F4}"
-                    ]));
             }
         }
 
@@ -220,19 +199,6 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 errorScore = Math.Min(1.0,
                     (errorRate - _config.ErrorRateThreshold) / (1.0 - _config.ErrorRateThreshold));
-                var errorContribution = errorScore * _config.ErrorRateWeight;
-                decisionReasons.Add(new DecisionReason(
-                    RuleId: "provider-degradation.error-rate",
-                    Weight: errorContribution,
-                    ReasonCode: "ERROR_RATE_HIGH",
-                    HumanExplanation: $"Error rate {errorRate:P1} exceeded threshold {_config.ErrorRateThreshold:P1}.",
-                    Severity: DecisionSeverity.Error,
-                    EvidenceRefs:
-                    [
-                        $"error-rate:{errorRate:F4}",
-                        $"component-score:{errorScore:F4}",
-                        $"coefficient:{_config.ErrorRateWeight:F4}"
-                    ]));
             }
         }
 
@@ -245,31 +211,38 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 var reconnectsPerHour = connectionStatus.Value.ReconnectCount / uptimeHours;
                 reconnectScore = Math.Min(1.0, reconnectsPerHour / _config.MaxReconnectsPerHour);
-                if (reconnectScore > 0)
-                {
-                    var reconnectContribution = reconnectScore * _config.ReconnectWeight;
-                    decisionReasons.Add(new DecisionReason(
-                        RuleId: "provider-degradation.reconnect-frequency",
-                        Weight: reconnectContribution,
-                        ReasonCode: "RECONNECT_RATE_HIGH",
-                        HumanExplanation: $"Reconnect frequency {reconnectsPerHour:F2}/hr indicates unstable connectivity.",
-                        Severity: DecisionSeverity.Warning,
-                        EvidenceRefs:
-                        [
-                            $"reconnects-per-hour:{reconnectsPerHour:F2}",
-                            $"component-score:{reconnectScore:F4}",
-                            $"coefficient:{_config.ReconnectWeight:F4}"
-                        ]));
-                }
             }
         }
 
-        // Weighted composite score
+        var weights = ResolveEffectiveWeights(connectionStatus, latencyHistogram, errorTracker);
+        var connectionContribution = connectionScore * weights.ConnectionWeight;
+        var latencyContribution = latencyScore * weights.LatencyWeight;
+        var errorContribution = errorScore * weights.ErrorRateWeight;
+        var reconnectContribution = reconnectScore * weights.ReconnectWeight;
+
+        var decisionReasons = BuildDecisionReasons(
+            providerName,
+            connectionStatus,
+            latencyHistogram,
+            errorRate,
+            connectionScore,
+            latencyScore,
+            errorScore,
+            reconnectScore,
+            connectionContribution,
+            latencyContribution,
+            errorContribution,
+            reconnectContribution,
+            weights);
+
+        // Weighted composite score. Request-only providers have no connection
+        // signal, so rebalance across the available latency/error evidence instead
+        // of capping severe secondary-provider failures below the threshold.
         var composite =
-            connectionScore * _config.ConnectionWeight +
-            latencyScore * _config.LatencyWeight +
-            errorScore * _config.ErrorRateWeight +
-            reconnectScore * _config.ReconnectWeight;
+            connectionContribution +
+            latencyContribution +
+            errorContribution +
+            reconnectContribution;
 
         composite = Math.Clamp(composite, 0.0, 1.0);
         var decision = new DecisionResult<double>(
@@ -283,14 +256,15 @@ public sealed class ProviderDegradationScorer : IDisposable
                 Metadata: new Dictionary<string, string?>
                 {
                     ["kernel"] = "provider-degradation",
-                    ["provider"] = providerName
+                    ["provider"] = providerName,
+                    ["scoring-mode"] = weights.ScoringMode
                 }));
 
         var scoreReasons = BuildReasons(
-            connectionScore * _config.ConnectionWeight,
-            latencyScore * _config.LatencyWeight,
-            errorScore * _config.ErrorRateWeight,
-            reconnectScore * _config.ReconnectWeight);
+            connectionContribution,
+            latencyContribution,
+            errorContribution,
+            reconnectContribution);
 
         return new ProviderDegradationScore(
             ProviderName: providerName,
@@ -307,6 +281,149 @@ public sealed class ProviderDegradationScorer : IDisposable
             EvaluatedAt: decision.Trace.EvaluatedAt,
             Decision: decision);
     }
+
+    private EffectiveWeights ResolveEffectiveWeights(
+        ConnectionStatus? connectionStatus,
+        ProviderLatencyHistogram? latencyHistogram,
+        ProviderErrorTracker? errorTracker)
+    {
+        if (connectionStatus.HasValue)
+        {
+            return new EffectiveWeights(
+                _config.ConnectionWeight,
+                _config.LatencyWeight,
+                _config.ErrorRateWeight,
+                _config.ReconnectWeight,
+                "connection-aware");
+        }
+
+        var availableWeight = 0.0;
+        if (latencyHistogram is not null)
+        {
+            availableWeight += _config.LatencyWeight;
+        }
+
+        if (errorTracker is not null)
+        {
+            availableWeight += _config.ErrorRateWeight;
+        }
+
+        if (availableWeight <= 0)
+        {
+            return new EffectiveWeights(0, 0, 0, 0, "no-evidence");
+        }
+
+        return new EffectiveWeights(
+            ConnectionWeight: 0,
+            LatencyWeight: latencyHistogram is not null ? _config.LatencyWeight / availableWeight : 0,
+            ErrorRateWeight: errorTracker is not null ? _config.ErrorRateWeight / availableWeight : 0,
+            ReconnectWeight: 0,
+            ScoringMode: "request-only");
+    }
+
+    private IReadOnlyList<DecisionReason> BuildDecisionReasons(
+        string providerName,
+        ConnectionStatus? connectionStatus,
+        ProviderLatencyHistogram? latencyHistogram,
+        double errorRate,
+        double connectionScore,
+        double latencyScore,
+        double errorScore,
+        double reconnectScore,
+        double connectionContribution,
+        double latencyContribution,
+        double errorContribution,
+        double reconnectContribution,
+        EffectiveWeights weights)
+    {
+        var decisionReasons = new List<DecisionReason>(capacity: 4);
+
+        if (connectionScore > 0 && connectionStatus.HasValue)
+        {
+            var isDisconnected = !connectionStatus.Value.IsConnected;
+            decisionReasons.Add(new DecisionReason(
+                RuleId: isDisconnected
+                    ? "provider-degradation.connection-connectivity"
+                    : "provider-degradation.connection-heartbeats",
+                Weight: connectionContribution,
+                ReasonCode: isDisconnected ? "CONNECTION_DISCONNECTED" : "MISSED_HEARTBEATS",
+                HumanExplanation: isDisconnected
+                    ? "Provider connection is disconnected."
+                    : $"Provider missed {connectionStatus.Value.MissedHeartbeats} heartbeat(s).",
+                Severity: isDisconnected ? DecisionSeverity.Critical : DecisionSeverity.Warning,
+                EvidenceRefs:
+                [
+                    $"provider:{providerName}",
+                    $"component-score:{connectionScore:F4}",
+                    $"coefficient:{weights.ConnectionWeight:F4}",
+                    $"scoring-mode:{weights.ScoringMode}"
+                ]));
+        }
+
+        if (latencyScore > 0 && latencyHistogram is not null)
+        {
+            decisionReasons.Add(new DecisionReason(
+                RuleId: "provider-degradation.latency-p95",
+                Weight: latencyContribution,
+                ReasonCode: "LATENCY_P95_HIGH",
+                HumanExplanation: $"P95 latency {latencyHistogram.P95Ms:F1}ms exceeded threshold {_config.LatencyThresholdMs:F1}ms.",
+                Severity: DecisionSeverity.Warning,
+                EvidenceRefs:
+                [
+                    $"provider:{providerName}",
+                    $"p95-latency-ms:{latencyHistogram.P95Ms:F1}",
+                    $"component-score:{latencyScore:F4}",
+                    $"coefficient:{weights.LatencyWeight:F4}",
+                    $"scoring-mode:{weights.ScoringMode}"
+                ]));
+        }
+
+        if (errorScore > 0)
+        {
+            decisionReasons.Add(new DecisionReason(
+                RuleId: "provider-degradation.error-rate",
+                Weight: errorContribution,
+                ReasonCode: "ERROR_RATE_HIGH",
+                HumanExplanation: $"Error rate {errorRate:P1} exceeded threshold {_config.ErrorRateThreshold:P1}.",
+                Severity: DecisionSeverity.Error,
+                EvidenceRefs:
+                [
+                    $"provider:{providerName}",
+                    $"error-rate:{errorRate:F4}",
+                    $"component-score:{errorScore:F4}",
+                    $"coefficient:{weights.ErrorRateWeight:F4}",
+                    $"scoring-mode:{weights.ScoringMode}"
+                ]));
+        }
+
+        if (reconnectScore > 0 && connectionStatus.HasValue)
+        {
+            var reconnectsPerHour = connectionStatus.Value.ReconnectCount / connectionStatus.Value.UptimeDuration.TotalHours;
+            decisionReasons.Add(new DecisionReason(
+                RuleId: "provider-degradation.reconnect-frequency",
+                Weight: reconnectContribution,
+                ReasonCode: "RECONNECT_RATE_HIGH",
+                HumanExplanation: $"Reconnect frequency {reconnectsPerHour:F2}/hr indicates unstable connectivity.",
+                Severity: DecisionSeverity.Warning,
+                EvidenceRefs:
+                [
+                    $"provider:{providerName}",
+                    $"reconnects-per-hour:{reconnectsPerHour:F2}",
+                    $"component-score:{reconnectScore:F4}",
+                    $"coefficient:{weights.ReconnectWeight:F4}",
+                    $"scoring-mode:{weights.ScoringMode}"
+                ]));
+        }
+
+        return decisionReasons;
+    }
+
+    private readonly record struct EffectiveWeights(
+        double ConnectionWeight,
+        double LatencyWeight,
+        double ErrorRateWeight,
+        double ReconnectWeight,
+        string ScoringMode);
 
     /// <summary>
     /// Computes score and reason-code deltas between two score snapshots.

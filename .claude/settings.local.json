@@ -36,7 +36,11 @@
       "PowerShell(\"=== git status --short \\(current\\) ===\")",
       "PowerShell(\"=== git ls-files -u \\(unmerged index entries\\) ===\")",
       "PowerShell(\"=== status long header ===\")",
-      "Bash(\"C:/Program Files/Git/cmd/git.exe\" --no-pager show 2dc164612 --format= -- \"src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs\")"
+      "Bash(\"C:/Program Files/Git/cmd/git.exe\" --no-pager show 2dc164612 --format= -- \"src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs\")",
+      "Bash(ls -la ~/ 2>/dev/null | head -40; echo \"---SCRATCHPAD---\"; ls -la \"/c/Users/Andrew James Rowden/AppData/Local/Temp/claude/D--Meridian-main/\" 2>/dev/null | head -40)",
+      "Bash(where node *)",
+      "Bash(grep -q \"tsc exit\" \"C:/Users/Andrew James Rowden/AppData/Local/Temp/claude/D--Meridian-main/a7633422-7001-43ac-9e0e-f5bdc7160040/tasks/bxlofes5e.output\")",
+      "Bash(break)"
     ]
   }
 }

@@ -100,10 +100,10 @@ The storage layer currently delivers:
 | Storage search & discovery | ✅ Implemented | `StorageSearchService`, `StorageCatalogService` |
 | Rich metadata & lineage | ✅ Implemented | `MetadataTagService`, `DataLineageService` |
 | Maintenance scheduling | ✅ Implemented | `ScheduledArchiveMaintenanceService` |
-| Cross-source reconciliation | 🔄 Partial | `DataQualityService`, cross-provider comparisons |
+| Cross-source reconciliation | 🔄 Partial | `DataQualityService`, cross-provider comparisons, `CrossSourceBackfillReconciliationService` |
 | Natural language query parser | ✅ Implemented | `StorageSearchService` |
 | Capacity forecasting | ✅ Implemented | `StorageEndpoints` |
-| Adaptive partitioning | ⏳ Planned | — |
+| Adaptive partitioning | 🔄 Partial | `BackfillPartitionPlanner`, `BackfillCostEstimator`, `HistoricalBackfillService` |
 
 `SourceRegistry`, `MetadataTagService`, and `DataLineageService` now treat persistence as part of the mutation boundary rather than a deferred background task. Their writes complete through `AtomicFileWriter` before the mutating call returns, save failures surface to the caller, and the metadata/lineage JSON stores use ADR-014 source-generated serializer contexts instead of ad-hoc `JsonSerializerOptions`.
 
@@ -124,8 +124,11 @@ retains:
   workflow.
 
 This is an evidence boundary, not a guarantee that a full cross-provider SLA engine is implemented.
-Cross-source reconciliation remains partial, and adaptive partitioning remains planned as listed in
-the implementation status table.
+Cross-source reconciliation now includes bounded daily backfill comparison through
+`CrossSourceBackfillReconciliationService`, but remains partial until it is wired into provider
+governance, SLA timers, and archival promotion gates. Adaptive backfill partition planning is now
+covered by preview-time cost estimation and bounded runtime execution; storage-engine archival
+promotion and governance timers remain separate implementation lanes.
 
 ### Storage Profiles (Presets)
 Storage profiles are optional presets that map to existing storage options without removing advanced configuration.
@@ -928,6 +931,10 @@ record MigrationOptions(
     Action<MigrationProgress>? OnProgress
 );
 ```
+
+When `VerifyChecksum` is enabled, migration verifies the logical payload after copy, including
+decompressing gzip warm-tier targets before comparison. Source evidence is deleted only after that
+verification succeeds.
 
 ### 4. Unified Query Layer
 
@@ -3088,9 +3095,10 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 
 - [x] Implement self-healing repair capabilities
 - [x] Add orphan detection and cleanup
-- [ ] Build cross-source reconciliation
+- [x] Build bounded daily backfill cross-source reconciliation
 - [x] Create capacity forecasting
-- [ ] Add adaptive partitioning
+- [x] Add adaptive backfill partition planning
+- [ ] Add storage-engine adaptive partition placement
 - [ ] Implement emergency override system
 
 **Exit criteria:**

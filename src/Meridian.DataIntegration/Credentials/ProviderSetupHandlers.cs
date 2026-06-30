@@ -244,6 +244,13 @@ public static class DefaultProviderSetupHandlers
             new PolygonProviderSetupHandler(),
             new PlaidProviderSetupHandler(),
             new QuickBooksProviderSetupHandler(),
+            new GenericReadOnlyDataProviderSetupHandler("finnhub"),
+            new GenericReadOnlyDataProviderSetupHandler("tiingo"),
+            new GenericReadOnlyDataProviderSetupHandler("alphavantage", aliases: ["alpha-vantage", "alphaVantage"]),
+            new GenericReadOnlyDataProviderSetupHandler("nasdaqdatalink", aliases: ["nasdaq", "nasdaq-data-link"]),
+            new GenericReadOnlyDataProviderSetupHandler("twelvedata", aliases: ["twelve-data", "twelvedata-api"]),
+            new GenericReadOnlyDataProviderSetupHandler("openfigi", aliases: ["open-figi", "openfigi-api"]),
+            new GenericReadOnlyDataProviderSetupHandler("stooq"),
             new GenericReadOnlyDataProviderSetupHandler("yahoo", DataSourceKind.Yahoo, ["yahoo-finance", "yahoofinance"]),
             new GenericReadOnlyDataProviderSetupHandler("synthetic", DataSourceKind.Synthetic, ["custom"])
         ];

@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Threading;
 using Meridian.Storage.Interfaces;
 
@@ -316,16 +317,41 @@ public sealed class TierMigrationService : ITierMigrationService
 
     private async Task CopyWithVerificationAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
     {
-        // Compute source checksum
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
-        await using var sourceStream = File.OpenRead(source);
-        var sourceHash = await sha256.ComputeHashAsync(sourceStream, ct);
-        sourceStream.Position = 0;
+        var sourceHash = await ComputeSourceHashAsync(source, ct).ConfigureAwait(false);
 
         // Copy file
-        await CopyFileAsync(source, target, tierConfig, ct);
+        await CopyFileAsync(source, target, tierConfig, ct).ConfigureAwait(false);
 
-        // Verification of compressed files would need decompression.
+        var targetHash = await ComputeMigratedPayloadHashAsync(target, tierConfig, ct).ConfigureAwait(false);
+        if (!sourceHash.AsSpan().SequenceEqual(targetHash))
+        {
+            File.Delete(target);
+            throw new IOException($"Checksum verification failed while migrating '{source}' to '{target}'.");
+        }
+    }
+
+    private static async Task<byte[]> ComputeSourceHashAsync(string source, CancellationToken ct)
+    {
+        using var sha256 = SHA256.Create();
+        await using var sourceStream = File.OpenRead(source);
+        return await sha256.ComputeHashAsync(sourceStream, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<byte[]> ComputeMigratedPayloadHashAsync(
+        string target,
+        TierConfig tierConfig,
+        CancellationToken ct)
+    {
+        using var sha256 = SHA256.Create();
+        await using var targetStream = File.OpenRead(target);
+
+        if (tierConfig.Compression == CompressionCodec.Gzip)
+        {
+            await using var gzip = new GZipStream(targetStream, CompressionMode.Decompress);
+            return await sha256.ComputeHashAsync(gzip, ct).ConfigureAwait(false);
+        }
+
+        return await sha256.ComputeHashAsync(targetStream, ct).ConfigureAwait(false);
     }
 
     private static string ApplyCompressionExtension(string targetPath, string extension)

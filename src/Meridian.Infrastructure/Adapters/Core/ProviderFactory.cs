@@ -374,6 +374,18 @@ public sealed class ProviderFactory
         // Finnhub Symbol Search (uses same credentials as Finnhub backfill)
         TryAddSearchProvider(providers, () => CreateFinnhubSearchProvider(backfillProviders?.Finnhub));
 
+        // Tiingo Symbol Search (uses same credentials as Tiingo backfill)
+        TryAddSearchProvider(providers, () => CreateTiingoSearchProvider(backfillProviders?.Tiingo));
+
+        // Alpha Vantage Symbol Search (uses same credentials as Alpha Vantage backfill)
+        TryAddSearchProvider(providers, () => CreateAlphaVantageSearchProvider(backfillProviders?.AlphaVantage));
+
+        // Twelve Data Symbol Search (uses same credentials as Twelve Data backfill)
+        TryAddSearchProvider(providers, CreateTwelveDataSearchProvider);
+
+        // FRED Symbol Search (uses same credentials as FRED backfill)
+        TryAddSearchProvider(providers, () => CreateFredSearchProvider(backfillProviders?.Fred));
+
         // Polygon Symbol Search (uses same credentials as Polygon backfill)
         TryAddSearchProvider(providers, () => CreatePolygonSearchProvider(backfillProviders?.Polygon));
 
@@ -439,6 +451,61 @@ public sealed class ProviderFactory
             return null;
 
         return new FinnhubSymbolSearchProviderRefactored(apiKey, httpClient: null, log: _log);
+    }
+
+    private ISymbolSearchProvider? CreateTiingoSearchProvider(TiingoBackfillConfig? cfg)
+    {
+        // Enabled by default if config is null (credential-based activation)
+        if (cfg != null && !cfg.Enabled)
+            return null;
+
+        var credentials = CreateCredentialContext<TiingoHistoricalDataProvider>(
+            ("TIINGO_API_TOKEN", cfg?.ApiToken));
+        var token = credentials.Get("TIINGO_API_TOKEN");
+        if (string.IsNullOrEmpty(token))
+            return null;
+
+        return new TiingoSymbolSearchProvider(token, httpClient: null, log: _log);
+    }
+
+    private ISymbolSearchProvider? CreateAlphaVantageSearchProvider(AlphaVantageBackfillConfig? cfg)
+    {
+        // Keep Alpha Vantage opt-in to avoid consuming the constrained free-tier quota implicitly.
+        if (!(cfg?.Enabled ?? false))
+            return null;
+
+        var credentials = CreateCredentialContext<AlphaVantageHistoricalDataProvider>(
+            ("ALPHA_VANTAGE_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("ALPHA_VANTAGE_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+            return null;
+
+        return new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log);
+    }
+
+    private ISymbolSearchProvider? CreateTwelveDataSearchProvider()
+    {
+        var credentials = CreateCredentialContext<TwelveDataHistoricalDataProvider>(
+            ("TWELVEDATA_API_KEY", null));
+        var apiKey = credentials.Get("TWELVEDATA_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+            return null;
+
+        return new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log);
+    }
+
+    private ISymbolSearchProvider? CreateFredSearchProvider(FredBackfillConfig? cfg)
+    {
+        if (cfg != null && !cfg.Enabled)
+            return null;
+
+        var credentials = CreateCredentialContext<FredHistoricalDataProvider>(
+            ("FRED_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("FRED_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+            return null;
+
+        return new FredSymbolSearchProvider(apiKey, httpClient: null, log: _log);
     }
 
     private ISymbolSearchProvider? CreatePolygonSearchProvider(PolygonBackfillConfig? cfg)

@@ -132,32 +132,39 @@ public sealed class AutoGapRemediationServiceTests
                 DefaultProvider: "stooq"));
 
         var gapDate = new DateOnly(2026, 06, 29);
+        var laterGapDate = gapDate.AddDays(7);
         var scanResult = new StorageGapAnalysisResult
         {
             FromDate = gapDate,
-            ToDate = gapDate,
+            ToDate = laterGapDate,
             Granularity = DataGranularity.Daily,
             SymbolGaps =
             {
-                ["msft"] = BuildSingleDayGap("msft", gapDate),
-                ["AAPL"] = BuildSingleDayGap("AAPL", gapDate)
+                ["msft"] = BuildGap("msft", gapDate, laterGapDate),
+                ["AAPL"] = BuildGap("AAPL", gapDate)
             }
         };
 
         await service.HandleGapAnalysisResultAsync(scanResult, provider: "polygon");
 
-        var request = gateway.Requests.Should().ContainSingle().Subject;
+        gateway.Requests.Should().HaveCount(2);
+        var request = gateway.Requests.Should().ContainSingle(r => r.From == gapDate && r.To == gapDate).Subject;
         request.Provider.Should().Be("polygon");
         request.Symbols.Should().Equal("AAPL", "MSFT");
         request.From.Should().Be(gapDate);
         request.To.Should().Be(gapDate);
 
-        var execution = history.GetRecentExecutions(10).Should().ContainSingle().Subject;
+        var execution = history.GetRecentExecutions(10)
+            .Should()
+            .ContainSingle(e => e.FromDate == gapDate && e.ToDate == gapDate)
+            .Subject;
         execution.Symbols.Should().Equal("AAPL", "MSFT");
         execution.Status.Should().Be(ExecutionStatus.Completed);
         execution.Statistics.TotalSymbols.Should().Be(2);
         execution.Statistics.SuccessfulSymbols.Should().Be(2);
         execution.AutoRemediationIdempotencyKey.Should().Be("AAPL,MSFT|polygon|2026-06-29|2026-06-29");
+        execution.AutoRemediationTriggerReason.Should().Contain("scan:Daily:1");
+        execution.AutoRemediationTriggerReason.Should().Contain("scan:Daily:2");
         execution.Warnings.Should().Contain("source=GapAnalyzerScan");
         execution.Warnings.Should().Contain("provider=polygon");
     }
@@ -190,15 +197,17 @@ public sealed class AutoGapRemediationServiceTests
         }
     }
 
-    private static SymbolGapInfo BuildSingleDayGap(string symbol, DateOnly gapDate)
+    private static SymbolGapInfo BuildGap(string symbol, params DateOnly[] gapDates)
     {
-        return new SymbolGapInfo
+        var info = new SymbolGapInfo
         {
             Symbol = symbol,
-            FromDate = gapDate,
-            ToDate = gapDate,
-            HasGaps = true,
-            GapDates = { gapDate }
+            FromDate = gapDates.Min(),
+            ToDate = gapDates.Max(),
+            HasGaps = true
         };
+
+        info.GapDates.AddRange(gapDates);
+        return info;
     }
 }

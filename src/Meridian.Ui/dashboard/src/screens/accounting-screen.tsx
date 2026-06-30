@@ -1,6 +1,7 @@
 import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import "@/styles/accounting-screen.css";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -39,11 +40,14 @@ import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, Close
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
-  buildAccountingLoadingViewState,
   buildAccountingTaskMode,
+  resolveAccountingWorkstream,
+  type AccountingWorkstream
+} from "@/screens/accounting-screen.task-mode-view-model";
+import {
+  buildAccountingLoadingViewState,
   buildCloseCommandCenterViewState,
   buildAccountingWorkflowLaunchViewState,
-  resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingCloseReportPackageViewModel,
   useCapitalAccountWorkbenchViewModel,
@@ -59,7 +63,6 @@ import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-mo
 import type {
   CalibrationProfileRowViewModel,
   CalibrationSummaryViewModel,
-  AccountingWorkstream,
   AccountingConfigurationViewModel,
   AccountingRulesStudioPromotionReadinessViewModel,
   CapitalAccountWorkbenchViewModel,
@@ -68,6 +71,7 @@ import type {
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
   ReconciliationComparisonViewState,
+  ReconciliationLineItemViewModel,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
   ReconciliationStatementRunRowViewModel,
@@ -403,7 +407,133 @@ const accountingSystemEvidencePackageVariant = {
   Missing: "danger"
 } as const;
 
+const reconciliationComparisonToneClass: Record<ReconciliationLineItemViewModel["statusTone"], string> = {
+  success: "is-matched",
+  warning: "is-timing",
+  danger: "is-break"
+};
+
+type ReconciliationComparisonSide = "statement" | "ledger";
+
+type ReconciliationComparisonSelection = { matchKey: string; side: ReconciliationComparisonSide } | null;
+
+function ReconciliationComparisonPane({
+  heading,
+  ariaLabel,
+  side,
+  lines,
+  selection,
+  onSelect,
+  scrollRef,
+  onScroll
+}: {
+  heading: string;
+  ariaLabel: string;
+  side: ReconciliationComparisonSide;
+  lines: ReconciliationLineItemViewModel[];
+  selection: ReconciliationComparisonSelection;
+  onSelect: (matchKey: string, side: ReconciliationComparisonSide) => void;
+  scrollRef?: React.Ref<HTMLDivElement>;
+  onScroll?: () => void;
+}) {
+  const { matched, timing, breaks } = useMemo(() => {
+    let matchedCount = 0;
+    let timingCount = 0;
+    let breaksCount = 0;
+    for (const line of lines) {
+      if (line.statusTone === "success") {
+        matchedCount++;
+      } else if (line.statusTone === "warning") {
+        timingCount++;
+      } else if (line.statusTone === "danger") {
+        breaksCount++;
+      }
+    }
+    return { matched: matchedCount, timing: timingCount, breaks: breaksCount };
+  }, [lines]);
+
+  return (
+    <div className="reconcile-pane">
+      <div className="reconcile-pane-head">
+        <span className="reconcile-pane-title">{heading}</span>
+        <span className="reconcile-pane-chips">
+          <span className="reconcile-chip is-ok">{matched} matched</span>
+          {timing > 0 && <span className="reconcile-chip is-timing">{timing} timing</span>}
+          {breaks > 0 && <span className="reconcile-chip is-break">{`${breaks} break${breaks > 1 ? "s" : ""}`}</span>}
+        </span>
+      </div>
+      <div className="reconcile-pane-scroll" ref={scrollRef} onScroll={onScroll}>
+        <table className="reconcile-table" aria-label={ariaLabel}>
+          <thead>
+            <tr>
+              <th scope="col">{side === "statement" ? "Custodian / source" : "Ledger entry"}</th>
+              <th scope="col" className="num">{side === "statement" ? "Statement" : "Ledger"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.length === 0 && (
+              <tr>
+                <td colSpan={2} className="reconcile-empty">No reconciliation items to display</td>
+              </tr>
+            )}
+            {lines.map((line) => {
+              const isSelected = selection?.matchKey === line.matchKey && selection.side === side;
+              const isCrossLit = selection?.matchKey === line.matchKey && selection.side !== side;
+              return (
+                <tr
+                  key={line.id}
+                  className={cn(
+                    reconciliationComparisonToneClass[line.statusTone],
+                    isSelected && "is-selected",
+                    isCrossLit && "is-cross-lit"
+                  )}
+                  tabIndex={0}
+                  aria-selected={isSelected}
+                  aria-label={`${line.title} · ${line.statusLabel}`}
+                  onClick={() => onSelect(line.matchKey, side)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelect(line.matchKey, side);
+                    }
+                  }}
+                >
+                  <td>
+                    <div className="reconcile-row-title">{line.title}</div>
+                    <div className="reconcile-row-meta">{line.meta}</div>
+                  </td>
+                  <td className="num">{line.amountLabel}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function ReconciliationComparisonPanel({ view }: { view: ReconciliationComparisonViewState }) {
+  const [selection, setSelection] = useState<ReconciliationComparisonSelection>(null);
+  const statementScrollRef = useRef<HTMLDivElement>(null);
+  const ledgerScrollRef = useRef<HTMLDivElement>(null);
+
+  const handleSelect = (matchKey: string, side: ReconciliationComparisonSide) => {
+    setSelection((previous) =>
+      previous && previous.matchKey === matchKey && previous.side === side ? null : { matchKey, side }
+    );
+  };
+
+  // Keep the two panes vertically aligned: mirror the scroll position of whichever side moves.
+  // The equality guard stops the mirrored scroll from echoing back into an infinite loop.
+  const syncScroll = (source: ReconciliationComparisonSide) => {
+    const from = (source === "statement" ? statementScrollRef : ledgerScrollRef).current;
+    const to = (source === "statement" ? ledgerScrollRef : statementScrollRef).current;
+    if (from && to && to.scrollTop !== from.scrollTop) {
+      to.scrollTop = from.scrollTop;
+    }
+  };
+
   return (
     <section className="accounting-reference-panel" data-appearance="light" aria-label={view.ariaLabel}>
       <div className="accounting-reference-heading">
@@ -417,31 +547,27 @@ function ReconciliationComparisonPanel({ view }: { view: ReconciliationCompariso
         </div>
       </div>
 
-      <div className="accounting-reconciliation-grid">
-        <div className="accounting-reconciliation-column-heading">
-          <span>{view.statementHeading}</span>
-        </div>
-        <div className="accounting-reconciliation-column-heading">
-          <span>{view.ledgerHeading}</span>
-        </div>
-        {view.rows.map((row) => (
-          <div key={row.id} className="contents">
-            <div className={cn("accounting-reconciliation-cell", row.statusTone === "success" ? "is-matched" : "is-open")}>
-              <div className="min-w-0">
-                <div className="accounting-reconciliation-title">{row.statementTitle}</div>
-                <div className="accounting-reconciliation-meta">{row.statementMeta}</div>
-              </div>
-              <div className="accounting-reconciliation-value">{row.statementValue}</div>
-            </div>
-            <div className={cn("accounting-reconciliation-cell", row.statusTone === "success" ? "is-matched" : "is-open")}>
-              <div className="min-w-0">
-                <div className="accounting-reconciliation-title">{row.ledgerTitle}</div>
-                <div className="accounting-reconciliation-meta">{row.ledgerMeta}</div>
-              </div>
-              <div className="accounting-reconciliation-value">{row.ledgerValue}</div>
-            </div>
-          </div>
-        ))}
+      <div className="accounting-reconciliation-split">
+        <ReconciliationComparisonPane
+          heading={view.statementHeading}
+          ariaLabel={`${view.statementHeading} reconciliation lines`}
+          side="statement"
+          lines={view.statementLines}
+          selection={selection}
+          onSelect={handleSelect}
+          scrollRef={statementScrollRef}
+          onScroll={() => syncScroll("statement")}
+        />
+        <ReconciliationComparisonPane
+          heading={view.ledgerHeading}
+          ariaLabel={`${view.ledgerHeading} reconciliation lines`}
+          side="ledger"
+          lines={view.ledgerLines}
+          selection={selection}
+          onSelect={handleSelect}
+          scrollRef={ledgerScrollRef}
+          onScroll={() => syncScroll("ledger")}
+        />
       </div>
 
       <div className="accounting-balance-strip">
@@ -1495,7 +1621,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const normalizedAccountingPath = normalizeAccountingLandingPath(pathname);
   const isCloseCockpitLanding = normalizedAccountingPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedAccountingPath === "/governance";
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
-  const reconciliation = useAccountingReconciliationViewModel(data, workstream);
+  const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
+  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
@@ -1509,7 +1636,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
-  const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
   const [accountingSystemExportPackage, setAccountingSystemExportPackage] = useState<ExternalGlExportPackage | null>(null);
   const [accountingSystemExportManifest, setAccountingSystemExportManifest] = useState<ExternalGlExportPackageManifest | null>(null);

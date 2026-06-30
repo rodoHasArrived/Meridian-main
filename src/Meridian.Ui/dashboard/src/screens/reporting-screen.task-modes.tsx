@@ -1,39 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-
-const reportingTaskModeLinks = [
-  {
-    id: "report-builder",
-    label: "Report Builder",
-    description: "Design governed templates, report-writer grids, schedules, branding, and delivery history.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder
-  },
-  {
-    id: "run-status",
-    label: "Run Status",
-    description: "Review report-run queue posture, retries, generated grids, and approval blockers.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingRunStatus
-  },
-  {
-    id: "delivery-evidence",
-    label: "Delivery Evidence",
-    description: "Inspect report-pack recipients, proof bundles, publication support, and report-line provenance.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
-  },
-  {
-    id: "exports",
-    label: "Exports",
-    description: "Run governed exports, inspect generated artifacts, and retain manifest evidence.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingExports
-  },
-  {
-    id: "governance",
-    label: "Governance",
-    description: "Audit access scope, approval posture, lifecycle decisions, and retained controls.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingGovernance
-  }
-] as const;
+import { reportingTaskModeLauncherLinks } from "@/screens/reporting-screen.task-mode-view-model";
 
 export function ReportingTaskModeLauncher() {
   return (
@@ -52,7 +19,7 @@ export function ReportingTaskModeLauncher() {
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        {reportingTaskModeLinks.map((mode) => (
+        {reportingTaskModeLauncherLinks.map((mode) => (
           <Link
             key={mode.id}
             to={mode.href}

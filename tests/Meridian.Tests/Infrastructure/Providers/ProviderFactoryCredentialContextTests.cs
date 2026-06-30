@@ -12,6 +12,7 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Tests.Ui;
@@ -201,7 +202,10 @@ public sealed class ProviderFactoryCredentialContextTests
                     Providers: new BackfillProvidersConfig(
                         Alpaca: new AlpacaBackfillConfig(KeyId: null, SecretKey: null),
                         Polygon: new PolygonConfig(ApiKey: null),
-                        Finnhub: new FinnhubConfig(ApiKey: null)))),
+                        Tiingo: new TiingoConfig(ApiToken: null),
+                        Finnhub: new FinnhubConfig(ApiKey: null),
+                        Fred: new FredConfig(ApiKey: null),
+                        AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: null)))),
             resolver);
 
         var providers = factory.CreateSymbolSearchProviders();
@@ -212,11 +216,96 @@ public sealed class ProviderFactoryCredentialContextTests
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(FinnhubHistoricalDataProvider), ["FINNHUB_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(TiingoHistoricalDataProvider), ["TIINGO_API_TOKEN"]));
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(FredHistoricalDataProvider), ["FRED_API_KEY"]));
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(AlphaVantageHistoricalDataProvider), ["ALPHA_VANTAGE_API_KEY"]));
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(TwelveDataHistoricalDataProvider), ["TWELVEDATA_API_KEY"]));
+        resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(PolygonHistoricalDataProvider), ["POLYGON_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateSymbolSearchProviders_WithAlphaVantageConfigKey_AddsAlphaVantageSearchProvider()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: "cfg-alpha-key")))),
+            resolver);
+
+        var providers = factory.CreateSymbolSearchProviders();
+
+        providers.Should().ContainSingle(p => p is AlphaVantageSymbolSearchProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(AlphaVantageHistoricalDataProvider), ["ALPHA_VANTAGE_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateSymbolSearchProviders_WithTwelveDataCredential_AddsTwelveDataSearchProvider()
+    {
+        var resolver = new TrackingCredentialResolver(new Dictionary<string, string?>
+        {
+            ["TWELVEDATA_API_KEY"] = "cfg-twelve-key"
+        });
+        var factory = new ProviderFactory(new AppConfig(), resolver);
+
+        var providers = factory.CreateSymbolSearchProviders();
+
+        providers.Should().ContainSingle(p => p is TwelveDataSymbolSearchProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(TwelveDataHistoricalDataProvider), ["TWELVEDATA_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateSymbolSearchProviders_WithTiingoConfigToken_AddsTiingoSearchProvider()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Tiingo: new TiingoConfig(ApiToken: "cfg-tiingo-token")))),
+            resolver);
+
+        var providers = factory.CreateSymbolSearchProviders();
+
+        providers.Should().ContainSingle(p => p is TiingoSymbolSearchProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(TiingoHistoricalDataProvider), ["TIINGO_API_TOKEN"]));
+    }
+
+    [Fact]
+    public void CreateSymbolSearchProviders_WithFredConfigKey_AddsFredSearchProvider()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Fred: new FredConfig(ApiKey: "cfg-fred-key")))),
+            resolver);
+
+        var providers = factory.CreateSymbolSearchProviders();
+
+        providers.Should().ContainSingle(p => p is FredSymbolSearchProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(FredHistoricalDataProvider), ["FRED_API_KEY"]));
     }
 
     private sealed class TrackingCredentialResolver : IProviderCredentialResolver
     {
+        private readonly IReadOnlyDictionary<string, string?> _resolvedValues;
+
+        public TrackingCredentialResolver(IReadOnlyDictionary<string, string?>? resolvedValues = null)
+        {
+            _resolvedValues = resolvedValues ?? new Dictionary<string, string?>(StringComparer.Ordinal);
+        }
+
         public List<ContextRequest> ContextRequests { get; } = new();
 
         public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
@@ -225,21 +314,29 @@ public sealed class ProviderFactoryCredentialContextTests
                 ?? Array.Empty<string>();
             ContextRequests.Add(new ContextRequest(providerType, credentialNames));
 
-            return new TestCredentialContext(configuredValues);
+            return new TestCredentialContext(configuredValues, _resolvedValues);
         }
     }
 
     private sealed class TestCredentialContext : ICredentialContext
     {
         private readonly IReadOnlyDictionary<string, string?> _configuredValues;
+        private readonly IReadOnlyDictionary<string, string?> _resolvedValues;
 
-        public TestCredentialContext(IReadOnlyDictionary<string, string?>? configuredValues)
+        public TestCredentialContext(
+            IReadOnlyDictionary<string, string?>? configuredValues,
+            IReadOnlyDictionary<string, string?>? resolvedValues)
         {
             _configuredValues = configuredValues ?? new Dictionary<string, string?>(StringComparer.Ordinal);
+            _resolvedValues = resolvedValues ?? new Dictionary<string, string?>(StringComparer.Ordinal);
         }
 
         public string? Get(string name)
-            => _configuredValues.TryGetValue(name, out var value) ? value : null;
+            => _configuredValues.TryGetValue(name, out var value) && !string.IsNullOrWhiteSpace(value)
+                ? value
+                : _resolvedValues.TryGetValue(name, out var resolvedValue)
+                    ? resolvedValue
+                    : null;
 
         public bool IsConfigured(string name)
             => !string.IsNullOrWhiteSpace(Get(name));
