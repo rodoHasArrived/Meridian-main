@@ -453,8 +453,12 @@ the existing Security Master lane instead of restoring the old static Data workb
 renders the server-provided report-line chain for instrument, position or transaction,
 reconciliation, journal, report line, evidence, and audit links; React must not rebuild that
 lineage locally.
-Saved views post back through the shared saved-view endpoint only after a material filter/search
-change, and blocked or empty DTOs keep proof actions disabled with the server-provided reason.
+Saved views post back through the shared saved-view endpoint only when an operator supplies a
+stable view name for the current filter/search state; browser code does not generate timestamp-only
+saved-view labels. Shared explorer links also round-trip explicit `frexFilter` values alongside the
+selected saved view, search text, and proof record, so a discussion URL can restore the exact
+evidence state even when the filter is not encoded in a durable saved view. Blocked or empty DTOs
+keep proof actions disabled with the server-provided reason.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -1031,6 +1035,41 @@ metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, 
 `Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and
 `Data Operations` remain route aliases and internal compatibility concepts only. App-shell overview
 event labels also normalize retained source names before entering the visible evidence timeline.
+The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
+of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
+now exposes decision drivers for blocked outputs, trust posture, linked context, and proof events
+before the blocked-output queue, so the first screen explains why the operator should act, who owns
+the issue, what output is affected, which action is next, and which retained proof supports it.
+Legacy `/overview` links redirect to that root while suffixed overview routes continue through the
+retained workspace alias path.
+The app shell exposes the active route as a named workbench landmark and marks that landmark busy
+during bootstrap or refresh, so skip-link and screen-reader users land on the current operator
+workspace with explicit loading posture.
+Shared workstation primitives render visual search context as read-only textboxes and shared tab
+strips use roving focus with Arrow, Home, and End keys, so route-owned filters and inspector tabs do
+not need screen-local keyboard handling.
+Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
+Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
+Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
+Governance. Accounting only resolves its internal reporting workstream under `/accounting/reporting`,
+keeping close/accounting tasks distinct from governed report-output tasks.
+Reporting exposes route-owned task modes as Daily Reporting Cockpit, Report Builder, Run Status,
+Delivery Evidence, Exports, and Governance. `/reporting` is the Daily Reporting Cockpit landing
+route and stops at the daily decision queue plus focused task-mode links instead of rendering the
+full builder surface. `/reporting/report-builder` owns governed output design and schedules,
+`/reporting/run-status` owns queue posture, `/reporting/report-packs` keeps the report-pack
+approval workflow panel while presenting as Delivery Evidence, `/reporting/exports` owns governed
+export artifacts, and `/reporting/governance` owns access, approval, lifecycle, and audit controls.
+Each queued daily item exposes blocked status, owner, affected output, next action, and proof or
+evidence posture so browser Reporting matches the WPF cockpit decision model.
+Financial Record Explorer drawers now render the shared Number Passport component for the selected
+record, carrying source, freshness, reconciliation, approvals, report usage, blockers, evidence
+packet, and audit-trail facts through the Accounting, Portfolio, Security Instrument, and Reporting
+provenance surfaces. DTO-backed explorers also restore `frexExplorer`, `frexView`, `frexSearch`,
+`frexFilter`, and `frexRecord` query state, emit a `Share view` link for the selected saved view,
+search, explicit filters, and proof record, and require operators to supply stable saved-view names
+instead of timestamp-only labels, keeping browser FREX review URLs portable without duplicating
+saved-view storage in React.
 
 ## Diagrams
 

@@ -65,9 +65,15 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                     <Badge variant={item.badgeVariant}>{item.statusLabel}</Badge>
                   </div>
                   <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
+                  <dl className="grid gap-2 text-xs sm:grid-cols-2" aria-label={`${item.title} decision facts`}>
+                    <ReportingHubFact label="Blocked" value={item.blockedLabel} tone={item.tone} />
+                    <ReportingHubFact label="Owner" value={item.owner} />
+                    <ReportingHubFact label="Output" value={item.affectedOutputLabel} />
+                    <ReportingHubFact label="Next action" value={item.nextActionLabel} />
+                    <ReportingHubFact label="Proof" value={item.proofLabel} tone={item.evidenceGaps.length > 0 ? "warning" : "success"} />
+                  </dl>
                   <div className="flex flex-wrap gap-1.5">
                     {item.dueLabel ? <Badge variant="outline">{item.dueLabel}</Badge> : null}
-                    <Badge variant="outline">{item.owner}</Badge>
                     {item.context.slice(0, 3).map((context) => (
                       <Badge key={context} variant="outline">{context}</Badge>
                     ))}
@@ -157,5 +163,22 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
         </CardContent>
       </Card>
     </section>
+  );
+}
+
+function ReportingHubFact({
+  label,
+  value,
+  tone = "muted"
+}: {
+  label: string;
+  value: string;
+  tone?: ReportingHubTone;
+}) {
+  return (
+    <div className="rounded-md border border-border/60 bg-background/50 px-2.5 py-2">
+      <dt className="text-[11px] uppercase text-muted-foreground">{label}</dt>
+      <dd className={cn("mt-1 break-words font-mono text-[11px]", toneClasses[tone])}>{value}</dd>
+    </div>
   );
 }

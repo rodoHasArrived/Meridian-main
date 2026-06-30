@@ -50,8 +50,11 @@ describe("workspace metadata", () => {
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("accountingEntitySetup")).toBe("/accounting/entity-setup");
     expect(workstationRoute("accountingExceptions")).toBe("/accounting/exceptions");
+    expect(workstationRoute("reportingReportBuilder")).toBe("/reporting/report-builder");
+    expect(workstationRoute("reportingRunStatus")).toBe("/reporting/run-status");
     expect(workstationRoute("reportingOperationsRecord")).toBe("/reporting/operations-record");
     expect(workstationRoute("reportingExports")).toBe("/reporting/exports");
+    expect(workstationRoute("reportingGovernance")).toBe("/reporting/governance");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
       "/data/quotes?symbol=BRK%2FB&provider=Alpaca"
@@ -121,6 +124,7 @@ describe("workspace metadata", () => {
     expect(workflowTargetPath("FundTrialBalance", "accounting")).toBe("/accounting/ledger");
     expect(workflowTargetPath("FundAuditTrail", "accounting")).toBe("/accounting");
     expect(workflowTargetPath("FundReportPack", "reporting")).toBe("/reporting/report-packs");
+    expect(workflowTargetPath("ReportLineProvenanceExplorer", "reporting")).toBe("/reporting/evidence");
     expect(workflowTargetPath("ProviderTrust", "data")).toBe("/data/providers");
     expect(workflowTargetPath("SecurityMaster", "data")).toBe("/accounting/security-master");
     expect(workflowTargetPath("UnknownTag", "research")).toBe("/strategy");
@@ -155,6 +159,7 @@ describe("workspace metadata", () => {
       "PortfolioShell",
       "ProviderHealth",
       "ProviderTrust",
+      "ReportLineProvenanceExplorer",
       "ReportPackApproval",
       "ReportingShell",
       "ResearchShell",

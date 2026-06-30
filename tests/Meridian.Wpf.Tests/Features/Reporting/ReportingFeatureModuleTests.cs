@@ -30,6 +30,9 @@ public sealed class ReportingFeatureModuleTests
 
         workspace.ShellDefinition.ViewModelType.Should().Be(typeof(ReportingWorkspaceShellViewModel));
         workspace.ShellDefinition.StateProviderType.Should().Be(typeof(ReportingWorkspaceShellStateProvider));
+        workspace.ShellDefinition.DefaultPanes.Select(static pane => pane.PageTag)
+            .Should()
+            .Contain("ReportLineProvenanceExplorer");
     }
 
     [Fact]

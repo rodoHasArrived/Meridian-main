@@ -2,9 +2,9 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-05-20
+**Reviewed:** 2026-06-30
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-06-30
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
@@ -127,6 +127,22 @@ If any check fails, promotion enablement is blocked and operator surfaces must s
 - Yahoo is active only as a historical and fallback provider row for Wave 1.
 - Deferred providers are tracked in the **Deferred provider inventory** table above; every deferred row must retain explicit owner, rationale, and revisit sprint.
 
+## 2026-06-30 ingestion test posture clarification
+
+Use this clarification when summarizing Meridian data-ingestion coverage. A provider with no
+dedicated provider-specific test file may still have executable evidence through shared contract,
+parser, credential, or reconciliation suites; that evidence is narrower than full runtime readiness.
+
+| Coverage bucket | Current evidence | Remaining gap |
+| --- | --- | --- |
+| Core ingestion durability | `WriteAheadLogTests`, `WriteAheadLogCorruptionModeTests`, `WriteAheadLogFuzzTests`, `WalEventPipelineTests`, `DualPathEventPipelineTests`, `EventPipelineTests`, `EventPipelineMetricsTests`, `EventPipelineTracePropagationTests` | Keep broad CI evidence current when WAL or pipeline contracts change. |
+| Backfill orchestration | `BackfillWorkerServiceTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `PriorityBackfillQueueTests`, `BackfillCostEstimatorTests`, `AutoGapRemediationServiceTests`, `BackfillStatusStoreTests` | Operator-facing cross-provider remediation SLA remains documented in the runbook, not enforced as a complete provider-governance workflow. |
+| Primary runtime providers | Alpaca, Polygon, IBKR, NYSE, and Robinhood have dedicated provider tests covering brokerage, parsing, subscriptions, historical data, or runtime guidance slices. | NYSE entitlement/session evidence and Robinhood manual broker-session evidence remain bounded runtime dependencies. |
+| Free-tier backfill providers | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests`, `AdditionalProviderContractTests`, `TwelveDataNasdaqProviderContractTests`, `AlphaVantageHistoricalDataProviderTests`, `TiingoHistoricalDataProviderTests`, and `ProviderFactoryCredentialContextTests` cover deterministic historical parsing, ordering, credential wiring, intraday request-shape behavior, adjusted EOD/corporate-action field handling, and selected rate-limit/error shapes for AlphaVantage, Finnhub, Fred, NasdaqDataLink, Stooq, Tiingo, TwelveData, and YahooFinance. | These are not provider-specific streaming, search-quality, or corporate-action runtime suites. Do not present them as production-grade provider parity. |
+| Symbol search and reference mapping | `OpenFigiClientTests`, `EdgarSymbolSearchProviderTests`, `RobinhoodSymbolSearchProviderTests`, and `FinnhubSymbolSearchProviderTests` provide deterministic parsing, projection, and credential-gating evidence for the active symbol-search adapters. | Search ranking, ambiguity resolution, vendor uptime/rate characteristics, and DK1 packet representation remain thin for secondary providers. |
+| Brokerage gateway experiments | `TradierExecutionReconciliationTests`, `TradierCanonicalMappersTests`, `TradeStationPayloadMappersTests`, and the TradeStation paper-session reconciliation slice cover deterministic mapping or reconciliation evidence. | Tradier and TradeStation do not yet have full dedicated brokerage-gateway lifecycle suites and remain experimental or execution-slice evidence, not production-supported broker readiness. |
+| Corporate actions | Alpaca and Polygon have direct provider evidence; Edgar and Security Master command paths provide partial reference-data/corporate-action support. | Corporate-action support beyond Alpaca, Polygon, and partial Edgar/Security Master paths remains template-only or inventory-level for most adapters. |
+
 ## 2026-05-20 capability-claim parity + deterministic data-shape audit
 
 The following audit reconciles current capability claims versus deterministic data-shape compatibility for the requested provider set:
@@ -134,15 +150,15 @@ Finnhub, NYSE, Edgar, OpenFigi, YahooFinance, Tradier, TwelveData, AlphaVantage,
 
 | Provider | Capability-claim parity posture | Deterministic data-shape compatibility posture | Evidence anchor |
 | --- | --- | --- | --- |
-| Finnhub | Backfill + symbol-search supported through credential-gated adapters | JSON parse and contract fixtures enforce stable bar parsing and symbol-search projection | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests`, `ProviderFactoryCredentialContextTests` |
+| Finnhub | Backfill + symbol-search supported through credential-gated adapters | JSON parse and contract fixtures enforce stable bar parsing, symbol-search projection, client-side filter behavior, and credential-gated no-call behavior | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests`, `ProviderFactoryCredentialContextTests`, `FinnhubSymbolSearchProviderTests` |
 | NYSE | Deferred from active Wave 1 closure; retained as provider inventory/runtime lane | Message/csv parser and pipeline tests lock schema, exchange-code mapping, and publication flow | `NYSEMessageParsingTests`, `NyseNationalTradesCsvParserTests`, `NyseMessagePipelineTests` |
 | Edgar | Security Master/symbol-search inventory support | Parser coverage validates ticker-entry extraction, malformed payload handling, and ingest projections | `EdgarSymbolSearchProviderTests` |
 | OpenFigi | Symbol mapping/search support | Recorded-response contract tests validate mapping/search parse determinism | `OpenFigiClientTests` |
 | YahooFinance | Active Wave 1 historical + fallback row | Historical/intraday contract suites lock fallback bar-shape expectations | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` |
 | Tradier | Execution reconciliation support path (not active Wave 1 provider row) | Deterministic execution evidence + out-of-order/partial-fill handling covered in focused execution suites | `TradierExecutionReconciliationTests` |
 | TwelveData | Backfill inventory support via provider adapter | Stubbed-response parsing tests validate success/error/empty payload handling | `FreeHistoricalProviderParsingTests` |
-| AlphaVantage | Backfill inventory support (explicitly credential/enable gated) | Contract + parser tests validate rate-limit and error-shape behavior | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests` |
-| Tiingo | Backfill inventory support | Contract tests + factory credential-path tests keep adapter eligibility deterministic | `FreeProviderContractTests`, `ProviderFactoryCredentialContextTests` |
+| AlphaVantage | Backfill inventory support (explicitly credential/enable gated) | Contract + parser tests validate rate-limit and error-shape behavior; dedicated provider tests validate intraday request shape, interval normalization, health-check gating, and body-level throttling response handling | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests`, `AdditionalProviderContractTests`, `AlphaVantageHistoricalDataProviderTests` |
+| Tiingo | Backfill inventory support | Contract tests + factory credential-path tests keep adapter eligibility deterministic; dedicated provider tests validate token routing, dotted-ticker normalization, adjusted EOD/corporate-action fields, health checks, and Retry-After rate-limit state | `FreeProviderContractTests`, `AdditionalProviderContractTests`, `ProviderFactoryCredentialContextTests`, `TiingoHistoricalDataProviderTests` |
 | Stooq | Backfill inventory support | CSV parser tests validate stable row-to-bar conversion and empty dataset handling | `FreeProviderContractTests`, `FreeHistoricalProviderParsingTests` |
 | Fred | Backfill inventory support for economic-series lanes | Parser/credential tests validate deterministic failure surface when key/shape is invalid | `FreeHistoricalProviderParsingTests`, `ProviderFactoryCredentialContextTests` |
 | NasdaqDataLink | Backfill inventory support | Provider-factory credential/context tests verify deterministic inclusion and credential wiring | `ProviderFactoryCredentialContextTests` |

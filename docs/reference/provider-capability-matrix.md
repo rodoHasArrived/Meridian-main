@@ -2,9 +2,9 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-05-21
+**Reviewed:** 2026-06-30
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-06-30
 
 This matrix enumerates every adapter subfolder under `src/Meridian.Infrastructure/Adapters/` and records capability coverage for:
 
@@ -23,6 +23,22 @@ State tags:
 - **partial**: capability exists but is scoped, read-only, or otherwise limited.
 - **experimental**: early/incomplete implementation, mapper-only path, or not yet fully wired.
 - **template-only**: scaffold/sample only, no active provider behavior.
+
+## Readiness Interpretation
+
+Use the matrix as capability evidence, not as a blanket production-readiness label:
+
+- `Alpaca`, `Polygon`, and `InteractiveBrokers` are the only adapter rows currently marked
+  `complete` overall.
+- `Robinhood` and `NYSE` expose important runtime surfaces, but their overall state remains
+  `partial`: Robinhood is unofficial and bounded by manual broker-session evidence, while NYSE
+  still depends on entitlement/session evidence outside the active Wave 1 closure.
+- The free-tier historical providers (`AlphaVantage`, `Finnhub`, `Fred`, `NasdaqDataLink`,
+  `Stooq`, `Tiingo`, `TwelveData`, and `YahooFinance`) are not production-grade streaming rows.
+  They are inventory/backfill rows unless a capability column says otherwise.
+- `OpenFigi`, `Edgar`, `Tradier`, and `TradeStation` must not be promoted from partial or
+  experimental support to production provider readiness without provider-specific runtime,
+  governance, and validation evidence.
 
 ## Adapter Capability + Risk Matrix
 

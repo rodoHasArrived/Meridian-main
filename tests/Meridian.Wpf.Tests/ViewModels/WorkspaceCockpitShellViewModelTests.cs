@@ -126,7 +126,7 @@ public sealed class WorkspaceCockpitShellViewModelTests
 
         viewModel.CockpitDecisionItems.Select(static item => item.SecondaryActionId)
             .Should()
-            .Equal("ExportPresets", "FundAuditTrail", "DataQuality", "DataQuality", "AnalysisExport", "ExportPresets");
+            .Equal("ExportPresets", "ReportLineProvenanceExplorer", "DataQuality", "DataQuality", "AnalysisExport", "ExportPresets");
 
         viewModel.CockpitDecisionItems.Should().OnlyContain(static item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
@@ -249,7 +249,7 @@ public sealed class WorkspaceCockpitShellViewModelTests
         delivery.Tone.Should().Be(WorkspaceTone.Danger);
         delivery.IsBlocked.Should().BeTrue();
         delivery.PrimaryActionId.Should().Be("ReportRunStatus");
-        delivery.SecondaryActionId.Should().Be("FundAuditTrail");
+        delivery.SecondaryActionId.Should().Be("ReportLineProvenanceExplorer");
 
         var evidence = items.Single(static item => item.Title == "Evidence and provenance gaps");
         evidence.StatusLabel.Should().Be("Evidence review");

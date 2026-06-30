@@ -1485,7 +1485,7 @@ describe("AccountingScreen", () => {
       "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries"
     );
     expect(screen.getByRole("group", { name: "Route /accounting/reconciliation" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Workstream Reconciliation" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Task mode Reconciliation Casework" })).toBeInTheDocument();
     expect(screen.getByText("Ledger and reconciliation")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Accounting operations continuity while Accounting loads" })).toHaveAttribute(
       "href",
@@ -2966,6 +2966,12 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Current Accounting route" })).toHaveValue("Accounting / Close Cockpit");
+    const navigator = screen.getByRole("region", { name: "Accounting recovery navigator" });
+    expect(within(navigator).getByRole("link", { name: "Reconciliation Casework" })).toHaveAttribute("href", "/accounting/reconciliation");
+    expect(within(navigator).getByRole("link", { name: "Journal Entry" })).toHaveAttribute("href", "/accounting/journal-entries");
+    expect(within(navigator).getByRole("link", { name: "Governance" })).toHaveAttribute("href", "/accounting/configure");
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
     expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
     expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Journal entries and ledger detail");
@@ -2974,11 +2980,11 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Ledger Explorer proof actions")).toHaveTextContent("Evidence packet");
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
-    expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
+    expect(within(workflow).getByRole("link", { name: "Ledger Explorer: Ledger authority, current Accounting workstream" })).toHaveAttribute(
       "href",
       "/accounting/ledger"
     );
-    expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
+    expect(within(workflow).getByRole("link", { name: "Ledger Explorer: Ledger authority, current Accounting workstream" })).toHaveAttribute(
       "aria-current",
       "page"
     );
@@ -3011,7 +3017,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
 
-    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entry workbench");
+    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal Entry");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
     expect(screen.getByRole("heading", { name: "Balance impact preview" })).toBeInTheDocument();
@@ -3671,7 +3677,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1");
 
     expect(await screen.findByRole("heading", { name: "Approval queue and audit gate" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Approval gate", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting approval queue" })).toHaveTextContent("2026-05");
     expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("approval-close-1");

@@ -7,6 +7,7 @@ import {
   buildAccountingCashFlowViewState,
   buildAccountingLoadingViewState,
   buildAccountingReportingViewState,
+  buildAccountingTaskMode,
   buildAccountingWorkflowLaunchViewState,
   buildCloseCommandCenterViewState,
   buildAccountingLedgerJournalEvidenceViewState,
@@ -2244,10 +2245,15 @@ describe("accounting-screen view model", () => {
 
     expect(state).toMatchObject({
       title: "Accounting workflow",
-      activeLabel: "Reconciliation active",
+      activeLabel: "Reconciliation Casework active",
       statusLabel: "Blocked",
       statusTone: "danger",
       ariaLabel: "Accounting workflow launch paths"
+    });
+    expect(state.taskMode).toMatchObject({
+      id: "reconciliation-casework",
+      label: "Reconciliation Casework",
+      href: "/accounting/reconciliation"
     });
     expect(state.steps.map((step) => step.href)).toEqual([
       "/accounting/configure",
@@ -2261,6 +2267,7 @@ describe("accounting-screen view model", () => {
       "/reporting/evidence"
     ]);
     expect(state.steps.find((step) => step.id === "reconciliation")).toMatchObject({
+      label: "Reconciliation Casework",
       metricLabel: "Open breaks",
       metricValue: "1",
       statusLabel: "Review breaks",
@@ -3724,10 +3731,42 @@ describe("accounting-screen view model", () => {
     expect(resolveAccountingWorkstream("/accounting/capital-accounts")).toBe("capital-accounts");
     expect(resolveAccountingWorkstream("/accounting")).toBe("ledger");
     expect(resolveAccountingWorkstream("/accounting/ledger")).toBe("ledger");
-    expect(resolveAccountingWorkstream("/reporting")).toBe("reporting");
+    expect(resolveAccountingWorkstream("/reporting")).toBe("ledger");
+    expect(resolveAccountingWorkstream("/accounting/reporting")).toBe("reporting");
     expect(resolveAccountingWorkstream("/governance/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/governance/reconciliation")).toBe("reconciliation");
     expect(resolveAccountingWorkstream("/governance")).toBe("ledger");
+
+    expect(buildAccountingTaskMode("/accounting")).toMatchObject({
+      id: "close-cockpit",
+      label: "Close Cockpit",
+      href: "/accounting",
+      workstream: "ledger"
+    });
+    expect(buildAccountingTaskMode("/accounting/ledger")).toMatchObject({
+      id: "ledger-explorer",
+      label: "Ledger Explorer",
+      href: "/accounting/ledger",
+      workstream: "ledger"
+    });
+    expect(buildAccountingTaskMode("/accounting/reconciliation")).toMatchObject({
+      id: "reconciliation-casework",
+      label: "Reconciliation Casework",
+      href: "/accounting/reconciliation",
+      workstream: "reconciliation"
+    });
+    expect(buildAccountingTaskMode("/accounting/journal-entries")).toMatchObject({
+      id: "journal-entry",
+      label: "Journal Entry",
+      href: "/accounting/journal-entries",
+      workstream: "journal-entries"
+    });
+    expect(buildAccountingTaskMode("/accounting/configure")).toMatchObject({
+      id: "governance",
+      label: "Governance",
+      href: "/accounting/configure",
+      workstream: "configure"
+    });
 
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
@@ -7282,7 +7321,7 @@ describe("accounting-screen view model", () => {
       title: "Loading Accounting",
       detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from workspace data.",
       routeLabel: "/accounting/reconciliation",
-      workstreamLabel: "Reconciliation",
+      workstreamLabel: "Reconciliation Casework",
       statusItemsLabel: "Accounting workspace data loading"
     });
     expect(buildAccountingLoadingViewState("/accounting/reconciliation").statusItems.map((item) => item.id)).toEqual([

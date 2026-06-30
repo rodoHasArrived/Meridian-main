@@ -365,7 +365,10 @@ PDF/XLSX/CSV delivery, secure-portal and email-link distribution, Top-N/contribu
 custom-formula grid validation, cross-fund consolidation roll-ups with shadow-NAV, regulatory and
 warehouse exports, user/group/company access posture, and audit lineage through registered WPF
 targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`, `ExportPresets`,
-`FundAuditTrail`, and `DataQuality`) rather than desktop-local reporting logic.
+`ReportLineProvenanceExplorer`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local
+reporting logic. The Reporting shell default pane set and command surface now include
+`ReportLineProvenanceExplorer`, matching the browser `/reporting/evidence` route for report-line
+evidence and provenance review.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured

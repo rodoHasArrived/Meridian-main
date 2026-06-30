@@ -110,6 +110,11 @@
                                             Click="OnNavigateButtonClick"
                                             Style="{StaticResource GhostButtonStyle}"
                                             Margin="0,0,8,8" />
+                                    <Button Content="Evidence"
+                                            Tag="ReportLineProvenanceExplorer"
+                                            Click="OnNavigateButtonClick"
+                                            Style="{StaticResource GhostButtonStyle}"
+                                            Margin="0,0,8,8" />
                                     <Button Content="Exports"
                                             Tag="AnalysisExport"
                                             Click="OnNavigateButtonClick"

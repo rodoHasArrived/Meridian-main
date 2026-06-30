@@ -2,6 +2,7 @@ import { Filter, GitBranch, LayoutPanelTop, Link2, Save, Search, ShieldCheck } f
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NumberPassport } from "@/components/meridian/number-passport";
 import { cn } from "@/lib/utils";
 import type {
   FinancialRecordExplorerDto,
@@ -39,6 +40,18 @@ export interface FinancialRecordExplorerAction {
   ariaLabel?: string;
 }
 
+interface SharedExplorerFilterState {
+  filterId: string;
+  value: string;
+}
+
+interface SharedExplorerViewState {
+  viewId: string | null;
+  searchText: string | null;
+  recordId: string | null;
+  filters: SharedExplorerFilterState[];
+}
+
 export function FinancialRecordExplorerShell({
   explorerLabel,
   title,
@@ -69,18 +82,24 @@ export function FinancialRecordExplorerShell({
   className?: string;
 }) {
   const dtoMode = explorer ?? null;
-  const normalizedViews = dtoMode
+  const normalizedViews = useMemo(() => dtoMode
     ? dtoMode.savedViews.map((view) => ({
         id: view.viewId,
         label: view.label,
         detail: view.description,
         active: view.isActive
       }))
-    : savedViews;
+    : savedViews, [dtoMode?.savedViews, savedViews]);
+  const normalizedViewKey = normalizedViews.map((view) => view.id).join("|");
   const activeSavedView = normalizedViews.find((view) => view.active) ?? normalizedViews[0] ?? null;
-  const [selectedViewId, setSelectedViewId] = useState(activeSavedView?.id ?? "");
-  const [searchText, setSearchText] = useState("");
-  const [selectedRecordId, setSelectedRecordId] = useState(dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "");
+  const sharedViewState = useMemo(() => readSharedExplorerViewState(dtoMode), [dtoMode?.explorerId]);
+  const initialViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
+  const initialRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []) ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
+  const [selectedViewId, setSelectedViewId] = useState(initialViewId);
+  const [searchText, setSearchText] = useState(sharedViewState.searchText ?? "");
+  const [selectedRecordId, setSelectedRecordId] = useState(initialRecordId);
+  const [sharedFilterState, setSharedFilterState] = useState(sharedViewState.filters);
+  const [viewName, setViewName] = useState("");
   const [saving, setSaving] = useState(false);
   const selectedDtoSavedView = useMemo(
     () => dtoMode?.savedViews.find((view) => view.viewId === selectedViewId) ?? null,
@@ -88,20 +107,41 @@ export function FinancialRecordExplorerShell({
   );
 
   useEffect(() => {
-    setSelectedViewId(activeSavedView?.id ?? "");
-    setSearchText("");
-    setSelectedRecordId(dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "");
-  }, [activeSavedView?.id, dtoMode?.explorerId, dtoMode?.selectedRecord?.recordId, dtoMode?.rows]);
+    const nextViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
+    const nextSearchText = sharedViewState.searchText ?? "";
+    const nextRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []) ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
+    setSelectedViewId((current) => current === nextViewId ? current : nextViewId);
+    setSearchText((current) => current === nextSearchText ? current : nextSearchText);
+    setSelectedRecordId((current) => current === nextRecordId ? current : nextRecordId);
+    setSharedFilterState(sharedViewState.filters);
+  }, [
+    activeSavedView?.id,
+    dtoMode?.explorerId,
+    dtoMode?.selectedRecord?.recordId,
+    dtoMode?.rows,
+    normalizedViewKey,
+    sharedViewState.recordId,
+    sharedViewState.filters,
+    sharedViewState.searchText,
+    sharedViewState.viewId
+  ]);
 
   function handleSelectSavedView(viewId: string) {
     setSelectedViewId(viewId);
+    setSharedFilterState([]);
     const savedView = dtoMode?.savedViews.find((view) => view.viewId === viewId);
     if (savedView) {
       setSearchText(savedView.searchText ?? "");
     }
   }
 
-  const selectedFilters = selectedDtoSavedView?.filters ?? [];
+  const selectedFilters = useMemo(() => {
+    if (sharedFilterState.length > 0 && dtoMode) {
+      return resolveSharedFilters(sharedFilterState, dtoMode);
+    }
+
+    return selectedDtoSavedView?.filters ?? [];
+  }, [dtoMode, selectedDtoSavedView?.filters, sharedFilterState]);
   const selectedColumnIds = selectedDtoSavedView?.columnIds?.filter((columnId) => columnId.trim().length > 0) ?? [];
   const visibleColumns = useMemo(() => {
     if (!dtoMode || selectedColumnIds.length === 0) {
@@ -127,12 +167,17 @@ export function FinancialRecordExplorerShell({
 
   const selectedRow = rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
   const selectedRecord = selectedRow?.detail ?? null;
-  const materialChange = Boolean(dtoMode && onSaveView && (searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
+  const selectedRecordShareId = selectedRow?.recordId ?? selectedRecordId;
+  const trimmedViewName = viewName.trim();
+  const materialChange = Boolean(dtoMode && onSaveView && (trimmedViewName || searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
+  const canSaveView = Boolean(materialChange && trimmedViewName);
   const headerTitle = dtoMode?.title ?? title;
   const headerDescription = dtoMode?.description ?? description;
+  const shareViewId = sharedFilterState.length > 0 && !sharedViewState.viewId ? "" : selectedViewId;
+  const shareHref = buildShareableExplorerHref(dtoMode, shareViewId, searchText, selectedFilters, selectedRecordShareId);
 
   async function handleSaveView() {
-    if (!dtoMode || !onSaveView || !materialChange) {
+    if (!dtoMode || !onSaveView || !canSaveView) {
       return;
     }
 
@@ -141,7 +186,7 @@ export function FinancialRecordExplorerShell({
     setSaving(true);
     try {
       await onSaveView({
-        label: `Explorer view ${new Date().toISOString().slice(0, 16).replace("T", " ")}`,
+        label: trimmedViewName,
         description: searchText.trim()
           ? `Search: ${searchText.trim()}`
           : `Saved from ${selectedView?.label ?? "current explorer filters"}.`,
@@ -150,6 +195,7 @@ export function FinancialRecordExplorerShell({
         columnIds: selectedView?.columnIds ?? []
       });
       setSearchText("");
+      setViewName("");
     } finally {
       setSaving(false);
     }
@@ -168,11 +214,32 @@ export function FinancialRecordExplorerShell({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
+          {dtoMode ? (
+            <Button asChild size="sm" variant="outline">
+              <a href={shareHref} aria-label={`Share ${headerTitle} saved view`}>
+                <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+                Share view
+              </a>
+            </Button>
+          ) : null}
+          {dtoMode && onSaveView ? (
+            <input
+              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
+              value={viewName}
+              onChange={(event) => setViewName(event.target.value)}
+              placeholder="View name"
+              aria-label="Saved view name"
+            />
+          ) : null}
           <Button
             size="sm"
             variant="outline"
-            disabled={!materialChange || saving || dtoMode?.isBlocked}
-            disabledReason={dtoMode?.isBlocked ? dtoMode.blockedReason : "Change search text or select a different saved view before saving."}
+            disabled={!canSaveView || saving || dtoMode?.isBlocked}
+            disabledReason={dtoMode?.isBlocked
+              ? dtoMode.blockedReason
+              : !trimmedViewName
+                ? "Enter a saved view name before saving this exact explorer state."
+                : "Change search text or select a different saved view before saving."}
             busy={saving}
             onClick={() => void handleSaveView()}
           >
@@ -209,7 +276,7 @@ export function FinancialRecordExplorerShell({
             <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={setSelectedRecordId} />
             <RecordGraph explorer={dtoMode} />
           </div>
-          <ProofDrawer record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
+            <ProofDrawer explorer={dtoMode} record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
         </div>
       ) : null}
 
@@ -218,6 +285,115 @@ export function FinancialRecordExplorerShell({
       </div>
     </section>
   );
+}
+
+function readSharedExplorerViewState(explorer: FinancialRecordExplorerDto | null): SharedExplorerViewState {
+  if (!explorer || typeof window === "undefined") {
+    return { viewId: null, searchText: null, recordId: null, filters: [] };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const explorerId = params.get("frexExplorer");
+  if (explorerId && explorerId !== explorer.explorerId) {
+    return { viewId: null, searchText: null, recordId: null, filters: [] };
+  }
+
+  return {
+    viewId: params.get("frexView"),
+    searchText: params.get("frexSearch"),
+    recordId: params.get("frexRecord"),
+    filters: readSharedFilterState(params)
+  };
+}
+
+function readSharedFilterState(params: URLSearchParams): SharedExplorerFilterState[] {
+  return params.getAll("frexFilter")
+    .map((value) => {
+      const separatorIndex = value.indexOf(":");
+      if (separatorIndex <= 0) {
+        return null;
+      }
+
+      const filterId = value.slice(0, separatorIndex).trim();
+      const filterValue = value.slice(separatorIndex + 1).trim();
+      return filterId && filterValue ? { filterId, value: filterValue } : null;
+    })
+    .filter((value): value is SharedExplorerFilterState => Boolean(value));
+}
+
+function resolveSharedViewId(viewId: string | null, views: FinancialRecordExplorerSavedView[]): string | null {
+  if (!viewId) {
+    return null;
+  }
+
+  return views.some((view) => view.id === viewId) ? viewId : null;
+}
+
+function resolveSharedRecordId(recordId: string | null, rows: FinancialRecordExplorerRowDto[]): string | null {
+  if (!recordId) {
+    return null;
+  }
+
+  return rows.some((row) => row.recordId === recordId) ? recordId : null;
+}
+
+function resolveSharedFilters(
+  filters: SharedExplorerFilterState[],
+  explorer: FinancialRecordExplorerDto
+): FinancialRecordExplorerFilterDto[] {
+  const candidateFilters = [
+    ...explorer.filters,
+    ...explorer.savedViews.flatMap((view) => view.filters)
+  ];
+
+  return filters.map((filter) => {
+    const candidate = candidateFilters.find((item) => item.filterId === filter.filterId);
+    return {
+      filterId: filter.filterId,
+      label: candidate?.label ?? filter.filterId,
+      value: filter.value,
+      operator: candidate?.operator ?? "equals",
+      tone: candidate?.tone ?? "Info"
+    };
+  });
+}
+
+function buildShareableExplorerHref(
+  explorer: FinancialRecordExplorerDto | null,
+  selectedViewId: string,
+  searchText: string,
+  selectedFilters: FinancialRecordExplorerFilterDto[],
+  selectedRecordId: string
+): string {
+  if (!explorer || typeof window === "undefined") {
+    return "#";
+  }
+
+  const url = new URL(window.location.href);
+  ["frexExplorer", "frexView", "frexSearch", "frexFilter", "frexRecord"].forEach((key) => {
+    url.searchParams.delete(key);
+  });
+
+  url.searchParams.set("frexExplorer", explorer.explorerId);
+  if (selectedViewId) {
+    url.searchParams.set("frexView", selectedViewId);
+  }
+
+  if (searchText.trim()) {
+    url.searchParams.set("frexSearch", searchText.trim());
+  }
+
+  selectedFilters.forEach((filter) => {
+    if (filter.filterId.trim() && filter.value.trim()) {
+      url.searchParams.append("frexFilter", `${filter.filterId.trim()}:${filter.value.trim()}`);
+    }
+  });
+
+  if (selectedRecordId) {
+    url.searchParams.set("frexRecord", selectedRecordId);
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[] }) {
@@ -430,9 +606,11 @@ function normalizeSearchToken(value: string): string {
 }
 
 function ProofDrawer({
+  explorer,
   record,
   blockedReason
 }: {
+  explorer: FinancialRecordExplorerDto;
   record: FinancialRecordExplorerSelectedRecordDto | null;
   blockedReason: string;
 }) {
@@ -453,6 +631,7 @@ function ProofDrawer({
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{record.description}</p>
       </div>
       <ProofActionList actions={record.proofActions} />
+      <NumberPassport explorer={explorer} record={record} />
       <FactList title="Fields" items={record.fields} />
       <RelationshipList title="Used In" items={record.usedIn} />
       <RelationshipList title="Impacts" items={record.impacts} />

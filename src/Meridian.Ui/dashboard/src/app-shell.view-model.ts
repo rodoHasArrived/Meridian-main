@@ -656,7 +656,7 @@ export function buildRouteFocusState(
   hash: string,
   activeWorkspace: WorkspaceSummary
 ): AppShellRouteFocusState {
-  const workspaceTitle = `${activeWorkspace.label} Workstation`;
+  const workspaceTitle = pathname === "/" ? "Daily Control Tower" : `${activeWorkspace.label} Workstation`;
   const targetElementId = normalizeHashTarget(hash);
   const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
 
@@ -1139,6 +1139,49 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "provider-setup",
         label: "Provider setup",
+        description: "Repair credentials, connection acknowledgement, and paper/live provider status.",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        matchPath: WORKSTATION_ROUTE_CATALOG.settings,
+        matchHash: "#alpaca-provider-setup"
+      }
+    ]
+  },
+  {
+    id: "daily-control-tower",
+    title: "Daily Control Tower",
+    summary: "Review the highest-priority operator decision across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.",
+    steps: [
+      {
+        id: "control-tower",
+        label: "Control Tower",
+        description: "Start each session from the ranked cross-workspace decision queue.",
+        href: "/",
+        matchPath: "/"
+      },
+      {
+        id: "trading-readiness",
+        label: "Trading readiness",
+        description: "Resolve execution, replay, and acceptance-gate blockers before paper operation.",
+        href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        matchPath: WORKSTATION_ROUTE_CATALOG.tradingReadiness
+      },
+      {
+        id: "reconciliation",
+        label: "Accounting records",
+        description: "Resolve ledger, security, cash, and position breaks before close or reporting.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+      },
+      {
+        id: "report-packs",
+        label: "Report outputs",
+        description: "Review governed output targets, evidence readiness, and export posture.",
+        href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
+      },
+      {
+        id: "provider-setup",
+        label: "Provider trust",
         description: "Repair credentials, connection acknowledgement, and paper/live provider status.",
         href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         matchPath: WORKSTATION_ROUTE_CATALOG.settings,

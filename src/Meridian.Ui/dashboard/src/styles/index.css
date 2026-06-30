@@ -3173,6 +3173,20 @@ body,
   font-size: 0.75rem;
 }
 
+.workspace-filter-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.workspace-filter-search input::placeholder {
+  color: var(--ws-text-muted);
+}
+
 .workspace-filter-segments,
 .workspace-filter-actions {
   flex-wrap: wrap;
@@ -3409,10 +3423,6 @@ body,
 .dense-data-table-empty {
   color: var(--ws-text-muted);
   padding: 2rem 0.75rem;
-}
-
-.workbench {
-  background: var(--ws-page-bg);
 }
 
 .operator-rail-section,

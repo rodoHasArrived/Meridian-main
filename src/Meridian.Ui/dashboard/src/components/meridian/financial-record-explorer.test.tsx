@@ -2,11 +2,15 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import type { FinancialRecordExplorerDto } from "@/types";
 
 describe("FinancialRecordExplorerShell", () => {
+  beforeEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+
   it("renders source-backed DTO rows and opens row proof detail", async () => {
     const user = userEvent.setup();
     renderExplorer();
@@ -18,12 +22,30 @@ describe("FinancialRecordExplorerShell", () => {
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
 
     const detail = screen.getByLabelText("Revenue proof detail");
+    const passport = within(detail).getByRole("region", { name: "Revenue Number Passport" });
+    expect(passport).toBeInTheDocument();
+    [
+      "Source",
+      "Freshness",
+      "Reconciliation",
+      "Approvals",
+      "Report Usage",
+      "Blockers",
+      "Evidence Packet",
+      "Audit Trail"
+    ].forEach((label) => {
+      expect(within(passport).getByText(label)).toBeInTheDocument();
+    });
     expect(within(detail).getByText("Used In")).toBeInTheDocument();
     expect(within(detail).getByText("Impacts")).toBeInTheDocument();
     expect(within(detail).getByRole("link", { name: "Full record" })).toHaveAttribute("href", "/api/workstation/runs/run-1/ledger/trial-balance");
+    expect(screen.getByRole("link", { name: "Share Ledger Explorer saved view" })).toHaveAttribute(
+      "href",
+      "/?frexExplorer=ledger&frexView=system-ledger-default&frexRecord=ledger%3Arun-1%3Arevenue"
+    );
   });
 
-  it("enables save view only after a material filter change", async () => {
+  it("requires an operator name before saving a material view change", async () => {
     const user = userEvent.setup();
     const onSaveView = vi.fn().mockResolvedValue(undefined);
     renderExplorer(onSaveView);
@@ -32,10 +54,35 @@ describe("FinancialRecordExplorerShell", () => {
     expect(saveButton).toBeDisabled();
 
     await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "cash");
+    expect(saveButton).toBeDisabled();
+
+    await user.type(screen.getByRole("textbox", { name: "Saved view name" }), "Cash review");
     expect(saveButton).toBeEnabled();
 
     await user.click(saveButton);
-    expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({ searchText: "cash" }));
+    expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({
+      label: "Cash review",
+      searchText: "cash"
+    }));
+  });
+
+  it("saves operator-named views without timestamp-only labels", async () => {
+    const user = userEvent.setup();
+    const onSaveView = vi.fn().mockResolvedValue(undefined);
+    renderExplorer(onSaveView);
+
+    const saveButton = screen.getByRole("button", { name: "Save view" });
+    expect(saveButton).toBeDisabled();
+
+    await user.type(screen.getByRole("textbox", { name: "Saved view name" }), "Month-end evidence");
+    expect(saveButton).toBeEnabled();
+
+    await user.click(saveButton);
+    expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({
+      label: "Month-end evidence",
+      description: "Saved from Controller review.",
+      searchText: ""
+    }));
   });
 
   it("keeps row selection unchanged when a cell link is clicked", async () => {
@@ -104,6 +151,66 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("textbox", { name: "Search Ledger Explorer" })).toHaveValue("aapl");
   });
 
+  it("restores and shares saved explorer views from URL state", () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/accounting?frexExplorer=ledger&frexView=operator-income-symbols&frexSearch=aapl&frexRecord=ledger:run-1:revenue"
+    );
+    renderExplorer(undefined, createExplorerDto({
+      savedViews: [
+        {
+          viewId: "system-ledger-default",
+          label: "Controller review",
+          description: "Default controller review.",
+          isSystem: true,
+          isActive: true,
+          filters: [],
+          searchText: "",
+          columnIds: []
+        },
+        {
+          viewId: "operator-income-symbols",
+          label: "Income symbols",
+          description: "Income accounts with symbol evidence.",
+          isSystem: false,
+          isActive: false,
+          filters: [{ filterId: "accountType", label: "Account Type", value: "Income", operator: "equals", tone: "Info" }],
+          searchText: "aapl",
+          columnIds: ["accountName", "symbol"]
+        }
+      ]
+    }));
+
+    expect(screen.getByRole("button", { name: "Income symbols" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("textbox", { name: "Search Ledger Explorer" })).toHaveValue("aapl");
+    expect(screen.getByRole("row", { name: /revenue aapl/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Share Ledger Explorer saved view" })).toHaveAttribute(
+      "href",
+      "/accounting?frexExplorer=ledger&frexView=operator-income-symbols&frexSearch=aapl&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
+    );
+  });
+
+  it("restores explicit filter state from share links without relying on a saved view", () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/accounting?frexExplorer=ledger&frexFilter=accountType:Income&frexRecord=ledger:run-1:revenue"
+    );
+    renderExplorer();
+
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("Income");
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Share Ledger Explorer saved view" })).toHaveAttribute(
+      "href",
+      "/accounting?frexExplorer=ledger&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
+    );
+  });
+
   it("renders Security & Instrument Explorer DTO fields used by WPF parity proof", async () => {
     const user = userEvent.setup();
     renderExplorer(undefined, createSecurityInstrumentExplorerDto());
@@ -117,11 +224,15 @@ describe("FinancialRecordExplorerShell", () => {
     await user.click(screen.getByRole("row", { name: /apple inc.*96%.*ready.*1 projection/i }));
 
     const detail = screen.getByLabelText("Apple Inc. proof detail");
+    const passport = within(detail).getByRole("region", { name: "Apple Inc. Number Passport" });
+    expect(within(passport).getByText("Report Usage")).toBeInTheDocument();
+    expect(within(passport).getByText("/api/workstation/financial-record-explorers/report-line-provenance?lineKey=holdings.aapl.market-value&sourceId=AAPL")).toBeInTheDocument();
+    expect(within(passport).getByText("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/passport")).toBeInTheDocument();
     expect(within(detail).getByText("Instrument Identity")).toBeInTheDocument();
     expect(within(detail).getByText("Provider Evidence")).toBeInTheDocument();
     expect(within(detail).getByText("AssetOperations Readiness")).toBeInTheDocument();
     expect(within(detail).getByText("Ledger Impact")).toBeInTheDocument();
-    expect(within(detail).getByText("Report Usage")).toBeInTheDocument();
+    expect(within(detail).getAllByText("Report Usage").length).toBeGreaterThanOrEqual(1);
     expect(within(detail).getByRole("link", { name: "Open instrument passport" })).toHaveAttribute("href", "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/passport");
   });
 
@@ -168,7 +279,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(within(detail).getByText("Provider Evidence")).toBeInTheDocument();
     expect(within(detail).getByText("AssetOperations Readiness")).toBeInTheDocument();
     expect(within(detail).getByText("Ledger Impact")).toBeInTheDocument();
-    expect(within(detail).getByText("Report Usage")).toBeInTheDocument();
+    expect(within(detail).getAllByText("Report Usage").length).toBeGreaterThanOrEqual(1);
     expect(within(detail).getByText("Portfolio position")).toBeInTheDocument();
     expect(within(detail).getByText("AssetOperations reconciliation")).toBeInTheDocument();
     expect(within(detail).getAllByText("Report usage")).toHaveLength(2);

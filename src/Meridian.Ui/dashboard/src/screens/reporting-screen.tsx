@@ -1,5 +1,5 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
+import { ArrowRight, FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -130,6 +130,38 @@ const structuredExportDownloadFormats = [
   { format: "xls", label: "XLS" },
   { format: "xlsx", label: "XLSX" }
 ] as const;
+const reportingTaskModeLinks = [
+  {
+    id: "report-builder",
+    label: "Report Builder",
+    description: "Design governed templates, report-writer grids, schedules, branding, and delivery history.",
+    href: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder
+  },
+  {
+    id: "run-status",
+    label: "Run Status",
+    description: "Review report-run queue posture, retries, generated grids, and approval blockers.",
+    href: WORKSTATION_ROUTE_CATALOG.reportingRunStatus
+  },
+  {
+    id: "delivery-evidence",
+    label: "Delivery Evidence",
+    description: "Inspect report-pack recipients, proof bundles, publication support, and report-line provenance.",
+    href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
+  },
+  {
+    id: "exports",
+    label: "Exports",
+    description: "Run governed exports, inspect generated artifacts, and retain manifest evidence.",
+    href: WORKSTATION_ROUTE_CATALOG.reportingExports
+  },
+  {
+    id: "governance",
+    label: "Governance",
+    description: "Audit access scope, approval posture, lifecycle decisions, and retained controls.",
+    href: WORKSTATION_ROUTE_CATALOG.reportingGovernance
+  }
+] as const;
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const defaultExportsReportRunRequester = "browser-workstation";
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
@@ -242,6 +274,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
+  const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
   const scheduleModel: ReportingScheduleManagementModel = {
     scheduleSummary: vm.scheduleSummary,
     hasScheduleRows: vm.hasScheduleRows,
@@ -991,14 +1024,13 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         <div className="min-w-0">
           <div className="eyebrow-label">Reporting lane</div>
           <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            Governed export workbench
+            {vm.taskMode.label}
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Report packs, export routes, and review evidence stay in one cockpit so governed output can be
-            checked before it leaves Reporting.
-          </p>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.taskMode.description}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <ReportingChip label="Task mode" value={vm.taskMode.label} />
+          <span className="sr-only">{vm.taskMode.description}</span>
           {vm.workbenchActions.map((action) => (
             <Button key={action.id} asChild variant="outline" size="sm">
               <Link to={action.href} aria-label={action.ariaLabel}>
@@ -1013,13 +1045,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </div>
       </section>
 
+      <ReportingHub model={hubModel} />
+
+      {isDailyReportingCockpitLanding ? (
+        <ReportingTaskModeLauncher />
+      ) : (
+        <>
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
           <MetricCard key={metric.id} {...metric} />
         ))}
       </section>
-
-      <ReportingHub model={hubModel} />
 
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
@@ -2637,7 +2673,45 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </div>
         </aside>
       </section>
+        </>
+      )}
     </div>
+  );
+}
+
+function ReportingTaskModeLauncher() {
+  return (
+    <section
+      className="workspace-section-band"
+      role="navigation"
+      aria-label="Reporting task modes"
+    >
+      <div className="workspace-section-subheader">
+        <div>
+          <p className="eyebrow-label">Task modes</p>
+          <h3 className="workspace-section-title">Open focused reporting work</h3>
+          <p className="workspace-section-summary">
+            The daily cockpit stays on the control queue; focused routes hold the heavier builder, run, evidence, export, and governance work.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        {reportingTaskModeLinks.map((mode) => (
+          <Link
+            key={mode.id}
+            to={mode.href}
+            className="group rounded-md border border-border/70 bg-background/75 px-4 py-3 text-sm transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={`Open ${mode.label} reporting task mode`}
+          >
+            <span className="flex items-start justify-between gap-3">
+              <span className="font-semibold text-foreground">{mode.label}</span>
+              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" aria-hidden="true" />
+            </span>
+            <span className="mt-2 block text-xs leading-5 text-muted-foreground">{mode.description}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

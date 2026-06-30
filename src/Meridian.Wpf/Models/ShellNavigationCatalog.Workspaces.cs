@@ -168,6 +168,7 @@ public static partial class ShellNavigationCatalog
             [
                 Pane("FundReportPack", PaneDropAction.Replace),
                 Pane("ReportRunStatus", PaneDropAction.SplitLeft),
+                Pane("ReportLineProvenanceExplorer", PaneDropAction.OpenTab),
                 Pane("Dashboard", PaneDropAction.SplitBelow),
                 Pane("AnalysisExport", PaneDropAction.SplitRight),
                 Pane("ExportPresets", PaneDropAction.OpenTab)

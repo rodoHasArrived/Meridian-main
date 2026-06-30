@@ -69,13 +69,17 @@ export interface ReportingHubDailyWorkItem {
   kindLabel: string;
   title: string;
   statusLabel: string;
+  blockedLabel: string;
   detail: string;
   tone: ReportingHubTone;
   badgeVariant: ReportingHubBadgeVariant;
   owner: string;
+  affectedOutputLabel: string;
   dueLabel: string | null;
   primaryActionLabel: string;
   primaryActionHref: string | null;
+  nextActionLabel: string;
+  proofLabel: string;
   evidenceGaps: string[];
   context: string[];
   secondaryActionLabel: string | null;
@@ -229,12 +233,42 @@ function compactStrings(values: readonly string[] | null | undefined): string[] 
   return [...new Set((values ?? []).map((value) => value.trim()).filter(Boolean))];
 }
 
+function presentBlockedLabel(kind: string, tone: ReportingHubTone, statusLabel: string): string {
+  const normalizedKind = kind.trim().toLowerCase();
+  if (tone === "danger" || normalizedKind === "blocked-package" || normalizedKind === "delivery-failure") {
+    return statusLabel.trim() || "Blocked";
+  }
+
+  if (tone === "warning") {
+    return statusLabel.trim() || "Needs review";
+  }
+
+  return "Not blocked";
+}
+
+function buildAffectedOutputLabel(item: ReportingHubDailyWorkInput, context: readonly string[]): string {
+  return context[0] ?? item.title;
+}
+
+function buildProofLabel(evidenceGaps: readonly string[], secondaryActionLabel: string | null | undefined): string {
+  if (evidenceGaps.length > 0) {
+    return countUnit(evidenceGaps.length, "evidence gap");
+  }
+
+  return secondaryActionLabel?.trim() || "Proof retained";
+}
+
 function buildDailyWorkItem(item: ReportingHubDailyWorkInput): ReportingHubDailyWorkItem {
   const tone = presentTone(item.tone);
   const kindLabel = presentWorkKind(item.kind);
   const evidenceGaps = compactStrings(item.evidenceGaps);
   const context = compactStrings(item.context);
   const dueLabel = formatDueLabel(item.dueAtUtc);
+  const owner = item.owner.trim() || "Unassigned";
+  const affectedOutputLabel = buildAffectedOutputLabel(item, context);
+  const blockedLabel = presentBlockedLabel(item.kind, tone, item.statusLabel);
+  const nextActionLabel = item.primaryActionLabel.trim() || "Review";
+  const proofLabel = buildProofLabel(evidenceGaps, item.secondaryActionLabel);
   const detailParts = [item.detail, dueLabel, evidenceGaps.length > 0 ? `${countUnit(evidenceGaps.length, "evidence gap")}` : ""]
     .filter((part) => part.trim().length > 0);
 
@@ -244,18 +278,22 @@ function buildDailyWorkItem(item: ReportingHubDailyWorkInput): ReportingHubDaily
     kindLabel,
     title: item.title,
     statusLabel: item.statusLabel,
+    blockedLabel,
     detail: item.detail,
     tone,
     badgeVariant: badgeVariantForTone(tone),
-    owner: item.owner,
+    owner,
+    affectedOutputLabel,
     dueLabel,
     primaryActionLabel: item.primaryActionLabel,
     primaryActionHref: item.primaryActionHref,
+    nextActionLabel,
+    proofLabel,
     evidenceGaps,
     context,
     secondaryActionLabel: item.secondaryActionLabel ?? null,
     secondaryActionHref: item.secondaryActionHref ?? null,
-    ariaLabel: `${kindLabel}: ${item.title}. ${item.statusLabel}. ${detailParts.join(" ")}`
+    ariaLabel: `${kindLabel}: ${item.title}. ${blockedLabel}. Owner ${owner}. Output ${affectedOutputLabel}. Next action ${nextActionLabel}. Proof ${proofLabel}. ${detailParts.join(" ")}`
   };
 }
 

@@ -149,6 +149,11 @@ describe("reporting hub model", () => {
     expect(model.dailyWork[0]).toMatchObject({
       kindLabel: "Delivery failure",
       badgeVariant: "danger",
+      blockedLabel: "Failed",
+      owner: "fund-controller",
+      affectedOutputLabel: "board",
+      nextActionLabel: "Review delivery",
+      proofLabel: "1 evidence gap",
       dueLabel: "Due Jun 30, 2026",
       evidenceGaps: ["Delivery failure has no retained evidence link."],
       primaryActionHref: "/reporting?deliveryAttempt=1"

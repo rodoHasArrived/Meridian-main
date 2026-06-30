@@ -29,8 +29,8 @@ public static class ReportingWorkspaceShellPresentationService
             Tone = WorkspaceTone.Warning,
             PrimaryActionId = "ReportRunStatus",
             PrimaryActionLabel = "Open",
-            SecondaryActionId = "FundAuditTrail",
-            SecondaryActionLabel = "Audit",
+            SecondaryActionId = "ReportLineProvenanceExplorer",
+            SecondaryActionLabel = "Evidence",
             AutomationName = "Reporting approval gates decision"
         },
         new WorkspaceQueueItem
@@ -181,8 +181,8 @@ public static class ReportingWorkspaceShellPresentationService
                 IsBlocked = schedulePlans.Count == 0 || readyPlans < schedulePlans.Count,
                 PrimaryActionId = "ReportRunStatus",
                 PrimaryActionLabel = "Run Status",
-                SecondaryActionId = "FundAuditTrail",
-                SecondaryActionLabel = "Audit",
+                SecondaryActionId = "ReportLineProvenanceExplorer",
+                SecondaryActionLabel = "Evidence",
                 AutomationName = "Reporting scheduled distribution decision"
             },
             new WorkspaceQueueItem
@@ -360,7 +360,7 @@ public static class ReportingWorkspaceShellPresentationService
 
     private static string DailyWorkSecondaryActionId(string kind) => kind switch
     {
-        "approval-needed" or "delivery-failure" or "evidence-gap" or "restatement" => "FundAuditTrail",
+        "approval-needed" or "delivery-failure" or "evidence-gap" or "restatement" => "ReportLineProvenanceExplorer",
         _ => "FundReportPack"
     };
 
@@ -392,6 +392,7 @@ public static class ReportingWorkspaceShellPresentationService
             ],
             SecondaryCommands =
             [
+                new WorkspaceCommandItem { Id = "ReportLineProvenanceExplorer", Label = "Evidence", Description = "Open report-line provenance and retained evidence.", Glyph = "\uE8D7" },
                 new WorkspaceCommandItem { Id = "Dashboard", Label = "Dashboard", Description = "Open portfolio reporting dashboard.", Glyph = "\uE71D" },
                 new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open retained audit lineage.", Glyph = "\uE8D7" }
             ]

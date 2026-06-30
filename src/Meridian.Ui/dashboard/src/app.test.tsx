@@ -144,6 +144,91 @@ const overview: SystemOverviewResponse = {
   recentEvents: []
 };
 
+function mockDailyControlTowerData() {
+  mockWorkstationData({
+    session: {
+      displayName: "Ops Desk",
+      role: "Operator",
+      environment: "paper",
+      activeWorkspace: "trading",
+      commandCount: 7
+    },
+    overview,
+    trading: {
+      readiness: {
+        asOf: "2026-05-14T21:30:00Z",
+        overallStatus: "Blocked",
+        readyForPaperOperation: false,
+        acceptanceGates: [
+          {
+            gateId: "replay-gate",
+            label: "Replay audit",
+            status: "Blocked",
+            detail: "Replay evidence is stale for the active paper session."
+          }
+        ],
+        activeSession: null,
+        sessions: [],
+        replay: null,
+        controls: {
+          circuitBreakerOpen: false
+        },
+        promotion: null,
+        trustGate: null,
+        brokerageSync: null,
+        workItems: [
+          {
+            workItemId: "brokerage-sync",
+            kind: "BrokerageSync",
+            label: "Brokerage sync failed",
+            detail: "Account sync failed after the last provider heartbeat.",
+            tone: "Critical",
+            createdAt: "2026-05-14T20:00:00Z",
+            runId: null,
+            fundAccountId: "fund-1",
+            auditReference: "audit-1",
+            workspace: "portfolio",
+            targetRoute: "/portfolio/brokerage-sync",
+            targetPageTag: "BrokerageSync"
+          },
+          {
+            workItemId: "report-pack",
+            kind: "ReportPackApproval",
+            label: "Report pack approval waiting",
+            detail: "Monthly board pack still needs an operator sign-off.",
+            tone: "Warning",
+            createdAt: "2026-05-14T21:00:00Z",
+            runId: "run-1",
+            fundAccountId: null,
+            auditReference: "audit-2",
+            workspace: "reporting",
+            targetRoute: "/reporting/report-packs",
+            targetPageTag: "ReportPackApproval"
+          }
+        ],
+        warnings: []
+      }
+    } as unknown as TradingWorkspaceResponse,
+    data: {
+      providers: [
+        {
+          provider: "Alpaca",
+          status: "Warning",
+          capability: "paper",
+          latency: "120ms",
+          note: "Paper endpoint returned intermittent quote gaps.",
+          recommendedAction: "Review paper provider posture."
+        }
+      ],
+      backfills: [],
+      exports: []
+    } as unknown as DataWorkspaceResponse,
+    loading: false,
+    error: null,
+    workspaceErrors: {}
+  });
+}
+
 describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
@@ -203,15 +288,65 @@ describe("App", () => {
   });
 
   it("provides a skip link into the workbench content", () => {
+    mockWorkstationData({ loading: false });
+
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
     expect(screen.getByRole("link", { name: "Skip to workbench" })).toHaveAttribute("href", "#workbench-content");
-    expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
+    const main = screen.getByRole("main", { name: "Trading workbench" });
+    expect(main).toHaveAttribute("id", "workbench-content");
+    expect(main).toHaveAttribute("aria-busy", "false");
   });
 
-  it("redirects the root route to trading", async () => {
+  it("marks the named workbench landmark busy during bootstrap", () => {
+    mockWorkstationData({ loading: true });
+
+    renderWithRouter(<App />, { initialEntries: ["/reporting/report-packs"] });
+
+    expect(screen.getByRole("main", { name: "Reporting workbench" })).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("renders the daily control tower on the root route", async () => {
+    mockDailyControlTowerData();
+
     renderWithRouter(<App />, { initialEntries: ["/"] });
-    await waitFor(() => expect(screen.getByRole("heading", { name: "Trading Workstation" })).toBeInTheDocument());
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
+    expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
+    const drivers = screen.getByRole("region", { name: "Daily control tower decision drivers" });
+    expect(within(drivers).getByText("Blocked outputs")).toBeInTheDocument();
+    expect(within(drivers).getByText("Trust posture")).toBeInTheDocument();
+    expect(within(drivers).getByText("Proof events")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Daily control tower blocked output queue" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", {
+      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+
+    const proofPassport = screen.getByRole("region", { name: "Brokerage sync failed Proof Passport" });
+    [
+      "Source",
+      "Freshness",
+      "Reconciliation",
+      "Approvals",
+      "Report Usage",
+      "Blockers",
+      "Evidence Packet",
+      "Audit Trail"
+    ].forEach((label) => {
+      expect(within(proofPassport).getByText(label)).toBeInTheDocument();
+    });
+    expect(within(proofPassport).getByText("Provider setup or diagnostics")).toBeInTheDocument();
+    await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+  });
+
+  it("redirects the legacy overview route to the daily control tower", async () => {
+    mockDailyControlTowerData();
+
+    renderWithRouter(<App />, { initialEntries: ["/overview"] });
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
+    await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
   });
 
   it("renders build, environment, data-source, and provider trust in the masthead", () => {
@@ -617,6 +752,32 @@ describe("App", () => {
     });
 
     renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
+
+    await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
+    expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();
+  });
+
+  it("redirects legacy Research and Governance wildcard routes to canonical workspaces", async () => {
+    const user = userEvent.setup();
+    mockWorkstationData({ loading: false });
+
+    function Harness() {
+      const navigate = useNavigate();
+      return (
+        <>
+          <button type="button" onClick={() => navigate("/governance/reconciliation")}>Open legacy governance</button>
+          <App />
+        </>
+      );
+    }
+
+    renderWithRouter(<Harness />, { initialEntries: ["/research/run-library"] });
+
+    await waitFor(() => expect(document.title).toBe("Strategy Workstation - Meridian"));
+    expect(screen.getByLabelText("Strategy workspace, active section, Paper")).toBeInTheDocument();
+
+    document.title = "Meridian";
+    await user.click(screen.getByRole("button", { name: "Open legacy governance" }));
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
     expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();

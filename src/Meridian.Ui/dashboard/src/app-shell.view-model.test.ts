@@ -60,6 +60,30 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
+  it("treats the root route as the Daily Control Tower shell focus", () => {
+    const state = buildAppShellViewState({
+      pathname: "/",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.routeFocus).toMatchObject({
+      announcement: "Daily Control Tower loaded.",
+      documentTitle: "Daily Control Tower - Meridian",
+      fallbackElementId: "workbench-content"
+    });
+    expect(state.workflowContinuity.title).toBe("Daily Control Tower");
+    expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
+      "Control Tower",
+      "Trading readiness",
+      "Accounting records",
+      "Report outputs",
+      "Provider trust"
+    ]);
+  });
+
   it("shows a loading status while bootstrap is in progress", () => {
     const state = buildAppShellViewState({
       pathname: "/trading",

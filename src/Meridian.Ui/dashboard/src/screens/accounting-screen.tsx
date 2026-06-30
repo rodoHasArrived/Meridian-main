@@ -1,4 +1,4 @@
-import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
+import { AlertCircle, ArrowRight, BookCheck, Briefcase, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -38,6 +38,7 @@ import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBa
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import {
   buildAccountingLoadingViewState,
+  buildAccountingTaskMode,
   buildCloseCommandCenterViewState,
   buildAccountingWorkflowLaunchViewState,
   resolveAccountingWorkstream,
@@ -390,45 +391,6 @@ const referenceDataEndpointColumns: DenseDataTableColumn<ReferenceDataEndpointRo
   { id: "latency", label: "Latency", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.latencyLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusLabel}</Badge> }
 ];
-const focusCopy: Record<string, { title: string; description: string }> = {
-  ledger: {
-    title: "Ledger overview",
-    description: "Cash, ledger coverage, and audit-facing balances remain visible from the workstation shell."
-  },
-  configure: {
-    title: "Configurable accounting setup",
-    description: "Books, chart accounts, journal templates, posting rules, validation, and action audit evidence are prepared before activation."
-  },
-  "journal-entries": {
-    title: "Journal entry workbench",
-    description: "Manual journal entry drafts, line-level Security Master attribution, GL account picks, balancing validation, and approval submission stay governed."
-  },
-  "capital-accounts": {
-    title: "Capital Account Workbench",
-    description: "Investor-level capital account evidence, allocation rules, statement lineage, restatement support, and audit drill-throughs stay governed."
-  },
-  reconciliation: {
-    title: "Reconciliation queue",
-    description: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting."
-  },
-  exceptions: {
-    title: "Operational exception workbench",
-    description: "Break queues, comments, workflow states, audit evidence, and approval handoffs stay together for case resolution."
-  },
-  "security-master": {
-    title: "Security coverage",
-    description: "Coverage gaps and reference integrity stay tied to reconciliation and reporting readiness."
-  },
-  approvals: {
-    title: "Approval gate",
-    description: "Pending, blocked, and completed close approvals stay grouped with signer, evidence, and audit context before release."
-  },
-  reporting: {
-    title: "Reporting profiles",
-    description: "Report packs, governed exports, and loader artifacts stay tied to accounting evidence."
-  }
-};
-
 const accountingSystemStatusVariant = {
   Matched: "success",
   Variance: "warning",
@@ -442,6 +404,45 @@ const accountingSystemEvidencePackageVariant = {
   ReviewRequired: "warning",
   Missing: "danger"
 } as const;
+
+const accountingTaskModeLinks = [
+  {
+    id: "reconciliation-casework",
+    label: "Reconciliation Casework",
+    description: "Review statement runs, open breaks, owners, evidence, and resolution actions.",
+    href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+  },
+  {
+    id: "ledger-explorer",
+    label: "Ledger Explorer",
+    description: "Inspect trial balance, journal support, proof links, report usage, and audit history.",
+    href: WORKSTATION_ROUTE_CATALOG.accountingLedger
+  },
+  {
+    id: "journal-entry",
+    label: "Journal Entry",
+    description: "Draft governed manual entries, validate balancing, attach proof, and submit approvals.",
+    href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
+  },
+  {
+    id: "capital-accounts",
+    label: "Capital Accounts",
+    description: "Trace investor capital activity, allocation evidence, statements, and report readiness.",
+    href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
+  },
+  {
+    id: "delivery-evidence",
+    label: "Delivery Evidence",
+    description: "Open retained report packs, manifests, exports, and audit-ready output support.",
+    href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+  },
+  {
+    id: "governance",
+    label: "Governance",
+    description: "Configure books, posting controls, Security Master readiness, and activation gates.",
+    href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
+  }
+] as const;
 
 function ReconciliationComparisonPanel({ view }: { view: ReconciliationComparisonViewState }) {
   return (
@@ -1518,10 +1519,22 @@ function formatApprovalError(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message || fallback : fallback;
 }
 
+function normalizeAccountingLandingPath(pathname: string): string {
+  const path = pathname.split("?")[0]?.split("#")[0]?.trim() || WORKSTATION_ROUTE_CATALOG.accounting;
+  if (path.length > 1 && path.endsWith("/")) {
+    return path.slice(0, -1).toLowerCase();
+  }
+
+  return path.toLowerCase();
+}
+
 export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
   const { pathname, search } = useLocation();
   const workstream = resolveAccountingWorkstream(pathname);
+  const taskMode = buildAccountingTaskMode(pathname);
   const workspace = workspaceForPath(pathname);
+  const normalizedAccountingPath = normalizeAccountingLandingPath(pathname);
+  const isCloseCockpitLanding = normalizedAccountingPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedAccountingPath === "/governance";
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
@@ -1932,9 +1945,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     () => data ? buildAccountingWorkflowLaunchViewState({
       data,
       workstream,
-      closeCommandCenter
+      closeCommandCenter,
+      taskMode
     }) : null,
-    [closeCommandCenter, data, workstream]
+    [closeCommandCenter, data, taskMode, workstream]
   );
 
   if (!data) {
@@ -1957,7 +1971,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <AccountingChip label="Route" value={loading.routeLabel} />
-              <AccountingChip label="Workstream" value={loading.workstreamLabel} />
+              <AccountingChip label="Task mode" value={loading.workstreamLabel} />
             </div>
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.38fr)]">
@@ -1993,10 +2007,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     );
   }
 
-  const focus = focusCopy[workstream];
+  const focus = taskMode;
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
   const accountingRecoveryFields = [
-    { id: "workstream", label: "Workstream", value: focus.title },
+    { id: "task-mode", label: "Task mode", value: focus.label },
+    { id: "workstream", label: "Workstream", value: workstream },
     { id: "queue", label: "Queue", value: `${data.reconciliationQueue.length} runs` },
     { id: "breaks", label: "Breaks", value: `${data.breakQueue.length} open` },
     { id: "close", label: "Close", value: closeCommandCenter?.statusLabel ?? "Loading" },
@@ -2016,16 +2031,18 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         role="region"
         aria-label={`${workspace.label} workbench context`}
         data-workstream={workstream}
+        data-task-mode={taskMode.id}
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
       >
         <div className="min-w-0">
           <div className="eyebrow-label">{workspace.label} lane</div>
           <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            {focus.title}
+            {focus.label}
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{focus.description}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <AccountingChip label="Task mode" value={taskMode.label} />
           <AccountingChip label="Workstream" value={workstream} />
           <AccountingChip label="Queue" value={String(data.reconciliationQueue.length)} />
           <AccountingChip label="Breaks" value={String(data.breakQueue.length)} />
@@ -2036,21 +2053,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       <WorkspaceFilterBar
         label="Accounting recovery navigator"
         searchLabel="Current Accounting route"
-        searchValue={`${workspace.label} / ${focus.title}`}
+        searchValue={`${workspace.label} / ${taskMode.label}`}
         fields={accountingRecoveryFields}
         actions={
-          <div className="flex flex-wrap gap-2" aria-label="Accounting recovery jump targets">
+          <div className="flex flex-wrap gap-2" aria-label="Accounting task-mode routes">
             <Button asChild size="sm" variant="outline">
-              <a href="#close-command-center">Close center</a>
+              <Link to="/accounting">Close Cockpit</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <a href="#external-gl-reconciliation">External GL</a>
+              <Link to="/accounting/reconciliation">Reconciliation Casework</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <a href="#accounting-posture">Posture</a>
+              <Link to="/accounting/ledger">Ledger Explorer</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <Link to="/accounting/reconciliation">Exceptions</Link>
+              <Link to="/accounting/journal-entries">Journal Entry</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/accounting/configure">Governance</Link>
             </Button>
           </div>
         }
@@ -2065,6 +2085,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       <AccountingCloseReportPackagePanel view={closeReportPackage} />
 
+      {isCloseCockpitLanding ? (
+        <AccountingTaskModeLauncher />
+      ) : (
+        <>
       {multiAssetCoveragePanel ? (
         <Card className="panel-surface" role="region" aria-label="Multi-asset accounting coverage">
           <CardHeader>
@@ -2249,7 +2273,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             <div className="eyebrow-label">{workspace.label} Lane</div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              {focus.title}
+              {focus.label}
             </CardTitle>
             <CardDescription>{focus.description}</CardDescription>
           </CardHeader>
@@ -3593,7 +3617,45 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </section>
         </section>
       )}
+        </>
+      )}
     </div>
+  );
+}
+
+function AccountingTaskModeLauncher() {
+  return (
+    <section
+      className="workspace-section-band"
+      role="navigation"
+      aria-label="Accounting task modes"
+    >
+      <div className="workspace-section-subheader">
+        <div>
+          <p className="eyebrow-label">Task modes</p>
+          <h3 className="workspace-section-title">Open focused accounting work</h3>
+          <p className="workspace-section-summary">
+            The close cockpit stays on daily blockers, owners, affected outputs, next actions, and retained proof; focused routes hold the heavier accounting work.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        {accountingTaskModeLinks.map((mode) => (
+          <Link
+            key={mode.id}
+            to={mode.href}
+            className="group rounded-md border border-border/70 bg-background/75 px-4 py-3 text-sm transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={`Open ${mode.label} accounting task mode`}
+          >
+            <span className="flex items-start justify-between gap-3">
+              <span className="font-semibold text-foreground">{mode.label}</span>
+              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" aria-hidden="true" />
+            </span>
+            <span className="mt-2 block text-xs leading-5 text-muted-foreground">{mode.description}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

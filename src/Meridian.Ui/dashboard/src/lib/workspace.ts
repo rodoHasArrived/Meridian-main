@@ -38,10 +38,13 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingApprovals: "/accounting/approvals",
   accountingEvidence: "/accounting/evidence",
   reporting: "/reporting",
+  reportingReportBuilder: "/reporting/report-builder",
+  reportingRunStatus: "/reporting/run-status",
   reportingOperationsRecord: "/reporting/operations-record",
   reportingReportPacks: "/reporting/report-packs",
   reportingEvidence: "/reporting/evidence",
   reportingExports: "/reporting/exports",
+  reportingGovernance: "/reporting/governance",
   strategy: "/strategy",
   strategyDesigner: "/strategy/designer",
   strategyFormulaWorkbench: "/strategy/formula-workbench",
@@ -105,6 +108,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   ProviderHealth: WORKSTATION_ROUTE_CATALOG.dataProviders,
   ProviderTrust: WORKSTATION_ROUTE_CATALOG.dataProviders,
   ResearchShell: WORKSTATION_ROUTE_CATALOG.strategy,
+  ReportLineProvenanceExplorer: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
   ReportingShell: WORKSTATION_ROUTE_CATALOG.reporting,
   ReportPackApproval: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
   RunRisk: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
@@ -312,6 +316,13 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
   if (firstSegment === "data" && pathSegments(pathname)[1] === "security-master") {
     const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataSecurityMasterLegacy.length);
     return `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "overview") {
+    const suffix = pathname.slice("/overview".length);
+    return suffix.length === 0 || suffix === "/"
+      ? `/${search}${hash}`
+      : `${workspacePath(LEGACY_WORKSPACE_ALIASES[firstSegment])}${suffix}${search}${hash}`;
   }
 
   if (!isLegacyWorkspaceKey(firstSegment)) {

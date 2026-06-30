@@ -551,9 +551,27 @@ export interface ReportingLoadingState {
   routeLabel: string;
 }
 
+export type ReportingTaskModeId =
+  | "daily-reporting-cockpit"
+  | "report-builder"
+  | "run-status"
+  | "delivery-evidence"
+  | "exports"
+  | "governance"
+  | "report-pack-approval";
+
+export interface ReportingTaskModeViewModel {
+  id: ReportingTaskModeId;
+  label: string;
+  description: string;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
 export interface ReportingScreenViewModel {
   title: string;
   description: string;
+  taskMode: ReportingTaskModeViewModel;
   countLabel: string;
   recommendedCountLabel: string;
   packTargetCountLabel: string;
@@ -623,6 +641,7 @@ export function useReportingScreenViewModel(
   const exportCommandRevisionRef = useRef(0);
   const exportAbortRef = useRef<AbortController | null>(null);
   const detailId = "reporting-profile-detail";
+  const taskMode = buildReportingTaskMode(pathname);
 
   useEffect(() => () => {
     exportCommandRevisionRef.current += 1;
@@ -694,6 +713,7 @@ export function useReportingScreenViewModel(
     return {
       title: "Report packs",
       description: "No reporting data is available.",
+      taskMode,
       countLabel: "0 profiles",
       recommendedCountLabel: "0",
       packTargetCountLabel: "0",
@@ -841,6 +861,7 @@ export function useReportingScreenViewModel(
   return {
     title: "Report packs",
     description: reporting.summary,
+    taskMode,
     countLabel,
     recommendedCountLabel,
     packTargetCountLabel,
@@ -1981,6 +2002,7 @@ function artifactLabel(artifact: string): string {
 
 function buildLoadingState(pathname: string): ReportingLoadingState {
   const title = "Loading Reporting";
+  const taskMode = buildReportingTaskMode(pathname);
 
   return {
     role: "status",
@@ -1991,8 +2013,95 @@ function buildLoadingState(pathname: string): ReportingLoadingState {
     title,
     detail: "Waiting for governed report-pack and export evidence.",
     badgeLabel: "Loading",
-    routeLabel: isReportPackRoute(pathname) ? "Report packs" : "Reporting"
+    routeLabel: taskMode.routeLabel
   };
+}
+
+function buildReportingTaskMode(pathname: string): ReportingTaskModeViewModel {
+  const normalizedPathname = normalizeReportingPathname(pathname);
+
+  if (normalizedPathname === WORKSTATION_ROUTE_CATALOG.reporting) {
+    return {
+      id: "daily-reporting-cockpit",
+      label: "Daily Reporting Cockpit",
+      description: "Reporting opens on the daily decision queue: blocked output, owner, affected report, next action, and retained proof.",
+      routeLabel: "Daily Reporting Cockpit",
+      ariaLabel: "Reporting task mode daily reporting cockpit"
+    };
+  }
+
+  if (normalizedPathname.startsWith(WORKSTATION_ROUTE_CATALOG.reportingReportBuilder)) {
+    return {
+      id: "report-builder",
+      label: "Report Builder",
+      description: "Reporting owns governed output design, report-writer grids, branding, schedules, and delivery history.",
+      routeLabel: "Report Builder",
+      ariaLabel: "Reporting task mode report builder"
+    };
+  }
+
+  if (isReportPackRoute(pathname)) {
+    return {
+      id: "report-pack-approval",
+      label: "Delivery Evidence",
+      description: "Reporting owns governed output review, recipient checks, export preview, and publication evidence.",
+      routeLabel: "Delivery Evidence",
+      ariaLabel: "Reporting task mode delivery evidence"
+    };
+  }
+
+  if (pathname.includes("/run-status")) {
+    return {
+      id: "run-status",
+      label: "Run Status",
+      description: "Reporting owns report-run readiness, queue posture, schedule state, and publication blockers.",
+      routeLabel: "Run Status",
+      ariaLabel: "Reporting task mode run status"
+    };
+  }
+
+  if (pathname.includes("/evidence")) {
+    return {
+      id: "delivery-evidence",
+      label: "Delivery Evidence",
+      description: "Reporting owns retained evidence packets, report-line provenance, recipient support, and audit-ready delivery proof.",
+      routeLabel: "Delivery Evidence",
+      ariaLabel: "Reporting task mode delivery evidence"
+    };
+  }
+
+  if (pathname.includes("/exports")) {
+    return {
+      id: "exports",
+      label: "Exports",
+      description: "Reporting owns governed export previews, generated artifacts, warnings, and retained manifest support.",
+      routeLabel: "Exports",
+      ariaLabel: "Reporting task mode exports"
+    };
+  }
+
+  if (pathname.includes("/governance")) {
+    return {
+      id: "governance",
+      label: "Governance",
+      description: "Reporting owns access scope, template approval posture, lifecycle decisions, and audit-ready controls.",
+      routeLabel: "Governance",
+      ariaLabel: "Reporting task mode governance"
+    };
+  }
+
+  return {
+    id: "report-builder",
+    label: "Report Builder",
+    description: "Reporting owns governed output design, access audit, schedules, delivery history, and report-writer evidence.",
+    routeLabel: "Report Builder",
+    ariaLabel: "Reporting task mode report builder"
+  };
+}
+
+function normalizeReportingPathname(pathname: string): string {
+  const [withoutQuery] = pathname.split(/[?#]/);
+  return (withoutQuery?.replace(/\/+$/, "") || WORKSTATION_ROUTE_CATALOG.reporting).toLowerCase();
 }
 
 function buildPackTargetsEmptyState(): ReportingPackTargetsEmptyState {

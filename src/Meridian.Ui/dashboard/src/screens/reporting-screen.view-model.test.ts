@@ -654,6 +654,11 @@ describe("useReportingScreenViewModel", () => {
   it("builds a route-specific report-pack approval task panel", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
 
+    expect(result.current.taskMode).toMatchObject({
+      id: "report-pack-approval",
+      label: "Delivery Evidence",
+      routeLabel: "Delivery Evidence"
+    });
     expect(result.current.workflowTaskPanel).toMatchObject({
       regionLabel: "Report-pack approval task",
       title: "Report-pack approval",
@@ -975,6 +980,11 @@ describe("useReportingScreenViewModel", () => {
   it("derives report queue summary chips in the view model", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 
+    expect(result.current.taskMode).toMatchObject({
+      id: "daily-reporting-cockpit",
+      label: "Daily Reporting Cockpit",
+      routeLabel: "Daily Reporting Cockpit"
+    });
     expect(result.current.recommendedCountLabel).toBe("1");
     expect(result.current.packTargetCountLabel).toBe("2");
     expect(result.current.workbenchChips).toEqual([
@@ -989,6 +999,30 @@ describe("useReportingScreenViewModel", () => {
       { label: "Recipients", value: "2" },
       { label: "List", value: "Export profiles" }
     ]);
+    const exportRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/exports"));
+    expect(exportRoute.result.current.taskMode).toMatchObject({
+      id: "exports",
+      label: "Exports",
+      routeLabel: "Exports"
+    });
+    const reportBuilderRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-builder"));
+    expect(reportBuilderRoute.result.current.taskMode).toMatchObject({
+      id: "report-builder",
+      label: "Report Builder",
+      routeLabel: "Report Builder"
+    });
+    const runStatusRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/run-status"));
+    expect(runStatusRoute.result.current.taskMode).toMatchObject({
+      id: "run-status",
+      label: "Run Status",
+      routeLabel: "Run Status"
+    });
+    const governanceRoute = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/governance"));
+    expect(governanceRoute.result.current.taskMode).toMatchObject({
+      id: "governance",
+      label: "Governance",
+      routeLabel: "Governance"
+    });
     expect(result.current.packTargetChips).toEqual([
       { label: "Recipients", value: "2" },
       { label: "Inspector", value: "No profile selected" }
@@ -1438,14 +1472,14 @@ describe("useReportingScreenViewModel", () => {
       title: "Loading Reporting",
       detail: "Waiting for governed report-pack and export evidence.",
       badgeLabel: "Loading",
-      routeLabel: "Reporting"
+      routeLabel: "Daily Reporting Cockpit"
     });
   });
 
   it("derives route-aware loading state for report packs", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(null, undefined, "/reporting/report-packs"));
 
-    expect(result.current.loadingState.routeLabel).toBe("Report packs");
+    expect(result.current.loadingState.routeLabel).toBe("Delivery Evidence");
   });
 
   it("count label reflects profile count", () => {

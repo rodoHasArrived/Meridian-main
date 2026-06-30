@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface WorkspaceFilterBarOption {
@@ -36,7 +36,12 @@ export function WorkspaceFilterBar({
     <section className={cn("workspace-filter-bar", className)} aria-label={label}>
       <div className="workspace-filter-search" role="search" aria-label={searchLabel}>
         <Search className="h-3.5 w-3.5" aria-hidden="true" />
-        <span>{searchValue ?? searchLabel}</span>
+        <input
+          aria-label={searchLabel}
+          readOnly
+          value={searchValue ?? ""}
+          placeholder={searchLabel}
+        />
       </div>
       {options.length > 0 ? (
         <div className="workspace-filter-segments" role="list" aria-label={`${label} filters`}>
@@ -87,12 +92,59 @@ export function WorkspaceTabStrip({
   onSelect?: (id: string) => void;
   className?: string;
 }) {
+  const selectedIndex = tabs.findIndex((tab) => tab.selected);
+  const focusTabAtIndex = (currentTarget: HTMLElement, index: number) => {
+    const tabElements = Array.from(
+      currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]') ?? []
+    );
+    tabElements[index]?.focus();
+  };
+  const handleTabKeyDown = (
+    event: KeyboardEvent<HTMLAnchorElement | HTMLButtonElement>,
+    index: number,
+    href: string | undefined
+  ) => {
+    if (tabs.length === 0) {
+      return;
+    }
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      focusTabAtIndex(event.currentTarget, (index + 1) % tabs.length);
+      return;
+    }
+
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      focusTabAtIndex(event.currentTarget, (index - 1 + tabs.length) % tabs.length);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      focusTabAtIndex(event.currentTarget, 0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      focusTabAtIndex(event.currentTarget, tabs.length - 1);
+      return;
+    }
+
+    if (href && event.key === " ") {
+      event.preventDefault();
+      event.currentTarget.click();
+    }
+  };
+
   return (
     <div className={cn("workspace-tab-strip", className)} role="tablist" aria-label={label}>
-      {tabs.map((tab) => {
+      {tabs.map((tab, index) => {
         const selected = Boolean(tab.selected);
         const className = cn("workspace-tab", selected && "active");
         const content = <span>{tab.label}</span>;
+        const tabIndex = selected || (selectedIndex < 0 && index === 0) ? 0 : -1;
 
         return tab.href ? (
           <a
@@ -102,6 +154,9 @@ export function WorkspaceTabStrip({
             role="tab"
             aria-selected={selected}
             aria-controls={tab.panelId}
+            aria-current={selected ? "page" : undefined}
+            tabIndex={tabIndex}
+            onKeyDown={(event) => handleTabKeyDown(event, index, tab.href)}
           >
             {content}
           </a>
@@ -113,6 +168,8 @@ export function WorkspaceTabStrip({
             role="tab"
             aria-selected={selected}
             aria-controls={tab.panelId}
+            tabIndex={tabIndex}
+            onKeyDown={(event) => handleTabKeyDown(event, index, tab.href)}
             onClick={() => onSelect?.(tab.id)}
           >
             {content}

@@ -49,6 +49,7 @@ import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: module.DataScreen })));
+const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: module.DailyControlTowerScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: module.AccountingScreen })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
@@ -222,6 +223,7 @@ function AppShell() {
     operatingContextScope: operatingScopeInput
   });
   const breadcrumbItems = buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate);
+  const headerWorkspace = buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace);
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -338,11 +340,13 @@ function AppShell() {
           ref={workbenchRef}
           id="workbench-content"
           className="workbench grid grid-rows-[auto_auto_minmax(0,1fr)]"
+          aria-label={`${headerWorkspace.label} workbench`}
+          aria-busy={loading || refreshStatus.inFlight}
           tabIndex={-1}
         >
           <WorkspaceHeader
             breadcrumbItems={breadcrumbItems}
-            workspace={shell.activeWorkspace}
+            workspace={headerWorkspace}
             session={session}
             onRefresh={refresh}
             refreshing={loading || refreshStatus.inFlight}
@@ -358,7 +362,12 @@ function AppShell() {
               <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes>
-                  <Route path="/" element={<Navigate to="/trading" replace />} />
+                  <Route path="/" element={(
+                    <DailyControlTowerScreen
+                      viewModel={shell.workflowContinuity}
+                      trustStrip={shell.trustStrip}
+                    />
+                  )} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
                       strategy={strategy}
@@ -444,9 +453,9 @@ function AppShell() {
                     />
                   )} />
                   <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/strategy/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/accounting/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
                     <Route path="*" element={<NotFoundScreen />} />
                   </Routes>
                 </Suspense>
@@ -508,6 +517,18 @@ function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
     default:
       return "trading";
   }
+}
+
+function buildHeaderWorkspaceSummary(pathname: string, workspace: WorkspaceSummary): WorkspaceSummary {
+  if (pathname !== "/") {
+    return workspace;
+  }
+
+  return {
+    ...workspace,
+    label: "Daily Control Tower",
+    description: "Ranked operator decisions across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
+  };
 }
 
 function focusRouteTargetWhenReady(
@@ -575,13 +596,17 @@ function buildWorkspaceBreadcrumbItems(
   workspace: WorkspaceSummary,
   navigate: ReturnType<typeof useNavigate>
 ): BreadcrumbItem[] {
+  if (pathname === "/") {
+    return [{ label: "Workstation", current: true }];
+  }
+
   const routeLabel = resolveRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
     {
       label: "Workstation",
-      onClick: () => navigate("/trading")
+      onClick: () => navigate("/")
     },
     {
       label: workspace.label,
@@ -605,21 +630,28 @@ function resolveRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSumma
 function formatRouteSegmentLabel(segment: string): string {
   const knownLabels: Record<string, string> = {
     alerts: "Alerts",
-    approvals: "Approvals",
+    approvals: "Close Cockpit",
     "capital-accounts": "Capital Accounts",
+    configure: "Governance",
     "covered-call": "Covered Call",
     designer: "Designer",
     "entity-setup": "Entity Setup",
     evidence: "Evidence",
+    exceptions: "Reconciliation Casework",
     "family-office": "Family Office",
     "formula-workbench": "Formula Workbench",
-    ledger: "Ledger",
+    "journal-entries": "Journal Entry",
+    ledger: "Ledger Explorer",
     "operations-continuity": "Operations Continuity",
     "operations-record": "Operations Record",
+    exports: "Exports",
     providers: "Providers",
     "quant-lab": "Quant Lab",
     quotes: "Quotes",
     readiness: "Readiness",
+    reconciliation: "Reconciliation Casework",
+    "report-packs": "Delivery Evidence",
+    "run-status": "Run Status",
     "security-master": "Security Master",
     watchlist: "Watchlist"
   };
@@ -811,9 +843,9 @@ class RouteErrorBoundary extends Component<
       return (
         <RouteRecoveryPanel
           title="Workbench route failed"
-          detail="Meridian could not render this route. Return to Trading or retry after refreshing live data."
-          actionLabel="Open Trading"
-          actionHref="/trading"
+          detail="Meridian could not render this route. Return to the Daily Control Tower or retry after refreshing live data."
+          actionLabel="Open Daily Control Tower"
+          actionHref="/"
         />
       );
     }
@@ -827,8 +859,8 @@ function NotFoundScreen() {
     <RouteRecoveryPanel
       title="Workbench route not found"
       detail="The requested workstation route is not available in this Meridian build."
-      actionLabel="Open Trading"
-      actionHref="/trading"
+      actionLabel="Open Daily Control Tower"
+      actionHref="/"
     />
   );
 }
@@ -1046,7 +1078,7 @@ function PriceAlertsBell() {
 
 function LegacyWorkspaceRedirect() {
   const location = useLocation();
-  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
+  return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/"} replace />;
 }
 
 function WorkspaceRouteFallback({ title }: { title: string }) {
