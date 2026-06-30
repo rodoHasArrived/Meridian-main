@@ -45,6 +45,7 @@ public static class LedgerEndpoints
             return Results.Json(books, jsonOptions);
         })
         .WithName("ListLedgerBooks")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<LedgerBookDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -116,6 +117,12 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             try
             {
                 var assessment = await service.AssessRolloutAsync(request, context.RequestAborted).ConfigureAwait(false);
@@ -170,6 +177,7 @@ public static class LedgerEndpoints
             return Results.Json(periods, jsonOptions);
         })
         .WithName("ListLedgerPeriods")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<LedgerPeriodDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -468,6 +476,7 @@ public static class LedgerEndpoints
                 jsonOptions);
         })
         .WithName("GetLedgerCrossPeriodTrialBalanceReport")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<LedgerCrossPeriodTrialBalanceReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -526,6 +535,7 @@ public static class LedgerEndpoints
                 jsonOptions);
         })
         .WithName("GetLedgerCrossPeriodPnlReport")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<LedgerCrossPeriodPnlReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -554,6 +564,7 @@ public static class LedgerEndpoints
             return Results.Json(workspace, jsonOptions);
         })
         .WithName("GetAccountingConfiguration")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -727,6 +738,11 @@ public static class LedgerEndpoints
             }
 
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service.PreviewTemplateAsync(request with
             {
                 Actor = ResolveMutationActor(context, request.Actor),
@@ -756,6 +772,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service.DryRunPostingRuleAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
@@ -791,6 +812,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildCandidateAsync(request with
                     {
@@ -871,6 +897,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildProjectionSetAsync(request with
                     {
@@ -908,6 +939,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service.ExecuteRuleTestCasesAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
@@ -984,6 +1020,7 @@ public static class LedgerEndpoints
             return Results.Json(audit, jsonOptions);
         })
         .WithName("ListAccountingConfigurationAudit")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1331,6 +1368,11 @@ public static class LedgerEndpoints
             {
                 var actor = ResolveMutationActor(context, request.Actor);
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildPackageAsync(request with
                     {
@@ -1439,6 +1481,7 @@ public static class LedgerEndpoints
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListLedgerAccountingReportPackages")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<IReadOnlyList<AccountingReportPackageBundleDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1510,6 +1553,7 @@ public static class LedgerEndpoints
             return Results.Json(workbench, jsonOptions);
         })
         .WithName("GetManualJournalEntryWorkbench")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<ManualJournalEntryWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1541,6 +1585,7 @@ public static class LedgerEndpoints
                 jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalActivity")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalActivityProjectionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1581,6 +1626,7 @@ public static class LedgerEndpoints
             return Results.Json(record, jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalFundEventRecord")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalFundEventLedgerRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1621,6 +1667,7 @@ public static class LedgerEndpoints
             return Results.Json(commandCenter, jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalFundEventCommandCenter")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalFundEventCommandCenterDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1681,6 +1728,7 @@ public static class LedgerEndpoints
             return Results.Json(subledgers[0], jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalCapitalAccountSubledger")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalCapitalAccountSubledgerDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1751,6 +1799,7 @@ public static class LedgerEndpoints
             return Results.Json(reportOutputs[0], jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalReportOutput")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalReportOutputDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1798,6 +1847,7 @@ public static class LedgerEndpoints
             return Results.Json(workbench, jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalCapitalAccountWorkbench")
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<CapitalAccountWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -1861,6 +1911,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.Draft.FundProfileId).ConfigureAwait(false))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service.ValidateDraftAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
@@ -2116,6 +2171,33 @@ public static class LedgerEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
+
+    /// <summary>
+    /// Tenant isolation (SEC-005 slice 3) for body-supplied fund scopes on POST read/preview routes the
+    /// query-string <see cref="FundProfileScopeEndpointFilters"/> filter cannot see. Returns true (allow)
+    /// for a blank fund or an unavailable guard (fail open); denies only a fund the registry positively
+    /// attributes to another tenant. Call it after the route's permission check so an unauthorized caller
+    /// never receives an ownership verdict.
+    /// </summary>
+    private static async Task<bool> IsBodyFundScopeAccessibleAsync(
+        HttpContext context,
+        WorkstationTenantContext tenant,
+        string? fundProfileId)
+    {
+        if (string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return true;
+        }
+
+        var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
+        if (guard is null)
+        {
+            return true;
+        }
+
+        var decision = await guard.EvaluateAsync(tenant, fundProfileId, context.RequestAborted).ConfigureAwait(false);
+        return decision.IsAllowed;
+    }
 
     private static bool HasLedgerMutationPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(

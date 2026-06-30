@@ -4,6 +4,7 @@ import {
   WorkspaceDocumentCanvas,
   WorkspaceFilterBar,
   WorkspaceInspectorHost,
+  WorkspaceTabPanel,
   WorkspaceTabStrip
 } from "@/components/meridian/workspace-primitives";
 
@@ -51,6 +52,7 @@ describe("workspace primitives", () => {
     );
 
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("id", "overview-panel-tab");
     expect(screen.getByRole("tablist", { name: "Provider detail tabs" })).toHaveAttribute("aria-orientation", "horizontal");
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("tab", { name: "Diagnostics" })).toHaveAttribute("tabindex", "-1");
@@ -123,6 +125,42 @@ describe("workspace primitives", () => {
     fireEvent.keyDown(diagnostics, { key: "ArrowRight" });
     fireEvent.keyDown(history, { key: " " });
     expect(onSelect).toHaveBeenCalledWith("history");
+  });
+
+  it("links tabs and tab panels with stable accessible names", () => {
+    render(
+      <>
+        <WorkspaceTabStrip
+          label="Provider detail tabs"
+          tabs={[
+            { id: "overview", label: "Overview", selected: true, panelId: "overview-panel" },
+            { id: "diagnostics", label: "Diagnostics", panelId: "diagnostics-panel", tabId: "provider-diagnostics-tab" }
+          ]}
+        />
+        <WorkspaceTabPanel id="overview-panel" labelledBy="overview-panel-tab">
+          <p>Overview evidence</p>
+        </WorkspaceTabPanel>
+        <WorkspaceTabPanel id="diagnostics-panel" labelledBy="provider-diagnostics-tab" active={false}>
+          <p>Diagnostics evidence</p>
+        </WorkspaceTabPanel>
+      </>
+    );
+
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-controls", "overview-panel");
+    expect(screen.getByRole("tab", { name: "Diagnostics" })).toHaveAttribute("id", "provider-diagnostics-tab");
+    expect(screen.getByRole("tabpanel", { name: "Overview" })).toHaveTextContent("Overview evidence");
+    expect(screen.queryByRole("tabpanel", { name: "Diagnostics" })).not.toBeInTheDocument();
+    expect(document.getElementById("diagnostics-panel")).toHaveAttribute("hidden");
+  });
+
+  it("supports labelled standalone tab panels when no tab label owns the panel", () => {
+    render(
+      <WorkspaceTabPanel id="audit-panel" label="Audit trail">
+        <p>Audit evidence</p>
+      </WorkspaceTabPanel>
+    );
+
+    expect(screen.getByRole("tabpanel", { name: "Audit trail" })).toHaveTextContent("Audit evidence");
   });
 
   it("frames inspector and document canvas regions", () => {
