@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
@@ -123,6 +124,74 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         await guard.DidNotReceive().EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
         await service.Received(1).UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Field_OnSuccessfulWrite_ClaimsFundOwnershipForCallerTenant()
+    {
+        // Trust-on-first-use (SEC-005 slice 2): a successful governed write binds the body-supplied fund
+        // to the caller's resolved session tenant so a later cross-tenant caller is positively rejected.
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        await using var app = await CreateAppAsync(
+            service, UserPermission.ModifySecurityMaster, fundRegistry: registry);
+        var client = app.GetTestClient();
+
+        var body = FieldRequest(Guid.NewGuid()) with { FundProfileId = "fund-caller" };
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // The post-commit claim must use a request-independent token so a client disconnect after the
+        // write commits cannot cancel the bind and leave the fund unbound (SEC-005).
+        await registry.Received(1).BindAsync(
+            "fund-caller", "tenant-test", Arg.Any<string?>(), CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Field_OnFailedWrite_DoesNotClaimFundOwnership()
+    {
+        // Binding only on success: a write that throws must never squat the fund id, otherwise a failed
+        // attempt would block the tenant that later performs the first real write.
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
+            .Throws(new SecurityMasterConcurrencyException(Guid.NewGuid(), expectedVersion: 3, currentVersion: 7));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        await using var app = await CreateAppAsync(
+            service, UserPermission.ModifySecurityMaster, fundRegistry: registry);
+        var client = app.GetTestClient();
+
+        var body = FieldRequest(Guid.NewGuid()) with { FundProfileId = "fund-caller" };
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await registry.DidNotReceive().BindAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Field_WithBlankFundProfile_DoesNotClaimOwnership()
+    {
+        // No fund scope to claim: a blank fund must not bind (and a registry failure must not break the
+        // unscoped edit path that the platform has always supported).
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        await using var app = await CreateAppAsync(
+            service, UserPermission.ModifySecurityMaster, fundRegistry: registry);
+        var client = app.GetTestClient();
+
+        // FieldRequest carries no FundProfileId (null) → nothing to bind.
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", FieldRequest(Guid.NewGuid()), Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await registry.DidNotReceive().BindAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -326,7 +395,8 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         ISecurityMasterWorkbenchCommandService service,
         UserPermission permissions,
         string? sessionActor = SessionActor,
-        IFundProfileTenantGuard? fundGuard = null)
+        IFundProfileTenantGuard? fundGuard = null,
+        IFundProfileTenancyRegistry? fundRegistry = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -334,6 +404,11 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
         if (fundGuard is not null)
         {
             builder.Services.AddSingleton(fundGuard);
+        }
+
+        if (fundRegistry is not null)
+        {
+            builder.Services.AddSingleton(fundRegistry);
         }
 
         var app = builder.Build();

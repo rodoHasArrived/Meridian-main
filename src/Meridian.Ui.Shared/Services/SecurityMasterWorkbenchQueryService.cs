@@ -5,12 +5,15 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -34,6 +37,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     private readonly ISecurityMasterCashFlowService? _cashFlowService;
     private readonly IDataVendorEntitlementService? _entitlementService;
     private readonly ISecurityMasterDataQualityService? _dataQualityService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -48,7 +53,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         ISecurityMasterPricingService? pricingService = null,
         ISecurityMasterCashFlowService? cashFlowService = null,
         IDataVendorEntitlementService? entitlementService = null,
-        ISecurityMasterDataQualityService? dataQualityService = null)
+        ISecurityMasterDataQualityService? dataQualityService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -63,6 +70,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         _cashFlowService = cashFlowService;
         _entitlementService = entitlementService;
         _dataQualityService = dataQualityService;
+        _tenancyRegistry = tenancyRegistry;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
@@ -72,6 +81,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         ct.ThrowIfCancellationRequested();
         var nowUtc = DateTimeOffset.UtcNow;
+
+        // Tenant isolation (SEC-005): sanitize the operator-supplied fund scope ONCE here so every
+        // fund-scoped evidence path the snapshot and its instrument passport fan out to — downstream
+        // impact, open lots, Clearwater pricing (golden-copy/hierarchy), and entitlement applicability —
+        // is unscoped for a fund owned by another tenant, not just runs/lots. Own/blank funds and registry
+        // uncertainty pass through unchanged (fail open to the single-company-per-deployment boundary).
+        fundProfileId = await SanitizeFundScopeAsync(fundProfileId, ct).ConfigureAwait(false);
 
         var detailTask = _queryService.GetByIdAsync(securityId, ct);
         var historyTask = _queryService.GetHistoryAsync(new SecurityHistoryRequest(securityId, 50), ct);
@@ -1966,6 +1982,17 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         var normalizedFundProfileId = fundProfileId.Trim();
+
+        // Tenant isolation (SEC-005): a fund the registry reports as owned by another tenant must surface as
+        // withheld/unknown — NOT as an empty "no runs" (Severity.None) impact. Reporting None would let
+        // downstream low-risk gates (e.g. bulk conflict resolution, which only proceeds on None/Low) treat
+        // a foreign scope as safe instead of forbidden; Unknown keeps it non-eligible while still disclosing
+        // zero runs/exposures. Unbound/legacy/own funds and uncertainty all pass through and resolve below.
+        if (!await IsFundAccessibleToCurrentTenantAsync(normalizedFundProfileId, ct).ConfigureAwait(false))
+        {
+            return BuildWithheldFundImpact(normalizedFundProfileId);
+        }
+
         var relatedRuns = await LoadFundRunsAsync(normalizedFundProfileId, ct).ConfigureAwait(false);
         if (relatedRuns.Count == 0)
         {
@@ -2179,6 +2206,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Links: links);
     }
 
+    /// <summary>
+    /// Enumerates the process-wide run store for a single fund. Callers MUST first gate access with
+    /// <see cref="IsFundAccessibleToCurrentTenantAsync"/> (tenant isolation, SEC-005): the run store carries
+    /// no tenant key, so a foreign fund's runs are withheld at the impact/open-lot boundaries — a foreign
+    /// scope yields a withheld/Unknown impact and empty lots, never a misleading empty "no runs" result.
+    /// </summary>
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadFundRunsAsync(string fundProfileId, CancellationToken ct)
     {
         var runs = new List<StrategyRunEntry>();
@@ -2195,6 +2228,86 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ThenBy(static run => run.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    /// <summary>
+    /// Whether the fund profile may be resolved for the current request's tenant. Returns true (pass
+    /// through) when there is no tenancy registry, a blank fund, no HTTP request context (background/test),
+    /// no caller tenant scope, or the registry is unavailable — only a positive "owned by a different
+    /// tenant" verdict withholds the fund's data.
+    /// </summary>
+    private async Task<bool> IsFundAccessibleToCurrentTenantAsync(string fundProfileId, CancellationToken ct)
+    {
+        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return true;
+        }
+
+        var httpContext = _httpContextAccessor?.HttpContext;
+        if (httpContext is null)
+        {
+            return true;
+        }
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        if (!tenant.HasTenantScope)
+        {
+            return true;
+        }
+
+        try
+        {
+            return await _tenancyRegistry
+                .IsAccessibleAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Fail open to the deployment boundary rather than dropping restatement impact on uncertainty.
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Sanitizes an operator-supplied fund scope for tenant isolation (SEC-005): returns the fund unchanged
+    /// when it is blank, owned by the caller's tenant, unbound/legacy, or accessibility cannot be decided
+    /// (fail open), and returns <c>null</c> — i.e. treat the request as unscoped — when the registry
+    /// positively attributes the fund to a different tenant. Used at the snapshot/passport entry so a
+    /// foreign fund never reaches any fund-scoped evidence path.
+    /// </summary>
+    private async Task<string?> SanitizeFundScopeAsync(string? fundProfileId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return fundProfileId;
+        }
+
+        return await IsFundAccessibleToCurrentTenantAsync(fundProfileId, ct).ConfigureAwait(false)
+            ? fundProfileId
+            : null;
+    }
+
+    /// <summary>
+    /// Downstream-impact result for a fund the registry positively attributes to another tenant: scoped but
+    /// withheld with <see cref="SecurityMasterImpactSeverity.Unknown"/> (SEC-005). Unknown — not None —
+    /// keeps the foreign scope out of low-risk gates such as bulk conflict resolution while disclosing no
+    /// runs or exposures.
+    /// </summary>
+    private static SecurityMasterDownstreamImpactDto BuildWithheldFundImpact(string fundProfileId)
+        => new(
+            FundProfileId: fundProfileId,
+            IsScoped: true,
+            Severity: SecurityMasterImpactSeverity.Unknown,
+            Summary: $"Fund profile {fundProfileId} is owned by another tenant; downstream impact is withheld.",
+            PortfolioExposureSummary: "Portfolio impact is withheld for a fund owned by another tenant.",
+            LedgerExposureSummary: "Ledger impact is withheld for a fund owned by another tenant.",
+            ReconciliationExposureSummary: "Reconciliation impact is withheld for a fund owned by another tenant.",
+            ReportPackExposureSummary: "Report-pack impact is withheld for a fund owned by another tenant.",
+            MatchedRunCount: 0,
+            PortfolioExposureCount: 0,
+            LedgerExposureCount: 0,
+            ReconciliationExposureCount: 0,
+            ReportPackExposureCount: 0,
+            Links: []);
 
     private static FundLedgerBook BuildFundLedgerBook(string fundProfileId, IReadOnlyList<StrategyRunEntry> runs)
     {
@@ -3017,7 +3130,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         var scopedFundProfileId = fundProfileId.Trim();
-        var relatedRuns = await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false);
+        // Tenant isolation (SEC-005): withhold a foreign fund's lots — treat as no scoped runs so the
+        // unscoped/empty read model is returned and no cross-tenant lots are materialized.
+        IReadOnlyList<StrategyRunEntry> relatedRuns =
+            await IsFundAccessibleToCurrentTenantAsync(scopedFundProfileId, ct).ConfigureAwait(false)
+                ? await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false)
+                : [];
         if (relatedRuns.Count == 0)
         {
             return new SecurityMasterOpenLotReadModelDto(
