@@ -1975,6 +1975,17 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         var normalizedFundProfileId = fundProfileId.Trim();
+
+        // Tenant isolation (SEC-005): a fund the registry reports as owned by another tenant must surface as
+        // withheld/unknown — NOT as an empty "no runs" (Severity.None) impact. Reporting None would let
+        // downstream low-risk gates (e.g. bulk conflict resolution, which only proceeds on None/Low) treat
+        // a foreign scope as safe instead of forbidden; Unknown keeps it non-eligible while still disclosing
+        // zero runs/exposures. Unbound/legacy/own funds and uncertainty all pass through and resolve below.
+        if (!await IsFundAccessibleToCurrentTenantAsync(normalizedFundProfileId, ct).ConfigureAwait(false))
+        {
+            return BuildWithheldFundImpact(normalizedFundProfileId);
+        }
+
         var relatedRuns = await LoadFundRunsAsync(normalizedFundProfileId, ct).ConfigureAwait(false);
         if (relatedRuns.Count == 0)
         {
@@ -2188,19 +2199,14 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Links: links);
     }
 
+    /// <summary>
+    /// Enumerates the process-wide run store for a single fund. Callers MUST first gate access with
+    /// <see cref="IsFundAccessibleToCurrentTenantAsync"/> (tenant isolation, SEC-005): the run store carries
+    /// no tenant key, so a foreign fund's runs are withheld at the impact/open-lot boundaries — a foreign
+    /// scope yields a withheld/Unknown impact and empty lots, never a misleading empty "no runs" result.
+    /// </summary>
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadFundRunsAsync(string fundProfileId, CancellationToken ct)
     {
-        // Tenant isolation (SEC-005): the run store is process-wide and runs carry no tenant key, so a
-        // fund owned by another tenant must not surface its runs (and therefore its downstream impact) to
-        // the current caller. When the fund-profile tenancy registry positively reports the fund as owned
-        // by a different tenant, withhold its runs. Unowned/legacy funds, no request/tenant scope, or an
-        // unavailable registry all pass through — the single-company-per-deployment boundary remains the
-        // backstop control, and the restatement path must never drop impact on mere uncertainty.
-        if (!await IsFundAccessibleToCurrentTenantAsync(fundProfileId, ct).ConfigureAwait(false))
-        {
-            return [];
-        }
-
         var runs = new List<StrategyRunEntry>();
         await foreach (var run in _strategyRepository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
         {
@@ -2253,6 +2259,29 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             return true;
         }
     }
+
+    /// <summary>
+    /// Downstream-impact result for a fund the registry positively attributes to another tenant: scoped but
+    /// withheld with <see cref="SecurityMasterImpactSeverity.Unknown"/> (SEC-005). Unknown — not None —
+    /// keeps the foreign scope out of low-risk gates such as bulk conflict resolution while disclosing no
+    /// runs or exposures.
+    /// </summary>
+    private static SecurityMasterDownstreamImpactDto BuildWithheldFundImpact(string fundProfileId)
+        => new(
+            FundProfileId: fundProfileId,
+            IsScoped: true,
+            Severity: SecurityMasterImpactSeverity.Unknown,
+            Summary: $"Fund profile {fundProfileId} is owned by another tenant; downstream impact is withheld.",
+            PortfolioExposureSummary: "Portfolio impact is withheld for a fund owned by another tenant.",
+            LedgerExposureSummary: "Ledger impact is withheld for a fund owned by another tenant.",
+            ReconciliationExposureSummary: "Reconciliation impact is withheld for a fund owned by another tenant.",
+            ReportPackExposureSummary: "Report-pack impact is withheld for a fund owned by another tenant.",
+            MatchedRunCount: 0,
+            PortfolioExposureCount: 0,
+            LedgerExposureCount: 0,
+            ReconciliationExposureCount: 0,
+            ReportPackExposureCount: 0,
+            Links: []);
 
     private static FundLedgerBook BuildFundLedgerBook(string fundProfileId, IReadOnlyList<StrategyRunEntry> runs)
     {
@@ -3075,7 +3104,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         }
 
         var scopedFundProfileId = fundProfileId.Trim();
-        var relatedRuns = await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false);
+        // Tenant isolation (SEC-005): withhold a foreign fund's lots — treat as no scoped runs so the
+        // unscoped/empty read model is returned and no cross-tenant lots are materialized.
+        IReadOnlyList<StrategyRunEntry> relatedRuns =
+            await IsFundAccessibleToCurrentTenantAsync(scopedFundProfileId, ct).ConfigureAwait(false)
+                ? await LoadFundRunsAsync(scopedFundProfileId, ct).ConfigureAwait(false)
+                : [];
         if (relatedRuns.Count == 0)
         {
             return new SecurityMasterOpenLotReadModelDto(

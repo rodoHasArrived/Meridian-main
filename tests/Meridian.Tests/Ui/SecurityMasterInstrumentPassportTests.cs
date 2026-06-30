@@ -146,6 +146,10 @@ public sealed class SecurityMasterInstrumentPassportTests
         snapshot.Should().NotBeNull();
         snapshot!.DownstreamImpact.IsScoped.Should().BeTrue();
         snapshot.DownstreamImpact.MatchedRunCount.Should().Be(0, "a foreign fund's runs are withheld");
+        snapshot.DownstreamImpact.Severity.Should().Be(
+            SecurityMasterImpactSeverity.Unknown,
+            "a foreign scope must read as withheld/unknown, not None — so low-risk gates (bulk resolve) do not treat it as safe");
+        snapshot.DownstreamImpact.Summary.Should().Contain("withheld");
     }
 
     [Fact]
