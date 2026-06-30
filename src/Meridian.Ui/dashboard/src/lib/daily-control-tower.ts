@@ -89,6 +89,7 @@ export function buildDailyControlTowerModel(
     nextActionAriaLabel: decision.actionAriaLabel,
     proofLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No proof linked",
     driverItems: buildDriverItems({
+      viewModel,
       queueRows,
       trustItems: trustStrip.items,
       linkedContextItems: viewModel.linkedContextItems,
@@ -103,11 +104,13 @@ export function buildDailyControlTowerModel(
 }
 
 function buildDriverItems({
+  viewModel,
   queueRows,
   trustItems,
   linkedContextItems,
   evidenceTimelineItems
 }: {
+  viewModel: AppShellWorkflowContinuityViewModel;
   queueRows: DailyControlTowerFocusRow[];
   trustItems: AppShellTrustStripItem[];
   linkedContextItems: AppShellLinkedContextItem[];
@@ -119,6 +122,13 @@ function buildDriverItems({
   const linkedAttention = linkedContextItems.filter((item) => item.tone === "blocked" || item.tone === "review" || item.tone === "pending").length;
 
   return [
+    {
+      id: "continuity",
+      label: "Continuity source",
+      value: viewModel.title,
+      detail: `${viewModel.summary} Source route: ${viewModel.routeLabel}.`,
+      badgeVariant: badgeVariantForTone(viewModel.decisionBrief.statusTone)
+    },
     {
       id: "queue",
       label: "Blocked outputs",

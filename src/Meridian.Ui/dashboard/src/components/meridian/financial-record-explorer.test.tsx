@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -209,6 +209,28 @@ describe("FinancialRecordExplorerShell", () => {
       "href",
       "/accounting?frexExplorer=ledger&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
     );
+  });
+
+  it("persists the current explorer evidence state into the browser URL", async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, "", "/accounting?period=2026-06");
+    renderExplorer();
+
+    await waitFor(() => {
+      expect(window.location.href).toContain("period=2026-06");
+      expect(window.location.href).toContain("frexExplorer=ledger");
+      expect(window.location.href).toContain("frexView=system-ledger-default");
+      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Acash");
+    });
+
+    await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "aapl");
+
+    await waitFor(() => {
+      expect(window.location.href).toContain("period=2026-06");
+      expect(window.location.href).toContain("frexSearch=aapl");
+      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Arevenue");
+    });
   });
 
   it("renders Security & Instrument Explorer DTO fields used by WPF parity proof", async () => {

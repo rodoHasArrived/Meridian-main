@@ -104,6 +104,13 @@ describe("daily control tower model", () => {
     expect(model.nextActionHref).toBe("/settings#alpaca-provider-setup");
     expect(model.driverItems).toEqual(expect.arrayContaining([
       expect.objectContaining({
+        id: "continuity",
+        label: "Continuity source",
+        value: "Daily Control Tower",
+        detail: expect.stringContaining("Source route: /."),
+        badgeVariant: "danger"
+      }),
+      expect.objectContaining({
         id: "queue",
         label: "Blocked outputs",
         value: "1 blocked / 2 review",

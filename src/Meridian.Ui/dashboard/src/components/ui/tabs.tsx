@@ -21,6 +21,9 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
   const [internalValue, setInternalValue] = useState(defaultValue ?? tabs[0]?.id ?? "");
   const activeValue = value ?? internalValue;
   const panels = Children.toArray(children);
+  const selectedTabIndex = tabs.findIndex((tab) => tab.id === activeValue && !tab.disabled);
+  const firstEnabledTabIndex = tabs.findIndex((tab) => !tab.disabled);
+  const focusableTabIndex = selectedTabIndex >= 0 ? selectedTabIndex : firstEnabledTabIndex;
 
   const selectTab = (item: TabItem) => {
     if (item.disabled) {
@@ -70,7 +73,7 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
               )}
               onClick={() => selectTab(tab)}
               onKeyDown={(event) => handleTabKeyDown(event, tab)}
-              tabIndex={selected ? 0 : index === 0 ? 0 : -1}
+              tabIndex={index === focusableTabIndex ? 0 : -1}
               data-tab-id={tab.id}
             >
               <span>{tab.label}</span>

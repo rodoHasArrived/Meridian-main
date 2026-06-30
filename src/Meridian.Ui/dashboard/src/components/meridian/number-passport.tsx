@@ -41,15 +41,22 @@ export function buildNumberPassportItems(
   const reconciliation = findProofText(record, "reconciliation") ?? "No reconciliation link on selected record";
   const approvals = findProofText(record, "approval", "approve") ?? "No approval link on selected record";
   const reportUsage = findProofText(record, "report") ?? "No report usage link on selected record";
-  const evidencePacket = firstNonBlank(findProofText(record, "passport"), record.proofActions[0]?.href, record.fullRecordHref) ?? "No evidence packet link";
-  const auditTrail = firstNonBlank(findProofText(record, "audit"), record.fullRecordHref, explorer.sourceState) ?? "No audit trail marker";
+  const evidencePacket = firstNonBlank(
+    findProofText(record, "evidence packet", "evidence", "supporting document", "document"),
+    findProofText(record, "passport"),
+    record.proofActions[0]?.href,
+    record.fullRecordHref
+  ) ?? "No evidence packet link";
+  const auditTrail = firstNonBlank(findProofText(record, "audit trail", "audit"), record.fullRecordHref, explorer.sourceState) ?? "No audit trail marker";
   const freshness = firstNonBlank(
     findFieldValue(record, "retrieved", "updated", "as of", "timestamp", "date"),
     explorer.sourceState
   ) ?? "No freshness marker";
-  const blockers = record.tone === "Danger"
-    ? record.description
-    : "No blocker flagged on selected record";
+  const blockers = firstNonBlank(
+    findFieldValue(record, "blocker", "blocked", "blocking"),
+    findProofText(record, "blocker", "blocked", "blocking"),
+    record.tone === "Danger" ? record.description : null
+  ) ?? "No blocker flagged on selected record";
 
   return [
     {

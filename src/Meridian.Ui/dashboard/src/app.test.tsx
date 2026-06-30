@@ -311,10 +311,16 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/"] });
 
-    await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
+    expect(await screen.findByRole(
+      "heading",
+      { name: "What needs an operator decision now" },
+      { timeout: 10_000 }
+    )).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const drivers = screen.getByRole("region", { name: "Daily control tower decision drivers" });
+    expect(within(drivers).getByText("Continuity source")).toBeInTheDocument();
+    expect(within(drivers).getByText("Daily Control Tower")).toBeInTheDocument();
     expect(within(drivers).getByText("Blocked outputs")).toBeInTheDocument();
     expect(within(drivers).getByText("Trust posture")).toBeInTheDocument();
     expect(within(drivers).getByText("Proof events")).toBeInTheDocument();

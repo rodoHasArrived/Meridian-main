@@ -11,6 +11,7 @@ RUN_DESKTOP_WORKFLOW_SCRIPT = REPO_ROOT / "scripts" / "dev" / "run-desktop-workf
 CAPTURE_DESKTOP_SCREENSHOTS_SCRIPT = REPO_ROOT / "scripts" / "dev" / "capture-desktop-screenshots.ps1"
 WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.json"
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
+WEB_SCREENSHOT_CAPTURE_SCRIPT = REPO_ROOT / "scripts" / "dev" / "capture-web-screenshots.mjs"
 DESKTOP_WORKFLOWS = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 
 
@@ -24,6 +25,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.capture_desktop_screenshots_script = CAPTURE_DESKTOP_SCREENSHOTS_SCRIPT.read_text(encoding="utf-8")
         cls.web_screenshot_routes = json.loads(WEB_SCREENSHOT_ROUTES.read_text(encoding="utf-8"))
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
+        cls.web_screenshot_capture_script = WEB_SCREENSHOT_CAPTURE_SCRIPT.read_text(encoding="utf-8")
         cls.desktop_workflows = json.loads(DESKTOP_WORKFLOWS.read_text(encoding="utf-8"))
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
@@ -168,6 +170,11 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
                     fixture_route_names,
                     f"{capture_name} requires fixture route '{required_route}' that is missing from web-screenshot-fixtures.json",
                 )
+
+    def test_web_screenshot_api_mocks_do_not_intercept_vite_source_modules(self) -> None:
+        self.assertIn('await page.route("**/api/**"', self.web_screenshot_capture_script)
+        self.assertIn('if (!pathname.startsWith("/api/"))', self.web_screenshot_capture_script)
+        self.assertIn("return route.continue();", self.web_screenshot_capture_script)
 
 
 if __name__ == "__main__":

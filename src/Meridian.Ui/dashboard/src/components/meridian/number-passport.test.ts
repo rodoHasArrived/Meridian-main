@@ -1,30 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { buildNumberPassportItems } from "@/components/meridian/number-passport";
-import type {
-  FinancialRecordExplorerDto,
-  FinancialRecordExplorerSelectedRecordDto
-} from "@/types";
+import type { FinancialRecordExplorerDto, FinancialRecordExplorerSelectedRecordDto } from "@/types";
 
-describe("buildNumberPassportItems", () => {
-  it("builds the standard proof fields from selected record evidence", () => {
+describe("NumberPassport", () => {
+  it("prefers explicit evidence, blocker, audit, approval, reconciliation, and report proof", () => {
     const items = buildNumberPassportItems(createExplorer(), createRecord());
+    const byLabel = Object.fromEntries(items.map((item) => [item.label, item]));
 
-    expect(items.map((item) => item.label)).toEqual([
-      "Source",
-      "Freshness",
-      "Reconciliation",
-      "Approvals",
-      "Report Usage",
-      "Blockers",
-      "Evidence Packet",
-      "Audit Trail"
-    ]);
-    expect(findItem(items, "Freshness").value).toBe("2026-06-30T00:00:00Z");
-    expect(findItem(items, "Reconciliation").value).toBe("/reconciliation/case-42");
-    expect(findItem(items, "Approvals").value).toBe("/approvals/package-7");
-    expect(findItem(items, "Report Usage").value).toBe("/reports/board-pack/line-9");
-    expect(findItem(items, "Evidence Packet").value).toBe("/evidence/passport-42");
-    expect(findItem(items, "Audit Trail").value).toBe("/audit/number-42");
+    expect(byLabel.Source?.value).toBe("Ledger account");
+    expect(byLabel.Freshness?.value).toBe("2026-06-30 14:00 UTC");
+    expect(byLabel.Reconciliation?.value).toBe("/accounting/reconciliation?caseId=recon-1");
+    expect(byLabel.Approvals?.value).toBe("/accounting/approvals?approvalId=approval-1");
+    expect(byLabel["Report Usage"]?.value).toBe("/reporting/report-packs?lineKey=cash");
+    expect(byLabel.Blockers?.value).toBe("Custodian statement proof missing");
+    expect(byLabel["Evidence Packet"]?.value).toBe("/reporting/evidence?subjectId=cash");
+    expect(byLabel["Audit Trail"]?.value).toBe("/accounting/audit?recordId=cash");
   });
 
   it("uses explicit empty-state fallbacks for missing proof evidence", () => {
@@ -40,13 +30,13 @@ describe("buildNumberPassportItems", () => {
     } satisfies FinancialRecordExplorerSelectedRecordDto;
     const items = buildNumberPassportItems(createExplorer(), record);
 
-    expect(findItem(items, "Freshness").value).toBe("Source-backed close package from 2026-06-30.");
+    expect(findItem(items, "Freshness").value).toBe("Source-backed ledger projection from run run-1.");
     expect(findItem(items, "Reconciliation").value).toBe("No reconciliation link on selected record");
     expect(findItem(items, "Approvals").value).toBe("No approval link on selected record");
     expect(findItem(items, "Report Usage").value).toBe("No report usage link on selected record");
     expect(findItem(items, "Blockers").value).toBe("Approval evidence is missing.");
     expect(findItem(items, "Evidence Packet").value).toBe("No evidence packet link");
-    expect(findItem(items, "Audit Trail").value).toBe("Source-backed close package from 2026-06-30.");
+    expect(findItem(items, "Audit Trail").value).toBe("Source-backed ledger projection from run run-1.");
   });
 });
 
@@ -60,8 +50,8 @@ function createExplorer(): FinancialRecordExplorerDto {
   return {
     explorerId: "ledger",
     title: "Ledger Explorer",
-    description: "Close evidence.",
-    sourceState: "Source-backed close package from 2026-06-30.",
+    description: "Explore retained ledger records.",
+    sourceState: "Source-backed ledger projection from run run-1.",
     isBlocked: false,
     blockedReason: "",
     scopeItems: [],
@@ -78,21 +68,50 @@ function createExplorer(): FinancialRecordExplorerDto {
 
 function createRecord(): FinancialRecordExplorerSelectedRecordDto {
   return {
-    recordId: "ledger:number-42",
-    recordType: "Ledger balance",
-    title: "Cash balance",
-    subtitle: "Operating cash",
-    description: "Validated cash balance.",
-    tone: "Success",
+    recordId: "ledger:run-1:cash",
+    recordType: "Ledger account",
+    title: "Cash",
+    subtitle: "Assets - run-1",
+    description: "Source-backed cash balance with a statement evidence gap.",
+    tone: "Warning",
     fields: [
-      { label: "As of", value: "2026-06-30T00:00:00Z", detail: "Close timestamp.", tone: "Info" }
+      {
+        label: "Last updated",
+        value: "2026-06-30 14:00 UTC",
+        detail: "Refreshed from retained ledger projection.",
+        tone: "Info"
+      },
+      {
+        label: "Blocker",
+        value: "Custodian statement proof missing",
+        detail: "Controller owns the statement proof upload.",
+        tone: "Warning"
+      }
     ],
     proofActions: [
       {
-        actionId: "passport",
-        label: "Open evidence passport",
-        description: "Primary evidence packet.",
-        href: "/evidence/passport-42",
+        actionId: "open-source",
+        label: "Open source record",
+        description: "Open retained source.",
+        href: "/accounting/source?recordId=cash",
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info"
+      },
+      {
+        actionId: "evidence-packet",
+        label: "Evidence packet",
+        description: "Open retained evidence packet.",
+        href: "/reporting/evidence?subjectId=cash",
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info"
+      },
+      {
+        actionId: "audit-trail",
+        label: "Audit trail",
+        description: "Open retained audit trail.",
+        href: "/accounting/audit?recordId=cash",
         isEnabled: true,
         disabledReason: "",
         tone: "Info"
@@ -100,36 +119,29 @@ function createRecord(): FinancialRecordExplorerSelectedRecordDto {
     ],
     usedIn: [
       {
-        relationshipId: "report",
-        label: "Report line",
-        description: "Board pack report usage.",
-        href: "/reports/board-pack/line-9",
+        relationshipId: "report-line",
+        label: "Report Usage",
+        description: "Cash appears in the board report pack.",
+        href: "/reporting/report-packs?lineKey=cash",
         tone: "Info"
-      },
-      {
-        relationshipId: "approval",
-        label: "Approval package",
-        description: "Controller approval evidence.",
-        href: "/approvals/package-7",
-        tone: "Success"
       }
     ],
     impacts: [
       {
-        relationshipId: "reconciliation",
-        label: "Reconciliation case",
-        description: "Matched cash proof.",
-        href: "/reconciliation/case-42",
-        tone: "Success"
+        relationshipId: "approval-gate",
+        label: "Approval gate",
+        description: "Controller approval is required.",
+        href: "/accounting/approvals?approvalId=approval-1",
+        tone: "Warning"
       },
       {
-        relationshipId: "audit",
-        label: "Audit trail",
-        description: "Audit events for this number.",
-        href: "/audit/number-42",
-        tone: "Info"
+        relationshipId: "reconciliation-case",
+        label: "Reconciliation case",
+        description: "Statement proof is required before the case can close.",
+        href: "/accounting/reconciliation?caseId=recon-1",
+        tone: "Warning"
       }
     ],
-    fullRecordHref: "/records/number-42"
+    fullRecordHref: "/accounting/ledger?recordId=cash"
   };
 }
