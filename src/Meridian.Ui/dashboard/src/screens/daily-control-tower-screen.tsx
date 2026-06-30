@@ -49,7 +49,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         <DailyControlTowerFact label="Proof">{model.proofLabel}</DailyControlTowerFact>
       </PanelSurface>
 
-      <section aria-label="Daily control tower decision drivers" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Daily control tower decision drivers" className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         {model.driverItems.map((item) => (
           <PanelSurface key={item.id} flat className="space-y-2 p-4">
             <div className="flex items-center justify-between gap-2">

@@ -153,10 +153,10 @@
       ],
       "waitForTexts": [
         "Open Breaks",
-        "Operations control center",
+        "Close Cockpit",
         "CFO / Controller close command center",
         "Critical cash variance breached SLA for run-42.",
-        "QuickBooks fixture evidence"
+        "Report-pack readiness"
       ]
     },
     {
@@ -175,7 +175,7 @@
         "Open Breaks",
         "Intraday Vol Carry",
         "Statement runs",
-        "QuickBooks fixture evidence"
+        "Reconciliation Casework"
       ]
     },
     {
@@ -194,7 +194,7 @@
         "Open Breaks",
         "Intraday Vol Carry",
         "Security Master",
-        "QuickBooks fixture evidence"
+        "Security Governance"
       ]
     },
     {
@@ -213,7 +213,7 @@
         "Approval queue",
         "Close approvals",
         "Report-pack readiness",
-        "QuickBooks fixture evidence"
+        "CFO / Controller close command center"
       ]
     },
     {
@@ -221,7 +221,7 @@
       "name": "web-accounting-external-gl-reconciliation",
       "path": "/accounting/reconciliation",
       "docLabel": "Accounting \u2014 External GL Reconciliation",
-      "waitForText": "External GL reconciliation",
+      "waitForText": "Reconciliation Casework",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -229,7 +229,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "QuickBooks fixture evidence",
+        "External GL",
         "Posting/export",
         "quickbooks-fixture:trial-balance"
       ]
@@ -258,15 +258,16 @@
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting lane",
+      "waitForText": "Reporting Workstation",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Governed report templates",
-        "Report run audit and lineage",
-        "Board Close Pack",
-        "report-run-board-202605"
+        "Report packs, governed exports",
+        "Reporting Hub",
+        "Daily reporting cockpit",
+        "Reports by family",
+        "Open focused reporting work"
       ]
     },
     {
@@ -304,12 +305,12 @@
       "name": "web-reporting-exports",
       "path": "/reporting/exports",
       "docLabel": "Reporting \u2014 Exports",
-      "waitForText": "Reporting lane",
+      "waitForText": "Reporting Workstation",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Governed export workbench",
+        "Report packs, governed exports",
         "Investor PDF",
         "Report run audit and lineage",
         "Report-pack recipients",

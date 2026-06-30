@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -95,7 +96,18 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
                 return Array.Empty<HistoricalBar>();
 
             if (!httpResult.IsSuccess)
+            {
+                if (httpResult.IsRateLimited)
+                {
+                    throw new RateLimitException(
+                        $"{Name} API rate limit exceeded for {normalizedSeriesId}",
+                        provider: Name,
+                        symbol: normalizedSeriesId,
+                        retryAfter: httpResult.RetryAfter ?? TimeSpan.FromSeconds(60));
+                }
+
                 throw new InvalidOperationException($"Failed to fetch FRED data for {normalizedSeriesId}: {httpResult.ErrorMessage}");
+            }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             var payload = DeserializeResponse<FredObservationsResponse>(json, normalizedSeriesId);

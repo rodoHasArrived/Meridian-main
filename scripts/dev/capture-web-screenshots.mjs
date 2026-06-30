@@ -202,6 +202,13 @@ async function setupApiMocking(page, fixtureRoutes) {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
 
+    // Vite source modules can live under paths such as
+    // /workstation/src/lib/api/*.ts. Let those module requests pass through;
+    // only root API calls should be answered by screenshot fixtures.
+    if (!pathname.startsWith("/api/")) {
+      return route.continue();
+    }
+
     // Exact-path match first (strips query string for lookup).
     if (Object.prototype.hasOwnProperty.call(fixtureRoutes, pathname)) {
       return route.fulfill({

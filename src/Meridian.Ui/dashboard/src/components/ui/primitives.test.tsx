@@ -77,6 +77,54 @@ describe("design-system UI primitives", () => {
     expect(screen.getByText("Closed panel")).toBeVisible();
   });
 
+  it("keeps one focusable tab while keyboard navigation skips disabled tabs", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Tabs
+        tabs={[
+          { id: "overview", label: "Overview" },
+          { id: "blocked", label: "Blocked", disabled: true },
+          { id: "history", label: "History" },
+          { id: "audit", label: "Audit" }
+        ]}
+      >
+        <TabPanel>Overview panel</TabPanel>
+        <TabPanel>Blocked panel</TabPanel>
+        <TabPanel>History panel</TabPanel>
+        <TabPanel>Audit panel</TabPanel>
+      </Tabs>
+    );
+
+    const overview = screen.getByRole("tab", { name: "Overview" });
+    const blocked = screen.getByRole("tab", { name: "Blocked" });
+    const history = screen.getByRole("tab", { name: "History" });
+    const audit = screen.getByRole("tab", { name: "Audit" });
+
+    expect(overview).toHaveAttribute("tabindex", "0");
+    expect(blocked).toBeDisabled();
+    expect(history).toHaveAttribute("tabindex", "-1");
+    expect(audit).toHaveAttribute("tabindex", "-1");
+
+    overview.focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(history).toHaveFocus();
+    expect(history).toHaveAttribute("aria-selected", "true");
+    expect(overview).toHaveAttribute("tabindex", "-1");
+    expect(blocked).toHaveAttribute("tabindex", "-1");
+    expect(history).toHaveAttribute("tabindex", "0");
+    expect(screen.getByText("History panel")).toBeVisible();
+
+    await user.keyboard("{End}");
+    expect(audit).toHaveFocus();
+    expect(audit).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{Home}");
+    expect(overview).toHaveFocus();
+    expect(overview).toHaveAttribute("aria-selected", "true");
+  });
+
   it("renders context menu and multi-select command primitives", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
