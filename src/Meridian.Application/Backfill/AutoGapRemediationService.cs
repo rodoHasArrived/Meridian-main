@@ -157,7 +157,7 @@ public sealed class AutoGapRemediationService : IDisposable
         }
 
         foreach (var group in candidates
-                     .GroupBy(static candidate => new AutoGapRemediationBatchKey(
+                     .GroupBy(static candidate => new AutoRemediationBatchKey(
                          candidate.Provider,
                          candidate.From,
                          candidate.To,
