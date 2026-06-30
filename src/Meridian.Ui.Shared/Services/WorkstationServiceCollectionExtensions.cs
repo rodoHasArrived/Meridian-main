@@ -81,6 +81,9 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddMemoryCache();
         services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
+        // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).
+        services.TryAddSingleton<IFundScopeTenantAccessor, WorkstationFundScopeTenantAccessor>();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))

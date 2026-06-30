@@ -1,3 +1,4 @@
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -83,6 +84,36 @@ public sealed class HttpContextWorkstationTenantContextAccessor : IWorkstationTe
         }
 
         return null;
+    }
+}
+
+/// <summary>
+/// SEC-005 slice 4c-ii: supplies the storage layer (which must not depend on ASP.NET Core) with the
+/// caller's server-resolved tenant for the current request, so the Postgres ledger store can apply
+/// tenant read predicates without threading a caller-tenant argument through every read method.
+/// Depends only on the singleton-safe <see cref="IHttpContextAccessor"/> (AsyncLocal-backed), so it is
+/// safe to inject into the singleton ledger store without a captive scoped dependency. Returns null
+/// outside a request, or when the session has no tenant (fail-open to the deployment boundary).
+/// </summary>
+public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccessor
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public string? ResolveCallerTenant()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            return null;
+        }
+
+        var context = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        return context.HasTenantScope ? context.TenantId : null;
     }
 }
 
