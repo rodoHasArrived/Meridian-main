@@ -1,6 +1,6 @@
 {
   "total_files": 534,
-  "total_lines": 86932,
+  "total_lines": 86935,
   "orphaned_count": 204,
   "no_heading_count": 38,
   "stale_count": 0,
@@ -2129,7 +2129,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7447,
+      "line_count": 7449,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3545,7 +3545,7 @@
     },
     {
       "path": "docs/security/security-remediation-backlog.md",
-      "line_count": 113,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

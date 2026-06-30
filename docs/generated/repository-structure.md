@@ -4421,7 +4421,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_016__accounting_configuration_tenant_company_scope.sql
 │   │   │   │   ├── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
 │   │   │   │   ├── V_ledger_018__accounting_audit_fund_lower_index.sql
-│   │   │   │   └── V_ledger_019__fund_profile_tenancy.sql
+│   │   │   │   ├── V_ledger_019__fund_profile_tenancy.sql
+│   │   │   │   └── V_ledger_020__fund_scope_tenant_columns.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
@@ -6831,6 +6832,7 @@ Meridian-main
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
+│   │   │   ├── FundScopeTenantColumnMigrationTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
