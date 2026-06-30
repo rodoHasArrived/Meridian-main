@@ -437,4 +437,31 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAsync_SymbolLessFeeRow_ImportsAsTransaction()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // Account-level fee rows legitimately omit the symbol; import must accept them
+            // (as transactions) rather than rejecting them for a missing SecurityIdentifier.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+                "EXT-1,,0,0,-9.99,fee,2026-05-29"
+            ]);
+
+            var result = await svc.ImportAsync("broker", filePath, CancellationToken.None);
+
+            Assert.Equal(1, result.RowCount);
+            var transaction = Assert.Single(result.Transactions);
+            Assert.Equal("fee", transaction.TransactionType);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }

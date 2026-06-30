@@ -246,9 +246,10 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, currentRowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            var symbol = rowKind == StatementRowKind.CashBalance
-                ? mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty
-                : mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber);
+            // Symbol is optional for import: account-level cash, fee, and dividend rows legitimately
+            // omit it, matching the prior positional importer (the numeric/date canonical fields below
+            // remain required).
+            var symbol = mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, currentRowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, currentRowNumber);
