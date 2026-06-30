@@ -1,12 +1,18 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Http;
 using NSubstitute;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
@@ -114,6 +120,74 @@ public sealed class SecurityMasterInstrumentPassportTests
         snapshot!.InstrumentPassport.Should().NotBeNull();
         snapshot.InstrumentPassport!.SecurityId.Should().Be(securityId);
         snapshot.InstrumentPassport.IdentifierSummary.PrimaryIdentifierValue.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task GetTrustSnapshotAsync_ForFundOwnedByAnotherTenant_WithholdsRunsAndImpact()
+    {
+        // SEC-005 slice 2 regression: a fund owned by tenant B must surface no runs (and therefore no
+        // downstream impact) to a tenant-A caller, even though the process-wide run store holds a matching
+        // run. The registry is the authority; a positive "owned by a different tenant" verdict withholds.
+        var securityId = Guid.Parse("D2C0F2C9-3A2B-4D0E-9D2A-0C9B7F2A11AA");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var runStore = new StrategyRunStore();
+        await runStore.RecordRunAsync(FundRun("fund-b"));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.IsAccessibleAsync("fund-b", "tenant-a", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+        var service = CreateService(
+            queryService,
+            strategyRepository: runStore,
+            tenancyRegistry: registry,
+            httpContextAccessor: HttpContextForTenant("tenant-a"));
+
+        var snapshot = await service.GetTrustSnapshotAsync(securityId, "fund-b");
+
+        snapshot.Should().NotBeNull();
+        snapshot!.DownstreamImpact.IsScoped.Should().BeTrue();
+        snapshot.DownstreamImpact.MatchedRunCount.Should().Be(0, "a foreign fund's runs are withheld");
+    }
+
+    [Fact]
+    public async Task GetTrustSnapshotAsync_ForOwnFund_IncludesRuns()
+    {
+        // Control for the gating test: when the registry confirms the caller owns the fund, the same run
+        // is counted — proving the gate withholds only foreign funds, not all scoped runs.
+        var securityId = Guid.Parse("D2C0F2C9-3A2B-4D0E-9D2A-0C9B7F2A22BB");
+        var queryService = new StubSecurityMasterQueryService(securityId);
+        var runStore = new StrategyRunStore();
+        await runStore.RecordRunAsync(FundRun("fund-a"));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.IsAccessibleAsync("fund-a", "tenant-a", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+        var service = CreateService(
+            queryService,
+            strategyRepository: runStore,
+            tenancyRegistry: registry,
+            httpContextAccessor: HttpContextForTenant("tenant-a"));
+
+        var snapshot = await service.GetTrustSnapshotAsync(securityId, "fund-a");
+
+        snapshot.Should().NotBeNull();
+        snapshot!.DownstreamImpact.MatchedRunCount.Should().Be(1, "the caller owns the fund, so its runs are scoped in");
+    }
+
+    private static StrategyRunEntry FundRun(string fundProfileId)
+        => new(
+            RunId: Guid.NewGuid().ToString("N"),
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy One",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 1, 5, 0, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 1, 5, 1, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            FundProfileId: fundProfileId);
+
+    private static IHttpContextAccessor HttpContextForTenant(string tenantId)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId;
+        return new HttpContextAccessor { HttpContext = httpContext };
     }
 
     [Fact]
@@ -403,13 +477,16 @@ public sealed class SecurityMasterInstrumentPassportTests
         ISecurityMasterPricingService? pricingService = null,
         ISecurityMasterCashFlowService? cashFlowService = null,
         IDataVendorEntitlementService? entitlementService = null,
-        ISecurityMasterDataQualityService? dataQualityService = null) =>
+        ISecurityMasterDataQualityService? dataQualityService = null,
+        IStrategyRepository? strategyRepository = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null,
+        IHttpContextAccessor? httpContextAccessor = null) =>
         new(
             queryService,
             new EmptySecurityValidationService(),
             conflictService ?? new StubSecurityMasterConflictService([]),
             new EmptySecurityMasterIngestStatusService(),
-            Substitute.For<IStrategyRepository>(),
+            strategyRepository ?? Substitute.For<IStrategyRepository>(),
             new PortfolioReadService(),
             new LedgerReadService(),
             new ReportGenerationService(queryService),
@@ -417,7 +494,9 @@ public sealed class SecurityMasterInstrumentPassportTests
             pricingService,
             cashFlowService,
             entitlementService,
-            dataQualityService);
+            dataQualityService,
+            tenancyRegistry,
+            httpContextAccessor);
 
     private sealed class StubSecurityMasterQueryService(Guid securityId)
         : ContractSecurityMasterQueryService,

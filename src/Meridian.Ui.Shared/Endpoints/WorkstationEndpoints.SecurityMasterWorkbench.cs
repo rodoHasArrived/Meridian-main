@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
@@ -38,7 +39,8 @@ public static partial class WorkstationEndpoints
             UpdateSecurityFieldRequest? request,
             HttpContext context,
             [FromServices] ISecurityMasterWorkbenchCommandService? service,
-            [FromServices] IFundProfileTenantGuard? fundGuard) =>
+            [FromServices] IFundProfileTenantGuard? fundGuard,
+            [FromServices] IFundProfileTenancyRegistry? fundRegistry) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster))
             {
@@ -60,6 +62,8 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+
             // Defense-in-depth tenant guard: a body-supplied fund profile is persisted on the draft and
             // later scopes downstream restatement impact, so refuse one that demonstrably belongs to a
             // different company before it is stored. The guard never denies an own/unknown fund (no
@@ -67,7 +71,6 @@ public static partial class WorkstationEndpoints
             // docs/security/security-remediation-backlog.md (SEC-005).
             if (fundGuard is not null && !string.IsNullOrWhiteSpace(request.FundProfileId))
             {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var fundDecision = await fundGuard
                     .EvaluateAsync(tenantContext, request.FundProfileId, context.RequestAborted)
                     .ConfigureAwait(false);
@@ -80,7 +83,10 @@ public static partial class WorkstationEndpoints
             // The acting principal is server-derived from the session, never trusted from the body.
             var bound = request with { SecurityId = securityId, Actor = actor };
             return await ExecuteWorkbenchAsync(
-                () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
+                () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted),
+                jsonOptions,
+                onSuccess: _ => ClaimFundOwnershipAsync(
+                    fundRegistry, tenantContext, request.FundProfileId, context.RequestAborted)).ConfigureAwait(false);
         })
         .WithName("SecurityMasterWorkbenchField")
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
@@ -249,15 +255,49 @@ public static partial class WorkstationEndpoints
     }
 
     /// <summary>
+    /// Claims the fund profile for the caller's tenant after a governed write succeeds (trust-on-first-use,
+    /// SEC-005). Binding only on success means a failed or rejected write can never squat a fund id and
+    /// block the tenant that later performs the first real write. Best-effort: an unavailable registry
+    /// never fails a committed edit, and the deployment boundary remains the control until the next bind.
+    /// </summary>
+    private static async Task ClaimFundOwnershipAsync(
+        IFundProfileTenancyRegistry? registry,
+        WorkstationTenantContext tenant,
+        string? fundProfileId,
+        CancellationToken ct)
+    {
+        if (registry is null || !tenant.HasTenantScope || string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return;
+        }
+
+        try
+        {
+            await registry.BindAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Ownership bookkeeping is best-effort; never fail a committed edit because the registry is
+            // unavailable.
+        }
+    }
+
+    /// <summary>
     /// Executes a governed-write command and maps its domain failures to stable status codes. Unmapped
-    /// exceptions are allowed to propagate to the framework's 500 handler rather than being masked.
+    /// exceptions are allowed to propagate to the framework's 500 handler rather than being masked. When
+    /// the write succeeds, <paramref name="onSuccess"/> runs before the 200 response is produced.
     /// </summary>
     private static async Task<IResult> ExecuteWorkbenchAsync<T>(
-        Func<Task<T>> action, JsonSerializerOptions jsonOptions)
+        Func<Task<T>> action, JsonSerializerOptions jsonOptions, Func<T, Task>? onSuccess = null)
     {
         try
         {
             var result = await action().ConfigureAwait(false);
+            if (onSuccess is not null)
+            {
+                await onSuccess(result).ConfigureAwait(false);
+            }
+
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status200OK);
         }
         catch (SecurityMasterConcurrencyException ex)

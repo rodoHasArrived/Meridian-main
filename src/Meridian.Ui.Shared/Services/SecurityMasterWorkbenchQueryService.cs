@@ -5,12 +5,15 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -34,6 +37,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     private readonly ISecurityMasterCashFlowService? _cashFlowService;
     private readonly IDataVendorEntitlementService? _entitlementService;
     private readonly ISecurityMasterDataQualityService? _dataQualityService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -48,7 +53,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         ISecurityMasterPricingService? pricingService = null,
         ISecurityMasterCashFlowService? cashFlowService = null,
         IDataVendorEntitlementService? entitlementService = null,
-        ISecurityMasterDataQualityService? dataQualityService = null)
+        ISecurityMasterDataQualityService? dataQualityService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -63,6 +70,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         _cashFlowService = cashFlowService;
         _entitlementService = entitlementService;
         _dataQualityService = dataQualityService;
+        _tenancyRegistry = tenancyRegistry;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
@@ -2181,6 +2190,17 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadFundRunsAsync(string fundProfileId, CancellationToken ct)
     {
+        // Tenant isolation (SEC-005): the run store is process-wide and runs carry no tenant key, so a
+        // fund owned by another tenant must not surface its runs (and therefore its downstream impact) to
+        // the current caller. When the fund-profile tenancy registry positively reports the fund as owned
+        // by a different tenant, withhold its runs. Unowned/legacy funds, no request/tenant scope, or an
+        // unavailable registry all pass through — the single-company-per-deployment boundary remains the
+        // backstop control, and the restatement path must never drop impact on mere uncertainty.
+        if (!await IsFundAccessibleToCurrentTenantAsync(fundProfileId, ct).ConfigureAwait(false))
+        {
+            return [];
+        }
+
         var runs = new List<StrategyRunEntry>();
         await foreach (var run in _strategyRepository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
         {
@@ -2194,6 +2214,44 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .OrderByDescending(static run => run.StartedAt)
             .ThenBy(static run => run.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    /// <summary>
+    /// Whether the fund profile may be resolved for the current request's tenant. Returns true (pass
+    /// through) when there is no tenancy registry, a blank fund, no HTTP request context (background/test),
+    /// no caller tenant scope, or the registry is unavailable — only a positive "owned by a different
+    /// tenant" verdict withholds the fund's data.
+    /// </summary>
+    private async Task<bool> IsFundAccessibleToCurrentTenantAsync(string fundProfileId, CancellationToken ct)
+    {
+        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            return true;
+        }
+
+        var httpContext = _httpContextAccessor?.HttpContext;
+        if (httpContext is null)
+        {
+            return true;
+        }
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        if (!tenant.HasTenantScope)
+        {
+            return true;
+        }
+
+        try
+        {
+            return await _tenancyRegistry
+                .IsAccessibleAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Fail open to the deployment boundary rather than dropping restatement impact on uncertainty.
+            return true;
+        }
     }
 
     private static FundLedgerBook BuildFundLedgerBook(string fundProfileId, IReadOnlyList<StrategyRunEntry> runs)
