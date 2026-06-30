@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -80,17 +82,24 @@ public static partial class WorkstationEndpoints
                 }
             }
 
+            // SEC-005 slice 4b: reserve fund ownership BEFORE the governed write commits, as a write
+            // precondition. The registry claim is atomic and first-owner-wins, so concurrent first-use is
+            // serialized — if another tenant has already won the fund this caller is rejected here, before
+            // it can commit fund-scoped data under a fund it does not own. (The earlier post-commit claim
+            // left a window where two tenants both passed the unbound read check and both committed before
+            // either bound.) A reservation that succeeds but is followed by a failed write leaves the fund
+            // bound to this caller's OWN tenant — a benign self-binding: a caller can only ever claim a fund
+            // for its own resolved tenant, and under single-company-per-deployment that is the only tenant.
+            if (!await ReserveFundOwnershipAsync(
+                    fundRegistry, tenantContext, request.FundProfileId, context).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             // The acting principal is server-derived from the session, never trusted from the body.
             var bound = request with { SecurityId = securityId, Actor = actor };
             return await ExecuteWorkbenchAsync(
-                () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted),
-                jsonOptions,
-                // The ownership claim runs after the write has committed, so it deliberately does NOT
-                // observe context.RequestAborted: a client disconnect/timeout between commit and bind
-                // would otherwise cancel the bind and leave the committed fund unbound (and unbound funds
-                // fail open on reads, so another tenant could later claim or see its impact).
-                onSuccess: _ => ClaimFundOwnershipAsync(
-                    fundRegistry, tenantContext, request.FundProfileId, CancellationToken.None)).ConfigureAwait(false);
+                () => service.UpdateSecurityFieldAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
         })
         .WithName("SecurityMasterWorkbenchField")
         .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
@@ -259,52 +268,60 @@ public static partial class WorkstationEndpoints
     }
 
     /// <summary>
-    /// Claims the fund profile for the caller's tenant after a governed write succeeds (trust-on-first-use,
-    /// SEC-005). Binding only on success means a failed or rejected write can never squat a fund id and
-    /// block the tenant that later performs the first real write. This runs <em>after</em> the write has
-    /// committed, so the caller passes a token that is independent of the HTTP request (a client disconnect
-    /// must not leave the committed fund unbound), and every failure — including a cancellation — is
-    /// swallowed: ownership bookkeeping is best-effort and must never turn a committed edit into a client
-    /// error. The deployment boundary remains the control until the next successful bind.
+    /// Reserves the fund profile for the caller's tenant as a precondition of a governed write
+    /// (trust-on-first-use, SEC-005 slice 4b). The registry's claim is atomic and first-owner-wins, so a
+    /// concurrent first-edit by another tenant cannot both pass: exactly one tenant wins the fund and any
+    /// other caller is rejected here — before it commits fund-scoped data it does not own (closing the race
+    /// the earlier post-commit claim left open). Returns <see langword="true"/> when the caller may proceed
+    /// (it now holds the fund, or there is nothing to enforce: no registry, no tenant scope, or no fund) and
+    /// <see langword="false"/> only when the fund is held by a different tenant. A transient registry failure
+    /// fails OPEN — proceed and defer to the deployment boundary, mirroring the read-side guard — while a
+    /// cancellation propagates, since nothing has been committed yet.
     /// </summary>
-    private static async Task ClaimFundOwnershipAsync(
+    private static async Task<bool> ReserveFundOwnershipAsync(
         IFundProfileTenancyRegistry? registry,
         WorkstationTenantContext tenant,
         string? fundProfileId,
-        CancellationToken ct)
+        HttpContext context)
     {
         if (registry is null || !tenant.HasTenantScope || string.IsNullOrWhiteSpace(fundProfileId))
         {
-            return;
+            return true;
         }
 
         try
         {
-            await registry.BindAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, ct).ConfigureAwait(false);
+            var owner = await registry
+                .BindAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, context.RequestAborted)
+                .ConfigureAwait(false);
+            // BindAsync is contracted to return the effective owner (never null); a null from a custom or
+            // test double falls open to the deployment boundary, consistent with the catch below.
+            return owner?.IsHeldBy(tenant.TenantId) ?? true;
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Ownership bookkeeping is best-effort and post-commit: never fail (or cancel out of) a
-            // committed edit because the registry is unavailable.
+            // The deployment boundary is the control; a transient registry failure must not block a
+            // legitimate edit (mirrors RegistryFundProfileTenantGuard's fail-open posture).
+            context.RequestServices.GetService<ILoggerFactory>()?
+                .CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints.SecurityMasterWorkbench")
+                .LogWarning(
+                    ex,
+                    "Fund-profile tenancy registry unavailable reserving {FundProfileId}; allowing (deployment boundary remains the control).",
+                    fundProfileId.Replace('\n', ' ').Replace('\r', ' '));
+            return true;
         }
     }
 
     /// <summary>
     /// Executes a governed-write command and maps its domain failures to stable status codes. Unmapped
-    /// exceptions are allowed to propagate to the framework's 500 handler rather than being masked. When
-    /// the write succeeds, <paramref name="onSuccess"/> runs before the 200 response is produced.
+    /// exceptions are allowed to propagate to the framework's 500 handler rather than being masked.
     /// </summary>
     private static async Task<IResult> ExecuteWorkbenchAsync<T>(
-        Func<Task<T>> action, JsonSerializerOptions jsonOptions, Func<T, Task>? onSuccess = null)
+        Func<Task<T>> action, JsonSerializerOptions jsonOptions)
     {
         try
         {
             var result = await action().ConfigureAwait(false);
-            if (onSuccess is not null)
-            {
-                await onSuccess(result).ConfigureAwait(false);
-            }
-
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status200OK);
         }
         catch (SecurityMasterConcurrencyException ex)
