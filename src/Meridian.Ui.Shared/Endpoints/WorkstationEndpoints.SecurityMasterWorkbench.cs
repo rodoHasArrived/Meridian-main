@@ -294,7 +294,9 @@ public static partial class WorkstationEndpoints
             var owner = await registry
                 .BindAsync(fundProfileId, tenant.TenantId!, tenant.CompanyId, context.RequestAborted)
                 .ConfigureAwait(false);
-            return owner.IsHeldBy(tenant.TenantId);
+            // BindAsync is contracted to return the effective owner (never null); a null from a custom or
+            // test double falls open to the deployment boundary, consistent with the catch below.
+            return owner?.IsHeldBy(tenant.TenantId) ?? true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
