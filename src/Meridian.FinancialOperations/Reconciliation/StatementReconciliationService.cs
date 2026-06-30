@@ -181,7 +181,7 @@ public sealed class StatementReconciliationService
                 securities.Add(p.Security);
             }
 
-            switch (ToStatementRowKind(p.TransactionType))
+            switch (p.RowKind)
             {
                 case StatementRowKind.Position:
                     positions.Add(new StatementPosition(
@@ -250,7 +250,11 @@ public sealed class StatementReconciliationService
 
             var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
             var account = mapped.GetRequired(StatementCanonicalField.Account, currentRowNumber);
-            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber));
+            // Classify the row kind from the mapped (canonical) activity, but keep the original source
+            // activity code for the transaction so direction-bearing codes (e.g. BUY/SELL, which a
+            // profile may both map to "trade") are not lost for downstream matching/classification.
+            var sourceActivityType = mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber);
+            var activityType = profile.MapActivityType(sourceActivityType);
             var rowKind = ToStatementRowKind(activityType);
             // Position rows must carry a security identifier (MatchRows auto-matches positions
             // without re-checking the symbol, so a blank one would become a false high-confidence
@@ -304,7 +308,8 @@ public sealed class StatementReconciliationService
                 settlementDate,
                 amount,
                 feesCommission,
-                activityType,
+                rowKind,
+                sourceActivityType,
                 externalReference);
         }
     }
@@ -696,6 +701,7 @@ public sealed class StatementReconciliationService
         DateOnly? SettlementDate,
         decimal Amount,
         decimal FeesCommission,
+        StatementRowKind RowKind,
         string TransactionType,
         string? ExternalReference);
 }

@@ -43,6 +43,36 @@ public sealed class StatementReconciliationServiceTests
     }
 
     [Fact]
+    public async Task ImportAsync_SampleBrokerProfile_PreservesSourceTradeCodes()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // The sample-broker profile maps both BUY and SELL to the canonical "trade" activity.
+            // Typed import must classify the row kind from the mapped value but retain the original
+            // source code on the transaction, so buys and sells remain distinguishable downstream.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "BrokerAccount,Ticker,Units,ExecutionPrice,NetCash,TxnCode,TradeDate",
+                "BRK-1,MSFT,5,400,0,BUY,2026-05-27",
+                "BRK-1,MSFT,3,410,0,SELL,2026-05-28"
+            ]);
+
+            var result = await svc.ImportAsync(
+                "broker", filePath, StatementMappingProfileRegistry.SampleBrokerCsvV1ProfileId, CancellationToken.None);
+
+            Assert.Equal(2, result.Transactions.Count);
+            Assert.Contains(result.Transactions, t => t.TransactionType == "BUY");
+            Assert.Contains(result.Transactions, t => t.TransactionType == "SELL");
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public async Task ImportAsync_Returns_Typed_Normalized_Broker_Collections_With_Source_Trace()
     {
         var svc = new StatementReconciliationService();
