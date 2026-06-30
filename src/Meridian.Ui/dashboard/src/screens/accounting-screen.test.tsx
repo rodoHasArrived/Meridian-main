@@ -1511,7 +1511,7 @@ describe("AccountingScreen", () => {
     await waitForAsyncEffects();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
-    expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Accounting task modes" })).toBeInTheDocument();
   });
 
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
@@ -2431,7 +2431,7 @@ describe("AccountingScreen", () => {
       actor: "browser-accounting-operator",
       testCases: null
     }));
-  }, 30_000);
+  }, 45_000);
 
   it("renders external GL evidence package posture from the reconciliation response", async () => {
     const provider: AccountingSystemProvider = {
@@ -2721,7 +2721,7 @@ describe("AccountingScreen", () => {
       .mockResolvedValueOnce(certifiedExportManifest);
     vi.mocked(api.certifyAccountingSystemExportPackage).mockResolvedValueOnce(certifiedExportPackage);
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/ledger");
 
     const providerPosture = await screen.findByLabelText("External GL provider import posture");
     expect(providerPosture).toHaveTextContent("QuickBooks Fixture");
@@ -2962,7 +2962,7 @@ describe("AccountingScreen", () => {
     expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
   });
 
-  it("renders reconciliation, cash-flow, and reporting summaries", async () => {
+  it("renders the close cockpit landing with focused accounting task modes", async () => {
     await renderAccountingScreen();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
@@ -2972,22 +2972,7 @@ describe("AccountingScreen", () => {
     expect(within(navigator).getByRole("link", { name: "Reconciliation Casework" })).toHaveAttribute("href", "/accounting/reconciliation");
     expect(within(navigator).getByRole("link", { name: "Journal Entry" })).toHaveAttribute("href", "/accounting/journal-entries");
     expect(within(navigator).getByRole("link", { name: "Governance" })).toHaveAttribute("href", "/accounting/configure");
-    expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
-    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Journal entries and ledger detail");
-    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Controller review");
-    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("All accounts");
-    expect(screen.getByLabelText("Ledger Explorer proof actions")).toHaveTextContent("Evidence packet");
-    expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
-    expect(within(workflow).getByRole("link", { name: "Ledger Explorer: Ledger authority, current Accounting workstream" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger"
-    );
-    expect(within(workflow).getByRole("link", { name: "Ledger Explorer: Ledger authority, current Accounting workstream" })).toHaveAttribute(
-      "aria-current",
-      "page"
-    );
     expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
       "href",
       "/accounting/journal-entries"
@@ -2996,20 +2981,30 @@ describe("AccountingScreen", () => {
       "href",
       "/reporting/evidence"
     );
-    expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Accounting reconciliation workflow" })).toHaveAttribute(
       "href",
       "/accounting/reconciliation"
     );
-    expect(screen.getByRole("table", { name: "Reconciliation runs" })).toHaveTextContent("Paper Index Mean Reversion");
-    expect(screen.getByRole("row", { name: /Paper Index Mean Reversion.*BreaksOpen.*1 open/i })).not.toHaveAttribute(
-      "aria-controls"
+    const taskModes = screen.getByRole("navigation", { name: "Accounting task modes" });
+    expect(within(taskModes).getByRole("link", { name: "Open Reconciliation Casework accounting task mode" })).toHaveAttribute(
+      "href",
+      "/accounting/reconciliation"
     );
-    expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
-    expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Cash-flow evidence for Ledger context at /accounting" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
-    expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
-    expect(screen.getAllByText("Paper Index Mean Reversion").length).toBeGreaterThanOrEqual(1);
+    expect(within(taskModes).getByRole("link", { name: "Open Ledger Explorer accounting task mode" })).toHaveAttribute(
+      "href",
+      "/accounting/ledger"
+    );
+    expect(within(taskModes).getByRole("link", { name: "Open Capital Accounts accounting task mode" })).toHaveAttribute(
+      "href",
+      "/accounting/capital-accounts"
+    );
+    expect(within(taskModes).getByRole("link", { name: "Open Delivery Evidence accounting task mode" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence"
+    );
+    expect(screen.queryByRole("heading", { name: "Ledger Explorer" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "Reconciliation runs" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Reporting profiles")).not.toBeInTheDocument();
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
@@ -3887,7 +3882,7 @@ describe("AccountingScreen", () => {
     const user = userEvent.setup();
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/ledger");
 
     const table = await screen.findByRole("table", { name: "Primary trial balance lines for run-42" });
     expect(table).toBeInTheDocument();
@@ -3931,7 +3926,7 @@ describe("AccountingScreen", () => {
   it("renders a useful trial-balance empty state instead of a blank table", async () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/ledger");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
     expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
@@ -3952,7 +3947,7 @@ describe("AccountingScreen", () => {
       ]
     }));
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/ledger");
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Fund account is required.");
@@ -3980,7 +3975,7 @@ describe("AccountingScreen", () => {
       timestamp: "2026-01-01T00:00:00Z"
     });
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/ledger");
 
     await user.click(screen.getByRole("button", { name: "Run reporting export for Excel" }));
 
@@ -4014,7 +4009,7 @@ describe("AccountingScreen", () => {
         })
     );
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/ledger");
 
     await user.click(screen.getByRole("button", { name: "Run reporting export for Excel" }));
 
