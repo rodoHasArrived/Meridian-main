@@ -5,6 +5,8 @@ using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Edgar;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Providers;
 
+/// <summary>
+/// Guards provider capability metadata against runtime-readiness drift for inventory-only ingestion providers.
+/// </summary>
 public sealed class ProviderCapabilityDescriptorCatalogTests
 {
     [Fact]
@@ -84,6 +89,67 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
             AssertResolvable(provider, descriptor.ProviderId, descriptor.CorporateActions, typeof(ICorporateActionProvider));
             AssertResolvable(provider, descriptor.ProviderId, descriptor.Options, typeof(IOptionsChainProvider));
             AssertResolvable(provider, descriptor.ProviderId, descriptor.Brokerage, typeof(IBrokerageGateway));
+        }
+    }
+
+    [Fact]
+    public void Scenario_RuntimeCapabilityDrift_SupportedRuntimeProvidersExposeImplementedDescriptors()
+    {
+        var descriptorsById = ProviderCapabilityDescriptorCatalog.Descriptors
+            .ToDictionary(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+        descriptorsById.Keys.Should().Contain("robinhood");
+        var robinhood = descriptorsById["robinhood"];
+        robinhood.Streaming.Should().Be(typeof(RobinhoodMarketDataClient));
+        robinhood.Historical.Should().Be(typeof(RobinhoodHistoricalDataProvider));
+        robinhood.Search.Should().Be(typeof(RobinhoodSymbolSearchProvider));
+        robinhood.Options.Should().Be(typeof(RobinhoodOptionsChainProvider));
+        robinhood.Brokerage.Should().Be(typeof(RobinhoodBrokerageGateway));
+        robinhood.CorporateActions.Should().BeNull(
+            "Robinhood has no dedicated ICorporateActionProvider implementation in the runtime catalog");
+
+        descriptorsById.Keys.Should().Contain("edgar");
+        var edgar = descriptorsById["edgar"];
+        edgar.Search.Should().Be(typeof(EdgarSymbolSearchProvider));
+        edgar.Streaming.Should().BeNull();
+        edgar.Historical.Should().BeNull();
+        edgar.Options.Should().BeNull();
+        edgar.Brokerage.Should().BeNull();
+        edgar.CorporateActions.Should().BeNull(
+            "EDGAR corporate-action support is routed through Security Master/reference-data workflows, not an ICorporateActionProvider implementation");
+    }
+
+    [Fact]
+    public void Scenario_RuntimeCapabilityDrift_FreeTierBackfillProvidersRemainFailClosed()
+    {
+        string[] inventoryOnlyBackfillProviders =
+        [
+            "alphavantage",
+            "finnhub",
+            "fred",
+            "nasdaq",
+            "stooq",
+            "tiingo",
+            "twelvedata",
+            "yahoo"
+        ];
+
+        var descriptorsById = ProviderCapabilityDescriptorCatalog.Descriptors
+            .ToDictionary(static descriptor => descriptor.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+        descriptorsById.Keys.Should().Contain(inventoryOnlyBackfillProviders);
+
+        foreach (var providerId in inventoryOnlyBackfillProviders)
+        {
+            descriptorsById[providerId].Streaming.Should().BeNull(
+                "inventory/backfill provider '{0}' must not advertise streaming readiness without a dedicated provider implementation and evidence",
+                providerId);
+            descriptorsById[providerId].CorporateActions.Should().BeNull(
+                "inventory/backfill provider '{0}' must not advertise corporate-action readiness without a dedicated provider implementation and evidence",
+                providerId);
+            descriptorsById[providerId].Brokerage.Should().BeNull(
+                "inventory/backfill provider '{0}' must not advertise brokerage readiness without a dedicated provider implementation and evidence",
+                providerId);
         }
     }
 

@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.6 | **Last Updated:** 2026-06-06
+**Version:** 3.7 | **Last Updated:** 2026-06-30
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -11,6 +11,7 @@ See also:
 - [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md)
 - [Provider Implementation Guide](../development/provider-implementation.md)
 - [Provider Capability Matrix](../reference/provider-capability-matrix.md)
+- [Provider Backfill Operations](../operators/provider-backfill-operations.md)
 
 ---
 
@@ -382,6 +383,32 @@ Backfill job queue with priority-based ordering:
 **Location:** `src/Meridian.Infrastructure/Adapters/Queue/BackfillWorkerService.cs`
 
 Background service that dequeues jobs from `PriorityBackfillQueue` (or `BackfillRequestQueue`) and executes them through `CompositeHistoricalDataProvider`.
+
+### Backfill Ordering and Gap-Remediation Contract
+
+The operator-facing backfill contract is documented in
+[Provider Backfill Operations](../operators/provider-backfill-operations.md). The current
+architecture supports the following deterministic semantics:
+
+- `HistoricalBackfillService` caps per-request symbol concurrency with `MaxConcurrentSymbols`; when
+  unset, it uses the configured backfill job concurrency.
+- `SymbolPriorities` sort symbols by lower numeric priority first, with case-insensitive keys.
+  Without priorities, serial execution (`MaxConcurrentSymbols=1`) preserves input order.
+- Concurrent multi-symbol runs do not guarantee completion order. Treat per-symbol validation
+  signals, execution history, and checkpoints as the evidence boundary instead of task completion
+  sequence.
+- `ResumeFromCheckpoint=true` skips fully covered symbols and advances partially covered symbols to
+  the day after the recorded checkpoint. Fresh non-resume runs clear only matching-granularity
+  checkpoints, so intraday and daily lanes do not wipe each other.
+- `PriorityBackfillQueue` orders jobs by `Critical`, `High`, `Normal`, `Low`, then `Deferred`, and
+  keeps dependency-blocked jobs paused until all dependencies complete.
+
+`AutoGapRemediationService` adds guardrails, not a complete cross-provider SLA engine. It requires
+minimum gap duration/size, applies symbol and provider cooldowns, limits concurrent remediation
+attempts, suppresses duplicate completed attempts by idempotency key, and allows transient failures
+to retry. Cross-provider fallback and promotion-grade closure remain operator-governed: the run is
+not considered remediated until execution history, per-symbol validation signals, and a follow-up
+gap or quality check prove the affected interval acceptable for the blocked downstream workflow.
 
 ### Rate Limiting
 
@@ -784,3 +811,10 @@ export TIINGO__TOKEN=your-token
 - Kept provider calibration command and status endpoint composition in Application as consumers of
   the Data Integration-owned provider telemetry, health, scoring, calibration, and data-quality
   evidence models.
+
+## Migration Notes (v3.6 -> v3.7)
+
+- Added the historical backfill ordering, checkpoint/resume, priority queue, and gap-remediation
+  contract that links architecture guidance to the canonical provider backfill operator runbook.
+- Clarified that current auto-remediation is guardrail automation, while cross-provider SLA closure
+  still requires retained execution, validation-signal, and follow-up quality evidence.

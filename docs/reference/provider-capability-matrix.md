@@ -36,6 +36,11 @@ Use the matrix as capability evidence, not as a blanket production-readiness lab
 - The free-tier historical providers (`AlphaVantage`, `Finnhub`, `Fred`, `NasdaqDataLink`,
   `Stooq`, `Tiingo`, `TwelveData`, and `YahooFinance`) are not production-grade streaming rows.
   They are inventory/backfill rows unless a capability column says otherwise.
+- A `complete` historical/backfill cell means the adapter surface and deterministic tests exist; it
+  does not mean cross-provider gap-remediation SLA enforcement is complete. Use
+  [Provider Backfill Operations](../operators/provider-backfill-operations.md) and
+  [Provider Validation Matrix](provider-validation-matrix.md) for ordering, checkpoint, remediation,
+  and evidence-closure posture.
 - `OpenFigi`, `Edgar`, `Tradier`, and `TradeStation` must not be promoted from partial or
   experimental support to production provider readiness without provider-specific runtime,
   governance, and validation evidence.
@@ -69,5 +74,6 @@ Use the matrix as capability evidence, not as a blanket production-readiness lab
 ## Notes
 
 - The matrix is folder-based: capability states are assigned from concrete adapter artifacts present in each subfolder (for example `*MarketDataClient`, `*HistoricalDataProvider`, `*SymbolSearchProvider`, `*OptionsChainProvider`, `*CorporateAction*`, `*BrokerageGateway`/`*BrokerageSync*`).
+- `ProviderCapabilityDescriptorCatalog` is contract-based: it registers only concrete adapters that implement the shared runtime provider contracts. Folder-level support such as EDGAR Security Master ingestion, OpenFIGI mapping, NYSE ProviderSdk sources, or mapper-only Tradier/TradeStation assets does not become a runtime descriptor until a compatible shared contract implementation exists.
 - `Core` and `Templates` are intentionally non-provider runtime folders and are marked `template-only` by design.
 - `TradeStation` and `Tradier` currently expose mapper-focused artifacts in this tree; they remain `experimental` until full adapter classes and wiring are present.

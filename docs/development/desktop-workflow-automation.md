@@ -68,7 +68,10 @@ prepares a `desktop-screenshots-complete-<run-number>` artifact under
 the requested catalog output and the timestamped `artifacts/desktop-workflows/` run bundles, plus a
 `screenshot-artifact-manifest.json` index of those files. The web capture set is planned from
 `scripts/dev/web-screenshot-routes.json`, so screenshot additions should be made in the definition
-files rather than by editing the workflow matrix directly. Strategy Designer is part of that web
+files rather than by editing the workflow matrix directly. The web screenshot workflow tests also
+compare that route definition with the dashboard workstation route catalog and explicit app-shell
+routes, excluding only compatibility redirects, so new browser pages should add fixture-backed
+capture entries before the workflow is considered complete. Strategy Designer is part of that web
 evidence lane through `/workstation/strategy/designer`; keep its screenshot route paired with
 `scripts/dev/web-screenshot-fixtures.json` and the dashboard no-host fixtures for the designer
 template, field-catalog, and draft GET endpoints.

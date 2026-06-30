@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -13,6 +14,8 @@ WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.j
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
 WEB_SCREENSHOT_CAPTURE_SCRIPT = REPO_ROOT / "scripts" / "dev" / "capture-web-screenshots.mjs"
 DESKTOP_WORKFLOWS = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
+WORKSTATION_ROUTE_CATALOG = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "lib" / "workspace.ts"
+WORKSTATION_APP_SHELL = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "src" / "app.tsx"
 
 
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
@@ -27,6 +30,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
         cls.web_screenshot_capture_script = WEB_SCREENSHOT_CAPTURE_SCRIPT.read_text(encoding="utf-8")
         cls.desktop_workflows = json.loads(DESKTOP_WORKFLOWS.read_text(encoding="utf-8"))
+        cls.workstation_route_catalog = WORKSTATION_ROUTE_CATALOG.read_text(encoding="utf-8")
+        cls.workstation_app_shell = WORKSTATION_APP_SHELL.read_text(encoding="utf-8")
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
         self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
@@ -79,43 +84,44 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("SwitchContextButton", self.run_desktop_workflow_script)
         self.assertIn("Invoke-AutomationButton -Button $switchContextButton -Description 'switch context'", self.run_desktop_workflow_script)
 
-    def test_web_screenshot_routes_cover_workspace_mega_menu_links(self) -> None:
+    def test_web_screenshot_routes_cover_workstation_route_catalog_pages(self) -> None:
         captures = self.web_screenshot_routes.get("captures", [])
         captured_paths = {capture.get("path") for capture in captures if capture.get("path")}
+        route_catalog = self.extract_workstation_route_catalog()
 
-        expected_paths = {
-            "/trading",
-            "/trading/orders",
-            "/trading/positions",
-            "/trading/risk",
-            "/trading/readiness",
-            "/portfolio",
-            "/portfolio/attribution",
-            "/portfolio/brokerage-sync",
-            "/accounting",
-            "/accounting/reconciliation",
-            "/accounting/security-master",
-            "/accounting/approvals",
-            "/reporting",
-            "/reporting/report-packs",
-            "/reporting/evidence",
-            "/reporting/exports",
-            "/strategy",
-            "/strategy/promotions",
-            "/strategy/lab",
-            "/strategy/quant-lab",
-            "/strategy/designer",
-            "/data",
-            "/data/watchlist",
-            "/data/quotes",
-            "/data/backfills",
-            "/settings",
-            "/settings/preferences",
-            "/settings/integrations",
+        compatibility_redirect_routes = {
+            "dataSecurityMasterLegacy",
         }
+        expected_paths = {
+            path
+            for key, path in route_catalog.items()
+            if key not in compatibility_redirect_routes
+        }
+        expected_paths.add("/")
 
         missing_paths = sorted(expected_paths - captured_paths)
         self.assertEqual([], missing_paths, f"Missing web screenshot routes: {missing_paths}")
+
+    def test_web_screenshot_routes_cover_explicit_app_routes(self) -> None:
+        captures = self.web_screenshot_routes.get("captures", [])
+        captured_paths = {capture.get("path") for capture in captures if capture.get("path")}
+        route_paths = set(re.findall(r'<Route\s+path="([^"]+)"', self.workstation_app_shell))
+        compatibility_redirect_routes = {
+            "/data/security-master",
+            "/data/security-master/*",
+            "/overview/*",
+            "/research/*",
+            "/data-operations/*",
+            "/governance/*",
+        }
+        explicit_pages = {
+            path
+            for path in route_paths
+            if "*" not in path and path not in compatibility_redirect_routes
+        }
+
+        missing_paths = sorted(explicit_pages - captured_paths)
+        self.assertEqual([], missing_paths, f"Missing explicit app route screenshots: {missing_paths}")
 
     def test_strategy_designer_screenshot_route_has_fixture_evidence(self) -> None:
         captures = self.web_screenshot_routes.get("captures", [])
@@ -175,6 +181,20 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn('await page.route("**/api/**"', self.web_screenshot_capture_script)
         self.assertIn('if (!pathname.startsWith("/api/"))', self.web_screenshot_capture_script)
         self.assertIn("return route.continue();", self.web_screenshot_capture_script)
+
+    def extract_workstation_route_catalog(self) -> dict[str, str]:
+        match = re.search(
+            r"export const WORKSTATION_ROUTE_CATALOG = \{(?P<body>.*?)\} as const;",
+            self.workstation_route_catalog,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(match, "WORKSTATION_ROUTE_CATALOG block was not found")
+        assert match is not None
+
+        return {
+            key: path
+            for key, path in re.findall(r'\n\s*([A-Za-z0-9_]+):\s*"([^"]+)"', match.group("body"))
+        }
 
 
 if __name__ == "__main__":

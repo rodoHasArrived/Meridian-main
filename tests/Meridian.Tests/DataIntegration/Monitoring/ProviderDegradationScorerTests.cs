@@ -278,6 +278,52 @@ public sealed class ProviderDegradationScorerTests : IDisposable
     }
 
     [Fact]
+    public void Scenario_ProviderFeedInterruption_DegradedEventFiresOnlyOnThresholdCrossing()
+    {
+        // Arrange
+        const string providerName = "interrupt-provider";
+        _healthMonitor.RegisterConnection("interrupt-conn", providerName);
+        _healthMonitor.MarkDisconnected("interrupt-conn", "provider feed interruption");
+
+        for (var i = 0; i < 100; i++)
+            _scorer.RecordError(providerName, "connection_failed");
+
+        var degradedCount = 0;
+        var recoveredCount = 0;
+        _scorer.OnProviderDegraded += e =>
+        {
+            if (e.ProviderName == providerName)
+                degradedCount++;
+        };
+        _scorer.OnProviderRecovered += e =>
+        {
+            if (e.ProviderName == providerName)
+                recoveredCount++;
+        };
+
+        // Act - initial crossing, repeated degraded evaluation, recovery, then a new crossing.
+        _scorer.EvaluateNow();
+        _scorer.EvaluateNow();
+
+        _healthMonitor.MarkConnected("interrupt-conn");
+        for (var i = 0; i < 300; i++)
+            _scorer.RecordSuccess(providerName);
+
+        _scorer.EvaluateNow();
+
+        _healthMonitor.MarkDisconnected("interrupt-conn", "second provider feed interruption");
+        for (var i = 0; i < 100; i++)
+            _latencyService.RecordLatency(providerName, 2000.0);
+
+        _scorer.EvaluateNow();
+
+        // Assert
+        _scorer.IsDegraded(providerName).Should().BeTrue();
+        degradedCount.Should().Be(2, "degraded events represent threshold crossings, not every degraded evaluation");
+        recoveredCount.Should().Be(1, "the provider recovered once between the two degraded crossings");
+    }
+
+    [Fact]
     public void EvaluateNow_ProviderRecovery_FiresOnProviderRecoveredEvent()
     {
         // Arrange – first, make the provider degrade

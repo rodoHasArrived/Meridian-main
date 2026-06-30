@@ -121,7 +121,7 @@ public sealed class AutoGapRemediationService : IDisposable
         var from = DateOnly.FromDateTime(gap.GapStart.UtcDateTime);
         var to = DateOnly.FromDateTime(gap.GapEnd.UtcDateTime);
         return EnqueueRemediationAsync(
-            gap.Symbol,
+            [gap.Symbol],
             from,
             to,
             provider ?? _policy.DefaultProvider,
@@ -133,6 +133,9 @@ public sealed class AutoGapRemediationService : IDisposable
 
     public async Task HandleGapAnalysisResultAsync(StorageGapAnalysisResult result, string? provider = null, CancellationToken ct = default)
     {
+        var candidates = new List<AutoGapRemediationCandidate>();
+        var remediationProvider = provider ?? _policy.DefaultProvider;
+
         foreach (var (symbol, info) in result.SymbolGaps)
         {
             if (!info.HasGaps || info.GapDates.Count < _policy.MinimumGapSize)
@@ -142,23 +145,50 @@ public sealed class AutoGapRemediationService : IDisposable
 
             foreach (var range in info.GetGapRanges())
             {
-                await EnqueueRemediationAsync(
+                candidates.Add(new AutoGapRemediationCandidate(
                     symbol,
                     range.From,
                     range.To,
-                    provider ?? _policy.DefaultProvider,
+                    remediationProvider,
                     AutoRemediationTriggerSource.GapAnalyzerScan,
                     $"scan:{result.Granularity}:{info.GapDates.Count}",
-                    info.GapDates.Count,
-                    ct).ConfigureAwait(false);
+                    info.GapDates.Count));
             }
+        }
+
+        foreach (var group in candidates
+                     .GroupBy(static candidate => new AutoGapRemediationBatchKey(
+                         candidate.Provider,
+                         candidate.From,
+                         candidate.To,
+                         candidate.Source,
+                         candidate.Reason))
+                     .OrderBy(static group => group.Key.From)
+                     .ThenBy(static group => group.Key.To)
+                     .ThenBy(static group => group.Key.Provider, StringComparer.OrdinalIgnoreCase))
+        {
+            var symbols = group
+                .Select(static candidate => candidate.Symbol)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static symbol => symbol, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            await EnqueueRemediationAsync(
+                symbols,
+                group.Key.From,
+                group.Key.To,
+                group.Key.Provider,
+                group.Key.Source,
+                group.Key.Reason,
+                group.Sum(static candidate => Math.Max(candidate.GapSize, 1)),
+                ct).ConfigureAwait(false);
         }
     }
 
     public Task HandleQualityAlertAsync(QualityAlertRemediationSignal signal, CancellationToken ct = default)
     {
         return EnqueueRemediationAsync(
-            signal.Symbol,
+            [signal.Symbol],
             signal.From,
             signal.To,
             signal.Provider ?? _policy.DefaultProvider,
@@ -174,7 +204,7 @@ public sealed class AutoGapRemediationService : IDisposable
     }
 
     private async Task EnqueueRemediationAsync(
-        string symbol,
+        IReadOnlyList<string> symbols,
         DateOnly from,
         DateOnly to,
         string provider,
@@ -188,16 +218,37 @@ public sealed class AutoGapRemediationService : IDisposable
             return;
         }
 
-        var normalizedSymbol = symbol.ToUpperInvariant();
-        var idempotencyKey = BuildIdempotencyKey(normalizedSymbol, provider, from, to);
-        var now = DateTimeOffset.UtcNow;
+        var normalizedSymbols = symbols
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Select(static symbol => symbol.Trim().ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
-        if (IsCoolingDown(_symbolCooldown, normalizedSymbol, _policy.SymbolCooldown, now) ||
-            IsCoolingDown(_providerCooldown, provider, _policy.ProviderCooldown, now))
+        if (normalizedSymbols.Length == 0)
         {
-            _log.Debug("Auto-remediation cooldown active for {Symbol}/{Provider}", normalizedSymbol, provider);
             return;
         }
+
+        var now = DateTimeOffset.UtcNow;
+
+        if (IsCoolingDown(_providerCooldown, provider, _policy.ProviderCooldown, now))
+        {
+            _log.Debug("Auto-remediation provider cooldown active for {Provider}", provider);
+            return;
+        }
+
+        var eligibleSymbols = normalizedSymbols
+            .Where(symbol => !IsCoolingDown(_symbolCooldown, symbol, _policy.SymbolCooldown, now))
+            .ToArray();
+
+        if (eligibleSymbols.Length == 0)
+        {
+            _log.Debug("Auto-remediation symbol cooldown active for {Provider}", provider);
+            return;
+        }
+
+        var idempotencyKey = BuildIdempotencyKey(eligibleSymbols, provider, from, to);
 
         var state = _idempotency.GetOrAdd(idempotencyKey, _ => new AutoRemediationState());
         lock (state)
@@ -221,26 +272,26 @@ public sealed class AutoGapRemediationService : IDisposable
 
         try
         {
-            var execution = CreateExecutionLog(normalizedSymbol, provider, from, to, source, reason, idempotencyKey, state.Attempts);
+            var execution = CreateExecutionLog(eligibleSymbols, provider, from, to, source, reason, idempotencyKey, state.Attempts);
             _history.AddExecution(execution);
 
             try
             {
-                var request = new BackfillRequest(provider, new[] { normalizedSymbol }, from, to);
+                var request = new BackfillRequest(provider, eligibleSymbols, from, to);
                 var result = await _backfillGateway.RunAsync(request, ct).ConfigureAwait(false);
 
                 execution.CompletedAt = DateTimeOffset.UtcNow;
                 execution.Status = result.Success ? ExecutionStatus.Completed : ExecutionStatus.Failed;
                 execution.ErrorMessage = result.Error;
                 execution.Statistics.TotalBarsRetrieved = result.BarsWritten;
-                execution.Statistics.TotalSymbols = 1;
-                execution.Statistics.SuccessfulSymbols = result.Success ? 1 : 0;
-                execution.Statistics.FailedSymbols = result.Success ? 0 : 1;
+                execution.Statistics.TotalSymbols = eligibleSymbols.Length;
+                execution.Statistics.SuccessfulSymbols = result.Success ? eligibleSymbols.Length : 0;
+                execution.Statistics.FailedSymbols = result.Success ? 0 : eligibleSymbols.Length;
                 execution.AutoRemediationLastOutcome = result.Success
                     ? AutoRemediationOutcome.Completed.ToString()
                     : AutoRemediationOutcome.FailedPermanent.ToString();
 
-                UpdateCooldowns(normalizedSymbol, provider, now);
+                UpdateCooldowns(eligibleSymbols, provider, now);
                 UpdateOutcome(state, result.Success ? AutoRemediationOutcome.Completed : AutoRemediationOutcome.FailedPermanent);
             }
             catch (Exception ex)
@@ -270,8 +321,8 @@ public sealed class AutoGapRemediationService : IDisposable
         }
     }
 
-    private static string BuildIdempotencyKey(string symbol, string provider, DateOnly from, DateOnly to)
-        => $"{symbol}|{provider.ToLowerInvariant()}|{from:yyyy-MM-dd}|{to:yyyy-MM-dd}";
+    private static string BuildIdempotencyKey(IReadOnlyList<string> symbols, string provider, DateOnly from, DateOnly to)
+        => $"{string.Join(",", symbols)}|{provider.ToLowerInvariant()}|{from:yyyy-MM-dd}|{to:yyyy-MM-dd}";
 
     private static bool IsCoolingDown(ConcurrentDictionary<string, DateTimeOffset> state, string key, TimeSpan cooldown, DateTimeOffset now)
         => state.TryGetValue(key, out var lastAttempt) && (now - lastAttempt) < cooldown;
@@ -287,14 +338,18 @@ public sealed class AutoGapRemediationService : IDisposable
         }
     }
 
-    private void UpdateCooldowns(string symbol, string provider, DateTimeOffset timestamp)
+    private void UpdateCooldowns(IReadOnlyList<string> symbols, string provider, DateTimeOffset timestamp)
     {
-        _symbolCooldown[symbol] = timestamp;
+        foreach (var symbol in symbols)
+        {
+            _symbolCooldown[symbol] = timestamp;
+        }
+
         _providerCooldown[provider] = timestamp;
     }
 
     private static BackfillExecutionLog CreateExecutionLog(
-        string symbol,
+        IReadOnlyList<string> symbols,
         string provider,
         DateOnly from,
         DateOnly to,
@@ -312,7 +367,7 @@ public sealed class AutoGapRemediationService : IDisposable
             StartedAt = DateTimeOffset.UtcNow,
             FromDate = from,
             ToDate = to,
-            Symbols = { symbol },
+            Symbols = symbols.ToList(),
             Status = ExecutionStatus.Running,
             AutoRemediationTriggerReason = reason,
             AutoRemediationAttemptCount = attempt,
@@ -321,4 +376,20 @@ public sealed class AutoGapRemediationService : IDisposable
             Warnings = { $"source={source}", $"provider={provider}" }
         };
     }
+
+    private sealed record AutoGapRemediationCandidate(
+        string Symbol,
+        DateOnly From,
+        DateOnly To,
+        string Provider,
+        AutoRemediationTriggerSource Source,
+        string Reason,
+        int GapSize);
+
+    private sealed record AutoRemediationBatchKey(
+        string Provider,
+        DateOnly From,
+        DateOnly To,
+        AutoRemediationTriggerSource Source,
+        string Reason);
 }

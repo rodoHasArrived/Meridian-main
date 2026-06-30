@@ -24,8 +24,9 @@ describe("workspace primitives", () => {
 
     expect(screen.getByRole("region", { name: "Data filters" })).toBeInTheDocument();
     expect(screen.getByRole("search", { name: "Search" })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "Search" })).toHaveValue("provider: polygon");
-    expect(screen.getByRole("textbox", { name: "Search" })).toHaveAttribute("readonly");
+    expect(screen.getByRole("searchbox", { name: "Search" })).toHaveValue("provider: polygon");
+    expect(screen.getByRole("searchbox", { name: "Search" })).toHaveAttribute("type", "search");
+    expect(screen.getByRole("searchbox", { name: "Search" })).toHaveAttribute("readonly");
     const filterSegments = screen.getByRole("list", { name: "Data filters filters" });
     expect(within(filterSegments).getByText("All").closest('[role="listitem"]')).toHaveAttribute(
       "aria-current",
@@ -50,6 +51,7 @@ describe("workspace primitives", () => {
     );
 
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tablist", { name: "Provider detail tabs" })).toHaveAttribute("aria-orientation", "horizontal");
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("tab", { name: "Diagnostics" })).toHaveAttribute("tabindex", "-1");
     fireEvent.click(screen.getByRole("tab", { name: "Diagnostics" }));
@@ -81,6 +83,35 @@ describe("workspace primitives", () => {
 
     fireEvent.keyDown(history, { key: "Home" });
     expect(overview).toHaveFocus();
+  });
+
+  it("activates focused button tabs with Enter and Space", () => {
+    const onSelect = vi.fn();
+
+    render(
+      <WorkspaceTabStrip
+        label="Provider detail tabs"
+        tabs={[
+          { id: "overview", label: "Overview", selected: true, panelId: "overview-panel" },
+          { id: "diagnostics", label: "Diagnostics", panelId: "diagnostics-panel" },
+          { id: "history", label: "History", panelId: "history-panel" }
+        ]}
+        onSelect={onSelect}
+      />
+    );
+
+    const overview = screen.getByRole("tab", { name: "Overview" });
+    const diagnostics = screen.getByRole("tab", { name: "Diagnostics" });
+    const history = screen.getByRole("tab", { name: "History" });
+
+    overview.focus();
+    fireEvent.keyDown(overview, { key: "ArrowRight" });
+    fireEvent.keyDown(diagnostics, { key: "Enter" });
+    expect(onSelect).toHaveBeenCalledWith("diagnostics");
+
+    fireEvent.keyDown(diagnostics, { key: "ArrowRight" });
+    fireEvent.keyDown(history, { key: " " });
+    expect(onSelect).toHaveBeenCalledWith("history");
   });
 
   it("frames inspector and document canvas regions", () => {

@@ -211,6 +211,32 @@ describe("FinancialRecordExplorerShell", () => {
     );
   });
 
+  it("saves URL-restored filters into operator-named views", async () => {
+    const user = userEvent.setup();
+    const onSaveView = vi.fn().mockResolvedValue(undefined);
+    window.history.replaceState(
+      null,
+      "",
+      "/accounting?frexExplorer=ledger&frexFilter=accountType:Income&frexRecord=ledger:run-1:revenue"
+    );
+    renderExplorer(onSaveView);
+
+    await user.type(screen.getByRole("textbox", { name: "Saved view name" }), "Income evidence review");
+    await user.click(screen.getByRole("button", { name: "Save view" }));
+
+    expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({
+      label: "Income evidence review",
+      description: "Saved from shared explorer link.",
+      filters: [
+        expect.objectContaining({
+          filterId: "accountType",
+          label: "Type",
+          value: "Income"
+        })
+      ]
+    }));
+  });
+
   it("persists the current explorer evidence state into the browser URL", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "/accounting?period=2026-06");

@@ -5,7 +5,7 @@ This document captures the Meridian storage architecture as it exists today, plu
 
 > **Document status:** Living architecture reference — reflects the implemented storage layer.
 >
-> **Last updated:** 2026-05-29
+> **Last updated:** 2026-06-30
 >
 > **Audience:** Platform engineers, storage/infrastructure owners, and data operations.
 
@@ -106,6 +106,26 @@ The storage layer currently delivers:
 | Adaptive partitioning | ⏳ Planned | — |
 
 `SourceRegistry`, `MetadataTagService`, and `DataLineageService` now treat persistence as part of the mutation boundary rather than a deferred background task. Their writes complete through `AtomicFileWriter` before the mutating call returns, save failures surface to the caller, and the metadata/lineage JSON stores use ADR-014 source-generated serializer contexts instead of ad-hoc `JsonSerializerOptions`.
+
+### Backfill Acceptance Boundary
+
+Historical backfill output is accepted into storage by evidence, not by request completion order.
+Current multi-symbol ordering and gap-remediation operator semantics live in
+[Provider Backfill Operations](../operators/provider-backfill-operations.md), with the architecture
+summary in [Provider Management Architecture](provider-management.md).
+
+For storage and archival promotion, a backfill or remediation run is acceptable only when the run
+retains:
+
+- execution history for the provider, symbols, date range, and granularity,
+- per-symbol validation signals from `HistoricalBackfillService`,
+- matching-granularity checkpoint evidence when resume semantics are used, and
+- a follow-up gap or quality check showing the affected interval is acceptable for the downstream
+  workflow.
+
+This is an evidence boundary, not a guarantee that a full cross-provider SLA engine is implemented.
+Cross-source reconciliation remains partial, and adaptive partitioning remains planned as listed in
+the implementation status table.
 
 ### Storage Profiles (Presets)
 Storage profiles are optional presets that map to existing storage options without removing advanced configuration.
@@ -3227,7 +3247,7 @@ The modular design allows incremental adoption—start with basic naming convent
 
 ---
 
-**Version:** 2.1.1
-**Last Updated:** 2026-05-29
+**Version:** 2.1.2
+**Last Updated:** 2026-06-30
 **Focus:** Data Collection, Archival & External Analysis Export
 **See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../adr/002-tiered-storage-architecture.md)

@@ -37,6 +37,7 @@ export function WorkspaceFilterBar({
       <div className="workspace-filter-search" role="search" aria-label={searchLabel}>
         <Search className="h-3.5 w-3.5" aria-hidden="true" />
         <input
+          type="search"
           aria-label={searchLabel}
           readOnly
           value={searchValue ?? ""}
@@ -102,6 +103,7 @@ export function WorkspaceTabStrip({
   const handleTabKeyDown = (
     event: KeyboardEvent<HTMLAnchorElement | HTMLButtonElement>,
     index: number,
+    id: string,
     href: string | undefined
   ) => {
     if (tabs.length === 0) {
@@ -135,11 +137,17 @@ export function WorkspaceTabStrip({
     if (href && event.key === " ") {
       event.preventDefault();
       event.currentTarget.click();
+      return;
+    }
+
+    if (!href && (event.key === " " || event.key === "Enter")) {
+      event.preventDefault();
+      onSelect?.(id);
     }
   };
 
   return (
-    <div className={cn("workspace-tab-strip", className)} role="tablist" aria-label={label}>
+    <div className={cn("workspace-tab-strip", className)} role="tablist" aria-label={label} aria-orientation="horizontal">
       {tabs.map((tab, index) => {
         const selected = Boolean(tab.selected);
         const className = cn("workspace-tab", selected && "active");
@@ -156,7 +164,7 @@ export function WorkspaceTabStrip({
             aria-controls={tab.panelId}
             aria-current={selected ? "page" : undefined}
             tabIndex={tabIndex}
-            onKeyDown={(event) => handleTabKeyDown(event, index, tab.href)}
+            onKeyDown={(event) => handleTabKeyDown(event, index, tab.id, tab.href)}
           >
             {content}
           </a>
@@ -169,7 +177,7 @@ export function WorkspaceTabStrip({
             aria-selected={selected}
             aria-controls={tab.panelId}
             tabIndex={tabIndex}
-            onKeyDown={(event) => handleTabKeyDown(event, index, tab.href)}
+            onKeyDown={(event) => handleTabKeyDown(event, index, tab.id, tab.href)}
             onClick={() => onSelect?.(tab.id)}
           >
             {content}

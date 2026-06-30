@@ -13,6 +13,9 @@ using Meridian.Contracts.Backfill;
 
 namespace Meridian.Tests.Application.Backfill;
 
+/// <summary>
+/// Guards automatic gap remediation for provider interruption and batch gap-scan recovery scenarios.
+/// </summary>
 public sealed class AutoGapRemediationServiceTests
 {
     [Fact]
@@ -112,14 +115,64 @@ public sealed class AutoGapRemediationServiceTests
         history.GetRecentExecutions(10).Should().Contain(e => e.AutoRemediationLastOutcome == "Completed");
     }
 
+    [Fact]
+    public async Task Scenario_MultiSymbolGapScan_BatchesDeterministicRequestAndHistory()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+
+        var gapDate = new DateOnly(2026, 06, 29);
+        var scanResult = new StorageGapAnalysisResult
+        {
+            FromDate = gapDate,
+            ToDate = gapDate,
+            Granularity = DataGranularity.Daily,
+            SymbolGaps =
+            {
+                ["msft"] = BuildSingleDayGap("msft", gapDate),
+                ["AAPL"] = BuildSingleDayGap("AAPL", gapDate)
+            }
+        };
+
+        await service.HandleGapAnalysisResultAsync(scanResult, provider: "polygon");
+
+        var request = gateway.Requests.Should().ContainSingle().Subject;
+        request.Provider.Should().Be("polygon");
+        request.Symbols.Should().Equal("AAPL", "MSFT");
+        request.From.Should().Be(gapDate);
+        request.To.Should().Be(gapDate);
+
+        var execution = history.GetRecentExecutions(10).Should().ContainSingle().Subject;
+        execution.Symbols.Should().Equal("AAPL", "MSFT");
+        execution.Status.Should().Be(ExecutionStatus.Completed);
+        execution.Statistics.TotalSymbols.Should().Be(2);
+        execution.Statistics.SuccessfulSymbols.Should().Be(2);
+        execution.AutoRemediationIdempotencyKey.Should().Be("AAPL,MSFT|polygon|2026-06-29|2026-06-29");
+        execution.Warnings.Should().Contain("source=GapAnalyzerScan");
+        execution.Warnings.Should().Contain("provider=polygon");
+    }
+
     private sealed class FakeGateway : IBackfillExecutionGateway
     {
         public int Calls { get; private set; }
+        public List<AppBackfillRequest> Requests { get; } = new();
         public Func<int, BackfillResult>? Handler { get; init; }
 
         public Task<BackfillResult> RunAsync(AppBackfillRequest request, CancellationToken ct = default)
         {
             Calls++;
+            Requests.Add(request);
+
             if (Handler is not null)
             {
                 return Task.FromResult(Handler(Calls));
@@ -135,5 +188,17 @@ public sealed class AutoGapRemediationServiceTests
                 StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
                 CompletedUtc: DateTimeOffset.UtcNow));
         }
+    }
+
+    private static SymbolGapInfo BuildSingleDayGap(string symbol, DateOnly gapDate)
+    {
+        return new SymbolGapInfo
+        {
+            Symbol = symbol,
+            FromDate = gapDate,
+            ToDate = gapDate,
+            HasGaps = true,
+            GapDates = { gapDate }
+        };
     }
 }
