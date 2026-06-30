@@ -236,9 +236,10 @@ public sealed class StatementReconciliationService
         ParsedStatementLine ParseCanonicalStatementLine(string line, int currentRowNumber)
         {
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length < header.Length)
+            var requiredColumnCount = RequiredColumnCount(profile, header);
+            if (parts.Length < requiredColumnCount)
             {
-                throw new InvalidDataException($"Statement row {currentRowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
+                throw new InvalidDataException($"Statement row {currentRowNumber} has {parts.Length} columns; expected at least {requiredColumnCount} required columns for mapping profile '{profile.ProfileId}'.");
             }
 
             var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
@@ -317,9 +318,10 @@ public sealed class StatementReconciliationService
             }
 
             var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length < header.Length)
+            var requiredColumnCount = RequiredColumnCount(profile, header);
+            if (parts.Length < requiredColumnCount)
             {
-                throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {header.Length} for mapping profile '{profile.ProfileId}'.");
+                throw new InvalidDataException($"Statement row {rowNumber} has {parts.Length} columns; expected at least {requiredColumnCount} required columns for mapping profile '{profile.ProfileId}'.");
             }
 
             var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
@@ -446,6 +448,29 @@ public sealed class StatementReconciliationService
         }
 
         return map;
+    }
+
+    // The number of leading columns a data row must contain to cover every required mapped field.
+    // Optional trailing columns may be omitted by an individual row (BuildColumnMap pads them empty);
+    // such rows default their optional values rather than being rejected for being shorter than the
+    // full header.
+    private static int RequiredColumnCount(StatementMappingProfile profile, string[] header)
+    {
+        var requiredColumns = profile.FieldMappings
+            .Where(mapping => mapping.Required)
+            .Select(mapping => mapping.SourceColumn)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var lastRequiredIndex = -1;
+        for (var i = 0; i < header.Length; i++)
+        {
+            if (requiredColumns.Contains(header[i]))
+            {
+                lastRequiredIndex = i;
+            }
+        }
+
+        return lastRequiredIndex + 1;
     }
 
     private static StatementSourceRowReference CreateSourceRowReference(

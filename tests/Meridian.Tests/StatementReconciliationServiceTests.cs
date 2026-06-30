@@ -408,4 +408,33 @@ public sealed class StatementReconciliationServiceTests
         }
     }
 
+    [Fact]
+    public async Task ImportAsync_RowOmittingOptionalTrailingColumns_DefaultsOptionalValues()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            // The header advertises optional trailing columns, but the data row stops after the
+            // required tradeDate. Such rows must import with defaulted optional values rather than
+            // being rejected for being shorter than the full header.
+            await File.WriteAllLinesAsync(filePath,
+            [
+                "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency,marketValue,settlementDate",
+                "EXT-1,SPY,10,500,0,position,2026-05-29"
+            ]);
+
+            var result = await svc.ImportAsync("broker", filePath, CancellationToken.None);
+
+            Assert.Equal(1, result.RowCount);
+            var position = Assert.Single(result.Positions);
+            Assert.Equal("USD", position.Currency);
+            Assert.Equal(5000m, position.MarketValue);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
 }
