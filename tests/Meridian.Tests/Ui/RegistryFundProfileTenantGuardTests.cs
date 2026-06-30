@@ -9,9 +9,10 @@ using NSubstitute.ExceptionExtensions;
 namespace Meridian.Tests.Ui;
 
 /// <summary>
-/// The registry-backed tenant guard claims a fund for the caller on first use and denies only when the
-/// fund is already owned by a different tenant. Own/unknown funds, a blank scope, a caller with no tenant
-/// scope, and an unavailable registry are all allowed, so a legitimate edit is never blocked.
+/// The registry-backed tenant guard is a read-only ownership check: it denies only a fund already owned
+/// by a different tenant, and never binds (ownership is claimed on the first successful write, so a failed
+/// write cannot squat a fund). Own/unowned funds, a blank scope, a caller with no tenant scope, and an
+/// unavailable registry are all allowed, so a legitimate edit is never blocked.
 /// </summary>
 public sealed class RegistryFundProfileTenantGuardTests
 {
@@ -19,8 +20,8 @@ public sealed class RegistryFundProfileTenantGuardTests
     public async Task OwnFund_IsAllowed()
     {
         var (guard, registry) = Build();
-        registry.BindAsync("fund-x", "tenant-acme", Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(new FundProfileOwnership("fund-x", "tenant-acme", "company-acme"));
+        registry.IsAccessibleAsync("fund-x", "tenant-acme", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(true);
 
         var decision = await guard.EvaluateAsync(Caller(), "fund-x");
 
@@ -31,8 +32,8 @@ public sealed class RegistryFundProfileTenantGuardTests
     public async Task ForeignFund_IsDenied()
     {
         var (guard, registry) = Build();
-        registry.BindAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(new FundProfileOwnership("fund-x", "tenant-other", "company-other"));
+        registry.IsAccessibleAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(false);
 
         var decision = await guard.EvaluateAsync(Caller(), "fund-x");
 
@@ -40,17 +41,17 @@ public sealed class RegistryFundProfileTenantGuardTests
     }
 
     [Fact]
-    public async Task UnboundFund_IsClaimedForCaller_AndAllowed()
+    public async Task UnownedFund_IsAllowed_WithoutBinding()
     {
         var (guard, registry) = Build();
-        // BindAsync claims an unbound fund for the caller and returns the caller as owner.
-        registry.BindAsync("fund-new", "tenant-acme", Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(ci => new FundProfileOwnership("fund-new", (string)ci[1], null));
+        registry.IsAccessibleAsync("fund-new", "tenant-acme", Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(true);
 
         var decision = await guard.EvaluateAsync(Caller(), "fund-new");
 
         decision.IsAllowed.Should().BeTrue();
-        await registry.Received(1).BindAsync("fund-new", "tenant-acme", Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await registry.DidNotReceive().BindAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public sealed class RegistryFundProfileTenantGuardTests
         var decision = await guard.EvaluateAsync(Caller(), "   ");
 
         decision.IsAllowed.Should().BeTrue();
-        await registry.DidNotReceive().BindAsync(
+        await registry.DidNotReceive().IsAccessibleAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
@@ -73,7 +74,7 @@ public sealed class RegistryFundProfileTenantGuardTests
         var decision = await guard.EvaluateAsync(Caller(tenant: null), "fund-x");
 
         decision.IsAllowed.Should().BeTrue();
-        await registry.DidNotReceive().BindAsync(
+        await registry.DidNotReceive().IsAccessibleAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
@@ -81,7 +82,7 @@ public sealed class RegistryFundProfileTenantGuardTests
     public async Task RegistryUnavailable_IsAllowed_DeferringToDeploymentBoundary()
     {
         var (guard, registry) = Build();
-        registry.BindAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        registry.IsAccessibleAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("registry down"));
 
         var decision = await guard.EvaluateAsync(Caller(), "fund-x");
@@ -93,7 +94,7 @@ public sealed class RegistryFundProfileTenantGuardTests
     public async Task Cancellation_Propagates()
     {
         var (guard, registry) = Build();
-        registry.BindAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        registry.IsAccessibleAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new OperationCanceledException());
 
         await guard.Invoking(g => g.EvaluateAsync(Caller(), "fund-x"))

@@ -5,14 +5,16 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// <see cref="IFundProfileTenantGuard"/> backed by the authoritative <see cref="IFundProfileTenancyRegistry"/>
-/// (security backlog SEC-005). On a governed write it claims the fund for the caller's tenant on first use
-/// (trust-on-first-use) and denies only when the fund is already owned by a different tenant.
+/// (security backlog SEC-005). It performs a <b>read-only</b> ownership check: a governed write is denied
+/// only when the fund is already owned by a different tenant.
 ///
-/// <para>An unknown fund (claimed for the caller), the caller's own fund, a blank fund scope, a caller
-/// with no tenant scope, or an unavailable registry are all allowed, so a legitimate edit is never
-/// blocked (no false-deny). Under a single-company-per-deployment runtime every fund binds to the one
-/// tenant and nothing is ever foreign; the guard only bites once a shared/multi-tenant deployment
-/// co-locates several tenants' funds, with the deployment boundary as the backstop control.</para>
+/// <para>An unowned fund, the caller's own fund, a blank fund scope, a caller with no tenant scope, or an
+/// unavailable registry are all allowed, so a legitimate edit is never blocked (no false-deny). The guard
+/// deliberately does NOT bind the fund here — ownership is established on the first <i>successful</i>
+/// authoritative write (a later slice), so a failed or malformed write cannot squat an arbitrary fund id
+/// and block the tenant that later performs the first real write. Under a single-company-per-deployment
+/// runtime nothing is ever foreign; the guard only bites once a shared/multi-tenant deployment co-locates
+/// several tenants' funds, with the deployment boundary as the backstop control.</para>
 /// </summary>
 internal sealed class RegistryFundProfileTenantGuard : IFundProfileTenantGuard
 {
@@ -48,13 +50,14 @@ internal sealed class RegistryFundProfileTenantGuard : IFundProfileTenantGuard
 
         try
         {
-            // Claim-on-first-use: binds the fund to the caller when unbound, otherwise returns the
-            // existing owner. The fund is accessible iff the effective owner is the caller's tenant.
-            var owner = await _registry
-                .BindAsync(fund, tenant.TenantId, tenant.CompanyId, ct)
+            // Read-only check: the fund is accessible when it is unowned (unknown) or owned by the
+            // caller's tenant; a fund owned by a different tenant is denied. Ownership is claimed on the
+            // first successful authoritative write, not here, so a failed write cannot squat a fund.
+            var accessible = await _registry
+                .IsAccessibleAsync(fund, tenant.TenantId, tenant.CompanyId, ct)
                 .ConfigureAwait(false);
-            return owner.IsHeldBy(tenant.TenantId)
-                ? FundProfileTenantDecision.Allow("Fund profile is owned by the caller's tenant.")
+            return accessible
+                ? FundProfileTenantDecision.Allow("Fund profile is unowned or owned by the caller's tenant.")
                 : FundProfileTenantDecision.Deny("Fund profile is owned by a different tenant.");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
