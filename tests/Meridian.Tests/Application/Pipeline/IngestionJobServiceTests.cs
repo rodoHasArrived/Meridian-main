@@ -334,4 +334,85 @@ public sealed class IngestionJobServiceTests : IDisposable
         loaded!.State.Should().Be(IngestionJobState.Queued);
         loaded.Symbols.Should().BeEquivalentTo(new[] { "SPY" });
     }
+
+    [Fact]
+    public async Task PersistJobAsync_WritesAtomically_NoTempFilesRemainAndJobFileValid()
+    {
+        var job = await _service.CreateJobAsync(
+            IngestionWorkloadType.Historical,
+            new[] { "SPY" },
+            "alpaca");
+        await _service.TransitionAsync(job.JobId, IngestionJobState.Queued);
+
+        var jobFile = Path.Combine(_tempDir, $"job_{job.JobId}.json");
+
+        // The persisted file is complete and parseable (never a truncated fragment).
+        File.Exists(jobFile).Should().BeTrue();
+        var parse = () => System.Text.Json.JsonDocument.Parse(File.ReadAllText(jobFile));
+        parse.Should().NotThrow();
+
+        // The atomic write leaves no temp sidecars, and the loader glob resolves exactly one file.
+        // AtomicFileWriter temp files are leading-dot hidden (".job_*.json.{guid}.tmp")
+        // and therefore do not match the "job_*.json" load glob.
+        Directory.GetFiles(_tempDir, ".job_*.tmp").Should().BeEmpty();
+        Directory.GetFiles(_tempDir, "job_*.json").Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task LoadJobsAsync_TruncatedJobFile_SkipsCorruptAndLoadsValid()
+    {
+        var validJob = await _service.CreateJobAsync(
+            IngestionWorkloadType.Historical,
+            new[] { "SPY" },
+            "alpaca");
+        var corruptJob = await _service.CreateJobAsync(
+            IngestionWorkloadType.Historical,
+            new[] { "AAPL" },
+            "polygon");
+
+        // Simulate the failure mode a non-atomic write could produce: a truncated JSON fragment
+        // on disk. The atomic write prevents this on the write path; the loader must still
+        // tolerate a pre-existing corrupt file by skipping it rather than failing the whole load.
+        var corruptFile = Path.Combine(_tempDir, $"job_{corruptJob.JobId}.json");
+        File.WriteAllText(corruptFile, "{\"JobId\":\"" + corruptJob.JobId + "\",\"Sta");
+
+        using var service2 = new IngestionJobService(_tempDir);
+        await service2.LoadJobsAsync();
+
+        service2.GetJob(validJob.JobId).Should().NotBeNull();
+        service2.GetJob(corruptJob.JobId).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task PersistThenReload_RoundTripsState()
+    {
+        var job = await _service.CreateJobAsync(
+            IngestionWorkloadType.Historical,
+            new[] { "SPY", "AAPL" },
+            "alpaca");
+        await _service.TransitionAsync(job.JobId, IngestionJobState.Queued);
+        await _service.TransitionAsync(job.JobId, IngestionJobState.Running);
+        await _service.UpdateCheckpointAsync(job.JobId, new IngestionCheckpointToken
+        {
+            LastSymbol = "SPY",
+            LastDate = new DateTime(2024, 6, 15),
+            LastOffset = 4242
+        });
+        await _service.UpdateSymbolProgressAsync(
+            job.JobId, "SPY",
+            dataPointsProcessed: 500,
+            expectedDataPoints: 1000);
+
+        using var service2 = new IngestionJobService(_tempDir);
+        await service2.LoadJobsAsync();
+
+        var reloaded = service2.GetJob(job.JobId);
+        reloaded.Should().NotBeNull();
+        reloaded!.State.Should().Be(IngestionJobState.Running);
+        reloaded.CheckpointToken.Should().NotBeNull();
+        reloaded.CheckpointToken!.LastSymbol.Should().Be("SPY");
+        reloaded.CheckpointToken.LastOffset.Should().Be(4242);
+        reloaded.SymbolProgress.First(p => p.Symbol == "SPY")
+            .DataPointsProcessed.Should().Be(500);
+    }
 }

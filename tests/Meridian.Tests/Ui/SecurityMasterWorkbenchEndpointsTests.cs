@@ -63,6 +63,69 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
     }
 
     [Fact]
+    public async Task Field_WithForeignFundProfile_Returns403_WithoutPersisting()
+    {
+        // The tenant guard reports the body-supplied fund profile as belonging to another company; the
+        // endpoint must reject before the draft (which would later scope restatement impact) is persisted.
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("foreign"));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster, fundGuard: guard);
+        var client = app.GetTestClient();
+
+        var body = FieldRequest(Guid.NewGuid()) with { FundProfileId = "fund-other-company" };
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceive().UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Field_WithAllowedFundProfile_Returns200()
+    {
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Allow("own fund"));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster, fundGuard: guard);
+        var client = app.GetTestClient();
+
+        var body = FieldRequest(Guid.NewGuid()) with { FundProfileId = "fund-caller" };
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", body, Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Field_WithBlankFundProfile_SkipsGuard_Returns200()
+    {
+        // A blank fund scope is the existing unscoped semantics and never persists a foreign fund, so the
+        // guard must not even be consulted (and a deny-everything guard must not block the edit).
+        var service = Substitute.For<ISecurityMasterWorkbenchCommandService>();
+        service.UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>())
+            .Returns(ci => EditResult(((UpdateSecurityFieldRequest)ci[0]).SecurityId));
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Deny("should not be called"));
+        await using var app = await CreateAppAsync(service, UserPermission.ModifySecurityMaster, fundGuard: guard);
+        var client = app.GetTestClient();
+
+        // FieldRequest carries no FundProfileId (null) → guard is skipped.
+        using var response = await client.PostAsJsonAsync(
+            $"/api/security-master/{Guid.NewGuid():D}/workbench/field", FieldRequest(Guid.NewGuid()), Json);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        await guard.DidNotReceive().EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await service.Received(1).UpdateSecurityFieldAsync(Arg.Any<UpdateSecurityFieldRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Approve_DerivesActorAndReviewerFromSession_IgnoringBody()
     {
         // The impersonation vector: a caller posts the assigned reviewer's name to approve as that
@@ -262,11 +325,16 @@ public sealed class SecurityMasterWorkbenchEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         ISecurityMasterWorkbenchCommandService service,
         UserPermission permissions,
-        string? sessionActor = SessionActor)
+        string? sessionActor = SessionActor,
+        IFundProfileTenantGuard? fundGuard = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(service);
+        if (fundGuard is not null)
+        {
+            builder.Services.AddSingleton(fundGuard);
+        }
 
         var app = builder.Build();
         app.Use(async (context, next) =>

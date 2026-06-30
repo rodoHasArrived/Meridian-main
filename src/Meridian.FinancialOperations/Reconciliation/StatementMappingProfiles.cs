@@ -14,7 +14,14 @@ public enum StatementCanonicalField
     SettlementDate,
     Currency,
     FeesCommission,
-    ExternalTransactionId
+    ExternalTransactionId,
+    AccountId,
+    ExternalAccountId,
+    SecurityId,
+    UnresolvedIdentifier,
+    MarketValue,
+    Amount,
+    ExternalReference
 }
 
 public sealed record StatementFieldMapping(
@@ -101,7 +108,14 @@ public sealed class StatementMappingProfileRegistry
                 new(StatementCanonicalField.SettlementDate, "settlementDate", Required: false),
                 new(StatementCanonicalField.Currency, "currency", Required: false),
                 new(StatementCanonicalField.FeesCommission, "feesCommission", Required: false),
-                new(StatementCanonicalField.ExternalTransactionId, "externalTransactionId", Required: false)
+                new(StatementCanonicalField.ExternalTransactionId, "externalTransactionId", Required: false),
+                new(StatementCanonicalField.AccountId, "accountId", Required: false),
+                new(StatementCanonicalField.ExternalAccountId, "externalAccountId", Required: false),
+                new(StatementCanonicalField.SecurityId, "securityId", Required: false),
+                new(StatementCanonicalField.UnresolvedIdentifier, "unresolvedIdentifier", Required: false),
+                new(StatementCanonicalField.MarketValue, "marketValue", Required: false),
+                new(StatementCanonicalField.Amount, "amount", Required: false),
+                new(StatementCanonicalField.ExternalReference, "externalReference", Required: false)
             ],
             [
                 new("position", "position"),
@@ -170,7 +184,10 @@ internal sealed class StatementMappedCsvRow
             return null;
         }
 
-        return value;
+        // Treat a blank/whitespace mapped value the same as a missing one so callers' default
+        // fallbacks (e.g. currency -> "USD", accountId -> account) apply to blank or omitted
+        // optional columns, matching the prior positional importer.
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     public decimal GetRequiredDecimal(StatementCanonicalField field, int rowNumber) =>
@@ -178,6 +195,16 @@ internal sealed class StatementMappedCsvRow
 
     public DateOnly GetRequiredDate(StatementCanonicalField field, int rowNumber) =>
         DateOnly.Parse(GetRequired(field, rowNumber), CultureInfo.InvariantCulture);
+
+    public decimal? GetOptionalDecimal(StatementCanonicalField field) =>
+        GetOptional(field) is { } value && !string.IsNullOrWhiteSpace(value)
+            ? decimal.Parse(value, NumberStyles.Number, CultureInfo.InvariantCulture)
+            : null;
+
+    public DateOnly? GetOptionalDate(StatementCanonicalField field) =>
+        GetOptional(field) is { } value && !string.IsNullOrWhiteSpace(value)
+            ? DateOnly.Parse(value, CultureInfo.InvariantCulture)
+            : null;
 
     public Dictionary<string, string> ToCanonicalSnapshot()
     {

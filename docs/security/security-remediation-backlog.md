@@ -69,6 +69,28 @@ This backlog converts the threat-model residual concerns into tracked remediatio
   - Reproducible throttling test artifacts (status codes + headers).
   - Threat-model rate-limiter residual concern closed with code-path reference.
 
+## Tenant isolation (fund-scoped data)
+
+### SEC-005 — Storage-enforced tenant isolation for fund-scoped data; single-company-per-deployment is the current boundary
+- **Affected module/path:** `src/Meridian.Strategies/Storage/StrategyRunStore.cs`; `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` (`LoadFundRunsAsync`); `src/Meridian.Storage/Ledger/*` (ledger books / journal); report-pack workflow + `ReportPackSecurityLineIndex`; `src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs` (field-edit draft persists a body-supplied `FundProfileId`).
+- **Risk rating:** **Medium** (deployment-conditional cross-tenant information disclosure; **not reachable** in the current runtime — see boundary below).
+- **Current security boundary (documented, relied upon):**
+  - Runtime today aliases `TenantId == CompanyId`, one company per authenticated session, and the platform is operated as **one company per deployment** (`src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs`; `WorkstationTenantContext.cs`). Multi-tenant separation is design-stage, not realized.
+  - The fund-scoped stores (strategy runs, ledger books, report packs) partition by the free-form `FundProfileId` string **alone** — they carry no tenant/company column. `StrategyRunEntry` has `FundProfileId` but no tenant key, and `LoadFundRunsAsync` enumerates the process-wide run store filtering only by `FundProfileId`.
+  - **Therefore tenant isolation is enforced by the single-company-per-deployment boundary, not by storage partitioning.** A shared-datastore multi-tenant deployment is out of the current security envelope until the work below lands. This assumption must be stated in deployment/operator docs and must not be mistaken for storage-enforced isolation.
+- **In place now (defense-in-depth, not the control):** `IFundProfileTenantGuard` / `AccountingHistoryFundProfileTenantGuard` gates the Security Master workbench field-edit route, denying a body-supplied `FundProfileId` whose accounting history is attributed exclusively to other companies. It never denies an own/unknown fund (no false-deny) and is a no-op under the single-company runtime; it is a tripwire for a future multi-tenant deployment, not the isolation boundary.
+- **Required code/tests (to close the gap / enable multi-tenant deployment):**
+  - Add `tenantId`/`companyId` as real partition columns + `WHERE`-clause predicates on the fund-scoped stores (strategy runs, ledger books/journal, report-pack workflow records, `ReportPackSecurityLineIndex`), keyed alongside `fund_profile_id`.
+  - Stamp the resolved server-side tenant/company onto `StrategyRunEntry` (and equivalents) at run creation; scope `LoadFundRunsAsync` to the caller's tenant, treating null-tenant legacy rows as the ambient deployment tenant so single-tenant deployments are unaffected.
+  - Introduce a tenant-scoped `FundProfileId` → accessible-funds authority and validate the field-edit fund against it (replacing the presence-based guard); add a regression test asserting a foreign `FundProfileId` yields no cross-fund runs/exposures at publish.
+  - Stop accepting client-body tenant overrides (`?? request.TenantId` / `?? request.CompanyId`) on accounting routes once an ambient server tenant context exists.
+- **Owner:** `@platform-security` + `@shared-ui-services` + `@fund-operations`.
+- **Target date:** **gated on a multi-tenant deployment decision** (not required while one-company-per-deployment holds).
+- **Done evidence:**
+  - PR adding tenant partition columns + predicates to the fund-scoped stores, with migration.
+  - Tests proving a fund scoped to company B is invisible to a company-A caller across runs, ledger books, and report packs.
+  - Threat-model update reclassifying the residual from "deployment-boundary-enforced" to "storage-enforced".
+
 ## Threat-model traceability
 
 | Backlog ID | Threat-model section | Threat-model source lines | Residual concern excerpt |
@@ -77,6 +99,7 @@ This backlog converts the threat-model residual concerns into tracked remediatio
 | SEC-002 | `Authentication, sessions, and authorization` | `docs/security/threat-model-current-state.md` lines 50-51 | "Session cookies still do not set `Secure` ... treat TLS + secure-cookie enablement as required ..." |
 | SEC-003 | `CSRF and browser security` | `docs/security/threat-model-current-state.md` lines 62-63 | "No explicit anti-forgery token workflow is visible ..." |
 | SEC-004 | `Rate limiting and request abuse` | `docs/security/threat-model-current-state.md` lines 57-58 | "`UseRateLimiter()` is not visible in `UiServer`; validate effective enforcement ..." |
+| SEC-005 | `Authentication, sessions, and authorization` | `docs/security/threat-model-current-state.md` lines 50-54 | "Fund-scoped data partitions by `FundProfileId` alone; tenant isolation currently relies on the single-company-per-deployment boundary ..." |
 
 ## Weekly governance and status expectations
 
