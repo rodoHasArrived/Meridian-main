@@ -122,7 +122,7 @@ export function Drawer({
   );
 }
 
-export interface DrawerHeaderProps extends HTMLAttributes<HTMLDivElement> {
+export interface DrawerHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   title?: ReactNode;
   onClose?: () => void;
 }
