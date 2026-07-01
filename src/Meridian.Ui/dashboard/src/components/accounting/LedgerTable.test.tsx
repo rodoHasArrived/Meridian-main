@@ -45,8 +45,10 @@ describe("LedgerTable", () => {
       />,
     );
     const bodyRows = screen.getAllByRole("row").filter((r) => r.closest("tbody"));
-    expect(within(bodyRows[0]).getByText("—")).toBeInTheDocument();
-    expect(within(bodyRows[1]).getByText("$500.00")).toBeInTheDocument();
+    const firstRowCells = within(bodyRows[0]).getAllByRole("cell");
+    const seededRowCells = within(bodyRows[1]).getAllByRole("cell");
+    expect(firstRowCells[firstRowCells.length - 1]).toHaveTextContent("—");
+    expect(seededRowCells[seededRowCells.length - 1]).toHaveTextContent("$500.00");
   });
 
   it("sorts only when an onSort handler is supplied and supports keyboard activation", async () => {

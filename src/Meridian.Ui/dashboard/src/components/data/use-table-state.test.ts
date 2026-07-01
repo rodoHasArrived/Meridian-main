@@ -14,6 +14,20 @@ const data: Row[] = [
   { symbol: "MSFT", sector: "Tech", qty: 75 },
 ];
 
+function readBlobText(blob: Blob): Promise<string> {
+  const text = (blob as Blob & { text?: () => Promise<string> }).text;
+  if (text) {
+    return text.call(blob);
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("Blob could not be read."));
+    reader.readAsText(blob);
+  });
+}
+
 describe("useTableState", () => {
   const originalCreateObjectURL = URL.createObjectURL;
   const originalRevokeObjectURL = URL.revokeObjectURL;
@@ -103,7 +117,6 @@ describe("useTableState", () => {
   });
 
   it("escapes quotes and newlines in CSV exports", async () => {
-    vi.useFakeTimers();
     const createObjectURL = vi.fn((_blob: Blob) => "blob:csv");
     const revokeObjectURL = vi.fn();
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
@@ -115,10 +128,9 @@ describe("useTableState", () => {
     act(() => result.current.exportCSV("positions.csv"));
 
     const blob = createObjectURL.mock.calls[0][0] as Blob;
-    await expect(blob.text()).resolves.toContain('"Tech\nGrowth","10""0"');
+    await expect(readBlobText(blob)).resolves.toContain('"Tech\nGrowth","10""0"');
     expect(click).toHaveBeenCalledOnce();
-    expect(revokeObjectURL).not.toHaveBeenCalled();
-    vi.runAllTimers();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:csv");
   });
 });

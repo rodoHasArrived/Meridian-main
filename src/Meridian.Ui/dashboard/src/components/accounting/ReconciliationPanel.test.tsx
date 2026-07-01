@@ -60,8 +60,10 @@ describe("ReconciliationPanel", () => {
         currency="USD"
       />,
     );
-    expect(screen.getByText("$7.00")).toBeInTheDocument();
-    expect(screen.queryByText("$100.00")).toBeNull();
+    const statementSide = screen.getByText("Statement").closest(".rec__side") as HTMLElement;
+    const statementRows = within(statementSide).getAllByRole("row").filter((row) => row.closest("tbody"));
+    expect(within(statementRows[0]).getByText("$7.00")).toBeInTheDocument();
+    expect(within(statementRows[0]).queryByText("$100.00")).toBeNull();
   });
 
   it("sorts columns from the keyboard", () => {
