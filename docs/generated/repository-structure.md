@@ -307,6 +307,7 @@ Meridian-main
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
 │   │   └── skills_provider.py
+│   ├── launch.json
 │   ├── settings.json
 │   └── settings.local.json
 ├── .codex
@@ -883,7 +884,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -1960,18 +1960,26 @@ Meridian-main
 │   │   │   ├── wpf-workflow-library.png
 │   │   │   └── wpf-workspaces.png
 │   │   ├── web
+│   │   │   ├── web-accounting-account-detail.png
+│   │   │   ├── web-accounting-approval-inbox.png
 │   │   │   ├── web-accounting-approvals.png
+│   │   │   ├── web-accounting-asset-detail.png
 │   │   │   ├── web-accounting-capital-accounts.png
+│   │   │   ├── web-accounting-close-calendar.png
 │   │   │   ├── web-accounting-configure.png
 │   │   │   ├── web-accounting-entity-setup.png
+│   │   │   ├── web-accounting-evidence-detail.png
 │   │   │   ├── web-accounting-evidence-workbench.png
 │   │   │   ├── web-accounting-exceptions.png
 │   │   │   ├── web-accounting-external-gl-reconciliation.png
 │   │   │   ├── web-accounting-journal-entries.png
+│   │   │   ├── web-accounting-journal-entry-detail.png
 │   │   │   ├── web-accounting-ledger.png
 │   │   │   ├── web-accounting-operations-continuity.png
+│   │   │   ├── web-accounting-reconciliation-match.png
 │   │   │   ├── web-accounting-reconciliation.png
 │   │   │   ├── web-accounting-security-master.png
+│   │   │   ├── web-accounting-trial-balance-detail.png
 │   │   │   ├── web-accounting-workspace.png
 │   │   │   ├── web-daily-control-tower.png
 │   │   │   ├── web-data-alerts.png
@@ -1983,6 +1991,7 @@ Meridian-main
 │   │   │   ├── web-data-workspace.png
 │   │   │   ├── web-operator-readiness-console.png
 │   │   │   ├── web-overview-workspace.png
+│   │   │   ├── web-portfolio-asset-detail.png
 │   │   │   ├── web-portfolio-attribution.png
 │   │   │   ├── web-portfolio-brokerage-sync.png
 │   │   │   ├── web-portfolio-family-office.png
@@ -1990,10 +1999,15 @@ Meridian-main
 │   │   │   ├── web-reporting-evidence-workbench.png
 │   │   │   ├── web-reporting-exports.png
 │   │   │   ├── web-reporting-governance.png
+│   │   │   ├── web-reporting-library.png
 │   │   │   ├── web-reporting-operations-record.png
+│   │   │   ├── web-reporting-preview-validation.png
 │   │   │   ├── web-reporting-report-builder.png
 │   │   │   ├── web-reporting-report-packs.png
+│   │   │   ├── web-reporting-run-detail.png
+│   │   │   ├── web-reporting-run-parameters.png
 │   │   │   ├── web-reporting-run-status.png
+│   │   │   ├── web-reporting-scheduled.png
 │   │   │   ├── web-reporting-workspace.png
 │   │   │   ├── web-settings-alpaca-provider-setup.png
 │   │   │   ├── web-settings-backend-capability-coverage.png
@@ -4718,7 +4732,8 @@ Meridian-main
 │   │   │   │   │   │   ├── StatementTable.test.tsx
 │   │   │   │   │   │   ├── StatementTable.tsx
 │   │   │   │   │   │   ├── TaxLotTable.test.tsx
-│   │   │   │   │   │   └── TaxLotTable.tsx
+│   │   │   │   │   │   ├── TaxLotTable.tsx
+│   │   │   │   │   │   └── TrialBalanceRowDetail.tsx
 │   │   │   │   │   ├── charts
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── ChartCard.tsx
@@ -4813,6 +4828,7 @@ Meridian-main
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
+│   │   │   │   │   │   ├── workflow-continuity-dock.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
@@ -4988,6 +5004,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.view-model.ts
 │   │   │   │   │   ├── accounting-screen.workbench-context.tsx
 │   │   │   │   │   ├── accounting-screen.workflow-continuity.ts
+│   │   │   │   │   ├── asset-detail-screen.test.tsx
+│   │   │   │   │   ├── asset-detail-screen.tsx
+│   │   │   │   │   ├── asset-detail-screen.view-model.test.ts
+│   │   │   │   │   ├── asset-detail-screen.view-model.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -5009,6 +5029,11 @@ Meridian-main
 │   │   │   │   │   ├── family-office-screen.tsx
 │   │   │   │   │   ├── family-office-screen.view-model.test.ts
 │   │   │   │   │   ├── family-office-screen.view-model.ts
+│   │   │   │   │   ├── finance-standard-pages-screen.test.tsx
+│   │   │   │   │   ├── finance-standard-pages-screen.tsx
+│   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
+│   │   │   │   │   ├── journal-entry-detail-screen.tsx
+│   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
@@ -5043,6 +5068,12 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
+│   │   │   │   │   ├── report-library-screen.test.tsx
+│   │   │   │   │   ├── report-library-screen.tsx
+│   │   │   │   │   ├── report-run-parameters-screen.test.tsx
+│   │   │   │   │   ├── report-run-parameters-screen.tsx
+│   │   │   │   │   ├── report-run-parameters-screen.view-model.test.ts
+│   │   │   │   │   ├── report-run-parameters-screen.view-model.ts
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.delivery-history.tsx
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
@@ -5091,6 +5122,10 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
 │   │   │   │   │   ├── trading-screen.workflow-continuity.ts
+│   │   │   │   │   ├── trial-balance-screen.test.tsx
+│   │   │   │   │   ├── trial-balance-screen.tsx
+│   │   │   │   │   ├── trial-balance-screen.view-model.test.ts
+│   │   │   │   │   ├── trial-balance-screen.view-model.ts
 │   │   │   │   │   ├── w4-acceptance-parity.test.ts
 │   │   │   │   │   ├── watchlist-screen.test.tsx
 │   │   │   │   │   ├── watchlist-screen.tsx
