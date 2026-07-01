@@ -22,7 +22,7 @@ public sealed class StatementReconciliationService
         ct.ThrowIfCancellationRequested();
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         var profileId = mappingProfileId;
-        if (IsIbFlexSourceKind(normalizedSourceKind))
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
         {
             // Flex reports are XML; the canonical CSV header check does not apply. Validate the
             // document shape instead so the workflow rejects non-Flex files before import.
@@ -48,7 +48,7 @@ public sealed class StatementReconciliationService
     {
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         ct.ThrowIfCancellationRequested();
-        if (IsIbFlexSourceKind(normalizedSourceKind))
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
         {
             return await ReadFlexStatementImportAsync(normalizedSourceKind, sourcePath, ct).ConfigureAwait(false);
         }
@@ -132,6 +132,14 @@ public sealed class StatementReconciliationService
 
     private static bool IsIbFlexSourceKind(string normalizedSourceKind) =>
         normalizedSourceKind is "ib-flex" or "ibflex" or "ibkr" or "interactive-brokers" or "interactivebrokers";
+
+    // Mirrors RoutingBrokerStatementService: an explicit Flex source kind always uses Flex
+    // processing, and a canonical broker/custodian kind with an .xml file routes to Flex too,
+    // so the workflow's validation stage agrees with where the import router will send the file.
+    private static bool UsesFlexProcessing(string normalizedSourceKind, string sourcePath) =>
+        IsIbFlexSourceKind(normalizedSourceKind)
+        || (RequiresCanonicalStatementSchema(normalizedSourceKind)
+            && string.Equals(Path.GetExtension(sourcePath), ".xml", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Validates that <paramref name="sourcePath"/> is a well-formed IB Flex Query document
@@ -223,7 +231,7 @@ public sealed class StatementReconciliationService
         // Flex XML never parses through the canonical CSV path, regardless of any mapping
         // profile the caller selected; case intake for Flex runs through the workflow's
         // Flex-aware broker statement importer instead.
-        if (IsIbFlexSourceKind(normalizedSourceKind) || !UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath) || !UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
             var content = File.ReadAllText(sourcePath);
             var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");

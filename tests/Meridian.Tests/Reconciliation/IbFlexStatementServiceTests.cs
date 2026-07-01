@@ -304,6 +304,50 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task StatementReconciliationService_RoutesGenericBrokerXmlThroughFlexValidation()
+    {
+        var service = new StatementReconciliationService();
+        var path = WriteFlexFile(SampleFlexXml);
+
+        // A canonical 'broker' kind with a Flex .xml file must validate as Flex, matching where
+        // RoutingBrokerStatementService will send the import — not fail CSV header checks.
+        var message = await service.ValidateAsync("broker", path, null, CancellationToken.None);
+        message.Should().Contain("broker");
+
+        var import = await service.ImportAsync("broker", path, null, CancellationToken.None);
+        import.RowCount.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task StatementRunWorkflow_ImportsFlexStatementWithGenericBrokerKind()
+    {
+        var workflow = new StatementRunWorkflowService(
+            _store,
+            new JsonReconciliationCaseStore(_tempDir),
+            new JsonReconciliationBreakStore(_tempDir),
+            new RoutingBrokerStatementService(new CsvBrokerStatementService(_store), _service),
+            new StatementReconciliationContextAdapter(new StatementReconciliationService()));
+        var path = WriteFlexFile(SampleFlexXml, "generic-broker-report.xml");
+        var request = new StatementRunRequest(
+            Broker: "broker",
+            SourceInstitution: "Interactive Brokers",
+            FundAccountId: "FUND-2",
+            ExternalAccountId: "U1234567",
+            StatementPeriodStart: new DateOnly(2026, 6, 1),
+            StatementPeriodEnd: new DateOnly(2026, 6, 30),
+            SourcePath: path,
+            OriginalFileName: "generic-broker-report.xml",
+            MappingProfileId: string.Empty,
+            ToleranceProfileId: "statement-default",
+            ImportedBy: "test",
+            SourceFileHash: string.Empty);
+
+        var result = await workflow.CreateAsync(request);
+
+        result.Import.NormalizedRowCount.Should().Be(5);
+    }
+
+    [Fact]
     public void MappingProfileRegistry_RegistersIbFlexProfile()
     {
         var registry = StatementMappingProfileRegistry.Defaults;
