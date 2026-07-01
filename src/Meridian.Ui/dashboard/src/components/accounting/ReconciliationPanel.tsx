@@ -143,8 +143,8 @@ function inject(): void {
 function compareItems(a: ReconciliationItem, b: ReconciliationItem, key: string): number {
   if (key === "amount") return (toNumber(a.amount) || 0) - (toNumber(b.amount) || 0);
   if (key === "status") return (a.matched ? 1 : 0) - (b.matched ? 1 : 0);
-  const an = toNumber(a[key]);
-  const bn = toNumber(b[key]);
+  const an = toNumber(a[key] as number | string | null | undefined);
+  const bn = toNumber(b[key] as number | string | null | undefined);
   if (Number.isFinite(an) || Number.isFinite(bn)) return (Number.isFinite(an) ? an : 0) - (Number.isFinite(bn) ? bn : 0);
   const av = String(a[key] ?? "");
   const bv = String(b[key] ?? "");
