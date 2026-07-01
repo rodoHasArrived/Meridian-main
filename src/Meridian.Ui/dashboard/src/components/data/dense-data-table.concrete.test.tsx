@@ -35,10 +35,26 @@ describe("DenseDataTable (Concrete)", () => {
     expect(onRowClick).toHaveBeenCalledWith(rows[1], 1);
   });
 
+  it("activates clickable rows from the keyboard", async () => {
+    const onRowClick = vi.fn();
+    render(<DenseDataTable columns={columns} rows={rows} onRowClick={onRowClick} />);
+    screen.getByText("MSFT").closest("tr")?.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(onRowClick).toHaveBeenCalledWith(rows[1], 1);
+  });
+
   it("fires onSort when a sortable header is clicked", async () => {
     const onSort = vi.fn();
     render(<DenseDataTable columns={columns} rows={rows} onSort={onSort} sortKey="qty" sortDir="desc" />);
     await userEvent.click(screen.getByText("Qty"));
+    expect(onSort).toHaveBeenCalledWith("qty");
+  });
+
+  it("fires onSort when a sortable header is activated from the keyboard", async () => {
+    const onSort = vi.fn();
+    render(<DenseDataTable columns={columns} rows={rows} onSort={onSort} sortKey="qty" sortDir="desc" />);
+    screen.getByRole("columnheader", { name: /Qty/ }).focus();
+    await userEvent.keyboard(" ");
     expect(onSort).toHaveBeenCalledWith("qty");
   });
 

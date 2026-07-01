@@ -7,6 +7,7 @@ import { DepthChart } from "./DepthChart";
 import { CorrelationHeatmap } from "./CorrelationHeatmap";
 import { Sparkline } from "./Sparkline";
 import { ChartCard } from "./ChartCard";
+import { niceTicks } from "./ticks";
 
 const bars: Candle[] = [
   { t: "10:00", o: 100, h: 105, l: 99, c: 104, v: 1200 },
@@ -53,6 +54,19 @@ describe("EquityCurve", () => {
       />
     );
     expect(screen.getByText("drawdown")).toBeInTheDocument();
+  });
+
+  it("keeps negative drawdown paths inside the drawdown subpane", () => {
+    const { container } = render(
+      <EquityCurve
+        series={[{ label: "S", color: "#16885F", points: [100, 90, 95] }]}
+        drawdown={[0, -10, -5]}
+      />
+    );
+    const drawdownPath = Array.from(container.querySelectorAll("path")).find((p) =>
+      p.getAttribute("stroke") === "var(--chart-drawdown, #BA3F55)"
+    );
+    expect(drawdownPath?.getAttribute("d")).toContain("432.0");
   });
 });
 
@@ -149,5 +163,11 @@ describe("ChartCard", () => {
     expect(screen.getByText("AAPL")).toBeInTheDocument();
     expect(screen.getByText("Last")).toBeInTheDocument();
     expect(screen.getByTestId("plot")).toBeInTheDocument();
+  });
+});
+
+describe("niceTicks", () => {
+  it("returns no ticks when the computed step underflows", () => {
+    expect(niceTicks(0, Number.MIN_VALUE, 4)).toEqual([]);
   });
 });

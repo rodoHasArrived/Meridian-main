@@ -1408,6 +1408,7 @@ export interface ReconciliationBreakDetailViewModel {
   eyebrow: string;
   title: string;
   subtitle: string;
+  rawCategoryLabel: string;
   description: string;
   ariaLabel: string;
   statusLabel: string;
@@ -2045,6 +2046,7 @@ export interface OperationalExceptionWorkbenchCaseViewModel {
   id: string;
   title: string;
   subtitle: string;
+  rawCategoryLabel: string;
   statusLabel: string;
   statusTone: "success" | "warning" | "outline" | "danger";
   ownerLabel: string;
@@ -12787,6 +12789,7 @@ export function buildOperationalExceptionWorkbenchState({
       id: row.breakId,
       title: row.financeLabel,
       subtitle: `${row.strategyName} - ${row.reason}`,
+      rawCategoryLabel: row.category,
       statusLabel: row.status,
       statusTone: row.statusBadgeVariant,
       ownerLabel: row.ownerLabel,
@@ -12850,18 +12853,19 @@ export function buildReconciliationBreakRows(
     const canResolve = !action && item.status !== "Resolved";
     const canDismiss = !action && item.status !== "Dismissed";
     const isSelected = item.breakId === selectedBreakId;
+    const financeLabel = financeBreakLabel(item.category);
 
     return {
       ...item,
       actionBusy,
-      financeLabel: financeBreakLabel(item.category),
+      financeLabel,
       varianceLabel: formatSignedCurrency(item.variance),
       varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatDateTimeLabel(item.detectedAt),
       lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
-      rowAriaLabel: `${financeBreakLabel(item.category)} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
+      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
       detailPanelId: "reconciliation-break-detail-panel",
       isSelected,
@@ -12912,6 +12916,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
     eyebrow: "Break detail",
     title: `${row.strategyName} - ${row.financeLabel}`,
     subtitle: `${row.breakId} - ${row.status}`,
+    rawCategoryLabel: row.category,
     description: row.reason,
     ariaLabel: `Reconciliation break detail for ${row.breakId}`,
     statusLabel: row.status,

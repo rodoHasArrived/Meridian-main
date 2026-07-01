@@ -48,4 +48,20 @@ describe("FilteredDataTable (Concrete)", () => {
     // Ascending: AAPL first.
     expect(cells[0]).toBe("AAPL");
   });
+
+  it("sorts by a column header keyboard activation", async () => {
+    render(<FilteredDataTable data={[...data].reverse()} columns={columns} />);
+    screen.getByRole("columnheader", { name: "Symbol" }).focus();
+    await userEvent.keyboard("{Enter}");
+    const cells = screen.getAllByRole("cell").map((c) => c.textContent);
+    expect(cells[0]).toBe("AAPL");
+  });
+
+  it("reflects data prop changes after initial empty render", () => {
+    const { rerender } = render(<FilteredDataTable data={[]} columns={columns} />);
+    expect(screen.getByText("No data")).toBeInTheDocument();
+    rerender(<FilteredDataTable data={data} columns={columns} />);
+    expect(screen.getByText("AAPL")).toBeInTheDocument();
+    expect(screen.getByText("3 of 3")).toBeInTheDocument();
+  });
 });

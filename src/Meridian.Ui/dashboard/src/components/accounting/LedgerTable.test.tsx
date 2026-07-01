@@ -1,4 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
 import { LedgerTable, type LedgerRow } from "./LedgerTable";
 
 const rows: LedgerRow[] = [
@@ -30,5 +32,28 @@ describe("LedgerTable", () => {
   it("marks a balanced ledger", () => {
     render(<LedgerTable rows={[{ date: "2026-01-05", debit: 100, credit: 100 }]} currency="USD" />);
     expect(screen.getByLabelText("Ledger balanced")).toBeInTheDocument();
+  });
+
+  it("does not backfill running balances before the first explicit seed", () => {
+    render(
+      <LedgerTable
+        rows={[
+          { date: "2026-01-02", ref: "JE-1", memo: "Unknown seed", debit: 100, credit: 0 },
+          { date: "2026-01-03", ref: "JE-2", memo: "Seeded", debit: 0, credit: 0, balance: 500 },
+        ]}
+        currency="USD"
+      />,
+    );
+    const bodyRows = screen.getAllByRole("row").filter((r) => r.closest("tbody"));
+    expect(within(bodyRows[0]).getByText("—")).toBeInTheDocument();
+    expect(within(bodyRows[1]).getByText("$500.00")).toBeInTheDocument();
+  });
+
+  it("sorts only when an onSort handler is supplied and supports keyboard activation", async () => {
+    const onSort = vi.fn();
+    render(<LedgerTable rows={rows} currency="USD" onSort={onSort} />);
+    screen.getByRole("columnheader", { name: "Date" }).focus();
+    await userEvent.keyboard("{Enter}");
+    expect(onSort).toHaveBeenCalledWith("date", 1);
   });
 });

@@ -211,7 +211,7 @@ function buildProofPassportItems({
   outputLabel: string;
 }): DailyControlTowerProofPassportItem[] {
   const source = proof?.workspaceLabel ?? item.workspaceLabel;
-  const freshness = proof?.timestampLabel ?? "No timestamped proof";
+  const freshness = proof?.timestampLabel ?? "No timestamped evidence";
   const reconciliation = linkedContext?.statusLabel ?? viewModel.linkedContextPostureLabel;
   const approvals = approvalsLabelForTone(item.tone);
   const evidencePacket = proof?.label ?? viewModel.decisionBrief.evidenceLabel ?? "No evidence packet linked";

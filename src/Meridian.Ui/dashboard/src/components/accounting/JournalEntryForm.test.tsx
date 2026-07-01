@@ -39,4 +39,17 @@ describe("JournalEntryForm", () => {
     fireEvent.change(screen.getByLabelText("Line 1 debit"), { target: { value: "600" } });
     expect(onChange).toHaveBeenCalled();
   });
+
+  it("generates unique header and datalist IDs for multiple forms", () => {
+    render(
+      <>
+        <JournalEntryForm initialLines={balanced} accounts={["Cash"]} />
+        <JournalEntryForm initialLines={balanced} accounts={["Cash"]} />
+      </>,
+    );
+    const dates = screen.getAllByLabelText("Date");
+    const lists = screen.getAllByLabelText("Line 1 account").map((input) => input.getAttribute("list"));
+    expect(dates[0].id).not.toBe(dates[1].id);
+    expect(lists[0]).not.toBe(lists[1]);
+  });
 });

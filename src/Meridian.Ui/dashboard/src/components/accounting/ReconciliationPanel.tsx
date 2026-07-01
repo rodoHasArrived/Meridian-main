@@ -6,6 +6,7 @@
 // the filtered view) and flags the difference: "Reconciled" (green) within tolerance, "Out by …"
 // (red) otherwise. Self-contained (native checkbox + search) so it has no cross-unit deps.
 import { useState } from "react";
+import type { KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
@@ -142,6 +143,9 @@ function inject(): void {
 function compareItems(a: ReconciliationItem, b: ReconciliationItem, key: string): number {
   if (key === "amount") return (toNumber(a.amount) || 0) - (toNumber(b.amount) || 0);
   if (key === "status") return (a.matched ? 1 : 0) - (b.matched ? 1 : 0);
+  const an = toNumber(a[key]);
+  const bn = toNumber(b[key]);
+  if (Number.isFinite(an) || Number.isFinite(bn)) return (Number.isFinite(an) ? an : 0) - (Number.isFinite(bn) ? bn : 0);
   const av = String(a[key] ?? "");
   const bv = String(b[key] ?? "");
   return av.localeCompare(bv, undefined, { numeric: true });
@@ -154,10 +158,18 @@ interface SortHeadProps {
 }
 function SortHead({ col, sort, onSort }: SortHeadProps) {
   const active = sort.key === col.key;
+  const onKeyDown = (e: KeyboardEvent<HTMLTableHeaderCellElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSort(col.key);
+    }
+  };
   return (
     <th
       className={`${col.num ? "num" : ""} ${active ? "is-sorted" : ""}`.trim()}
       onClick={() => onSort(col.key)}
+      onKeyDown={onKeyDown}
+      tabIndex={0}
       aria-sort={active ? (sort.dir > 0 ? "ascending" : "descending") : "none"}
       scope="col"
     >
@@ -246,7 +258,7 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
                 {columns.map((c) =>
                   c.amount ? (
                     <td key={c.key} className="num">
-                      <AmountCell value={it.amount} currency={currency} parens />
+                      <AmountCell value={it[c.key] as number | string} currency={currency} parens />
                     </td>
                   ) : (
                     <td key={c.key} className={`${c.mono ? "mono" : ""} ${c.key === "memo" ? "memo" : ""}`.trim()}>

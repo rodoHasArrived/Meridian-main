@@ -7,6 +7,7 @@ export function niceTicks(min: number, max: number, count: number): number[] {
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));
   const norm = raw / mag;
   const step = (norm >= 5 ? 5 : norm >= 2 ? 2 : 1) * mag;
+  if (!Number.isFinite(step) || step <= 0) return [];
   const start = Math.ceil(min / step) * step;
   const out: number[] = [];
   for (let v = start; v <= max + 1e-9; v += step) out.push(+v.toFixed(6));

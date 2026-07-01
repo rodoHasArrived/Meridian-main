@@ -13,9 +13,9 @@ const injectedKeys = new Set<string>();
  * (e.g. server render) or when the key has already been injected.
  */
 export function injectStyle(key: string, css: string): void {
+  if (typeof document === "undefined") return;
   if (injectedKeys.has(key)) return;
   injectedKeys.add(key);
-  if (typeof document === "undefined") return;
   const el = document.createElement("style");
   el.setAttribute("data-mds", key);
   el.textContent = css;

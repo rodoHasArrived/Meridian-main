@@ -3,7 +3,7 @@
 // that stays red ("Out by …") until Σdebit = Σcredit, then turns green ("Balanced"). Add/remove
 // lines; an optional account list drives autocomplete; the Post button is gated on a balanced
 // entry. Self-contained (native inputs styled with Concrete tokens) so it has no cross-unit deps.
-import { useState } from "react";
+import { useId, useState } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
@@ -109,6 +109,10 @@ export function JournalEntryForm({
   onPost
 }: JournalEntryFormProps) {
   inject();
+  const idPrefix = useId();
+  const dateId = `${idPrefix}-date`;
+  const refId = `${idPrefix}-ref`;
+  const memoId = `${idPrefix}-memo`;
   const [header, setHeader] = useState<JournalHeader>(() => ({ date: "", ref: "", memo: "", ...initialHeader }));
   const [lines, setLines] = useState<JournalLine[]>(() =>
     initialLines && initialLines.length ? initialLines.map((l) => ({ ...blankLine(), ...l })) : [blankLine(), blankLine()]
@@ -140,28 +144,28 @@ export function JournalEntryForm({
   const totalC = lines.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
   const diff = totalD - totalC;
   const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
-  const dlId = accounts && accounts.length ? "jnl-accts" : undefined;
+  const dlId = accounts && accounts.length ? `${idPrefix}-accts` : undefined;
 
   return (
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor="jnl-date">
+          <label className="jnl__lbl" htmlFor={dateId}>
             Date
           </label>
-          <input id="jnl-date" className="jnl__inp" type="date" value={header.date} onChange={(e) => setH("date", e.target.value)} />
+          <input id={dateId} className="jnl__inp" type="date" value={header.date} onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor="jnl-ref">
+          <label className="jnl__lbl" htmlFor={refId}>
             Reference
           </label>
-          <input id="jnl-ref" className="jnl__inp" placeholder="JE-0001" value={header.ref} onChange={(e) => setH("ref", e.target.value)} />
+          <input id={refId} className="jnl__inp" placeholder="JE-0001" value={header.ref} onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl" htmlFor="jnl-memo">
+          <label className="jnl__lbl" htmlFor={memoId}>
             Memo
           </label>
-          <input id="jnl-memo" className="jnl__inp" placeholder="Description" value={header.memo} onChange={(e) => setH("memo", e.target.value)} />
+          <input id={memoId} className="jnl__inp" placeholder="Description" value={header.memo} onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>
 

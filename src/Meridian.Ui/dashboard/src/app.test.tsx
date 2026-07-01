@@ -324,7 +324,7 @@ describe("App", () => {
     expect(within(drivers).getByText("Finance queue")).toBeInTheDocument();
     expect(within(drivers).getByText("Trust posture")).toBeInTheDocument();
     expect(within(drivers).getByText("Evidence events")).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Daily control tower blocked output queue" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Daily control tower finance queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);

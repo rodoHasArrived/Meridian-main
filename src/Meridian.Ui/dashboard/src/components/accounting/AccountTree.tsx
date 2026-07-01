@@ -3,7 +3,7 @@
 // Disclosure triangles toggle branches; depth indents the name column; balances are mono and
 // right-aligned. Flat Concrete theme.
 import { useState } from "react";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
@@ -55,6 +55,7 @@ function inject(): void {
 .act__tw{width:14px;height:14px;flex:0 0 auto;display:inline-flex;align-items:center;
   justify-content:center;font-size:9px;color:var(--text-muted,#59636F);
   cursor:pointer;border-radius:var(--radius-chip,2px);user-select:none;}
+.act__tw:focus-visible,.act__row:focus-visible{outline:2px solid var(--accent,#2F6F8F);outline-offset:1px;}
 .act__tw:hover{background:var(--bg-active,#E6EEF5);color:var(--text-secondary,#4D5967);}
 .act__tw--leaf{cursor:default;opacity:0;}
 .act__code{font-family:var(--font-data,monospace);font-size:11px;color:var(--text-muted,#59636F);
@@ -118,31 +119,57 @@ export function AccountTree({
       const isGroup = hasKids;
       const selectable = !!onSelect;
       const on = selectedCode != null && selectedCode === node.code;
+      const onRowKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+        if (!onSelect) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(node);
+        } else if (hasKids && e.key === "ArrowRight" && !open) {
+          e.preventDefault();
+          toggle(node.code);
+        } else if (hasKids && e.key === "ArrowLeft" && open) {
+          e.preventDefault();
+          toggle(node.code);
+        }
+      };
+      const onToggleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          toggle(node.code);
+        }
+      };
       out.push(
         <div
           key={node.code}
           className={`act__row${selectable ? " act__row--sel" : ""}${on ? " act__row--on" : ""}`}
           onClick={onSelect ? () => onSelect(node) : undefined}
-          role={onSelect ? "button" : "treeitem"}
+          onKeyDown={onRowKeyDown}
+          role="treeitem"
           aria-expanded={hasKids ? open : undefined}
           aria-selected={on || undefined}
-          tabIndex={onSelect ? 0 : undefined}
+          tabIndex={on || (selectable && depth === 0) ? 0 : -1}
         >
           <div className={`act__name${isGroup ? " act__name--group" : ""}`} style={{ paddingLeft: depth * 18 }}>
-            <span
-              className={`act__tw${hasKids ? "" : " act__tw--leaf"}`}
-              onClick={
-                hasKids
-                  ? (e) => {
-                      e.stopPropagation();
-                      toggle(node.code);
-                    }
-                  : undefined
-              }
-              aria-hidden={!hasKids}
-            >
-              {hasKids ? (open ? "▾" : "▸") : "•"}
-            </span>
+            {hasKids ? (
+              <button
+                type="button"
+                className="act__tw"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle(node.code);
+                }}
+                onKeyDown={onToggleKeyDown}
+                aria-label={open ? `Collapse ${node.name}` : `Expand ${node.name}`}
+                aria-expanded={open}
+              >
+                {open ? "▾" : "▸"}
+              </button>
+            ) : (
+              <span className="act__tw act__tw--leaf" aria-hidden="true">
+                •
+              </span>
+            )}
             {node.code && <span className="act__code">{node.code}</span>}
             <span className="act__label">{node.name}</span>
           </div>

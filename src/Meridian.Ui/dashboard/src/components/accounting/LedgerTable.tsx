@@ -3,6 +3,7 @@
 // P&L color when the two sides disagree). Flat Concrete grid: white paper, small-caps muted
 // headers, hairline rows, mono tabular figures.
 import { useState } from "react";
+import type { KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
@@ -76,6 +77,7 @@ function inject(): void {
 .ldg__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-secondary,#4D5967);}
 .ldg__sort{cursor:pointer;user-select:none;}
+.ldg__sort:focus-visible{outline:2px solid var(--accent,#2F6F8F);outline-offset:-2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");
@@ -97,10 +99,17 @@ export function LedgerTable({
   const [sortDir, setSortDir] = useState(1);
 
   const handleSort = (key: SortKey) => {
+    if (!onSort) return;
     const nextDir = sortKey === key ? (sortDir === 1 ? -1 : 1) : 1;
     setSortKey(key);
     setSortDir(nextDir);
-    onSort?.(key, nextDir);
+    onSort(key, nextDir);
+  };
+  const handleSortKey = (key: SortKey) => (e: KeyboardEvent<HTMLTableHeaderCellElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleSort(key);
+    }
   };
 
   const openingNum = toNumber(opening);
@@ -108,7 +117,7 @@ export function LedgerTable({
 
   // Compute running balances when a row omits `balance`.
   let bal = hasOpening ? openingNum : 0;
-  let hasRunning = hasOpening;
+  let canCompute = hasOpening;
   const computed = rows.map((r) => {
     const d = toNumber(r.debit) || 0;
     const c = toNumber(r.credit) || 0;
@@ -116,45 +125,56 @@ export function LedgerTable({
     const explicit = toNumber(r.balance);
     if (r.balance != null && Number.isFinite(explicit)) {
       bal = explicit;
-      hasRunning = true;
+      canCompute = true;
     } else {
-      bal += delta;
+      if (canCompute) bal += delta;
     }
-    return { ...r, _bal: bal };
+    return { ...r, _bal: bal, _hasBal: canCompute };
   });
 
   const totalD = rows.reduce((a, r) => a + (toNumber(r.debit) || 0), 0);
   const totalC = rows.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
   const imbalance = totalD - totalC;
 
-  const caret = (key: SortKey) => (sortKey === key ? (sortDir === 1 ? " ↑" : " ↓") : "");
+  const caret = (key: SortKey) => (onSort && sortKey === key ? (sortDir === 1 ? " ↑" : " ↓") : "");
+  const sortableProps = (key: SortKey) =>
+    onSort
+      ? {
+          className: "ldg__sort",
+          onClick: () => handleSort(key),
+          onKeyDown: handleSortKey(key),
+          tabIndex: 0,
+          "aria-sort": sortKey === key ? (sortDir === 1 ? "ascending" : "descending") : "none",
+          scope: "col",
+        }
+      : { scope: "col" };
 
   return (
     <div className="ldg-wrap" role="region" aria-label={caption || "General ledger"}>
       <table className="ldg">
         <thead>
           <tr>
-            <th className="ldg__sort" onClick={() => handleSort("date")}>
+            <th {...sortableProps("date")}>
               Date{caret("date")}
             </th>
-            <th className="ldg__sort" onClick={() => handleSort("ref")}>
+            <th {...sortableProps("ref")}>
               Ref{caret("ref")}
             </th>
             {showAccount && (
-              <th className="ldg__sort" onClick={() => handleSort("account")}>
+              <th {...sortableProps("account")}>
                 Account{caret("account")}
               </th>
             )}
-            <th className="ldg__sort" onClick={() => handleSort("memo")}>
+            <th {...sortableProps("memo")}>
               Description{caret("memo")}
             </th>
-            <th className="ldg--r ldg__sort" onClick={() => handleSort("debit")}>
+            <th {...sortableProps("debit")} className={`${onSort ? "ldg__sort " : ""}ldg--r`.trim()}>
               Debit{caret("debit")}
             </th>
-            <th className="ldg--r ldg__sort" onClick={() => handleSort("credit")}>
+            <th {...sortableProps("credit")} className={`${onSort ? "ldg__sort " : ""}ldg--r`.trim()}>
               Credit{caret("credit")}
             </th>
-            <th className="ldg--r ldg__sort" onClick={() => handleSort("balance")}>
+            <th {...sortableProps("balance")} className={`${onSort ? "ldg__sort " : ""}ldg--r`.trim()}>
               Balance{caret("balance")}
             </th>
           </tr>
@@ -186,7 +206,7 @@ export function LedgerTable({
                 <AmountCell value={r.credit ?? ""} currency={currency} zeroDash />
               </td>
               <td className="ldg--r">
-                {hasRunning ? (
+                {r._hasBal ? (
                   <AmountCell value={r._bal} currency={currency} parens />
                 ) : (
                   <span style={{ color: "var(--text-disabled, #889099)" }}>—</span>

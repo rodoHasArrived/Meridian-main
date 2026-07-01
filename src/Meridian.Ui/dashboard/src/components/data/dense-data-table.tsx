@@ -102,6 +102,7 @@ export function DenseDataTable<Row extends Record<string, unknown> = Record<stri
   injectStyle("dds", CSS);
   const allSelected = selectable && selectedRows.length === rows.length && rows.length > 0;
   const someSelected = selectable && selectedRows.length > 0 && selectedRows.length < rows.length;
+  const activateKey = (key: string) => key === "Enter" || key === " ";
 
   return (
     <div className="dds-wrap">
@@ -131,6 +132,18 @@ export function DenseDataTable<Row extends Record<string, unknown> = Record<stri
                   key={c.key}
                   className={cls}
                   onClick={sortable ? () => onSort?.(c.key) : undefined}
+                  onKeyDown={
+                    sortable
+                      ? (e) => {
+                          if (activateKey(e.key)) {
+                            e.preventDefault();
+                            onSort?.(c.key);
+                          }
+                        }
+                      : undefined
+                  }
+                  tabIndex={sortable ? 0 : undefined}
+                  aria-sort={sorted ? (sortDir === "asc" ? "ascending" : "descending") : sortable ? "none" : undefined}
                   style={{ cursor: sortable ? "pointer" : "default" }}
                 >
                   {c.label}
@@ -152,6 +165,16 @@ export function DenseDataTable<Row extends Record<string, unknown> = Record<stri
                 className={`${onRowClick ? "dds--sel " : ""}${on ? "dds--on" : ""}`.trim()}
                 tabIndex={onRowClick ? 0 : undefined}
                 onClick={onRowClick ? () => onRowClick(row, i) : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        if (activateKey(e.key)) {
+                          e.preventDefault();
+                          onRowClick(row, i);
+                        }
+                      }
+                    : undefined
+                }
               >
                 {selectable && (
                   <td className="dds--checkbox">

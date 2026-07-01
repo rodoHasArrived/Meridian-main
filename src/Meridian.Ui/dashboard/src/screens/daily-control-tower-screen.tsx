@@ -85,21 +85,21 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
 
       <PanelSurface flat className="overflow-hidden">
         <div className="border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold text-foreground">Blocked output queue</h3>
+          <h3 className="text-sm font-semibold text-foreground">Finance queue</h3>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
             Each row carries the evidence needed to move from source issue to downstream output.
           </p>
         </div>
         {model.queueRows.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower blocked output queue">
+            <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
               <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-semibold">Blocked item</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Owner</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Affected output</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Next action</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Proof</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Evidence</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

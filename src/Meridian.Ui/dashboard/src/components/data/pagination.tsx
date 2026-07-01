@@ -1,7 +1,7 @@
 // Meridian Pagination (Concrete) — prev/next controls, windowed page numbers with
 // ellipses, and a jump-to-page input. Flat hairline buttons; the active page carries the
 // steel accent. No external deps.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
@@ -53,6 +53,10 @@ export function Pagination({
 }: PaginationProps) {
   injectStyle("pagination", CSS);
   const [jumpValue, setJumpValue] = useState(String(currentPage));
+
+  useEffect(() => {
+    setJumpValue(String(currentPage));
+  }, [currentPage]);
 
   const goTo = (page: number) => {
     const clamped = Math.max(1, Math.min(totalPages, page));

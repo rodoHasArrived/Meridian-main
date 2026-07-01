@@ -3721,7 +3721,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/exceptions");
 
     expect(screen.getAllByRole("heading", { name: "Operational exception workbench" }).length).toBeGreaterThan(0);
-    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("Paper Index Mean Reversion / AmountMismatch");
+    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("Cash variance needs review");
     expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("2 comments");
     expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("3 evidence links");
     expect(screen.getAllByRole("link", { name: "Approval gate" })[0]).toHaveAttribute("href", "/accounting/approvals");
@@ -4639,12 +4639,12 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
     expect(await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" }))
-      .toHaveTextContent("Paper Index Mean Reversion - AmountMismatch");
+      .toHaveTextContent("Paper Index Mean Reversion - Cash variance needs review");
 
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
 
     expect(screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" }))
-      .toHaveTextContent("Intraday Vol Carry - FeeMismatch");
+      .toHaveTextContent("Intraday Vol Carry - Cash variance needs review");
     expect(screen.getByRole("textbox", { name: "Resolve rationale" })).toBeInTheDocument();
   });
 

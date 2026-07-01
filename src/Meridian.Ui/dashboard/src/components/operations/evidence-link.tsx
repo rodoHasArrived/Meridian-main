@@ -42,7 +42,7 @@ type EvidenceLinkOwnProps = {
 export type EvidenceLinkProps = EvidenceLinkOwnProps &
   Omit<
     AnchorHTMLAttributes<HTMLAnchorElement> & ButtonHTMLAttributes<HTMLButtonElement>,
-    keyof EvidenceLinkOwnProps
+    keyof EvidenceLinkOwnProps | "onClick"
   >;
 
 /**
@@ -64,6 +64,8 @@ export function EvidenceLink({
   injectStyle("evidence-link", CSS);
   const sev = normalizeSeverity(status);
   const cls = `mds-evidence mds-evidence--${sev}${className ? " " + className : ""}`;
+  const safeRest = { ...rest };
+  delete (safeRest as { onClick?: unknown }).onClick;
   const body = (
     <>
       <span className="mds-evidence__dot" aria-hidden="true" />
@@ -77,13 +79,13 @@ export function EvidenceLink({
 
   if (href) {
     return (
-      <a className={cls} href={href} onClick={onOpen} {...rest}>
+      <a className={cls} href={href} onClick={onOpen} {...safeRest}>
         {body}
       </a>
     );
   }
   return (
-    <button type="button" className={cls} onClick={onOpen} {...rest}>
+    <button type="button" className={cls} onClick={onOpen} {...safeRest}>
       {body}
     </button>
   );
