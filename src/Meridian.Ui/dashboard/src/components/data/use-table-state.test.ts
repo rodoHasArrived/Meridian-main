@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Blob as NodeBlob } from "node:buffer";
 import { useTableState } from "./use-table-state";
 
 interface Row extends Record<string, unknown> {
@@ -109,13 +110,19 @@ describe("useTableState", () => {
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
     Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: revokeObjectURL });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    // jsdom's Blob lacks .text(); use Node's Blob for this export so we can read it back.
+    const OriginalBlob = globalThis.Blob;
+    globalThis.Blob = NodeBlob as unknown as typeof Blob;
     const csvRows = [{ symbol: "AAPL", sector: "Tech\nGrowth", qty: '10"0' }];
     const { result } = renderHook(() => useTableState(csvRows));
 
-    act(() => result.current.exportCSV("positions.csv"));
-
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
-    await expect(blob.text()).resolves.toContain('"Tech\nGrowth","10""0"');
+    try {
+      act(() => result.current.exportCSV("positions.csv"));
+      const blob = createObjectURL.mock.calls[0][0] as Blob;
+      await expect(blob.text()).resolves.toContain('"Tech\nGrowth","10""0"');
+    } finally {
+      globalThis.Blob = OriginalBlob;
+    }
     expect(click).toHaveBeenCalledOnce();
     expect(revokeObjectURL).not.toHaveBeenCalled();
     vi.runAllTimers();

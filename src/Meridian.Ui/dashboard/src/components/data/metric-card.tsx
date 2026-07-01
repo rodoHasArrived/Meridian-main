@@ -39,7 +39,17 @@ export interface MetricCardProps {
   tone?: MetricCardTone;
   /** Force delta color; otherwise inferred from a leading +/− sign. */
   trend?: "up" | "down" | "flat";
+  /** Override the composed group accessible name (label, value, change, status). */
+  ariaLabel?: string;
 }
+
+const TONE_STATUS: Record<MetricCardTone, string> = {
+  neutral: "",
+  info: "",
+  success: "positive",
+  warning: "attention",
+  danger: "critical",
+};
 
 /**
  * MetricCard — the KPI tile with a 3px left-accent border. Lay out 4–5 in a row.
@@ -48,16 +58,28 @@ export interface MetricCardProps {
  * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
  * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
  */
-export function MetricCard({ label, value, delta, tone = "neutral", trend }: MetricCardProps) {
+export function MetricCard({ label, value, delta, tone = "neutral", trend, ariaLabel }: MetricCardProps) {
   injectStyle("metric", CSS);
   const t =
     trend ??
     (delta?.trim().startsWith("-") ? "down" : delta?.trim().startsWith("+") ? "up" : "flat");
+  // Compose the group name so screen-reader users keep the change + status context
+  // that label/value alone would drop.
+  const composedLabel =
+    ariaLabel ??
+    [
+      typeof label === "string" ? label : undefined,
+      typeof value === "string" ? value : undefined,
+      delta ? `change ${delta}` : undefined,
+      TONE_STATUS[tone] ? `status ${TONE_STATUS[tone]}` : undefined,
+    ]
+      .filter(Boolean)
+      .join(", ");
   return (
     <div
       className={`mds-metric mds-metric--${tone}`}
       role="group"
-      aria-label={`${typeof label === "string" ? label : ""}: ${typeof value === "string" ? value : ""}`.trim()}
+      aria-label={composedLabel}
     >
       <p className="mds-metric__label">{label}</p>
       <p className="mds-metric__value">{value}</p>

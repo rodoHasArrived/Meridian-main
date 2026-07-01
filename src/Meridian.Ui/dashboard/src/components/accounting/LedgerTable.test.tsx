@@ -45,8 +45,10 @@ describe("LedgerTable", () => {
       />,
     );
     const bodyRows = screen.getAllByRole("row").filter((r) => r.closest("tbody"));
-    expect(within(bodyRows[0]).getByText("—")).toBeInTheDocument();
-    expect(within(bodyRows[1]).getByText("$500.00")).toBeInTheDocument();
+    // The balance is the last cell; scope to it (zero credit also renders "—").
+    const balanceCell = (row: HTMLElement) => within(row).getAllByRole("cell").at(-1)!;
+    expect(balanceCell(bodyRows[0])).toHaveTextContent("—");
+    expect(balanceCell(bodyRows[1])).toHaveTextContent("$500.00");
   });
 
   it("sorts only when an onSort handler is supplied and supports keyboard activation", async () => {

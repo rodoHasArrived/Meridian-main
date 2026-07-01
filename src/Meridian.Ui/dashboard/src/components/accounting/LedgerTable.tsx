@@ -137,7 +137,7 @@ export function LedgerTable({
   const imbalance = totalD - totalC;
 
   const caret = (key: SortKey) => (onSort && sortKey === key ? (sortDir === 1 ? " ↑" : " ↓") : "");
-  const sortableProps = (key: SortKey) =>
+  const sortableProps = (key: SortKey): ThHTMLAttributes<HTMLTableCellElement> =>
     onSort
       ? {
           className: "ldg__sort",
