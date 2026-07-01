@@ -1372,6 +1372,7 @@ export interface ReconciliationBreakAction {
 
 export interface ReconciliationBreakRowViewModel extends ReconciliationBreakQueueItem {
   actionBusy: boolean;
+  financeLabel: string;
   varianceLabel: string;
   varianceTone: "default" | "success" | "danger";
   statusBadgeVariant: "success" | "warning" | "outline" | "danger";
@@ -1407,6 +1408,7 @@ export interface ReconciliationBreakDetailViewModel {
   eyebrow: string;
   title: string;
   subtitle: string;
+  rawCategoryLabel: string;
   description: string;
   ariaLabel: string;
   statusLabel: string;
@@ -2044,6 +2046,7 @@ export interface OperationalExceptionWorkbenchCaseViewModel {
   id: string;
   title: string;
   subtitle: string;
+  rawCategoryLabel: string;
   statusLabel: string;
   statusTone: "success" | "warning" | "outline" | "danger";
   ownerLabel: string;
@@ -12784,8 +12787,9 @@ export function buildOperationalExceptionWorkbenchState({
     ],
     cases: cases.map((row) => ({
       id: row.breakId,
-      title: `${row.strategyName} / ${row.category}`,
-      subtitle: `${row.breakId} - ${row.reason}`,
+      title: row.financeLabel,
+      subtitle: `${row.strategyName} - ${row.reason}`,
+      rawCategoryLabel: row.category,
       statusLabel: row.status,
       statusTone: row.statusBadgeVariant,
       ownerLabel: row.ownerLabel,
@@ -12794,7 +12798,7 @@ export function buildOperationalExceptionWorkbenchState({
       auditLabel: `${row.evidenceCount ?? 0} evidence link${(row.evidenceCount ?? 0) === 1 ? "" : "s"}`,
       routeHref: buildReconciliationBreakRoutingHref(row.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
       routeLabel: row.routingTarget ? "Open routed workflow" : "Open reconciliation",
-      ariaLabel: `Operational exception ${row.breakId}. ${row.status}. ${row.reason}`
+      ariaLabel: `${row.financeLabel}. ${row.status}. ${row.reason}`
     })),
     emptyText: "No reconciliation exceptions are available for this accounting scope.",
     reconciliationHref: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
@@ -12849,17 +12853,19 @@ export function buildReconciliationBreakRows(
     const canResolve = !action && item.status !== "Resolved";
     const canDismiss = !action && item.status !== "Dismissed";
     const isSelected = item.breakId === selectedBreakId;
+    const financeLabel = financeBreakLabel(item.category);
 
     return {
       ...item,
       actionBusy,
+      financeLabel,
       varianceLabel: formatSignedCurrency(item.variance),
       varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatDateTimeLabel(item.detectedAt),
       lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
-      rowAriaLabel: `${item.strategyName} ${item.category} break ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
+      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
       detailPanelId: "reconciliation-break-detail-panel",
       isSelected,
@@ -12908,8 +12914,9 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
   return {
     id: row.detailPanelId,
     eyebrow: "Break detail",
-    title: `${row.strategyName} - ${row.category}`,
+    title: `${row.strategyName} - ${row.financeLabel}`,
     subtitle: `${row.breakId} - ${row.status}`,
+    rawCategoryLabel: row.category,
     description: row.reason,
     ariaLabel: `Reconciliation break detail for ${row.breakId}`,
     statusLabel: row.status,
@@ -12949,6 +12956,20 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
     routingActionHref,
     routingActionAriaLabel: routingActionHref ? `Open routing target for reconciliation break ${row.breakId}` : null
   };
+}
+
+export function financeBreakLabel(category: string): string {
+  const normalized = category.trim().toLowerCase();
+  if (normalized.includes("amount") || normalized.includes("cash") || normalized.includes("fee")) {
+    return "Cash variance needs review";
+  }
+  if (normalized.includes("quantity") || normalized.includes("position")) {
+    return "Position variance needs review";
+  }
+  if (normalized.includes("timing")) {
+    return "Timing variance needs review";
+  }
+  return "Accounting exception needs review";
 }
 
 function formatReconciliationList(values: string[] | null | undefined, fallback: string): string {

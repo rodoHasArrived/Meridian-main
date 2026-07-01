@@ -89,6 +89,7 @@ export function FilteredDataTable<Row extends Record<string, unknown> = Record<s
     const col = columns.find((c) => c.key === colKey);
     if (col?.sortable !== false) state.toggleSort(colKey);
   };
+  const activateKey = (key: string) => key === "Enter" || key === " ";
 
   return (
     <div className="fdt-wrap">
@@ -148,6 +149,26 @@ export function FilteredDataTable<Row extends Record<string, unknown> = Record<s
                       key={col.key}
                       className={cls}
                       onClick={sortable ? () => handleSort(col.key) : undefined}
+                      onKeyDown={
+                        sortable
+                          ? (e) => {
+                              if (activateKey(e.key)) {
+                                e.preventDefault();
+                                handleSort(col.key);
+                              }
+                            }
+                          : undefined
+                      }
+                      tabIndex={sortable ? 0 : undefined}
+                      aria-sort={
+                        sorted
+                          ? state.sortBy?.direction === "asc"
+                            ? "ascending"
+                            : "descending"
+                          : sortable
+                            ? "none"
+                            : undefined
+                      }
                     >
                       {col.label}
                       {sortable && sorted && (

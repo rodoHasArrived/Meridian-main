@@ -27,4 +27,11 @@ describe("Pagination (Concrete)", () => {
     render(<Pagination currentPage={2} totalPages={5} />);
     expect(screen.getByLabelText("Page 2")).toHaveAttribute("aria-current", "page");
   });
+
+  it("keeps the jump input synchronized with currentPage changes", () => {
+    const { rerender } = render(<Pagination currentPage={1} totalPages={5} />);
+    expect(screen.getByLabelText("Jump to page")).toHaveValue(1);
+    rerender(<Pagination currentPage={4} totalPages={5} />);
+    expect(screen.getByLabelText("Jump to page")).toHaveValue(4);
+  });
 });

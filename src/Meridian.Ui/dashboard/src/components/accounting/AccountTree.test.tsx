@@ -1,4 +1,6 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
 import { AccountTree, type AccountNode } from "./AccountTree";
 
 const nodes: AccountNode[] = [
@@ -28,5 +30,22 @@ describe("AccountTree", () => {
   it("exposes a tree role", () => {
     render(<AccountTree nodes={nodes} />);
     expect(screen.getByRole("tree", { name: "Chart of accounts" })).toBeInTheDocument();
+  });
+
+  it("keeps selectable rows as treeitems and supports keyboard selection", async () => {
+    const onSelect = vi.fn();
+    render(<AccountTree nodes={nodes} selectedCode="1000" onSelect={onSelect} />);
+    const assets = screen.getByRole("treeitem", { name: /1000 Assets/ });
+    expect(screen.queryByRole("button", { name: /1000 Assets/ })).toBeNull();
+    assets.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(onSelect).toHaveBeenCalledWith(nodes[0]);
+  });
+
+  it("expands and collapses branches through a disclosure button", async () => {
+    render(<AccountTree nodes={nodes} defaultExpandedDepth={0} />);
+    expect(screen.queryByText("Cash")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Expand Assets" }));
+    expect(screen.getByText("Cash")).toBeInTheDocument();
   });
 });

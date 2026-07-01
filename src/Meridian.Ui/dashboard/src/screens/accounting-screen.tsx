@@ -243,7 +243,7 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "category", label: "Category", render: (row) => <span className="font-mono text-muted-foreground">{row.category}</span> },
+  { id: "category", label: "Case", render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
   {
     id: "variance",
     label: "Variance",
@@ -1692,7 +1692,7 @@ function AccountingCaseWorkbench({
                     aria-pressed={row.breakId === selectedBreak?.breakId}
                     onClick={() => onSelectBreak(row.breakId)}
                   >
-                    <span className="block text-sm font-semibold text-foreground">{financeBreakLabel(row.category)}</span>
+                    <span className="block text-sm font-semibold text-foreground">{row.financeLabel}</span>
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                       {row.strategyName} · {row.varianceLabel} · {row.ownerLabel}
                     </span>
@@ -1806,6 +1806,7 @@ function AccountingCaseWorkbench({
               <dl className="mt-3 grid gap-2">
                 <AccountingValue label="Case ID" value={selectedBreak?.breakId ?? selectedBlocker?.id ?? "No case"} />
                 <AccountingValue label="Route" value={selectedBreakDetail?.routingActionHref ?? selectedBlocker?.href ?? "No route"} />
+                <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </dl>
             </details>
@@ -1814,20 +1815,6 @@ function AccountingCaseWorkbench({
       </div>
     </section>
   );
-}
-
-function financeBreakLabel(category: string): string {
-  const normalized = category.trim().toLowerCase();
-  if (normalized.includes("amount") || normalized.includes("cash")) {
-    return "Cash variance needs review";
-  }
-  if (normalized.includes("quantity") || normalized.includes("position")) {
-    return "Position variance needs review";
-  }
-  if (normalized.includes("timing")) {
-    return "Timing variance needs review";
-  }
-  return "Accounting exception needs review";
 }
 
 export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
@@ -4691,7 +4678,7 @@ function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExcepti
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="font-semibold text-foreground">{item.title}</div>
-                        <div className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{item.subtitle}</div>
+                        <div className="mt-1 break-words text-xs leading-5 text-muted-foreground">{item.subtitle}</div>
                       </div>
                       <Badge variant={item.statusTone}>{item.statusLabel}</Badge>
                     </div>
@@ -4704,6 +4691,13 @@ function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExcepti
                     <Button asChild size="sm" variant="ghost" className="mt-3">
                       <Link to={item.routeHref}>{item.routeLabel}</Link>
                     </Button>
+                    <details className="mt-3 rounded-md border border-border/70 bg-background/45 px-3 py-2">
+                      <summary className="cursor-pointer text-xs font-semibold uppercase text-muted-foreground">Audit details</summary>
+                      <dl className="mt-3 grid gap-2 text-xs text-muted-foreground">
+                        <AccountingValue label="Case ID" value={item.id} />
+                        <AccountingValue label="Raw category" value={item.rawCategoryLabel} />
+                      </dl>
+                    </details>
                   </div>
                 ))}
               </div>

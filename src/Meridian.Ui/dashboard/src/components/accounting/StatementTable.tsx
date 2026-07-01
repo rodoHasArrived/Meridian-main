@@ -93,7 +93,7 @@ export function StatementTable({ sections, total, columns, currency = "USD", par
   };
 
   return (
-    <div className="stm-wrap" role="table" aria-label="Financial statement">
+    <div className="stm-wrap" role="region" aria-label="Financial statement">
       <table className="stm">
         <thead>
           <tr>

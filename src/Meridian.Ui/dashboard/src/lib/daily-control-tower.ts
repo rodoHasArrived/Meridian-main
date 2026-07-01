@@ -46,7 +46,7 @@ export interface DailyControlTowerModel {
   nextActionLabel: string;
   nextActionHref: string;
   nextActionAriaLabel: string;
-  proofLabel: string;
+  evidenceLabel: string;
   driverItems: DailyControlTowerDriverItem[];
   queueRows: DailyControlTowerFocusRow[];
   trustItems: AppShellTrustStripItem[];
@@ -87,7 +87,7 @@ export function buildDailyControlTowerModel(
     nextActionLabel: decision.actionLabel,
     nextActionHref: decision.actionHref,
     nextActionAriaLabel: decision.actionAriaLabel,
-    proofLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No proof linked",
+    evidenceLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No evidence linked",
     driverItems: buildDriverItems({
       viewModel,
       queueRows,
@@ -131,7 +131,7 @@ function buildDriverItems({
     },
     {
       id: "queue",
-      label: "Blocked outputs",
+      label: "Finance queue",
       value: queueRows.length > 0 ? `${blockedRows} blocked / ${reviewRows} review` : "0 queued",
       detail: queueRows.length > 0
         ? `${queueRows.length} ranked operator focus item(s) drive the daily decision queue.`
@@ -156,10 +156,10 @@ function buildDriverItems({
     },
     {
       id: "proof",
-      label: "Proof events",
+      label: "Evidence events",
       value: evidenceTimelineItems.length > 0 ? `${evidenceTimelineItems.length} retained` : "No events",
       detail: evidenceTimelineItems.length > 0
-        ? "Timestamped evidence events back the visible queue and proof passports."
+        ? "Timestamped evidence events back the visible queue and evidence summaries."
         : "No timestamped evidence event is linked to this decision.",
       badgeVariant: evidenceTimelineItems.length > 0 ? "success" : "warning"
     }
@@ -193,7 +193,7 @@ function buildFocusRow(
     badgeVariant: badgeVariantForTone(item.tone),
     proof,
     proofPassportItems,
-    proofPassportSummary: `${item.label}: ${statusLabel}, ${outputLabel}, ${proofPassportItems[1]?.value ?? "No freshness proof"}.`
+    proofPassportSummary: `${item.label}: ${statusLabel}, ${outputLabel}, ${proofPassportItems[1]?.value ?? "No freshness evidence"}.`
   };
 }
 
@@ -211,7 +211,7 @@ function buildProofPassportItems({
   outputLabel: string;
 }): DailyControlTowerProofPassportItem[] {
   const source = proof?.workspaceLabel ?? item.workspaceLabel;
-  const freshness = proof?.timestampLabel ?? "No timestamped proof";
+  const freshness = proof?.timestampLabel ?? "No timestamped evidence";
   const reconciliation = linkedContext?.statusLabel ?? viewModel.linkedContextPostureLabel;
   const approvals = approvalsLabelForTone(item.tone);
   const evidencePacket = proof?.label ?? viewModel.decisionBrief.evidenceLabel ?? "No evidence packet linked";

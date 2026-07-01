@@ -22,6 +22,9 @@ const CSS = `
 .edt td{padding:8px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
   border-top:1px solid var(--border,#CBD3DC);font-variant-numeric:tabular-nums;height:34px;}
 .edt td.edt--expand{padding:6px 10px;text-align:center;cursor:pointer;}
+.edt__expand-btn{appearance:none;border:none;background:transparent;color:inherit;cursor:pointer;
+  padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-button,2px);}
+.edt__expand-btn:focus-visible{outline:var(--focus-ring,2px solid #2F6F8F);outline-offset:1px;}
 .edt td.edt--checkbox{padding:6px 10px;text-align:center;}
 .edt tbody tr:first-child td{border-top:none;}
 .edt td.edt--r{text-align:right;}
@@ -110,6 +113,7 @@ export function ExpandableDataTable<Row extends Record<string, unknown> = Record
   const allSelected = selectable && selectedRows.length === rows.length && rows.length > 0;
   const someSelected = selectable && selectedRows.length > 0 && selectedRows.length < rows.length;
   const colSpan = (expandable ? 1 : 0) + (selectable ? 1 : 0) + columns.length;
+  const activateKey = (key: string) => key === "Enter" || key === " ";
 
   return (
     <div className="edt-wrap">
@@ -140,6 +144,18 @@ export function ExpandableDataTable<Row extends Record<string, unknown> = Record
                   key={c.key}
                   className={cls}
                   onClick={sortable ? () => onSort?.(c.key) : undefined}
+                  onKeyDown={
+                    sortable
+                      ? (e) => {
+                          if (activateKey(e.key)) {
+                            e.preventDefault();
+                            onSort?.(c.key);
+                          }
+                        }
+                      : undefined
+                  }
+                  tabIndex={sortable ? 0 : undefined}
+                  aria-sort={sorted ? (sortDir === "asc" ? "ascending" : "descending") : sortable ? "none" : undefined}
                   style={{ cursor: sortable ? "pointer" : "default" }}
                 >
                   {c.label}
@@ -162,16 +178,33 @@ export function ExpandableDataTable<Row extends Record<string, unknown> = Record
                   className={`edt-main${on ? " edt--sel" : ""}`}
                   tabIndex={onRowClick ? 0 : undefined}
                   onClick={onRowClick ? () => onRowClick(row, i) : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? (e) => {
+                          if (activateKey(e.key)) {
+                            e.preventDefault();
+                            onRowClick(row, i);
+                          }
+                        }
+                      : undefined
+                  }
                 >
                   {expandable && (
-                    <td
-                      className="edt--expand"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleExpand(i);
-                      }}
-                    >
-                      <span className={`edt__chevron${isExpanded ? " edt--open" : ""}`}>›</span>
+                    <td className="edt--expand">
+                      <button
+                        type="button"
+                        className="edt__expand-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleExpand(i);
+                        }}
+                        aria-label={isExpanded ? `Collapse row ${i + 1}` : `Expand row ${i + 1}`}
+                        aria-expanded={isExpanded}
+                      >
+                        <span className={`edt__chevron${isExpanded ? " edt--open" : ""}`} aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
                     </td>
                   )}
                   {selectable && (

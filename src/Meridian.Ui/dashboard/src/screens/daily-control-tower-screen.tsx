@@ -46,7 +46,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         <DailyControlTowerFact label="Owner">{model.ownerLabel}</DailyControlTowerFact>
         <DailyControlTowerFact label="Output">{model.outputLabel}</DailyControlTowerFact>
         <DailyControlTowerFact label="Next action">{model.nextActionLabel}</DailyControlTowerFact>
-        <DailyControlTowerFact label="Proof">{model.proofLabel}</DailyControlTowerFact>
+        <DailyControlTowerFact label="Evidence">{model.evidenceLabel}</DailyControlTowerFact>
       </PanelSurface>
 
       <section aria-label="Daily control tower decision drivers" className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -85,21 +85,21 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
 
       <PanelSurface flat className="overflow-hidden">
         <div className="border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold text-foreground">Blocked output queue</h3>
+          <h3 className="text-sm font-semibold text-foreground">Finance queue</h3>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
             Each row carries the evidence needed to move from source issue to downstream output.
           </p>
         </div>
         {model.queueRows.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower blocked output queue">
+            <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
               <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-semibold">Blocked item</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Owner</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Affected output</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Next action</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Proof</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Evidence</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -127,9 +127,9 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                       </Link>
                     </td>
                     <td className="min-w-[22rem] px-4 py-4">
-                      <section aria-label={`${row.item.label} Proof Passport`} className="space-y-3">
+                      <section aria-label={`${row.item.label} Evidence summary`} className="space-y-3">
                         <div>
-                          <h3 className="text-sm font-semibold text-foreground">Proof Passport</h3>
+                          <h3 className="text-sm font-semibold text-foreground">Evidence summary</h3>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.proofPassportSummary}</p>
                         </div>
                         <dl className="grid gap-2 sm:grid-cols-2">

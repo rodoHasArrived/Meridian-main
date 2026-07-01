@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { EvidenceLink } from "./evidence-link";
+import { EvidenceLink, type EvidenceLinkProps } from "./evidence-link";
 
 describe("EvidenceLink", () => {
   it("renders as an anchor when href is set", () => {
@@ -18,6 +18,16 @@ describe("EvidenceLink", () => {
     const button = screen.getByRole("button");
     await userEvent.click(button);
     expect(onOpen).toHaveBeenCalledOnce();
+  });
+
+  it("does not allow a rest onClick handler to override onOpen", async () => {
+    const onOpen = vi.fn();
+    const override = vi.fn();
+    const props = { label: "Approval", status: "Missing", onOpen, onClick: override } as unknown as EvidenceLinkProps;
+    render(<EvidenceLink {...props} />);
+    await userEvent.click(screen.getByRole("button"));
+    expect(onOpen).toHaveBeenCalledOnce();
+    expect(override).not.toHaveBeenCalled();
   });
 
   it("tints the status dot by the resolved severity", () => {

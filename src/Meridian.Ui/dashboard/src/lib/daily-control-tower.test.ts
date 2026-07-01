@@ -112,7 +112,7 @@ describe("daily control tower model", () => {
       }),
       expect.objectContaining({
         id: "queue",
-        label: "Blocked outputs",
+        label: "Finance queue",
         value: "1 blocked / 2 review",
         badgeVariant: "danger"
       }),
@@ -124,7 +124,7 @@ describe("daily control tower model", () => {
       }),
       expect.objectContaining({
         id: "proof",
-        label: "Proof events",
+        label: "Evidence events",
         value: "3 retained",
         badgeVariant: "success"
       })

@@ -41,4 +41,10 @@ describe("StatementTable", () => {
     expect(screen.getByText("$100.00")).toBeInTheDocument();
     expect(screen.getByText("$80.00")).toBeInTheDocument();
   });
+
+  it("uses the wrapper as a region and leaves table semantics to the table", () => {
+    render(<StatementTable sections={sections} total={{ label: "Net income", value: 8000 }} currency="USD" />);
+    expect(screen.getByRole("region", { name: "Financial statement" })).toBeInTheDocument();
+    expect(screen.getByRole("table")).toBeInTheDocument();
+  });
 });

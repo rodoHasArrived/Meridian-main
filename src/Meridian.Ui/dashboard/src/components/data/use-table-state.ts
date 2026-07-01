@@ -37,6 +37,33 @@ function readValue(row: Record<string, unknown>, column: string): unknown {
   return row[column];
 }
 
+function readPersistedState(localStorageKey: string | null): {
+  query: string;
+  sortBy: TableSort | null;
+  filters: TableFilters;
+} {
+  if (!localStorageKey || typeof localStorage === "undefined") {
+    return { query: "", sortBy: null, filters: {} };
+  }
+
+  try {
+    const saved = localStorage.getItem(localStorageKey);
+    if (!saved) return { query: "", sortBy: null, filters: {} };
+    const parsed = JSON.parse(saved) as {
+      query?: string;
+      sortBy?: TableSort | null;
+      filters?: TableFilters;
+    };
+    return {
+      query: parsed.query ?? "",
+      sortBy: parsed.sortBy ?? null,
+      filters: parsed.filters ?? {},
+    };
+  } catch {
+    return { query: "", sortBy: null, filters: {} };
+  }
+}
+
 /**
  * Manage query / sort / filter state for a data table.
  *
@@ -47,29 +74,15 @@ export function useTableState<Row extends Record<string, unknown> = Record<strin
   initialData: Row[] = [],
   localStorageKey: string | null = null,
 ): TableState<Row> {
+  const persistedState = () => readPersistedState(localStorageKey);
   const [data, setData] = useState<Row[]>(initialData);
-  const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState<TableSort | null>(null);
-  const [filters, setFilters] = useState<TableFilters>({});
+  const [query, setQuery] = useState(() => persistedState().query);
+  const [sortBy, setSortBy] = useState<TableSort | null>(() => persistedState().sortBy);
+  const [filters, setFilters] = useState<TableFilters>(() => persistedState().filters);
 
-  // Restore persisted state on mount / key change.
   useEffect(() => {
-    if (!localStorageKey || typeof localStorage === "undefined") return;
-    const saved = localStorage.getItem(localStorageKey);
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved) as {
-        query?: string;
-        sortBy?: TableSort | null;
-        filters?: TableFilters;
-      };
-      setQuery(parsed.query ?? "");
-      setSortBy(parsed.sortBy ?? null);
-      setFilters(parsed.filters ?? {});
-    } catch {
-      // Ignore malformed persisted state.
-    }
-  }, [localStorageKey]);
+    setData(initialData);
+  }, [initialData]);
 
   // Persist state when it changes.
   useEffect(() => {
@@ -102,6 +115,8 @@ export function useTableState<Row extends Record<string, unknown> = Record<strin
       const aVal = readValue(a, column);
       const bVal = readValue(b, column);
       if (aVal === bVal) return 0;
+      if (aVal == null) return direction === "asc" ? 1 : -1;
+      if (bVal == null) return direction === "asc" ? -1 : 1;
       const cmp = (aVal as never) < (bVal as never) ? -1 : 1;
       return direction === "asc" ? cmp : -cmp;
     });
@@ -143,7 +158,8 @@ export function useTableState<Row extends Record<string, unknown> = Record<strin
             const value = readValue(row, h);
             if (value === null || value === undefined) return "";
             const str = String(value);
-            return str.includes(",") ? `"${str.replace(/"/g, '""')}"` : str;
+            const escaped = str.replace(/"/g, '""');
+            return /[",\r\n]/.test(str) ? `"${escaped}"` : escaped;
           })
           .join(","),
       ),
@@ -154,7 +170,7 @@ export function useTableState<Row extends Record<string, unknown> = Record<strin
     anchor.href = url;
     anchor.download = filename;
     anchor.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
   return {

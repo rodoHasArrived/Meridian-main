@@ -80,8 +80,8 @@ export function EquityCurve({
 
   const x = (i: number) => plotL + i * ((plotR - plotL) / denom);
   const y = (v: number) => eqT + (max - v) * ((eqB - eqT) / (max - min || 1));
-  const line = (pts: number[]) => pts.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  const area = (pts: number[]) => `${line(pts)} L${x(n - 1).toFixed(1)},${eqB} L${x(0).toFixed(1)},${eqB} Z`;
+  const line = (pts: number[]) => pts.length === 0 ? "" : pts.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const area = (pts: number[]) => pts.length === 0 ? "" : `${line(pts)} L${x(n - 1).toFixed(1)},${eqB} L${x(0).toFixed(1)},${eqB} Z`;
 
   const vTicks = niceTicks(min, max, valueTicks);
   const tStep = Math.max(1, Math.round((n || 1) / timeTicks));
@@ -90,8 +90,10 @@ export function EquityCurve({
 
   // drawdown subpane scale (drawdown values are <= 0)
   const ddMin = drawdown ? Math.min(...drawdown, 0) : 0;
-  const yD = (v: number) => ddT + (0 - v) * ((ddB - ddT) / (ddMin || -1));
-  const ddArea = drawdown
+  const ddSpan = Math.abs(ddMin) || 1;
+  const yD = (v: number) => ddT + Math.abs(v) * ((ddB - ddT) / ddSpan);
+  const hasDrawdown = !!(drawdown && drawdown.length > 0);
+  const ddArea = hasDrawdown
     ? `M${x(0).toFixed(1)},${yD(0).toFixed(1)} ${drawdown
         .map((v, i) => `L${x(i).toFixed(1)},${yD(v).toFixed(1)}`)
         .join(" ")} L${x(n - 1).toFixed(1)},${yD(0).toFixed(1)} Z`
@@ -164,7 +166,7 @@ export function EquityCurve({
         ))}
 
         {/* drawdown subpane */}
-        {drawdown && (
+        {hasDrawdown && (
           <g>
             <path d={ddArea} fill={DRAWDOWN} opacity="0.20" />
             <path

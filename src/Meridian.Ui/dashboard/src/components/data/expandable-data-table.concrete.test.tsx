@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ExpandableDataTable } from "./expandable-data-table";
 
 interface Txn extends Record<string, unknown> {
@@ -36,9 +36,28 @@ describe("ExpandableDataTable (Concrete)", () => {
     );
     expect(screen.queryByTestId("detail")).toBeNull();
 
-    // First cell in the first row is the expand chevron.
-    const chevrons = document.querySelectorAll(".edt--expand");
-    await userEvent.click(chevrons[1] as Element); // [0] is the header cell
+    await userEvent.click(screen.getByRole("button", { name: "Expand row 1" }));
     expect(screen.getByTestId("detail")).toHaveTextContent("Account 4000");
+  });
+
+  it("toggles a detail panel from the keyboard", async () => {
+    render(
+      <ExpandableDataTable
+        columns={columns}
+        rows={rows}
+        expandable={(row) => <div data-testid="detail">Account {row.account}</div>}
+      />,
+    );
+    screen.getByRole("button", { name: "Expand row 1" }).focus();
+    await userEvent.keyboard("{Enter}");
+    expect(screen.getByTestId("detail")).toHaveTextContent("Account 4000");
+  });
+
+  it("activates clickable rows from the keyboard", async () => {
+    const onRowClick = vi.fn();
+    render(<ExpandableDataTable columns={columns} rows={rows} onRowClick={onRowClick} />);
+    screen.getByText("2026-06-02").closest("tr")?.focus();
+    await userEvent.keyboard(" ");
+    expect(onRowClick).toHaveBeenCalledWith(rows[1], 1);
   });
 });

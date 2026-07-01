@@ -50,4 +50,37 @@ describe("ReconciliationPanel", () => {
     const summary = screen.getByText("Statement balance").closest(".rec__sumcell") as HTMLElement;
     expect(within(summary).getByText("$950.00")).toBeInTheDocument();
   });
+
+  it("renders custom amount columns from their configured field", () => {
+    render(
+      <ReconciliationPanel
+        left={{ title: "Statement", items: [{ id: "s1", amount: 100, fee: 7, matched: false }] }}
+        right={{ title: "Ledger", items: [] }}
+        columns={[{ key: "fee", label: "Fee", num: true, amount: true }]}
+        currency="USD"
+      />,
+    );
+    expect(screen.getByText("$7.00")).toBeInTheDocument();
+    expect(screen.queryByText("$100.00")).toBeNull();
+  });
+
+  it("sorts columns from the keyboard", () => {
+    render(
+      <ReconciliationPanel
+        left={{
+          title: "Statement",
+          items: [
+            { id: "s1", ref: "B", amount: 2 },
+            { id: "s2", ref: "A", amount: 1 },
+          ],
+        }}
+        right={{ title: "Ledger", items: [] }}
+        currency="USD"
+      />,
+    );
+    const refHeader = screen.getAllByRole("columnheader", { name: "Reference" })[0];
+    refHeader.focus();
+    fireEvent.keyDown(refHeader, { key: "Enter" });
+    expect(refHeader).toHaveAttribute("aria-sort", "ascending");
+  });
 });
