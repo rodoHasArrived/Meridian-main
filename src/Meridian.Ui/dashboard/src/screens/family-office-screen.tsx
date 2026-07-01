@@ -138,7 +138,7 @@ export function FamilyOfficeScreen() {
             ) : null}
           </div>
           <div className="lg:justify-end">
-            <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value }))} />
+            <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value, state: "muted" }))} />
           </div>
         </div>
       </header>
