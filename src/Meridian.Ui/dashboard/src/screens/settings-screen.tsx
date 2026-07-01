@@ -546,6 +546,9 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   if (normalizedHash === "robinhood-provider-setup") {
     return "providers";
   }
+  if (normalizedHash === "alpaca-provider-setup") {
+    return "providers";
+  }
   if (normalizedHash === "scoped-access-control") {
     return "overview";
   }

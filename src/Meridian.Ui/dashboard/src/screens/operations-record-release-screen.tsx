@@ -1,9 +1,10 @@
 import { ArrowRight, DatabaseZap, FileCheck2, Landmark, Network } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
+import { MetricCard } from "@/components/data/concrete";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useOperationsContinuityScreenViewModel } from "@/screens/operations-continuity-screen.view-model";
 import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
@@ -26,6 +27,31 @@ const tonePanel: Record<OperationsRecordReleaseTone, string> = {
   review: "border-warning/35 bg-warning/10",
   blocked: "border-danger/35 bg-danger/10",
   neutral: "border-border/70 bg-secondary/25"
+};
+
+// Concrete severity layer: collapse the release tone onto the operator-readiness status
+// strings that the operations components normalize (Ready · Review · Action · Blocked · Info).
+const toneStatus: Record<OperationsRecordReleaseTone, string> = {
+  ready: "Ready",
+  review: "ReviewRequired",
+  blocked: "Blocked",
+  neutral: "Info"
+};
+
+const toneMetric: Record<OperationsRecordReleaseTone, "success" | "warning" | "danger" | "neutral"> = {
+  ready: "success",
+  review: "warning",
+  blocked: "danger",
+  neutral: "neutral"
+};
+
+// Reporting read-model badge variants → readiness status strings for SeverityBadge.
+const badgeVariantStatus: Record<"default" | "outline" | "success" | "warning" | "danger", string> = {
+  success: "Ready",
+  warning: "ReviewRequired",
+  danger: "Blocked",
+  outline: "Info",
+  default: "Info"
 };
 
 export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRecordReleaseScreenProps) {
@@ -58,7 +84,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
             <p className="mt-2 max-w-4xl text-xs leading-5 text-muted-foreground">{vm.rootAreaSummary}</p>
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
-            <Badge variant={vm.badgeVariant} dot>{vm.statusLabel}</Badge>
+            <SeverityBadge status={toneStatus[vm.tone]} label={vm.statusLabel} />
             <span className="font-mono text-[11px] text-muted-foreground">{vm.routePathLabel}</span>
           </div>
         </div>
@@ -90,6 +116,15 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
             </Link>
           </Button>
         </div>
+        <GateRail
+          className="px-1 py-2"
+          gates={vm.steps.map((step) => ({
+            key: step.id,
+            label: step.label,
+            status: toneStatus[step.tone],
+            statusLabel: step.statusLabel
+          }))}
+        />
         <ol className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           {vm.steps.map((step) => (
             <li key={step.id}>
@@ -104,7 +139,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
                 <span className="min-w-0">
                   <span className="flex items-center justify-between gap-2">
                     <span className="font-semibold text-foreground">{step.label}</span>
-                    <Badge variant={step.badgeVariant}>{step.statusLabel}</Badge>
+                    <SeverityBadge status={toneStatus[step.tone]} label={step.statusLabel} />
                   </span>
                   <span className="mt-2 block text-xs leading-5 text-muted-foreground">{step.detail}</span>
                 </span>
@@ -142,9 +177,10 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-semibold text-foreground">{distribution.label}</span>
-                      <Badge variant={distribution.pendingItemsLabel === "0 pending" ? "outline" : "warning"}>
-                        {distribution.pendingItemsLabel}
-                      </Badge>
+                      <SeverityBadge
+                        status={distribution.pendingItemsLabel === "0 pending" ? "Ready" : "ReviewRequired"}
+                        label={distribution.pendingItemsLabel}
+                      />
                     </div>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
                       {distribution.channel} - {distribution.ownerLabel} - {distribution.pendingSummary}
@@ -171,7 +207,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
                 <div key={`${template.id}-${template.version}`} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-semibold text-foreground">{template.name}</span>
-                    <Badge variant={template.statusVariant}>{template.statusLabel}</Badge>
+                    <SeverityBadge status={badgeVariantStatus[template.statusVariant]} label={template.statusLabel} />
                   </div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     {template.family} - {template.version} - {template.sectionSummary}
@@ -195,7 +231,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
                 <div key={run.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="break-all font-mono text-xs font-semibold text-foreground">{run.id}</span>
-                    <Badge variant={run.status === "Failed" ? "warning" : "outline"}>{run.status}</Badge>
+                    <SeverityBadge status={run.status} label={run.status} />
                   </div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     {run.family} - {run.lineageSummary} - {run.auditSummary}
@@ -216,15 +252,13 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
 
 function ReleaseMetric({ metric }: { metric: OperationsRecordReleaseMetric }) {
   return (
-    <div className={cn("rounded-md border px-3 py-3", tonePanel[metric.tone])}>
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-xs text-muted-foreground">{metric.label}</span>
-        <Badge variant={metric.tone === "ready" ? "success" : metric.tone === "blocked" ? "danger" : metric.tone === "review" ? "warning" : "outline"}>
-          {metric.value}
-        </Badge>
-      </div>
-      <p className="mt-3 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
-    </div>
+    <MetricCard
+      label={metric.label}
+      value={metric.value}
+      delta={metric.detail}
+      tone={toneMetric[metric.tone]}
+      trend="flat"
+    />
   );
 }
 
@@ -238,39 +272,37 @@ function ReleasePanel({
   const Icon = icon === "source" ? DatabaseZap : icon === "accounting" ? Landmark : Network;
 
   return (
-    <Card className={cn("border", tonePanel[panel.tone])}>
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2">
-              <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-              {panel.title}
-            </CardTitle>
-            <CardDescription className="mt-2">{panel.description}</CardDescription>
-          </div>
-          <Badge variant={panel.badgeVariant}>{panel.statusLabel}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <ReadinessPanel
+      state={toneStatus[panel.tone]}
+      statusLabel={panel.statusLabel}
+      title={
+        <span className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+          {panel.title}
+        </span>
+      }
+      detail={panel.description}
+      actions={
         <Button asChild variant="outline" size="sm">
           <Link to={panel.primaryHref} aria-label={panel.primaryAriaLabel}>
             {panel.primaryLabel}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>
-        {panel.rows.length > 0 ? (
-          <div role="list" aria-label={`${panel.title} release evidence`} className="grid gap-2">
-            {panel.rows.map((row) => (
-              <ReleaseEvidenceRow key={row.id} row={row} />
-            ))}
-          </div>
-        ) : (
-          <p role="status" className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning">
-            {panel.emptyText}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+      }
+    >
+      {panel.rows.length > 0 ? (
+        <div role="list" aria-label={`${panel.title} release evidence`} className="grid gap-2">
+          {panel.rows.map((row) => (
+            <ReleaseEvidenceRow key={row.id} row={row} />
+          ))}
+        </div>
+      ) : (
+        <p role="status" className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning">
+          {panel.emptyText}
+        </p>
+      )}
+    </ReadinessPanel>
   );
 }
 
@@ -282,7 +314,7 @@ function ReleaseEvidenceRow({ row }: { row: OperationsRecordReleaseEvidenceRow }
           <span className="block font-semibold text-foreground">{row.label}</span>
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
         </span>
-        <Badge variant={row.badgeVariant}>{row.value}</Badge>
+        <SeverityBadge status={toneStatus[row.tone]} label={row.value} />
       </span>
       <span className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] text-primary">
         {row.routeLabel}
