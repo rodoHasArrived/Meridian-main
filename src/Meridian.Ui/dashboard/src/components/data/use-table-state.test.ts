@@ -105,7 +105,7 @@ describe("useTableState", () => {
 
   it("escapes quotes and newlines in CSV exports", async () => {
     vi.useFakeTimers();
-    const createObjectURL = vi.fn((_obj: Blob | MediaSource) => "blob:csv");
+    const createObjectURL = vi.fn((_blob: Blob) => "blob:csv");
     const revokeObjectURL = vi.fn();
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
     Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: revokeObjectURL });
