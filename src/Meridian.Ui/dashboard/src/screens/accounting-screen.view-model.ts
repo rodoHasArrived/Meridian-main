@@ -12786,7 +12786,7 @@ export function buildOperationalExceptionWorkbenchState({
     ],
     cases: cases.map((row) => ({
       id: row.breakId,
-      title: `${row.financeLabel}`,
+      title: row.financeLabel,
       subtitle: `${row.strategyName} - ${row.reason}`,
       statusLabel: row.status,
       statusTone: row.statusBadgeVariant,
