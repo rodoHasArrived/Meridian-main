@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -15,10 +16,21 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
     private readonly FundAccountStoreOptions _options;
 
-    public PostgresFundAccountStore(FundAccountStoreOptions options)
+    // SEC-005 slice 4c: ambient caller-tenant resolver. Optional so existing construction (tests,
+    // non-web hosts) keeps compiling and stays fail-open; the workstation host injects an
+    // IHttpContextAccessor-backed implementation. Null (no tenant in scope) => reads are not scoped and
+    // writes stamp no tenant. Trust-on-first-use: fund accounts have no in-DB registry linkage in this
+    // separate database, so the owning tenant is the operator who creates the account.
+    private readonly IFundScopeTenantAccessor? _tenantAccessor;
+
+    public PostgresFundAccountStore(FundAccountStoreOptions options, IFundScopeTenantAccessor? tenantAccessor = null)
     {
         _options = options;
+        _tenantAccessor = tenantAccessor;
     }
+
+    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
+    private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 
@@ -40,12 +52,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 (account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
                  account_code, display_name, base_currency, institution, is_active,
                  effective_from, effective_to, portfolio_id, ledger_reference,
-                 strategy_id, run_id, operational_status, custodian_details, bank_details, updated_at)
+                 strategy_id, run_id, operational_status, custodian_details, bank_details, tenant_id, updated_at)
             VALUES
                 (@account_id, @account_type, @entity_id, @fund_id, @sleeve_id, @vehicle_id,
                  @account_code, @display_name, @base_currency, @institution, @is_active,
                  @effective_from, @effective_to, @portfolio_id, @ledger_reference,
-                 @strategy_id, @run_id, @operational_status, @custodian_details::jsonb, @bank_details::jsonb, now())
+                 @strategy_id, @run_id, @operational_status, @custodian_details::jsonb, @bank_details::jsonb, @tenant_id, now())
             ON CONFLICT (account_id) DO UPDATE SET
                 account_type        = EXCLUDED.account_type,
                 entity_id           = EXCLUDED.entity_id,
@@ -66,6 +78,10 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 operational_status  = EXCLUDED.operational_status,
                 custodian_details   = EXCLUDED.custodian_details,
                 bank_details        = EXCLUDED.bank_details,
+                -- SEC-005 slice 4c: first-owner-wins — keep an already-stamped tenant, fill a null from the
+                -- writing caller's tenant, so an account first written without a tenant in scope is stamped
+                -- on a later write by a tenant-scoped operator.
+                tenant_id           = coalesce(account_definition.tenant_id, EXCLUDED.tenant_id),
                 updated_at          = now()
             """;
         cmd.Parameters.AddWithValue("account_id", account.AccountId);
@@ -90,6 +106,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             account.CustodianDetails is not null ? JsonSerializer.Serialize(account.CustodianDetails, JsonOpts) : DBNull.Value);
         cmd.Parameters.AddWithValue("bank_details",
             account.BankDetails is not null ? JsonSerializer.Serialize(account.BankDetails, JsonOpts) : DBNull.Value);
+        // SEC-005 slice 4c: trust-on-first-use tenant stamp from the writing operator (null => fail-open).
+        var callerTenantStamp = ResolveCallerTenant();
+        cmd.Parameters.AddWithValue(
+            "tenant_id",
+            string.IsNullOrWhiteSpace(callerTenantStamp) ? DBNull.Value : callerTenantStamp.Trim());
 
         await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
@@ -107,6 +128,16 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             WHERE account_id = @account_id
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
+        // SEC-005 slice 4c: scope by the account's stamped tenant_id so a foreign account GUID resolves to
+        // not-found. Fail-open for a tenantless caller or an unstamped (legacy) account.
+        var callerTenant = ResolveCallerTenant();
+        if (TenantReadPredicate.ShouldFilter(callerTenant))
+        {
+            cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            cmd.Parameters.AddWithValue(
+                TenantReadPredicate.ParameterName,
+                TenantReadPredicate.NormalizeParameter(callerTenant!));
+        }
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
             return null;
@@ -176,6 +207,17 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         {
             sb.AppendLine("  AND run_id = @run_id");
             cmd.Parameters.AddWithValue("run_id", query.RunId);
+        }
+
+        // SEC-005 slice 4c: scope by the account's stamped tenant_id (closes the fund_account_id
+        // alternate-identifier residual). Fail-open for a tenantless caller or unstamped legacy rows.
+        var callerTenant = ResolveCallerTenant();
+        if (TenantReadPredicate.ShouldFilter(callerTenant))
+        {
+            sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id"));
+            cmd.Parameters.AddWithValue(
+                TenantReadPredicate.ParameterName,
+                TenantReadPredicate.NormalizeParameter(callerTenant!));
         }
 
         cmd.CommandText = sb.ToString();

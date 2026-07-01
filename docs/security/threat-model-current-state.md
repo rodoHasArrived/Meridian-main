@@ -43,6 +43,15 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
   - Sessions are in-memory and reset on process restart.
   - Some endpoint groups still lack explicit permission checks (for example configuration and direct-lending routes), so authenticated overreach remains plausible where gates are absent.
 
+### Tenant isolation (fund-scoped data) — SEC-005
+- **Storage-enforced (was deployment-boundary-enforced).** Fund-scoped data is now partitioned by a stamped `tenant_id` at the storage layer, not solely by the single-company-per-deployment boundary:
+  - Ledger stores (`ledger_books`, `accounting_periods`, journal entries) carry `tenant_id` (registry-backfilled + write-stamped) and filter reads by it, including the alternate-identifier paths (`ledgerBookId`/`periodId`/`fundStructureNodeId`).
+  - The operations-continuity workflow store carries `tenant_id` (resolved through its ledger book to the authoritative `fund_profile_tenancy` registry, caller-tenant fallback for book-less workflows) and filters `ListAsync`/`GetAsync`.
+  - The fund-account store (`account_definition`, a separate database with no in-DB registry linkage) carries `tenant_id` stamped trust-on-first-use from the writing operator and filters `GetAccount`/`QueryAccounts`.
+  - Reads are **fail-open**: a null (unbound/legacy) `tenant_id` or a tenantless caller passes, so single-company-per-deployment behavior is unchanged. `TenantReadPredicate` (`Meridian.Contracts.Tenancy`) centralizes the decision and is unit-tested.
+- **Write side (4c-iii):** fund-scoped write/evaluate routes across `LedgerEndpoints`, `AccountingSystemEndpoints`, and `DirectLendingEndpoints` carry `RequireFundScopedWriteTenant()`. Enforcement is **off by default** (detection-first: a tenantless write is logged, not blocked) and is enabled per shared-multi-tenant deployment via `MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true`; the Security Master governed-write group is already unconditionally tenant-scoped.
+- **Residual (deployment-gated):** enabling enforcement requires that every authenticated session carries a tenant (the legacy tenantless `MDC_USERNAME` admin must be given a `CompanyId` before enabling, or it will be refused fund-scoped writes). Fund-account sub-tables (balances, statements, reconciliation, sync, margin) and the fund-structure store are reached by `account_id`/node id and are not yet tenant-partitioned — further defense-in-depth, tracked in `docs/security/security-remediation-backlog.md` (SEC-005 slice 4c). Single-company deployments remain safe with enforcement off.
+
 ### Rate limiting and request abuse
 - Mutation routes commonly attach `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`.
 - `AddRateLimiter` is wired in shared services, but `UseRateLimiter()` is not visible in `UiServer`; validate effective enforcement in deployed hosts.
