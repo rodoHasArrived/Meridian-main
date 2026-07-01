@@ -16,6 +16,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   financialRecordExplorerRecord: UI_API_ROUTES.WorkstationFinancialRecordExplorerRecord,
   financialRecordExplorerSavedViews: UI_API_ROUTES.WorkstationFinancialRecordExplorerSavedViews,
   data: UI_API_ROUTES.WorkstationData,
+  dataQuery: UI_API_ROUTES.WorkstationDataQuery,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
   accounting: UI_API_ROUTES.WorkstationAccounting,

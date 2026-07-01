@@ -21,7 +21,7 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath));
-        services.TryAddSingleton<IBrokerStatementService>(sp => new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        AddBrokerStatementServices(services);
         return services;
     }
 
@@ -38,8 +38,19 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
         services.TryAddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(dataRoot));
         services.TryAddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(dataRoot));
-        services.TryAddSingleton<IBrokerStatementService>(sp => new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        AddBrokerStatementServices(services);
         return services;
+    }
+
+    private static void AddBrokerStatementServices(IServiceCollection services)
+    {
+        services.TryAddSingleton<CsvBrokerStatementService>(sp =>
+            new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        services.TryAddSingleton<IbFlexBrokerStatementService>(sp =>
+            new IbFlexBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        services.TryAddSingleton<IBrokerStatementService>(sp => new RoutingBrokerStatementService(
+            sp.GetRequiredService<CsvBrokerStatementService>(),
+            sp.GetRequiredService<IbFlexBrokerStatementService>()));
     }
 
     private static void AddSharedServices(IServiceCollection services)
