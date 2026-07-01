@@ -539,14 +539,14 @@ function ProofDrawer({
 }) {
   if (!record) {
     return (
-      <aside className="rounded-md border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
+      <div role="status" className="rounded-md border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
         {blockedReason || "Select a source-backed row to inspect fields, proof actions, Used In, and Impacts."}
-      </aside>
+      </div>
     );
   }
 
   return (
-    <aside className="space-y-3 rounded-md border border-border/70 bg-background/60 p-4" aria-label={`${record.title} proof detail`}>
+    <div role="region" className="space-y-3 rounded-md border border-border/70 bg-background/60 p-4" aria-label={`${record.title} proof detail`}>
       <div>
         <Badge variant={toneToBadge(record.tone)}>{record.recordType}</Badge>
         <h3 className="mt-3 text-base font-semibold text-foreground">{record.title}</h3>
@@ -566,7 +566,7 @@ function ProofDrawer({
           </a>
         </Button>
       ) : null}
-    </aside>
+    </div>
   );
 }
 
@@ -604,16 +604,18 @@ function FactList({ title, items }: { title: string; items: FinancialRecordExplo
   }
 
   return (
-    <dl className="grid gap-2">
-      <dt className="text-xs font-semibold uppercase text-muted-foreground">{title}</dt>
+    <section className="grid gap-2" aria-label={title}>
+      <h4 className="text-xs font-semibold uppercase text-muted-foreground">{title}</h4>
       {items.map((item) => (
-        <div key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
+        <dl key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
           <dt className="text-[11px] text-muted-foreground">{item.label}</dt>
-          <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>{item.value}</dd>
-          {item.detail ? <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p> : null}
-        </div>
+          <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>
+            {item.value}
+            {item.detail ? <span className="mt-1 block font-sans text-xs text-muted-foreground">{item.detail}</span> : null}
+          </dd>
+        </dl>
       ))}
-    </dl>
+    </section>
   );
 }
 

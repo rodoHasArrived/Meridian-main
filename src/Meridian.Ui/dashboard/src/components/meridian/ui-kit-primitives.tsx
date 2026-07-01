@@ -93,6 +93,7 @@ export function DenseDataTable<T>({
 }) {
   const generatedKeyboardInstructionsId = useId();
   const selectableRows = onRowSelect !== undefined && rows.length > 0;
+  const exposesExpandedRows = getRowAriaExpanded !== undefined;
   const keyboardInstructionsId = `${tableId ?? generatedKeyboardInstructionsId}-keyboard-instructions`;
   const focusableRowId = resolveFocusableDenseRowId(rows, getRowId, selectedRowId);
   const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
@@ -111,6 +112,7 @@ export function DenseDataTable<T>({
       ) : null}
       <table
         id={tableId}
+        role={exposesExpandedRows ? "treegrid" : undefined}
         className="dense-data-table"
         aria-label={ariaLabel}
         aria-describedby={selectableRows ? keyboardInstructionsId : undefined}

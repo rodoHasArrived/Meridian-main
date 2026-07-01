@@ -29,7 +29,7 @@ describe("FamilyOfficeScreen", () => {
 
     await user.click(screen.getByRole("button", { name: "Show ownership table fallback" }));
 
-    const table = screen.getByRole("table", { name: "Family office ownership table fallback" });
+    const table = screen.getByRole("treegrid", { name: "Family office ownership table fallback" });
     expect(table).toBeInTheDocument();
     await user.click(within(table).getByRole("row", { name: "Inspect ownership node Beta Holdings LLC" }));
     expect(screen.getByRole("region", { name: "Selected ownership detail" })).toHaveTextContent("Beta Holdings LLC");
