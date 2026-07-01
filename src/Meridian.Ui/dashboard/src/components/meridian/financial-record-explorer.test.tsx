@@ -312,7 +312,7 @@ describe("FinancialRecordExplorerShell", () => {
       recordGraph: { nodes: [], edges: [] }
     });
 
-    expect(screen.getByRole("status")).toHaveTextContent("Strategy run read service is not registered.");
+    expect(screen.getAllByRole("status").some((status) => status.textContent === "Strategy run read service is not registered.")).toBe(true);
     expect(screen.getByRole("button", { name: "Source unavailable" })).toBeDisabled();
   });
 

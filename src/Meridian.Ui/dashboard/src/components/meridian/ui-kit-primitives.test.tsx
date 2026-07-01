@@ -51,7 +51,7 @@ describe("DenseDataTable", () => {
     expect(selectedRow).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("tabindex", "-1");
-    expect(screen.getByRole("table", { name: "Test table" })).toHaveAccessibleDescription(
+    expect(screen.getByRole("treegrid", { name: "Test table" })).toHaveAccessibleDescription(
       DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS
     );
 

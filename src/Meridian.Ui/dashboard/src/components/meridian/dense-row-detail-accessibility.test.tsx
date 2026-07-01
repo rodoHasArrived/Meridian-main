@@ -110,7 +110,7 @@ describe("dense row detail accessibility contract", () => {
 
     render(<Harness />);
 
-    const table = screen.getByRole("table", { name: moduleCase.tableLabel });
+    const table = screen.getByRole("treegrid", { name: moduleCase.tableLabel });
     expect(table).toHaveAccessibleDescription(DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS);
 
     const firstRow = screen.getByRole("row", { name: `Select ${moduleCase.moduleName} First row` });

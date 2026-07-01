@@ -1,5 +1,6 @@
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
 import * as plaidLink from "@/lib/plaid-link";
@@ -258,7 +259,8 @@ describe("DataScreen", () => {
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
-    expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Provider management scan band")).toHaveTextContent("Connection Health");
+    expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
     const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     expect(providerRow).toHaveAttribute("aria-selected", "true");
     expect(providerRow).toHaveAttribute("aria-expanded", "true");
@@ -278,7 +280,7 @@ describe("DataScreen", () => {
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
     expect(within(backfillDetail).getByText(/Replay is currently advancing/i)).toBeInTheDocument();
-    const exportTable = screen.getByRole("table", { name: "Recent exports" });
+    const exportTable = screen.getByRole("treegrid", { name: "Recent exports" });
     expect(exportTable).toBeInTheDocument();
     const exportRow = screen.getByRole("row", { name: "Inspect export EX-2201" });
     expect(exportRow).toHaveAttribute("aria-selected", "true");
@@ -292,6 +294,18 @@ describe("DataScreen", () => {
     expect(within(exportDetail).queryByText("research pack")).not.toBeInTheDocument();
     expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
+  });
+
+  it("has no basic accessibility violations on the provider-management route", async () => {
+    const { container } = renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
+
+    expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target),
+      summaries: violation.nodes.map((node) => node.failureSummary)
+    }))).toEqual([]);
   });
 
   it("previews a data upload file through the shared upload endpoint", async () => {
@@ -345,7 +359,7 @@ describe("DataScreen", () => {
 
     expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
     expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
     const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });
     expect(plaidRow).toHaveClass("bg-danger/5");
@@ -780,7 +794,7 @@ describe("DataScreen", () => {
 
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
-    expect(screen.getByRole("table", { name: "Backfill queue" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Backfill queue" })).toBeInTheDocument();
 
     const reviewBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1044" });
     const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });

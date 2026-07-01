@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ArrowRight, ChevronDown, GitBranch, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
@@ -12,9 +13,10 @@ export function WorkflowContinuityDock({
   viewModel: AppShellWorkflowContinuityViewModel;
   onClearOperatingContext?: () => void;
 }) {
-  const visibleSteps = viewModel.steps.filter((step) => step.active || step.next);
-  const dockSteps = visibleSteps.length > 0 ? visibleSteps : viewModel.steps.slice(0, 2);
   const decision = viewModel.decisionBrief;
+  const scopeSummary = viewModel.operatingScope.items.map((item) => `${item.label} ${item.value}`).join(", ");
+  const [operatorFlowOpen, setOperatorFlowOpen] = useState(false);
+  const toggleOperatorFlow = () => setOperatorFlowOpen((isOpen) => !isOpen);
 
   return (
     <section
@@ -33,7 +35,7 @@ export function WorkflowContinuityDock({
             <h2 className="workflow-continuity-title">{viewModel.title}</h2>
           </div>
         </div>
-        <p className="workflow-continuity-summary">{viewModel.summary}</p>
+        <p className="sr-only">{viewModel.summary}</p>
         <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
           <span>{viewModel.contextValue}</span>
           <span>{viewModel.routeLabel}</span>
@@ -49,6 +51,7 @@ export function WorkflowContinuityDock({
             </button>
           ) : null}
         </div>
+        {scopeSummary ? <p className="sr-only">Operating scope: {scopeSummary}.</p> : null}
         {viewModel.operatingScope.items.length > 0 ? (
           <dl className="workflow-continuity-scope" aria-label={viewModel.operatingScope.label}>
             {viewModel.operatingScope.items.map((item) => (
@@ -74,7 +77,7 @@ export function WorkflowContinuityDock({
             <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
           </div>
           <h3 id="workflow-decision-title">{decision.title}</h3>
-          <p>{decision.summary}</p>
+          <p className="workflow-continuity-decision-summary">{decision.summary}</p>
           <div className="workflow-continuity-decision-reason">
             <span>{decision.reasonLabel}</span>
             <span>{decision.reason}</span>
@@ -91,64 +94,87 @@ export function WorkflowContinuityDock({
         </Button>
       </article>
 
-      <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
-        {dockSteps.map((step) => (
-          <Link
-            key={step.id}
-            to={step.href}
-            aria-label={step.ariaLabel}
-            aria-current={step.active ? "step" : undefined}
-            className={cn(
-              "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-              `workflow-continuity-step-${step.statusTone}`,
-              step.active && "workflow-continuity-step-active",
-              step.next && "workflow-continuity-step-next"
-            )}
-          >
-            <span className="workflow-continuity-step-label">{step.label}</span>
-            <span className="workflow-continuity-step-description">{step.description}</span>
-            <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-          </Link>
-        ))}
-      </nav>
-
-      <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
-        <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
-          <span>{viewModel.nextActionLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </Button>
-
       <details
         className="workflow-continuity-operator-flow"
         aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
+        open={operatorFlowOpen}
       >
-        <summary>
-          <span>
-            <span className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</span>
-            <span className="workflow-continuity-summary">{viewModel.primaryOperatorFlowSummary}</span>
+        <summary
+          tabIndex={0}
+          onClick={(event) => {
+            event.preventDefault();
+            toggleOperatorFlow();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+              return;
+            }
+            event.preventDefault();
+            toggleOperatorFlow();
+          }}
+        >
+          <span className="workflow-continuity-flow-summary">
+            <span className="workflow-continuity-flow-label">Flow details</span>
+            <span className="sr-only">
+              {viewModel.primaryOperatorFlowLabel}: {viewModel.primaryOperatorFlowSummary}
+            </span>
           </span>
           <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
         </summary>
-        <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
-          {viewModel.primaryOperatorFlowSteps.map((step) => (
-            <Link
-              key={step.id}
-              to={step.href}
-              aria-label={step.ariaLabel}
-              aria-current={step.active ? "step" : undefined}
-              className={cn(
-                "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                `workflow-continuity-step-${step.statusTone}`,
-                step.active && "workflow-continuity-step-active"
-              )}
-            >
-              <span className="workflow-continuity-step-label">{step.label}</span>
-              <span className="workflow-continuity-step-description">{step.description}</span>
-              <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-            </Link>
-          ))}
-        </nav>
+        {operatorFlowOpen ? (
+          <>
+            <p className="workflow-continuity-expanded-flow">
+              <span>{viewModel.primaryOperatorFlowLabel}</span>
+              <span>{viewModel.primaryOperatorFlowSummary}</span>
+            </p>
+            <div className="workflow-continuity-expanded-decision" aria-label={`${decision.label} detail`}>
+              <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
+              <p>{decision.summary}</p>
+              <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
+                {viewModel.nextActionLabel}
+              </Link>
+            </div>
+            <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
+              {viewModel.steps.map((step) => (
+                <Link
+                  key={step.id}
+                  to={step.href}
+                  aria-label={step.ariaLabel}
+                  aria-current={step.active ? "step" : undefined}
+                  className={cn(
+                    "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    `workflow-continuity-step-${step.statusTone}`,
+                    step.active && "workflow-continuity-step-active",
+                    step.next && "workflow-continuity-step-next"
+                  )}
+                >
+                  <span className="workflow-continuity-step-label">{step.label}</span>
+                  <span className="workflow-continuity-step-description">{step.description}</span>
+                  <span className="workflow-continuity-step-status">{step.statusLabel}</span>
+                </Link>
+              ))}
+            </nav>
+            <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
+              {viewModel.primaryOperatorFlowSteps.map((step) => (
+                <Link
+                  key={step.id}
+                  to={step.href}
+                  aria-label={step.ariaLabel}
+                  aria-current={step.active ? "step" : undefined}
+                  className={cn(
+                    "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    `workflow-continuity-step-${step.statusTone}`,
+                    step.active && "workflow-continuity-step-active"
+                  )}
+                >
+                  <span className="workflow-continuity-step-label">{step.label}</span>
+                  <span className="workflow-continuity-step-description">{step.description}</span>
+                  <span className="workflow-continuity-step-status">{step.statusLabel}</span>
+                </Link>
+              ))}
+            </nav>
+          </>
+        ) : null}
       </details>
     </section>
   );

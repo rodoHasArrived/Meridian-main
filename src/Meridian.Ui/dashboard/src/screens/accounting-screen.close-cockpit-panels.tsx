@@ -605,28 +605,28 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 {view.closeSignOffTaskOptions.length > 0 ? (
                   <div role="list" className="grid gap-2 md:grid-cols-2" aria-label="Close task sign-off selector">
                     {view.closeSignOffTaskOptions.map((task) => (
-                      <button
-                        key={task.taskId}
-                        type="button"
-                        role="listitem"
-                        aria-label={task.selectAriaLabel}
-                        aria-pressed={task.selected}
-                        className={cn(
-                          "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                          task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-background/45"
-                        )}
-                        onClick={() => view.selectCloseSignOffTask(task.taskId)}
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <span className="font-semibold text-foreground">{task.displayName}</span>
-                          <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
-                        </div>
-                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                          <span>{task.taskId}</span>
-                          <span>Owner: {task.ownerLabel}</span>
-                          <span>{task.signOffLabel}</span>
-                        </div>
-                      </button>
+                      <div key={task.taskId} role="listitem">
+                        <button
+                          type="button"
+                          aria-label={task.selectAriaLabel}
+                          aria-pressed={task.selected}
+                          className={cn(
+                            "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-background/45"
+                          )}
+                          onClick={() => view.selectCloseSignOffTask(task.taskId)}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{task.displayName}</span>
+                            <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                          </div>
+                          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                            <span>{task.taskId}</span>
+                            <span>Owner: {task.ownerLabel}</span>
+                            <span>{task.signOffLabel}</span>
+                          </div>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -657,23 +657,23 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   {view.closeSignOffRoleOptions.length > 0 ? (
                     <div role="list" className="grid gap-2 md:grid-cols-2">
                       {view.closeSignOffRoleOptions.map((role) => (
-                        <button
-                          key={role.role}
-                          type="button"
-                          role="listitem"
-                          aria-label={role.selectAriaLabel}
-                          aria-pressed={role.selected}
-                          className={cn(
-                            "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                            role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
-                          )}
-                          onClick={() => view.selectCloseSignOffRole(role.role)}
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-2">
-                            <span className="font-semibold text-foreground">{role.label}</span>
-                            <Badge variant={role.selected ? "success" : "outline"}>{role.sourceLabel}</Badge>
-                          </div>
-                        </button>
+                        <div key={role.role} role="listitem">
+                          <button
+                            type="button"
+                            aria-label={role.selectAriaLabel}
+                            aria-pressed={role.selected}
+                            className={cn(
+                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                            )}
+                            onClick={() => view.selectCloseSignOffRole(role.role)}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <span className="font-semibold text-foreground">{role.label}</span>
+                              <Badge variant={role.selected ? "success" : "outline"}>{role.sourceLabel}</Badge>
+                            </div>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -686,20 +686,20 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   <div className="text-xs font-semibold uppercase text-muted-foreground">Decision</div>
                   <div role="list" className="grid gap-2 sm:grid-cols-2">
                     {view.closeSignOffDecisionOptions.map((decision) => (
-                      <button
-                        key={decision.decision}
-                        type="button"
-                        role="listitem"
-                        aria-label={decision.selectAriaLabel}
-                        aria-pressed={decision.selected}
-                        className={cn(
-                          "rounded-md border px-3 py-2 text-left font-semibold transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                          decision.selected ? "border-primary/50 bg-primary/10 text-foreground" : "border-border/70 bg-secondary/10 text-muted-foreground"
-                        )}
-                        onClick={() => view.selectCloseSignOffDecision(decision.decision)}
-                      >
-                        {decision.label}
-                      </button>
+                      <div key={decision.decision} role="listitem">
+                        <button
+                          type="button"
+                          aria-label={decision.selectAriaLabel}
+                          aria-pressed={decision.selected}
+                          className={cn(
+                            "w-full rounded-md border px-3 py-2 text-left font-semibold transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            decision.selected ? "border-primary/50 bg-primary/10 text-foreground" : "border-border/70 bg-secondary/10 text-muted-foreground"
+                          )}
+                          onClick={() => view.selectCloseSignOffDecision(decision.decision)}
+                        >
+                          {decision.label}
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -767,28 +767,28 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                 {view.closeSetupTaskOptions.length > 0 ? (
                   <div role="list" className="grid gap-2 md:grid-cols-2" aria-label="Close setup task catalog">
                     {view.closeSetupTaskOptions.map((task) => (
-                      <button
-                        key={task.taskId}
-                        type="button"
-                        role="listitem"
-                        aria-label={task.selectAriaLabel}
-                        aria-pressed={task.selected}
-                        className={cn(
-                          "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                          task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
-                        )}
-                        onClick={() => view.selectCloseSetupTask(task.taskId)}
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <span className="font-semibold text-foreground">{task.displayName}</span>
-                          <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
-                        </div>
-                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                          <span>{task.taskId}</span>
-                          <span>Owner: {task.ownerLabel}; Due: {task.dueDateLabel}</span>
-                          <span>{task.dependencyLabel}; {task.signOffLabel}</span>
-                        </div>
-                      </button>
+                      <div key={task.taskId} role="listitem">
+                        <button
+                          type="button"
+                          aria-label={task.selectAriaLabel}
+                          aria-pressed={task.selected}
+                          className={cn(
+                            "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                          )}
+                          onClick={() => view.selectCloseSetupTask(task.taskId)}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{task.displayName}</span>
+                            <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                          </div>
+                          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                            <span>{task.taskId}</span>
+                            <span>Owner: {task.ownerLabel}; Due: {task.dueDateLabel}</span>
+                            <span>{task.dependencyLabel}; {task.signOffLabel}</span>
+                          </div>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -848,23 +848,23 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   {view.closeSetupSignOffRoleOptions.length > 0 ? (
                     <div role="list" className="grid gap-2 md:grid-cols-2">
                       {view.closeSetupSignOffRoleOptions.map((role) => (
-                        <button
-                          key={role.role}
-                          type="button"
-                          role="listitem"
-                          aria-label={role.selectAriaLabel}
-                          aria-pressed={role.selected}
-                          className={cn(
-                            "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                            role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
-                          )}
-                          onClick={() => view.selectCloseSetupSignOffRole(role.role)}
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-2">
-                            <span className="font-semibold text-foreground">{role.label}</span>
-                            <Badge variant={role.selected ? "success" : "outline"}>{role.sourceLabel}</Badge>
-                          </div>
-                        </button>
+                        <div key={role.role} role="listitem">
+                          <button
+                            type="button"
+                            aria-label={role.selectAriaLabel}
+                            aria-pressed={role.selected}
+                            className={cn(
+                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                            )}
+                            onClick={() => view.selectCloseSetupSignOffRole(role.role)}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <span className="font-semibold text-foreground">{role.label}</span>
+                              <Badge variant={role.selected ? "success" : "outline"}>{role.sourceLabel}</Badge>
+                            </div>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -893,27 +893,27 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                   {view.closeSetupDependencyOptions.length > 0 ? (
                     <div role="list" className="grid gap-2 md:grid-cols-2">
                       {view.closeSetupDependencyOptions.map((dependency) => (
-                        <button
-                          key={dependency.taskId}
-                          type="button"
-                          role="listitem"
-                          aria-label={dependency.toggleAriaLabel}
-                          aria-pressed={dependency.checked}
-                          className={cn(
-                            "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                            dependency.checked ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
-                          )}
-                          onClick={() => view.toggleCloseSetupDependency(dependency.taskId)}
-                        >
-                          <div className="flex flex-wrap items-start justify-between gap-2">
-                            <span className="font-semibold text-foreground">{dependency.displayName}</span>
-                            <Badge variant={accountingToolingBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
-                          </div>
-                          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                            <span>{dependency.taskId}</span>
-                            <span>Owner: {dependency.ownerLabel}; Due: {dependency.dueDateLabel}</span>
-                          </div>
-                        </button>
+                        <div key={dependency.taskId} role="listitem">
+                          <button
+                            type="button"
+                            aria-label={dependency.toggleAriaLabel}
+                            aria-pressed={dependency.checked}
+                            className={cn(
+                              "w-full rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                              dependency.checked ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                            )}
+                            onClick={() => view.toggleCloseSetupDependency(dependency.taskId)}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <span className="font-semibold text-foreground">{dependency.displayName}</span>
+                              <Badge variant={accountingToolingBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
+                            </div>
+                            <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                              <span>{dependency.taskId}</span>
+                              <span>Owner: {dependency.ownerLabel}; Due: {dependency.dueDateLabel}</span>
+                            </div>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   ) : (
