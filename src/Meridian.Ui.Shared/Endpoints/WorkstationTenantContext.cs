@@ -3,6 +3,8 @@ using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -101,6 +103,7 @@ public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccesso
 
     public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor)
     {
+        ArgumentNullException.ThrowIfNull(httpContextAccessor);
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -141,5 +144,68 @@ public static class WorkstationTenantScopeEndpointFilters
         return ValueTask.FromResult<object?>(Results.Problem(
             MissingTenantScopeMessage,
             statusCode: StatusCodes.Status403Forbidden));
+    }
+}
+
+/// <summary>
+/// SEC-005 slice 4c-iii runtime switch for the fund-scoped write tenant gate. Off by default: a
+/// tenantless authenticated session (the legacy <c>MDC_USERNAME</c> admin) can still create/evaluate
+/// fund-scoped accounting artifacts, but the write is logged for detection. A shared multi-tenant
+/// deployment sets <c>MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true</c> to fail closed instead.
+/// </summary>
+public sealed record FundScopedWriteTenantOptions(bool Enforce)
+{
+    public static readonly FundScopedWriteTenantOptions Disabled = new(Enforce: false);
+}
+
+/// <summary>
+/// SEC-005 slice 4c-iii: gates fund-scoped <b>write</b>/evaluate routes on a server-resolved tenant.
+/// Detection-first — a tenantless caller is refused with <c>403</c> only when
+/// <see cref="FundScopedWriteTenantOptions.Enforce"/> is set (a deployment opt-in); otherwise the write
+/// proceeds and is logged so operators can see whether any real deployment still relies on the tenantless
+/// admin profile before enforcement is enabled. A tenant-scoped caller always proceeds, so single-company
+/// deployments (where the session tenant is populated) are unaffected. The read side stays fail-open;
+/// this is the write-side counterpart. See <c>docs/security/security-remediation-backlog.md</c> (SEC-005).
+/// </summary>
+public static class FundScopedWriteTenantEndpointFilters
+{
+    private const string MissingTenantScopeMessage =
+        "A tenant-scoped session is required for fund-scoped writes.";
+
+    public static RouteHandlerBuilder RequireFundScopedWriteTenant(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(EnforceFundScopedWriteTenantAsync);
+        return builder;
+    }
+
+    private static async ValueTask<object?> EnforceFundScopedWriteTenantAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        var httpContext = context.HttpContext;
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        var options = httpContext.RequestServices.GetService<FundScopedWriteTenantOptions>()
+                      ?? FundScopedWriteTenantOptions.Disabled;
+
+        switch (FundScopedWriteTenantGate.Decide(tenant.HasTenantScope, options.Enforce))
+        {
+            case FundScopedWriteTenantDecision.Allow:
+                return await next(context).ConfigureAwait(false);
+
+            case FundScopedWriteTenantDecision.Deny:
+                return Results.Problem(MissingTenantScopeMessage, statusCode: StatusCodes.Status403Forbidden);
+
+            default:
+                // Detection-first: record the tenantless fund-scoped write without blocking it. Structured
+                // fields only (no interpolation) per the repo logging convention.
+                httpContext.RequestServices
+                    .GetService<ILoggerFactory>()?
+                    .CreateLogger("Meridian.Security.FundScopedWriteTenant")
+                    .LogWarning(
+                        "SEC-005 4c-iii: tenantless session performed a fund-scoped write; enforcement is off. Actor={Actor}, Path={Path}",
+                        tenant.Actor ?? "(unknown)",
+                        httpContext.Request.Path.Value);
+                return await next(context).ConfigureAwait(false);
+        }
     }
 }

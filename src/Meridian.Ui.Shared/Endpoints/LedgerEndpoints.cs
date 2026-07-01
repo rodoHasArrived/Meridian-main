@@ -100,6 +100,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerBookRolloutAssessment, async (
@@ -210,6 +211,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerPeriodClose, async (
@@ -253,6 +255,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapGet(UiApiRoutes.LedgerPeriodJournalEntries, async (Guid periodId, HttpContext context) =>
@@ -597,6 +600,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationTemplates, async (UpsertJournalEntryTemplateRequest request, HttpContext context) =>
@@ -627,6 +631,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRules, async (UpsertPostingRuleRequest request, HttpContext context) =>
@@ -657,6 +662,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRulePromotionApprovals, async (ApprovePostingRulePromotionRequest request, HttpContext context) =>
@@ -692,6 +698,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleTestCases, async (UpsertAccountingRuleTestCaseRequest request, HttpContext context) =>
@@ -722,6 +729,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPreview, async (PreviewJournalTemplateRequest request, HttpContext context) =>
@@ -879,6 +887,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleProjectionSets, async (AccountingBasisProjectionSetRequestDto request, HttpContext context) =>
@@ -995,6 +1004,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapGet(UiApiRoutes.LedgerAccountingConfigurationAudit, async (
@@ -1098,6 +1108,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerCloseManagementLateAdjustments, async (
@@ -1147,6 +1158,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerCloseManagementLateAdjustmentReview, async (
@@ -1196,6 +1208,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerCloseManagementTaskSignOffs, async (
@@ -1245,6 +1258,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerCloseManagementEvidenceReview, async (
@@ -1294,6 +1308,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodLock, async (
@@ -1347,6 +1362,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerReportsAccountingPackage, async (
@@ -1447,6 +1463,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapGet(UiApiRoutes.LedgerReportsAccountingPackages, async (
@@ -1901,6 +1918,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryValidate, async (ValidateManualJournalEntryDraftRequest request, HttpContext context) =>
@@ -1983,6 +2001,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryEvidence, async (AttachManualJournalEntryEvidenceRequest request, HttpContext context) =>
@@ -2025,6 +2044,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, async (JournalEntryLifecycleActionRequestDto request, HttpContext context) =>
@@ -2069,6 +2089,7 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 

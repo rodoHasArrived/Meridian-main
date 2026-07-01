@@ -377,12 +377,18 @@ public sealed class PostgresOperationsContinuityStore :
                 @updated_at_utc,
                 cast(@workflow_json as jsonb),
                 now(),
-                -- SEC-005 slice 4c: inherit the partition tenant from the workflow's ledger book (stamped by
-                -- V_ledger_020 from the authoritative registry). A workflow with no book / an unbound book
-                -- resolves null and stays fail-open until it is attributed.
-                (select b.tenant_id
-                 from {Qualified("ledger_books")} b
-                 where b.ledger_book_id = @tenant_ledger_book_id))
+                -- SEC-005 slice 4c: partition tenant = the fund's authoritative owner via the workflow's
+                -- ledger book (stamped by V_ledger_020 from the registry) when it has one, else the writing
+                -- operator's resolved tenant (trust-on-first-use) so a book-less workflow — allowed by
+                -- OperationsStartWorkflowRequestDto — created under a tenant-scoped request is still isolated
+                -- instead of staying fail-open (the P1 gap). Null only for a book-less workflow written with
+                -- no tenant in scope (background/automation), which stays fail-open until attributed. Under
+                -- one-company-per-deployment both resolve to the single tenant, so behavior is unchanged.
+                coalesce(
+                    (select b.tenant_id
+                     from {Qualified("ledger_books")} b
+                     where b.ledger_book_id = @tenant_ledger_book_id),
+                    @caller_tenant_stamp))
             on conflict (workflow_id) do update
             set fund_account_id = excluded.fund_account_id,
                 period_id = excluded.period_id,
@@ -410,6 +416,13 @@ public sealed class PostgresOperationsContinuityStore :
         command.Parameters.AddWithValue("updated_at_utc", workflow.UpdatedAtUtc.UtcDateTime);
         command.Parameters.AddWithValue("workflow_json", JsonSerializer.Serialize(workflow, JsonOptions));
         command.Parameters.AddWithValue("tenant_ledger_book_id", (object?)workflow.LedgerBookId ?? DBNull.Value);
+        // Trust-on-first-use fallback tenant for a book-less workflow: the resolved tenant of the operator
+        // performing the write (null for a background/non-request writer, which stays fail-open). Trimmed to
+        // match the write-side stamp; the read predicate compares lower(trim(...)) on both sides.
+        var callerTenantStamp = ResolveCallerTenant();
+        command.Parameters.AddWithValue(
+            "caller_tenant_stamp",
+            string.IsNullOrWhiteSpace(callerTenantStamp) ? DBNull.Value : callerTenantStamp.Trim());
 
         var affected = await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         if (affected != 1)

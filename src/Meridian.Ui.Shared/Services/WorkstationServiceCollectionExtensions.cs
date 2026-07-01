@@ -84,6 +84,14 @@ public static class WorkstationServiceCollectionExtensions
         // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
         // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).
         services.TryAddSingleton<IFundScopeTenantAccessor, WorkstationFundScopeTenantAccessor>();
+        // SEC-005 slice 4c-iii: fund-scoped write tenant gate switch. Off by default (detection-first) so
+        // the tenantless legacy admin still writes; a shared multi-tenant deployment opts into fail-closed
+        // enforcement via MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true.
+        services.TryAddSingleton(new FundScopedWriteTenantOptions(
+            Enforce: string.Equals(
+                Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
+                "true",
+                StringComparison.OrdinalIgnoreCase)));
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))

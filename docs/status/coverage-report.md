@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**2586 / 7219** items documented (**35.8%**) &mdash; Grade: **F**
+**2594 / 7226** items documented (**35.9%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 35.8%
+[=======-------------] 35.9%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2465 | 6724 | 36.7% | F |
+| Public Classes / Interfaces | 2473 | 6731 | 36.7% | F |
 | API Endpoints | 107 | 348 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4259 undocumented)
+### Public Classes / Interfaces (4258 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `SecurityMasterOperationalEvidenceItem` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:21` |
 | `ISecurityMasterOperationalReadinessService` | `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:33` |
 | `NullSecurityValidationGateService` | `src/Meridian.Application/SecurityMaster/SecurityValidationGateService.cs:160` |
-| ... and 4209 more | |
+| ... and 4208 more | |
 
 ### API Endpoints (241 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4259 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4258 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 241 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
