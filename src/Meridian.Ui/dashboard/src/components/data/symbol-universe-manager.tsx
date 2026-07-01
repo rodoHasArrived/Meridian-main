@@ -1,4 +1,4 @@
-import { Plus, Trash2, Edit2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Edit2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/data/concrete";
 
 interface Symbol {
   symbol: string;
@@ -94,27 +94,27 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
         </CardHeader>
         <CardContent>
           {symbols.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No symbols configured yet.</p>
-              <p className="text-xs text-muted-foreground mt-1">Add your first symbol to get started.</p>
-            </div>
+            <EmptyState
+              icon="table"
+              title="No symbols configured yet."
+              detail="Add your first symbol to get started."
+            />
           ) : (
             <div className="grid gap-2">
               {symbols.map((sym) => (
                 <div
                   key={sym.symbol}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-[var(--radius-card,2px)] border border-border/70 bg-background/35 transition-colors hover:border-border hover:bg-secondary/40"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">{sym.symbol}</span>
+                        <span className="font-semibold text-foreground">{sym.symbol}</span>
                         <Badge variant="outline" className="text-xs">
                           {sym.exchange}
                         </Badge>
                         {sym.status === "configured" && (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" aria-label="Configured" />
+                          <CheckCircle2 className="h-4 w-4 text-success" aria-label="Configured" />
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
@@ -144,7 +144,7 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
                       disabled={isLoading}
                       aria-label={`Delete ${sym.symbol}`}
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-danger" />
                     </Button>
                   </div>
                 </div>
