@@ -33,6 +33,7 @@ const badgeVariantToStatus: Record<"outline" | "success" | "warning" | "danger",
 
 export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
+  const selectedQueueRow = model.queueRows[0] ?? null;
 
   return (
     <section
@@ -126,71 +127,79 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         summary="Each row carries the evidence needed to move from source issue to downstream output."
       >
         {model.queueRows.length > 0 ? (
-          <PanelSurface flat className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
-              <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                <tr>
-                  <th scope="col" className="px-4 py-3 font-semibold">Blocked item</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Owner</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Affected output</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Next action</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Evidence</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {model.queueRows.map((row) => (
-                  <tr key={row.item.id} className="align-top">
-                    <td className="max-w-sm px-4 py-4">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium text-foreground">{row.item.label}</span>
-                          <SeverityBadge
-                            status={badgeVariantToStatus[row.badgeVariant]}
-                            label={row.statusLabel}
-                          />
-                        </div>
-                        <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-foreground">{row.item.workspaceLabel}</td>
-                    <td className="px-4 py-4 text-sm text-foreground">{row.outputLabel}</td>
-                    <td className="px-4 py-4">
-                      <Link
-                        to={row.item.route}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                        aria-label={row.item.ariaLabel}
-                      >
-                        <span>{row.item.actionLabel}</span>
-                        <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                      </Link>
-                    </td>
-                    <td className="min-w-[22rem] px-4 py-4">
-                      <section aria-label={`${row.item.label} Evidence summary`} className="space-y-3">
-                        <div>
-                          <h3 className="text-sm font-semibold text-foreground">Evidence summary</h3>
-                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.proofPassportSummary}</p>
-                        </div>
-                        <KeyValueGrid
-                          columns={2}
-                          items={row.proofPassportItems.map((passportItem) => ({
-                            label: passportItem.label,
-                            value: (
-                              <span className="block min-w-0">
-                                <span className="block font-medium leading-5 text-foreground">{passportItem.value}</span>
-                                <span className="mt-1 block text-[11px] font-normal leading-4 text-muted-foreground">
-                                  {passportItem.detail}
-                                </span>
-                              </span>
-                            )
-                          }))}
-                        />
-                      </section>
-                    </td>
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
+                <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 font-semibold">Blocked item</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Owner</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Affected output</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Next action</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Evidence</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </PanelSurface>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {model.queueRows.map((row, index) => (
+                    <tr
+                      key={row.item.id}
+                      className={index === 0 ? "align-top bg-primary/5" : "align-top"}
+                      aria-current={index === 0 ? "true" : undefined}
+                    >
+                      <td className="max-w-sm px-4 py-4">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-medium text-foreground">{row.item.label}</span>
+                            <SeverityBadge
+                              status={badgeVariantToStatus[row.badgeVariant]}
+                              label={row.statusLabel}
+                            />
+                          </div>
+                          <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-foreground">{row.item.workspaceLabel}</td>
+                      <td className="px-4 py-4 text-sm text-foreground">{row.outputLabel}</td>
+                      <td className="px-4 py-4">
+                        <Link
+                          to={row.item.route}
+                          className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                          aria-label={row.item.ariaLabel}
+                        >
+                          <span>{row.item.actionLabel}</span>
+                          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                        </Link>
+                      </td>
+                      <td className="px-4 py-4 text-xs leading-5 text-muted-foreground">
+                        {row.proof?.label ?? row.proofPassportItems.find((item) => item.id === "freshness")?.value ?? "No evidence linked"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {selectedQueueRow ? (
+              <section
+                aria-label={`${selectedQueueRow.item.label} Evidence summary`}
+                className="space-y-3 border-l border-border bg-background/50 p-4"
+              >
+                <div>
+                  <p className="eyebrow-label">Selected queue evidence</p>
+                  <h3 className="text-sm font-semibold text-foreground">{selectedQueueRow.item.label}</h3>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
+                </div>
+                <dl className="grid gap-2">
+                  {selectedQueueRow.proofPassportItems.map((passportItem) => (
+                    <div key={passportItem.id} className="rounded border border-border bg-card p-2">
+                      <dt className="eyebrow-label">{passportItem.label}</dt>
+                      <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
+                      <dd className="mt-1 text-[11px] leading-4 text-muted-foreground">{passportItem.detail}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
+          </div>
         ) : (
           <PanelSurface flat role="status" className="p-4 text-sm text-muted-foreground">
             {model.emptyQueueText}

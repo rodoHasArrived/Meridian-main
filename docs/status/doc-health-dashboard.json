@@ -1,6 +1,6 @@
 {
   "total_files": 535,
-  "total_lines": 87621,
+  "total_lines": 87653,
   "orphaned_count": 204,
   "no_heading_count": 38,
   "stale_count": 0,
@@ -1513,7 +1513,7 @@
     },
     {
       "path": "docs/architecture/storage-design.md",
-      "line_count": 3264,
+      "line_count": 3280,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2129,7 +2129,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7666,
+      "line_count": 7670,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4065,7 +4065,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 459,
+      "line_count": 464,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4305,7 +4305,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 315,
+      "line_count": 322,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormRow } from "@/components/ui/form";
@@ -29,6 +30,30 @@ interface ReportRunParametersScreenProps {
   data: AccountingWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
 }
+
+const reportRunSavedViews = [
+  {
+    id: "close-pack",
+    label: "Close pack",
+    title: "Monthly close package",
+    detail: "Investor statement, trial balance, evidence appendix",
+    cadence: "Month end"
+  },
+  {
+    id: "board-pack",
+    label: "Board",
+    title: "Board finance packet",
+    detail: "NAV bridge, exposure, exceptions, report-pack status",
+    cadence: "Weekly"
+  },
+  {
+    id: "operations",
+    label: "Ops",
+    title: "Operations evidence packet",
+    detail: "Break queue, provider health, retained support files",
+    cadence: "Daily"
+  }
+];
 
 export function ReportRunParametersScreen({ data, accounting }: ReportRunParametersScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -152,40 +177,201 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
   }
 
   if (!templateId) {
+    const runnableTemplates = templates.filter((template) => template.canRunOnDemand);
+    const recentRuns = runStatusRows.slice(0, 3);
+    const primaryTemplate = runnableTemplates[0] ?? templates[0] ?? null;
+    const runSetupActions = [
+      {
+        id: "breaks",
+        label: "Review breaks",
+        detail: `${readinessGate.items.find((item) => item.id === "reconciliation-breaks")?.count ?? 0} open reconciliation break(s)`,
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        tone: readinessGate.isClear ? ("success" as const) : ("warning" as const)
+      },
+      {
+        id: "library",
+        label: "Open library",
+        detail: `${templates.length} governed template(s) available`,
+        href: WORKSTATION_ROUTE_CATALOG.reportingLibrary,
+        tone: "outline" as const
+      },
+      {
+        id: "status",
+        label: "Check run status",
+        detail: `${runStatusRows.length} recent run(s) loaded`,
+        href: WORKSTATION_ROUTE_CATALOG.reportingRunStatus,
+        tone: runStatusRows.length > 0 ? ("success" as const) : ("outline" as const)
+      }
+    ];
+
     return (
       <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Report Parameters</CardTitle>
-          <CardDescription>Choose a report template to configure and run, or open one from the Report Library.</CardDescription>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle>Report Parameters</CardTitle>
+            <CardDescription>Choose a governed template, review readiness, then run or open one from the Report Library.</CardDescription>
+          </div>
+          <Badge variant={readinessGate.isClear ? "success" : "warning"}>
+            {readinessGate.isClear ? "Readiness clear" : "Review readiness"}
+          </Badge>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {templates.length > 0 ? (
-            <label className="block max-w-md space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Report template</span>
-              <Select
-                value=""
-                onChange={(event) => {
-                  const nextTemplateId = event.target.value;
-                  if (nextTemplateId) {
-                    setSearchParams({ templateId: nextTemplateId });
-                  }
-                }}
-                aria-label="Choose a report template to run"
-              >
-                <option value="" disabled>Select a template</option>
-                {templates.map((template) => (
-                  <option key={template.id} value={template.id} disabled={!template.canRunOnDemand}>
-                    {template.name} v{template.versionNumber} ({template.statusLabel})
-                  </option>
+        <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="space-y-4">
+            <section className="grid gap-2 md:grid-cols-3" aria-label="Report run setup scan band">
+              <div className="border border-border bg-secondary/20 px-3 py-2">
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Templates</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{templates.length}</div>
+                <p className="text-xs text-muted-foreground">{runnableTemplates.length} ready for on-demand runs</p>
+              </div>
+              <div className="border border-border bg-secondary/20 px-3 py-2">
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{readinessGate.isClear ? "Clear" : "Review"}</div>
+                <p className="text-xs text-muted-foreground">{readinessGate.disclaimer}</p>
+              </div>
+              <div className="border border-border bg-secondary/20 px-3 py-2">
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent runs</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{runStatusRows.length}</div>
+                <p className="text-xs text-muted-foreground">Run history and exceptions stay visible before configuration.</p>
+              </div>
+            </section>
+
+            {templates.length > 0 ? (
+              <label className="block max-w-xl space-y-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Report template</span>
+                <Select
+                  value=""
+                  onChange={(event) => {
+                    const nextTemplateId = event.target.value;
+                    if (nextTemplateId) {
+                      setSearchParams({ templateId: nextTemplateId });
+                    }
+                  }}
+                  aria-label="Choose a report template to run"
+                >
+                  <option value="" disabled>Select a template</option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id} disabled={!template.canRunOnDemand}>
+                      {template.name} v{template.versionNumber} ({template.statusLabel})
+                    </option>
+                  ))}
+                </Select>
+              </label>
+            ) : (
+              <p className="text-sm text-muted-foreground">No report templates are available yet.</p>
+            )}
+
+            <section aria-label="Recommended report templates" className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold text-foreground">Recommended templates</h3>
+                <Link className="text-xs text-primary underline-offset-2 hover:underline" to={WORKSTATION_ROUTE_CATALOG.reportingLibrary}>
+                  Or browse the Report Library
+                </Link>
+              </div>
+              {runnableTemplates.length > 0 ? (
+                <ul className="grid gap-2" aria-label="Runnable report templates">
+                  {runnableTemplates.slice(0, 4).map((template) => (
+                    <li key={template.id} className="flex items-center justify-between gap-3 border border-border bg-background/50 px-3 py-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-medium text-foreground">{template.name}</div>
+                        <div className="text-xs text-muted-foreground">v{template.versionNumber} · {template.statusLabel}</div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setSearchParams({ templateId: template.id })}
+                      >
+                        Configure
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="border border-border bg-background/50 p-3 text-sm text-muted-foreground">
+                  No runnable templates are available. Open the library to review approval posture.
+                </p>
+              )}
+            </section>
+
+            <section aria-label="Saved report run views" className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Saved run views</h3>
+              <div className="grid gap-2 lg:grid-cols-3">
+                {reportRunSavedViews.map((view) => (
+                  <div key={view.id} className="border border-border bg-background/50 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-semibold text-foreground">{view.title}</div>
+                      <Badge variant="outline">{view.label}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{view.detail}</p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{view.cadence}</span>
+                      {primaryTemplate ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSearchParams({ templateId: primaryTemplate.id })}
+                        >
+                          Open
+                        </Button>
+                      ) : (
+                        <Button asChild variant="ghost" size="sm">
+                          <Link to={WORKSTATION_ROUTE_CATALOG.reportingLibrary}>Open</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </Select>
-            </label>
-          ) : (
-            <p className="text-sm text-muted-foreground">No report templates are available yet.</p>
-          )}
-          <Link className="inline-block text-xs text-primary underline-offset-2 hover:underline" to={WORKSTATION_ROUTE_CATALOG.reportingLibrary}>
-            Or browse the Report Library
-          </Link>
+              </div>
+            </section>
+          </div>
+
+          <aside className="space-y-4" aria-label="Report run setup context">
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Next actions</h3>
+              <ul className="grid gap-2" aria-label="Report run next actions">
+                {runSetupActions.map((action) => (
+                  <li key={action.id} className="border border-border bg-background/50 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Link className="text-xs font-semibold text-primary underline-offset-2 hover:underline" to={action.href}>
+                        {action.label}
+                      </Link>
+                      <Badge variant={action.tone}>{action.id}</Badge>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{action.detail}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Readiness cues</h3>
+              <ul className="grid gap-2" aria-label="Report run readiness cues">
+                {readinessGate.items.map((item) => (
+                  <li key={item.id} className="flex items-center justify-between gap-3 border border-border bg-background/50 px-3 py-2">
+                    <span className="text-xs text-muted-foreground">{item.label}</span>
+                    <Badge variant={item.tone === "success" ? "success" : "warning"}>{item.count}</Badge>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Recent runs</h3>
+              {recentRuns.length > 0 ? (
+                <ul className="grid gap-2" aria-label="Recent report runs">
+                  {recentRuns.map((run) => (
+                    <li key={run.id} className="border border-border bg-background/50 px-3 py-2">
+                      <div className="text-xs font-medium text-foreground">{run.templateLabel}</div>
+                      <div className="text-[11px] text-muted-foreground">{run.status} · {run.asOfDateLabel}</div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="border border-border bg-background/50 p-3 text-xs leading-5 text-muted-foreground">
+                  No recent report runs are loaded. Select a template to prepare the first run.
+                </p>
+              )}
+            </section>
+          </aside>
         </CardContent>
       </Card>
     );

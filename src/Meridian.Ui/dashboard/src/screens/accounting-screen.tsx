@@ -673,85 +673,110 @@ function AccountingSystemReconciliationPanel({
           <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
         </div>
         {providers.length > 0 ? (
-          <div className="grid gap-2 md:grid-cols-3" aria-label="External GL provider import posture">
-            {providers.slice(0, 6).map((provider) => {
-              const hasMappingProfile = mappedProviderIds.has(provider.providerId);
-              const importKinds = [
-                provider.supportsChartOfAccounts ? "chart" : null,
-                provider.supportsJournalEntries ? "journals" : null,
-                provider.supportsTrialBalance ? "trial balance" : null
-              ].filter((item): item is string => Boolean(item));
-              const connectionLabel = provider.connection?.statusLabel
-                ?? (provider.requiresCredentials ? "Credentials required" : "No credentials required");
-              const postingLabel = provider.supportsPosting
-                ? "Posting gated by export certification"
-                : "Live posting disabled";
-              const mappingRequirementLabels = (provider.mappingRequirements ?? [])
-                .filter((requirement) => requirement.requiredForGuardedExport)
-                .slice(0, 2)
-                .map((requirement) => requirement.label);
+          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-sm">
+            <table className="w-full min-w-[900px] text-sm" aria-label="External GL provider import posture">
+              <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Provider</th>
+                  <th className="px-3 py-2 text-left">State</th>
+                  <th className="px-3 py-2 text-left">Connection</th>
+                  <th className="px-3 py-2 text-left">Import</th>
+                  <th className="px-3 py-2 text-left">Mapping</th>
+                  <th className="px-3 py-2 text-left">Posting</th>
+                </tr>
+              </thead>
+              <tbody>
+                {providers.slice(0, 6).map((provider) => {
+                  const hasMappingProfile = mappedProviderIds.has(provider.providerId);
+                  const importKinds = [
+                    provider.supportsChartOfAccounts ? "chart" : null,
+                    provider.supportsJournalEntries ? "journals" : null,
+                    provider.supportsTrialBalance ? "trial balance" : null
+                  ].filter((item): item is string => Boolean(item));
+                  const connectionLabel = provider.connection?.statusLabel
+                    ?? (provider.requiresCredentials ? "Credentials required" : "No credentials required");
+                  const postingLabel = provider.supportsPosting
+                    ? "Posting gated by export certification"
+                    : "Live posting disabled";
+                  const mappingRequirementLabels = (provider.mappingRequirements ?? [])
+                    .filter((requirement) => requirement.requiredForGuardedExport)
+                    .slice(0, 2)
+                    .map((requirement) => requirement.label);
 
-              return (
-                <div
-                  key={provider.providerId}
-                  className={cn(
-                    "rounded-md border bg-secondary/15 px-3 py-2 text-sm",
-                    provider.providerId === activeProvider?.providerId ? "border-primary/45" : "border-border/70"
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold text-foreground">{provider.displayName}</div>
-                      <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{provider.providerId}</div>
-                    </div>
-                    <Badge variant={provider.state === "Available" ? "success" : provider.state === "Planned" ? "outline" : "warning"}>
-                      {provider.state}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 space-y-1 text-[11px] leading-4 text-muted-foreground">
-                    <div>{connectionLabel}</div>
-                    <div>{importKinds.length > 0 ? `Import: ${importKinds.join(", ")}` : "Import: not configured"}</div>
-                    <div>{hasMappingProfile ? "Mapping profile retained" : "Mapping profile needed"}</div>
-                    <div>{mappingRequirementLabels.length > 0 ? `Requires: ${mappingRequirementLabels.join(", ")}` : "Requires: mapping evidence"}</div>
-                    <div>{postingLabel}</div>
-                  </div>
-                </div>
-              );
-            })}
+                  return (
+                    <tr
+                      key={provider.providerId}
+                      className={cn(
+                        "border-t border-border/60 align-top",
+                        provider.providerId === activeProvider?.providerId ? "bg-primary/5" : "bg-background/30"
+                      )}
+                    >
+                      <td className="px-3 py-2">
+                        <div className="font-semibold text-foreground">{provider.displayName}</div>
+                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{provider.providerId}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={provider.state === "Available" ? "success" : provider.state === "Planned" ? "outline" : "warning"}>
+                          {provider.state}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{connectionLabel}</td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{importKinds.length > 0 ? `Import: ${importKinds.join(", ")}` : "Import: not configured"}</td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                        <div>{hasMappingProfile ? "Mapping profile retained" : "Mapping profile needed"}</div>
+                        <div className="mt-1">{mappingRequirementLabels.length > 0 ? `Requires: ${mappingRequirementLabels.join(", ")}` : "Requires: mapping evidence"}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{postingLabel}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : null}
         {mappingProfiles.length > 0 ? (
-          <div className="grid gap-2 md:grid-cols-2" aria-label="External GL mapping profiles">
-            {mappingProfiles.slice(0, 4).map((profile) => {
-              const accountMappingCount = Object.keys(profile.accountMappings).length;
-              const externalDimensionCount = profile.dimensionMappings.reduce((count, mapping) => (
-                count + Object.keys(mapping.externalDimensions.externalGlDimensions ?? {}).length
-              ), 0);
-              const isSelected = profile.profileId === selectedMappingProfile?.profileId;
+          <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-sm">
+            <table className="w-full min-w-[760px] text-sm" aria-label="External GL mapping profiles">
+              <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Profile</th>
+                  <th className="px-3 py-2 text-left">Provider</th>
+                  <th className="px-3 py-2 text-right">Accounts</th>
+                  <th className="px-3 py-2 text-right">Dimensions</th>
+                  <th className="px-3 py-2 text-left">Certification</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mappingProfiles.slice(0, 4).map((profile) => {
+                  const accountMappingCount = Object.keys(profile.accountMappings).length;
+                  const externalDimensionCount = profile.dimensionMappings.reduce((count, mapping) => (
+                    count + Object.keys(mapping.externalDimensions.externalGlDimensions ?? {}).length
+                  ), 0);
+                  const isSelected = profile.profileId === selectedMappingProfile?.profileId;
 
-              return (
-                <div
-                  key={profile.profileId}
-                  className={cn(
-                    "rounded-md border bg-secondary/20 px-3 py-2 text-sm",
-                    isSelected ? "border-primary/45" : "border-border/70"
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold text-foreground">{profile.displayName}</div>
-                      <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{profile.profileId}</div>
-                    </div>
-                    <Badge variant={profile.certificationState === "Certified" ? "success" : "warning"}>{profile.certificationState}</Badge>
-                  </div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                    <AccountingValue label="Provider" value={profile.providerId} />
-                    <AccountingValue label="Accounts" value={String(accountMappingCount)} />
-                    <AccountingValue label="Dimensions" value={`${profile.dimensionMappings.length}/${externalDimensionCount}`} />
-                  </div>
-                </div>
-              );
-            })}
+                  return (
+                    <tr
+                      key={profile.profileId}
+                      className={cn(
+                        "border-t border-border/60 align-top",
+                        isSelected ? "bg-primary/5" : "bg-background/30"
+                      )}
+                    >
+                      <td className="px-3 py-2">
+                        <div className="font-semibold text-foreground">{profile.displayName}</div>
+                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{profile.profileId}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{profile.providerId}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{accountMappingCount}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{`${profile.dimensionMappings.length}/${externalDimensionCount}`}</td>
+                      <td className="px-3 py-2">
+                        <Badge variant={profile.certificationState === "Certified" ? "success" : "warning"}>{profile.certificationState}</Badge>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
           <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
@@ -760,7 +785,7 @@ function AccountingSystemReconciliationPanel({
         )}
         {reconciliation ? (
           <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_19rem]">
-            <div className="overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-sm">
+            <div className="h-fit overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-sm">
               <div className="border-b border-border/70 bg-secondary/35 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -772,43 +797,50 @@ function AccountingSystemReconciliationPanel({
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 border-b border-border/70 bg-secondary/20 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                <div className="border-r border-border/70 px-4 py-2">Statement</div>
-                <div className="px-4 py-2">Ledger</div>
-              </div>
-              <div>
-                {rows.map((row) => {
-                  const isMatched = row.status === "Matched";
-                  return (
-                    <div key={row.rowId} className="grid min-h-[4.65rem] grid-cols-2 border-b border-border/60 last:border-b-0">
-                      <div className={cn("border-r border-l-4 border-border/70 px-4 py-3", isMatched ? "border-l-success bg-background/50" : "border-l-warning bg-warning/5")}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{row.accountCode} · {row.evidenceRef}</div>
-                          </div>
-                          <div className="shrink-0 whitespace-nowrap text-right font-mono text-sm tabular-nums text-foreground">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[820px] text-sm" aria-label="External GL reconciliation rows">
+                  <thead className="border-b border-border/70 bg-secondary/20 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Statement</th>
+                      <th className="px-4 py-2 text-right">Statement amount</th>
+                      <th className="px-4 py-2 text-left">Ledger</th>
+                      <th className="px-4 py-2 text-right">Ledger amount</th>
+                      <th className="px-4 py-2 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => {
+                      const isMatched = row.status === "Matched";
+                      return (
+                        <tr
+                          key={row.rowId}
+                          className={cn(
+                            "border-b border-border/60 last:border-b-0",
+                            isMatched ? "bg-background/50" : "bg-warning/5"
+                          )}
+                        >
+                          <td className={cn("border-l-4 px-4 py-3", isMatched ? "border-l-success" : "border-l-warning")}>
+                            <div className="font-semibold text-foreground">{row.accountName}</div>
+                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{row.accountCode} · {row.evidenceRef}</div>
+                          </td>
+                          <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
                             {formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}
-                          </div>
-                        </div>
-                      </div>
-                      <div className={cn("px-4 py-3", isMatched ? "border-l-4 border-l-success bg-background/50" : "border-l-4 border-l-warning bg-warning/5")}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">Meridian ledger · {row.accountCode}</div>
-                          </div>
-                          <div className="shrink-0 text-right">
-                            <div className="whitespace-nowrap font-mono text-sm tabular-nums text-foreground">
-                              {formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}
-                            </div>
-                            <Badge className="mt-1" variant={accountingSystemStatusVariant[row.status]}>{row.status}</Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="font-semibold text-foreground">{row.accountName}</div>
+                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">Meridian ledger · {row.accountCode}</div>
+                          </td>
+                          <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
+                            {formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant={accountingSystemStatusVariant[row.status]}>{row.status}</Badge>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
               <div className="grid gap-3 border-t border-border/80 bg-secondary/30 px-4 py-3 text-sm sm:grid-cols-[1fr_1fr_auto]">
                 <AccountingValue label="Statement balance" value={formatGlAmount(statementBalance, rows[0]?.currency ?? "USD")} />
@@ -820,7 +852,7 @@ function AccountingSystemReconciliationPanel({
                 </div>
               </div>
             </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm">
+            <div className="row-detail-panel h-fit min-w-0 text-sm" data-selected-source="Selected external GL scope">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="font-semibold text-foreground">Posting/export</div>
@@ -1774,12 +1806,12 @@ function AccountingCaseWorkbench({
             </div>
             <details className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <summary className="cursor-pointer text-xs font-semibold uppercase text-muted-foreground">Audit details</summary>
-              <dl className="mt-3 grid gap-2">
+              <div className="mt-3 grid gap-2" role="group" aria-label="Audit detail values">
                 <AccountingValue label="Case ID" value={selectedBreak?.breakId ?? selectedBlocker?.id ?? "No case"} />
                 <AccountingValue label="Route" value={selectedBreakDetail?.routingActionHref ?? selectedBlocker?.href ?? "No route"} />
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
-              </dl>
+              </div>
             </details>
           </CardContent>
         </Card>
@@ -7204,31 +7236,31 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
               <div className="space-y-2" role="list" aria-label="Accounting posting rules">
                 {view.rules.map((rule) => (
-                  <button
-                    key={rule.id}
-                    type="button"
-                    role="listitem"
-                    aria-label={rule.selectAriaLabel}
-                    aria-pressed={rule.isSelected}
-                    className={cn(
-                      "w-full rounded-lg border px-3 py-3 text-left transition hover:bg-secondary/35",
-                      rule.isSelected ? "border-primary/45 bg-primary/10" : "border-border/70 bg-secondary/20"
-                    )}
-                    onClick={() => view.selectRule(rule.id)}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground">{rule.title}</div>
-                        <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{rule.subtitle}</div>
+                  <div key={rule.id} role="listitem">
+                    <button
+                      type="button"
+                      aria-label={rule.selectAriaLabel}
+                      aria-pressed={rule.isSelected}
+                      className={cn(
+                        "w-full rounded-lg border px-3 py-3 text-left transition hover:bg-secondary/35",
+                        rule.isSelected ? "border-primary/45 bg-primary/10" : "border-border/70 bg-secondary/20"
+                      )}
+                      onClick={() => view.selectRule(rule.id)}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-foreground">{rule.title}</div>
+                          <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{rule.subtitle}</div>
+                        </div>
+                        <Badge variant={rule.statusTone}>{rule.statusLabel}</Badge>
                       </div>
-                      <Badge variant={rule.statusTone}>{rule.statusLabel}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
-                      <span className="font-mono">{rule.eventLabel}</span>
-                      <span className="font-mono">{rule.effectiveLabel}</span>
-                      <span className="font-mono">{rule.priorityLabel}</span>
-                    </div>
-                  </button>
+                      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                        <span className="font-mono">{rule.eventLabel}</span>
+                        <span className="font-mono">{rule.effectiveLabel}</span>
+                        <span className="font-mono">{rule.priorityLabel}</span>
+                      </div>
+                    </button>
+                  </div>
                 ))}
               </div>
 

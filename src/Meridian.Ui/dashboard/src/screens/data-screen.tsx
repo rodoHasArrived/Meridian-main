@@ -420,7 +420,10 @@ export function DataScreen({
           <CardContent className="space-y-3">
             {vm.providerSection.hasRows ? (
               <>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                <div
+                  className="flex flex-wrap items-stretch gap-2 rounded-md border border-border/70 bg-secondary/20 px-2 py-2"
+                  aria-label="Provider management scan band"
+                >
                   {vm.providerSection.summaryCards.map((card) => (
                     <ProviderSummaryCard key={card.id} card={card} />
                   ))}
@@ -581,10 +584,10 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
         : "border-border/70 bg-secondary/25";
 
   return (
-    <div className={cn("min-w-0 rounded-md border px-3 py-3", toneClass)}>
+    <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
       <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
       <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
-      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+      <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
     </div>
   );
 }
@@ -734,7 +737,7 @@ function DataUploadIntakePanel({
                   </ul>
                 </div>
               </div>
-              <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {state.selectedTemplateFields.map((field) => (
                   <div key={field.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
                     <div className="flex items-center justify-between gap-2">
@@ -746,12 +749,12 @@ function DataUploadIntakePanel({
                     <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground" title={field.example}>{field.example}</p>
                   </div>
                 ))}
-              </dl>
+              </div>
             </div>
           ) : null}
         </div>
 
-        <aside className="row-detail-panel h-fit min-w-0" aria-labelledby="data-upload-preview-title">
+        <div className="row-detail-panel h-fit min-w-0" role="region" aria-labelledby="data-upload-preview-title">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="eyebrow-label">Preview</div>
@@ -788,9 +791,9 @@ function DataUploadIntakePanel({
           </label>
 
           {state.retainedPath ? (
-            <dl className="mt-3 grid gap-2">
+            <div className="mt-3 grid gap-2">
               <FieldTile field={{ id: "retained-path", label: "Retained path", value: state.retainedPath }} />
-            </dl>
+            </div>
           ) : null}
 
           {state.issueRows.length > 0 ? (
@@ -828,7 +831,7 @@ function DataUploadIntakePanel({
               </table>
             </div>
           ) : null}
-        </aside>
+        </div>
       </CardContent>
     </section>
   );
@@ -939,11 +942,11 @@ function ProviderDetailTabPanel({
   if (activeTab === "credentials") {
     return (
       <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
-        <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
           {detail.credentialFields.map((field) => (
             <FieldTile key={field.id} field={field} />
           ))}
-        </dl>
+        </div>
         <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
           <div className="eyebrow-label">Secret handling</div>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -1002,11 +1005,11 @@ function ProviderDetailTabPanel({
 
   return (
     <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
-      <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
         {detail.overviewFields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
-      </dl>
+      </div>
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Recommended action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
@@ -1093,11 +1096,11 @@ function BackfillDetailPanel({
           {detail.statusLabel}
         </Badge>
       </div>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
         {detail.rows.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
-      </dl>
+      </div>
     </DenseRowDetailPanel>
   );
 }
@@ -1147,11 +1150,11 @@ function ExportDetailPanel({
         </Badge>
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
         {detail.fields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
-      </dl>
+      </div>
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Next action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
@@ -1207,11 +1210,11 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
             >
               <div className="eyebrow-label">Routing posture</div>
-              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
                   <FieldTile key={row.id} field={row} />
                 ))}
-              </dl>
+              </div>
               {vm.providerSetupDialogState.successMetadata.warnings.length > 0 ? (
                 <div
                   className="mt-3 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning"
@@ -1295,11 +1298,11 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                     <Badge variant="success">No key needed</Badge>
                   ) : null}
                 </div>
-                <dl className="mt-3 grid gap-2 sm:grid-cols-3">
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {vm.providerSetupDialogState.selectedProviderSummary.rows.map((row) => (
                     <FieldTile key={row.id} field={row} />
                   ))}
-                </dl>
+                </div>
                 {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage ? (
                   <p className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs leading-5 text-success">
                     {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage}
@@ -1605,12 +1608,12 @@ function ProviderSetupInstitutionSearch({
           </Button>
         </div>
         {state.linkTokenResult ? (
-          <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
             <FieldTile field={{ id: "plaid-link-token", label: "Link token", value: state.linkTokenResult.linkTokenPreview }} />
             <FieldTile field={{ id: "plaid-link-environment", label: "Environment", value: state.linkTokenResult.environmentLabel ?? "Sandbox" }} />
             <FieldTile field={{ id: "plaid-link-institution", label: "Institution", value: state.linkTokenResult.institutionLabel ?? "Selected bank" }} />
             <FieldTile field={{ id: "plaid-link-expiration", label: "Expires", value: state.linkTokenResult.expirationLabel ?? "Temporary" }} />
-          </dl>
+          </div>
         ) : null}
         {state.linkedEvidence ? (
           <div
@@ -1624,11 +1627,11 @@ function ProviderSetupInstitutionSearch({
               </div>
               <Badge variant="success">{state.linkedEvidence.accountCountLabel}</Badge>
             </div>
-            <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+            <div className="mt-2 grid gap-2 sm:grid-cols-3">
               <FieldTile field={{ id: "plaid-linked-item", label: "Item", value: state.linkedEvidence.itemId }} />
               <FieldTile field={{ id: "plaid-linked-status", label: "Status", value: state.linkedEvidence.status }} />
               <FieldTile field={{ id: "plaid-linked-request", label: "Request", value: state.linkedEvidence.requestId ?? "Recorded" }} />
-            </dl>
+            </div>
             {state.linkedEvidence.accounts.length > 0 ? (
               <ul className="mt-3 grid gap-2" aria-label="Linked Plaid accounts">
                 {state.linkedEvidence.accounts.map((account) => (
@@ -2017,11 +2020,11 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
         <div className="font-semibold">{state.title}</div>
         <div className="font-mono text-xs">{state.statusLabel}</div>
       </div>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {state.rows.map((row) => (
           <FieldTile key={row.id} field={row} />
         ))}
-      </dl>
+      </div>
       {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
   );

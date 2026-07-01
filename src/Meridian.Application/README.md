@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-01
 ---
 
 # src/Meridian.Application
@@ -229,6 +229,11 @@ and UI presentation concerns in their owning layers.
   symbol are retained as review-required contamination evidence and filtered out of the matching bar
   set so same-date fallback data cannot falsely close the requested symbol; zero symbol-scoped
   provider bars likewise block closure until retained evidence exists.
+  Backfill storage placement now consumes the Storage-owned `AdaptivePartitionPlacementPlanner`.
+  Request-scoped options use hourly symbol partitions for intraday runs, provider/source-aware
+  partitions for composite provider evidence, and monthly date partitions for long-window archival
+  backfills while preserving the caller's compression, retention, sink, quota, and manifest
+  settings.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot

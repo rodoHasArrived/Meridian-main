@@ -546,7 +546,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
       "Operator control posture"
     );
-    const eventTable = screen.getByRole("table", { name: "1 recent system event" });
+    const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
       name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
     });

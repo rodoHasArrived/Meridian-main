@@ -283,7 +283,7 @@ describe("StrategyScreen", () => {
       const cells = screen.getAllByText("Carry Alpha");
       expect(cells.some((el) => el.closest("td") !== null)).toBe(true);
     });
-    expect(screen.getByRole("table", { name: "Strategy run comparison evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Strategy run comparison evidence" })).toBeInTheDocument();
     const firstComparisonRow = screen.getByRole("row", { name: "Inspect Carry Alpha comparison evidence" });
     const secondComparisonRow = screen.getByRole("row", { name: "Inspect Index Momentum comparison evidence" });
     expect(firstComparisonRow).toHaveAttribute("aria-controls", "strategy-run-comparison-selected-detail");
@@ -337,7 +337,7 @@ describe("StrategyScreen", () => {
       await pending.promise;
     });
 
-    expect(screen.queryByRole("table", { name: "Strategy run comparison evidence" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Strategy run comparison evidence" })).not.toBeInTheDocument();
     expect(screen.queryByText("Stale Carry Pair")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
   });
@@ -488,8 +488,8 @@ describe("StrategyScreen", () => {
     expect(screen.getByLabelText("Run diff compatibility warnings")).toHaveTextContent(
       "Fill-level evidence is incomplete for at least one run."
     );
-    expect(screen.getByRole("table", { name: "Position diff rows" })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Parameter diff rows" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Position diff rows" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Parameter diff rows" })).toBeInTheDocument();
     expect(screen.getByLabelText("2 position changes returned")).toBeInTheDocument();
     const aaplRow = screen.getByRole("row", { name: "Inspect AAPL added position diff" });
     const msftRow = screen.getByRole("row", { name: "Inspect MSFT modified position diff" });

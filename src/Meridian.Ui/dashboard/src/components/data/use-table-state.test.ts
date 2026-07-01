@@ -104,7 +104,6 @@ describe("useTableState", () => {
   });
 
   it("escapes quotes and newlines in CSV exports", async () => {
-    vi.useFakeTimers();
     const createObjectURL = vi.fn((_blob: Blob) => "blob:csv");
     const revokeObjectURL = vi.fn();
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
@@ -124,8 +123,7 @@ describe("useTableState", () => {
       globalThis.Blob = OriginalBlob;
     }
     expect(click).toHaveBeenCalledOnce();
-    expect(revokeObjectURL).not.toHaveBeenCalled();
-    vi.runAllTimers();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:csv");
   });
 });

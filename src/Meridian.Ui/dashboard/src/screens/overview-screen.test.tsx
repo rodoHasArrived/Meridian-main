@@ -111,7 +111,7 @@ describe("OverviewScreen", () => {
 
     expect(screen.getByText("Recent activity")).toBeInTheDocument();
 
-    const activityTable = screen.getByRole("table", { name: "2 recent system events" });
+    const activityTable = screen.getByRole("treegrid", { name: "2 recent system events" });
     const warningRow = within(activityTable).getByRole("row", {
       name: /Inspect Warning event from Provider health at .*Brokerage sync delayed\./i
     });

@@ -374,7 +374,7 @@ describe("PortfolioScreen", () => {
     expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Open positions + run evidence");
     expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("AAPL");
     expect(screen.getByLabelText("Portfolio Explorer proof actions")).toHaveTextContent("Open evidence packet");
-    expect(screen.getByRole("table", { name: /open positions/i })).toBeDefined();
+    expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
@@ -385,7 +385,7 @@ describe("PortfolioScreen", () => {
       <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />
     );
 
-    const positionsTable = screen.getByRole("table", { name: /open positions/i });
+    const positionsTable = screen.getByRole("treegrid", { name: /open positions/i });
     expect(within(positionsTable).getByText("NVDA")).toBeDefined();
     expect(within(positionsTable).queryByText("AAPL")).toBeNull();
     expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThanOrEqual(1);
@@ -416,7 +416,7 @@ describe("PortfolioScreen", () => {
 
   it("renders run-linked equity table with strategy data", async () => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
-    expect(screen.getByRole("table", { name: /run-linked equity/i })).toBeDefined();
+    expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect mean reversion run evidence/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /mean reversion run detail/i })).toBeDefined();
     expect(screen.getByText(/running paper run with \+4.2% p&l/i)).toBeDefined();
@@ -458,9 +458,9 @@ describe("PortfolioScreen", () => {
     expect(within(trustSnapshot).getByText("2 accounts")).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /show alpaca paper roth ira account/i })).toBeDefined();
-    expect(screen.getByRole("table", { name: /alpaca paper brokerage accounts/i })).toBeDefined();
+    expect(screen.getByRole("treegrid", { name: /alpaca paper brokerage accounts/i })).toBeDefined();
     expect(screen.getByRole("complementary", { name: /all brokerage accounts detail/i })).toBeDefined();
-    expect(screen.getByRole("table", { name: /alpaca paper current positions/i })).toBeDefined();
+    expect(screen.getByRole("treegrid", { name: /alpaca paper current positions/i })).toBeDefined();
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
 
@@ -583,7 +583,7 @@ describe("PortfolioScreen", () => {
     expect(rothRow).toHaveAttribute("aria-selected", "true");
     expect(rothRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /roth ira brokerage account detail/i })).toBeInTheDocument();
-    let brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
+    let brokerageTable = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("AAPL")).toBeDefined();
     expect(within(brokerageTable).queryByText("MSFT")).toBeNull();
 
@@ -593,7 +593,7 @@ describe("PortfolioScreen", () => {
     expect(brokerageButton).toHaveAttribute("aria-pressed", "true");
     expect(rothButton).toHaveAttribute("tabindex", "-1");
     expect(brokerageButton).toHaveAttribute("tabindex", "0");
-    brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
+    brokerageTable = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
     expect(within(brokerageTable).queryByText("AAPL")).toBeNull();
   });
@@ -622,7 +622,7 @@ describe("PortfolioScreen", () => {
     expect(screen.getByRole("button", { name: /show alpaca paper brokerage account/i })).toHaveAttribute("aria-pressed", "true");
     const accountDetail = screen.getByRole("complementary", { name: /brokerage brokerage account detail/i });
     expect(within(accountDetail).getByText(/alpaca paper \/ alpaca brokerage/i)).toBeInTheDocument();
-    const brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
+    const brokerageTable = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
     expect(within(brokerageTable).queryByText("AAPL")).toBeNull();
   });
