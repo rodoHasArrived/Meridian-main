@@ -1,6 +1,7 @@
 import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { GateRail, SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -255,11 +256,7 @@ function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
     {
       id: "status",
       label: "Status",
-      render: (row) => (
-        <Badge variant={row.status === "ready" ? "success" : row.status === "warning" ? "warning" : "danger"} dot>
-          {row.statusLabel}
-        </Badge>
-      )
+      render: (row) => <SeverityBadge status={row.status} label={row.statusLabel} />
     }
   ];
 
@@ -312,9 +309,7 @@ function InspectorPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
               vm.validationMessages.map((message) => (
                 <div key={`${message.code}-${message.targetId}`} role="listitem" className="rounded-md border border-border/70 px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant={message.severity === "error" ? "danger" : "warning"} dot>
-                      {message.severity}
-                    </Badge>
+                    <SeverityBadge status={message.severity} label={message.severity} />
                     <span className="font-mono text-xs text-muted-foreground">{message.code}</span>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{message.message}</p>
@@ -431,6 +426,18 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
         <CardDescription>{vm.backtest.proofSummary}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {vm.trace.length > 0 ? (
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+            <div className="eyebrow-label mb-3">Review gates</div>
+            <GateRail
+              gates={vm.trace.map((step) => ({
+                key: step.stepId,
+                label: step.label,
+                status: step.status
+              }))}
+            />
+          </div>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-md border border-border/70 p-3">
             <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Dataset fingerprint</div>
@@ -483,9 +490,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
               )}
             >
               <div className="flex items-center gap-2">
-                <Badge variant={step.status === "blocked" ? "danger" : step.status === "warning" ? "warning" : "success"} dot>
-                  {step.status}
-                </Badge>
+                <SeverityBadge status={step.status} label={step.status} />
                 <span className="text-sm font-medium text-foreground">{step.label}</span>
               </div>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
@@ -511,9 +516,7 @@ function TransitionMap({ transitions }: { transitions: StrategyBuilderTransition
         {transitions.map((transition) => (
           <div key={transition.transitionId} className="rounded-md border border-border/70 px-3 py-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={transition.status === "blocked" ? "danger" : transition.status === "warning" ? "warning" : "outline"} dot>
-                {transition.statusLabel}
-              </Badge>
+              <SeverityBadge status={transition.status} label={transition.statusLabel} />
               <span className="break-words text-sm font-medium text-foreground">{transition.label}</span>
             </div>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">{transition.detail}</p>

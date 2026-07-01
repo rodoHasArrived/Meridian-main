@@ -5,6 +5,8 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { Histogram } from "@/components/charts";
+import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,11 +61,6 @@ const plotLegendToneClass = {
   muted: "bg-muted-foreground/70"
 } as const;
 
-const distributionBarToneClass = {
-  selected: "bg-primary",
-  base: "bg-primary/65"
-} as const;
-
 const promotionTitleToneClass = {
   success: "text-success",
   danger: "text-danger"
@@ -75,6 +72,20 @@ const sampleToneBadgeVariant = {
   warning: "warning",
   danger: "danger"
 } as const;
+
+/** Map a view-model `Badge` variant onto a Concrete operator-severity status string so run,
+ * study, comparison, and promotion statuses render through the shared `SeverityBadge`.
+ * Presentational only — the view-model keeps emitting its `*BadgeVariant` fields for its tests. */
+function strategySeverityStatus(variant: string): string {
+  switch (variant) {
+    case "success": return "ready";
+    case "danger": return "blocked";
+    case "warning": return "action";
+    case "paper":
+    case "research": return "review";
+    default: return "info";
+  }
+}
 
 const plotToolMomentColumns: DenseDataTableColumn<StrategyPlotMomentRow>[] = [
   {
@@ -246,7 +257,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (run) => run.statusText
+      render: (run) => <SeverityBadge status={run.statusText} label={run.statusText} />
     },
     {
       id: "pnl",
@@ -316,7 +327,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge>
+      render: (row) => <SeverityBadge status={strategySeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
     },
     {
       id: "net-pnl",
@@ -693,7 +704,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   description={vm.inspectedRunDetail.description}
                   fields={vm.inspectedRunDetail.fields}
                   ariaLabel={vm.inspectedRunDetail.ariaLabel}
-                  status={<Badge variant={vm.inspectedRunDetail.statusVariant}>{vm.inspectedRunDetail.statusLabel}</Badge>}
+                  status={<SeverityBadge status={strategySeverityStatus(vm.inspectedRunDetail.statusVariant)} label={vm.inspectedRunDetail.statusLabel} />}
                   actions={(
                     <>
                       <Button
@@ -758,7 +769,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     description={vm.selectedComparisonDetail.description}
                     fields={vm.selectedComparisonDetail.fields}
                     ariaLabel={vm.selectedComparisonDetail.ariaLabel}
-                    status={<Badge variant={vm.selectedComparisonDetail.statusVariant} dot>{vm.selectedComparisonDetail.statusLabel}</Badge>}
+                    status={<SeverityBadge status={strategySeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
                   />
                 </div>
               ) : (
@@ -902,9 +913,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     fields={vm.selectedPromotionHistoryDetail.fields}
                     ariaLabel={vm.selectedPromotionHistoryDetail.ariaLabel}
                     status={(
-                      <Badge variant={vm.selectedPromotionHistoryDetail.statusVariant}>
-                        {vm.selectedPromotionHistoryDetail.statusLabel}
-                      </Badge>
+                      <SeverityBadge
+                        status={strategySeverityStatus(vm.selectedPromotionHistoryDetail.statusVariant)}
+                        label={vm.selectedPromotionHistoryDetail.statusLabel}
+                      />
                     )}
                   />
                 </div>
@@ -1006,7 +1018,7 @@ function StrategyDiffDetailPanel({
         description={detail.description}
         fields={detail.fields}
         ariaLabel={detail.ariaLabel}
-        status={<Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>}
+        status={<SeverityBadge status={strategySeverityStatus(detail.statusVariant)} label={detail.statusLabel} />}
       />
     </div>
   );
@@ -1042,7 +1054,7 @@ function PlotToolWorkspacePanel({
     {
       id: "status",
       label: "Status",
-      render: (study) => <Badge variant={study.statusBadgeVariant}>{study.statusBadgeLabel}</Badge>
+      render: (study) => <SeverityBadge status={strategySeverityStatus(study.statusBadgeVariant)} label={study.statusBadgeLabel} />
     },
     {
       id: "metric",
@@ -1069,7 +1081,7 @@ function PlotToolWorkspacePanel({
           title={vm.title}
           subtitle={vm.metaItems.join(" · ")}
           description={vm.description}
-          status={<Badge variant={vm.statusBadgeVariant}>{vm.statusBadgeLabel}</Badge>}
+          status={<SeverityBadge status={strategySeverityStatus(vm.statusBadgeVariant)} label={vm.statusBadgeLabel} />}
           fields={vm.studySummary.map((field) => ({ label: field.label, value: field.value }))}
           ariaLabel="PlotTool study brief"
         />
@@ -1253,7 +1265,7 @@ function SelectedPlotStudyDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>{detail.eyebrow}</span>
-        <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
+        <SeverityBadge status={strategySeverityStatus(detail.statusVariant)} label={detail.statusLabel} />
       </div>
       <div className="body">
         <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
@@ -1314,16 +1326,24 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="plottool-distribution-chart" aria-label={vm.distributionChart.ariaLabel}>
-              {vm.distributionChart.bars.map((bar) => (
-                <div
-                  key={bar.id}
-                  className={cn("flex-1 rounded-t-sm", distributionBarToneClass[bar.tone])}
-                  style={{ height: `${bar.heightPercent}%` }}
-                  aria-label={bar.ariaLabel}
-                />
-              ))}
+            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+              <Histogram
+                bins={vm.distributionChart.bars.map((bar, index) => ({
+                  x0: index,
+                  x1: index + 1,
+                  count: bar.heightPercent
+                }))}
+                signed={false}
+                showMean={false}
+                valueFmt={(value) => String(Math.round(value))}
+                countFmt={(count) => `${Math.round(count)}%`}
+              />
             </div>
+            <ul className="sr-only">
+              {vm.distributionChart.bars.map((bar) => (
+                <li key={bar.id}>{bar.ariaLabel}</li>
+              ))}
+            </ul>
             <p className="text-xs leading-5 text-muted-foreground">{vm.distributionFootnote}</p>
           </CardContent>
         </Card>

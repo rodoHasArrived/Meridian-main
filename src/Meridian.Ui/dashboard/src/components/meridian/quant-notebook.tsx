@@ -7,10 +7,10 @@ import { FieldSupportText } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   cellOutputToneClass,
-  cellStateBadgeVariant,
   cellStateLabel
 } from "@/components/meridian/quant-notebook.view-model";
 import type {
@@ -173,9 +173,7 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           Data context
         </span>
         {panel.result && (
-          <Badge variant="success" className="ml-auto text-xs">
-            {panel.result.summaryText}
-          </Badge>
+          <SeverityBadge status="ready" label={panel.result.summaryText} className="ml-auto" />
         )}
       </div>
       <p id={panel.descriptionId} className="sr-only">
@@ -478,9 +476,7 @@ function CellHeader({
           }
         </button>
         {!isMarkdown && (
-          <Badge variant={cellStateBadgeVariant(cell.state)} className="text-xs">
-            {cellStateLabel(cell.state)}
-          </Badge>
+          <SeverityBadge status={cell.state} label={cellStateLabel(cell.state)} />
         )}
         {!isMarkdown && cell.statusText && cell.statusText !== cellStateLabel(cell.state) && (
           <span className="text-xs text-muted-foreground">{cell.statusText}</span>

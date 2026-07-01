@@ -6,9 +6,9 @@ import {
   Settings2,
   Sparkles
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SeverityBadge } from "@/components/operations";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import {
   DenseDataTable,
@@ -198,9 +198,7 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
               )}
               {panel.title}
             </CardTitle>
-            <Badge variant={panel.tone === "success" ? "success" : panel.tone === "danger" ? "danger" : "outline"} dot>
-              {panel.statusBadgeLabel}
-            </Badge>
+            <SeverityBadge status={panel.tone} label={panel.statusBadgeLabel} />
           </div>
           {result.runtimeError ? (
             <CardDescription className="text-danger/80">{panel.description}</CardDescription>
@@ -305,18 +303,10 @@ function TradeLedgerPanel({
               ariaLabel={ledger.selectedDetail.ariaLabel}
               fields={ledger.selectedDetail.fields}
               status={
-                <Badge
-                  variant={
-                    ledger.selectedDetail.statusTone === "success"
-                      ? "success"
-                      : ledger.selectedDetail.statusTone === "warning"
-                        ? "warning"
-                        : "outline"
-                  }
-                  dot
-                >
-                  {ledger.selectedDetail.statusLabel}
-                </Badge>
+                <SeverityBadge
+                  status={ledger.selectedDetail.statusTone}
+                  label={ledger.selectedDetail.statusLabel}
+                />
               }
             />
           ) : (
