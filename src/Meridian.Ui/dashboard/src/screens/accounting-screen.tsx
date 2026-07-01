@@ -48,6 +48,7 @@ import {
   buildAccountingLoadingViewState,
   buildCloseCommandCenterViewState,
   buildAccountingWorkflowLaunchViewState,
+  financeBreakLabel,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingCloseReportPackageViewModel,
   useCapitalAccountWorkbenchViewModel,
@@ -1814,20 +1815,6 @@ function AccountingCaseWorkbench({
       </div>
     </section>
   );
-}
-
-function financeBreakLabel(category: string): string {
-  const normalized = category.trim().toLowerCase();
-  if (normalized.includes("amount") || normalized.includes("cash")) {
-    return "Cash variance needs review";
-  }
-  if (normalized.includes("quantity") || normalized.includes("position")) {
-    return "Position variance needs review";
-  }
-  if (normalized.includes("timing")) {
-    return "Timing variance needs review";
-  }
-  return "Accounting exception needs review";
 }
 
 export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {

@@ -1412,7 +1412,6 @@ export interface ReconciliationBreakDetailViewModel {
   ariaLabel: string;
   statusLabel: string;
   statusBadgeVariant: "success" | "warning" | "outline" | "danger";
-  rawCategoryLabel: string;
   fields: ReconciliationBreakDetailFieldViewModel[];
   analysisText: string | null;
   recommendedActionText: string | null;
@@ -12917,7 +12916,6 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
     ariaLabel: `Reconciliation break detail for ${row.breakId}`,
     statusLabel: row.status,
     statusBadgeVariant: row.statusBadgeVariant,
-    rawCategoryLabel: row.category,
     fields: [
       { label: "Run", value: row.runId },
       { label: "Variance", value: row.varianceLabel },
