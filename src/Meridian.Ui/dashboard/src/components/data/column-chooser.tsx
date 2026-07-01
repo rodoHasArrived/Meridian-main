@@ -75,7 +75,9 @@ export function ColumnChooser({ columns = [], visible, onChange }: ColumnChooser
   const toggle = (key: string) => {
     const next = new Set(visSet);
     if (next.has(key)) {
-      if (next.size > 1) next.delete(key);
+      // Never hide the last remaining column — a table always needs one.
+      if (next.size <= 1) return;
+      next.delete(key);
     } else {
       next.add(key);
     }
