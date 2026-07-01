@@ -30,14 +30,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={cn(
-          "w-full appearance-none rounded-[var(--radius-button,0.375rem)] border bg-secondary/40 text-sm text-foreground shadow-[var(--shadow-panel)]",
+          "w-full appearance-none rounded-[2px] border bg-[#F3F6F9] text-sm text-foreground",
           "min-h-9 py-2 pl-3 pr-8",
           "transition-colors duration-150",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
           "disabled:cursor-not-allowed disabled:opacity-50",
           error
             ? "border-danger/60 focus-visible:ring-danger/40"
-            : "border-border/80 hover:border-border focus-visible:border-primary/60",
+            : "border-border hover:border-[#ADB8C4] focus-visible:border-primary",
           className
         )}
         aria-invalid={error || undefined}

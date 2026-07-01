@@ -121,7 +121,7 @@ export function buildDialogContentViewModel(tabIndex = -1): DialogContentViewMod
     className: [
       "w-full max-w-lg",
       "max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
-      "rounded-[var(--radius-card,0.5rem)] border border-border bg-card p-5 text-card-foreground shadow-float backdrop-blur-sm",
+      "rounded-[2px] border border-border bg-card p-5 text-card-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     ].join(" ")
   };
@@ -141,9 +141,9 @@ export function buildDialogCloseButtonViewModel({
     disabled,
     iconAriaHidden: true,
     className: [
-      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-button,0.375rem)] border",
-      "border-border/70 bg-transparent text-muted-foreground transition-colors duration-200",
-      "hover:bg-secondary/55 hover:text-foreground",
+      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border [outline-offset:-2px]",
+      "border-border bg-transparent text-muted-foreground transition-colors duration-150",
+      "hover:border-[#ADB8C4] hover:bg-[#EAEEF3] hover:text-foreground",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
       "disabled:cursor-not-allowed disabled:opacity-50"
     ].join(" ")

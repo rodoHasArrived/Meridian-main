@@ -19,11 +19,11 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
         aria-valuemin={0}
         aria-valuemax={safeMax}
         aria-valuenow={safeValue}
-        className={cn("h-2 overflow-hidden rounded-[var(--radius-chip,0.25rem)] bg-secondary", className)}
+        className={cn("h-2 overflow-hidden rounded-[2px] border border-border bg-[#F3F6F9]", className)}
         {...props}
       >
         <div
-          className="h-full rounded-[var(--radius-chip,0.25rem)] bg-primary transition-all duration-300"
+          className="h-full rounded-[2px] bg-primary transition-all duration-300"
           style={{ width: `${percent}%` }}
         />
       </div>

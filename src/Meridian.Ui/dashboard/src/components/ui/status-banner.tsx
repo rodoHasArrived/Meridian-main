@@ -20,7 +20,7 @@ export function StatusBanner({ className, detail, title, tone = "info", ...props
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-button,0.375rem)] border border-border border-l-4 px-3.5 py-3 text-sm shadow-[var(--shadow-panel)]",
+        "rounded-[2px] border border-border border-l-[3px] px-3.5 py-3 text-sm",
         toneClasses[tone],
         className
       )}
