@@ -1,10 +1,16 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Meridian "Concrete" command palette — white overlay panel, hairline structure,
+   one teal-blue accent, the only elevation is the tight menu shadow.
+   ───────────────────────────────────────────────────────────────────────────── */
+
 .command-palette-shell {
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  background: rgba(13, 23, 34, 0.98);
+  border: 1px solid var(--border-strong, #AAB4BF);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface, #FFFFFF);
+  color: var(--ws-text, #22272E);
   padding: 1rem;
-  box-shadow: var(--shadow-float);
-  animation: commandPalettePanelIn 160ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
+  animation: commandPalettePanelIn 140ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .command-palette-summary {
@@ -22,19 +28,19 @@
   align-items: center;
   min-height: 1.5rem;
   padding: 0 0.5rem;
-  border: 1px solid rgba(31, 52, 76, 0.95);
-  border-radius: var(--radius-sm);
-  background: rgba(8, 16, 26, 0.82);
-  color: #d6e1eb;
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  border: 1px solid var(--ws-border, #CBD3DC);
+  border-radius: var(--radius-chip, 2px);
+  background: var(--ws-surface-subtle, #F3F6F9);
+  color: var(--ws-text-muted, #59636F);
+  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
   font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-variant: all-small-caps;
   white-space: nowrap;
 }
 
 .command-palette-command {
-  box-shadow: var(--shadow-panel);
+  box-shadow: none;
 }
 
 .command-palette-group {
@@ -47,64 +53,48 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.375rem 0.25rem 0.25rem;
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
   font-size: 0.5625rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
+  font-weight: 600;
+  font-variant: all-small-caps;
+  letter-spacing: 0.08em;
+  color: var(--ws-text-muted, #59636F);
 }
 
 .command-palette-status {
-  border-color: rgba(42, 178, 212, 0.28);
-  background: rgba(42, 178, 212, 0.10);
-  color: var(--cyan-primary);
+  border-color: var(--state-paper-bd, rgba(47, 111, 143, 0.34));
+  background: var(--state-paper-bg, rgba(47, 111, 143, 0.1));
+  color: var(--state-paper-fg, #2F6F8F);
 }
 
 .command-palette-status-blocked {
-  border-color: rgba(222, 88, 120, 0.38);
-  background: rgba(222, 88, 120, 0.12);
-  color: #ff8faa;
+  border-color: var(--state-danger-bd, rgba(186, 63, 85, 0.35));
+  background: var(--state-danger-bg, rgba(186, 63, 85, 0.1));
+  color: var(--state-danger-fg, #BA3F55);
 }
 
 .command-palette-status-review {
-  border-color: rgba(214, 158, 56, 0.38);
-  background: var(--state-warn-bg);
-  color: #f7ca54;
+  border-color: var(--state-warn-bd, rgba(138, 82, 14, 0.38));
+  background: var(--state-warn-bg, rgba(138, 82, 14, 0.11));
+  color: var(--state-warn-fg, #8A520E);
 }
 
 .command-palette-status-ready {
-  border-color: rgba(67, 230, 167, 0.34);
-  background: rgba(67, 230, 167, 0.10);
-  color: #43e6a7;
+  border-color: var(--state-healthy-bd, rgba(22, 136, 95, 0.32));
+  background: var(--state-healthy-bg, rgba(22, 136, 95, 0.1));
+  color: var(--state-healthy-fg, #16885F);
 }
 
 .command-palette-status-neutral {
-  border-color: rgba(31, 52, 76, 0.95);
-  background: rgba(8, 16, 26, 0.82);
-  color: var(--fg-muted);
-}
-
-.command-palette-shell {
-  border: 1px solid var(--ws-border);
-  background: var(--ws-surface);
-  color: var(--ws-text);
-  box-shadow: var(--ws-shadow);
-}
-
-.command-palette-chip,
-.command-palette-route,
-.command-palette-status {
-  border-color: var(--ws-border);
-  background: var(--ws-surface-subtle);
-  color: var(--ws-text-muted);
-  box-shadow: none;
+  border-color: var(--ws-border, #CBD3DC);
+  background: var(--ws-surface-subtle, #F3F6F9);
+  color: var(--ws-text-muted, #59636F);
 }
 
 @keyframes commandPalettePanelIn {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.985);
+    transform: translateY(-8px) scale(0.99);
   }
 
   to {
