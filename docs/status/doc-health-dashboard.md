@@ -19,10 +19,10 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 534 |
-| Total lines | 86,936 |
-| Average file size (lines) | 162.8 |
-| Orphaned files | 204 |
+| Total documentation files | 535 |
+| Total lines | 87,608 |
+| Average file size (lines) | 163.8 |
+| Orphaned files | 205 |
 | Files without headings | 38 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 199 |
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
 - `Meridian Design System/components/charts/CandleChart.prompt.md`
 - `Meridian Design System/components/charts/ChartCard.prompt.md`
-- ... and 184 more
+- ... and 185 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 83 | 534 | 204 | 0 |
+| 1970-01-01 | 83 | 535 | 205 | 0 |
 
 ---
 

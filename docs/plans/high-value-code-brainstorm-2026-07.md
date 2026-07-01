@@ -54,7 +54,7 @@ Five signals from the July 2026 landscape shape this prioritization:
 | # | Idea | Effort | Audience | Impact | Depends On |
 |---|------|--------|----------|--------|------------|
 | 1 | Live/Paper TCA & best-execution report pack | M | I | High | — |
-| 2 | Alpaca live broker adapter behind `IOrderGateway` | M | H, I | High | — |
+| 2 | Alpaca live broker adapter implementing `IExecutionGateway` | M | H, I | High | — |
 | 3 | Reconciliation break-resolution agent (MCP + CoS gates) | M | I | High | — |
 | 4 | Custodian/broker statement connector library | M | I, H | High | — |
 | 5 | DuckDB analytics workbench in the Data workspace | M | Q, H | High | — |
@@ -102,7 +102,7 @@ duplicated from Backtesting.Sdk.
 **Why now:** feeds W7 live-readiness directly; institutional differentiator no open-source
 competitor has; models already exist and are tested on the backtest side.
 
-### 2. Alpaca Live Broker Adapter Behind `IOrderGateway`
+### 2. Alpaca Live Broker Adapter Implementing `IExecutionGateway`
 
 `PaperTradingGateway` (`src/Meridian.Execution/Adapters/PaperTradingGateway.cs`) is still the only
 live-capable adapter. W7-LIVE-001 — live-readiness governance — has nothing real to govern until at
