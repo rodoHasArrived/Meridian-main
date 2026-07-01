@@ -39,7 +39,16 @@ public static class SessionTcaReporter
         ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
         ArgumentNullException.ThrowIfNull(fills);
 
-        var normalized = NormalizeFills(fills);
+        // Last-writer-wins on duplicate order updates: the latest OrderState for an order id
+        // carries the final limit price, creation timestamp, and executed quantity.
+        var ordersById = new Dictionary<string, OrderState>(StringComparer.Ordinal);
+        if (orders is not null)
+        {
+            foreach (var order in orders)
+                ordersById[order.OrderId] = order;
+        }
+
+        var normalized = NormalizeFills(fills, ordersById);
 
         if (normalized.Count == 0)
         {
@@ -56,7 +65,7 @@ public static class SessionTcaReporter
         var costSummary = BuildCostSummary(normalized);
         var symbolSummaries = BuildSymbolSummaries(normalized);
         var outliers = DetectOutliers(normalized);
-        var executionQuality = BuildExecutionQuality(normalized, orders);
+        var executionQuality = BuildExecutionQuality(normalized, ordersById);
 
         return new SessionTcaReport(
             sessionId,
@@ -85,13 +94,17 @@ public static class SessionTcaReporter
     /// Filters the raw report tape down to usable fills and converts cumulative per-order
     /// quantity sequences into incremental ones. A per-order sequence is treated as cumulative
     /// when it contains multiple reports whose quantities never decrease and whose sum exceeds
-    /// the order quantity — the signature of running totals (a 40-share partial followed by a
-    /// 100-share final report describes 100 executed shares, not 140). Sequences that already
-    /// sum to at most the order quantity are left untouched, so incremental tapes (e.g. the
-    /// paper gateway) are unaffected. When the order quantity is unknown the sequence is left
-    /// as-is because the two encodings cannot be distinguished.
+    /// the executed quantity known for the order — either the order quantity (a 40-share
+    /// partial followed by a 100-share final report on a 100-share order describes 100 executed
+    /// shares, not 140) or, for orders still working, the executed quantity recorded in order
+    /// history (cumulative partials of 10 then 20 against a 100-share order describe 20
+    /// executed shares, not 30). Incremental tapes (e.g. the paper gateway) sum exactly to the
+    /// executed quantity and are unaffected. When neither signal is available the sequence is
+    /// left as-is because the two encodings cannot be distinguished.
     /// </summary>
-    private static List<TcaFill> NormalizeFills(IReadOnlyList<ExecutionReport> fills)
+    private static List<TcaFill> NormalizeFills(
+        IReadOnlyList<ExecutionReport> fills,
+        IReadOnlyDictionary<string, OrderState> ordersById)
     {
         var usable = new List<ExecutionReport>(fills.Count);
         foreach (var fill in fills)
@@ -108,7 +121,8 @@ public static class SessionTcaReporter
         foreach (var orderGroup in usable.GroupBy(static f => f.OrderId, StringComparer.Ordinal))
         {
             var sequence = orderGroup.OrderBy(static f => f.Timestamp).ToList();
-            var isCumulative = IsCumulativeSequence(sequence);
+            ordersById.TryGetValue(orderGroup.Key, out var orderState);
+            var isCumulative = IsCumulativeSequence(sequence, orderState);
 
             decimal previousCumulative = 0m;
             foreach (var report in sequence)
@@ -136,13 +150,9 @@ public static class SessionTcaReporter
         return result;
     }
 
-    private static bool IsCumulativeSequence(List<ExecutionReport> sequence)
+    private static bool IsCumulativeSequence(List<ExecutionReport> sequence, OrderState? orderState)
     {
         if (sequence.Count < 2)
-            return false;
-
-        var orderQuantity = sequence[^1].OrderQuantity;
-        if (orderQuantity <= 0m)
             return false;
 
         decimal sum = 0m;
@@ -155,7 +165,13 @@ public static class SessionTcaReporter
             sum += report.FilledQuantity;
         }
 
-        return sum > orderQuantity;
+        var orderQuantity = sequence[^1].OrderQuantity;
+        if (orderQuantity > 0m && sum > orderQuantity)
+            return true;
+
+        // Order still working: compare against the executed quantity the order history knows
+        // about. A cumulative tape always sums past it; an incremental tape sums exactly to it.
+        return orderState is { FilledQuantity: > 0m } && sum > orderState.FilledQuantity;
     }
 
     private static SessionTcaCostSummary BuildCostSummary(List<TcaFill> fills)
@@ -305,16 +321,10 @@ public static class SessionTcaReporter
 
     private static SessionTcaExecutionQuality BuildExecutionQuality(
         List<TcaFill> fills,
-        IReadOnlyList<OrderState>? orders)
+        IReadOnlyDictionary<string, OrderState> ordersById)
     {
-        if (orders is not { Count: > 0 })
+        if (ordersById.Count == 0)
             return SessionTcaExecutionQuality.Empty;
-
-        // Last-writer-wins on duplicate order updates: the latest OrderState for an order id
-        // carries the final limit price and creation timestamp.
-        var ordersById = new Dictionary<string, OrderState>(StringComparer.Ordinal);
-        foreach (var order in orders)
-            ordersById[order.OrderId] = order;
 
         var timesToFillSeconds = new List<double>();
         decimal improvementWeightedBps = 0m;

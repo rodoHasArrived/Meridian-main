@@ -604,8 +604,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/symbols/{symbol}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:103` |
 | `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:187` |
 | `POST` | `/api/symbols/{symbol}/update` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:480` |
-| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:349` |
-| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:371` |
+| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:351` |
+| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:373` |
 | `GET` | `/health` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:60` |
 | `GET` | `/live` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:73` |
 | `GET` | `/ready` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:72` |

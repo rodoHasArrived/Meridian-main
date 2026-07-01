@@ -17,13 +17,13 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:349",
+      "source": "src/Meridian/UiServer.cs:351",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:371",
+      "source": "src/Meridian/UiServer.cs:373",
       "documented": true
     },
     {

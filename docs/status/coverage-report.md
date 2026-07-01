@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**2599 / 7248** items documented (**35.9%**) &mdash; Grade: **F**
+**2599 / 7250** items documented (**35.8%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 35.9%
+[=======-------------] 35.8%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2478 | 6752 | 36.7% | F |
+| Public Classes / Interfaces | 2478 | 6754 | 36.7% | F |
 | API Endpoints | 107 | 349 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4274 undocumented)
+### Public Classes / Interfaces (4276 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `SecurityMasterActiveImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13` |
 | `SecurityMasterCompletedImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:26` |
 | `ISecurityMasterIngestStatusService` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:41` |
-| ... and 4224 more | |
+| ... and 4226 more | |
 
 ### API Endpoints (242 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4274 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4276 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 242 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

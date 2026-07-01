@@ -268,6 +268,32 @@ public sealed class SessionTcaReporterTests
     }
 
     [Fact]
+    public void Generate_CumulativePartialsOnWorkingOrder_AreNormalizedUsingOrderHistory()
+    {
+        var start = DateTimeOffset.UtcNow;
+        // In-progress IB-style order: cumulative partials 10 then 20 on a 100-share order.
+        // The sum (30) does not exceed the order quantity, so the order history's executed
+        // quantity (20) is the disambiguating signal.
+        var fills = new[]
+        {
+            MakeFill("SPY", OrderSide.Buy, 10m, 400m, orderId: "ib-w1", timestamp: start,
+                reportType: ExecutionReportType.PartialFill, orderQuantity: 100m),
+            MakeFill("SPY", OrderSide.Buy, 20m, 401m, orderId: "ib-w1", timestamp: start.AddSeconds(1),
+                reportType: ExecutionReportType.PartialFill, orderQuantity: 100m)
+        };
+        var orders = new[]
+        {
+            MakeOrder("ib-w1", "SPY", OrderSide.Buy, 100m, createdAt: start) with { FilledQuantity = 20m }
+        };
+
+        var report = SessionTcaReporter.Generate("s", "strat", fills, orders);
+
+        // 10 @ 400 + 10 @ 401 = 8,010 — not 10 @ 400 + 20 @ 401 = 12,020.
+        report.CostSummary.TotalBuyNotional.Should().Be(8_010m);
+        report.CostSummary.TotalFills.Should().Be(2);
+    }
+
+    [Fact]
     public void Generate_IncrementalPartialFillsOnWorkingOrder_AreUnchanged()
     {
         var start = DateTimeOffset.UtcNow;

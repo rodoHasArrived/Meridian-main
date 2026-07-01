@@ -3976,6 +3976,7 @@ Meridian-main
 │   │   ├── Reconciliation
 │   │   │   ├── BrokerStatementInfrastructure.cs
 │   │   │   ├── BrokerStatementNormalizer.cs
+│   │   │   ├── IbFlexStatementService.cs
 │   │   │   └── ReconciliationCaseInfrastructure.cs
 │   │   ├── Resilience
 │   │   │   ├── HttpResiliencePolicy.cs
@@ -6957,6 +6958,7 @@ Meridian-main
 │   │   │   │   ├── statement-invalid-blockers.csv
 │   │   │   │   └── statement-unresolved-breaks.csv
 │   │   │   ├── BrokerCustodianMatchingPipelineTests.cs
+│   │   │   ├── IbFlexStatementServiceTests.cs
 │   │   │   ├── ReconciliationCaseServiceTests.cs
 │   │   │   ├── ReconciliationContractsTests.cs
 │   │   │   ├── StatementBreakClassifierTests.cs
