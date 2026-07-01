@@ -2,8 +2,9 @@ import { AlertTriangle, ArrowUpRight, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
-import type { ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
+import type { ReportingHubBadgeVariant, ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
 
 export interface ReportingHubProps {
   model: ReportingHubModel;
@@ -15,6 +16,14 @@ const toneClasses: Record<ReportingHubTone, string> = {
   warning: "text-warning",
   danger: "text-danger",
   muted: "text-muted-foreground"
+};
+
+// Concrete severity layer: hub badge variant → operator-readiness status string.
+const badgeVariantStatus: Record<ReportingHubBadgeVariant, string> = {
+  success: "Ready",
+  warning: "ReviewRequired",
+  danger: "Blocked",
+  outline: "Info"
 };
 
 /**
@@ -62,7 +71,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                       </div>
                       <div className="mt-1 break-words text-sm font-semibold text-foreground">{item.title}</div>
                     </div>
-                    <Badge variant={item.badgeVariant}>{item.statusLabel}</Badge>
+                    <SeverityBadge status={badgeVariantStatus[item.badgeVariant]} label={item.statusLabel} />
                   </div>
                   <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
                   <dl className="grid gap-2 text-xs sm:grid-cols-2" aria-label={`${item.title} decision facts`}>
@@ -130,7 +139,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="min-w-0 break-words font-semibold text-foreground">{card.family}</span>
-                      <Badge variant={card.badgeVariant}>{card.statusLabel}</Badge>
+                      <SeverityBadge status={badgeVariantStatus[card.badgeVariant]} label={card.statusLabel} />
                     </div>
                     <p className={cn("text-xs leading-5", toneClasses[card.statusTone])}>{card.approvedAsOfLabel}</p>
                     <p className="text-[11px] leading-4 text-muted-foreground">

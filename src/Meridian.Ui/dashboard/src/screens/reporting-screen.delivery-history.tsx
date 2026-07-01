@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SeverityBadge } from "@/components/operations";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import { reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
@@ -53,7 +54,7 @@ export function ReportingDeliveryHistoryPanel({
                     <span className="block font-semibold text-foreground">{attempt.recipient}</span>
                     <span className="mt-1 block text-xs text-muted-foreground">{attempt.recipientRole} · {attempt.channel}</span>
                   </span>
-                  <Badge variant={attempt.state === "Failed" ? "warning" : "success"}>{attempt.state}</Badge>
+                  <SeverityBadge status={attempt.state} label={attempt.state} />
                 </div>
                 <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{attempt.deliveryReference}</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
