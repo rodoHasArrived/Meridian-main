@@ -83,6 +83,15 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 -- on a later write by a tenant-scoped operator.
                 tenant_id           = coalesce(account_definition.tenant_id, EXCLUDED.tenant_id),
                 updated_at          = now()
+            -- SEC-005 slice 4c: refuse a cross-tenant overwrite. The read predicate hides a foreign account
+            -- from GetAccount, but without this guard a tenant-scoped caller who knows a foreign account UUID
+            -- could still clobber that row's fields via the conflict path (tenant_id itself is first-owner
+            -- preserved, but the other columns are not). Only update when the existing row is unbound, the
+            -- caller is tenantless (single-company fail-open), or the tenants match; otherwise 0 rows change
+            -- and the caller gets a conflict error below. Behavior-preserving under one-company-per-deployment.
+            WHERE account_definition.tenant_id IS NULL
+               OR @tenant_id IS NULL
+               OR lower(trim(account_definition.tenant_id)) = lower(trim(@tenant_id))
             """;
         cmd.Parameters.AddWithValue("account_id", account.AccountId);
         cmd.Parameters.AddWithValue("account_type", account.AccountType.ToString());
@@ -112,7 +121,15 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             "tenant_id",
             string.IsNullOrWhiteSpace(callerTenantStamp) ? DBNull.Value : callerTenantStamp.Trim());
 
-        await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        var affected = await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        if (affected == 0)
+        {
+            // The row exists but the conflict update was blocked by the tenant guard above: a tenant-scoped
+            // caller attempted to modify an account owned by a different tenant. Fail instead of silently
+            // succeeding. Unreachable under one-company-per-deployment (the guard always matches there).
+            throw new InvalidOperationException(
+                $"Fund account '{account.AccountId}' is owned by a different tenant and cannot be modified.");
+        }
     }
 
     public async Task<AccountSummaryDto?> GetAccountAsync(Guid accountId, CancellationToken ct = default)

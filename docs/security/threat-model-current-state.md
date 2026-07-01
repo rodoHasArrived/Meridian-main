@@ -41,7 +41,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
   - Session cookies still do not set `Secure` (open remediation item; treat TLS + secure-cookie enablement as required for non-local deployments).
   - Operator credentials now require password hashes in `MDC_USERS` / `MDC_PASSWORD_HASH`, and governed user-account administration writes hashes plus audit evidence under the storage root; legacy plaintext password env bootstrap is no longer accepted.
   - Sessions are in-memory and reset on process restart.
-  - Some endpoint groups still lack explicit permission checks (for example configuration and direct-lending routes), so authenticated overreach remains plausible where gates are absent.
+  - Some endpoint groups still lack explicit permission checks (for example parts of the configuration routes), so authenticated overreach remains plausible where gates are absent. (Direct-lending routes are now permission-gated — group-level `RequireAnyPermission(View/ManageDirectLending)` plus `RequirePermission(ManageDirectLending)` on mutations — and additionally carry the SEC-005 fund-scoped write-tenant gate.)
 
 ### Tenant isolation (fund-scoped data) — SEC-005
 - **Storage-enforced (was deployment-boundary-enforced).** Fund-scoped data is now partitioned by a stamped `tenant_id` at the storage layer, not solely by the single-company-per-deployment boundary:
