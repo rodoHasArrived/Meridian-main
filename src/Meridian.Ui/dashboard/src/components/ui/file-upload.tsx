@@ -86,10 +86,11 @@ export function FileUpload({
       <input
         ref={inputRef}
         type="file"
+        tabIndex={-1}
         multiple={multiple}
-        accept={accept}
+        accept={accept === "*" ? undefined : accept}
         disabled={disabled}
-        className="hidden"
+        className="sr-only"
         onChange={(event) => addFiles(event.target.files)}
       />
       {files.length > 0 ? (
