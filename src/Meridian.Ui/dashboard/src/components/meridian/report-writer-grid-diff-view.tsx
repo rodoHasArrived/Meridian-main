@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
 import type { ReportWriterDiffRowState, ReportWriterGridDiff } from "@/types";
 
@@ -9,11 +9,12 @@ export interface ReportWriterGridDiffViewProps {
   className?: string;
 }
 
-const STATE_BADGE: Record<ReportWriterDiffRowState, "success" | "warning" | "danger" | "outline"> = {
-  Added: "success",
-  Removed: "danger",
-  Changed: "warning",
-  Unchanged: "outline"
+// Concrete severity layer: diff row state → operator-readiness status string.
+const STATE_STATUS: Record<ReportWriterDiffRowState, string> = {
+  Added: "Ready",
+  Removed: "Blocked",
+  Changed: "ReviewRequired",
+  Unchanged: "Info"
 };
 
 const STATE_LABEL: Record<ReportWriterDiffRowState, string> = {
@@ -52,7 +53,7 @@ export function ReportWriterGridDiffView({ diff, maxRows = 6, className }: Repor
             {rows.map((row) => (
               <tr key={`${row.state}:${row.rowKey}`} className="border-t border-border/50">
                 <td className="px-2 py-1.5">
-                  <Badge variant={STATE_BADGE[row.state]}>{STATE_LABEL[row.state]}</Badge>
+                  <SeverityBadge status={STATE_STATUS[row.state]} label={STATE_LABEL[row.state]} />
                 </td>
                 {row.cells.map((cell) => {
                   const display = cell.currentValue ?? cell.priorValue ?? "";

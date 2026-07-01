@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
+import { SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
@@ -134,6 +135,23 @@ const structuredExportDownloadFormats = [
   { format: "xls", label: "XLS" },
   { format: "xlsx", label: "XLSX" }
 ] as const;
+
+// Concrete severity layer: reporting read-model badge variant → operator-readiness status
+// string (Ready · Review · Action · Blocked · Info) consumed by SeverityBadge. Used for the
+// run/approval/delivery STATUS chips; informational count/outline badges keep their neutral look.
+const reportingStatusFromVariant: Record<
+  "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research",
+  string
+> = {
+  success: "Ready",
+  warning: "ReviewRequired",
+  danger: "Blocked",
+  outline: "Info",
+  default: "Info",
+  paper: "ReviewRequired",
+  live: "Blocked",
+  research: "Info"
+};
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const defaultExportsReportRunRequester = "browser-workstation";
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
@@ -1645,7 +1663,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{template.name}</span>
                   <span className="flex flex-wrap items-center gap-1.5">
-                    <Badge variant={template.statusVariant}>{template.statusLabel}</Badge>
+                    <SeverityBadge status={reportingStatusFromVariant[template.statusVariant]} label={template.statusLabel} />
                     <Badge variant="outline">{template.sourceLabel}</Badge>
                     <Badge variant="outline">{template.family}</Badge>
                     <Badge variant="outline">{template.accessMode}</Badge>
@@ -1777,7 +1795,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono text-sm text-foreground">{run.id}</span>
-                  <Badge variant={run.status === "Failed" ? "warning" : "outline"}>{run.status}</Badge>
+                  <SeverityBadge status={run.status} label={run.status} />
                 </div>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
@@ -1940,9 +1958,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.description}
                 </p>
               </div>
-              <Badge variant={vm.workflowTaskPanel.statusVariant}>
-                {vm.workflowTaskPanel.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={reportingStatusFromVariant[vm.workflowTaskPanel.statusVariant]}
+                label={vm.workflowTaskPanel.statusLabel}
+              />
             </div>
             <div className="flex flex-wrap gap-2">
               {vm.workflowTaskPanel.chips.map((chip) => (
@@ -1969,9 +1988,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     {vm.workflowTaskPanel.publicationReview.description}
                   </p>
                 </div>
-                <Badge variant={vm.workflowTaskPanel.publicationReview.statusVariant}>
-                  {vm.workflowTaskPanel.publicationReview.statusLabel}
-                </Badge>
+                <SeverityBadge
+                  status={reportingStatusFromVariant[vm.workflowTaskPanel.publicationReview.statusVariant]}
+                  label={vm.workflowTaskPanel.publicationReview.statusLabel}
+                />
               </div>
               <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
                 {vm.workflowTaskPanel.publicationReview.summaryText}
@@ -2090,9 +2110,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     {vm.workflowTaskPanel.restatementReview.description}
                   </p>
                 </div>
-                <Badge variant={vm.workflowTaskPanel.restatementReview.statusVariant}>
-                  {vm.workflowTaskPanel.restatementReview.statusLabel}
-                </Badge>
+                <SeverityBadge
+                  status={reportingStatusFromVariant[vm.workflowTaskPanel.restatementReview.statusVariant]}
+                  label={vm.workflowTaskPanel.restatementReview.statusLabel}
+                />
               </div>
               <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
                 {vm.workflowTaskPanel.restatementReview.summaryText}

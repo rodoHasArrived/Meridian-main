@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SeverityBadge } from "@/components/operations";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   AccountingWorkspaceResponse,
-  ManualJournalEntryStatus,
   PrivateCapitalActivityProjection,
   PrivateCapitalCapitalAccountSubledger,
   PrivateCapitalEvidenceCategory,
@@ -31,9 +31,10 @@ export function ReportingPrivateCapitalReadinessPanel({ data }: { data: Accounti
                 Read-only report readiness from Accounting private-capital activity data.
               </CardDescription>
             </div>
-            <Badge variant={activity ? fundEventRecords.length > 0 ? "success" : "outline" : "warning"} dot>
-              {activity ? "Source data" : "Not loaded"}
-            </Badge>
+            <SeverityBadge
+              status={activity ? (fundEventRecords.length > 0 ? "Ready" : "Info") : "ReviewRequired"}
+              label={activity ? "Source data" : "Not loaded"}
+            />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -166,17 +167,27 @@ function ReportingPrivateCapitalFundEventRecordRow({
       </td>
       <td className="px-3 py-2">
         <div className="flex flex-wrap gap-1.5">
-          <Badge variant={privateCapitalApprovalVariant(record.approvalState)} dot>{record.approvalState}</Badge>
-          <Badge variant={privateCapitalReadinessVariant(record.readiness)} dot>{record.readinessLabel || record.readiness}</Badge>
-          {record.isPosted ? <Badge variant="success">Posted</Badge> : <Badge variant="outline">Unposted</Badge>}
+          <SeverityBadge status={record.approvalState} label={record.approvalState} />
+          <SeverityBadge status={record.readiness ?? "Info"} label={record.readinessLabel || record.readiness} />
+          {record.isPosted ? (
+            <SeverityBadge status="Ready" label="Posted" />
+          ) : (
+            <SeverityBadge status="Info" label="Unposted" />
+          )}
         </div>
         <p className="mt-2 text-xs leading-5 text-muted-foreground">{record.readinessReason || "No readiness reason retained."}</p>
         <p className="mt-1 text-xs text-muted-foreground">{record.nextAction || "No next action retained."}</p>
       </td>
       <td className="px-3 py-2">
         <div className="flex flex-wrap gap-1.5">
-          <Badge variant={record.isReportReady ? "success" : "warning"}>{record.isReportReady ? "Report-ready" : "Not report-ready"}</Badge>
-          <Badge variant={record.isPublished ? "success" : "outline"}>{record.isPublished ? "Published" : "Not published"}</Badge>
+          <SeverityBadge
+            status={record.isReportReady ? "Ready" : "ReviewRequired"}
+            label={record.isReportReady ? "Report-ready" : "Not report-ready"}
+          />
+          <SeverityBadge
+            status={record.isPublished ? "Ready" : "Info"}
+            label={record.isPublished ? "Published" : "Not published"}
+          />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
           {record.reportOutputCount.toLocaleString()} output{record.reportOutputCount === 1 ? "" : "s"} / {record.reportLineProvenanceCount.toLocaleString()} provenance line{record.reportLineProvenanceCount === 1 ? "" : "s"}
@@ -254,9 +265,10 @@ function ReportingPrivateCapitalSubledgerRow({ subledger }: { subledger: Private
         <div className="mt-1">{subledger.publishedReportOutputCount.toLocaleString()} published report output{subledger.publishedReportOutputCount === 1 ? "" : "s"}</div>
       </td>
       <td className="px-3 py-2 text-xs">
-        <Badge variant={privateCapitalReadinessVariant(subledger.readiness ?? "EvidenceMissing")} dot>
-          {subledger.readinessLabel || subledger.readiness || "Evidence missing"}
-        </Badge>
+        <SeverityBadge
+          status={subledger.readiness ?? "EvidenceMissing"}
+          label={subledger.readinessLabel || subledger.readiness || "Evidence missing"}
+        />
         <div className="mt-1 text-[11px] text-muted-foreground">{subledger.readinessReason || "No subledger readiness reason"}</div>
         <ReportingPrivateCapitalRouteLink label={subledger.nextAction || "Next action"} href={subledger.nextActionRoute ?? subledger.activityRoute} />
         <div>{subledger.evidenceLinkCount.toLocaleString()} retained evidence link{subledger.evidenceLinkCount === 1 ? "" : "s"}</div>
@@ -283,9 +295,10 @@ function ReportingPrivateCapitalLedgerImpactList({ impacts }: { impacts: Private
                   <span className="block font-semibold text-foreground">{impact.fundEventType || impact.fundEventId}</span>
                   <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{impact.journalEntryId}</span>
                 </span>
-                <Badge variant={impact.isPostingReady ? "success" : impact.isBalanced ? "warning" : "danger"} dot>
-                  {impact.isPostingReady ? "Posting-ready" : impact.isBalanced ? "Balanced review" : "Unbalanced"}
-                </Badge>
+                <SeverityBadge
+                  status={impact.isPostingReady ? "Ready" : impact.isBalanced ? "ReviewRequired" : "Blocked"}
+                  label={impact.isPostingReady ? "Posting-ready" : impact.isBalanced ? "Balanced review" : "Unbalanced"}
+                />
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-[11px] text-muted-foreground">
                 <span>Debits {formatReportingMoney(impact.totalDebits, impact.currency)}</span>
@@ -320,8 +333,14 @@ function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: Private
                   <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{output.reportOutputId}</span>
                 </span>
                 <span className="flex flex-wrap justify-end gap-1.5">
-                  <Badge variant={output.isReportReady ? "success" : "warning"}>{output.readinessLabel || (output.isReportReady ? "Report-ready" : "Review")}</Badge>
-                  <Badge variant={output.isPublished ? "success" : "outline"}>{output.isPublished ? "Published" : "Unpublished"}</Badge>
+                  <SeverityBadge
+                    status={output.isReportReady ? "Ready" : "ReviewRequired"}
+                    label={output.readinessLabel || (output.isReportReady ? "Report-ready" : "Review")}
+                  />
+                  <SeverityBadge
+                    status={output.isPublished ? "Ready" : "Info"}
+                    label={output.isPublished ? "Published" : "Unpublished"}
+                  />
                 </span>
               </div>
               <p className="mt-2 text-[11px] text-muted-foreground">{output.readinessReason || "No report-output readiness reason"}</p>
@@ -352,7 +371,10 @@ function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories:
       {categories.map((category) => (
         <div key={category.categoryId} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge variant={category.isReady ? "success" : "warning"} dot>{category.label || category.categoryId}</Badge>
+            <SeverityBadge
+              status={category.isReady ? "Ready" : "ReviewRequired"}
+              label={category.label || category.categoryId}
+            />
             <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLinkCount.toLocaleString()} evidence</span>
           </div>
           <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{category.summary || "No evidence summary retained."}</p>
@@ -387,34 +409,6 @@ function ReportingPrivateCapitalRouteLink({ label, href }: { label: string; href
       {label}: {href}
     </a>
   );
-}
-
-function privateCapitalApprovalVariant(status: ManualJournalEntryStatus): "outline" | "success" | "warning" | "danger" {
-  if (status === "Approved") {
-    return "success";
-  }
-
-  if (status === "Submitted") {
-    return "warning";
-  }
-
-  if (status === "NeedsFix" || status === "Rejected") {
-    return "danger";
-  }
-
-  return "outline";
-}
-
-function privateCapitalReadinessVariant(readiness: PrivateCapitalFundEventLedgerRecord["readiness"]): "outline" | "success" | "warning" | "danger" {
-  if (readiness === "Published" || readiness === "Ready") {
-    return "success";
-  }
-
-  if (readiness === "Blocked") {
-    return "danger";
-  }
-
-  return readiness ? "warning" : "outline";
 }
 
 function formatReportingMoney(value: number, currency: string): string {
