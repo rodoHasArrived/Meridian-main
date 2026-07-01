@@ -2686,7 +2686,7 @@ function resolveSelectedExportsTemplate(
     ?? null;
 }
 
-function buildExportsReportRunRequest(
+export function buildExportsReportRunRequest(
   template: ReportingTemplateRow,
   draft: ExportsReportRunDraftState
 ): ReportingRunRequest {
@@ -2704,12 +2704,12 @@ function parseExportsReportMaxRetries(value: string): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
-function isExportsOnDemandRun(run: ReportingRunStatusRow): boolean {
+export function isExportsOnDemandRun(run: ReportingRunStatusRow): boolean {
   const trigger = run.trigger.trim().toLowerCase().replace(/[^a-z]/g, "");
   return trigger === "adhoc" || trigger === "ondemand" || trigger === "manual";
 }
 
-function buildReportRunResultDetails(run: {
+export function buildReportRunResultDetails(run: {
   runId: string;
   status: string;
   trigger: string;

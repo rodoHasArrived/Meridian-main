@@ -56,6 +56,11 @@ const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").t
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
+const TrialBalanceScreen = lazy(() => import("@/screens/trial-balance-screen").then((module) => ({ default: module.TrialBalanceScreen })));
+const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
+const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").then((module) => ({ default: module.AssetDetailScreen })));
+const ReportLibraryScreen = lazy(() => import("@/screens/report-library-screen").then((module) => ({ default: module.ReportLibraryScreen })));
+const ReportRunParametersScreen = lazy(() => import("@/screens/report-run-parameters-screen").then((module) => ({ default: module.ReportRunParametersScreen })));
 const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-record-release-screen").then((module) => ({ default: module.OperationsRecordReleaseScreen })));
 const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
@@ -395,9 +400,14 @@ function AppShell() {
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
+                  <Route path="/accounting/trial-balance" element={<TrialBalanceScreen data={accounting} />} />
+                  <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
+                  <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
                   <Route path="/accounting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
+                  <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
+                  <Route path="/reporting/run" element={<ReportRunParametersScreen data={reporting} accounting={accounting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />

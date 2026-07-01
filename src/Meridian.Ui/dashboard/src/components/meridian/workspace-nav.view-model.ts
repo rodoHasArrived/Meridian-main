@@ -81,6 +81,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Close", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
     { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
+    { label: "Trial Balance", route: WORKSTATION_ROUTE_CATALOG.accountingTrialBalance },
     { label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
@@ -91,6 +92,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
+    { label: "Report Library", route: WORKSTATION_ROUTE_CATALOG.reportingLibrary },
     { label: "Operations record", route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord },
     { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },

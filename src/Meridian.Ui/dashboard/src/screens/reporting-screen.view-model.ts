@@ -1079,7 +1079,7 @@ function countRestatementEvidence(selected: ReportingWorkflowRecord | null, chan
   return changedLines.reduce((total, line) => total + (line.evidenceLinks?.length ?? 0), 0);
 }
 
-function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
+export function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
   return templates.map((template) => {
     const writerGrids = buildWriterGridRows(template);
     const gridCount = template.reportWriterGrids?.length ?? 0;
@@ -1604,7 +1604,7 @@ function templateStatusVariant(status?: string): Exclude<ReportingBadgeVariant, 
   return "outline";
 }
 
-function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
+export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
   return runs.map((run) => {
     const drilldownLinks = buildRunLinkRows(run);
     const nextActions = buildRunActionRows(run);

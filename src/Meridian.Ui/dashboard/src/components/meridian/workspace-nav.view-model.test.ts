@@ -124,6 +124,7 @@ describe("workspace nav view model", () => {
       "/accounting/operations-continuity",
       "/accounting/entity-setup",
       "/accounting/ledger",
+      "/accounting/trial-balance",
       "/accounting/journal-entries",
       "/accounting/reconciliation",
       "/accounting/exceptions",
@@ -179,6 +180,7 @@ describe("workspace nav view model", () => {
     ]);
     expect(reporting?.subItems.map((item) => item.route)).toEqual([
       "/reporting",
+      "/reporting/library",
       "/reporting/operations-record",
       "/reporting/report-packs",
       "/reporting/evidence",
