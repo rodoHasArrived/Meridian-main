@@ -123,6 +123,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
 
     // ── Balance snapshots ─────────────────────────────────────────────────────
 
+    // SEC-005 slice 4c note: the `if (account is not null)` preflight below is the account-status
+    // policy gate (Closed/Suspended), not the tenant gate — a tenant-scoped read hides a foreign
+    // account, so this check simply skips the status policy for one the caller cannot see. Tenant
+    // isolation for these child writes is enforced uniformly in the store's child-write guard
+    // (PostgresFundAccountStore.ResolveChildWriteTenantAsync / FundAccountChildWriteTenantGuard),
+    // which refuses a write to a missing or foreign account for a tenant-scoped caller and stamps the
+    // child rows with the owning account's tenant. That is why this preflight does not (and must not)
+    // fail-closed on a null account: doing so would break the fail-open single-company posture.
     public async Task<AccountBalanceSnapshotDto> RecordBalanceSnapshotAsync(
         RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default)
     {

@@ -32,6 +32,74 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
     private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
 
+    // SEC-005 slice 4c (child partitioning): resolve the tenant to stamp on rows owned by
+    // <paramref name="accountId"/>, enforcing the fail-open cross-tenant write guard. The child tables
+    // are reached by account_id through the alternate-identifier write routes, so the authoritative
+    // owner is the parent account_definition.tenant_id — children inherit it (trust-on-first-use). A
+    // tenant-scoped caller targeting a missing or foreign account is refused, so it cannot inject child
+    // rows keyed on another tenant's account UUID (or learn it exists). Runs on the supplied connection
+    // and transaction so the ownership check shares the write's unit of work. Fail-open: a tenantless
+    // caller always proceeds and inherits the account's stamp (possibly null), preserving single-company
+    // behavior including a write to a not-yet-existing account.
+    private async Task<string?> ResolveChildWriteTenantAsync(
+        NpgsqlConnection connection, NpgsqlTransaction? tx, Guid accountId, CancellationToken ct)
+    {
+        await using var cmd = connection.CreateCommand();
+        if (tx is not null)
+        {
+            cmd.Transaction = tx;
+        }
+        cmd.CommandText = $"SELECT tenant_id FROM {Qualified("account_definition")} WHERE account_id = @account_id";
+        cmd.Parameters.AddWithValue("account_id", accountId);
+        var raw = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+
+        // ExecuteScalar returns null only when no row matched; a matched row with SQL NULL tenant_id
+        // returns DBNull (=> unstamped/legacy account, fail-open).
+        var accountExists = raw is not null;
+        var accountTenant = raw as string;
+
+        var decision = FundAccountChildWriteTenantGuard.Decide(accountExists, accountTenant, ResolveCallerTenant());
+        if (!decision.Allowed)
+        {
+            throw new InvalidOperationException(
+                $"Fund account '{accountId}' does not exist or is owned by a different tenant and cannot be modified.");
+        }
+        return decision.TenantStamp;
+    }
+
+    // SEC-005 slice 4c (child partitioning): append the fail-open tenant read predicate on the child
+    // table's stamped tenant_id when the caller has a resolved tenant. Omitted for a tenantless caller
+    // (single-company / legacy admin), so every row passes and behavior is unchanged. Mirrors the
+    // ambient-accessor + TenantReadPredicate pattern used by GetAccountAsync/QueryAccountsAsync.
+    private void AppendTenantReadPredicate(StringBuilder sb, NpgsqlCommand cmd)
+    {
+        var callerTenant = ResolveCallerTenant();
+        if (!TenantReadPredicate.ShouldFilter(callerTenant))
+        {
+            return;
+        }
+        sb.AppendLine(TenantReadPredicate.FilterClause("tenant_id"));
+        cmd.Parameters.AddWithValue(
+            TenantReadPredicate.ParameterName,
+            TenantReadPredicate.NormalizeParameter(callerTenant!));
+    }
+
+    // As above, appending the predicate directly onto the command text (for reads built without a
+    // StringBuilder). The caller must append any ORDER BY after invoking this so the predicate stays in
+    // the WHERE clause.
+    private void AppendTenantReadPredicate(NpgsqlCommand cmd)
+    {
+        var callerTenant = ResolveCallerTenant();
+        if (!TenantReadPredicate.ShouldFilter(callerTenant))
+        {
+            return;
+        }
+        cmd.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+        cmd.Parameters.AddWithValue(
+            TenantReadPredicate.ParameterName,
+            TenantReadPredicate.NormalizeParameter(callerTenant!));
+    }
+
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
@@ -280,20 +348,23 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto snapshot, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        // SEC-005 slice 4c: resolve + guard the owning account's tenant before writing the child row.
+        var tenantStamp = await ResolveChildWriteTenantAsync(connection, null, snapshot.AccountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_balance_snapshot")}
                 (snapshot_id, account_id, fund_id, as_of_date, currency,
                  cash_balance, securities_market_value, accrued_interest,
                  pending_settlement, source, recorded_at, external_reference,
-                 unrealized_pnl, realized_pnl)
+                 unrealized_pnl, realized_pnl, tenant_id)
             VALUES
                 (@snapshot_id, @account_id, @fund_id, @as_of_date, @currency,
                  @cash_balance, @securities_market_value, @accrued_interest,
                  @pending_settlement, @source, @recorded_at, @external_reference,
-                 @unrealized_pnl, @realized_pnl)
+                 @unrealized_pnl, @realized_pnl, @tenant_id)
             ON CONFLICT (snapshot_id) DO NOTHING
             """;
+        cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
         cmd.Parameters.AddWithValue("snapshot_id", snapshot.SnapshotId);
         cmd.Parameters.AddWithValue("account_id", snapshot.AccountId);
         cmd.Parameters.AddWithValue("fund_id", snapshot.FundId.HasValue ? (object)snapshot.FundId.Value : DBNull.Value);
@@ -336,6 +407,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             sb.AppendLine("  AND as_of_date <= @to_date");
             cmd.Parameters.AddWithValue("to_date", toDate.Value);
         }
+        AppendTenantReadPredicate(sb, cmd);
         sb.AppendLine("  ORDER BY as_of_date DESC, recorded_at DESC");
         cmd.CommandText = sb.ToString();
 
@@ -372,16 +444,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // SEC-005 slice 4c: resolve + guard the owning account's tenant once for the whole batch.
+        var tenantStamp = await ResolveChildWriteTenantAsync(connection, tx, batch.AccountId, ct).ConfigureAwait(false);
+
         await using (var cmd = connection.CreateCommand())
         {
             cmd.Transaction = tx;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("custodian_statement_batch")}
-                    (batch_id, account_id, as_of_date, custodian_name, source_format, file_name, line_count, ingested_at, loaded_by)
+                    (batch_id, account_id, as_of_date, custodian_name, source_format, file_name, line_count, ingested_at, loaded_by, tenant_id)
                 VALUES
-                    (@batch_id, @account_id, @as_of_date, @custodian_name, @source_format, null, @line_count, @ingested_at, @loaded_by)
+                    (@batch_id, @account_id, @as_of_date, @custodian_name, @source_format, null, @line_count, @ingested_at, @loaded_by, @tenant_id)
                 ON CONFLICT (batch_id) DO NOTHING
                 """;
+            cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
             cmd.Parameters.AddWithValue("batch_id", batch.BatchId);
             cmd.Parameters.AddWithValue("account_id", batch.AccountId);
             cmd.Parameters.AddWithValue("as_of_date", batch.AsOfDate);
@@ -408,13 +484,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 INSERT INTO {Qualified("custodian_position_line")}
                     (position_line_id, batch_id, account_id, as_of_date,
                      security_identifier, identifier_type, quantity, market_value,
-                     market_value_currency, cost_basis, accrued_income, settlement_pending, raw_payload)
+                     market_value_currency, cost_basis, accrued_income, settlement_pending, raw_payload, tenant_id)
                 VALUES
                     (@position_line_id, @batch_id, @account_id, @as_of_date,
                      @security_identifier, @identifier_type, @quantity, @market_value,
-                     @market_value_currency, null, null, false, @raw_payload::jsonb)
+                     @market_value_currency, null, null, false, @raw_payload::jsonb, @tenant_id)
                 ON CONFLICT (position_line_id) DO NOTHING
                 """;
+            cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
             cmd.Parameters.AddWithValue("position_line_id", line.LineId);
             cmd.Parameters.AddWithValue("batch_id", line.BatchId);
             cmd.Parameters.AddWithValue("account_id", line.AccountId);
@@ -439,16 +516,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // SEC-005 slice 4c: resolve + guard the owning account's tenant once for the whole batch.
+        var tenantStamp = await ResolveChildWriteTenantAsync(connection, tx, batch.AccountId, ct).ConfigureAwait(false);
+
         await using (var cmd = connection.CreateCommand())
         {
             cmd.Transaction = tx;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_batch")}
-                    (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by)
+                    (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by, tenant_id)
                 VALUES
-                    (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by)
+                    (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by, @tenant_id)
                 ON CONFLICT (batch_id) DO NOTHING
                 """;
+            cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
             cmd.Parameters.AddWithValue("batch_id", batch.BatchId);
             cmd.Parameters.AddWithValue("account_id", batch.AccountId);
             cmd.Parameters.AddWithValue("statement_date", batch.StatementDate);
@@ -466,12 +547,13 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_line")}
                     (statement_line_id, batch_id, account_id, statement_date, value_date,
-                     amount, currency, transaction_type, description, external_reference, running_balance)
+                     amount, currency, transaction_type, description, external_reference, running_balance, tenant_id)
                 VALUES
                     (@statement_line_id, @batch_id, @account_id, @statement_date, @value_date,
-                     @amount, @currency, @transaction_type, @description, @external_reference, @running_balance)
+                     @amount, @currency, @transaction_type, @description, @external_reference, @running_balance, @tenant_id)
                 ON CONFLICT (statement_line_id) DO NOTHING
                 """;
+            cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
             cmd.Parameters.AddWithValue("statement_line_id", line.LineId);
             cmd.Parameters.AddWithValue("batch_id", line.BatchId);
             cmd.Parameters.AddWithValue("account_id", line.AccountId);
@@ -503,6 +585,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
         cmd.Parameters.AddWithValue("as_of_date", asOfDate);
+        // SEC-005 slice 4c: scope by the row's stamped tenant_id (fail-open); no ORDER BY follows.
+        AppendTenantReadPredicate(cmd);
 
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var results = new List<CustodianPositionLineDto>();
@@ -562,6 +646,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             sb.AppendLine("  AND statement_date <= @to_date");
             cmd.Parameters.AddWithValue("to_date", toDate.Value);
         }
+        AppendTenantReadPredicate(sb, cmd);
         sb.AppendLine("  ORDER BY statement_date DESC");
         cmd.CommandText = sb.ToString();
 
@@ -595,6 +680,10 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // SEC-005 slice 4c: resolve + guard the owning account's tenant once; the run and its breaks
+        // (children by reconciliation_run_id) inherit the same stamp.
+        var tenantStamp = await ResolveChildWriteTenantAsync(connection, tx, run.AccountId, ct).ConfigureAwait(false);
+
         await using (var cmd = connection.CreateCommand())
         {
             cmd.Transaction = tx;
@@ -602,13 +691,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 INSERT INTO {Qualified("account_reconciliation_run")}
                     (reconciliation_run_id, account_id, as_of_date, status,
                      total_checks, total_matched, total_breaks, break_amount_total,
-                     requested_at, completed_at, requested_by)
+                     requested_at, completed_at, requested_by, tenant_id)
                 VALUES
                     (@reconciliation_run_id, @account_id, @as_of_date, @status,
                      @total_checks, @total_matched, @total_breaks, @break_amount_total,
-                     @requested_at, @completed_at, @requested_by)
+                     @requested_at, @completed_at, @requested_by, @tenant_id)
                 ON CONFLICT (reconciliation_run_id) DO NOTHING
                 """;
+            cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
             cmd.Parameters.AddWithValue("reconciliation_run_id", run.ReconciliationRunId);
             cmd.Parameters.AddWithValue("account_id", run.AccountId);
             cmd.Parameters.AddWithValue("as_of_date", run.AsOfDate);
@@ -631,13 +721,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 INSERT INTO {Qualified("account_reconciliation_breaks")}
                     (result_id, reconciliation_run_id, break_type, check_label,
                      is_match, category, status, expected_amount, actual_amount,
-                     variance, reason)
+                     variance, reason, tenant_id)
                 VALUES
                     (@result_id, @reconciliation_run_id, @break_type, @check_label,
                      @is_match, @category, @status, @expected_amount, @actual_amount,
-                     @variance, @reason)
+                     @variance, @reason, @tenant_id)
                 ON CONFLICT (result_id) DO NOTHING
                 """;
+            cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
             cmd.Parameters.AddWithValue("result_id", result.ResultId);
             cmd.Parameters.AddWithValue("reconciliation_run_id", result.ReconciliationRunId);
             cmd.Parameters.AddWithValue("break_type", result.Category);
@@ -666,9 +757,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                    requested_at, completed_at, requested_by
             FROM {Qualified("account_reconciliation_run")}
             WHERE account_id = @account_id
-            ORDER BY as_of_date DESC, requested_at DESC
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
+        // SEC-005 slice 4c: scope by the row's stamped tenant_id (fail-open) before ORDER BY.
+        AppendTenantReadPredicate(cmd);
+        cmd.CommandText += " ORDER BY as_of_date DESC, requested_at DESC";
 
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var results = new List<AccountReconciliationRunDto>();
@@ -703,6 +796,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             WHERE reconciliation_run_id = @reconciliation_run_id
             """;
         cmd.Parameters.AddWithValue("reconciliation_run_id", reconciliationRunId);
+        // SEC-005 slice 4c: scope by the break's stamped tenant_id (inherited from its run's account),
+        // fail-open; closes the reconciliation-run-id alternate-identifier read path.
+        AppendTenantReadPredicate(cmd);
 
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var results = new List<AccountReconciliationResultDto>();
@@ -728,18 +824,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task InsertSyncHistoryAsync(AccountSyncHistoryEntryDto entry, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        // SEC-005 slice 4c: resolve + guard the owning account's tenant before writing the child row.
+        var tenantStamp = await ResolveChildWriteTenantAsync(connection, null, entry.AccountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_sync_history")}
                 (sync_history_id, account_id, capability, status, provider_link_status,
                  provider_id, external_account_id, attempted_at, completed_at, fresh_until,
                  failure_kind, failure_message, correlation_id, requested_by,
-                 raw_evidence_path, projection_evidence_path, security_missing_count, warnings)
+                 raw_evidence_path, projection_evidence_path, security_missing_count, warnings, tenant_id)
             VALUES
                 (@sync_history_id, @account_id, @capability, @status, @provider_link_status,
                  @provider_id, @external_account_id, @attempted_at, @completed_at, @fresh_until,
                  @failure_kind, @failure_message, @correlation_id, @requested_by,
-                 @raw_evidence_path, @projection_evidence_path, @security_missing_count, @warnings::jsonb)
+                 @raw_evidence_path, @projection_evidence_path, @security_missing_count, @warnings::jsonb, @tenant_id)
             ON CONFLICT (sync_history_id) DO UPDATE SET
                 status                  = EXCLUDED.status,
                 provider_link_status    = EXCLUDED.provider_link_status,
@@ -751,8 +849,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 failure_kind            = EXCLUDED.failure_kind,
                 failure_message         = EXCLUDED.failure_message,
                 security_missing_count  = EXCLUDED.security_missing_count,
-                warnings                = EXCLUDED.warnings
+                warnings                = EXCLUDED.warnings,
+                -- SEC-005 slice 4c: first-owner-wins — keep an already-stamped tenant, fill a null.
+                tenant_id               = coalesce(account_sync_history.tenant_id, EXCLUDED.tenant_id)
             """;
+        cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
         cmd.Parameters.AddWithValue("sync_history_id", entry.SyncHistoryId);
         cmd.Parameters.AddWithValue("account_id", entry.AccountId);
         cmd.Parameters.AddWithValue("capability", entry.Capability);
@@ -794,6 +895,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             sb.AppendLine("  AND lower(capability) = lower(@capability)");
             cmd.Parameters.AddWithValue("capability", capability);
         }
+        AppendTenantReadPredicate(sb, cmd);
         sb.AppendLine("  ORDER BY attempted_at DESC, completed_at DESC NULLS LAST");
         cmd.CommandText = sb.ToString();
 
@@ -836,6 +938,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
     public async Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        // SEC-005 slice 4c: resolve + guard the owning account's tenant before writing the child row.
+        var tenantStamp = await ResolveChildWriteTenantAsync(connection, null, snapshot.AccountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             INSERT INTO {Qualified("account_margin_snapshot")}
@@ -847,7 +951,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                  missing_requirement_count, missing_collateral_classification_count,
                  concentration_limit_breach_count, is_live_account, approved_for_live_margin,
                  requirements_json, warnings_json, provider_id, external_account_id,
-                 fresh_until, agreement_evidence_path, snapshot_evidence_path, correlation_id)
+                 fresh_until, agreement_evidence_path, snapshot_evidence_path, correlation_id, tenant_id)
             VALUES
                 (@margin_snapshot_id, @account_id, @effective_at, @recorded_at, @currency,
                  @margin_type, @margin_call_status, @initial_margin, @maintenance_margin,
@@ -857,7 +961,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                  @missing_requirement_count, @missing_collateral_classification_count,
                  @concentration_limit_breach_count, @is_live_account, @approved_for_live_margin,
                  @requirements_json::jsonb, @warnings_json::jsonb, @provider_id, @external_account_id,
-                 @fresh_until, @agreement_evidence_path, @snapshot_evidence_path, @correlation_id)
+                 @fresh_until, @agreement_evidence_path, @snapshot_evidence_path, @correlation_id, @tenant_id)
             ON CONFLICT (account_id, effective_at) DO UPDATE SET
                 margin_snapshot_id                      = EXCLUDED.margin_snapshot_id,
                 recorded_at                             = EXCLUDED.recorded_at,
@@ -888,8 +992,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 fresh_until                             = EXCLUDED.fresh_until,
                 agreement_evidence_path                 = EXCLUDED.agreement_evidence_path,
                 snapshot_evidence_path                  = EXCLUDED.snapshot_evidence_path,
-                correlation_id                          = EXCLUDED.correlation_id
+                correlation_id                          = EXCLUDED.correlation_id,
+                -- SEC-005 slice 4c: first-owner-wins — keep an already-stamped tenant, fill a null.
+                tenant_id                               = coalesce(account_margin_snapshot.tenant_id, EXCLUDED.tenant_id)
             """;
+        cmd.Parameters.AddWithValue("tenant_id", (object?)tenantStamp ?? DBNull.Value);
         cmd.Parameters.AddWithValue("margin_snapshot_id", snapshot.MarginSnapshotId);
         cmd.Parameters.AddWithValue("account_id", snapshot.AccountId);
         cmd.Parameters.AddWithValue("effective_at", snapshot.EffectiveAt);
@@ -942,9 +1049,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                    fresh_until, agreement_evidence_path, snapshot_evidence_path, correlation_id
             FROM {Qualified("account_margin_snapshot")}
             WHERE account_id = @account_id
-            ORDER BY effective_at DESC, recorded_at DESC
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
+        // SEC-005 slice 4c: scope by the row's stamped tenant_id (fail-open) before ORDER BY.
+        AppendTenantReadPredicate(cmd);
+        cmd.CommandText += " ORDER BY effective_at DESC, recorded_at DESC";
 
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var results = new List<MarginSnapshotDto>();
