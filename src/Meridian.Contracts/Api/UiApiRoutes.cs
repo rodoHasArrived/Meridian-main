@@ -606,6 +606,7 @@ public static class UiApiRoutes
     public const string WorkstationTrading = "/api/workstation/trading";
     public const string WorkstationDataOperations = "/api/workstation/data-operations";
     public const string WorkstationData = "/api/workstation/data";
+    public const string WorkstationDataReplacementCost = "/api/workstation/data/replacement-cost";
     public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
     public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
     public const string WorkstationBankStatementImport = "/api/workstation/data/uploads/bank-statements/import";

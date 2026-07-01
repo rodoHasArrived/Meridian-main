@@ -581,6 +581,28 @@ public static class ExecutionEndpoints
         .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
+        group.MapGet("/sessions/{sessionId}/tca", async (string sessionId, HttpContext context) =>
+        {
+            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+            if (persistence is null)
+                return Results.NotFound();
+
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            var session = persistence.GetSession(sessionId);
+            if (session is null)
+                return Results.NotFound();
+
+            var report = SessionTcaReporter.Generate(
+                sessionId,
+                session.Summary.StrategyId,
+                session.FillHistory ?? Array.Empty<ExecutionReport>(),
+                session.OrderHistory);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("GetExecutionSessionTcaReport")
+        .Produces<SessionTcaReport>(200)
+        .Produces(404);
+
         group.MapPost("/sessions/create", async (CreatePaperSessionRequest request, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))

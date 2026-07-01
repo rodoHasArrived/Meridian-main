@@ -1717,7 +1717,6 @@ Meridian-main
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
 │   │   ├── governance-fund-ops-blueprint.md
-│   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── ledger.md
@@ -1767,6 +1766,7 @@ Meridian-main
 │   │   └── web-ui-development-pivot.md
 │   ├── product
 │   │   ├── deferred-expansion-boundaries.md
+│   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
 │   │   └── README.md
@@ -3582,7 +3582,8 @@ Meridian-main
 │   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   ├── PositionSyncOptions.cs
-│   │   │   └── ReplayDriftDetector.cs
+│   │   │   ├── ReplayDriftDetector.cs
+│   │   │   └── SessionTcaReporter.cs
 │   │   ├── TaxLotAccounting
 │   │   │   ├── ITaxLotSelector.cs
 │   │   │   ├── TaxLotAccountingMethod.cs
@@ -4559,6 +4560,7 @@ Meridian-main
 │   │   │   ├── DataLineageService.cs
 │   │   │   ├── DataQualityScoringService.cs
 │   │   │   ├── DataQualityService.cs
+│   │   │   ├── DataReplacementCostEstimator.cs
 │   │   │   ├── EventBuffer.cs
 │   │   │   ├── FileMaintenanceService.cs
 │   │   │   ├── FilePermissionsService.cs
@@ -6705,6 +6707,7 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
+│   │   │   ├── SessionTcaReporterTests.cs
 │   │   │   └── TradierExecutionReconciliationTests.cs
 │   │   ├── FinancialOperations
 │   │   │   ├── AccountingClose
@@ -7033,6 +7036,7 @@ Meridian-main
 │   │   │   ├── CompositeSinkTests.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
+│   │   │   ├── DataReplacementCostEstimatorTests.cs
 │   │   │   ├── DataValidatorTests.cs
 │   │   │   ├── DirectLendingMigrationTests.cs
 │   │   │   ├── EventBufferTests.cs

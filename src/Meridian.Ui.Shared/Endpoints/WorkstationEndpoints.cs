@@ -23,6 +23,8 @@ using Meridian.Execution.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Storage.Interfaces;
+using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -36,6 +38,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -384,6 +387,19 @@ public static partial class WorkstationEndpoints
             return await BuildDataPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationData");
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataReplacementCost), (HttpContext context) =>
+        {
+            var estimate = TryBuildDataReplacementCostEstimate(context);
+            return estimate is null
+                ? Results.Problem(
+                    "Storage catalog is not available.",
+                    statusCode: StatusCodes.Status503ServiceUnavailable)
+                : Results.Ok(estimate);
+        })
+        .WithName("GetWorkstationDataReplacementCost")
+        .Produces<DataReplacementCostEstimate>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationGovernance), async (HttpContext context) =>
         {
@@ -4119,21 +4135,60 @@ public static partial class WorkstationEndpoints
             backfills = [];
         }
 
+        var metrics = new List<WorkstationMetricCard>
+        {
+            new("providers-healthy", "Providers Healthy", healthyProviderCount.ToString(CultureInfo.InvariantCulture), "0", healthyProviderCount > 0 ? "success" : "default"),
+            new("backfills-running", "Backfills Running", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0" : $"+{activeRuns}", activeRuns > 0 ? "default" : "success"),
+            new("exports-ready", "Exports Ready", "0", "0", "default"),
+            new("ops-review", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0" : $"+{reviewRuns}", reviewRuns == 0 ? "default" : "warning"),
+            new("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
+        };
+
+        var replacementCost = TryBuildDataReplacementCostEstimate(context);
+        if (replacementCost is { ConservativeEstimateUsd: > 0m })
+        {
+            metrics.Add(new WorkstationMetricCard(
+                "data-replacement-cost",
+                "Est. Replacement Cost",
+                FormatCompactUsd(replacementCost.ConservativeEstimateUsd),
+                $"{replacementCost.TotalGigabytes.ToString("0.#", CultureInfo.InvariantCulture)} GB local",
+                "success"));
+        }
+
         return new WorkstationDataPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("providers-healthy", "Providers Healthy", healthyProviderCount.ToString(CultureInfo.InvariantCulture), "0", healthyProviderCount > 0 ? "success" : "default"),
-                new WorkstationMetricCard("backfills-running", "Backfills Running", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0" : $"+{activeRuns}", activeRuns > 0 ? "default" : "success"),
-                new WorkstationMetricCard("exports-ready", "Exports Ready", "0", "0", "default"),
-                new WorkstationMetricCard("ops-review", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0" : $"+{reviewRuns}", reviewRuns == 0 ? "default" : "warning"),
-                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
-            ],
+            Metrics: metrics,
             Providers: providers,
             Backfills: backfills,
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
+
+    /// <summary>
+    /// Builds the replacement-cost estimate from the storage catalog, or returns
+    /// <see langword="null"/> when the catalog service is unavailable or the meter is disabled.
+    /// </summary>
+    private static DataReplacementCostEstimate? TryBuildDataReplacementCostEstimate(HttpContext context)
+    {
+        var catalogService = context.RequestServices.GetService<IStorageCatalogService>();
+        if (catalogService is null)
+            return null;
+
+        var options = context.RequestServices
+            .GetService<IOptionsMonitor<DataReplacementCostOptions>>()?.CurrentValue
+            ?? new DataReplacementCostOptions();
+        if (!options.Enabled)
+            return null;
+
+        return DataReplacementCostEstimator.Estimate(catalogService.GetCatalog(), options);
+    }
+
+    private static string FormatCompactUsd(decimal usd) => usd switch
+    {
+        >= 1_000_000m => "$" + (usd / 1_000_000m).ToString("0.0", CultureInfo.InvariantCulture) + "M",
+        >= 1_000m => "$" + (usd / 1_000m).ToString("0.0", CultureInfo.InvariantCulture) + "k",
+        _ => "$" + usd.ToString("0", CultureInfo.InvariantCulture)
+    };
 
     private static bool MatchesLedgerDimensionFilter(
         LedgerDimensionSetDto? dimensions,

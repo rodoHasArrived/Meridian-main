@@ -1,7 +1,7 @@
 {
   "total_files": 535,
-  "total_lines": 87608,
-  "orphaned_count": 205,
+  "total_lines": 87619,
+  "orphaned_count": 204,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 199,
@@ -126,7 +126,6 @@
     "docs/plans/fund-management-pr-sequenced-roadmap.md",
     "docs/plans/fund-management-product-vision-and-capability-matrix.md",
     "docs/plans/governance-fund-ops-blueprint.md",
-    "docs/plans/high-value-code-brainstorm-2026-07.md",
     "docs/plans/kernel-parity-migration-blueprint.md",
     "docs/plans/l3-inference-implementation-plan.md",
     "docs/plans/ledger.md",
@@ -2130,7 +2129,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7660,
+      "line_count": 7664,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2673,14 +2672,6 @@
       "stale": false
     },
     {
-      "path": "docs/plans/high-value-code-brainstorm-2026-07.md",
-      "line_count": 376,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/plans/kernel-parity-migration-blueprint.md",
       "line_count": 16,
       "has_heading": true,
@@ -3065,6 +3056,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/high-value-code-brainstorm-2026-07.md",
+      "line_count": 380,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/implementation-todo-list.md",
       "line_count": 186,
       "has_heading": true,
@@ -3082,7 +3081,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 198,
+      "line_count": 201,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

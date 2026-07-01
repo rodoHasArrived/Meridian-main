@@ -54,7 +54,7 @@ Five signals from the July 2026 landscape shape this prioritization:
 | # | Idea | Effort | Audience | Impact | Depends On |
 |---|------|--------|----------|--------|------------|
 | 1 | Live/Paper TCA & best-execution report pack | M | I | High | — |
-| 2 | Alpaca live broker adapter implementing `IExecutionGateway` | M | H, I | High | — |
+| 2 | Live execution hardening: wire `AlpacaBrokerageGateway` into promotion, reconciliation, and governance | M | H, I | High | — |
 | 3 | Reconciliation break-resolution agent (MCP + CoS gates) | M | I | High | — |
 | 4 | Custodian/broker statement connector library | M | I, H | High | — |
 | 5 | DuckDB analytics workbench in the Data workspace | M | Q, H | High | — |
@@ -102,28 +102,32 @@ duplicated from Backtesting.Sdk.
 **Why now:** feeds W7 live-readiness directly; institutional differentiator no open-source
 competitor has; models already exist and are tested on the backtest side.
 
-### 2. Alpaca Live Broker Adapter Implementing `IExecutionGateway`
+### 2. Live Execution Hardening: Wire `AlpacaBrokerageGateway` Into Promotion, Reconciliation, and Governance
 
-`PaperTradingGateway` (`src/Meridian.Execution/Adapters/PaperTradingGateway.cs`) is still the only
-live-capable adapter. W7-LIVE-001 — live-readiness governance — has nothing real to govern until at
-least one broker adapter exists. The competitive scan makes this the sharpest gap: NautilusTrader's
-whole pitch is surviving the backtest→live jump, and Meridian's promotion workflow
-(`BacktestToLivePromoter`, paper-first gate pattern from ADR-015/016) is architecturally ahead but
-ends at paper.
+A broker adapter already exists — `AlpacaBrokerageGateway`
+(`src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs`) implements
+`IBrokerageGateway : IExecutionGateway` (`src/Meridian.Execution.Sdk/IBrokerageGateway.cs`) with
+account, position, open-order, and health queries, and the host registers it under the `alpaca`
+key. What's missing is everything around it that makes live execution a governed product rather
+than a wired-up capability: the promotion workflow (`BacktestToLivePromoter`, paper-first gate
+pattern from ADR-015/016) still terminates at paper, and W7-LIVE-001 — live-readiness governance —
+has no evidence surface over the real gateway. The competitive scan makes this the sharpest gap:
+NautilusTrader's whole pitch is surviving the backtest→live jump.
 
-Alpaca is the right first adapter: Meridian already ships `AlpacaMarketDataClient`
-(`src/Meridian.Infrastructure/Adapters/Alpaca/`), so credentials, HTTP resilience patterns, and
-symbol mapping exist; the trading API is REST+SSE with a free paper environment for CI-safe
-integration tests. Implement `IExecutionGateway` (`src/Meridian.Execution.Sdk/`), wire it through
-`OrderManagementSystem`, and keep it gated behind `ExecutionMode.Live` plus the
-`CompositeRiskValidator` pre-trade chain. The user moment: the promotion workflow's final step
-changes from "paper only" to a governed live toggle with an explicit operator sign-off — exactly
-the approval-gate pattern the CoS runtime was built for.
+The work is hardening, not adapter-building: route the promotion workflow's final step to the
+registered brokerage gateway behind `ExecutionMode.Live` plus the `CompositeRiskValidator`
+pre-trade chain with an explicit operator sign-off (the approval-gate pattern the CoS runtime was
+built for); add broker-state reconciliation that compares `GetPositionsAsync` /
+`GetOpenOrdersAsync` broker truth against the local `OrderManagementSystem` view and surfaces
+divergence as reconciliation breaks (fills arriving after disconnect are the hard 20%); and emit
+live-readiness evidence (gateway health checks, capability declarations, reconciliation status)
+into the W7 governance surface. The user moment: the promotion workflow's final step changes from
+"paper only" to a governed live toggle whose evidence panel shows broker health and position parity
+before the operator signs off.
 
-Tradeoffs: live order routing is the highest-blast-radius code in the product. Scope tightly —
-market/limit/day orders, single account, equities only — and let the risk-rule chain and W7
-governance carry the safety story. Order-state reconciliation against broker truth (fills arriving
-after disconnect) is the hard 20%.
+Tradeoffs: live order routing is the highest-blast-radius surface in the product. Scope tightly —
+promotion wiring, reconciliation, and evidence first; order-type breadth and multi-account later —
+and let the risk-rule chain and W7 governance carry the safety story.
 
 **Why now:** unlocks W7, completes the "collection → backtest → paper → live" value proposition
 that the differentiation matrix already promises, and converts the promotion workflow from demo to
