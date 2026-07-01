@@ -16,6 +16,7 @@ using Meridian.Platform.Tracing;
 using Meridian.Storage;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
+using Meridian.Storage.Services;
 using Serilog;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using Meridian.Contracts.Monitoring;
@@ -363,32 +364,52 @@ public sealed class BackfillCoordinator : IDisposable
             .ToArray();
     }
 
-    private static StorageOptions CreateStorageOptionsForRequest(StorageOptions baseOptions, BackfillRequest request)
+    internal static StorageOptions CreateStorageOptionsForRequest(StorageOptions baseOptions, BackfillRequest request)
     {
-        if (!request.Granularity.IsIntraday())
-            return baseOptions;
+        var planner = new AdaptivePartitionPlacementPlanner();
+        var placementRequest = CreateAdaptivePartitionPlacementRequest(request);
+        var recommendation = planner.Recommend(placementRequest);
+        var filePrefix = request.Granularity.IsIntraday()
+            ? AppendFilePrefix(baseOptions.FilePrefix, request.Granularity.ToStorageFilePrefix())
+            : baseOptions.FilePrefix;
 
-        return new StorageOptions
-        {
-            RootPath = baseOptions.RootPath,
-            Compress = baseOptions.Compress,
-            CompressionCodec = baseOptions.CompressionCodec,
-            NamingConvention = baseOptions.NamingConvention,
-            DatePartition = baseOptions.DatePartition,
-            IncludeProvider = baseOptions.IncludeProvider,
-            FilePrefix = AppendFilePrefix(baseOptions.FilePrefix, request.Granularity.ToStorageFilePrefix()),
-            RetentionDays = baseOptions.RetentionDays,
-            MaxTotalBytes = baseOptions.MaxTotalBytes,
-            Tiering = baseOptions.Tiering,
-            Quotas = baseOptions.Quotas,
-            Policies = baseOptions.Policies,
-            GenerateManifests = baseOptions.GenerateManifests,
-            EmbedChecksum = baseOptions.EmbedChecksum,
-            VerifyOnRead = baseOptions.VerifyOnRead,
-            EnableParquetSink = baseOptions.EnableParquetSink,
-            ActiveSinks = baseOptions.ActiveSinks,
-            PartitionStrategy = baseOptions.PartitionStrategy
-        };
+        return planner.ApplyRecommendation(baseOptions, recommendation, filePrefix);
+    }
+
+    private static AdaptivePartitionPlacementRequest CreateAdaptivePartitionPlacementRequest(BackfillRequest request)
+    {
+        var symbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
+        var coverage = EstimateCoverage(request.From, request.To);
+        var estimatedEvents = EstimateBackfillEventCount(symbols.Length, coverage, request.Granularity);
+        var sourceCount = string.Equals(request.Provider, "composite", StringComparison.OrdinalIgnoreCase) ? 2 : 1;
+
+        return new AdaptivePartitionPlacementRequest(
+            TotalEvents: estimatedEvents,
+            Coverage: coverage,
+            SymbolCount: symbols.Length,
+            SourceCount: sourceCount,
+            EventTypeCount: 1,
+            LatencySensitive: request.Granularity.IsIntraday(),
+            ArchivalPromotion: request.Granularity is DataGranularity.Weekly or DataGranularity.Monthly ||
+                coverage.TotalDays >= 90);
+    }
+
+    private static TimeSpan EstimateCoverage(DateOnly? from, DateOnly? to)
+    {
+        if (from.HasValue && to.HasValue && to.Value >= from.Value)
+            return TimeSpan.FromDays(to.Value.DayNumber - from.Value.DayNumber + 1);
+
+        return TimeSpan.FromDays(1);
+    }
+
+    private static long EstimateBackfillEventCount(int symbolCount, TimeSpan coverage, DataGranularity granularity)
+    {
+        var effectiveSymbolCount = Math.Max(1, symbolCount);
+        var intervalSeconds = Math.Max(1d, granularity.ToTimeSpan().TotalSeconds);
+        var intervals = Math.Max(1d, Math.Ceiling(coverage.TotalSeconds / intervalSeconds));
+        var total = intervals * effectiveSymbolCount;
+
+        return total >= long.MaxValue ? long.MaxValue : (long)total;
     }
 
     private static string AppendFilePrefix(string? existingPrefix, string granularityPrefix)

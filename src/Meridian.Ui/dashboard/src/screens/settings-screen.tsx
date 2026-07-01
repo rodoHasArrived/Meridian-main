@@ -578,10 +578,7 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   if (normalizedHash === "backend-capability-coverage") {
     return "runtime";
   }
-  if (normalizedHash === "robinhood-provider-setup") {
-    return "providers";
-  }
-  if (normalizedHash === "alpaca-provider-setup") {
+  if (normalizedHash === "alpaca-provider-setup" || normalizedHash === "robinhood-provider-setup") {
     return "providers";
   }
   if (normalizedHash === "scoped-access-control") {

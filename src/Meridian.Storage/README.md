@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-01
 ---
 
 # src/Meridian.Storage
@@ -84,6 +84,13 @@ Backfill status and checkpoint sidecars are Storage-owned durable records publis
 `Meridian.Contracts.Backfill` result payload plus per-symbol checkpoint and bar-count maps under
 the storage root through `AtomicFileWriter`, allowing interrupted jobs to resume without
 Application owning file persistence details.
+
+Adaptive partition placement recommendations are Storage-owned through
+`AdaptivePartitionPlacementPlanner`. The planner converts observed event volume, coverage window,
+symbol count, provider/source breadth, and event-type breadth into a recommended
+`PartitionStrategy` plus storage profile, then maps the recommendation back to concrete
+path-driving `StorageOptions` fields. Backfill orchestration opts into those recommendations for
+request-scoped placement while broader tier-promotion automation remains a separate workflow.
 
 Shared-storage coordination lease persistence is Storage-owned durable state. The
 `SharedStorageCoordinationStore` in `Meridian.Storage.Coordination` persists Contracts-owned
