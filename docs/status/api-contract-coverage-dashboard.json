@@ -1859,289 +1859,289 @@
     {
       "method": "POST",
       "path": "/api/ledger/books/rollout-assessment",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:106",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:105",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:147",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:146",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/periods",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:185",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:184",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/periods/{periodId:guid}/close",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:217",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:215",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/journal-entries",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:261",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:258",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/aggregates/{aggregateId:guid}/journal-entries",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:305",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:302",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/trial-balance",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:354",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:351",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/trial-balance-report",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:379",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:376",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/periods/{periodId:guid}/pnl-summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:404",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:401",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/trial-balance",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:429",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:426",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/pnl-summary",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:488",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:485",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:547",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:544",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/chart",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:575",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:572",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/templates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:606",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:602",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:637",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:632",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/promotion-approvals",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:668",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:662",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/test-cases",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:704",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:697",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:735",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:727",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/dry-run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:767",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:759",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/candidates",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:807",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:799",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/candidates/post",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:849",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:841",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/projection-sets",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:893",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:884",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/posting-rules/tests",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:935",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:926",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/accounting-configuration/activate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:975",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:966",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/accounting-configuration/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1010",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1000",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/close-management/period-plan/{workflowId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1038",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1028",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/period-plan/configuration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1064",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1054",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/late-adjustments",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1114",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1103",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/late-adjustments/review",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1164",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1152",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/task-signoffs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1214",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1201",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/evidence-review",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1264",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1250",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/close-management/period-lock",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1314",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1299",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/reports/accounting-package",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1368",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1352",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/reports/accounting-package/certification",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1416",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1400",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/accounting-packages",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1469",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1452",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1506",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1489",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/journal-entry-workbench",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1552",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1535",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/activity",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1578",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1561",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/fund-event-record",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1610",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1593",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/fund-event-command-center",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1653",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1636",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/capital-account-subledger",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1694",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1677",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/report-output",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1755",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1738",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/private-capital/capital-account-workbench",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1826",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1809",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/drafts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1873",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1856",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/validate",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1924",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1906",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/submit-approval",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1964",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1946",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/evidence",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2007",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1988",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2050",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2030",
       "documented": true
     },
     {

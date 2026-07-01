@@ -3256,9 +3256,7 @@ Meridian-main
 │   │   ├── StrategyEngine
 │   │   │   └── StrategyEngineContracts.cs
 │   │   ├── Tenancy
-│   │   │   ├── FundProfileTenancy.cs
-│   │   │   ├── FundScopedWriteTenantGate.cs
-│   │   │   └── TenantReadPredicate.cs
+│   │   │   └── FundProfileTenancy.cs
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
@@ -4424,9 +4422,7 @@ Meridian-main
 │   │   │   │   ├── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
 │   │   │   │   ├── V_ledger_018__accounting_audit_fund_lower_index.sql
 │   │   │   │   ├── V_ledger_019__fund_profile_tenancy.sql
-│   │   │   │   ├── V_ledger_020__fund_scope_tenant_columns.sql
-│   │   │   │   ├── V_ledger_021__operations_continuity_tenant_column.sql
-│   │   │   │   └── V_ledger_022__tenant_lower_indexes.sql
+│   │   │   │   └── V_ledger_020__fund_scope_tenant_columns.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
@@ -6836,7 +6832,6 @@ Meridian-main
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
-│   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
@@ -6848,7 +6843,6 @@ Meridian-main
 │   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
-│   │   │   ├── OperationsContinuityTenantColumnMigrationTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs
 │   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
@@ -6861,8 +6855,6 @@ Meridian-main
 │   │   │   ├── StorageProfilePresetsTests.cs
 │   │   │   ├── StorageSinkRegistryTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
-│   │   │   ├── TenantLowerIndexMigrationTests.cs
-│   │   │   ├── TenantReadPredicateTests.cs
 │   │   │   ├── TierMigrationServiceTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
