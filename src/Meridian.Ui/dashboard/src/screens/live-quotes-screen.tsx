@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
+import { DepthChart } from "@/components/charts";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -313,6 +314,19 @@ export function LiveQuotesScreen() {
               ) : (
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
+                  {marketVm.orderbook.bids.length > 0 || marketVm.orderbook.asks.length > 0 ? (
+                    <div
+                      className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40"
+                      role="img"
+                      aria-label={`Order-book depth profile for ${activeSymbol}: cumulative bid and ask size around the mid price.`}
+                    >
+                      <DepthChart
+                        bids={marketVm.orderbook.bids.map((level) => ({ price: level.price, size: level.size }))}
+                        asks={marketVm.orderbook.asks.map((level) => ({ price: level.price, size: level.size }))}
+                        mid={marketVm.orderbook.midPrice ?? null}
+                      />
+                    </div>
+                  ) : null}
                   <DepthLadder
                     ladder={marketVm.depthLadder}
                     onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}

@@ -1,9 +1,10 @@
-import { AlertCircle, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { EmptyState, MetricCard } from "@/components/data/concrete";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
 
 interface BackfillValidation {
@@ -32,17 +33,21 @@ interface BackfillValidationDashboardProps {
   isLoading?: boolean;
 }
 
-function getStatusColor(completeness: number): string {
-  if (completeness >= 0.95) return "bg-green-500";
-  if (completeness >= 0.8) return "bg-yellow-500";
-  return "bg-red-500";
+// Concrete severity mapping: Complete reads Ready (spruce-green), Good reads Action
+// (ochre — attention, not blocked), Incomplete reads Blocked (brick-red). The original
+// human label is preserved via SeverityBadge's `label` prop.
+function getStatusSeverity(status: string): string {
+  if (status === "Complete") return "Ready";
+  if (status === "Good") return "Action";
+  if (status === "Incomplete") return "Blocked";
+  return "Info";
 }
 
-function getStatusBadgeVariant(status: string): "success" | "warning" | "danger" | "default" {
-  if (status === "Complete") return "success";
-  if (status === "Good") return "warning";
-  if (status === "Incomplete") return "danger";
-  return "default";
+// Completeness-driven tone for the value readout: alpha layer only, semantic tokens.
+function getCompletenessToneClass(completeness: number): string {
+  if (completeness >= 0.95) return "text-success";
+  if (completeness >= 0.8) return "text-warning";
+  return "text-danger";
 }
 
 export function BackfillValidationDashboard({
@@ -87,22 +92,10 @@ export function BackfillValidationDashboard({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="p-4 rounded-lg border bg-card">
-                <div className="text-sm text-muted-foreground">Complete (≥95%)</div>
-                <div className="text-3xl font-bold text-green-600 mt-1">{summary.complete}</div>
-              </div>
-              <div className="p-4 rounded-lg border bg-card">
-                <div className="text-sm text-muted-foreground">Good (80-95%)</div>
-                <div className="text-3xl font-bold text-yellow-600 mt-1">{summary.good}</div>
-              </div>
-              <div className="p-4 rounded-lg border bg-card">
-                <div className="text-sm text-muted-foreground">Poor (&lt;80%)</div>
-                <div className="text-3xl font-bold text-red-600 mt-1">{summary.poor}</div>
-              </div>
-              <div className="p-4 rounded-lg border bg-card">
-                <div className="text-sm text-muted-foreground">Average Completeness</div>
-                <div className="text-3xl font-bold mt-1">{Math.round(summary.average * 100)}%</div>
-              </div>
+              <MetricCard label="Complete (≥95%)" value={summary.complete} tone="success" />
+              <MetricCard label="Good (80-95%)" value={summary.good} tone="warning" />
+              <MetricCard label="Poor (<80%)" value={summary.poor} tone="danger" />
+              <MetricCard label="Average Completeness" value={`${Math.round(summary.average * 100)}%`} tone="neutral" />
             </div>
           </CardContent>
         </Card>
@@ -120,28 +113,27 @@ export function BackfillValidationDashboard({
         </CardHeader>
         <CardContent>
           {validations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
-                No symbols configured yet. Add symbols to monitor backfill completeness.
-              </p>
-            </div>
+            <EmptyState
+              icon="table"
+              title="No symbols configured yet"
+              detail="Add symbols to monitor backfill completeness."
+            />
           ) : (
             <div className="space-y-3">
               {validations.map((validation) => (
                 <div
                   key={validation.symbol}
-                  className="p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                  className="rounded-[var(--radius-card,2px)] border border-border/70 bg-background/35 p-4 transition-colors hover:border-border hover:bg-secondary/40"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="font-semibold text-base">{validation.symbol}</span>
-                      <Badge variant={getStatusBadgeVariant(validation.status)} className="text-xs">
-                        {validation.status}
-                      </Badge>
+                      <span className="font-semibold text-base text-foreground">{validation.symbol}</span>
+                      <SeverityBadge status={getStatusSeverity(validation.status)} label={validation.status} />
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold">{Math.round(validation.completeness * 100)}%</div>
+                      <div className={cn("font-mono text-2xl font-semibold tabular-nums", getCompletenessToneClass(validation.completeness))}>
+                        {Math.round(validation.completeness * 100)}%
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {validation.coveredDays} of {validation.totalDays} days
                       </div>
@@ -158,7 +150,7 @@ export function BackfillValidationDashboard({
 
                   {/* Date range */}
                   {validation.firstDataPoint && validation.lastDataPoint && (
-                    <div className="text-xs text-muted-foreground mb-2">
+                    <div className="font-mono text-xs text-muted-foreground mb-2">
                       {validation.firstDataPoint} to {validation.lastDataPoint}
                     </div>
                   )}
@@ -166,10 +158,10 @@ export function BackfillValidationDashboard({
                   {/* Gaps */}
                   {validation.gaps && validation.gaps.length > 0 && (
                     <details className="cursor-pointer">
-                      <summary className="text-xs font-semibold text-yellow-700 hover:text-yellow-900">
+                      <summary className="text-xs font-semibold text-warning hover:text-warning/80">
                         {validation.gaps.length} gap{validation.gaps.length > 1 ? "s" : ""} detected
                       </summary>
-                      <ul className="mt-2 space-y-1 text-xs text-muted-foreground list-disc list-inside">
+                      <ul className="mt-2 space-y-1 font-mono text-xs text-muted-foreground list-disc list-inside">
                         {validation.gaps.slice(0, 3).map((gap, idx) => (
                           <li key={idx}>{gap}</li>
                         ))}
