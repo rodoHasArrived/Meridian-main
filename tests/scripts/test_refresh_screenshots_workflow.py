@@ -205,6 +205,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
     def screenshot_coverage_path(route_path: str) -> str:
         parsed = urlsplit(route_path)
         path = parsed.path or "/"
+        if not path.startswith("/"):
+            path = f"/{path}"
         return f"{path}#{parsed.fragment}" if parsed.fragment else path
 
     def extract_workstation_route_catalog(self) -> dict[str, str]:

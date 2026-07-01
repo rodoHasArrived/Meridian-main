@@ -323,8 +323,12 @@ function screenshotCoveragePath(routePath) {
     return "";
   }
 
-  const routeUrl = new URL(routePath.trim(), "http://meridian.local");
-  return `${routeUrl.pathname || "/"}${routeUrl.hash}`;
+  try {
+    const routeUrl = new URL(routePath.trim(), "http://meridian.local");
+    return `${routeUrl.pathname || "/"}${routeUrl.hash}`;
+  } catch {
+    return "";
+  }
 }
 
 async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath) {
