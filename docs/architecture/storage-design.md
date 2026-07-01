@@ -103,7 +103,7 @@ The storage layer currently delivers:
 | Cross-source reconciliation | 🔄 Partial | `DataQualityService`, cross-provider comparisons, `CrossSourceBackfillReconciliationService` |
 | Natural language query parser | ✅ Implemented | `StorageSearchService` |
 | Capacity forecasting | ✅ Implemented | `StorageEndpoints` |
-| Adaptive partitioning | 🔄 Partial | `BackfillPartitionPlanner`, `BackfillCostEstimator`, `HistoricalBackfillService` |
+| Adaptive partitioning | 🔄 Partial | `BackfillPartitionPlanner`, `BackfillCostEstimator`, `HistoricalBackfillService`, `AdaptivePartitionPlacementPlanner` |
 
 `SourceRegistry`, `MetadataTagService`, and `DataLineageService` now treat persistence as part of the mutation boundary rather than a deferred background task. Their writes complete through `AtomicFileWriter` before the mutating call returns, save failures surface to the caller, and the metadata/lineage JSON stores use ADR-014 source-generated serializer contexts instead of ad-hoc `JsonSerializerOptions`.
 
@@ -128,9 +128,12 @@ Auto-remediation execution history now retains SLA tier, due-time, owner-assignm
 downstream-workflow, and reason-code metadata for system-triggered gap repair attempts.
 Cross-source reconciliation now includes bounded daily backfill comparison through
 `CrossSourceBackfillReconciliationService`, but remains partial until it is wired into provider
-governance timer ownership, escalation, and archival promotion gates. Adaptive backfill partition planning is now
-covered by preview-time cost estimation and bounded runtime execution; storage-engine archival
-promotion and governance timers remain separate implementation lanes.
+governance timer ownership, escalation, and archival promotion gates. Adaptive backfill partition
+planning is now covered by preview-time cost estimation and bounded runtime execution.
+Storage-engine adaptive placement now has deterministic recommendation support through
+`AdaptivePartitionPlacementPlanner`, and backfill orchestration applies those recommendations to
+request-scoped storage options. Automatic archival tier promotion and governance timers remain
+separate implementation lanes.
 
 ### Storage Profiles (Presets)
 Storage profiles are optional presets that map to existing storage options without removing advanced configuration.
@@ -306,23 +309,34 @@ enum PartitionDimension
 }
 ```
 
-### 2. Adaptive Partitioning by Volume (Roadmap)
+### 2. Adaptive Partitioning by Volume (Implemented Recommendation)
 
-**Auto-adjust partition granularity based on data volume:**
+`AdaptivePartitionPlacementPlanner` provides the storage-engine recommendation boundary for adaptive
+placement and maps recommendations back to concrete path-driving `StorageOptions`. Backfill
+orchestration applies this boundary for request-scoped writes; other storage callers remain
+caller-configured until they explicitly opt in.
 
 ```csharp
-record AdaptivePartitionConfig(
-    long EventsPerHourThreshold = 100_000,  // Switch to hourly
-    long EventsPerDayThreshold = 50_000,    // Stay at daily
-    long EventsPerMonthThreshold = 10_000   // Switch to monthly
+record AdaptivePartitionPlacementRequest(
+    long TotalEvents,
+    TimeSpan Coverage,
+    int SymbolCount,
+    int SourceCount,
+    int EventTypeCount = 1,
+    bool LatencySensitive = false,
+    bool ArchivalPromotion = false
 );
 ```
 
 **Implementation logic:**
 ```
-IF events_per_hour > 100,000 THEN use Hourly partitions
-ELSE IF events_per_day > 50,000 THEN use Daily partitions
-ELSE IF events_per_month < 10,000 THEN use Monthly partitions
+IF latency_sensitive OR events_per_hour >= 100,000
+  THEN recommend LowLatency profile, Symbol + EventType (+ Source) and Hourly partitions
+ELSE IF archival_promotion OR long-window events_per_day <= 10,000
+  THEN recommend Archival profile, Date + Source/Symbol and Monthly partitions
+ELSE IF source_count > 1
+  THEN recommend Research profile, Date + Source + Symbol and Daily partitions
+ELSE recommend Research profile, Date + Symbol and Daily partitions
 ```
 
 ### 3. Trading Calendar Awareness (Roadmap)
@@ -3101,7 +3115,9 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 - [x] Build bounded daily backfill cross-source reconciliation
 - [x] Create capacity forecasting
 - [x] Add adaptive backfill partition planning
-- [ ] Add storage-engine adaptive partition placement
+- [x] Add storage-engine adaptive partition placement recommendations
+- [x] Wire adaptive placement recommendations into backfill storage-engine decisions
+- [ ] Wire adaptive placement recommendations into automatic archival tier-promotion decisions
 - [ ] Implement emergency override system
 
 **Exit criteria:**
