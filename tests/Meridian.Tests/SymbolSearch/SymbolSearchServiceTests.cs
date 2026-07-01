@@ -208,6 +208,74 @@ public class SymbolSearchServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SearchAsync_ExactSymbolMatchOutranksHigherScoredFuzzySecondaryResult()
+    {
+        var secondaryProvider = new Mock<ISymbolSearchProvider>();
+        secondaryProvider.Setup(p => p.Name).Returns("tiingo");
+        secondaryProvider.Setup(p => p.Priority).Returns(7);
+        secondaryProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        secondaryProvider.Setup(p => p.SearchAsync("MSFT", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSFU", "Microsoft Ultra Fund", "NYSE", "ETF", "US", "USD", null, 100),
+                new SymbolSearchResult(" msft ", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", null, 70)
+            ]);
+
+        _service = new SymbolSearchService(
+            [secondaryProvider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
+
+        result.Results.Should().HaveCount(2);
+        result.Results[0].Symbol.Should().Be("MSFT", "exact ticker matches should be preferred over fuzzy secondary-provider rows");
+        result.Results[0].Source.Should().Be("tiingo", "the service should attribute sparse rows to the provider that returned them");
+    }
+
+    [Fact]
+    public async Task SearchAsync_UsesProviderConsensusAsTieBreakerForSecondaryAmbiguity()
+    {
+        var firstProvider = new Mock<ISymbolSearchProvider>();
+        firstProvider.Setup(p => p.Name).Returns("alpha");
+        firstProvider.Setup(p => p.Priority).Returns(1);
+        firstProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        firstProvider.Setup(p => p.SearchAsync("micro", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSH", "Micro Strategic Holdings", "NASDAQ", "Stock", "US", "USD", null, 75)
+            ]);
+
+        var secondProvider = new Mock<ISymbolSearchProvider>();
+        secondProvider.Setup(p => p.Name).Returns("tiingo");
+        secondProvider.Setup(p => p.Priority).Returns(2);
+        secondProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        secondProvider.Setup(p => p.SearchAsync("micro", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult("MSFT", "Microsoft Corporation", "NASDAQ", "Stock", "US", "USD", null, 75)
+            ]);
+
+        var thirdProvider = new Mock<ISymbolSearchProvider>();
+        thirdProvider.Setup(p => p.Name).Returns("twelvedata");
+        thirdProvider.Setup(p => p.Priority).Returns(3);
+        thirdProvider.Setup(p => p.IsAvailableAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        thirdProvider.Setup(p => p.SearchAsync("micro", It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new SymbolSearchResult(" msft ", "Microsoft Corp", "NASDAQ", "Equity", "US", "USD", null, 75)
+            ]);
+
+        _service = new SymbolSearchService(
+            [firstProvider.Object, secondProvider.Object, thirdProvider.Object],
+            null,
+            new MetadataEnrichmentService());
+
+        var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "micro", Limit: 10));
+
+        result.Results.Should().HaveCount(2);
+        result.Results[0].Symbol.Should().Be("MSFT", "equal-score ambiguity should prefer the symbol corroborated by more providers");
+        result.Results[0].Source.Should().Be("tiingo", "provider priority should choose the representative source inside a corroborated symbol group");
+        result.Sources.Should().BeEquivalentTo(["alpha", "tiingo", "twelvedata"]);
+    }
+
+    [Fact]
     public async Task SearchAsync_WithSpecificProvider_QueriesOnlyThatProvider()
     {
         // Arrange

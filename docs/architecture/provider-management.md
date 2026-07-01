@@ -228,7 +228,7 @@ All locations relative to `src/Meridian.Infrastructure/Adapters/`.
 | FRED | `FredHistoricalDataProvider`, `FredSymbolSearchProvider` | Yes | 120/min | Economic series observations mapped to synthetic daily bars, credential-gated series search |
 | Alpha Vantage | `AlphaVantageHistoricalDataProvider`, `AlphaVantageSymbolSearchProvider`, `AlphaVantageCorporateActionProvider` | Yes | 5/min | Daily bars, intraday bars, keyword symbol search, adjusted-daily dividend/split extraction |
 | Twelve Data | `TwelveDataHistoricalDataProvider`, `TwelveDataSymbolSearchProvider`, `TwelveDataCorporateActionProvider` | Yes | 8/min | Daily bars, credential-gated `/symbol_search` discovery, paid-plan `/dividends` and `/splits` corporate actions |
-| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider`, `NasdaqDataLinkCorporateActionProvider` | Limited | Varies | Time-series datasets, adjusted dataset dividend/split extraction |
+| Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider`, `NasdaqDataLinkSymbolSearchProvider`, `NasdaqDataLinkCorporateActionProvider` | Limited | Varies | Time-series datasets, credential-gated dataset-code search, adjusted dataset dividend/split extraction |
 | Interactive Brokers | `IBHistoricalDataProvider` | With account | IB pacing | All types |
 | StockSharp | `StockSharpHistoricalDataProvider` | With account | Varies | Multi-exchange |
 
@@ -251,6 +251,12 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 
 Located under `src/Meridian.Infrastructure/Adapters/` provider folders.
 
+`SymbolSearchService` remains the shared aggregation boundary for UI and workflow consumers. It
+normalizes provider symbols, drops malformed blank-symbol rows, attributes sparse rows to the
+provider that returned them, promotes exact ticker matches ahead of fuzzy rows, and uses
+multi-provider agreement plus provider priority as deterministic tie-breakers. These rules reduce
+secondary-provider ambiguity without promoting any inventory provider to full search-quality parity.
+
 ---
 
 ## Streaming Failover
@@ -272,7 +278,7 @@ Orchestrates automatic failover between streaming providers. Monitors provider h
 **Failover triggers:**
 
 - Consecutive operation failures exceeding the threshold
-- Average latency exceeding `MaxLatencyMs` configured on the rule
+- Recent-window average latency exceeding `MaxLatencyMs` configured on the rule
 - Connection lost events from `ConnectionHealthMonitor`
 - Missed heartbeats (2+ consecutive)
 
@@ -292,6 +298,12 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 - On connect failure: iterates backup providers until one succeeds
 - Thread-safe switching via `SemaphoreSlim`
 - Reports capabilities of the currently active underlying provider
+
+Provider health snapshots keep a bounded recent latency window for streaming failover decisions.
+This makes `MaxLatencyMs` routing responsive to current SLA breaches while allowing stale latency
+spikes to decay after sustained healthy samples. When a latency breach triggers failover, backup
+selection also applies the same `MaxLatencyMs` health rule so routing skips backups whose current
+recent-latency window is already outside the rule threshold.
 
 ### StreamingFailoverRegistry
 
@@ -412,12 +424,19 @@ architecture supports the following deterministic semantics:
 - `PriorityBackfillQueue` orders jobs by `Critical`, `High`, `Normal`, `Low`, then `Deferred`, and
   keeps dependency-blocked jobs paused until all dependencies complete.
 
-`AutoGapRemediationService` adds guardrails, not a complete cross-provider SLA engine. It requires
-minimum gap duration/size, applies symbol and provider cooldowns, limits concurrent remediation
-attempts, suppresses duplicate completed attempts by idempotency key, and allows transient failures
-to retry. Cross-provider fallback and promotion-grade closure remain operator-governed: the run is
-not considered remediated until execution history, per-symbol validation signals, and a follow-up
-gap or quality check prove the affected interval acceptable for the blocked downstream workflow.
+`AutoGapRemediationService` adds guardrails plus retained SLA classification and status projection,
+not a complete cross-provider SLA engine. It requires minimum gap duration/size, applies symbol and
+provider cooldowns, limits concurrent remediation attempts, suppresses duplicate completed attempts
+by idempotency key, and allows transient failures to retry. Same-provider, same-window gap-analyzer
+scan results are batched into a single deterministic remediation execution with uppercase, sorted
+symbols and retained execution history. Each system-triggered execution now retains SLA tier,
+due-time, owner-assignment, downstream-workflow, and reason-code warnings so critical paper,
+reconciliation, accounting, or reporting blockers are distinguishable from standard repairs.
+`EvaluateRemediationSla` projects those retained execution-history fields into overdue, due-soon,
+failed, open, and completed status items with owner-assignment counts for operator read models.
+Cross-provider fallback and promotion-grade closure remain operator-governed: the run is not
+considered remediated until execution history, per-symbol validation signals, and a follow-up gap or
+quality check prove the affected interval acceptable for the blocked downstream workflow.
 For bounded daily backfill checks, `CrossSourceBackfillReconciliationService` can compare a
 baseline provider against one or more comparison providers and retain structured price/volume drift,
 missing-session, and provider-error evidence. Batch reconciliation normalizes symbols to uppercase,
@@ -839,5 +858,6 @@ export TIINGO__TOKEN=your-token
 
 - Added the historical backfill ordering, checkpoint/resume, priority queue, and gap-remediation
   contract that links architecture guidance to the canonical provider backfill operator runbook.
-- Clarified that current auto-remediation is guardrail automation, while cross-provider SLA closure
-  still requires retained execution, validation-signal, and follow-up quality evidence.
+- Clarified that current auto-remediation is guardrail automation with retained SLA classification
+  metadata and status projection, while cross-provider SLA closure still requires retained execution,
+  validation-signal, and follow-up quality evidence plus later governance timer enforcement.

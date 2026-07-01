@@ -260,6 +260,87 @@ function assertFixtureRouteCoverage(requiredRoutes, fixtureRoutes) {
   }
 }
 
+function extractWorkstationRouteCatalog(source, filePath) {
+  const match = source.match(/export const WORKSTATION_ROUTE_CATALOG = \{(?<body>[\s\S]*?)\} as const;/);
+  if (!match?.groups?.body) {
+    throw new Error(`WORKSTATION_ROUTE_CATALOG block was not found in ${filePath}`);
+  }
+
+  const catalog = new Map();
+  const routePattern = /\n\s*([A-Za-z0-9_]+):\s*"([^"]+)"/g;
+  let routeMatch = routePattern.exec(match.groups.body);
+  while (routeMatch) {
+    catalog.set(routeMatch[1], routeMatch[2]);
+    routeMatch = routePattern.exec(match.groups.body);
+  }
+
+  return catalog;
+}
+
+function extractExplicitAppRoutes(source) {
+  const paths = new Set();
+  const routePattern = /<Route\s+path="([^"]+)"/g;
+  let routeMatch = routePattern.exec(source);
+  while (routeMatch) {
+    paths.add(routeMatch[1]);
+    routeMatch = routePattern.exec(source);
+  }
+
+  return paths;
+}
+
+function collectExpectedCapturePaths(routeCatalog, appRoutes) {
+  const compatibilityRouteKeys = new Set([
+    "dataSecurityMasterLegacy"
+  ]);
+  const compatibilityAppRoutes = new Set([
+    "/data/security-master",
+    "/data/security-master/*",
+    "/overview/*",
+    "/research/*",
+    "/data-operations/*",
+    "/governance/*"
+  ]);
+  const expected = new Set(["/"]);
+
+  for (const [key, routePath] of routeCatalog.entries()) {
+    if (!compatibilityRouteKeys.has(key)) {
+      expected.add(routePath);
+    }
+  }
+
+  for (const routePath of appRoutes) {
+    if (!routePath.includes("*") && !compatibilityAppRoutes.has(routePath)) {
+      expected.add(routePath);
+    }
+  }
+
+  return expected;
+}
+
+async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath) {
+  const capturedPaths = new Set(
+    captures
+      .map((capture) => capture.path)
+      .filter((routePath) => typeof routePath === "string" && routePath.trim().length > 0)
+  );
+  const routeCatalog = extractWorkstationRouteCatalog(
+    await fs.readFile(routeCatalogPath, "utf8"),
+    routeCatalogPath
+  );
+  const appRoutes = extractExplicitAppRoutes(await fs.readFile(appShellPath, "utf8"));
+  const expectedPaths = collectExpectedCapturePaths(routeCatalog, appRoutes);
+  const missingPaths = [...expectedPaths]
+    .filter((routePath) => !capturedPaths.has(routePath))
+    .sort();
+
+  if (missingPaths.length > 0) {
+    throw new Error(
+      `Web screenshot route coverage is incomplete. Missing capture path(s): ${missingPaths.join(", ")}`
+    );
+  }
+}
+
 function collectCaptureWaitForTexts(capture) {
   const waitForTexts = [];
   if (typeof capture.waitForText === "string" && capture.waitForText.trim().length > 0) {
@@ -371,6 +452,14 @@ async function main() {
     repoRoot,
     values.get("fixtures") ?? routeConfig.fixturesPath ?? "scripts/dev/web-screenshot-fixtures.json"
   );
+  const routeCatalogPath = resolveRepoPath(
+    repoRoot,
+    values.get("route-catalog") ?? "src/Meridian.Ui/dashboard/src/lib/workspace.ts"
+  );
+  const appShellPath = resolveRepoPath(
+    repoRoot,
+    values.get("app-shell") ?? "src/Meridian.Ui/dashboard/src/app.tsx"
+  );
   const host = values.get("host") ?? "127.0.0.1";
   const port = Number(values.get("port") ?? "5173");
   const timeoutMs = Number(values.get("timeout-ms") ?? "120000");
@@ -398,6 +487,8 @@ async function main() {
   };
 
   try {
+    await assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath);
+
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);
       await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs);

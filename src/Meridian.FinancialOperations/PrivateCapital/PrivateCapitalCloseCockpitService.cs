@@ -80,8 +80,12 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         var approvalHistory = BuildApprovalHistory(workflows, records, reportOutputs);
         var navSupportPackages = BuildNavSupportPackages(workflows, records, reportOutputs);
         var evidencePackages = BuildEvidencePackages(lanes, approvalHistory, navSupportPackages, workflows);
-        var overallStatus = ResolveOverallStatus(lanes);
-        var readinessScore = ResolveReadinessScore(workflows, lanes);
+        var approvalStatus = ResolveApprovalHistoryStatus(approvalHistory);
+        var overallStatus = ResolveOverallStatus(lanes, approvalStatus);
+        var readinessScore = ResolveReadinessScore(workflows, lanes, approvalStatus);
+        var isReadyToClose = lanes.Count > 0 &&
+                             lanes.All(static lane => lane.IsReady) &&
+                             approvalStatus == EvidenceStatusDto.Ready;
 
         return new PrivateCapitalCloseCockpitDto(
             FundProfileId: Normalize(activity?.FundProfileId) ?? Normalize(fundProfileId),
@@ -92,7 +96,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             ProjectedAtUtc: activity?.ProjectedAtUtc ?? DateTimeOffset.UtcNow,
             CockpitRoute: BuildCockpitRoute(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId),
             OverallStatus: overallStatus,
-            IsReadyToClose: lanes.Count > 0 && lanes.All(static lane => lane.IsReady),
+            IsReadyToClose: isReadyToClose,
             ReadinessScore: readinessScore,
             WorkflowCount: workflowRows.Length,
             FundEventCount: records.Count,
@@ -1266,7 +1270,23 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             : EvidenceStatusDto.ReviewRequired;
     }
 
-    private static EvidenceStatusDto ResolveOverallStatus(IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes)
+    private static EvidenceStatusDto ResolveApprovalHistoryStatus(
+        IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> approvalHistory)
+    {
+        if (approvalHistory.Count == 0 ||
+            approvalHistory.All(static approval => approval.Status == OperationsApprovalStateDto.Approved))
+        {
+            return EvidenceStatusDto.Ready;
+        }
+
+        return approvalHistory.Any(static approval => approval.Status == OperationsApprovalStateDto.Rejected)
+            ? EvidenceStatusDto.Blocked
+            : EvidenceStatusDto.ReviewRequired;
+    }
+
+    private static EvidenceStatusDto ResolveOverallStatus(
+        IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes,
+        EvidenceStatusDto approvalStatus)
     {
         if (lanes.Any(static lane => lane.Status == EvidenceStatusDto.Blocked))
         {
@@ -1276,6 +1296,16 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         if (lanes.Any(static lane => lane.Status == EvidenceStatusDto.Missing))
         {
             return EvidenceStatusDto.Missing;
+        }
+
+        if (approvalStatus == EvidenceStatusDto.Blocked)
+        {
+            return EvidenceStatusDto.Blocked;
+        }
+
+        if (approvalStatus != EvidenceStatusDto.Ready)
+        {
+            return EvidenceStatusDto.ReviewRequired;
         }
 
         if (lanes.All(static lane => lane.Status == EvidenceStatusDto.Ready))
@@ -1288,20 +1318,25 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static int ResolveReadinessScore(
         IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
-        IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes)
+        IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes,
+        EvidenceStatusDto approvalStatus)
     {
         var scoredWorkflows = workflows
             .Where(static workflow => workflow.CloseReadiness is not null)
             .Select(static workflow => workflow.CloseReadiness!.Score)
             .ToArray();
-        if (scoredWorkflows.Length > 0)
-        {
-            return (int)Math.Round(scoredWorkflows.Average(), MidpointRounding.AwayFromZero);
-        }
-
-        return lanes.Count == 0
+        var score = scoredWorkflows.Length > 0
+            ? (int)Math.Round(scoredWorkflows.Average(), MidpointRounding.AwayFromZero)
+            : lanes.Count == 0
             ? 0
             : (int)Math.Round(lanes.Count(static lane => lane.IsReady) * 100m / lanes.Count, MidpointRounding.AwayFromZero);
+
+        return approvalStatus switch
+        {
+            EvidenceStatusDto.Blocked => Math.Min(score, 70),
+            EvidenceStatusDto.ReviewRequired => Math.Min(score, 90),
+            _ => score
+        };
     }
 
     private static string? FirstRoute(IReadOnlyList<OperationsContinuityWorkflowDto> workflows, string componentKey)

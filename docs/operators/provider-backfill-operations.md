@@ -102,14 +102,20 @@ Before accepting outputs, run:
 
 ## Gap-remediation SLA posture
 
-The current automation provides guardrails for gap remediation, but it is not a complete
-cross-provider SLA engine. Treat these as the active operator semantics until a provider-governance
-workflow enforces timers end to end:
+The current automation provides guardrails plus retained SLA classification metadata and a
+queryable SLA status snapshot for gap remediation, but it is not a complete cross-provider SLA
+engine. Treat these as the active operator semantics until a provider-governance workflow enforces
+timers and escalation end to end:
 
 - Detect: a gap report, data-quality gap, or quality alert must identify symbol, provider when known,
   date range, granularity, severity, and affected downstream workflow.
 - Triage: critical gaps that block paper promotion, reconciliation, accounting, or governed reporting
-  require same-business-day owner assignment and a retained runbook entry.
+  require same-business-day owner assignment and a retained runbook entry. Auto-remediation history
+  now records `sla-tier`, `sla-due-utc`, `sla-requires-owner`, `downstream-workflow`, and
+  `sla-reason` warnings for each system-triggered remediation execution so operators can distinguish
+  standard repairs from critical workflow blockers. `AutoGapRemediationService.EvaluateRemediationSla`
+  projects those retained fields into current `Overdue`, `DueSoon`, `Failed`, `Open`, or `Completed`
+  status items with owner-assignment counts.
 - Attempt: auto-remediation may run when the gap exceeds the configured minimum duration/size and is
   not under symbol/provider cooldown. Duplicate triggers are suppressed by idempotency; transient
   provider failures may retry with the same remediation key. Same-provider, same-window scan gaps
@@ -122,9 +128,9 @@ workflow enforces timers end to end:
   rows in the accepted evidence set, a retained closure decision with ordered review symbols, and a
   follow-up gap/quality check showing the affected interval is acceptable for the downstream
   workflow.
-- Escalate: if provider fallback cannot close the interval, attach the failed execution evidence and
-  route the exception to provider readiness, reconciliation, or reporting owners according to the
-  blocked workflow.
+- Escalate: if provider fallback cannot close the interval or the SLA snapshot marks the remediation
+  overdue, attach the failed execution evidence and route the exception to provider readiness,
+  reconciliation, or reporting owners according to the blocked workflow.
 
 ## Backfill controls for operators
 

@@ -6,6 +6,14 @@ function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
 }
 
+function readWorkspaceSurfaceStyles() {
+  return readFileSync(resolve(process.cwd(), "src/styles/workspace-surface.css"), "utf8");
+}
+
+function readDashboardEntry() {
+  return readFileSync(resolve(process.cwd(), "src/main.tsx"), "utf8");
+}
+
 function readTailwindConfig() {
   return readFileSync(resolve(process.cwd(), "tailwind.config.ts"), "utf8");
 }
@@ -113,6 +121,23 @@ describe("dashboard design-system contract", () => {
     expect(styles).not.toContain("radial-gradient(ellipse at 6% 0%");
     expect(styles).not.toContain("rgba(214, 158, 56, 0.12)");
     expect(styles).not.toContain("rgba(52, 211, 153");
+  });
+
+  it("keeps final workspace surface rules outside the global token stylesheet", () => {
+    const entry = readDashboardEntry();
+    const styles = readDashboardStyles();
+    const surface = readWorkspaceSurfaceStyles();
+
+    expect(styles).not.toContain("Final cascade for the light-first Institutional Ops system");
+    expect(surface).toContain("Final cascade for the light-first Institutional Ops system");
+    expect(surface).toContain("background: var(--ws-page-bg)");
+    expect(surface).toContain(".workspace-table-inspector-layout");
+    expect(entry.indexOf('import "@/styles/index.css";')).toBeLessThan(
+      entry.indexOf('import "@/styles/workspace-surface.css";')
+    );
+    expect(entry.indexOf('import "@/styles/workspace-surface.css";')).toBeLessThan(
+      entry.indexOf('import "@/styles/command-palette.css";')
+    );
   });
 
   // ─── Light Institutional Ops alignment contracts ─────────────────────────

@@ -80,7 +80,12 @@ export interface WorkspaceTabStripItem {
   label: string;
   selected?: boolean;
   panelId?: string;
+  tabId?: string;
   href?: string;
+}
+
+function resolveWorkspaceTabId(tab: WorkspaceTabStripItem): string | undefined {
+  return tab.tabId ?? (tab.panelId ? `${tab.panelId}-tab` : undefined);
 }
 
 export function WorkspaceTabStrip({
@@ -166,11 +171,13 @@ export function WorkspaceTabStrip({
         const selected = Boolean(tab.selected);
         const className = cn("workspace-tab", selected && "active");
         const content = <span>{tab.label}</span>;
+        const tabElementId = resolveWorkspaceTabId(tab);
         const tabIndex = tab.id === focusableTabId ? 0 : -1;
 
         return tab.href ? (
           <a
             key={tab.id}
+            id={tabElementId}
             href={tab.href}
             className={className}
             role="tab"
@@ -186,6 +193,7 @@ export function WorkspaceTabStrip({
         ) : (
           <button
             key={tab.id}
+            id={tabElementId}
             type="button"
             className={className}
             role="tab"
@@ -201,6 +209,36 @@ export function WorkspaceTabStrip({
         );
       })}
     </div>
+  );
+}
+
+export function WorkspaceTabPanel({
+  id,
+  labelledBy,
+  label,
+  active = true,
+  children,
+  className
+}: {
+  id: string;
+  labelledBy?: string;
+  label?: string;
+  active?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      id={id}
+      role="tabpanel"
+      tabIndex={active ? 0 : -1}
+      aria-labelledby={labelledBy}
+      aria-label={labelledBy ? undefined : label}
+      hidden={!active}
+      className={cn("workspace-tab-panel", className)}
+    >
+      {children}
+    </section>
   );
 }
 

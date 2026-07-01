@@ -209,7 +209,11 @@ and UI presentation concerns in their owning layers.
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
-  remediation paths remain single-symbol signals. `BackfillCostEstimator` exposes adaptive
+  remediation paths remain single-symbol signals. Auto-remediation execution history also retains
+  SLA tier, due-time, owner-assignment, downstream-workflow, and reason-code metadata, and exposes
+  `EvaluateRemediationSla` snapshots for overdue, due-soon, failed, open, and completed remediation
+  items so critical paper, reconciliation, accounting, and reporting gaps can be distinguished from
+  standard gap repairs before a full provider-governance workflow owns escalation timers. `BackfillCostEstimator` exposes adaptive
   partition plans for intraday and multi-year daily ranges so preview and cost-estimate callers can
   size provider windows before execution, and `HistoricalBackfillService` executes bounded requests
   through the same plan before writing per-symbol validation signals and checkpoints. Cost previews

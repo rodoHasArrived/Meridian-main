@@ -27,8 +27,9 @@ or different run cannot satisfy the evidence gate by reusing the expected filena
 
 The maintained browser catalog in `scripts/dev/web-screenshot-routes.json` is expected to cover the
 active workstation page surface: every non-legacy path in `WORKSTATION_ROUTE_CATALOG`, the
-workstation root route, and every explicit non-redirect `<Route>` in the dashboard app shell. Update
-the route definition and fixture-backed wait evidence together when adding a new browser page.
+workstation root route, and every explicit non-redirect `<Route>` in the dashboard app shell. The
+web capture script checks that coverage before launching Playwright. Update the route definition and
+fixture-backed wait evidence together when adding a new browser page.
 
 ## Desktop WPF screenshot index
 

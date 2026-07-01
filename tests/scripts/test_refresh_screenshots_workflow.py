@@ -182,6 +182,15 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn('if (!pathname.startsWith("/api/"))', self.web_screenshot_capture_script)
         self.assertIn("return route.continue();", self.web_screenshot_capture_script)
 
+    def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
+        self.assertIn(
+            "assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath)",
+            self.web_screenshot_capture_script,
+        )
+        self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
+        self.assertIn("dataSecurityMasterLegacy", self.web_screenshot_capture_script)
+        self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+
     def extract_workstation_route_catalog(self) -> dict[str, str]:
         match = re.search(
             r"export const WORKSTATION_ROUTE_CATALOG = \{(?P<body>.*?)\} as const;",

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net.Http;
 using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring.DataQuality;
@@ -43,6 +44,112 @@ public sealed record AutoGapRemediationPolicy(
         DefaultProvider: "stooq");
 }
 
+public enum BackfillRemediationSlaTier
+{
+    Standard,
+    SameBusinessDay
+}
+
+public sealed record BackfillRemediationSlaDecision(
+    BackfillRemediationSlaTier Tier,
+    DateTimeOffset DueAtUtc,
+    bool RequiresOwnerAssignment,
+    string DownstreamWorkflow,
+    string ReasonCode);
+
+public enum BackfillRemediationSlaStatus
+{
+    Open,
+    DueSoon,
+    Overdue,
+    Failed,
+    Completed
+}
+
+public sealed record BackfillRemediationSlaStatusItem(
+    string ExecutionId,
+    string IdempotencyKey,
+    BackfillRemediationSlaTier Tier,
+    BackfillRemediationSlaStatus Status,
+    DateTimeOffset DueAtUtc,
+    bool RequiresOwnerAssignment,
+    string DownstreamWorkflow,
+    string ReasonCode,
+    string Provider,
+    IReadOnlyList<string> Symbols,
+    DateOnly From,
+    DateOnly To,
+    ExecutionStatus ExecutionStatus,
+    string? LastOutcome,
+    TimeSpan TimeRemaining);
+
+public sealed record BackfillRemediationSlaSnapshot(
+    DateTimeOffset EvaluatedAtUtc,
+    int Total,
+    int OverdueCount,
+    int DueSoonCount,
+    int RequiresOwnerAssignmentCount,
+    IReadOnlyList<BackfillRemediationSlaStatusItem> Items);
+
+public sealed record BackfillRemediationSlaPolicy(
+    TimeSpan StandardWindow,
+    TimeSpan SameBusinessDayWindow)
+{
+    private static readonly string[] CriticalDownstreamWorkflows =
+    [
+        "paper",
+        "paper-trading",
+        "reconciliation",
+        "accounting",
+        "reporting",
+        "governed-reporting"
+    ];
+
+    public static BackfillRemediationSlaPolicy Default { get; } = new(
+        StandardWindow: TimeSpan.FromHours(48),
+        SameBusinessDayWindow: TimeSpan.FromHours(8));
+
+    public BackfillRemediationSlaDecision Classify(
+        AutoRemediationTriggerSource source,
+        string? severity,
+        string? downstreamWorkflow,
+        DateTimeOffset observedAtUtc)
+    {
+        var normalizedWorkflow = NormalizeWorkflow(downstreamWorkflow);
+        var criticalWorkflow = CriticalDownstreamWorkflows.Any(workflow =>
+            normalizedWorkflow.Contains(workflow, StringComparison.OrdinalIgnoreCase));
+        var criticalSeverity = IsCriticalSeverity(severity);
+        var alertDriven = source == AutoRemediationTriggerSource.QualityAlert;
+        var sameBusinessDay = criticalWorkflow || criticalSeverity || alertDriven;
+        var tier = sameBusinessDay
+            ? BackfillRemediationSlaTier.SameBusinessDay
+            : BackfillRemediationSlaTier.Standard;
+        var reasonCode = criticalWorkflow
+            ? "CriticalWorkflow"
+            : criticalSeverity
+                ? "CriticalSeverity"
+                : alertDriven
+                    ? "QualityAlert"
+                    : "StandardGap";
+
+        return new BackfillRemediationSlaDecision(
+            tier,
+            observedAtUtc.Add(sameBusinessDay ? SameBusinessDayWindow : StandardWindow),
+            sameBusinessDay,
+            normalizedWorkflow,
+            reasonCode);
+    }
+
+    private static bool IsCriticalSeverity(string? severity)
+        => string.Equals(severity, "Major", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(severity, "Critical", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeWorkflow(string? downstreamWorkflow)
+        => string.IsNullOrWhiteSpace(downstreamWorkflow)
+            ? "unassigned"
+            : downstreamWorkflow.Trim().ToLowerInvariant();
+}
+
 public sealed record QualityAlertRemediationSignal(
     string Symbol,
     DateOnly From,
@@ -50,7 +157,9 @@ public sealed record QualityAlertRemediationSignal(
     string? Provider,
     string AlertId,
     string Reason,
-    int GapSize = 1);
+    int GapSize = 1,
+    string? Severity = null,
+    string? DownstreamWorkflow = null);
 
 internal sealed class AutoRemediationState
 {
@@ -68,6 +177,7 @@ public sealed class AutoGapRemediationService : IDisposable
     private readonly IBackfillExecutionGateway _backfillGateway;
     private readonly BackfillExecutionHistory _history;
     private readonly AutoGapRemediationPolicy _policy;
+    private readonly BackfillRemediationSlaPolicy _slaPolicy;
     private readonly ILogger _log;
     private readonly ConcurrentDictionary<string, AutoRemediationState> _idempotency = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, DateTimeOffset> _symbolCooldown = new(StringComparer.OrdinalIgnoreCase);
@@ -81,12 +191,14 @@ public sealed class AutoGapRemediationService : IDisposable
         BackfillExecutionHistory history,
         DataQualityMonitoringService? qualityMonitoringService = null,
         AutoGapRemediationPolicy? policy = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        BackfillRemediationSlaPolicy? slaPolicy = null)
     {
         _backfillGateway = backfillGateway;
         _history = history;
         _qualityMonitoringService = qualityMonitoringService;
         _policy = policy ?? AutoGapRemediationPolicy.Default;
+        _slaPolicy = slaPolicy ?? BackfillRemediationSlaPolicy.Default;
         _log = log ?? LoggingSetup.ForContext<AutoGapRemediationService>();
         _concurrencyGate = new SemaphoreSlim(Math.Max(1, _policy.MaxConcurrentRemediations));
 
@@ -128,7 +240,9 @@ public sealed class AutoGapRemediationService : IDisposable
             AutoRemediationTriggerSource.DataQualityGap,
             $"gap:{gap.Severity}:{gap.Duration}",
             (int)Math.Max(gap.EstimatedMissedEvents, 1),
-            ct);
+            gap.Severity.ToString(),
+            downstreamWorkflow: null,
+            ct: ct);
     }
 
     public async Task HandleGapAnalysisResultAsync(StorageGapAnalysisResult result, string? provider = null, CancellationToken ct = default)
@@ -181,7 +295,9 @@ public sealed class AutoGapRemediationService : IDisposable
                 group.Key.Source,
                 BuildBatchedReason(group.Select(static candidate => candidate.Reason)),
                 gapSize,
-                ct).ConfigureAwait(false);
+                severity: null,
+                downstreamWorkflow: null,
+                ct: ct).ConfigureAwait(false);
         }
     }
 
@@ -195,7 +311,54 @@ public sealed class AutoGapRemediationService : IDisposable
             AutoRemediationTriggerSource.QualityAlert,
             $"alert:{signal.AlertId}:{signal.Reason}",
             Math.Max(signal.GapSize, 1),
+            signal.Severity,
+            signal.DownstreamWorkflow,
             ct);
+    }
+
+    public BackfillRemediationSlaSnapshot EvaluateRemediationSla(
+        DateTimeOffset? nowUtc = null,
+        int maxExecutions = 100,
+        TimeSpan? dueSoonWindow = null)
+    {
+        var evaluatedAt = (nowUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
+
+        if (maxExecutions <= 0)
+        {
+            return new BackfillRemediationSlaSnapshot(
+                evaluatedAt,
+                Total: 0,
+                OverdueCount: 0,
+                DueSoonCount: 0,
+                RequiresOwnerAssignmentCount: 0,
+                Items: Array.Empty<BackfillRemediationSlaStatusItem>());
+        }
+
+        var dueSoonThreshold = dueSoonWindow ?? TimeSpan.FromHours(1);
+        if (dueSoonThreshold < TimeSpan.Zero)
+        {
+            dueSoonThreshold = TimeSpan.Zero;
+        }
+
+        var items = _history.GetRecentExecutions(maxExecutions)
+            .Where(static execution => execution.Trigger == ExecutionTrigger.AutoRemediation)
+            .Select(execution => TryBuildSlaStatusItem(execution, evaluatedAt, dueSoonThreshold))
+            .Where(static item => item is not null)
+            .Select(static item => item!)
+            .OrderBy(static item => SlaStatusPriority(item.Status))
+            .ThenBy(static item => item.DueAtUtc)
+            .ThenBy(static item => item.Provider, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => string.Join(",", item.Symbols), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return new BackfillRemediationSlaSnapshot(
+            evaluatedAt,
+            items.Count,
+            items.Count(static item => item.Status == BackfillRemediationSlaStatus.Overdue),
+            items.Count(static item => item.Status == BackfillRemediationSlaStatus.DueSoon),
+            items.Count(static item =>
+                item.RequiresOwnerAssignment && item.Status != BackfillRemediationSlaStatus.Completed),
+            items);
     }
 
     private void OnQualityGapDetected(QualityDataGap gap)
@@ -211,6 +374,8 @@ public sealed class AutoGapRemediationService : IDisposable
         AutoRemediationTriggerSource source,
         string reason,
         int gapSize,
+        string? severity,
+        string? downstreamWorkflow,
         CancellationToken ct)
     {
         if (gapSize < _policy.MinimumGapSize)
@@ -231,6 +396,7 @@ public sealed class AutoGapRemediationService : IDisposable
         }
 
         var now = DateTimeOffset.UtcNow;
+        var slaDecision = _slaPolicy.Classify(source, severity, downstreamWorkflow, now);
 
         if (IsCoolingDown(_providerCooldown, provider, _policy.ProviderCooldown, now))
         {
@@ -272,7 +438,16 @@ public sealed class AutoGapRemediationService : IDisposable
 
         try
         {
-            var execution = CreateExecutionLog(eligibleSymbols, provider, from, to, source, reason, idempotencyKey, state.Attempts);
+            var execution = CreateExecutionLog(
+                eligibleSymbols,
+                provider,
+                from,
+                to,
+                source,
+                reason,
+                idempotencyKey,
+                state.Attempts,
+                slaDecision);
             _history.AddExecution(execution);
 
             try
@@ -346,6 +521,126 @@ public sealed class AutoGapRemediationService : IDisposable
     private static bool IsTransientFailure(Exception ex)
         => ex is HttpRequestException or TimeoutException or OperationCanceledException;
 
+    private static BackfillRemediationSlaStatusItem? TryBuildSlaStatusItem(
+        BackfillExecutionLog execution,
+        DateTimeOffset evaluatedAt,
+        TimeSpan dueSoonThreshold)
+    {
+        var metadata = ParseWarningMetadata(execution.Warnings);
+        if (!metadata.TryGetValue("sla-due-utc", out var dueText) ||
+            !DateTimeOffset.TryParse(
+                dueText,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out var dueAt))
+        {
+            return null;
+        }
+
+        if (!metadata.TryGetValue("sla-tier", out var tierText) ||
+            !Enum.TryParse<BackfillRemediationSlaTier>(tierText, ignoreCase: true, out var tier))
+        {
+            tier = BackfillRemediationSlaTier.Standard;
+        }
+
+        var provider = metadata.TryGetValue("provider", out var providerText)
+            ? providerText
+            : string.Empty;
+        var downstreamWorkflow = metadata.TryGetValue("downstream-workflow", out var workflowText)
+            ? workflowText
+            : "unassigned";
+        var reasonCode = metadata.TryGetValue("sla-reason", out var reasonText)
+            ? reasonText
+            : "Unknown";
+        var requiresOwnerAssignment = metadata.TryGetValue("sla-requires-owner", out var requiresOwnerText) &&
+            bool.TryParse(requiresOwnerText, out var requiresOwner) &&
+            requiresOwner;
+        var idempotencyKey = execution.AutoRemediationIdempotencyKey ??
+            BuildIdempotencyKey(execution.Symbols, provider, execution.FromDate, execution.ToDate);
+        var status = ResolveSlaStatus(execution, dueAt, evaluatedAt, dueSoonThreshold);
+
+        return new BackfillRemediationSlaStatusItem(
+            execution.ExecutionId,
+            idempotencyKey,
+            tier,
+            status,
+            dueAt,
+            requiresOwnerAssignment,
+            downstreamWorkflow,
+            reasonCode,
+            provider,
+            execution.Symbols.ToArray(),
+            execution.FromDate,
+            execution.ToDate,
+            execution.Status,
+            execution.AutoRemediationLastOutcome,
+            dueAt - evaluatedAt);
+    }
+
+    private static Dictionary<string, string> ParseWarningMetadata(IEnumerable<string> warnings)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var warning in warnings)
+        {
+            var separatorIndex = warning.IndexOf('=');
+            if (separatorIndex <= 0 || separatorIndex == warning.Length - 1)
+            {
+                continue;
+            }
+
+            var key = warning[..separatorIndex].Trim();
+            var value = warning[(separatorIndex + 1)..].Trim();
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                metadata[key] = value;
+            }
+        }
+
+        return metadata;
+    }
+
+    private static BackfillRemediationSlaStatus ResolveSlaStatus(
+        BackfillExecutionLog execution,
+        DateTimeOffset dueAt,
+        DateTimeOffset evaluatedAt,
+        TimeSpan dueSoonThreshold)
+    {
+        if (execution.Status == ExecutionStatus.Completed ||
+            string.Equals(
+                execution.AutoRemediationLastOutcome,
+                AutoRemediationOutcome.Completed.ToString(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BackfillRemediationSlaStatus.Completed;
+        }
+
+        if (evaluatedAt >= dueAt)
+        {
+            return BackfillRemediationSlaStatus.Overdue;
+        }
+
+        if (execution.Status is ExecutionStatus.Failed or ExecutionStatus.Cancelled or ExecutionStatus.Skipped)
+        {
+            return BackfillRemediationSlaStatus.Failed;
+        }
+
+        return dueAt - evaluatedAt <= dueSoonThreshold
+            ? BackfillRemediationSlaStatus.DueSoon
+            : BackfillRemediationSlaStatus.Open;
+    }
+
+    private static int SlaStatusPriority(BackfillRemediationSlaStatus status)
+        => status switch
+        {
+            BackfillRemediationSlaStatus.Overdue => 0,
+            BackfillRemediationSlaStatus.Failed => 1,
+            BackfillRemediationSlaStatus.DueSoon => 2,
+            BackfillRemediationSlaStatus.Open => 3,
+            BackfillRemediationSlaStatus.Completed => 4,
+            _ => 5
+        };
+
     private static void UpdateOutcome(AutoRemediationState state, AutoRemediationOutcome outcome)
     {
         lock (state)
@@ -372,7 +667,8 @@ public sealed class AutoGapRemediationService : IDisposable
         AutoRemediationTriggerSource source,
         string reason,
         string idempotencyKey,
-        int attempt)
+        int attempt,
+        BackfillRemediationSlaDecision slaDecision)
     {
         return new BackfillExecutionLog
         {
@@ -389,7 +685,16 @@ public sealed class AutoGapRemediationService : IDisposable
             AutoRemediationAttemptCount = attempt,
             AutoRemediationLastOutcome = AutoRemediationOutcome.None.ToString(),
             AutoRemediationIdempotencyKey = idempotencyKey,
-            Warnings = { $"source={source}", $"provider={provider}" }
+            Warnings =
+            {
+                $"source={source}",
+                $"provider={provider}",
+                $"sla-tier={slaDecision.Tier}",
+                $"sla-due-utc={slaDecision.DueAtUtc:O}",
+                $"sla-requires-owner={slaDecision.RequiresOwnerAssignment.ToString().ToLowerInvariant()}",
+                $"downstream-workflow={slaDecision.DownstreamWorkflow}",
+                $"sla-reason={slaDecision.ReasonCode}"
+            }
         };
     }
 

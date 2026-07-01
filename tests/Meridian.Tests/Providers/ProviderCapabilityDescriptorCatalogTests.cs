@@ -7,6 +7,7 @@ using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
+using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Robinhood;
@@ -154,7 +155,6 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     {
         string[] inventoryOnlyBackfillProviders =
         [
-            "finnhub",
             "fred",
             "stooq",
             "yahoo"
@@ -178,6 +178,15 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
                 providerId);
         }
 
+        var finnhub = descriptorsById["finnhub"];
+        finnhub.Historical.Should().Be(typeof(FinnhubHistoricalDataProvider));
+        finnhub.Search.Should().Be(typeof(FinnhubSymbolSearchProviderRefactored));
+        finnhub.CorporateActions.Should().Be(typeof(FinnhubCorporateActionProvider));
+        finnhub.Streaming.Should().BeNull(
+            "Finnhub has no dedicated streaming provider implementation in the runtime catalog");
+        finnhub.Brokerage.Should().BeNull(
+            "Finnhub is a data provider and must not advertise brokerage readiness");
+
         var tiingo = descriptorsById["tiingo"];
         tiingo.Historical.Should().Be(typeof(TiingoHistoricalDataProvider));
         tiingo.Search.Should().Be(typeof(TiingoSymbolSearchProvider));
@@ -198,6 +207,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         var nasdaq = descriptorsById["nasdaq"];
         nasdaq.Historical.Should().Be(typeof(NasdaqDataLinkHistoricalDataProvider));
+        nasdaq.Search.Should().Be(typeof(NasdaqDataLinkSymbolSearchProvider));
         nasdaq.CorporateActions.Should().Be(typeof(NasdaqDataLinkCorporateActionProvider));
         nasdaq.Streaming.Should().BeNull(
             "Nasdaq Data Link has no dedicated streaming provider implementation in the runtime catalog");

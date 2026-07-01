@@ -10,6 +10,15 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class TierMigrationService : ITierMigrationService
 {
+    private static readonly string[] DataExtensions =
+    [
+        ".jsonl",
+        ".jsonl.gz",
+        ".jsonl.zst",
+        ".jsonl.lz4",
+        ".parquet"
+    ];
+
     private readonly StorageOptions _options;
     private readonly ISourceRegistry? _sourceRegistry;
 
@@ -125,6 +134,7 @@ public sealed class TierMigrationService : ITierMigrationService
                 continue;
 
             var eligibleFiles = Directory.EnumerateFiles(sourceTier.Path, "*", SearchOption.AllDirectories)
+                .Where(IsDataFile)
                 .Select(f => new FileInfo(f))
                 .Where(f => f.LastWriteTimeUtc < cutoffDate)
                 .ToList();
@@ -229,14 +239,15 @@ public sealed class TierMigrationService : ITierMigrationService
         if (Directory.Exists(sourcePath))
         {
             return Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
-                .Where(f => f.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) ||
-                           f.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase) ||
-                           f.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+                .Where(IsDataFile)
                 .ToList();
         }
 
         return new List<string>();
     }
+
+    private static bool IsDataFile(string path)
+        => DataExtensions.Any(extension => path.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
 
     private async Task<FileMigrationResult> MigrateFileAsync(
         string sourcePath,

@@ -17,6 +17,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private ClosePeriodState _closeState = ClosePeriodState.Open;
     private string _closeStateText = "Open";
     private string _trialBalanceStatusText = "Trial balance has not loaded.";
+    private string _evidencePackageStatusText = "Close evidence package has not loaded.";
     private string _closePlanSetupStatusText = "Load a close plan before retaining governed close setup.";
     private string _closePeriodLockStatusText = "Load a close plan before locking the accounting period.";
     private string _closeTaskSignOffStatusText = "Load a close plan before retaining close task sign-off evidence.";
@@ -75,6 +76,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     public ObservableCollection<TrialBalanceLine> TrialBalance { get; } = [];
     public ObservableCollection<RollForwardLine> RollForward { get; } = [];
     public ObservableCollection<SourceLinkedAuditLine> AuditTrail { get; } = [];
+    public ObservableCollection<CloseApprovalHistoryEntry> ApprovalHistory { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> CloseMaterialityRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> CloseTaskRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> CloseDependencyRows { get; } = [];
@@ -526,6 +528,21 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
     }
 
+    public string EvidencePackageStatusText
+    {
+        get => _evidencePackageStatusText;
+        private set
+        {
+            if (string.Equals(_evidencePackageStatusText, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _evidencePackageStatusText = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public string ClosePlanSetupStatusText
     {
         get => _closePlanSetupStatusText;
@@ -678,9 +695,19 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     {
         ArgumentNullException.ThrowIfNull(projection);
         SetCloseState(projection.ClosePeriod.State);
+        ApprovalHistory.Clear();
+        foreach (var approval in projection.ApprovalHistory)
+        {
+            ApprovalHistory.Add(approval);
+        }
+
         TrialBalanceStatusText = projection.TrialBalanceBalanced
             ? "Trial balance is balanced and eligible for close evidence review."
             : "Trial balance is out of balance; close workflow remains blocked until corrected.";
+        var sourceEventCount = projection.EvidencePackage.SourceEventIds.Length;
+        var approvalCount = projection.EvidencePackage.ApprovalIds.Length;
+        EvidencePackageStatusText =
+            $"{projection.EvidencePackage.PackageId} retains {sourceEventCount} source event{(sourceEventCount == 1 ? string.Empty : "s")} and {approvalCount} approval{(approvalCount == 1 ? string.Empty : "s")}.";
     }
 
     public void ApplyClosePlan(ClosePeriodPlanDto closePlan)

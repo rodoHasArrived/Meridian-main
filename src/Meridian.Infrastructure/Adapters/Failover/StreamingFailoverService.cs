@@ -295,7 +295,12 @@ public sealed class StreamingFailoverService : IDisposable
         {
             if (_providerHealth.TryGetValue(providerId, out var health))
             {
-                if (health.ConsecutiveFailures < rule.FailoverThreshold)
+                var latencyWithinRule =
+                    rule.MaxLatencyMs <= 0 ||
+                    health.AverageLatencyMs <= 0 ||
+                    health.AverageLatencyMs <= rule.MaxLatencyMs;
+
+                if (health.ConsecutiveFailures < rule.FailoverThreshold && latencyWithinRule)
                 {
                     return providerId;
                 }
@@ -373,6 +378,8 @@ internal sealed class ProviderHealthState
     private readonly object _gate = new();
     private readonly List<string> _recentIssues = new();
     private const int MaxRecentIssues = 20;
+    private const int MaxRecentLatencySamples = 20;
+    private readonly Queue<double> _recentLatencySamples = new();
 
     public string ProviderId { get; }
     public int ConsecutiveFailures { get; private set; }
@@ -381,7 +388,6 @@ internal sealed class ProviderHealthState
     public DateTimeOffset? LastSuccessTime { get; private set; }
     public double AverageLatencyMs { get; private set; }
 
-    private long _latencySamples;
     private double _latencySum;
 
     public ProviderHealthState(string providerId)
@@ -415,11 +421,22 @@ internal sealed class ProviderHealthState
 
     public void RecordLatency(double latencyMs)
     {
+        if (!double.IsFinite(latencyMs) || latencyMs < 0)
+            return;
+
         lock (_gate)
         {
-            _latencySamples++;
+            _recentLatencySamples.Enqueue(latencyMs);
             _latencySum += latencyMs;
-            AverageLatencyMs = _latencySum / _latencySamples;
+
+            while (_recentLatencySamples.Count > MaxRecentLatencySamples)
+            {
+                _latencySum -= _recentLatencySamples.Dequeue();
+            }
+
+            AverageLatencyMs = _recentLatencySamples.Count == 0
+                ? 0
+                : _latencySum / _recentLatencySamples.Count;
         }
     }
 

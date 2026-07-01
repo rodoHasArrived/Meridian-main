@@ -70,6 +70,49 @@ public sealed class AccountingProjectionQueryServiceTests
         projection.ClosePeriod.State.Should().Be(ClosePeriodState.Closed);
     }
 
+    [Fact]
+    public void GetCloseProjection_BuildsEvidencePackageWithApprovalHistoryAndStableHash()
+    {
+        var posting = new AccountingPostingService();
+        var service = new AccountingProjectionQueryService(posting, new TrialBalanceProjectionService());
+        posting.Post("ledger-a", [NewEntry("ledger-a", "evt-post", "approval-post", 100m, new LedgerDimensionSetDto())]);
+        var evidence = new CloseEvidence(
+            TrialBalanceSignedOff: true,
+            ReconciliationSignedOff: true,
+            ApprovalsCompleted: true,
+            Checks:
+            [
+                new CloseEvidenceCheck(
+                    "controller-packet",
+                    "Controller close packet",
+                    Required: true,
+                    Passed: true,
+                    SourceEventId: "evt-close",
+                    ApprovalId: "approval-close",
+                    Detail: "Controller package approved.")
+            ]);
+
+        var first = service.GetCloseProjection("ledger-a", new DateOnly(2026, 03, 31), evidence);
+        var replay = service.GetCloseProjection("ledger-a", new DateOnly(2026, 03, 31), evidence);
+
+        first.ClosePeriod.State.Should().Be(ClosePeriodState.Closed);
+        first.EvidencePackage.PackageId.Should().StartWith("close-evidence-ledger-a-20260331-");
+        first.EvidencePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        first.EvidencePackage.EvidenceHash.Should().Be(replay.EvidencePackage.EvidenceHash);
+        first.EvidencePackage.PackageId.Should().Be(replay.EvidencePackage.PackageId);
+        first.EvidencePackage.SourceEventIds.Should().BeEquivalentTo(["evt-close", "evt-post"]);
+        first.EvidencePackage.ApprovalIds.Should().BeEquivalentTo(["approval-close", "approval-post"]);
+        first.ApprovalHistory.Should().Contain(row =>
+            row.Label == "Controller close packet" &&
+            row.ApprovalId == "approval-close" &&
+            row.Completed);
+        first.ApprovalHistory.Should().Contain(row =>
+            row.JournalEntryId.HasValue &&
+            row.SourceEventId == "evt-post" &&
+            row.ApprovalId == "approval-post" &&
+            row.AccountCodes.Contains("Cash"));
+    }
+
     private static AccountingProjectionQueryService CreateServiceWithDimensionedLedger()
     {
         var posting = new AccountingPostingService();

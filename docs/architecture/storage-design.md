@@ -124,9 +124,11 @@ retains:
   workflow.
 
 This is an evidence boundary, not a guarantee that a full cross-provider SLA engine is implemented.
+Auto-remediation execution history now retains SLA tier, due-time, owner-assignment,
+downstream-workflow, and reason-code metadata for system-triggered gap repair attempts.
 Cross-source reconciliation now includes bounded daily backfill comparison through
 `CrossSourceBackfillReconciliationService`, but remains partial until it is wired into provider
-governance, SLA timers, and archival promotion gates. Adaptive backfill partition planning is now
+governance timer ownership, escalation, and archival promotion gates. Adaptive backfill partition planning is now
 covered by preview-time cost estimation and bounded runtime execution; storage-engine archival
 promotion and governance timers remain separate implementation lanes.
 

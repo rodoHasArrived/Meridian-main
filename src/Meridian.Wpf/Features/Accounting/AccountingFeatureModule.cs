@@ -69,6 +69,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<AccountingPostingService>();
         services.TryAddSingleton<TrialBalanceProjectionService>();
         services.TryAddSingleton<MonthEndCloseStateMachine>();
+        services.TryAddSingleton<CloseEvidencePackageService>();
         services.TryAddSingleton<IAccountingProjectionQueryService, AccountingProjectionQueryService>();
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(

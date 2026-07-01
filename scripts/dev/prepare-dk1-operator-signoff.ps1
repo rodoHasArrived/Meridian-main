@@ -137,6 +137,20 @@ function Test-PacketBindingGeneratedAtEquals {
     return $null -ne $expectedTicks -and $null -ne $actualTicks -and $expectedTicks -eq $actualTicks
 }
 
+function Test-PacketBindingValueEquals {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [object]$Expected,
+        [object]$Actual
+    )
+
+    if ([string]::Equals($Name, "generatedAtUtc", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Test-PacketBindingGeneratedAtEquals -Expected $Expected -Actual $Actual
+    }
+
+    return [string]::Equals([string]$Expected, [string]$Actual, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
 function Get-Dk1PacketReview {
     param([Parameter(Mandatory)][string]$Path)
 
@@ -179,18 +193,37 @@ function Get-Dk1PacketReview {
     $baselineThresholdContract = Get-ObjectPropertyValue -Object $packet -Name "baselineThresholdContract"
     $trustRationaleContractStatus = [string](Get-ObjectPropertyValue -Object $trustRationaleContract -Name "status")
     $baselineThresholdContractStatus = [string](Get-ObjectPropertyValue -Object $baselineThresholdContract -Name "status")
+    $searchDependencyReview = Get-ObjectPropertyValue -Object $packet -Name "searchDependencyReview"
+    $requiredSearchDependencyCountValue = Get-ObjectPropertyValue -Object $searchDependencyReview -Name "requiredCount"
+    $requiredSearchDependencyCount = if ($null -ne $requiredSearchDependencyCountValue) { [int]$requiredSearchDependencyCountValue } else { 0 }
+    $searchDependenciesValue = Get-ObjectPropertyValue -Object $searchDependencyReview -Name "dependencies"
+    $searchDependencies = if ($null -eq $searchDependenciesValue) { @() } else { @($searchDependenciesValue) }
+    $representedSearchDependencyCount = @(
+        $searchDependencies | Where-Object {
+            [string]::Equals(
+                [string](Get-ObjectPropertyValue -Object $_ -Name "status"),
+                "represented",
+                [System.StringComparison]::OrdinalIgnoreCase)
+        }
+    ).Count
+    $searchDependencyReviewStatus = [string](Get-ObjectPropertyValue -Object $searchDependencyReview -Name "status")
 
     $samplesReady = $requiredSampleCount -gt 0 -and $readySampleCount -eq $requiredSampleCount
     $documentsValidated = $evidenceDocuments.Count -gt 0 -and $validatedEvidenceDocumentCount -eq $evidenceDocuments.Count
     $contractsValidated =
         [string]::Equals($trustRationaleContractStatus, "validated", [System.StringComparison]::OrdinalIgnoreCase) -and
         [string]::Equals($baselineThresholdContractStatus, "validated", [System.StringComparison]::OrdinalIgnoreCase)
+    $searchDependenciesRepresented =
+        $requiredSearchDependencyCount -gt 0 -and
+        $representedSearchDependencyCount -eq $requiredSearchDependencyCount -and
+        [string]::Equals($searchDependencyReviewStatus, "represented", [System.StringComparison]::OrdinalIgnoreCase)
     $validForOperatorReview =
         [string]::Equals($status, "ready-for-operator-review", [System.StringComparison]::OrdinalIgnoreCase) -and
         $blockers.Count -eq 0 -and
         $samplesReady -and
         $documentsValidated -and
-        $contractsValidated
+        $contractsValidated -and
+        $searchDependenciesRepresented
 
     return [ordered]@{
         path = ConvertTo-RelativePath -Path $resolvedPath
@@ -204,6 +237,9 @@ function Get-Dk1PacketReview {
         validatedEvidenceDocumentCount = $validatedEvidenceDocumentCount
         trustRationaleContractStatus = $trustRationaleContractStatus
         baselineThresholdContractStatus = $baselineThresholdContractStatus
+        requiredSearchDependencyCount = $requiredSearchDependencyCount
+        representedSearchDependencyCount = $representedSearchDependencyCount
+        searchDependencyReviewStatus = $searchDependencyReviewStatus
         validForOperatorReview = $validForOperatorReview
         blockers = $blockers
         samples = @(
@@ -222,6 +258,15 @@ function Get-Dk1PacketReview {
                     gate = [string](Get-ObjectPropertyValue -Object $_ -Name "gate")
                     status = [string](Get-ObjectPropertyValue -Object $_ -Name "status")
                     path = [string](Get-ObjectPropertyValue -Object $_ -Name "path")
+                    missingRequirements = @(Get-ObjectPropertyValue -Object $_ -Name "missingRequirements")
+                }
+            }
+        )
+        searchDependencies = @(
+            $searchDependencies | ForEach-Object {
+                [ordered]@{
+                    provider = [string](Get-ObjectPropertyValue -Object $_ -Name "provider")
+                    status = [string](Get-ObjectPropertyValue -Object $_ -Name "status")
                     missingRequirements = @(Get-ObjectPropertyValue -Object $_ -Name "missingRequirements")
                 }
             }
@@ -346,10 +391,6 @@ function Get-OperatorSignoffReview {
     $packetBindingMissingRequirements = New-Object System.Collections.Generic.List[string]
     $payloadPacketReview = Get-ObjectPropertyValue -Object $payload -Name "packetReview"
     if ($null -ne $PacketReview) {
-        $expectedPacketPath = [string](Get-ObjectPropertyValue -Object $PacketReview -Name "path")
-        $expectedGeneratedAtUtc = [string](Get-ObjectPropertyValue -Object $PacketReview -Name "generatedAtUtc")
-        $expectedStatus = [string](Get-ObjectPropertyValue -Object $PacketReview -Name "status")
-
         if (-not [bool](Get-ObjectPropertyValue -Object $PacketReview -Name "validForOperatorReview")) {
             $packetBindingMissingRequirements.Add("packetReadyForOperatorReview")
         }
@@ -358,18 +399,31 @@ function Get-OperatorSignoffReview {
             $packetBindingMissingRequirements.Add("packetReview")
         }
         else {
-            $actualPacketPath = [string](Get-ObjectPropertyValue -Object $payloadPacketReview -Name "path")
-            $actualGeneratedAtUtc = [string](Get-ObjectPropertyValue -Object $payloadPacketReview -Name "generatedAtUtc")
-            $actualStatus = [string](Get-ObjectPropertyValue -Object $payloadPacketReview -Name "status")
+            $packetBindingComparisons = @(
+                @{ Name = "path"; Requirement = "packetPath" },
+                @{ Name = "generatedAtUtc"; Requirement = "packetGeneratedAtUtc" },
+                @{ Name = "status"; Requirement = "packetStatus" },
+                @{ Name = "sourceSummary"; Requirement = "packetSourceSummary" },
+                @{ Name = "sourceResult"; Requirement = "packetSourceResult" },
+                @{ Name = "requiredSampleCount"; Requirement = "packetRequiredSampleCount" },
+                @{ Name = "readySampleCount"; Requirement = "packetReadySampleCount" },
+                @{ Name = "evidenceDocumentCount"; Requirement = "packetEvidenceDocumentCount" },
+                @{ Name = "validatedEvidenceDocumentCount"; Requirement = "packetValidatedEvidenceDocumentCount" },
+                @{ Name = "trustRationaleContractStatus"; Requirement = "packetTrustRationaleContractStatus" },
+                @{ Name = "baselineThresholdContractStatus"; Requirement = "packetBaselineThresholdContractStatus" },
+                @{ Name = "requiredSearchDependencyCount"; Requirement = "packetRequiredSearchDependencyCount" },
+                @{ Name = "representedSearchDependencyCount"; Requirement = "packetRepresentedSearchDependencyCount" },
+                @{ Name = "searchDependencyReviewStatus"; Requirement = "packetSearchDependencyReviewStatus" },
+                @{ Name = "validForOperatorReview"; Requirement = "packetReadyForOperatorReview" }
+            )
 
-            if (-not [string]::Equals($expectedPacketPath, $actualPacketPath, [System.StringComparison]::OrdinalIgnoreCase)) {
-                $packetBindingMissingRequirements.Add("packetPath")
-            }
-            if (-not (Test-PacketBindingGeneratedAtEquals -Expected $expectedGeneratedAtUtc -Actual $actualGeneratedAtUtc)) {
-                $packetBindingMissingRequirements.Add("packetGeneratedAtUtc")
-            }
-            if (-not [string]::Equals($expectedStatus, $actualStatus, [System.StringComparison]::OrdinalIgnoreCase)) {
-                $packetBindingMissingRequirements.Add("packetStatus")
+            foreach ($comparison in $packetBindingComparisons) {
+                $name = [string]$comparison.Name
+                $expectedValue = Get-ObjectPropertyValue -Object $PacketReview -Name $name
+                $actualValue = Get-ObjectPropertyValue -Object $payloadPacketReview -Name $name
+                if (-not (Test-PacketBindingValueEquals -Name $name -Expected $expectedValue -Actual $actualValue)) {
+                    $packetBindingMissingRequirements.Add([string]$comparison.Requirement)
+                }
             }
         }
     }

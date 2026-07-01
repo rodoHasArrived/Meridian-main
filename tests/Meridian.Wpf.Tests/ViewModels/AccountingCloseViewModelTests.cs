@@ -149,6 +149,55 @@ public sealed class AccountingCloseViewModelTests
     }
 
     [Fact]
+    public void ApplyCloseProjection_ProjectsEvidencePackageStatusAndApprovalHistory()
+    {
+        var posting = new AccountingPostingService();
+        var query = new AccountingProjectionQueryService(posting, new TrialBalanceProjectionService());
+        var viewModel = new AccountingCloseViewModel(query);
+        posting.Post(
+            "ledger-a",
+            [
+                new JournalEntry(
+                    Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+                    "ledger-a",
+                    new DateOnly(2026, 03, 31),
+                    "evt-post",
+                    "close accrual",
+                    ImmutableArray.Create(
+                        new JournalLine("Cash", 100m, "USD", true, "evt-post", "approval-post"),
+                        new JournalLine("Revenue", 100m, "USD", false, "evt-post", "approval-post")))
+            ]);
+        var evidence = new CloseEvidence(
+            TrialBalanceSignedOff: true,
+            ReconciliationSignedOff: true,
+            ApprovalsCompleted: true,
+            Checks:
+            [
+                new CloseEvidenceCheck(
+                    "controller-packet",
+                    "Controller close packet",
+                    Required: true,
+                    Passed: true,
+                    SourceEventId: "evt-close",
+                    ApprovalId: "approval-close",
+                    Detail: "Controller package approved.")
+            ]);
+        var projection = query.GetCloseProjection("ledger-a", new DateOnly(2026, 03, 31), evidence);
+
+        viewModel.ApplyCloseProjection(projection);
+
+        viewModel.EvidencePackageStatusText.Should().Contain(projection.EvidencePackage.PackageId);
+        viewModel.EvidencePackageStatusText.Should().Contain("2 source events");
+        viewModel.EvidencePackageStatusText.Should().Contain("2 approvals");
+        viewModel.ApprovalHistory.Should().Contain(row =>
+            row.ApprovalId == "approval-close" &&
+            row.Label == "Controller close packet");
+        viewModel.ApprovalHistory.Should().Contain(row =>
+            row.ApprovalId == "approval-post" &&
+            row.JournalEntryId == Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"));
+    }
+
+    [Fact]
     public void LoadClosePlanCommand_RequiresValidWorkflowId()
     {
         var closePlan = BuildClosePlan(Guid.Parse("11111111-2222-3333-4444-555555555555"));

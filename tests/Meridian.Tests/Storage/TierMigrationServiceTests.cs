@@ -144,6 +144,38 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Scenario_RetentionPlanning_SkipsProviderSidecarsAndOperatorNotes()
+    {
+        var sourceDirectory = Path.Combine(_hot, "alpaca", "AAPL", "Trade");
+        Directory.CreateDirectory(sourceDirectory);
+        var tradeFile = Path.Combine(sourceDirectory, "2026-06-01.jsonl");
+        var compressedFile = Path.Combine(sourceDirectory, "2026-06-02.jsonl.zst");
+        var parquetFile = Path.Combine(sourceDirectory, "2026-06-03.parquet");
+        var checksumSidecar = Path.Combine(sourceDirectory, "2026-06-01.jsonl.sha256");
+        var operatorNote = Path.Combine(sourceDirectory, "notes.txt");
+        await File.WriteAllTextAsync(tradeFile, "trade");
+        await File.WriteAllTextAsync(compressedFile, "compressed");
+        await File.WriteAllTextAsync(parquetFile, "parquet");
+        await File.WriteAllTextAsync(checksumSidecar, "checksum");
+        await File.WriteAllTextAsync(operatorNote, "operator note");
+
+        foreach (var path in new[] { tradeFile, compressedFile, parquetFile, checksumSidecar, operatorNote })
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-10));
+
+        var plan = await _sut.PlanMigrationAsync(TimeSpan.FromDays(30));
+
+        plan.Actions.Select(action => action.SourcePath)
+            .Should()
+            .BeEquivalentTo(new[] { tradeFile, compressedFile, parquetFile });
+        plan.Actions.Should().NotContain(action => action.SourcePath == checksumSidecar);
+        plan.Actions.Should().NotContain(action => action.SourcePath == operatorNote);
+        plan.EstimatedBytesToMigrate.Should().Be(
+            new FileInfo(tradeFile).Length +
+            new FileInfo(compressedFile).Length +
+            new FileInfo(parquetFile).Length);
+    }
+
+    [Fact]
     public async Task Scenario_MigrationCancellation_CancelledRolloverLeavesSourceEvidenceInPlace()
     {
         var sourceFile = Path.Combine(_hot, "cancelled-session.jsonl");

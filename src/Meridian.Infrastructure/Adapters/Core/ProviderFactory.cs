@@ -386,6 +386,9 @@ public sealed class ProviderFactory
         // FRED Symbol Search (uses same credentials as FRED backfill)
         TryAddSearchProvider(providers, () => CreateFredSearchProvider(backfillProviders?.Fred));
 
+        // Nasdaq Data Link Symbol Search (uses same credentials as Nasdaq Data Link backfill)
+        TryAddSearchProvider(providers, () => CreateNasdaqSearchProvider(backfillProviders?.Nasdaq));
+
         // Polygon Symbol Search (uses same credentials as Polygon backfill)
         TryAddSearchProvider(providers, () => CreatePolygonSearchProvider(backfillProviders?.Polygon));
 
@@ -506,6 +509,20 @@ public sealed class ProviderFactory
             return null;
 
         return new FredSymbolSearchProvider(apiKey, httpClient: null, log: _log);
+    }
+
+    private ISymbolSearchProvider? CreateNasdaqSearchProvider(NasdaqBackfillConfig? cfg)
+    {
+        if (cfg != null && !cfg.Enabled)
+            return null;
+
+        var credentials = CreateCredentialContext<NasdaqDataLinkHistoricalDataProvider>(
+            ("NASDAQ_DATA_LINK_API_KEY", cfg?.ApiKey));
+        var apiKey = credentials.Get("NASDAQ_DATA_LINK_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+            return null;
+
+        return new NasdaqDataLinkSymbolSearchProvider(apiKey, httpClient: null, log: _log);
     }
 
     private ISymbolSearchProvider? CreatePolygonSearchProvider(PolygonBackfillConfig? cfg)

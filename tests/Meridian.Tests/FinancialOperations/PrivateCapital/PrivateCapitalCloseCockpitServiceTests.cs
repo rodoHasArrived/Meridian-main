@@ -236,6 +236,39 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     }
 
     [Fact]
+    public async Task GetCockpitAsync_WhenWorkflowApprovalIsPending_DoesNotReportReadyToClose()
+    {
+        var activity = BuildActivity();
+        var workflow = BuildClosedWorkflow(approvalState: OperationsApprovalStateDto.Submitted);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        cockpit.IsReadyToClose.Should().BeFalse();
+        cockpit.ReadinessScore.Should().Be(90);
+        cockpit.ReadyLaneCount.Should().Be(14);
+        cockpit.BlockedLaneCount.Should().Be(0);
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId == "approval-close-fund-alpha-2026-06" &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Submitted &&
+            row.DecidedAtUtc == null);
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:close-approval-audit" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.RequiredActions.Contains("Retain approved close approval history before audit package release."));
+    }
+
+    [Fact]
     public async Task GetCockpitAsync_WhenNoSourcesAreRegistered_FailsClosedWithMissingLanes()
     {
         var service = new PrivateCapitalCloseCockpitService(null, null);
@@ -581,6 +614,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     private static OperationsContinuityWorkflowDto BuildClosedWorkflow(
         bool includeCloseControlEvidence = true,
         bool periodLockPackageReady = true,
+        OperationsApprovalStateDto approvalState = OperationsApprovalStateDto.Approved,
         IReadOnlyList<OperationsTimelineEntryDto>? timeline = null)
     {
         var workflowId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -617,7 +651,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             OperationsSecurityMasterStateDto.Complete,
             OperationsLedgerPostingStateDto.Complete,
             OperationsReconciliationStateDto.Complete,
-            OperationsApprovalStateDto.Approved,
+            approvalState,
             Gates:
             [
                 Gate(OperationsGateKeyDto.BrokerIngest),
@@ -633,12 +667,12 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             [
                 new OperationsApprovalDto(
                     "approval-close-fund-alpha-2026-06",
-                    OperationsApprovalStateDto.Approved,
+                    approvalState,
                     "ops-user",
-                    "controller",
+                    approvalState == OperationsApprovalStateDto.Approved ? "controller" : null,
                     "Close approved after evidence package review.",
                     now.AddMinutes(-45),
-                    now.AddMinutes(-30),
+                    approvalState == OperationsApprovalStateDto.Approved ? now.AddMinutes(-30) : null,
                     [Evidence("approval-close", "Approval close evidence", "/evidence/approval-close")])
             ],
             ReportPackReadiness: new OperationsReportPackReadinessDto(

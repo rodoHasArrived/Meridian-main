@@ -1088,6 +1088,10 @@ component instead of the global workstation stylesheet.
 App-shell frame, skip-link, masthead, command-search trigger, trust-strip, session card, startup
 status, status-strip, and workbench scroll styles live in `src/styles/app-shell.css`, imported by
 `app.tsx`, so the global workstation stylesheet no longer owns root shell chrome.
+The final light-first workspace surface cascade now lives in `src/styles/workspace-surface.css`,
+imported immediately after `src/styles/index.css` in `main.tsx`, so `index.css` stays focused on
+global tokens, Tailwind layers, and legacy shared rules while the workspace surface overrides remain
+order-pinned and reviewable.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
 Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
 Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
@@ -1105,6 +1109,9 @@ palette overlay rules.
 Workspace filter bar, tab strip, inspector host, and document canvas primitive styles live in
 `src/styles/workspace-primitives.css`, imported by `workspace-primitives.tsx`, so the global
 workstation stylesheet does not own primitive-specific accessibility surface styling.
+`WorkspaceTabStrip` emits stable tab ids from each panel id or an explicit `tabId`, and
+`WorkspaceTabPanel` centralizes `role="tabpanel"`, `aria-labelledby`, focus, and hidden-state
+semantics for route tabs that expose richer keyboard behavior.
 Shared toolbar strip, dense data table, and entity-summary primitive styles live in
 `src/styles/ui-kit-primitives.css`, imported by `ui-kit-primitives.tsx`, keeping dense table
 keyboard/accessibility behavior and visual ownership in the same component module.

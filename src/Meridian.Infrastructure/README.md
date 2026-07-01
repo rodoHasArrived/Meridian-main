@@ -50,8 +50,8 @@ amortization, paydown, and factor evidence without storing provider credentials 
 vendor-specific payloads in the workstation layer.
 Provider corporate-action backfill adapters, including Polygon retained actions, Alpha Vantage
 adjusted-daily dividend/split extraction, Nasdaq Data Link dataset dividend/split extraction,
-Tiingo adjusted-EOD dividend/split extraction, and Twelve Data paid-plan fundamentals
-dividend/split extraction, append retained actions through the Contracts-owned
+Finnhub dividend/split endpoint extraction, Tiingo adjusted-EOD dividend/split extraction, and
+Twelve Data paid-plan fundamentals dividend/split extraction, append retained actions through the Contracts-owned
 `ISecurityMasterCorporateActionCommandService` seam so Infrastructure keeps vendor
 transport concerns here while Application owns validation, append ordering, and structured audit
 metadata.
@@ -69,6 +69,10 @@ FRED symbol search is implemented as a credential-gated `ISymbolSearchProvider` 
 `series/search` endpoint. It reuses `FRED_API_KEY`, keeps FRED's 120-request/minute pacing, maps
 economic series IDs as reference-discovery results, and applies asset/exchange filtering
 client-side.
+Nasdaq Data Link symbol search is implemented as a credential-gated `ISymbolSearchProvider` over
+the dataset-search endpoint. It reuses `NASDAQ_DATA_LINK_API_KEY`, returns exact
+`DATABASE/DATASET` codes to avoid dataset/ticker ambiguity, supports database-code filtering, and
+keeps the conservative 50-request/day pacing already used by the Nasdaq Data Link backfill family.
 OpenFIGI symbol/reference-data enrichment prefers exchange-scoped mapping candidates when callers
 provide an exchange hint, while preserving upstream ordering as the fallback when no exchange can be
 normalized.
@@ -90,10 +94,13 @@ copied providers and tests prove lifecycle behavior before replacing the templat
 APIs.
 
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
-to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
-failure. Backfill worker and queue orchestration consumes ProviderSdk-owned job descriptors and
-stores dependency job IDs on each job so chained jobs resume only after all upstream dependencies
-complete.
+to the periodic evaluator. Latency-triggered failover decisions use a bounded recent-sample window
+and ignore impossible latency samples so stale spikes or malformed telemetry do not distort current
+routing posture. Candidate backups must satisfy the same recent-latency threshold before selection,
+so failover does not route into a provider that is already breaching the rule's SLA window.
+Cancellation is propagated as cancellation, not treated as a provider failure.
+Backfill worker and queue orchestration consumes ProviderSdk-owned job descriptors and stores
+dependency job IDs on each job so chained jobs resume only after all upstream dependencies complete.
 
 ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts-owned
 `ISftpFilePublisher` port. Data Integration owns export behavior and composes the port; this layer

@@ -156,9 +156,14 @@ public sealed class SymbolSearchService : IDisposable
         var sources = new List<string>();
 
         // Get providers to query
-        var providers = string.IsNullOrEmpty(request.Provider)
+        var providers = (string.IsNullOrEmpty(request.Provider)
             ? _providers.Where(p => true)
-            : _providers.Where(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
+            : _providers.Where(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(p => p.Priority)
+            .ToList();
+        var providerPriorities = providers
+            .GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Min(p => p.Priority), StringComparer.OrdinalIgnoreCase);
 
         // Query all providers in parallel
         var tasks = providers.Select(async p =>
@@ -202,6 +207,8 @@ public sealed class SymbolSearchService : IDisposable
         {
             var validResults = results
                 .Where(static r => !string.IsNullOrWhiteSpace(r.Symbol))
+                .Select(r => EnsureResultSource(r, provider))
+                .Select(NormalizeResultSymbol)
                 .ToList();
 
             if (validResults.Count > 0)
@@ -211,12 +218,18 @@ public sealed class SymbolSearchService : IDisposable
             }
         }
 
-        // Deduplicate by symbol, keeping highest score
+        // Deduplicate by symbol with exact-match ranking plus consensus and priority tiebreakers.
+        var normalizedQuery = NormalizeSymbolKey(request.Query);
         var deduped = allResults
             .GroupBy(r => NormalizeSymbolKey(r.Symbol))
-            .Select(g => NormalizeResultSymbol(g.OrderByDescending(r => r.MatchScore).First()))
-            .OrderByDescending(r => r.MatchScore)
+            .Select(g => RankSymbolGroup(g, normalizedQuery, providerPriorities))
+            .OrderByDescending(r => IsExactSymbolMatch(r.Result, normalizedQuery))
+            .ThenByDescending(r => r.Result.MatchScore)
+            .ThenByDescending(r => r.ContributingSourceCount)
+            .ThenBy(r => GetProviderPriority(r.Result.Source, providerPriorities))
+            .ThenBy(r => r.Result.Symbol, StringComparer.OrdinalIgnoreCase)
             .Take(request.Limit)
+            .Select(r => r.Result)
             .ToList();
 
         // Enrich with local metadata
@@ -258,6 +271,40 @@ public sealed class SymbolSearchService : IDisposable
 
     private static string NormalizeSymbolKey(string? symbol)
         => symbol?.Trim().ToUpperInvariant() ?? string.Empty;
+
+    private static SymbolSearchResult EnsureResultSource(SymbolSearchResult result, string provider)
+        => string.IsNullOrWhiteSpace(result.Source)
+            ? result with { Source = provider }
+            : result;
+
+    private static RankedSymbolSearchResult RankSymbolGroup(
+        IGrouping<string, SymbolSearchResult> group,
+        string normalizedQuery,
+        IReadOnlyDictionary<string, int> providerPriorities)
+    {
+        var candidates = group.Select(NormalizeResultSymbol).ToList();
+        var contributingSourceCount = candidates
+            .Select(static r => r.Source)
+            .Where(static source => !string.IsNullOrWhiteSpace(source))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+        var result = candidates
+            .OrderByDescending(r => IsExactSymbolMatch(r, normalizedQuery))
+            .ThenByDescending(r => r.MatchScore)
+            .ThenBy(r => GetProviderPriority(r.Source, providerPriorities))
+            .ThenBy(r => r.Source ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .First();
+
+        return new RankedSymbolSearchResult(result, contributingSourceCount);
+    }
+
+    private static bool IsExactSymbolMatch(SymbolSearchResult result, string normalizedQuery)
+        => NormalizeSymbolKey(result.Symbol).Equals(normalizedQuery, StringComparison.OrdinalIgnoreCase);
+
+    private static int GetProviderPriority(string? source, IReadOnlyDictionary<string, int> providerPriorities)
+        => !string.IsNullOrWhiteSpace(source) && providerPriorities.TryGetValue(source, out var priority)
+            ? priority
+            : int.MaxValue;
 
     /// <summary>
     /// Get detailed information about a specific symbol.
@@ -450,6 +497,8 @@ public sealed class SymbolSearchService : IDisposable
 
     private static SymbolSearchResult NormalizeResultSymbol(SymbolSearchResult result)
         => result with { Symbol = NormalizeSymbolKey(result.Symbol) };
+
+    private sealed record RankedSymbolSearchResult(SymbolSearchResult Result, int ContributingSourceCount);
 
     /// <summary>
     /// Clear the search and details cache.

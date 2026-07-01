@@ -39,11 +39,11 @@ public static class ProviderCapabilityDescriptorCatalog
         new("edgar", Search: typeof(EdgarSymbolSearchProvider)),
         new("tiingo", Historical: typeof(TiingoHistoricalDataProvider), Search: typeof(TiingoSymbolSearchProvider), CorporateActions: typeof(TiingoCorporateActionProvider)),
         new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider), Search: typeof(TwelveDataSymbolSearchProvider), CorporateActions: typeof(TwelveDataCorporateActionProvider)),
-        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored)),
+        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored), CorporateActions: typeof(FinnhubCorporateActionProvider)),
         new("stooq", Historical: typeof(StooqHistoricalDataProvider)),
         new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider), Search: typeof(AlphaVantageSymbolSearchProvider), CorporateActions: typeof(AlphaVantageCorporateActionProvider)),
         new("fred", Historical: typeof(FredHistoricalDataProvider), Search: typeof(FredSymbolSearchProvider)),
-        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider))
+        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), Search: typeof(NasdaqDataLinkSymbolSearchProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider))
     ];
 }
 

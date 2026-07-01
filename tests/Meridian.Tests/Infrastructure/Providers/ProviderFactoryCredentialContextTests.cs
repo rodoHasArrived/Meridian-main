@@ -205,6 +205,7 @@ public sealed class ProviderFactoryCredentialContextTests
                         Tiingo: new TiingoConfig(ApiToken: null),
                         Finnhub: new FinnhubConfig(ApiKey: null),
                         Fred: new FredConfig(ApiKey: null),
+                        Nasdaq: new NasdaqDataLinkConfig(ApiKey: null),
                         AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: null)))),
             resolver);
 
@@ -219,6 +220,8 @@ public sealed class ProviderFactoryCredentialContextTests
             new ContextRequest(typeof(TiingoHistoricalDataProvider), ["TIINGO_API_TOKEN"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(FredHistoricalDataProvider), ["FRED_API_KEY"]));
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(NasdaqDataLinkHistoricalDataProvider), ["NASDAQ_DATA_LINK_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlphaVantageHistoricalDataProvider), ["ALPHA_VANTAGE_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
@@ -243,6 +246,24 @@ public sealed class ProviderFactoryCredentialContextTests
         providers.Should().ContainSingle(p => p is AlphaVantageSymbolSearchProvider);
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlphaVantageHistoricalDataProvider), ["ALPHA_VANTAGE_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateSymbolSearchProviders_WithNasdaqConfigKey_AddsNasdaqDataLinkSearchProvider()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Nasdaq: new NasdaqDataLinkConfig(ApiKey: "cfg-nasdaq-key")))),
+            resolver);
+
+        var providers = factory.CreateSymbolSearchProviders();
+
+        providers.Should().ContainSingle(p => p is NasdaqDataLinkSymbolSearchProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(NasdaqDataLinkHistoricalDataProvider), ["NASDAQ_DATA_LINK_API_KEY"]));
     }
 
     [Fact]

@@ -19,6 +19,27 @@ namespace Meridian.Tests.Application.Backfill;
 public sealed class AutoGapRemediationServiceTests
 {
     [Fact]
+    public void BackfillRemediationSlaPolicy_CriticalWorkflow_RequiresSameBusinessDayOwnerAssignment()
+    {
+        var observedAt = new DateTimeOffset(2026, 06, 30, 14, 00, 00, TimeSpan.Zero);
+        var policy = new BackfillRemediationSlaPolicy(
+            StandardWindow: TimeSpan.FromHours(48),
+            SameBusinessDayWindow: TimeSpan.FromHours(8));
+
+        var decision = policy.Classify(
+            AutoRemediationTriggerSource.QualityAlert,
+            severity: "Critical",
+            downstreamWorkflow: "Accounting Close",
+            observedAtUtc: observedAt);
+
+        decision.Tier.Should().Be(BackfillRemediationSlaTier.SameBusinessDay);
+        decision.RequiresOwnerAssignment.Should().BeTrue();
+        decision.DownstreamWorkflow.Should().Be("accounting close");
+        decision.ReasonCode.Should().Be("CriticalWorkflow");
+        decision.DueAtUtc.Should().Be(observedAt.AddHours(8));
+    }
+
+    [Fact]
     public async Task DuplicateTrigger_IsSuppressedByIdempotencyAndCooldown()
     {
         var gateway = new FakeGateway();
@@ -167,6 +188,149 @@ public sealed class AutoGapRemediationServiceTests
         execution.AutoRemediationTriggerReason.Should().Contain("scan:Daily:2");
         execution.Warnings.Should().Contain("source=GapAnalyzerScan");
         execution.Warnings.Should().Contain("provider=polygon");
+        execution.Warnings.Should().Contain("sla-tier=Standard");
+        execution.Warnings.Should().Contain("sla-requires-owner=false");
+        execution.Warnings.Should().Contain("downstream-workflow=unassigned");
+    }
+
+    [Fact]
+    public async Task Scenario_CriticalQualityAlert_RetainsSameBusinessDaySlaMetadata()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"),
+            slaPolicy: new BackfillRemediationSlaPolicy(
+                StandardWindow: TimeSpan.FromHours(48),
+                SameBusinessDayWindow: TimeSpan.FromHours(8)));
+
+        await service.HandleQualityAlertAsync(new QualityAlertRemediationSignal(
+            Symbol: "SPY",
+            From: new DateOnly(2026, 06, 29),
+            To: new DateOnly(2026, 06, 29),
+            Provider: "polygon",
+            AlertId: "dq-001",
+            Reason: "missing-close-bar",
+            GapSize: 1,
+            Severity: "Critical",
+            DownstreamWorkflow: "accounting"));
+
+        var execution = history.GetRecentExecutions(10).Should().ContainSingle().Subject;
+        execution.Symbols.Should().Equal("SPY");
+        execution.Status.Should().Be(ExecutionStatus.Completed);
+        execution.AutoRemediationTriggerReason.Should().Be("alert:dq-001:missing-close-bar");
+        execution.Warnings.Should().Contain("source=QualityAlert");
+        execution.Warnings.Should().Contain("provider=polygon");
+        execution.Warnings.Should().Contain("sla-tier=SameBusinessDay");
+        execution.Warnings.Should().Contain("sla-requires-owner=true");
+        execution.Warnings.Should().Contain("downstream-workflow=accounting");
+        execution.Warnings.Should().Contain("sla-reason=CriticalWorkflow");
+        execution.Warnings.Should().Contain(warning => warning.StartsWith("sla-due-utc=", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task EvaluateRemediationSla_CriticalFailedAlert_ReturnsOverdueOwnerEscalation()
+    {
+        var gateway = new FakeGateway
+        {
+            Handler = _ => throw new HttpRequestException("Polygon outage")
+        };
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"),
+            slaPolicy: new BackfillRemediationSlaPolicy(
+                StandardWindow: TimeSpan.FromHours(48),
+                SameBusinessDayWindow: TimeSpan.FromMinutes(15)));
+
+        await service.HandleQualityAlertAsync(new QualityAlertRemediationSignal(
+            Symbol: "spy",
+            From: new DateOnly(2026, 06, 29),
+            To: new DateOnly(2026, 06, 29),
+            Provider: "polygon",
+            AlertId: "dq-002",
+            Reason: "missing-close-bar",
+            GapSize: 1,
+            Severity: "Critical",
+            DownstreamWorkflow: "Accounting Close"));
+
+        var snapshot = service.EvaluateRemediationSla(DateTimeOffset.UtcNow.AddMinutes(30));
+
+        snapshot.Total.Should().Be(1);
+        snapshot.OverdueCount.Should().Be(1);
+        snapshot.RequiresOwnerAssignmentCount.Should().Be(1);
+
+        var item = snapshot.Items.Should().ContainSingle().Subject;
+        item.Status.Should().Be(BackfillRemediationSlaStatus.Overdue);
+        item.ExecutionStatus.Should().Be(ExecutionStatus.Failed);
+        item.LastOutcome.Should().Be(AutoRemediationOutcome.FailedTransient.ToString());
+        item.Tier.Should().Be(BackfillRemediationSlaTier.SameBusinessDay);
+        item.RequiresOwnerAssignment.Should().BeTrue();
+        item.DownstreamWorkflow.Should().Be("accounting close");
+        item.ReasonCode.Should().Be("CriticalWorkflow");
+        item.Provider.Should().Be("polygon");
+        item.Symbols.Should().Equal("SPY");
+        item.IdempotencyKey.Should().Be("SPY|polygon|2026-06-29|2026-06-29");
+        item.TimeRemaining.Should().BeLessThan(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task EvaluateRemediationSla_CompletedAlert_DoesNotCountAsOverdue()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"),
+            slaPolicy: new BackfillRemediationSlaPolicy(
+                StandardWindow: TimeSpan.FromHours(48),
+                SameBusinessDayWindow: TimeSpan.FromMinutes(15)));
+
+        await service.HandleQualityAlertAsync(new QualityAlertRemediationSignal(
+            Symbol: "SPY",
+            From: new DateOnly(2026, 06, 29),
+            To: new DateOnly(2026, 06, 29),
+            Provider: "polygon",
+            AlertId: "dq-003",
+            Reason: "missing-close-bar",
+            GapSize: 1,
+            Severity: "Critical",
+            DownstreamWorkflow: "Accounting"));
+
+        var snapshot = service.EvaluateRemediationSla(DateTimeOffset.UtcNow.AddMinutes(30));
+
+        snapshot.Total.Should().Be(1);
+        snapshot.OverdueCount.Should().Be(0);
+        snapshot.DueSoonCount.Should().Be(0);
+        snapshot.RequiresOwnerAssignmentCount.Should().Be(0);
+
+        var item = snapshot.Items.Should().ContainSingle().Subject;
+        item.Status.Should().Be(BackfillRemediationSlaStatus.Completed);
+        item.ExecutionStatus.Should().Be(ExecutionStatus.Completed);
+        item.RequiresOwnerAssignment.Should().BeTrue();
+        item.TimeRemaining.Should().BeLessThan(TimeSpan.Zero);
     }
 
     private sealed class FakeGateway : IBackfillExecutionGateway

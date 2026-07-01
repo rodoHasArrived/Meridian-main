@@ -43,7 +43,16 @@ This document defines the fixed automation artifact contract emitted under:
   - `GET /api/workstation/trading/readiness`
   - `GET /api/workstation/operator/inbox`
 - `calibration.kernelVersion` ties evidence to DK trust-threshold interpretation and stale-calibration checks.
-- `dk1-pilot-parity-packet.json` resolves document/token and sample-review gates before operator review.
+- `dk1-pilot-parity-packet.json` resolves document/token, sample-review, and search-dependency gates before operator review.
+
+## DK1 Packet Search Dependency Review
+
+`dk1-pilot-parity-packet.json` must include `searchDependencyReview` for symbol-search dependencies that can affect provider trust without being broker runtime feeds:
+
+- `requiredCount`, `representedCount`, and `status` summarize the dependency gate.
+- `dependencies[]` includes `provider`, `dependency`, `risk`, `governanceAction`, `evidenceAnchors`, `status`, and `missingRequirements`.
+- OpenFIGI identifier mapping and EDGAR company ticker/reference-data endpoints are represented in this section until runtime search telemetry has its own packet input.
+- Operator sign-off packet reviews bind `requiredSearchDependencyCount`, `representedSearchDependencyCount`, and `searchDependencyReviewStatus` alongside sample counts, evidence-document counts, and contract statuses.
 
 ## Promotion Sign-off Responsibilities
 
@@ -53,4 +62,4 @@ Promotion beyond DK1 requires valid sign-off entries in `dk1-operator-signoff.js
 - Provider Reliability
 - Trading
 
-Each approval must be bound to the exact reviewed packet metadata (path/status/generated timestamp/sample counts/contracts) before promotion can proceed.
+Each approval must be bound to the exact reviewed packet metadata (path/status/generated timestamp/sample counts/contracts/search dependency review) before promotion can proceed.
