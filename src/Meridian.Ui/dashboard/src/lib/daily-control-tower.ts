@@ -46,7 +46,7 @@ export interface DailyControlTowerModel {
   nextActionLabel: string;
   nextActionHref: string;
   nextActionAriaLabel: string;
-  proofLabel: string;
+  evidenceLabel: string;
   driverItems: DailyControlTowerDriverItem[];
   queueRows: DailyControlTowerFocusRow[];
   trustItems: AppShellTrustStripItem[];
@@ -87,7 +87,7 @@ export function buildDailyControlTowerModel(
     nextActionLabel: decision.actionLabel,
     nextActionHref: decision.actionHref,
     nextActionAriaLabel: decision.actionAriaLabel,
-    proofLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No proof linked",
+    evidenceLabel: decision.evidenceLabel ?? leadingRow?.proof?.label ?? "No evidence linked",
     driverItems: buildDriverItems({
       viewModel,
       queueRows,
@@ -131,11 +131,11 @@ function buildDriverItems({
     },
     {
       id: "queue",
-      label: "Blocked outputs",
+      label: "Finance queue",
       value: queueRows.length > 0 ? `${blockedRows} blocked / ${reviewRows} review` : "0 queued",
       detail: queueRows.length > 0
-        ? `${queueRows.length} ranked operator focus item(s) drive the daily decision queue.`
-        : "No operator focus items are currently queued.",
+        ? `${queueRows.length} ranked finance focus item(s) drive the daily decision queue.`
+        : "No finance focus items are currently queued.",
       badgeVariant: blockedRows > 0 ? "danger" : reviewRows > 0 ? "warning" : "success"
     },
     {
@@ -156,10 +156,10 @@ function buildDriverItems({
     },
     {
       id: "proof",
-      label: "Proof events",
+      label: "Evidence events",
       value: evidenceTimelineItems.length > 0 ? `${evidenceTimelineItems.length} retained` : "No events",
       detail: evidenceTimelineItems.length > 0
-        ? "Timestamped evidence events back the visible queue and proof passports."
+        ? "Timestamped evidence events back the visible queue and evidence summaries."
         : "No timestamped evidence event is linked to this decision.",
       badgeVariant: evidenceTimelineItems.length > 0 ? "success" : "warning"
     }
@@ -193,7 +193,7 @@ function buildFocusRow(
     badgeVariant: badgeVariantForTone(item.tone),
     proof,
     proofPassportItems,
-    proofPassportSummary: `${item.label}: ${statusLabel}, ${outputLabel}, ${proofPassportItems[1]?.value ?? "No freshness proof"}.`
+    proofPassportSummary: `${item.label}: ${statusLabel}, ${outputLabel}, ${proofPassportItems[1]?.value ?? "No freshness evidence"}.`
   };
 }
 
@@ -352,11 +352,11 @@ function outputLabelForRoute(route: string, workspaceLabel: string): string {
   }
 
   if (pathname.startsWith("/data")) {
-    return "Market data or provider trust";
+    return "Data health or provider review";
   }
 
   if (pathname.startsWith("/settings")) {
-    return "Provider setup or diagnostics";
+    return "Provider connections or diagnostics";
   }
 
   if (pathname.startsWith("/strategy")) {

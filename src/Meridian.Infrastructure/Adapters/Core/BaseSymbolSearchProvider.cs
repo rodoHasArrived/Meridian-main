@@ -208,6 +208,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (string.IsNullOrWhiteSpace(query))
             return Array.Empty<SymbolSearchResult>();
 
+        if (limit <= 0)
+            return Array.Empty<SymbolSearchResult>();
+
         if (!HasValidCredentials())
             return Array.Empty<SymbolSearchResult>();
 

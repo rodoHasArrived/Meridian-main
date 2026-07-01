@@ -251,11 +251,14 @@ describe("app shell view model", () => {
     });
     expect(state.workflowContinuity.title).toBe("Daily Control Tower");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
-      "Control Tower",
-      "Trading readiness",
-      "Accounting records",
-      "Report outputs",
-      "Provider trust"
+      "Today",
+      "Exceptions",
+      "Close",
+      "Reconciliation",
+      "Ledger",
+      "Reports",
+      "Evidence",
+      "Data Health"
     ]);
   });
 

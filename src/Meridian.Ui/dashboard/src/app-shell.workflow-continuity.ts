@@ -122,43 +122,63 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   {
     id: "daily-control-tower",
     title: "Daily Control Tower",
-    summary: "Review the highest-priority operator decision across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.",
+    summary: "Start finance users with today's exceptions, close blockers, reconciliation, ledger, reports, evidence, and data-health work before non-finance surfaces.",
     steps: [
       {
-        id: "control-tower",
-        label: "Control Tower",
-        description: "Start each session from the ranked cross-workspace decision queue.",
+        id: "today",
+        label: "Today",
+        description: "Start each session from the finance decision queue and next action.",
         href: "/",
         matchPath: "/"
       },
       {
-        id: "trading-readiness",
-        label: "Trading readiness",
-        description: "Resolve execution, replay, and acceptance-gate blockers before paper operation.",
-        href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
-        matchPath: WORKSTATION_ROUTE_CATALOG.tradingReadiness
+        id: "exceptions",
+        label: "Exceptions",
+        description: "Review breaks, approvals, and due close work that need finance action.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingExceptions
+      },
+      {
+        id: "close",
+        label: "Close",
+        description: "Review period-close blockers, approvals, and close-support tasks.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
       },
       {
         id: "reconciliation",
-        label: "Accounting records",
-        description: "Resolve ledger, security, cash, and position breaks before close or reporting.",
+        label: "Reconciliation",
+        description: "Resolve cash, position, ledger, and security breaks before close or reporting.",
         href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
       },
       {
-        id: "report-packs",
-        label: "Report outputs",
-        description: "Review governed output targets, evidence readiness, and export posture.",
+        id: "ledger",
+        label: "Ledger",
+        description: "Inspect trial-balance, journal, and book-impact evidence for selected cases.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingLedger
+      },
+      {
+        id: "reports",
+        label: "Reports",
+        description: "Review governed report outputs affected by finance exceptions.",
         href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       },
       {
-        id: "provider-setup",
-        label: "Provider trust",
-        description: "Repair credentials, connection acknowledgement, and paper/live provider status.",
-        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
-        matchPath: WORKSTATION_ROUTE_CATALOG.settings,
-        matchHash: "#alpaca-provider-setup"
+        id: "evidence",
+        label: "Evidence",
+        description: "Open retained support and evidence packets for the selected finance item.",
+        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+      },
+      {
+        id: "data-health",
+        label: "Data Health",
+        description: "Check provider data quality and import posture after finance work is triaged.",
+        href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+        matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders
       }
     ]
   },

@@ -97,22 +97,22 @@ describe("daily control tower model", () => {
     const model = buildDailyControlTowerModel(shell.workflowContinuity, shell.trustStrip);
 
     expect(shell.workflowContinuity.title).toBe("Daily Control Tower");
-    expect(model.decision.title).toBe("Resolve Brokerage sync failed");
-    expect(model.statusLabel).toBe("Blocked");
-    expect(model.ownerLabel).toBe("Settings");
-    expect(model.outputLabel).toBe("Provider setup or diagnostics");
-    expect(model.nextActionHref).toBe("/settings#alpaca-provider-setup");
+    expect(model.decision.title).toBe("Resolve Report pack approval waiting");
+    expect(model.statusLabel).toBe("Review");
+    expect(model.ownerLabel).toBe("Reporting");
+    expect(model.outputLabel).toBe("Reporting package or evidence");
+    expect(model.nextActionHref).toBe("/reporting/report-packs");
     expect(model.driverItems).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "continuity",
         label: "Continuity source",
         value: "Daily Control Tower",
         detail: expect.stringContaining("Source route: /."),
-        badgeVariant: "danger"
+        badgeVariant: "warning"
       }),
       expect.objectContaining({
         id: "queue",
-        label: "Blocked outputs",
+        label: "Finance queue",
         value: "1 blocked / 2 review",
         badgeVariant: "danger"
       }),
@@ -124,19 +124,19 @@ describe("daily control tower model", () => {
       }),
       expect.objectContaining({
         id: "proof",
-        label: "Proof events",
+        label: "Evidence events",
         value: "3 retained",
         badgeVariant: "success"
       })
     ]));
     expect(model.queueRows.map((row) => row.item.label)).toEqual([
-      "Brokerage sync failed",
       "Report pack approval waiting",
-      "Alpaca provider warning"
+      "Alpaca provider warning",
+      "Brokerage sync failed"
     ]);
   });
 
-  it("builds the required proof passport facts from linked evidence", () => {
+  it("builds the required evidence summary facts from linked evidence", () => {
     const shell = buildAppShellViewState({
       pathname: "/",
       loading: false,
@@ -148,11 +148,11 @@ describe("daily control tower model", () => {
     const model = buildDailyControlTowerModel(shell.workflowContinuity, shell.trustStrip);
     const row = model.queueRows[0];
 
-    expect(row?.proof?.label).toBe("Brokerage sync failed");
+    expect(row?.proof?.label).toBe("Report pack approval waiting");
     expect(row?.proofPassportItems.map((item) => item.label)).toEqual(dailyControlTowerProofPassportLabels());
-    expect(row?.proofPassportItems.find((item) => item.label === "Source")?.value).toBe("Settings");
-    expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value).toBe("2026-05-14 20:00 UTC");
-    expect(row?.proofPassportItems.find((item) => item.label === "Report Usage")?.value).toBe("Provider setup or diagnostics");
-    expect(row?.proofPassportItems.find((item) => item.label === "Audit Trail")?.value).toBe("2026-05-14T20:00:00.000Z");
+    expect(row?.proofPassportItems.find((item) => item.label === "Source")?.value).toBe("Reporting");
+    expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value).toBe("2026-05-14 21:00 UTC");
+    expect(row?.proofPassportItems.find((item) => item.label === "Report Usage")?.value).toBe("Reporting package or evidence");
+    expect(row?.proofPassportItems.find((item) => item.label === "Audit Trail")?.value).toBe("2026-05-14T21:00:00.000Z");
   });
 });

@@ -87,7 +87,7 @@ export function buildWorkflowContinuityViewModel(
   const nextStep = steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
-  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope);
+  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, pathname === "/");
   const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
@@ -276,10 +276,15 @@ function buildWorkflowContinuityStepStatus(
   }
 
   switch (stepId) {
+    case "today":
+      return context.error || context.workflowError
+        ? { label: "Review", tone: "review" }
+        : { label: "Finance queue", tone: "ready" };
     case "watchlist":
     case "quotes":
     case "alerts":
     case "trusted-data":
+    case "data-health":
       return buildTrustedDataContinuityStatus(context.payload.data);
     case "strategy-runs":
     case "quant-lab":
@@ -309,14 +314,17 @@ function buildWorkflowContinuityStepStatus(
     case "security-master":
     case "ledger":
     case "reconciliation":
+    case "exceptions":
       return buildAccountingReconciliationContinuityStatus(context.payload.accounting);
     case "close-support":
+    case "close":
       return buildAccountingCloseSupportContinuityStatus(context.payload.accounting);
     case "produce-evidence":
     case "evidence":
     case "evidence-review":
     case "report-packs":
     case "governed-report":
+    case "reports":
       return buildReportingGovernedReportContinuityStatus(context.payload.reporting);
     default:
       return context.error || context.workflowError
@@ -326,6 +334,11 @@ function buildWorkflowContinuityStepStatus(
 }
 
 const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
+  today: ["accounting", "reporting", "data"],
+  exceptions: ["accounting"],
+  close: ["accounting"],
+  reports: ["reporting"],
+  "data-health": ["data"],
   watchlist: ["data"],
   quotes: ["data"],
   alerts: ["data"],
@@ -492,7 +505,8 @@ function formatDecisionEvidenceLabel(item: AppShellEvidenceTimelineItem | null):
 
 function buildOperatorFocusViewModel(
   context: WorkflowContinuityStatusContext,
-  operatingScope: AppShellOperatingScopeState
+  operatingScope: AppShellOperatingScopeState,
+  financeFirst = false
 ): OperatorFocusViewModel {
   if (context.loading) {
     return {
@@ -515,7 +529,7 @@ function buildOperatorFocusViewModel(
     }),
     ...buildReportingOperatorFocusItems(context.payload.reporting),
     ...buildStrategyOperatorFocusItems(context.payload.strategy)
-  ]).sort(compareOperatorFocusCandidates);
+  ]).sort((left, right) => compareOperatorFocusCandidates(left, right, financeFirst));
 
   const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map((candidate) => toOperatorFocusItem(candidate, operatingScope));
   const blockedCount = candidates.filter((item) => item.tone === "blocked").length;
@@ -635,11 +649,33 @@ function dedupeOperatorFocusCandidates(candidates: OperatorFocusCandidate[]): Op
   return Array.from(byId.values());
 }
 
-function compareOperatorFocusCandidates(left: OperatorFocusCandidate, right: OperatorFocusCandidate): number {
-  return operatorFocusTonePriority(left.tone) - operatorFocusTonePriority(right.tone)
+function compareOperatorFocusCandidates(left: OperatorFocusCandidate, right: OperatorFocusCandidate, financeFirst = false): number {
+  return (financeFirst ? financeWorkspacePriority(left.workspaceLabel) - financeWorkspacePriority(right.workspaceLabel) : 0)
+    || operatorFocusTonePriority(left.tone) - operatorFocusTonePriority(right.tone)
     || left.sourcePriority - right.sourcePriority
     || left.sourceIndex - right.sourceIndex
     || left.label.localeCompare(right.label);
+}
+
+function financeWorkspacePriority(workspaceLabel: string): number {
+  switch (workspaceLabel.toLowerCase()) {
+    case "accounting":
+      return 0;
+    case "reporting":
+      return 1;
+    case "data":
+      return 2;
+    case "portfolio":
+      return 3;
+    case "settings":
+      return 4;
+    case "trading":
+      return 5;
+    case "strategy":
+      return 6;
+    default:
+      return 7;
+  }
 }
 
 function operatorFocusTonePriority(tone: AppShellWorkflowContinuityStatusTone): number {

@@ -133,16 +133,16 @@ describe("workspace nav view model", () => {
       "/accounting/configure"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
-      label: "Overview",
+      label: "Today",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Overview"
+      ariaLabel: "Open Today"
     });
     expect(accounting?.subItems[1]).toMatchObject({
-      label: "Continuity",
+      label: "Close",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Continuity"
+      ariaLabel: "Open Close"
     });
     expect(accounting?.subItems[3]).toMatchObject({
       label: "Ledger",

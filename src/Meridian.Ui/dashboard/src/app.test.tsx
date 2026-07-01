@@ -321,15 +321,15 @@ describe("App", () => {
     const drivers = screen.getByRole("region", { name: "Daily control tower decision drivers" });
     expect(within(drivers).getByText("Continuity source")).toBeInTheDocument();
     expect(within(drivers).getByText("Daily Control Tower")).toBeInTheDocument();
-    expect(within(drivers).getByText("Blocked outputs")).toBeInTheDocument();
+    expect(within(drivers).getByText("Finance queue")).toBeInTheDocument();
     expect(within(drivers).getByText("Trust posture")).toBeInTheDocument();
-    expect(within(drivers).getByText("Proof events")).toBeInTheDocument();
+    expect(within(drivers).getByText("Evidence events")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Daily control tower blocked output queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
-      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
-    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+      name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
+    }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
 
-    const proofPassport = screen.getByRole("region", { name: "Brokerage sync failed Proof Passport" });
+    const evidenceSummary = screen.getByRole("region", { name: "Report pack approval waiting Evidence summary" });
     [
       "Source",
       "Freshness",
@@ -340,9 +340,9 @@ describe("App", () => {
       "Evidence Packet",
       "Audit Trail"
     ].forEach((label) => {
-      expect(within(proofPassport).getByText(label)).toBeInTheDocument();
+      expect(within(evidenceSummary).getByText(label)).toBeInTheDocument();
     });
-    expect(within(proofPassport).getByText("Provider setup or diagnostics")).toBeInTheDocument();
+    expect(within(evidenceSummary).getByText("Reporting package or evidence")).toBeInTheDocument();
     await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
   });
 

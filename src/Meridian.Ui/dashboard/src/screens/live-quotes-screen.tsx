@@ -6,6 +6,7 @@ import {
   ArrowUp,
   BellPlus,
   CheckCircle2,
+  FileSpreadsheet,
   ListPlus,
   LineChart,
   Pause,

@@ -539,7 +539,9 @@ describe("SettingsScreen", () => {
   });
 
   it("renders recent events as accessible status evidence rows", () => {
-    renderWithRouter(<SettingsScreen session={session} overview={overview} />);
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings#diagnostic-endpoints"]
+    });
 
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
       "Operator control posture"
@@ -585,7 +587,7 @@ describe("SettingsScreen", () => {
     expect(within(profileRegion).getByRole("link", {
       name: "Open Settings diagnostic services from profile authentication posture"
     })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
-    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
 
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {
@@ -938,7 +940,10 @@ describe("SettingsScreen", () => {
         overview={overview}
         rolePermissionCatalog={rolePermissionCatalog}
         onRefresh={onRefresh}
-      />
+      />,
+      {
+        initialEntries: ["/settings#settings-overview"]
+      }
     );
 
     const consoleRegion = await screen.findByRole("region", { name: "Scoped access assignment console" });
@@ -2151,7 +2156,10 @@ describe("SettingsScreen", () => {
             }
           ]
         }}
-      />
+      />,
+      {
+        initialEntries: ["/settings#diagnostic-endpoints"]
+      }
     );
 
     const storageRow = screen.getByRole("row", {
@@ -2170,14 +2178,18 @@ describe("SettingsScreen", () => {
   });
 
   it("keeps the recent-events panel visible when there are no events", () => {
-    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, recentEvents: [] }} />);
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, recentEvents: [] }} />, {
+      initialEntries: ["/settings#diagnostic-endpoints"]
+    });
 
     expect(screen.getAllByText("No recent events")).toHaveLength(2);
     expect(screen.getByText("No system events reported for the active session. Diagnostic services remain available below.")).toBeInTheDocument();
   });
 
   it("renders an alert state when overview data is unavailable", () => {
-    renderWithRouter(<SettingsScreen session={session} overview={null} />);
+    renderWithRouter(<SettingsScreen session={session} overview={null} />, {
+      initialEntries: ["/settings#diagnostic-endpoints"]
+    });
 
     expect(screen.getAllByText("Event stream unavailable")).toHaveLength(2);
     expect(screen.getByRole("alert")).toHaveTextContent("Reconnect to the Meridian API");
@@ -2194,7 +2206,8 @@ describe("SettingsScreen", () => {
         data={{ metrics: [], providers: [], backfills: [], exports: [] }}
         accounting={{} as never}
         reporting={{} as never}
-      />
+      />,
+      { initialEntries: ["/settings#diagnostic-endpoints"] }
     );
 
     expect(screen.getByRole("link", { name: "Open System overview diagnostic service" })).toHaveAttribute(
@@ -2499,7 +2512,8 @@ describe("SettingsScreen", () => {
         data={{ metrics: [], providers: [], backfills: [], exports: [] }}
         accounting={{} as never}
         reporting={{} as never}
-      />
+      />,
+      { initialEntries: ["/settings#backend-capability-coverage"] }
     );
 
     expect(screen.getByRole("list", { name: "Service coverage by workstation route" })).toBeInTheDocument();

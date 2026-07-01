@@ -46,7 +46,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         <DailyControlTowerFact label="Owner">{model.ownerLabel}</DailyControlTowerFact>
         <DailyControlTowerFact label="Output">{model.outputLabel}</DailyControlTowerFact>
         <DailyControlTowerFact label="Next action">{model.nextActionLabel}</DailyControlTowerFact>
-        <DailyControlTowerFact label="Proof">{model.proofLabel}</DailyControlTowerFact>
+        <DailyControlTowerFact label="Evidence">{model.evidenceLabel}</DailyControlTowerFact>
       </PanelSurface>
 
       <section aria-label="Daily control tower decision drivers" className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -127,9 +127,9 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                       </Link>
                     </td>
                     <td className="min-w-[22rem] px-4 py-4">
-                      <section aria-label={`${row.item.label} Proof Passport`} className="space-y-3">
+                      <section aria-label={`${row.item.label} Evidence summary`} className="space-y-3">
                         <div>
-                          <h3 className="text-sm font-semibold text-foreground">Proof Passport</h3>
+                          <h3 className="text-sm font-semibold text-foreground">Evidence summary</h3>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.proofPassportSummary}</p>
                         </div>
                         <dl className="grid gap-2 sm:grid-cols-2">
