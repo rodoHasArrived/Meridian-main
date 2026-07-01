@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import { describeApiError } from "@/lib/api-errors";
 import { getManualJournalEntryWorkbench, runReportingNow } from "@/lib/api";
 import { todayIsoDate } from "@/lib/reporting-periods";
@@ -27,7 +28,7 @@ interface ReportRunParametersScreenProps {
 }
 
 export function ReportRunParametersScreen({ data, accounting }: ReportRunParametersScreenProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const templateId = searchParams.get("templateId") ?? "";
   const reporting = data?.reporting ?? null;
 
@@ -136,8 +137,37 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Report Parameters</CardTitle>
-          <CardDescription>Open this page from the Report Library to configure and run a specific template.</CardDescription>
+          <CardDescription>Choose a report template to configure and run, or open one from the Report Library.</CardDescription>
         </CardHeader>
+        <CardContent className="space-y-3">
+          {templates.length > 0 ? (
+            <label className="block max-w-md space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Report template</span>
+              <Select
+                value=""
+                onChange={(event) => {
+                  const nextTemplateId = event.target.value;
+                  if (nextTemplateId) {
+                    setSearchParams({ templateId: nextTemplateId });
+                  }
+                }}
+                aria-label="Choose a report template to run"
+              >
+                <option value="" disabled>Select a template</option>
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id} disabled={!template.canRunOnDemand}>
+                    {template.name} v{template.versionNumber} ({template.statusLabel})
+                  </option>
+                ))}
+              </Select>
+            </label>
+          ) : (
+            <p className="text-sm text-muted-foreground">No report templates are available yet.</p>
+          )}
+          <Link className="inline-block text-xs text-primary underline-offset-2 hover:underline" to={WORKSTATION_ROUTE_CATALOG.reportingLibrary}>
+            Or browse the Report Library
+          </Link>
+        </CardContent>
       </Card>
     );
   }
