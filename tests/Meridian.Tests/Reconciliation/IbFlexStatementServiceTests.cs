@@ -245,6 +245,65 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task StatementReconciliationService_ValidatesAndIngestsFlexSourceKind()
+    {
+        var service = new StatementReconciliationService();
+        var path = WriteFlexFile(SampleFlexXml);
+
+        // Validation must accept the flex source kind instead of rejecting it or applying
+        // CSV header checks, even when a mapping profile is supplied.
+        var message = await service.ValidateAsync("ib-flex", path, StatementMappingProfileRegistry.IbFlexV1ProfileId, CancellationToken.None);
+        message.Should().Contain("ib-flex");
+
+        var import = await service.ImportAsync("IBKR", path, StatementMappingProfileRegistry.IbFlexV1ProfileId, CancellationToken.None);
+        import.SourceKind.Should().Be("ib-flex");
+        import.RowCount.Should().Be(5);
+        import.SourceRows.Should().HaveCount(5);
+        import.SourceRows[0].RawSnapshot.Should().ContainKey("symbol");
+    }
+
+    [Fact]
+    public async Task StatementReconciliationService_RejectsNonFlexXmlForFlexSourceKind()
+    {
+        var service = new StatementReconciliationService();
+        var path = WriteFlexFile("<NotAFlexReport />", "other.xml");
+
+        var validate = async () => await service.ValidateAsync("ib-flex", path, null, CancellationToken.None);
+
+        await validate.Should().ThrowAsync<InvalidDataException>().WithMessage("*not an IB Flex Query report*");
+    }
+
+    [Fact]
+    public async Task StatementRunWorkflow_ImportsFlexStatementEndToEnd()
+    {
+        var workflow = new StatementRunWorkflowService(
+            _store,
+            new JsonReconciliationCaseStore(_tempDir),
+            new JsonReconciliationBreakStore(_tempDir),
+            new RoutingBrokerStatementService(new CsvBrokerStatementService(_store), _service),
+            new StatementReconciliationContextAdapter(new StatementReconciliationService()));
+        var path = WriteFlexFile(SampleFlexXml);
+        var request = new StatementRunRequest(
+            Broker: "ib-flex",
+            SourceInstitution: "Interactive Brokers",
+            FundAccountId: "FUND-1",
+            ExternalAccountId: "U1234567",
+            StatementPeriodStart: new DateOnly(2026, 6, 1),
+            StatementPeriodEnd: new DateOnly(2026, 6, 30),
+            SourcePath: path,
+            OriginalFileName: "flex-report.xml",
+            MappingProfileId: StatementMappingProfileRegistry.IbFlexV1ProfileId,
+            ToleranceProfileId: "statement-default",
+            ImportedBy: "test",
+            SourceFileHash: string.Empty);
+
+        var result = await workflow.CreateAsync(request);
+
+        result.Import.NormalizedRowCount.Should().Be(5);
+        result.Import.Broker.Should().Be("ib-flex");
+    }
+
+    [Fact]
     public void MappingProfileRegistry_RegistersIbFlexProfile()
     {
         var registry = StatementMappingProfileRegistry.Defaults;
