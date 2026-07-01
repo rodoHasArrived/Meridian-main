@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Npgsql;
 
@@ -13,10 +14,22 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
 
-    public PostgresLedgerJournalStore(LedgerJournalStoreOptions options)
+    // SEC-005 slice 4c-ii: ambient caller-tenant resolver. Optional so existing construction sites
+    // (tests, in-memory wiring) keep compiling and stay fail-open; the workstation host injects an
+    // IHttpContextAccessor-backed implementation. When it resolves null (no tenant in scope — a
+    // background/worker caller, or the single-company runtime) reads are not tenant-scoped.
+    private readonly IFundScopeTenantAccessor? _tenantAccessor;
+
+    public PostgresLedgerJournalStore(
+        LedgerJournalStoreOptions options,
+        IFundScopeTenantAccessor? tenantAccessor = null)
     {
         _options = options;
+        _tenantAccessor = tenantAccessor;
     }
+
+    // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
+    private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
 
     public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
     {
@@ -79,7 +92,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 transaction,
                 entry.PeriodId,
                 forUpdate: _options.EnablePeriodLocking,
-                ct)
+                ct: ct)
             .ConfigureAwait(false);
         if (period is null)
         {
@@ -115,6 +128,11 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             Qualified("journal_entries"),
             Qualified("journal_legs"),
             Qualified("accounting_periods"));
+
+        // SEC-005 slice 4c-ii: scope the entry filter to the caller's tenant via the period's stamped
+        // tenant_id (p_filter aliases accounting_periods inside the filter subquery). Fail-open when the
+        // caller is tenantless or the period is unbound.
+        ApplyTenantReadFilter(command, "p_filter.tenant_id", ResolveCallerTenant());
 
         if (query.LedgerBookId.HasValue)
         {
@@ -166,12 +184,12 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = CreateJournalEntryReadCommand(connection);
-        command.CommandText +=
-            $"""
-            where je.period_id = @period_id
-            order by je.occurred_at, je.global_sequence, jl.line_no;
-            """;
+        command.CommandText += " where je.period_id = @period_id";
         command.Parameters.AddWithValue("period_id", periodId);
+        // SEC-005 slice 4c-ii: scope by the tenant stamped on the entry's period (the main read has no
+        // period join). Fail-open for a tenantless caller or an unbound period.
+        ApplyTenantPeriodReadFilter(command, "je.period_id", ResolveCallerTenant());
+        command.CommandText += " order by je.occurred_at, je.global_sequence, jl.line_no;";
 
         return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
     }
@@ -180,12 +198,11 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = CreateJournalEntryReadCommand(connection);
-        command.CommandText +=
-            $"""
-            where je.aggregate_id = @aggregate_id
-            order by je.occurred_at, je.global_sequence, jl.line_no;
-            """;
+        command.CommandText += " where je.aggregate_id = @aggregate_id";
         command.Parameters.AddWithValue("aggregate_id", aggregateId);
+        // SEC-005 slice 4c-ii: scope by the tenant stamped on the entry's period; fail-open otherwise.
+        ApplyTenantPeriodReadFilter(command, "je.period_id", ResolveCallerTenant());
+        command.CommandText += " order by je.occurred_at, je.global_sequence, jl.line_no;";
 
         return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
     }
@@ -193,7 +210,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     public async Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        return await LoadPeriodAsync(connection, transaction: null, periodId, forUpdate: false, ct).ConfigureAwait(false);
+        return await LoadPeriodAsync(connection, transaction: null, periodId, forUpdate: false, ResolveCallerTenant(), ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
@@ -247,6 +264,11 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             command.Parameters.AddWithValue("fund_structure_node_id", fundStructureNodeId.Value);
         }
 
+        // SEC-005 slice 4c-ii: scope by the period's stamped tenant_id (closes the ledgerBookId /
+        // fundStructureNodeId alternate-identifier residual when fundProfileId is omitted). Filter
+        // p.tenant_id directly so a legacy book-less period is still scoped by its own stamp.
+        ApplyTenantReadFilter(command, "p.tenant_id", ResolveCallerTenant());
+
         command.CommandText += " order by p.start_date, p.period_no;";
 
         var periods = new List<LedgerAccountingPeriod>();
@@ -290,7 +312,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 transaction,
                 period.PeriodId,
                 forUpdate: _options.EnablePeriodLocking,
-                ct)
+                ct: ct)
             .ConfigureAwait(false);
 
         LedgerAccountingPeriod saved;
@@ -315,7 +337,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             var affected = await UpdatePeriodAsync(connection, transaction, saved, expectedVersion, ct).ConfigureAwait(false);
             if (affected != 1)
             {
-                var actual = await LoadPeriodAsync(connection, transaction, period.PeriodId, forUpdate: false, ct).ConfigureAwait(false);
+                var actual = await LoadPeriodAsync(connection, transaction, period.PeriodId, forUpdate: false, ct: ct).ConfigureAwait(false);
                 throw PeriodVersionConflict(period.PeriodId, expectedVersion, actual?.Version ?? 0);
             }
         }
@@ -348,9 +370,12 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                    created_at,
                    updated_at
             from {Qualified("ledger_books")}
-            where ledger_book_id = @ledger_book_id;
+            where ledger_book_id = @ledger_book_id
             """;
         command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        // SEC-005 slice 4c-ii: scope by the book's stamped tenant_id (closes the ledgerBookId
+        // alternate-identifier residual). Fail-open for a tenantless caller or an unbound book.
+        ApplyTenantReadFilter(command, "tenant_id", ResolveCallerTenant());
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         return await reader.ReadAsync(ct).ConfigureAwait(false)
@@ -401,6 +426,10 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             command.CommandText += " and fund_structure_node_kind = @fund_structure_node_kind";
             command.Parameters.AddWithValue("fund_structure_node_kind", fundStructureNodeKind.Value.ToString());
         }
+
+        // SEC-005 slice 4c-ii: scope by the book's stamped tenant_id (closes the fundStructureNodeId
+        // alternate-identifier residual when fundProfileId is omitted). Fail-open otherwise.
+        ApplyTenantReadFilter(command, "tenant_id", ResolveCallerTenant());
 
         command.CommandText += " order by fund_profile_id, display_name, ledger_book_id;";
 
@@ -1100,10 +1129,14 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         NpgsqlTransaction? transaction,
         Guid periodId,
         bool forUpdate,
-        CancellationToken ct)
+        string? callerTenantId = null,
+        CancellationToken ct = default)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
+        // SEC-005 slice 4c-ii: the tenant filter (when any) must precede the FOR UPDATE clause, which
+        // Postgres requires last. Internal write callers pass callerTenantId = null (no filter); only
+        // the GetPeriodAsync read path scopes by the period's stamped tenant_id, fail-open otherwise.
         command.CommandText =
             $"""
             select period_id,
@@ -1119,9 +1152,10 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                    optimistic_version
             from {Qualified("accounting_periods")}
             where period_id = @period_id
-            {ForUpdateClause(forUpdate)};
             """;
         command.Parameters.AddWithValue("period_id", periodId);
+        ApplyTenantReadFilter(command, "tenant_id", callerTenantId);
+        command.CommandText += $" {ForUpdateClause(forUpdate)};";
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -1455,6 +1489,38 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     private string Qualified(string table) => $"{ValidateIdentifier(_options.SchemaName, nameof(_options.SchemaName))}.{ValidateIdentifier(table, nameof(table))}";
 
     private static string ForUpdateClause(bool enabled) => enabled ? "for update" : string.Empty;
+
+    // SEC-005 slice 4c-ii: append the fail-open tenant predicate (and bind its parameter) to a read
+    // command, but only when the caller has a resolved tenant. A tenantless caller adds nothing, so
+    // every row passes — identical behavior under one-company-per-deployment. The column expression is
+    // table-qualified by the caller (e.g. "tenant_id" or "p.tenant_id").
+    private static void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
+    {
+        if (!TenantReadPredicate.ShouldFilter(callerTenantId))
+        {
+            return;
+        }
+
+        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression);
+        command.Parameters.AddWithValue(
+            TenantReadPredicate.ParameterName,
+            TenantReadPredicate.NormalizeParameter(callerTenantId!));
+    }
+
+    // SEC-005 slice 4c-ii: scope a journal-entry read (which has no period join in its main query) by
+    // the tenant stamped on the entry's accounting period, via an EXISTS subquery. Fail-open otherwise.
+    private void ApplyTenantPeriodReadFilter(NpgsqlCommand command, string periodIdColumnExpression, string? callerTenantId)
+    {
+        if (!TenantReadPredicate.ShouldFilter(callerTenantId))
+        {
+            return;
+        }
+
+        command.CommandText += TenantReadPredicate.PeriodExistsClause(Qualified("accounting_periods"), periodIdColumnExpression);
+        command.Parameters.AddWithValue(
+            TenantReadPredicate.ParameterName,
+            TenantReadPredicate.NormalizeParameter(callerTenantId!));
+    }
 
     private static InvalidOperationException PeriodVersionConflict(Guid periodId, long expectedVersion, long actualVersion)
         => new($"Ledger period version conflict for {periodId}. Expected {expectedVersion}, actual {actualVersion}.");

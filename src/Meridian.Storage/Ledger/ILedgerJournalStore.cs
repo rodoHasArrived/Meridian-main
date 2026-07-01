@@ -9,6 +9,10 @@ public interface ILedgerJournalStore
 {
     Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);
 
+    // SEC-005 slice 4c-ii: fund-scoped reads are scoped to the caller's tenant via the stamped
+    // tenant_id column inside the Postgres store, resolved from the ambient IFundScopeTenantAccessor
+    // (fail-open when no tenant is in scope). The store interface is intentionally unchanged so the
+    // ~50 internal/worker/service call sites and other implementations are unaffected.
     Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
         LedgerJournalEntryQuery query,
         CancellationToken ct = default)

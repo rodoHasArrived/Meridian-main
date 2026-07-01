@@ -38,6 +38,25 @@ public interface IFundProfileTenancyRegistry
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Resolves the caller's server-side tenant for the current ambient scope (e.g. the active HTTP
+/// request), so storage can apply SEC-005 slice 4c-ii tenant read predicates without threading a
+/// caller-tenant argument through every read method and intermediate service.
+///
+/// <para>Returns null when there is no tenant in scope — a non-request/background caller, or the
+/// single-company-per-deployment runtime where the legacy tenantless admin profile has no company.
+/// A null result is the fail-open signal: reads are not tenant-scoped and every row passes, matching
+/// the deployment-boundary posture. The web layer supplies an <see cref="IHttpContextAccessor"/>-backed
+/// implementation; the storage layer depends only on this abstraction (no ASP.NET Core coupling).</para>
+/// </summary>
+public interface IFundScopeTenantAccessor
+{
+    /// <summary>
+    /// The caller's resolved tenant id for the current scope, or null when none is in scope (fail-open).
+    /// </summary>
+    string? ResolveCallerTenant();
+}
+
 /// <summary>Recorded ownership of a fund profile by a tenant (and, for audit, its company).</summary>
 public sealed record FundProfileOwnership(string FundProfileId, string TenantId, string? CompanyId)
 {
