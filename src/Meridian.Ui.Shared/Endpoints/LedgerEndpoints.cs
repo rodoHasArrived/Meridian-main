@@ -762,7 +762,10 @@ public static class LedgerEndpoints
         .WithName("PreviewAccountingConfigurationTemplate")
         .Produces<AccountingJournalTemplatePreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        // SEC-005 slice 4c-iii: body-scoped fund EVALUATION (read-permission POST). The fund-scope read
+        // gate above is fail-open; this adds the write/evaluate tenant gate so enforcement fails closed.
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleDryRun, async (RuleDryRunRequestDto request, HttpContext context) =>
         {
@@ -802,7 +805,8 @@ public static class LedgerEndpoints
         .Produces<RuleDryRunResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates, async (PostingRuleJournalCandidateRequestDto request, HttpContext context) =>
         {
@@ -844,7 +848,8 @@ public static class LedgerEndpoints
         .Produces<PostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts, async (PostPostingRuleJournalCandidateRequestDto request, HttpContext context) =>
         {
@@ -930,7 +935,8 @@ public static class LedgerEndpoints
         .Produces<AccountingBasisProjectionSetDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests, async (ExecuteAccountingRuleTestCasesRequestDto request, HttpContext context) =>
         {
@@ -970,7 +976,8 @@ public static class LedgerEndpoints
         .Produces<AccountingRuleTestSuiteResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationActivate, async (ActivateAccountingConfigurationRequest request, HttpContext context) =>
         {
@@ -1962,7 +1969,8 @@ public static class LedgerEndpoints
         .Produces<ManualJournalEntryDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntrySubmitApproval, async (SubmitManualJournalEntryApprovalRequest request, HttpContext context) =>
         {
