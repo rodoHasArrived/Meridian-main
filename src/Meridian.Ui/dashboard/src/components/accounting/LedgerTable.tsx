@@ -2,7 +2,7 @@
 // running Balance, plus a totals footer that proves Σdebit = Σcredit (the footer balance turns to
 // P&L color when the two sides disagree). Flat Concrete grid: white paper, small-caps muted
 // headers, hairline rows, mono tabular figures.
-import { useState } from "react";
+import { useState, type ThHTMLAttributes } from "react";
 import type { KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
@@ -137,7 +137,7 @@ export function LedgerTable({
   const imbalance = totalD - totalC;
 
   const caret = (key: SortKey) => (onSort && sortKey === key ? (sortDir === 1 ? " ↑" : " ↓") : "");
-  const sortableProps = (key: SortKey) =>
+  const sortableProps = (key: SortKey): ThHTMLAttributes<HTMLTableCellElement> =>
     onSort
       ? {
           className: "ldg__sort",

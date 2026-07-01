@@ -45,7 +45,7 @@ const SEVERITY_MAP: Record<string, SeverityKey> = {
   reviewrequiredsoon: "action", drafted: "action", deferred: "action",
   // blocked / brick-red
   blocked: "blocked", critical: "blocked", failed: "blocked", rejected: "blocked",
-  error: "blocked", blocker: "blocked",
+  error: "blocked", blocker: "blocked", danger: "blocked",
   // info / muted — unknown, not yet started, absent
   info: "info", unknown: "info", notstarted: "info", missing: "info", pending: "info",
   draft: "info", neutral: "info", notrequired: "info", default: "info", "": "info",
