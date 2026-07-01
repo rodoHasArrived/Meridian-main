@@ -211,6 +211,64 @@ export function JournalEntryDetailScreen() {
         </Card>
       ) : null}
 
+      <section className="grid gap-4 xl:grid-cols-2">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>Approval</CardTitle>
+            <CardDescription>Prepared, reviewed, and approved posture for this journal entry.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <JournalEntryFact label="Prepared by" value={draft?.preparedBy ?? "Unknown preparer"} />
+              <JournalEntryFact label="Reviewed by" value={draft?.submittedBy ?? "Review pending"} />
+              <JournalEntryFact label="Approved by" value={draft?.approvedBy ?? "Approval pending"} />
+              <JournalEntryFact label="Approval ID" value={draft?.approvalId ?? "No approval linked"} />
+            </dl>
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>Source lineage</CardTitle>
+            <CardDescription>Origin of this entry across event, reconciliation, report, import, or manual workflows.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <JournalEntryFact label="Source" value={draft?.entryType ?? (runId ? "System generated" : "Unknown source")} />
+              <JournalEntryFact label="Run / case" value={runId ?? "Manual workbench"} />
+              <JournalEntryFact label="Reversal of" value={draft?.reversalOfJournalEntryId ?? "Not a reversal"} />
+              <JournalEntryFact label="Rebooked from" value={draft?.rebookedFromJournalEntryId ?? "Not rebooked"} />
+            </dl>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card className="panel-surface">
+        <CardHeader>
+          <CardTitle>Actions</CardTitle>
+          <CardDescription>Reverse, clone, attach evidence, request review, or export from the owning workbench.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline" disabled={view.dataCompleteness !== "full"} disabledReason="Only full manual-workbench entries can be reversed from this drilldown.">
+              Reverse
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Clone</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={evidenceWorkbenchPath("journal-entry", view.journalEntryId)}>Attach evidence</Link>
+            </Button>
+            <Button type="button" size="sm" variant="outline" disabled={view.dataCompleteness !== "full"} disabledReason="Summary-only system entries must be reviewed from the source run or approval queue.">
+              Request review
+            </Button>
+            <Button type="button" size="sm" variant="outline">
+              Export
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-wrap gap-2">
         {runId ? (
           <Button asChild size="sm" variant="outline">
@@ -221,6 +279,15 @@ export function JournalEntryDetailScreen() {
           <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Open Journal Entries workbench</Link>
         </Button>
       </div>
+    </div>
+  );
+}
+
+function JournalEntryFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-sm text-foreground">{value}</dd>
     </div>
   );
 }

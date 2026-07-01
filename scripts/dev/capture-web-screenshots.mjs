@@ -375,6 +375,59 @@ function collectCaptureWaitForTexts(capture) {
   return [...new Set(waitForTexts)];
 }
 
+function splitCaptureFilter(value) {
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function collectCaptureFilters(values) {
+  return [
+    values.get("capture"),
+    values.get("captures"),
+    values.get("capture-id"),
+    values.get("capture-name")
+  ].flatMap(splitCaptureFilter);
+}
+
+function captureIdentityValues(capture) {
+  return [
+    capture.id,
+    capture.name,
+    capture.path,
+    screenshotCoveragePath(capture.path),
+    capture.docLabel
+  ].filter((value) => typeof value === "string" && value.trim().length > 0);
+}
+
+function filterCaptures(captures, values) {
+  const filters = collectCaptureFilters(values);
+  if (filters.length === 0) {
+    return captures;
+  }
+
+  const normalizedFilters = new Set(filters.map((filter) => filter.toLowerCase()));
+  const matchedFilters = new Set();
+  const selected = captures.filter((capture) => {
+    const identities = captureIdentityValues(capture);
+    const matched = identities.find((identity) => normalizedFilters.has(identity.toLowerCase()));
+    if (matched) {
+      matchedFilters.add(matched.toLowerCase());
+      return true;
+    }
+
+    return false;
+  });
+
+  const missing = [...normalizedFilters].filter((filter) => !matchedFilters.has(filter));
+  if (missing.length > 0) {
+    throw new Error(`Unknown web screenshot capture filter(s): ${missing.join(", ")}`);
+  }
+
+  return selected;
+}
+
 async function captureRoute(page, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -451,10 +504,11 @@ async function main() {
     throw new Error(`Unsupported web screenshot route config version: ${routeConfig.version}`);
   }
 
-  const captures = Array.isArray(routeConfig.captures) ? routeConfig.captures : [];
-  if (captures.length === 0) {
+  const allCaptures = Array.isArray(routeConfig.captures) ? routeConfig.captures : [];
+  if (allCaptures.length === 0) {
     throw new Error(`No web screenshot captures found in ${configPath}`);
   }
+  const captures = filterCaptures(allCaptures, values);
 
   if (flags.has("list")) {
     for (const capture of captures) {
@@ -499,12 +553,14 @@ async function main() {
     configPath,
     baseUrl: normalizeBaseUrl(baseUrl),
     outputDir,
+    selectedCaptureCount: captures.length,
+    totalCaptureCount: allCaptures.length,
     captures: results,
     logs: []
   };
 
   try {
-    await assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath);
+    await assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath);
 
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);

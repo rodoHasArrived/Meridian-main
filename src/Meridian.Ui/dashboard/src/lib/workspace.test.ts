@@ -48,11 +48,18 @@ describe("workspace metadata", () => {
     expect(workstationRoute("strategyLab")).toBe("/strategy/lab");
     expect(workstationRoute("portfolioAssetDetail")).toBe("/portfolio/asset-detail");
     expect(workstationRoute("portfolioFamilyOffice")).toBe("/portfolio/family-office");
+    expect(workstationRoute("accountingCloseCalendar")).toBe("/accounting/close-calendar");
+    expect(workstationRoute("accountingAccountDetail")).toBe("/accounting/accounts/detail");
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("accountingEntitySetup")).toBe("/accounting/entity-setup");
+    expect(workstationRoute("accountingReconciliationMatch")).toBe("/accounting/reconciliation/match");
     expect(workstationRoute("accountingExceptions")).toBe("/accounting/exceptions");
+    expect(workstationRoute("accountingApprovalInbox")).toBe("/accounting/approvals/inbox");
+    expect(workstationRoute("accountingEvidenceDetail")).toBe("/accounting/evidence/detail");
     expect(workstationRoute("reportingReportBuilder")).toBe("/reporting/report-builder");
     expect(workstationRoute("reportingScheduled")).toBe("/reporting/scheduled");
+    expect(workstationRoute("reportingPreviewValidation")).toBe("/reporting/preview");
+    expect(workstationRoute("reportingRunDetail")).toBe("/reporting/runs/detail");
     expect(workstationRoute("reportingRunStatus")).toBe("/reporting/run-status");
     expect(workstationRoute("reportingOperationsRecord")).toBe("/reporting/operations-record");
     expect(workstationRoute("reportingExports")).toBe("/reporting/exports");

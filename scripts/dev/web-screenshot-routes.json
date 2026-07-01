@@ -37,7 +37,7 @@
       ],
       "waitForTexts": [
         "What needs an operator decision now",
-        "BLOCKED OUTPUTS",
+        "Finance queue",
         "Daily Control Tower"
       ]
     },
@@ -198,7 +198,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
+        "Open breaks",
         "Close Cockpit",
         "CFO / Controller close command center",
         "Critical cash variance breached SLA for run-42.",
@@ -218,7 +218,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
+        "Open breaks",
         "Intraday Vol Carry",
         "Statement runs",
         "Reconciliation Casework"
@@ -237,7 +237,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
+        "Open breaks",
         "Intraday Vol Carry",
         "Security Master",
         "Security Governance"
@@ -277,6 +277,21 @@
       ]
     },
     {
+      "id": "W03C1",
+      "name": "web-accounting-approval-inbox",
+      "path": "/accounting/approvals/inbox",
+      "docLabel": "Accounting \u2014 Approval Inbox",
+      "waitForText": "Approval Inbox",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "What am I approving?",
+        "What evidence supports it?",
+        "What happens after approval?"
+      ]
+    },
+    {
       "id": "W03D",
       "name": "web-accounting-external-gl-reconciliation",
       "path": "/accounting/reconciliation",
@@ -295,6 +310,21 @@
       ]
     },
     {
+      "id": "W03D0",
+      "name": "web-accounting-reconciliation-match",
+      "path": "/accounting/reconciliation/match",
+      "docLabel": "Accounting \u2014 Reconciliation Match Workbench",
+      "waitForText": "Reconciliation Match Workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Source statement / provider records",
+        "Suggested matches",
+        "Ledger records"
+      ]
+    },
+    {
       "id": "W03D1",
       "name": "web-accounting-trial-balance-detail",
       "path": "/accounting/trial-balance?runId=run-42",
@@ -306,6 +336,21 @@
       "waitForTexts": [
         "Pick a ledger run",
         "basis-aware account balances"
+      ]
+    },
+    {
+      "id": "W03D2",
+      "name": "web-accounting-account-detail",
+      "path": "/accounting/accounts/detail?accountId=1000",
+      "docLabel": "Accounting \u2014 Account Detail",
+      "waitForText": "Account Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Beginning balance",
+        "Related journal entries",
+        "Report lines using this account"
       ]
     },
     {
@@ -361,6 +406,21 @@
         "1 operations continuity workflows loaded.",
         "Workflows",
         "LEDGER POSTING DRAFT"
+      ]
+    },
+    {
+      "id": "W03G1",
+      "name": "web-accounting-close-calendar",
+      "path": "/accounting/close-calendar",
+      "docLabel": "Accounting \u2014 Close Calendar",
+      "waitForText": "Close Calendar",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Current close period",
+        "Close checklist",
+        "Dependencies and blockers"
       ]
     },
     {
@@ -426,6 +486,21 @@
       "waitForTexts": [
         "Open this page from a trial balance",
         "ledger, or reconciliation row"
+      ]
+    },
+    {
+      "id": "W03J2",
+      "name": "web-accounting-evidence-detail",
+      "path": "/accounting/evidence/detail?evidenceId=bank-statement",
+      "docLabel": "Accounting \u2014 Evidence Detail",
+      "waitForText": "Evidence Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Document name",
+        "does not approve, post, or release work",
+        "Linked work"
       ]
     },
     {
@@ -611,8 +686,8 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Open this page from the Report Library",
-        "Back to Report Library"
+        "Choose a report template to configure and run",
+        "Or browse the Report Library"
       ]
     },
     {
@@ -628,6 +703,36 @@
         "Schedule delivery",
         "Run due",
         "Delivery history"
+      ]
+    },
+    {
+      "id": "W04K",
+      "name": "web-reporting-preview-validation",
+      "path": "/reporting/preview",
+      "docLabel": "Reporting \u2014 Preview & Validation",
+      "waitForText": "Report Preview & Validation",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "What will be included",
+        "Financial statement sections",
+        "Validation Issues"
+      ]
+    },
+    {
+      "id": "W04L",
+      "name": "web-reporting-run-detail",
+      "path": "/reporting/runs/detail?runId=report-run-board-202605",
+      "docLabel": "Reporting \u2014 Run Detail",
+      "waitForText": "Report Run Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Parameters used",
+        "Generated files",
+        "Clone parameters"
       ]
     },
     {

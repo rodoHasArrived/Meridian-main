@@ -193,13 +193,18 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
         self.assertIn(
-            "assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath)",
+            "assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath)",
             self.web_screenshot_capture_script,
         )
         self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
         self.assertIn("screenshotCoveragePath", self.web_screenshot_capture_script)
         self.assertIn("dataSecurityMasterLegacy", self.web_screenshot_capture_script)
         self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_supports_targeted_captures(self) -> None:
+        self.assertIn("filterCaptures(allCaptures, values)", self.web_screenshot_capture_script)
+        self.assertIn('values.get("capture")', self.web_screenshot_capture_script)
+        self.assertIn("selectedCaptureCount", self.web_screenshot_capture_script)
 
     @staticmethod
     def screenshot_coverage_path(route_path: str) -> str:

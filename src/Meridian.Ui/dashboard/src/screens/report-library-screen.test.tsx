@@ -80,7 +80,11 @@ describe("ReportLibraryScreen", () => {
   it("groups run-this-report links by template family and links to the parameters screen", async () => {
     await renderScreen();
 
-    expect(screen.getByRole("heading", { name: "Run a report" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Report Library" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trial Balance" })).toBeInTheDocument();
+    expect(screen.getByText("Account-balance proof with debit, credit, and ending balance support.")).toBeInTheDocument();
+    expect(screen.getByText("Ledger, chart of accounts, accounting basis, period close posture")).toBeInTheDocument();
+    expect(screen.getByText("Controller")).toBeInTheDocument();
     const trialBalanceLink = screen.getByRole("link", { name: "Run Trial Balance Pack" });
     expect(trialBalanceLink).toHaveAttribute("href", "/reporting/run?templateId=trial-balance-pack%3A1.0");
 

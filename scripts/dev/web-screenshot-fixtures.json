@@ -210,6 +210,214 @@
         }
       }
     ],
+    "/api/workstation/security-master/securities/sec-dev-001": {
+      "securityId": "sec-dev-001",
+      "displayName": "Apple Inc.",
+      "status": "Active",
+      "classification": {
+        "assetClass": "Equity",
+        "subType": "Common Stock",
+        "primaryIdentifierKind": "Ticker",
+        "primaryIdentifierValue": "AAPL",
+        "matchedIdentifierKind": "Ticker",
+        "matchedIdentifierValue": "AAPL",
+        "matchedProvider": "Bloomberg"
+      },
+      "economicDefinition": {
+        "currency": "USD",
+        "version": 3,
+        "effectiveFrom": "2024-01-01",
+        "effectiveTo": null,
+        "subType": "Common Stock",
+        "assetFamily": "Equities",
+        "issuerType": "Corporate"
+      }
+    },
+    "/api/workstation/security-master/securities/sec-dev-001/identity": {
+      "securityId": "sec-dev-001",
+      "displayName": "Apple Inc.",
+      "assetClass": "Equity",
+      "status": "Active",
+      "version": 3,
+      "effectiveFrom": "2024-01-01",
+      "effectiveTo": null,
+      "identifiers": [
+        {
+          "kind": "Ticker",
+          "value": "AAPL",
+          "isPrimary": true,
+          "validFrom": "2024-01-01",
+          "validTo": null,
+          "provider": "Bloomberg"
+        },
+        {
+          "kind": "ISIN",
+          "value": "US0378331005",
+          "isPrimary": false,
+          "validFrom": "2024-01-01",
+          "validTo": null,
+          "provider": "Refinitiv"
+        }
+      ],
+      "aliases": [
+        {
+          "aliasId": "alias-dev-001",
+          "securityId": "sec-dev-001",
+          "aliasKind": "ProviderSymbol",
+          "aliasValue": "AAPL.OQ",
+          "provider": "Nasdaq",
+          "scope": "Collector",
+          "reason": "Market data source mapping",
+          "createdBy": "dashboard-dev",
+          "createdAt": "2026-04-28T18:15:00Z",
+          "validFrom": "2024-01-01",
+          "validTo": null,
+          "isEnabled": true
+        }
+      ]
+    },
+    "/api/security-master/sec-dev-001/corporate-actions": [
+      {
+        "corpActId": "ca-aapl-div-2026-02",
+        "securityId": "sec-dev-001",
+        "eventType": "Dividend",
+        "exDate": "2026-02-07",
+        "payDate": "2026-02-13",
+        "dividendPerShare": 0.25,
+        "currency": "USD",
+        "splitRatio": null,
+        "newSecurityId": null,
+        "distributionRatio": null,
+        "acquirerSecurityId": null,
+        "exchangeRatio": null,
+        "subscriptionPricePerShare": null,
+        "rightsPerShare": null
+      }
+    ],
+    "/api/security-master/sec-dev-001/trading-parameters": {
+      "securityId": "sec-dev-001",
+      "lotSize": 1,
+      "tickSize": 0.01,
+      "contractMultiplier": null,
+      "marginRequirementPct": 25,
+      "tradingHoursUtc": "13:30-20:00",
+      "circuitBreakerThresholdPct": 20,
+      "asOf": "2026-04-28T18:15:00Z"
+    },
+    "/api/workstation/runs/run-42/ledger/trial-balance": [
+      {
+        "accountName": "Cash",
+        "accountType": "Asset",
+        "symbol": null,
+        "financialAccountId": "acct-cash",
+        "balance": 120500,
+        "entryCount": 12,
+        "security": null,
+        "sourceJournalEntryId": "je-cash-1"
+      },
+      {
+        "accountName": "Apple Inc.",
+        "accountType": "Asset",
+        "symbol": "AAPL",
+        "financialAccountId": "acct-aapl",
+        "balance": 5000,
+        "entryCount": 3,
+        "security": {
+          "securityId": "sec-dev-001",
+          "displayName": "Apple Inc.",
+          "assetClass": "Equity",
+          "currency": "USD",
+          "status": "Active",
+          "primaryIdentifier": "AAPL",
+          "subType": null
+        },
+        "sourceJournalEntryId": "je-aapl-1"
+      },
+      {
+        "accountName": "Financing payable",
+        "accountType": "Liability",
+        "symbol": null,
+        "financialAccountId": "acct-financing",
+        "balance": -500,
+        "entryCount": 2,
+        "security": null,
+        "sourceJournalEntryId": "je-financing-1"
+      }
+    ],
+    "/api/workstation/runs/run-42/ledger/journal": [
+      {
+        "journalEntryId": "je-cash-1",
+        "timestamp": "2026-06-30T00:00:00Z",
+        "description": "Cash sweep",
+        "totalDebits": 500,
+        "totalCredits": 500,
+        "lineCount": 2
+      },
+      {
+        "journalEntryId": "je-aapl-1",
+        "timestamp": "2026-06-30T01:00:00Z",
+        "description": "AAPL mark-to-market",
+        "totalDebits": 250,
+        "totalCredits": 250,
+        "lineCount": 2
+      }
+    ],
+    "/api/ledger/journal-entry-workbench": {
+      "fundProfileId": "fund-alpha",
+      "ledgerBookId": "book-alpha",
+      "loadedAtUtc": "2026-06-30T00:00:00Z",
+      "ledgerBooks": [],
+      "chartOfAccounts": [],
+      "drafts": [
+        {
+          "journalEntryId": "manual-je-1",
+          "status": "Approved",
+          "fundProfileId": "fund-alpha",
+          "ledgerBookId": "book-alpha",
+          "accountingBasis": "Primary",
+          "accountingDate": "2026-06-30",
+          "currency": "USD",
+          "memo": "Manual close adjustment",
+          "preparedBy": "browser-user",
+          "createdAtUtc": "2026-06-30T00:00:00Z",
+          "updatedAtUtc": "2026-06-30T00:00:00Z",
+          "version": 1,
+          "lines": [
+            { "lineId": "line-1", "side": "Debit", "amount": 500, "currency": "USD", "accountPath": "Cash", "description": "Sweep in" },
+            { "lineId": "line-2", "side": "Credit", "amount": 500, "currency": "USD", "accountPath": "Suspense", "description": "Sweep out" }
+          ],
+          "evidenceLinks": [],
+          "validationIssues": [],
+          "evidenceAttachments": [
+            {
+              "attachmentId": "att-1",
+              "displayName": "Bank statement.pdf",
+              "evidenceKind": "Statement",
+              "uri": "https://evidence.example/att-1",
+              "sourceSystem": "vault",
+              "addedAtUtc": "2026-06-30T01:00:00Z",
+              "addedBy": "controller"
+            }
+          ],
+          "totalDebits": 500,
+          "totalCredits": 500,
+          "imbalance": 0,
+          "entryType": "General",
+          "lifecycleTransitions": [
+            {
+              "transitionId": "t1",
+              "fromStatus": "Draft",
+              "toStatus": "Approved",
+              "action": "Approve",
+              "actor": "controller",
+              "recordedAtUtc": "2026-06-30T02:00:00Z",
+              "evidenceLinks": []
+            }
+          ]
+        }
+      ],
+      "auditTrail": []
+    },
     "/api/workstation/portfolio": {
       "metrics": [
         { "id": "equity", "label": "Total Equity", "value": "$312,400", "delta": "+1.2%", "tone": "success" },

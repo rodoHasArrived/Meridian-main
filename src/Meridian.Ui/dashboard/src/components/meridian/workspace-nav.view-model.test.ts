@@ -135,15 +135,19 @@ describe("workspace nav view model", () => {
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting",
       "/accounting/operations-continuity",
+      "/accounting/close-calendar",
       "/accounting/entity-setup",
       "/accounting/ledger",
       "/accounting/trial-balance",
+      "/accounting/accounts/detail",
       "/accounting/journal-entries",
       "/accounting/reconciliation",
+      "/accounting/reconciliation/match",
       "/accounting/exceptions",
       "/accounting/security-master",
-      "/accounting/approvals",
+      "/accounting/approvals/inbox",
       "/accounting/evidence",
+      "/accounting/evidence/detail",
       "/accounting/configure"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
@@ -158,11 +162,41 @@ describe("workspace nav view model", () => {
       ariaCurrent: undefined,
       ariaLabel: "Open Close"
     });
-    expect(accounting?.subItems[3]).toMatchObject({
+    expect(accounting?.subItems[4]).toMatchObject({
       label: "Ledger",
       active: true,
       ariaCurrent: "page",
       ariaLabel: "Ledger, current page"
+    });
+  });
+
+  it("surfaces standard finance accounting drill-through pages under Accounting", () => {
+    const model = buildWorkspaceNavViewModel("/accounting/reconciliation/match");
+    const accounting = model.items.find((item) => item.key === "accounting");
+
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/close-calendar")).toMatchObject({
+      label: "Close Calendar",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Close Calendar"
+    });
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/accounts/detail")).toMatchObject({
+      label: "Account Detail",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Account Detail"
+    });
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/reconciliation/match")).toMatchObject({
+      label: "Match Workbench",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Match Workbench, current page"
+    });
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/approvals/inbox")).toMatchObject({
+      label: "Approval Inbox"
+    });
+    expect(accounting?.subItems.find((item) => item.route === "/accounting/evidence/detail")).toMatchObject({
+      label: "Evidence Detail"
     });
   });
 
@@ -196,6 +230,8 @@ describe("workspace nav view model", () => {
       "/reporting/library",
       "/reporting/scheduled",
       "/reporting/run",
+      "/reporting/preview",
+      "/reporting/runs/detail",
       "/reporting/operations-record",
       "/reporting/report-packs",
       "/reporting/evidence",
@@ -224,6 +260,18 @@ describe("workspace nav view model", () => {
       active: false,
       ariaCurrent: undefined,
       ariaLabel: "Open Run Report"
+    });
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/preview")).toMatchObject({
+      label: "Preview & Validation",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Preview & Validation"
+    });
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/runs/detail")).toMatchObject({
+      label: "Run Detail",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Run Detail"
     });
   });
 
