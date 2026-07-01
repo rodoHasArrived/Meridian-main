@@ -13,7 +13,10 @@ namespace Meridian.Storage.Query;
 /// type, date, format, absolute path, size, event count) so operators can discover files and
 /// feed paths into <c>read_parquet</c>/<c>read_json_auto</c> without leaving SQL. Statements
 /// are guarded: single SELECT-family statement, keyword blocklist, row cap, and timeout —
-/// a runaway query can never touch the ingestion hot path or mutate the store.
+/// a runaway query can never touch the ingestion hot path or mutate the store. File access
+/// is sandboxed to the storage root via DuckDB's <c>allowed_directories</c> with external
+/// access otherwise disabled and the configuration locked, so reader functions cannot reach
+/// arbitrary host files.
 /// </summary>
 public sealed partial class DuckDbQueryService(
     IStorageCatalogService catalogService,
@@ -104,16 +107,25 @@ public sealed partial class DuckDbQueryService(
         }
     }
 
-    private static async Task ApplySessionLimitsAsync(
+    private async Task ApplySessionLimitsAsync(
         DuckDBConnection connection,
         DataQueryOptions options,
         CancellationToken ct)
     {
         using var command = connection.CreateCommand();
-        // Session-scoped resource limits; these SET statements are issued by the service
-        // itself before the (blocklist-guarded) user statement runs.
+        // Session-scoped resource limits and the filesystem sandbox; these SET statements are
+        // issued by the service itself before the (blocklist-guarded) user statement runs.
+        // Reader functions (read_parquet/read_csv_auto/...) may only touch the storage root:
+        // allowed_directories confines file access, enable_external_access=false blocks
+        // everything else (other paths, remote endpoints, extension loading), and
+        // lock_configuration=true makes the sandbox immutable for the rest of the session.
+        var storageRoot = Path.GetFullPath(storageOptions.RootPath).Replace("'", "''", StringComparison.Ordinal);
         command.CommandText =
-            $"SET memory_limit='{options.MemoryLimitMb}MB'; SET threads={options.MaxThreads};";
+            $"SET memory_limit='{options.MemoryLimitMb}MB'; "
+            + $"SET threads={options.MaxThreads}; "
+            + $"SET allowed_directories=['{storageRoot}']; "
+            + "SET enable_external_access=false; "
+            + "SET lock_configuration=true;";
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 

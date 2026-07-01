@@ -100,9 +100,9 @@ public sealed class DuckDbQueryServiceTests
         public Task ExportCatalogAsync(string outputPath, CatalogExportFormat format = CatalogExportFormat.Json, CancellationToken ct = default) => Task.CompletedTask;
     }
 
-    private static DuckDbQueryService MakeService(StubCatalogService? catalog = null) => new(
+    private static DuckDbQueryService MakeService(StubCatalogService? catalog = null, string? rootPath = null) => new(
         catalog ?? new StubCatalogService(),
-        new StorageOptions { RootPath = Path.GetTempPath() });
+        new StorageOptions { RootPath = rootPath ?? Path.GetTempPath() });
 
     [Fact]
     public async Task ExecuteAsync_RunsSimpleSelect()
@@ -190,6 +190,49 @@ public sealed class DuckDbQueryServiceTests
 
         result.Success.Should().BeTrue();
         result.Rows[0][0].Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_BlocksReadingFilesOutsideStorageRoot()
+    {
+        var root = Directory.CreateTempSubdirectory("meridian-duckdb-root").FullName;
+        var outside = Path.Combine(Path.GetTempPath(), $"meridian-outside-{Guid.NewGuid():N}.csv");
+        await File.WriteAllTextAsync(outside, "secret\nvalue\n");
+        try
+        {
+            var result = await MakeService(rootPath: root).ExecuteAsync(
+                $"SELECT * FROM read_csv_auto('{outside.Replace("'", "''")}')",
+                new DataQueryOptions());
+
+            result.Success.Should().BeFalse();
+            result.Error.Should().NotBeNullOrWhiteSpace();
+        }
+        finally
+        {
+            File.Delete(outside);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AllowsReadingFilesInsideStorageRoot()
+    {
+        var root = Directory.CreateTempSubdirectory("meridian-duckdb-root").FullName;
+        var inside = Path.Combine(root, "sample.csv");
+        await File.WriteAllTextAsync(inside, "symbol,price\nSPY,400\n");
+        try
+        {
+            var result = await MakeService(rootPath: root).ExecuteAsync(
+                $"SELECT symbol, price FROM read_csv_auto('{inside.Replace("'", "''")}')",
+                new DataQueryOptions());
+
+            result.Success.Should().BeTrue();
+            result.Rows[0].Should().Equal("SPY", "400");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [Fact]
