@@ -15,14 +15,15 @@ public sealed class SessionTcaReporterTests
         decimal? commission = null,
         string? orderId = null,
         DateTimeOffset? timestamp = null,
-        ExecutionReportType reportType = ExecutionReportType.Fill) => new()
+        ExecutionReportType reportType = ExecutionReportType.Fill,
+        decimal? orderQuantity = null) => new()
     {
         OrderId = orderId ?? $"order-{Guid.NewGuid():N}",
         ReportType = reportType,
         Symbol = symbol,
         Side = side,
         OrderStatus = OrderStatus.Filled,
-        OrderQuantity = quantity,
+        OrderQuantity = orderQuantity ?? quantity,
         FilledQuantity = quantity,
         FillPrice = price,
         Commission = commission,
@@ -220,6 +221,69 @@ public sealed class SessionTcaReporterTests
         report.ExecutionQuality.OrdersWithLimitPrice.Should().Be(2);
         // Both legs improve by 10 bps; the notional-weighted average stays ≈ 10 bps.
         report.ExecutionQuality.AvgLimitPriceImprovementBps.Should().BeApproximately(10.0, 0.05);
+    }
+
+    [Fact]
+    public void Generate_CumulativeQuantitySequence_IsConvertedToIncrements()
+    {
+        var start = DateTimeOffset.UtcNow;
+        // IB-style running totals: a 40-share partial then a 100-share final report
+        // describe 100 executed shares (40 @ 400 + 60 @ 401), not 140.
+        var fills = new[]
+        {
+            MakeFill("SPY", OrderSide.Buy, 40m, 400m, commission: 0.4m,
+                orderId: "ib-1", timestamp: start,
+                reportType: ExecutionReportType.PartialFill, orderQuantity: 100m),
+            MakeFill("SPY", OrderSide.Buy, 100m, 401m, commission: 0.6m,
+                orderId: "ib-1", timestamp: start.AddSeconds(1),
+                orderQuantity: 100m)
+        };
+
+        var report = SessionTcaReporter.Generate("s", "strat", fills);
+
+        report.CostSummary.TotalFills.Should().Be(2);
+        // 40 × 400 + 60 × 401 = 40,060
+        report.CostSummary.TotalBuyNotional.Should().Be(40_060m);
+        report.CostSummary.TotalCommissions.Should().Be(1.0m);
+        // VWAP = 40,060 / 100 = 400.6
+        report.SymbolSummaries[0].AvgBuyPrice.Should().Be(400.6m);
+    }
+
+    [Fact]
+    public void Generate_IncrementalSequenceSummingToOrderQuantity_IsUnchanged()
+    {
+        var start = DateTimeOffset.UtcNow;
+        // Incremental tape: two partials of 40 + 60 against a 100-share order.
+        var fills = new[]
+        {
+            MakeFill("SPY", OrderSide.Buy, 40m, 400m, orderId: "p-1", timestamp: start,
+                reportType: ExecutionReportType.PartialFill, orderQuantity: 100m),
+            MakeFill("SPY", OrderSide.Buy, 60m, 401m, orderId: "p-1", timestamp: start.AddSeconds(1),
+                orderQuantity: 100m)
+        };
+
+        var report = SessionTcaReporter.Generate("s", "strat", fills);
+
+        report.CostSummary.TotalBuyNotional.Should().Be(40m * 400m + 60m * 401m);
+    }
+
+    [Fact]
+    public void Generate_IncrementalPartialFillsOnWorkingOrder_AreUnchanged()
+    {
+        var start = DateTimeOffset.UtcNow;
+        // Working order: only 30 of 100 shares filled so far across two increments.
+        var fills = new[]
+        {
+            MakeFill("SPY", OrderSide.Buy, 10m, 400m, orderId: "w-1", timestamp: start,
+                reportType: ExecutionReportType.PartialFill, orderQuantity: 100m),
+            MakeFill("SPY", OrderSide.Buy, 20m, 400m, orderId: "w-1", timestamp: start.AddSeconds(1),
+                reportType: ExecutionReportType.PartialFill, orderQuantity: 100m)
+        };
+
+        var report = SessionTcaReporter.Generate("s", "strat", fills);
+
+        report.CostSummary.TotalBuyNotional.Should().Be(30m * 400m);
+        report.CostSummary.TotalFills.Should().Be(2);
     }
 
     [Fact]

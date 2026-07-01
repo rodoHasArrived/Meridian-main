@@ -24,8 +24,10 @@ public static class SessionTcaReporter
     /// Generates a <see cref="SessionTcaReport"/> for <paramref name="sessionId"/> from the
     /// session's fill history. Only reports of type <see cref="ExecutionReportType.Fill"/> or
     /// <see cref="ExecutionReportType.PartialFill"/> with a fill price and positive filled
-    /// quantity contribute. <paramref name="orders"/> is optional and enriches the report with
-    /// time-to-fill and limit-price-improvement statistics when supplied.
+    /// quantity contribute. Report sequences whose per-order quantities are cumulative (as
+    /// emitted by brokers that report running totals, e.g. the IB gateway) are converted to
+    /// incremental quantities before aggregation. <paramref name="orders"/> is optional and
+    /// enriches the report with time-to-fill and limit-price-improvement statistics.
     /// Returns a zero-valued report when no usable fills exist.
     /// </summary>
     public static SessionTcaReport Generate(
@@ -37,18 +39,9 @@ public static class SessionTcaReporter
         ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
         ArgumentNullException.ThrowIfNull(fills);
 
-        var usable = new List<ExecutionReport>(fills.Count);
-        foreach (var fill in fills)
-        {
-            if (fill.ReportType is ExecutionReportType.Fill or ExecutionReportType.PartialFill
-                && fill.FillPrice is > 0m
-                && fill.FilledQuantity > 0m)
-            {
-                usable.Add(fill);
-            }
-        }
+        var normalized = NormalizeFills(fills);
 
-        if (usable.Count == 0)
+        if (normalized.Count == 0)
         {
             return new SessionTcaReport(
                 sessionId,
@@ -60,10 +53,10 @@ public static class SessionTcaReporter
                 SessionTcaExecutionQuality.Empty);
         }
 
-        var costSummary = BuildCostSummary(usable);
-        var symbolSummaries = BuildSymbolSummaries(usable);
-        var outliers = DetectOutliers(usable);
-        var executionQuality = BuildExecutionQuality(usable, orders);
+        var costSummary = BuildCostSummary(normalized);
+        var symbolSummaries = BuildSymbolSummaries(normalized);
+        var outliers = DetectOutliers(normalized);
+        var executionQuality = BuildExecutionQuality(normalized, orders);
 
         return new SessionTcaReport(
             sessionId,
@@ -75,7 +68,97 @@ public static class SessionTcaReporter
             executionQuality);
     }
 
-    private static SessionTcaCostSummary BuildCostSummary(List<ExecutionReport> fills)
+    /// <summary>A fill with its effective (incremental) executed quantity.</summary>
+    private sealed record TcaFill(
+        string OrderId,
+        string Symbol,
+        OrderSide Side,
+        decimal Quantity,
+        decimal Price,
+        decimal Commission,
+        DateTimeOffset Timestamp)
+    {
+        public decimal Notional => Quantity * Price;
+    }
+
+    /// <summary>
+    /// Filters the raw report tape down to usable fills and converts cumulative per-order
+    /// quantity sequences into incremental ones. A per-order sequence is treated as cumulative
+    /// when it contains multiple reports whose quantities never decrease and whose sum exceeds
+    /// the order quantity — the signature of running totals (a 40-share partial followed by a
+    /// 100-share final report describes 100 executed shares, not 140). Sequences that already
+    /// sum to at most the order quantity are left untouched, so incremental tapes (e.g. the
+    /// paper gateway) are unaffected. When the order quantity is unknown the sequence is left
+    /// as-is because the two encodings cannot be distinguished.
+    /// </summary>
+    private static List<TcaFill> NormalizeFills(IReadOnlyList<ExecutionReport> fills)
+    {
+        var usable = new List<ExecutionReport>(fills.Count);
+        foreach (var fill in fills)
+        {
+            if (fill.ReportType is ExecutionReportType.Fill or ExecutionReportType.PartialFill
+                && fill.FillPrice is > 0m
+                && fill.FilledQuantity > 0m)
+            {
+                usable.Add(fill);
+            }
+        }
+
+        var result = new List<TcaFill>(usable.Count);
+        foreach (var orderGroup in usable.GroupBy(static f => f.OrderId, StringComparer.Ordinal))
+        {
+            var sequence = orderGroup.OrderBy(static f => f.Timestamp).ToList();
+            var isCumulative = IsCumulativeSequence(sequence);
+
+            decimal previousCumulative = 0m;
+            foreach (var report in sequence)
+            {
+                var quantity = isCumulative
+                    ? report.FilledQuantity - previousCumulative
+                    : report.FilledQuantity;
+                previousCumulative = report.FilledQuantity;
+
+                if (quantity <= 0m)
+                    continue;
+
+                result.Add(new TcaFill(
+                    report.OrderId,
+                    report.Symbol,
+                    report.Side,
+                    quantity,
+                    report.FillPrice!.Value,
+                    report.Commission ?? 0m,
+                    report.Timestamp));
+            }
+        }
+
+        result.Sort(static (a, b) => a.Timestamp.CompareTo(b.Timestamp));
+        return result;
+    }
+
+    private static bool IsCumulativeSequence(List<ExecutionReport> sequence)
+    {
+        if (sequence.Count < 2)
+            return false;
+
+        var orderQuantity = sequence[^1].OrderQuantity;
+        if (orderQuantity <= 0m)
+            return false;
+
+        decimal sum = 0m;
+        decimal previous = 0m;
+        foreach (var report in sequence)
+        {
+            if (report.FilledQuantity < previous)
+                return false;
+            previous = report.FilledQuantity;
+            sum += report.FilledQuantity;
+        }
+
+        return sum > orderQuantity;
+    }
+
+    private static SessionTcaCostSummary BuildCostSummary(List<TcaFill> fills)
     {
         decimal totalCommissions = 0m;
         decimal totalBuyNotional = 0m;
@@ -85,17 +168,16 @@ public static class SessionTcaReporter
 
         foreach (var fill in fills)
         {
-            var notional = fill.FilledQuantity * fill.FillPrice!.Value;
-            totalCommissions += fill.Commission ?? 0m;
+            totalCommissions += fill.Commission;
 
             if (fill.Side == OrderSide.Buy)
             {
-                totalBuyNotional += notional;
+                totalBuyNotional += fill.Notional;
                 buyFills++;
             }
             else
             {
-                totalSellNotional += notional;
+                totalSellNotional += fill.Notional;
                 sellFills++;
             }
         }
@@ -116,14 +198,14 @@ public static class SessionTcaReporter
             sellFills);
     }
 
-    private static IReadOnlyList<SessionSymbolTcaSummary> BuildSymbolSummaries(List<ExecutionReport> fills)
+    private static IReadOnlyList<SessionSymbolTcaSummary> BuildSymbolSummaries(List<TcaFill> fills)
     {
-        var grouped = new Dictionary<string, List<ExecutionReport>>(StringComparer.Ordinal);
+        var grouped = new Dictionary<string, List<TcaFill>>(StringComparer.Ordinal);
         foreach (var fill in fills)
         {
             if (!grouped.TryGetValue(fill.Symbol, out var bucket))
             {
-                bucket = new List<ExecutionReport>();
+                bucket = new List<TcaFill>();
                 grouped[fill.Symbol] = bucket;
             }
             bucket.Add(fill);
@@ -138,21 +220,19 @@ public static class SessionTcaReporter
 
             foreach (var fill in symbolFills)
             {
-                var price = fill.FillPrice!.Value;
-                var notional = fill.FilledQuantity * price;
-                commission += fill.Commission ?? 0m;
+                commission += fill.Commission;
 
                 if (fill.Side == OrderSide.Buy)
                 {
-                    buyNotional += notional;
-                    buyQty += fill.FilledQuantity;
-                    buyWeighted += fill.FilledQuantity * price;
+                    buyNotional += fill.Notional;
+                    buyQty += fill.Quantity;
+                    buyWeighted += fill.Quantity * fill.Price;
                 }
                 else
                 {
-                    sellNotional += notional;
-                    sellQty += fill.FilledQuantity;
-                    sellWeighted += fill.FilledQuantity * price;
+                    sellNotional += fill.Notional;
+                    sellQty += fill.Quantity;
+                    sellWeighted += fill.Quantity * fill.Price;
                 }
             }
 
@@ -177,16 +257,15 @@ public static class SessionTcaReporter
         return summaries;
     }
 
-    private static IReadOnlyList<SessionTcaFillOutlier> DetectOutliers(List<ExecutionReport> fills)
+    private static IReadOnlyList<SessionTcaFillOutlier> DetectOutliers(List<TcaFill> fills)
     {
         // The median (not the aggregate mean) is used as the baseline so that a single high-cost
         // fill cannot inflate the threshold enough to avoid detection.
         var perFillBps = new List<double>(fills.Count);
         foreach (var fill in fills)
         {
-            var notional = fill.FilledQuantity * fill.FillPrice!.Value;
-            if (notional > 0m)
-                perFillBps.Add((double)((fill.Commission ?? 0m) / notional) * 10_000.0);
+            if (fill.Notional > 0m)
+                perFillBps.Add((double)(fill.Commission / fill.Notional) * 10_000.0);
         }
 
         double medianBps = 0.0;
@@ -202,19 +281,18 @@ public static class SessionTcaReporter
         var outliers = new List<SessionTcaFillOutlier>();
         foreach (var fill in fills)
         {
-            var notional = fill.FilledQuantity * fill.FillPrice!.Value;
-            if (notional <= 0m)
+            if (fill.Notional <= 0m)
                 continue;
 
-            var fillBps = (double)((fill.Commission ?? 0m) / notional) * 10_000.0;
+            var fillBps = (double)(fill.Commission / fill.Notional) * 10_000.0;
             if (fillBps > medianBps * OutlierThresholdMultiplier
                 && fillBps > OutlierMinimumRateBps)
             {
                 outliers.Add(new SessionTcaFillOutlier(
                     fill.OrderId,
                     fill.Symbol,
-                    notional,
-                    fill.Commission ?? 0m,
+                    fill.Notional,
+                    fill.Commission,
                     Math.Round(fillBps, 2),
                     fill.Timestamp));
             }
@@ -226,7 +304,7 @@ public static class SessionTcaReporter
     }
 
     private static SessionTcaExecutionQuality BuildExecutionQuality(
-        List<ExecutionReport> fills,
+        List<TcaFill> fills,
         IReadOnlyList<OrderState>? orders)
     {
         if (orders is not { Count: > 0 })
@@ -256,16 +334,14 @@ public static class SessionTcaReporter
             {
                 limitOrderIds.Add(order.OrderId);
                 var limit = order.LimitPrice.Value;
-                var price = fill.FillPrice!.Value;
-                var notional = fill.FilledQuantity * price;
 
                 // Positive = filled better than the limit (price improvement).
                 var improvementBps = fill.Side == OrderSide.Buy
-                    ? (limit - price) / limit * 10_000m
-                    : (price - limit) / limit * 10_000m;
+                    ? (limit - fill.Price) / limit * 10_000m
+                    : (fill.Price - limit) / limit * 10_000m;
 
-                improvementWeightedBps += improvementBps * notional;
-                improvementNotional += notional;
+                improvementWeightedBps += improvementBps * fill.Notional;
+                improvementNotional += fill.Notional;
             }
         }
 
