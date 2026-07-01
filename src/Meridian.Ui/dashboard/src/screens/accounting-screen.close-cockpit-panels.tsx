@@ -78,7 +78,7 @@ export function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkfl
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-2 text-xs">
                   <span className="text-muted-foreground">{step.metricLabel}</span>
-                  <span className="font-mono text-foreground">{step.metricValue}</span>
+                  <span className="font-mono tabular-nums text-foreground">{step.metricValue}</span>
                 </div>
               </Link>
             );
@@ -1297,7 +1297,7 @@ function CloseCommandCenterValue({ label, value }: { label: string; value: strin
   return (
     <div className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono text-foreground">{value}</span>
+      <span className="font-mono tabular-nums text-foreground">{value}</span>
     </div>
   );
 }

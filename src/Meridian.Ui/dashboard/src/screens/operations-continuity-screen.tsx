@@ -167,7 +167,7 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     render: (row) => (
       <span className="block text-xs leading-5">
         <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
-        <span className="mt-1 block font-mono text-foreground">{row.valueLabel}</span>
+        <span className="mt-1 block font-mono tabular-nums text-foreground">{row.valueLabel}</span>
       </span>
     )
   },

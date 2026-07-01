@@ -522,7 +522,7 @@ function EvidenceMetric({ label, value, tone = "muted" }: { label: string; value
   return (
     <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
       <div className="eyebrow-label">{label}</div>
-      <div className={cn("mt-1 font-mono text-lg font-semibold", metricToneClass[tone])}>{value}</div>
+      <div className={cn("mt-1 font-mono tabular-nums text-lg font-semibold", metricToneClass[tone])}>{value}</div>
     </div>
   );
 }
