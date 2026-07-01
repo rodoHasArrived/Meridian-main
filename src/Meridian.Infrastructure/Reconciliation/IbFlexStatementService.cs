@@ -103,6 +103,14 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         var importId = duplicateKey;
         var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
         var rows = ParseRows(document, importId).ToList();
+        if (rows.Count == 0)
+        {
+            // A Flex query configured without the supported sections must fail loudly instead
+            // of being recorded as a clean zero-row run with no breaks or cases.
+            throw new InvalidDataException(
+                "Flex report contains no Trade, OpenPosition, or CashTransaction rows; "
+                + "include those sections in the Flex Query definition.");
+        }
 
         var import = new CanonicalStatementImport(
             importId,

@@ -24,6 +24,7 @@ using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Query;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -387,6 +388,37 @@ public static partial class WorkstationEndpoints
             return await BuildDataPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationData");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationDataQuery), async (DataQueryRequest request, HttpContext context) =>
+        {
+            var queryService = context.RequestServices.GetService<DuckDbQueryService>();
+            if (queryService is null)
+            {
+                return Results.Problem(
+                    "The data query service is not available.",
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var options = context.RequestServices
+                .GetService<IOptionsMonitor<DataQueryOptions>>()?.CurrentValue
+                ?? new DataQueryOptions();
+            if (!options.Enabled)
+            {
+                return Results.Problem(
+                    "The data query workbench is disabled.",
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            // Guard violations and SQL errors are part of the result payload (Success=false)
+            // so the workbench can render them inline without parsing problem responses.
+            var result = await queryService.ExecuteAsync(request.Sql, options, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Ok(result);
+        })
+        .WithName("PostWorkstationDataQuery")
+        .Produces<DataQueryResult>(200)
+        .Produces(503)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataReplacementCost), (HttpContext context) =>
         {

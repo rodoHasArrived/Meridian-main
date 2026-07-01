@@ -13,6 +13,7 @@
   <ItemGroup>
     <!-- Storage -->
     <PackageReference Include="Apache.Arrow" />
+    <PackageReference Include="DuckDB.NET.Data.Full" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Parquet.Net" />
 

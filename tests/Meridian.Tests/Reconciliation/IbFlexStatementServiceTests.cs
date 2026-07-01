@@ -164,6 +164,23 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Import_FlexReportWithNoSupportedRows_Throws()
+    {
+        var path = WriteFlexFile("""
+            <FlexQueryResponse queryName="Empty" type="AF">
+              <FlexStatements count="1">
+                <FlexStatement accountId="U1" fromDate="20260601" toDate="20260630" />
+              </FlexStatements>
+            </FlexQueryResponse>
+            """);
+
+        var import = async () => await _service.ImportAsync(MakeRequest(path));
+
+        await import.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*no Trade, OpenPosition, or CashTransaction rows*");
+    }
+
+    [Fact]
     public async Task Import_SameFileTwice_ThrowsDuplicate()
     {
         var path = WriteFlexFile(SampleFlexXml);

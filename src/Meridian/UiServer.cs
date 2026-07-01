@@ -121,8 +121,6 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton(_lifecycle);
 
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
-        builder.Services.AddOptions<Meridian.Storage.Services.DataReplacementCostOptions>()
-            .BindConfiguration(Meridian.Storage.Services.DataReplacementCostOptions.SectionName);
         builder.Services.AddWorkstationSharedServices();
         builder.Services.AddOmsIntegrationApiHandlers();
 

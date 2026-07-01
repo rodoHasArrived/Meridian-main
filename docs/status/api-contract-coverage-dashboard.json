@@ -17,13 +17,13 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:351",
+      "source": "src/Meridian/UiServer.cs:349",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:373",
+      "source": "src/Meridian/UiServer.cs:371",
       "documented": true
     },
     {
@@ -3533,13 +3533,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2544",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2576",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2665",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2697",
       "documented": true
     }
   ],

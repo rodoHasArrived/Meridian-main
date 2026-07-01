@@ -80,6 +80,14 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHttpClient();
         services.AddHttpContextAccessor();
         services.AddMemoryCache();
+
+        // Options consumed by workstation endpoints must bind in the shared registration so
+        // every host of these endpoints (UiServer and AddUiSharedServices alike) honors
+        // operator configuration rather than compiled defaults.
+        services.AddOptions<Meridian.Storage.Services.DataReplacementCostOptions>()
+            .BindConfiguration(Meridian.Storage.Services.DataReplacementCostOptions.SectionName);
+        services.AddOptions<Meridian.Storage.Query.DataQueryOptions>()
+            .BindConfiguration(Meridian.Storage.Query.DataQueryOptions.SectionName);
         services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
         // SEC-005 slice 4c-ii: ambient caller-tenant accessor consumed by the singleton Postgres ledger
         // store for tenant read predicates. Singleton + IHttpContextAccessor-backed (no captive scope).

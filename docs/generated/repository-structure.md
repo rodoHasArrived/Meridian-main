@@ -4485,6 +4485,8 @@ Meridian-main
 │   │   │   └── PortableDataPackager.Validation.cs
 │   │   ├── Policies
 │   │   │   └── JsonlStoragePolicy.cs
+│   │   ├── Query
+│   │   │   └── DuckDbQueryService.cs
 │   │   ├── Replay
 │   │   │   ├── JsonlReplayer.cs
 │   │   │   └── MemoryMappedJsonlReader.cs
@@ -5021,6 +5023,8 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
 │   │   │   │   │   ├── data-screen.linked-context.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
+│   │   │   │   │   ├── data-screen.query-panel.view-model.test.ts
+│   │   │   │   │   ├── data-screen.query-panel.view-model.ts
 │   │   │   │   │   ├── data-screen.security-master.ts
 │   │   │   │   │   ├── data-screen.test.tsx
 │   │   │   │   │   ├── data-screen.tsx
@@ -7045,6 +7049,7 @@ Meridian-main
 │   │   │   ├── DataReplacementCostEstimatorTests.cs
 │   │   │   ├── DataValidatorTests.cs
 │   │   │   ├── DirectLendingMigrationTests.cs
+│   │   │   ├── DuckDbQueryServiceTests.cs
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
