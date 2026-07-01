@@ -141,6 +141,20 @@
       ]
     },
     {
+      "id": "W02D",
+      "name": "web-portfolio-asset-detail",
+      "path": "/portfolio/asset-detail?symbol=AAPL",
+      "docLabel": "Portfolio \u2014 Asset Detail",
+      "waitForText": "Asset Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/security-master/securities"
+      ],
+      "waitForTexts": [
+        "Search for a security",
+        "AAPL"
+      ]
+    },
+    {
       "id": "W02B",
       "name": "web-portfolio-brokerage-sync",
       "path": "/portfolio/brokerage-sync",
@@ -406,6 +420,59 @@
       ]
     },
     {
+      "id": "W03M",
+      "name": "web-accounting-trial-balance",
+      "path": "/accounting/trial-balance?runId=run-42",
+      "docLabel": "Accounting \u2014 Trial Balance",
+      "waitForText": "Trial Balance",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/workstation/runs/run-42/ledger/trial-balance",
+        "/api/workstation/runs/run-42/ledger/journal"
+      ],
+      "waitForTexts": [
+        "Primary trial balance",
+        "Cash",
+        "Journal evidence",
+        "Securities in this run"
+      ]
+    },
+    {
+      "id": "W03N",
+      "name": "web-accounting-journal-entry-detail",
+      "path": "/accounting/journal-entries/detail?journalEntryId=manual-je-1&runId=run-42",
+      "docLabel": "Accounting \u2014 Journal Entry Detail",
+      "waitForText": "Journal Entry Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/ledger/journal-entry-workbench"
+      ],
+      "waitForTexts": [
+        "Manual close adjustment",
+        "Lines",
+        "Lifecycle",
+        "Bank statement.pdf"
+      ]
+    },
+    {
+      "id": "W03O",
+      "name": "web-accounting-security-master-asset-detail",
+      "path": "/accounting/security-master/detail?securityId=sec-dev-001",
+      "docLabel": "Accounting \u2014 Asset Detail",
+      "waitForText": "Apple Inc.",
+      "requiredApiRoutes": [
+        "/api/workstation/security-master/securities/sec-dev-001",
+        "/api/workstation/security-master/securities/sec-dev-001/identity",
+        "/api/security-master/sec-dev-001/corporate-actions",
+        "/api/security-master/sec-dev-001/trading-parameters"
+      ],
+      "waitForTexts": [
+        "AAPL",
+        "Corporate actions",
+        "Trading parameters"
+      ]
+    },
+    {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",
@@ -528,6 +595,50 @@
         "Reporting owns access scope",
         "Governed report templates",
         "Report run audit and lineage"
+      ]
+    },
+    {
+      "id": "W04H",
+      "name": "web-reporting-library",
+      "path": "/reporting/library",
+      "docLabel": "Reporting \u2014 Report Library",
+      "waitForText": "Report Library",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Reporting Hub",
+        "Run a report",
+        "Pick a template"
+      ]
+    },
+    {
+      "id": "W04I",
+      "name": "web-reporting-run-parameters",
+      "path": "/reporting/run",
+      "docLabel": "Reporting \u2014 Run Parameters",
+      "waitForText": "Report Parameters",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Open this page from the Report Library",
+        "Back to Report Library"
+      ]
+    },
+    {
+      "id": "W04J",
+      "name": "web-reporting-scheduled",
+      "path": "/reporting/scheduled",
+      "docLabel": "Reporting \u2014 Scheduled Reports",
+      "waitForText": "Reporting schedules",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Schedule delivery",
+        "Run due",
+        "Delivery history"
       ]
     },
     {
