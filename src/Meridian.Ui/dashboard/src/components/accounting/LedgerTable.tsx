@@ -3,7 +3,7 @@
 // P&L color when the two sides disagree). Flat Concrete grid: white paper, small-caps muted
 // headers, hairline rows, mono tabular figures.
 import { useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { AriaAttributes, KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
@@ -144,7 +144,11 @@ export function LedgerTable({
           onClick: () => handleSort(key),
           onKeyDown: handleSortKey(key),
           tabIndex: 0,
-          "aria-sort": sortKey === key ? (sortDir === 1 ? "ascending" : "descending") : "none",
+          "aria-sort": (sortKey === key
+            ? sortDir === 1
+              ? "ascending"
+              : "descending"
+            : "none") as AriaAttributes["aria-sort"],
           scope: "col",
         }
       : { scope: "col" };
