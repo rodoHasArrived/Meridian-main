@@ -1,10 +1,10 @@
 import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { GateRail, SeverityBadge } from "@/components/operations";
+import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
 import { cn } from "@/lib/utils";
 import {
   useOperatorReadinessConsoleViewModel,
@@ -20,6 +20,7 @@ import {
 import type {
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
+  MetricSnapshot,
   ReportingWorkspaceResponse,
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
@@ -33,18 +34,32 @@ interface OperatorReadinessConsoleProps {
   reporting: ReportingWorkspaceResponse | null;
 }
 
-const levelBadge: Record<ReadinessConsoleLevel, "success" | "warning" | "danger" | "outline"> = {
-  ready: "success",
-  review: "warning",
-  blocked: "danger",
-  neutral: "outline"
+// Concrete severity vocabulary. The console's readiness levels collapse onto the design
+// system's canonical operator severities: ready · review · action · blocked · info.
+// `SeverityBadge`/`GateRail` normalize the string, and "neutral" resolves to the muted
+// "info" tone. Passing the level as the status keeps one source of truth.
+const levelStatus: Record<ReadinessConsoleLevel, string> = {
+  ready: "ready",
+  review: "review",
+  blocked: "blocked",
+  neutral: "neutral"
 };
 
+// Severity-tinted panel shell: an alpha-10 wash + solid semantic border, never a solid
+// fill, matching the Concrete readiness surfaces.
 const levelPanel: Record<ReadinessConsoleLevel, string> = {
-  ready: "border-success/35 bg-success/10",
-  review: "border-warning/35 bg-warning/10",
-  blocked: "border-danger/35 bg-danger/10",
-  neutral: "border-border/70 bg-secondary/25"
+  ready: "border-[var(--severity-ready-bd)] bg-[var(--severity-ready-bg)]",
+  review: "border-[var(--severity-review-bd)] bg-[var(--severity-review-bg)]",
+  blocked: "border-[var(--severity-blocked-bd)] bg-[var(--severity-blocked-bg)]",
+  neutral: "border-[var(--severity-info-bd)] bg-[var(--severity-info-bg)]"
+};
+
+// `MetricSnapshot` tone → Concrete MetricCard left-accent tone.
+const metricTone: Record<MetricSnapshot["tone"], MetricCardTone> = {
+  default: "neutral",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
 };
 
 const panelIcons: Record<ReadinessConsolePanel["id"], typeof ShieldCheck> = {
@@ -70,7 +85,7 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+    render: (row) => <SeverityBadge status={levelStatus[row.level]} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "target",
@@ -100,7 +115,7 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+    render: (row) => <SeverityBadge status={levelStatus[row.level]} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "detail",
@@ -148,10 +163,24 @@ export function OperatorReadinessConsole({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ConsoleChip label="As of" value={vm.asOf} />
           <ConsoleChip label="Inbox" value={vm.inboxSummary} />
-          <span className={cn("rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", levelPanel[vm.overallLevel])}>
-            {vm.overallLabel}
-          </span>
+          <SeverityBadge status={levelStatus[vm.overallLevel]} label={vm.overallLabel} />
         </div>
+      </section>
+
+      <section
+        className="panel-surface px-4 py-4"
+        role="group"
+        aria-label="Readiness gate pipeline"
+      >
+        <div className="eyebrow-label mb-3">Readiness pipeline</div>
+        <GateRail
+          gates={vm.checkpointGates.map((gate) => ({
+            key: gate.id,
+            label: gate.label,
+            status: levelStatus[gate.level],
+            statusLabel: gate.value
+          }))}
+        />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
@@ -166,7 +195,7 @@ export function OperatorReadinessConsole({
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.subtitle}</CardDescription>
               </div>
-              <Badge variant={levelBadge[vm.overallLevel]}>{vm.overallLabel}</Badge>
+              <SeverityBadge status={levelStatus[vm.overallLevel]} label={vm.overallLabel} />
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -237,7 +266,7 @@ export function OperatorReadinessConsole({
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{source.label}</span>
-                  <Badge variant={levelBadge[source.level]} aria-label={source.statusAriaLabel}>{source.status}</Badge>
+                  <SeverityBadge status={levelStatus[source.level]} label={source.status} aria-label={source.statusAriaLabel} />
                 </div>
                 <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
               </div>
@@ -267,7 +296,12 @@ export function OperatorReadinessConsole({
             aria-describedby={metric.detailId}
             className="grid gap-2"
           >
-            <MetricCard {...metric} />
+            <MetricCard
+              label={metric.label}
+              value={metric.value}
+              delta={metric.delta}
+              tone={metricTone[metric.tone]}
+            />
             <p
               id={metric.detailId}
               className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", levelPanel[metric.level])}
@@ -355,7 +389,7 @@ function SelectedWorkItemDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected work item</span>
-        <Badge variant={levelBadge[detail.level]} aria-label={detail.statusAriaLabel}>{detail.statusLabel}</Badge>
+        <SeverityBadge status={levelStatus[detail.level]} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
@@ -504,7 +538,7 @@ function SelectedEvidenceDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected evidence</span>
-        <Badge variant={levelBadge[detail.level]} aria-label={detail.statusAriaLabel}>{detail.statusLabel}</Badge>
+        <SeverityBadge status={levelStatus[detail.level]} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
@@ -544,14 +578,17 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
       role="group"
       aria-label={row.ariaLabel}
       aria-describedby={row.detailId}
-      className={cn("rounded-lg border bg-card px-3 py-3 shadow-[var(--shadow-panel)]", levelPanel[row.level])}
+      className={cn(
+        "rounded-[var(--radius-card)] border border-l-[3px] px-3 py-3",
+        levelPanel[row.level]
+      )}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-foreground">{row.label}</div>
           <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{row.meta}</div>
         </div>
-        <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+        <SeverityBadge status={levelStatus[row.level]} label={row.value} aria-label={row.statusAriaLabel} />
       </div>
       <p id={row.detailId} className="mt-2 text-xs leading-5 text-foreground/80">{row.detail}</p>
       {row.action ? (
