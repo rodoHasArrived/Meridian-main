@@ -1,4 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
 import {
@@ -7,7 +9,6 @@ import {
   buildAccountingCashFlowViewState,
   buildAccountingLoadingViewState,
   buildAccountingReportingViewState,
-  buildAccountingTaskMode,
   buildAccountingWorkflowLaunchViewState,
   buildCloseCommandCenterViewState,
   buildAccountingLedgerJournalEvidenceViewState,
@@ -38,7 +39,6 @@ import {
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveSecurityScheduleEvents,
-  resolveAccountingWorkstream,
   resolveSelectedReconciliation,
   useCapitalAccountWorkbenchViewModel,
   useAccountingCloseReportPackageViewModel,
@@ -47,6 +47,11 @@ import {
   useAccountingReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
+import {
+  accountingTaskModeLauncherLinks,
+  buildAccountingTaskMode,
+  resolveAccountingWorkstream
+} from "@/screens/accounting-screen.task-mode-view-model";
 import type {
   AccountingConfigurationServices,
   AccountingCloseReportPackageServices,
@@ -3721,6 +3726,31 @@ describe("accounting-screen view model", () => {
     expect(result.current.signOffStatusText).toBe("investor-relations is not retained on the selected task sign-off matrix.");
     expect(result.current.signOffStatusTone).toBe("danger");
     expect(signOffCloseTask).not.toHaveBeenCalled();
+  });
+
+  it("keeps Accounting task-mode routing outside the overloaded view model", () => {
+    // NB: read relative to the dashboard project root (process.cwd()). The Vitest runner executes
+    // from src/Meridian.Ui/dashboard, and import.meta.url is not a file:// URL under Vitest, so
+    // `new URL(..., import.meta.url)` throws ERR_INVALID_URL_SCHEME.
+    const viewModelSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
+    const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.task-mode-view-model.ts"), "utf8");
+
+    expect(taskModeSource).toContain("const accountingTaskModeDefinitions");
+    expect(taskModeSource).toContain("export const accountingTaskModeLauncherLinks");
+    expect(taskModeSource).toContain("export function resolveAccountingWorkstream");
+    expect(taskModeSource).toContain("export function buildAccountingTaskMode");
+    expect(taskModeSource).toContain("export function accountingWorkstreamHref");
+    expect(viewModelSource).not.toContain("const accountingTaskModeDefinitions");
+    expect(viewModelSource).not.toContain("function normalizeAccountingTaskModePath");
+    expect(viewModelSource).not.toContain("function buildAccountingTaskModeViewModel");
+    expect(accountingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
+      ["reconciliation-casework", "/accounting/reconciliation"],
+      ["ledger-explorer", "/accounting/ledger"],
+      ["journal-entry", "/accounting/journal-entries"],
+      ["capital-accounts", "/accounting/capital-accounts"],
+      ["delivery-evidence", "/reporting/evidence"],
+      ["governance", "/accounting/configure"]
+    ]);
   });
 
   it("derives the accounting workstream and selected reconciliation run", () => {

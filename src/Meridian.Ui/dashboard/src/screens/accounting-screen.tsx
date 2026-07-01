@@ -1,6 +1,7 @@
 import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import "@/styles/accounting-screen.css";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -39,11 +40,14 @@ import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, Close
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
-  buildAccountingLoadingViewState,
   buildAccountingTaskMode,
+  resolveAccountingWorkstream,
+  type AccountingWorkstream
+} from "@/screens/accounting-screen.task-mode-view-model";
+import {
+  buildAccountingLoadingViewState,
   buildCloseCommandCenterViewState,
   buildAccountingWorkflowLaunchViewState,
-  resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingCloseReportPackageViewModel,
   useCapitalAccountWorkbenchViewModel,
@@ -59,7 +63,6 @@ import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-mo
 import type {
   CalibrationProfileRowViewModel,
   CalibrationSummaryViewModel,
-  AccountingWorkstream,
   AccountingConfigurationViewModel,
   AccountingRulesStudioPromotionReadinessViewModel,
   CapitalAccountWorkbenchViewModel,
