@@ -5,6 +5,8 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { Histogram } from "@/components/charts";
+import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,11 +61,6 @@ const plotLegendToneClass = {
   muted: "bg-muted-foreground/70"
 } as const;
 
-const distributionBarToneClass = {
-  selected: "bg-primary",
-  base: "bg-primary/65"
-} as const;
-
 const promotionTitleToneClass = {
   success: "text-success",
   danger: "text-danger"
@@ -75,6 +72,33 @@ const sampleToneBadgeVariant = {
   warning: "warning",
   danger: "danger"
 } as const;
+
+/** Map a view-model `Badge` variant onto a Concrete operator-severity status string so run,
+ * study, comparison, and promotion statuses render through the shared `SeverityBadge`.
+ * Presentational only — the view-model keeps emitting its `*BadgeVariant` fields for its tests. */
+function strategySeverityStatus(variant: string): string {
+  switch (variant) {
+    case "success": return "ready";
+    case "danger": return "blocked";
+    case "warning": return "action";
+    case "paper":
+    case "research": return "review";
+    default: return "info";
+  }
+}
+
+/** Map a raw run status string onto a Concrete operator severity. Covers the full
+ * `StrategyRunRecord.status` union (`Running` · `Queued` · `Needs Review` · `Completed`) plus
+ * common backend variants so no valid status silently falls through to the neutral `info` gray:
+ * Completed→ready, Needs Review→review, Running→action, failure states→blocked, Queued/unknown→info. */
+function strategyRunSeverityStatus(status: string): string {
+  const key = status.trim().toLowerCase();
+  if (key === "completed" || key === "complete" || key === "done" || key === "passed") return "ready";
+  if (key === "needs review" || key === "needsreview" || key === "review" || key === "review required" || key === "reviewrequired") return "review";
+  if (key === "failed" || key === "cancelled" || key === "canceled" || key === "error" || key === "blocked") return "blocked";
+  if (key === "running" || key === "inprogress" || key === "in progress") return "action";
+  return "info";
+}
 
 const plotToolMomentColumns: DenseDataTableColumn<StrategyPlotMomentRow>[] = [
   {
@@ -246,7 +270,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (run) => run.statusText
+      render: (run) => <SeverityBadge status={strategyRunSeverityStatus(run.statusText)} label={run.statusText} />
     },
     {
       id: "pnl",
@@ -316,7 +340,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge>
+      render: (row) => <SeverityBadge status={strategySeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
     },
     {
       id: "net-pnl",
@@ -758,7 +782,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     description={vm.selectedComparisonDetail.description}
                     fields={vm.selectedComparisonDetail.fields}
                     ariaLabel={vm.selectedComparisonDetail.ariaLabel}
-                    status={<Badge variant={vm.selectedComparisonDetail.statusVariant} dot>{vm.selectedComparisonDetail.statusLabel}</Badge>}
+                    status={<SeverityBadge status={strategySeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
                   />
                 </div>
               ) : (
@@ -1042,6 +1066,8 @@ function PlotToolWorkspacePanel({
     {
       id: "status",
       label: "Status",
+      // Mode-derived chip (LIVE/PAPER/BACKTEST) — a categorical environment badge, not an
+      // operator severity, so it stays a plain Badge.
       render: (study) => <Badge variant={study.statusBadgeVariant}>{study.statusBadgeLabel}</Badge>
     },
     {
@@ -1253,6 +1279,7 @@ function SelectedPlotStudyDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>{detail.eyebrow}</span>
+        {/* Mode-derived chip (LIVE/PAPER/BACKTEST), not a severity — stays a plain Badge. */}
         <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
       </div>
       <div className="body">
@@ -1314,16 +1341,24 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="plottool-distribution-chart" aria-label={vm.distributionChart.ariaLabel}>
-              {vm.distributionChart.bars.map((bar) => (
-                <div
-                  key={bar.id}
-                  className={cn("flex-1 rounded-t-sm", distributionBarToneClass[bar.tone])}
-                  style={{ height: `${bar.heightPercent}%` }}
-                  aria-label={bar.ariaLabel}
-                />
-              ))}
+            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+              <Histogram
+                bins={vm.distributionChart.bars.map((bar, index) => ({
+                  x0: index,
+                  x1: index + 1,
+                  count: bar.heightPercent
+                }))}
+                signed={false}
+                showMean={false}
+                valueFmt={(value) => String(Math.round(value))}
+                countFmt={(count) => `${Math.round(count)}%`}
+              />
             </div>
+            <ul className="sr-only">
+              {vm.distributionChart.bars.map((bar) => (
+                <li key={bar.id}>{bar.ariaLabel}</li>
+              ))}
+            </ul>
             <p className="text-xs leading-5 text-muted-foreground">{vm.distributionFootnote}</p>
           </CardContent>
         </Card>

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { GateRail, SeverityBadge } from "@/components/operations";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
 
@@ -184,6 +185,18 @@ export function StrategyFormulaWorkbench({
             <CardDescription>Local compile preview for the selected authoring mode.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {initialCells.length > 0 ? (
+              <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+                <div className="eyebrow-label mb-3">Authoring gates</div>
+                <GateRail
+                  gates={initialCells.map((cell) => ({
+                    key: cell.cellId,
+                    label: cell.label,
+                    status: cell.status
+                  }))}
+                />
+              </div>
+            ) : null}
             <div className="space-y-2" role="list" aria-label="Strategy cells">
               {initialCells.map((cell) => (
                 <button
@@ -200,9 +213,7 @@ export function StrategyFormulaWorkbench({
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="font-medium text-foreground">{cell.label}</span>
-                    <Badge variant={cell.status === "Ready" ? "success" : cell.status === "Review" ? "warning" : "danger"} dot>
-                      {cell.status}
-                    </Badge>
+                    <SeverityBadge status={cell.status} label={cell.status} />
                   </span>
                   <span className="mt-1 block font-mono text-xs text-muted-foreground">{cell.cellId} · {cell.mode}</span>
                 </button>
