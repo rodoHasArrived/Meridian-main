@@ -23,10 +23,11 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
-import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -120,6 +121,23 @@ const acceptanceLabel: Record<AcceptanceLevel, string> = {
   ready: "Ready",
   review: "Review",
   atRisk: "At risk"
+};
+
+// Concrete severity vocabulary: acceptance levels collapse onto the design system's
+// canonical operator severities (ready · review · action · blocked · info). `atRisk`
+// maps to the brick-red "blocked" severity used by SeverityBadge.
+const acceptanceStatus: Record<AcceptanceLevel, string> = {
+  ready: "ready",
+  review: "review",
+  atRisk: "blocked"
+};
+
+// `MetricSnapshot` tone → Concrete MetricCard left-accent tone.
+const metricCardTone: Record<TradingWorkspaceResponse["metrics"][number]["tone"], MetricCardTone> = {
+  default: "neutral",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
 };
 
 const workItemTone: Record<string, string> = {
@@ -526,7 +544,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
-          <MetricCard key={metric.id} {...metric} />
+          <MetricCard
+            key={metric.id}
+            label={metric.label}
+            value={metric.value}
+            delta={metric.delta}
+            tone={metricCardTone[metric.tone]}
+          />
         ))}
       </section>
 
@@ -2028,9 +2052,7 @@ function AcceptanceStatusCard({
               <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
               {readinessVm.refreshButtonLabel}
             </Button>
-            <span className={cn("rounded-sm border px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
-              {readyCount}/{totalCount} ready
-            </span>
+            <SeverityBadge status={acceptanceStatus[overallLevel]} label={`${readyCount}/${totalCount} ready`} />
           </div>
         </div>
       </CardHeader>
@@ -2071,7 +2093,7 @@ function AcceptanceStatusCard({
 
 function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
   return (
-    <div className={cn("data-grid-surface border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
+    <div className={cn("data-grid-surface border border-l-[3px] px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
       <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
       <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
     </div>
@@ -2080,15 +2102,13 @@ function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
 
 function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
   return (
-    <div className={cn("data-grid-surface border px-4 py-3", acceptanceTone[item.level])}>
+    <div className={cn("data-grid-surface border border-l-[3px] px-4 py-3", acceptanceTone[item.level])}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
           <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
         </div>
-        <span className="rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-foreground">
-          {acceptanceLabel[item.level]}
-        </span>
+        <SeverityBadge status={acceptanceStatus[item.level]} label={acceptanceLabel[item.level]} />
       </div>
       <p className="mt-2 text-xs leading-5 text-foreground/80">{item.detail}</p>
     </div>
@@ -2138,7 +2158,7 @@ function OperatorWorkItemList({
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold text-foreground">{item.label}</span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.12em]">{item.tone}</span>
+                <SeverityBadge status={item.tone} label={item.tone} />
               </div>
               <p className="mt-1 text-xs leading-5 text-foreground/80">{item.detail}</p>
               {item.metadataText && (
