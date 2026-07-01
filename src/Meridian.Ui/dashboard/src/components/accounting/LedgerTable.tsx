@@ -2,7 +2,7 @@
 // running Balance, plus a totals footer that proves Σdebit = Σcredit (the footer balance turns to
 // P&L color when the two sides disagree). Flat Concrete grid: white paper, small-caps muted
 // headers, hairline rows, mono tabular figures.
-import { useState } from "react";
+import { useState, type ThHTMLAttributes } from "react";
 import type { AriaAttributes, KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
