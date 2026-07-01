@@ -678,6 +678,10 @@ describe("PortfolioScreen", () => {
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /msft holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$10,250 exposure with \+\$52.50 unrealized p&l/i)).toBeDefined();
+    expect(screen.getByRole("link", { name: "Open asset detail for MSFT" })).toHaveAttribute(
+      "href",
+      "/portfolio/asset-detail?symbol=MSFT&source=portfolio"
+    );
   });
 
   it("updates the run evidence detail panel from the selectable row", async () => {

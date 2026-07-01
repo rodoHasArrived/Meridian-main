@@ -80,10 +80,25 @@ describe("ReportRunParametersScreen", () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValue(emptyWorkbench);
   });
 
-  it("prompts to open from the Report Library when no templateId is provided", async () => {
+  it("offers a template picker when no templateId is provided", async () => {
     await renderScreen("/reporting/run");
 
-    expect(screen.getByText(/Open this page from the Report Library/)).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Choose a report template to run" })).toBeInTheDocument();
+    expect(screen.getByText(/Trial Balance Pack/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Or browse the Report Library" })).toHaveAttribute("href", "/reporting/library");
+  });
+
+  it("navigates to the selected template's parameters when picked from the picker", async () => {
+    const user = userEvent.setup();
+
+    await renderScreen("/reporting/run");
+
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Choose a report template to run" }),
+      "trial-balance-pack:1.0"
+    );
+
+    expect(await screen.findByRole("region", { name: "Exports report runner" })).toHaveTextContent("Trial Balance Pack");
   });
 
   it("renders a template-not-found state for an unknown templateId", async () => {
@@ -95,6 +110,14 @@ describe("ReportRunParametersScreen", () => {
   it("renders the readiness gate with open breaks and the exports runner for a known template", async () => {
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
+    expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
+    expect(screen.getByLabelText("Ledger book")).toHaveValue("Primary GL");
+    expect(screen.getByLabelText("Accounting basis")).toHaveValue("GAAP");
+    expect(screen.getByLabelText("Output format")).toHaveValue("PDF");
+    expect(screen.getByLabelText("Include supporting schedules")).toBeChecked();
+    expect(screen.getByLabelText("Include evidence appendix")).toBeChecked();
+    expect(screen.getByRole("heading", { name: "Can this report run?" })).toBeInTheDocument();
     expect(await screen.findByText("Warnings present")).toBeInTheDocument();
     expect(screen.getByText("Open reconciliation breaks")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review breaks" })).toHaveAttribute("href", "/accounting/reconciliation");

@@ -15,18 +15,23 @@ import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, Tra
 export function AssetDetailScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const securityId = searchParams.get("securityId");
+  const initialQuery = searchParams.get("symbol") ?? searchParams.get("query") ?? "";
 
   if (!securityId) {
-    return <AssetSearchPanel onSelect={(id) => setSearchParams({ securityId: id })} />;
+    return <AssetSearchPanel initialQuery={initialQuery} onSelect={(id) => setSearchParams({ securityId: id })} />;
   }
 
   return <AssetDetailPanel securityId={securityId} />;
 }
 
-function AssetSearchPanel({ onSelect }: { onSelect: (securityId: string) => void }) {
-  const [query, setQuery] = useState("");
+function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; onSelect: (securityId: string) => void }) {
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SecurityMasterEntry[]>([]);
   const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   useEffect(() => {
     if (query.trim().length < 2) {

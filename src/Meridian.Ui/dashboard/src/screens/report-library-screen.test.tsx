@@ -77,14 +77,18 @@ describe("ReportLibraryScreen", () => {
     expect(screen.getAllByText("Investor Reporting").length).toBeGreaterThan(0);
   });
 
-  it("groups run-this-report links by template family and links to the parameters screen", async () => {
+  it("renders standard report cards and links runnable templates to the parameters screen", async () => {
     await renderScreen();
 
-    expect(screen.getByRole("heading", { name: "Run a report" })).toBeInTheDocument();
-    const trialBalanceLink = screen.getByRole("link", { name: "Run Trial Balance Pack" });
+    expect(screen.getByRole("heading", { name: "Report Library" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trial Balance" })).toBeInTheDocument();
+    expect(screen.getByText("Account-balance proof with debit, credit, and ending balance support.")).toBeInTheDocument();
+    expect(screen.getByText("Ledger, chart of accounts, accounting basis, period close posture")).toBeInTheDocument();
+    expect(screen.getAllByText("Controller").length).toBeGreaterThan(0);
+    const trialBalanceLink = screen.getAllByRole("link", { name: "Run Trial Balance Pack" })[0];
     expect(trialBalanceLink).toHaveAttribute("href", "/reporting/run?templateId=trial-balance-pack%3A1.0");
 
-    const investorLink = screen.getByRole("link", { name: "Run Investor Statement" });
+    const investorLink = screen.getAllByRole("link", { name: "Run Investor Statement" })[0];
     expect(investorLink).toHaveAttribute("href", "/reporting/run?templateId=investor-statement%3A2.1");
   });
 });

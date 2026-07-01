@@ -59,6 +59,14 @@ const OperationsContinuityScreen = lazy(() => import("@/screens/operations-conti
 const TrialBalanceScreen = lazy(() => import("@/screens/trial-balance-screen").then((module) => ({ default: module.TrialBalanceScreen })));
 const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
 const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").then((module) => ({ default: module.AssetDetailScreen })));
+const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.AccountDetailScreen })));
+const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
+const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
+const EvidenceDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.EvidenceDetailScreen })));
+const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
+const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
+const ReportPreviewValidationScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportPreviewValidationScreen })));
+const ReportRunDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportRunDetailScreen })));
 const ReportLibraryScreen = lazy(() => import("@/screens/report-library-screen").then((module) => ({ default: module.ReportLibraryScreen })));
 const ReportRunParametersScreen = lazy(() => import("@/screens/report-run-parameters-screen").then((module) => ({ default: module.ReportRunParametersScreen })));
 const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-record-release-screen").then((module) => ({ default: module.OperationsRecordReleaseScreen })));
@@ -387,6 +395,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
                       portfolio={portfolio}
@@ -400,14 +409,22 @@ function AppShell() {
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
+                  <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
                   <Route path="/accounting/trial-balance" element={<TrialBalanceScreen data={accounting} />} />
+                  <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
+                  <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
+                  <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
+                  <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
+                  <Route path="/accounting/evidence/detail" element={<EvidenceDetailScreen />} />
                   <Route path="/accounting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
                   <Route path="/reporting/run" element={<ReportRunParametersScreen data={reporting} accounting={accounting} />} />
+                  <Route path="/reporting/preview" element={<ReportPreviewValidationScreen data={reporting} />} />
+                  <Route path="/reporting/runs/detail" element={<ReportRunDetailScreen data={reporting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
@@ -654,6 +671,7 @@ function formatRouteSegmentLabel(segment: string): string {
   const knownLabels: Record<string, string> = {
     alerts: "Alerts",
     approvals: "Close Cockpit",
+    "asset-detail": "Asset Detail",
     "capital-accounts": "Capital Accounts",
     configure: "Governance",
     "covered-call": "Covered Call",
@@ -674,7 +692,9 @@ function formatRouteSegmentLabel(segment: string): string {
     readiness: "Readiness",
     reconciliation: "Reconciliation Casework",
     "report-packs": "Delivery Evidence",
+    run: "Run Report",
     "run-status": "Run Status",
+    scheduled: "Scheduled Reports",
     "security-master": "Security Master",
     watchlist: "Watchlist"
   };

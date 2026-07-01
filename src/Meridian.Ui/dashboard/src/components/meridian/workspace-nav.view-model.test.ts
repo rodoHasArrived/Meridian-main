@@ -104,6 +104,7 @@ describe("workspace nav view model", () => {
     expect(portfolio?.subItems.map((item) => item.route)).toEqual([
       "/portfolio",
       "/portfolio/attribution",
+      "/portfolio/asset-detail",
       "/portfolio/brokerage-sync",
       "/portfolio/family-office"
     ]);
@@ -112,6 +113,18 @@ describe("workspace nav view model", () => {
       active: true,
       ariaCurrent: "page",
       ariaLabel: "Family office, current page"
+    });
+  });
+
+  it("surfaces portfolio-native asset detail under Portfolio", () => {
+    const model = buildWorkspaceNavViewModel("/portfolio/asset-detail");
+    const portfolio = model.items.find((item) => item.key === "portfolio");
+
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/asset-detail")).toMatchObject({
+      label: "Asset detail",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Asset detail, current page"
     });
   });
 
@@ -181,6 +194,8 @@ describe("workspace nav view model", () => {
     expect(reporting?.subItems.map((item) => item.route)).toEqual([
       "/reporting",
       "/reporting/library",
+      "/reporting/scheduled",
+      "/reporting/run",
       "/reporting/operations-record",
       "/reporting/report-packs",
       "/reporting/evidence",
@@ -191,6 +206,24 @@ describe("workspace nav view model", () => {
       active: true,
       ariaCurrent: "page",
       ariaLabel: "Operations record, current page"
+    });
+  });
+
+  it("surfaces scheduled reporting and report parameter pages under Reporting", () => {
+    const model = buildWorkspaceNavViewModel("/reporting/scheduled");
+    const reporting = model.items.find((item) => item.key === "reporting");
+
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/scheduled")).toMatchObject({
+      label: "Scheduled Reports",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Scheduled Reports, current page"
+    });
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/run")).toMatchObject({
+      label: "Run Report",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Run Report"
     });
   });
 

@@ -30,6 +30,9 @@ type TrialBalanceViewMode = "table" | "hierarchy";
 export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
+  const [entityScope, setEntityScope] = useState("All entities");
+  const [ledgerBook, setLedgerBook] = useState("Primary GL");
+  const [period, setPeriod] = useState("Current period");
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
   const reconciliation = useAccountingReconciliationViewModel(data, "ledger");
@@ -169,6 +172,43 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
             </Select>
           </FormRow>
         </CardHeader>
+      </Card>
+
+      <Card className="panel-surface">
+        <CardHeader>
+          <CardTitle>Trial balance scope</CardTitle>
+          <CardDescription>Confirm entity, book, and period before drilling into account, ledger, journal, or evidence detail.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 lg:grid-cols-[repeat(3,minmax(0,1fr))_auto] lg:items-end">
+          <FormRow label="Entity / fund / portfolio" labelFor="trial-balance-entity-scope">
+            <Input
+              id="trial-balance-entity-scope"
+              value={entityScope}
+              onChange={(event) => setEntityScope(event.target.value)}
+            />
+          </FormRow>
+          <FormRow label="Book" labelFor="trial-balance-book">
+            <Input
+              id="trial-balance-book"
+              value={ledgerBook}
+              onChange={(event) => setLedgerBook(event.target.value)}
+            />
+          </FormRow>
+          <FormRow label="Period" labelFor="trial-balance-period">
+            <Input
+              id="trial-balance-period"
+              value={period}
+              onChange={(event) => setPeriod(event.target.value)}
+            />
+          </FormRow>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline">Compare prior period</Button>
+            <Button type="button" size="sm" variant="outline">Export</Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={WORKSTATION_ROUTE_CATALOG.reportingPreviewValidation}>Jump to report preview</Link>
+            </Button>
+          </div>
+        </CardContent>
       </Card>
 
       <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">

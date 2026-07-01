@@ -107,6 +107,19 @@ describe("JournalEntryDetailScreen", () => {
     expect(screen.getByRole("region", { name: "Lines for journal entry manual-je-1" })).toHaveTextContent("Suspense");
     expect(screen.getByText("Draft -> Approved (Approve)")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Bank statement.pdf" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Approval" })).toBeInTheDocument();
+    expect(screen.getAllByText("browser-user").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Source lineage" })).toBeInTheDocument();
+    expect(screen.getByText("Manual journal workbench")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Actions" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reverse" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Clone" })).toHaveAttribute("href", "/accounting/journal-entries");
+    expect(screen.getByRole("link", { name: "Attach evidence" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=journal-entry&subjectId=manual-je-1"
+    );
+    expect(screen.getByRole("button", { name: "Request review" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
     expect(screen.getByRole("link", { name: "Back to Trial Balance" })).toHaveAttribute(
       "href",
       "/accounting/trial-balance?runId=run-42"

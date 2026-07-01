@@ -2,6 +2,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -86,14 +87,18 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_routes_cover_workstation_route_catalog_pages(self) -> None:
         captures = self.web_screenshot_routes.get("captures", [])
-        captured_paths = {capture.get("path") for capture in captures if capture.get("path")}
+        captured_paths = {
+            self.screenshot_coverage_path(capture.get("path"))
+            for capture in captures
+            if capture.get("path")
+        }
         route_catalog = self.extract_workstation_route_catalog()
 
         compatibility_redirect_routes = {
             "dataSecurityMasterLegacy",
         }
         expected_paths = {
-            path
+            self.screenshot_coverage_path(path)
             for key, path in route_catalog.items()
             if key not in compatibility_redirect_routes
         }
@@ -104,7 +109,11 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_routes_cover_explicit_app_routes(self) -> None:
         captures = self.web_screenshot_routes.get("captures", [])
-        captured_paths = {capture.get("path") for capture in captures if capture.get("path")}
+        captured_paths = {
+            self.screenshot_coverage_path(capture.get("path"))
+            for capture in captures
+            if capture.get("path")
+        }
         route_paths = set(re.findall(r'<Route\s+path="([^"]+)"', self.workstation_app_shell))
         compatibility_redirect_routes = {
             "/data/security-master",
@@ -115,7 +124,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             "/governance/*",
         }
         explicit_pages = {
-            path
+            self.screenshot_coverage_path(path)
             for path in route_paths
             if "*" not in path and path not in compatibility_redirect_routes
         }
@@ -184,12 +193,29 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
         self.assertIn(
-            "assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath)",
+            "assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath)",
             self.web_screenshot_capture_script,
         )
         self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
+        self.assertIn("screenshotCoveragePath", self.web_screenshot_capture_script)
         self.assertIn("dataSecurityMasterLegacy", self.web_screenshot_capture_script)
         self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_supports_targeted_capture_filters(self) -> None:
+        self.assertIn('valueLists.get("capture")', self.web_screenshot_capture_script)
+        self.assertIn('valueLists.get("capture-id")', self.web_screenshot_capture_script)
+        self.assertIn('valueLists.get("capture-name")', self.web_screenshot_capture_script)
+        self.assertIn("selectCaptures(allCaptures, captureSelectors)", self.web_screenshot_capture_script)
+        self.assertIn("selectedCaptureCount", self.web_screenshot_capture_script)
+        self.assertIn("totalCaptureCount", self.web_screenshot_capture_script)
+
+    @staticmethod
+    def screenshot_coverage_path(route_path: str) -> str:
+        parsed = urlsplit(route_path)
+        path = parsed.path or "/"
+        if not path.startswith("/"):
+            path = f"/{path}"
+        return f"{path}#{parsed.fragment}" if parsed.fragment else path
 
     def extract_workstation_route_catalog(self) -> dict[str, str]:
         match = re.search(
