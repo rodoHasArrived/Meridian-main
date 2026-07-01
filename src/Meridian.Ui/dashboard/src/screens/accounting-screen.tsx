@@ -13,6 +13,7 @@ import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
+import { SeverityBadge } from "@/components/operations";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
@@ -205,8 +206,8 @@ const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRow
   },
   { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
   { id: "status", label: "Status", render: (row) => row.runStatusLabel },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono">{row.breakCountLabel}</span> },
-  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono">{row.openBreakLabel}</span> },
+  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
+  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.openBreakLabel}</span> },
   {
     id: "reconciliation",
     label: "Reconciliation",
@@ -225,10 +226,10 @@ const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStat
   { id: "account", label: "Account", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.accountLabel}</span> },
   { id: "period", label: "Period", render: (row) => <span className="font-mono text-muted-foreground" title={row.unavailableReason ?? undefined}>{row.periodLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusLabel === "Matched" || row.statusLabel === "Balanced" ? "success" : "warning"}>{row.statusLabel}</Badge> },
-  { id: "validation", label: "Validation issues", align: "right", render: (row) => <span className="font-mono">{row.validationIssueCountLabel}</span> },
-  { id: "matches", label: "Matches", align: "right", render: (row) => <span className="font-mono">{row.matchCountLabel}</span> },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono">{row.breakCountLabel}</span> },
-  { id: "cases", label: "Cases", align: "right", render: (row) => <span className="font-mono">{row.caseCountLabel}</span> },
+  { id: "validation", label: "Validation issues", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.validationIssueCountLabel}</span> },
+  { id: "matches", label: "Matches", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.matchCountLabel}</span> },
+  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
+  { id: "cases", label: "Cases", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.caseCountLabel}</span> },
   { id: "imported", label: "Imported", render: (row) => <span className="font-mono text-muted-foreground">{row.importedAtLabel}</span> }
 ];
 
@@ -430,9 +431,9 @@ function ReconciliationComparisonPane({
       <div className="reconcile-pane-head">
         <span className="reconcile-pane-title">{heading}</span>
         <span className="reconcile-pane-chips">
-          <span className="reconcile-chip is-ok">{matched} matched</span>
-          {timing > 0 && <span className="reconcile-chip is-timing">{timing} timing</span>}
-          {breaks > 0 && <span className="reconcile-chip is-break">{`${breaks} break${breaks > 1 ? "s" : ""}`}</span>}
+          <SeverityBadge status="ready" dot={false} label={`${matched} matched`} />
+          {timing > 0 && <SeverityBadge status="action" dot={false} label={`${timing} timing`} />}
+          {breaks > 0 && <SeverityBadge status="blocked" dot={false} label={`${breaks} break${breaks > 1 ? "s" : ""}`} />}
         </span>
       </div>
       <div className="reconcile-pane-scroll" ref={scrollRef} onScroll={onScroll}>
@@ -3034,8 +3035,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                           <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
                         </div>
                         <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                          <span className="font-mono">Primary {row.primaryBalanceLabel}</span>
-                          <span className="font-mono">{row.comparisonBalanceLabel}</span>
+                          <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
+                          <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
                         </div>
                       </div>
                     ))}
@@ -5582,9 +5583,9 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       <div className="mt-1 text-xs text-muted-foreground">{entry.issueLabel}</div>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">{entry.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{entry.netActivityLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{entry.runningBalanceLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{entry.grossAmountLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.netActivityLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.runningBalanceLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.grossAmountLabel}</td>
                     <td className="px-3 py-2 text-xs">{entry.evidenceLabel}</td>
                   </tr>
                 ))}
@@ -5619,9 +5620,9 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       <div className="mt-1 text-xs text-muted-foreground">{impact.issueLabel}</div>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">{impact.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{impact.debitLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{impact.creditLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{impact.imbalanceLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.debitLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.creditLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.imbalanceLabel}</td>
                     <td className="px-3 py-2 text-xs">
                       <div>{impact.evidenceLabel}</div>
                       <div className="mt-1 text-muted-foreground">{impact.lineLabel}</div>
@@ -5659,7 +5660,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       <div className="mt-1 text-xs text-muted-foreground">{output.issueLabel}</div>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">{output.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{output.amountLabel}</td>
+                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{output.amountLabel}</td>
                     <td className="px-3 py-2 text-xs">{output.evidenceLabel}</td>
                     <td className="px-3 py-2 text-xs">
                       <div className="break-all font-mono text-[11px] text-foreground">{output.workflowLabel}</div>
@@ -5687,8 +5688,8 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                 </div>
                 <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
                   <div><dt className="text-muted-foreground">Effective</dt><dd className="font-mono">{event.effectiveDateLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Net</dt><dd className="font-mono">{event.amountLabel}</dd></div>
-                  <div><dt className="text-muted-foreground">Gross</dt><dd className="font-mono">{event.grossAmountLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Net</dt><dd className="font-mono tabular-nums">{event.amountLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Gross</dt><dd className="font-mono tabular-nums">{event.grossAmountLabel}</dd></div>
                   <div><dt className="text-muted-foreground">Evidence</dt><dd>{event.evidenceLabel}</dd></div>
                   <div><dt className="text-muted-foreground">Payment</dt><dd className="break-all">{event.paymentLabel}</dd></div>
                   <div><dt className="text-muted-foreground">Validation</dt><dd>{event.validationLabel}</dd></div>
@@ -5991,8 +5992,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                           <div className="font-semibold text-foreground">{row.accountName}</div>
                           <div className="font-mono text-[11px] text-muted-foreground">{row.accountPath} / {row.accountType}</div>
                         </td>
-                        <td className="font-mono text-right">{row.debitLabel}</td>
-                        <td className="font-mono text-right">{row.creditLabel}</td>
+                        <td className="font-mono tabular-nums text-right">{row.debitLabel}</td>
+                        <td className="font-mono tabular-nums text-right">{row.creditLabel}</td>
                         <td>
                           <Badge variant={row.tone === "warning" ? "warning" : row.tone === "success" ? "success" : "outline"}>
                             {row.netEffectLabel}
@@ -7423,7 +7424,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="font-semibold text-foreground">{view.preview.title}</div>
-                    <div className="mt-1 font-mono text-xs text-muted-foreground">{view.preview.balanceLabel}</div>
+                    <div className="mt-1 font-mono tabular-nums text-xs text-muted-foreground">{view.preview.balanceLabel}</div>
                   </div>
                   <Badge variant={view.preview.statusLabel.startsWith("Balanced") ? "success" : "warning"}>{view.preview.statusLabel}</Badge>
                 </div>
@@ -7432,7 +7433,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                     <div key={line.id} className="grid gap-2 rounded border border-border/60 px-2 py-2 text-xs sm:grid-cols-[1fr_auto_auto]">
                       <span className="min-w-0 break-words font-mono text-foreground">{line.account}</span>
                       <span className="font-mono text-muted-foreground">{line.side}</span>
-                      <span className="font-mono text-foreground">{line.amount}</span>
+                      <span className="font-mono tabular-nums text-foreground">{line.amount}</span>
                     </div>
                   ))}
                 </div>
@@ -7508,7 +7509,7 @@ function AccountingValue({ label, value, tone, ariaLabel }: { label: string; val
   return (
     <div aria-label={ariaLabel} className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className={cn("font-mono text-foreground", tone)}>{value}</span>
+      <span className={cn("font-mono tabular-nums text-foreground", tone)}>{value}</span>
     </div>
   );
 }

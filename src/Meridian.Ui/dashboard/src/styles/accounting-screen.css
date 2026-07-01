@@ -1,16 +1,21 @@
-/* Accounting route-owned workstation styling. Keep imported from accounting-screen.tsx. */
+/* Accounting route-owned workstation styling — Concrete design language.
+   Flat #FFFFFF panels on the #DEE3EA canvas, hairline #CBD3DC borders, 2px radii,
+   one steel accent (#2F6F8F), mono tabular money, small-caps section labels. Every
+   value routes through the shared --ws-* / semantic tokens with a Concrete hex
+   fallback so the sheet tracks white-label + dark automatically.
+   Keep imported from accounting-screen.tsx. */
 
 .accounting-reference-panel,
 .accounting-draft-rail {
   display: grid;
   gap: 1rem;
   min-width: 0;
-  border: 1px solid #d8dde5;
-  border-radius: 8px;
-  background: #f3f5f8;
-  color: #20242a;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface-raised, #f3f6f9);
+  color: var(--ws-text, #22272e);
   padding: 1rem;
-  box-shadow: 0 1px 2px rgba(21, 35, 48, 0.08);
+  box-shadow: var(--ws-shadow, none);
 }
 
 .accounting-journal-panel {
@@ -27,7 +32,7 @@
 
 .accounting-reference-kicker {
   margin: 0;
-  color: #65717f;
+  color: var(--ws-text-muted, #59636f);
   font-size: 0.75rem;
   font-weight: 760;
   line-height: 1.25;
@@ -37,7 +42,7 @@
 
 .accounting-reference-subtitle {
   margin: 0.25rem 0 0;
-  color: #65717f;
+  color: var(--ws-text-muted, #59636f);
   font-size: 0.875rem;
   line-height: 1.35;
 }
@@ -56,11 +61,11 @@
   align-items: center;
   justify-content: center;
   min-height: 1.5rem;
-  border: 1px solid #cbd4de;
-  border-radius: 5px;
-  background: #ffffff;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-chip, 2px);
+  background: var(--ws-surface, #ffffff);
   padding: 0.125rem 0.5rem;
-  color: #343a42;
+  color: var(--ws-text, #343a42);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
   font-size: 0.6875rem;
   font-weight: 760;
@@ -71,15 +76,15 @@
 
 .accounting-reference-badge-success,
 .accounting-reference-balance-badge.is-balanced {
-  border-color: #2f8f79;
-  background: #e8f6f1;
-  color: #23715f;
+  border-color: var(--state-healthy-bd, rgba(22, 136, 95, 0.32));
+  background: var(--state-healthy-bg, rgba(22, 136, 95, 0.1));
+  color: var(--state-healthy-fg, #16885f);
 }
 
 .accounting-reference-badge-warning {
-  border-color: #b88939;
-  background: #fbf3df;
-  color: #8a6420;
+  border-color: var(--state-warn-bd, rgba(138, 82, 14, 0.38));
+  background: var(--state-warn-bg, rgba(138, 82, 14, 0.11));
+  color: var(--state-warn-fg, #8a520e);
 }
 
 .accounting-reference-balance-badge {
@@ -96,9 +101,9 @@
 }
 
 .accounting-reference-balance-badge.is-out {
-  border-color: #b25367;
-  background: #fae8ed;
-  color: #963c50;
+  border-color: var(--state-danger-bd, rgba(186, 63, 85, 0.35));
+  background: var(--state-danger-bg, rgba(186, 63, 85, 0.1));
+  color: var(--state-danger-fg, #ba3f55);
 }
 
 /* ── Split-pane reconciliation (statement vs. ledger) ──────────────────────
@@ -111,10 +116,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--ws-border, #d7dce2);
-  border-radius: 8px;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
   background: var(--ws-surface, #ffffff);
-  box-shadow: var(--ws-shadow, 0 1px 1px rgba(0, 0, 0, 0.08));
+  box-shadow: var(--ws-shadow, none);
 }
 
 .reconcile-pane {
@@ -125,7 +130,7 @@
 }
 
 .reconcile-pane + .reconcile-pane {
-  border-left: 1px solid var(--ws-border, #d7dce2);
+  border-left: 1px solid var(--ws-border, #cbd3dc);
 }
 
 .reconcile-pane-head {
@@ -134,8 +139,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--ws-border, #d7dce2);
-  background: var(--ws-surface-subtle, #f5f7fa);
+  border-bottom: 1px solid var(--ws-border, #cbd3dc);
+  background: var(--ws-surface-subtle, #ebeff4);
   padding: 0.5rem 0.8125rem;
 }
 
@@ -155,36 +160,6 @@
   gap: 0.3125rem;
 }
 
-.reconcile-chip {
-  border: 1px solid;
-  border-radius: var(--radius-chip, 4px);
-  padding: 0.0625rem 0.4375rem;
-  font-size: 0.625rem;
-  font-weight: 700;
-  line-height: 1.5;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.reconcile-chip.is-ok {
-  border-color: var(--state-healthy-bd);
-  background: var(--state-healthy-bg);
-  color: var(--state-healthy-fg);
-}
-
-.reconcile-chip.is-timing {
-  border-color: var(--state-warn-bd);
-  background: var(--state-warn-bg);
-  color: var(--state-warn-fg);
-}
-
-.reconcile-chip.is-break {
-  border-color: var(--state-danger-bd);
-  background: var(--state-danger-bg);
-  color: var(--state-danger-fg);
-}
-
 .reconcile-pane-scroll {
   flex: 1;
   min-height: 0;
@@ -201,7 +176,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  border-bottom: 1px solid var(--ws-border, #d7dce2);
+  border-bottom: 1px solid var(--ws-border, #cbd3dc);
   background: var(--ws-surface, #ffffff);
   padding: 0.375rem 0.75rem;
   color: var(--ws-text-muted, #59636f);
@@ -224,7 +199,7 @@
 
 .reconcile-table td {
   position: relative;
-  border-top: 1px solid var(--ws-border, #d7dce2);
+  border-top: 1px solid var(--ws-border, #cbd3dc);
   padding: 0.5rem 0.75rem;
   vertical-align: middle;
 }
@@ -241,7 +216,7 @@
   bottom: 0;
   width: 3px;
   border-radius: 0 2px 2px 0;
-  background: var(--ws-border-strong, #b8c2cc);
+  background: var(--ws-border-strong, #99a5b2);
 }
 
 .reconcile-table tr.is-matched td:first-child::before {
@@ -265,7 +240,7 @@
 }
 
 .reconcile-table tbody tr:hover td {
-  background: var(--ws-row-hover, #f1f4f7);
+  background: var(--ws-row-hover, #eaeef3);
 }
 
 .reconcile-table tr.is-selected td {
@@ -312,6 +287,8 @@
 .reconcile-table td.num {
   color: var(--ws-text, #22272e);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   font-size: 0.8125rem;
   text-align: right;
   white-space: nowrap;
@@ -329,15 +306,15 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;
   align-items: center;
   gap: 1rem;
-  border: 1px solid #d8dde5;
-  border-radius: 7px;
-  background: #f6f8fb;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface-subtle, #ebeff4);
   padding: 0.875rem 1rem;
 }
 
 .accounting-balance-strip span {
   display: block;
-  color: #65717f;
+  color: var(--ws-text-muted, #59636f);
   font-size: 0.6875rem;
   font-weight: 760;
   letter-spacing: 0.08em;
@@ -347,17 +324,19 @@
 .accounting-balance-strip strong {
   display: block;
   margin-top: 0.4rem;
-  color: #20242a;
+  color: var(--ws-text, #22272e);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   font-size: 0.95rem;
   font-weight: 640;
 }
 
 .accounting-draft-button {
   width: 100%;
-  border: 1px solid #d8dde5;
-  border-radius: 6px;
-  background: #ffffff;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface, #ffffff);
   padding: 0.75rem;
   text-align: left;
   transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
@@ -365,18 +344,18 @@
 
 .accounting-draft-button:hover,
 .accounting-draft-button.is-active {
-  border-color: #176fa3;
-  background: #f1f7fb;
-  box-shadow: inset 3px 0 0 #176fa3;
+  border-color: var(--ws-accent, #2f6f8f);
+  background: var(--state-paper-bg, rgba(47, 111, 143, 0.1));
+  box-shadow: inset 3px 0 0 var(--ws-accent, #2f6f8f);
 }
 
 .accounting-journal-header-grid {
   display: grid;
   grid-template-columns: minmax(9rem, 0.75fr) minmax(9rem, 0.75fr) minmax(16rem, 1.6fr);
   gap: 0.75rem 1rem;
-  border: 1px solid #d8dde5;
-  border-radius: 7px;
-  background: #f6f8fb;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface-subtle, #ebeff4);
   padding: 0.875rem 1rem;
 }
 
@@ -388,7 +367,7 @@
 }
 
 .accounting-journal-header-grid span {
-  color: #65717f;
+  color: var(--ws-text-muted, #59636f);
   font-size: 0.6875rem;
   font-weight: 760;
   letter-spacing: 0.08em;
@@ -401,10 +380,10 @@
   min-width: 0;
   min-height: 2.25rem;
   width: 100%;
-  border: 1px solid #d8dde5;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #20242a;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-button, 2px);
+  background: var(--ws-surface, #ffffff);
+  color: var(--ws-text, #22272e);
   padding: 0 0.65rem;
   font-size: 0.875rem;
   outline: none;
@@ -413,15 +392,15 @@
 .accounting-journal-header-grid input:focus,
 .accounting-journal-table input:focus,
 .accounting-journal-table select:focus {
-  border-color: #176fa3;
-  box-shadow: 0 0 0 2px rgba(23, 111, 163, 0.16);
+  border-color: var(--ws-accent, #2f6f8f);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ws-accent, #2f6f8f) 20%, transparent);
 }
 
 .accounting-journal-table-wrap {
   overflow: auto;
-  border: 1px solid #d8dde5;
-  border-radius: 7px;
-  background: #ffffff;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface, #ffffff);
 }
 
 .accounting-journal-table {
@@ -429,15 +408,15 @@
   min-width: 58rem;
   border-collapse: separate;
   border-spacing: 0;
-  color: #20242a;
+  color: var(--ws-text, #22272e);
   font-size: 0.875rem;
 }
 
 .accounting-journal-table th {
-  border-bottom: 1px solid #d8dde5;
-  background: #ffffff;
+  border-bottom: 1px solid var(--ws-border, #cbd3dc);
+  background: var(--ws-surface, #ffffff);
   padding: 0.7rem 0.875rem;
-  color: #65717f;
+  color: var(--ws-text-muted, #59636f);
   font-size: 0.6875rem;
   font-weight: 760;
   letter-spacing: 0.08em;
@@ -446,7 +425,7 @@
 }
 
 .accounting-journal-table td {
-  border-bottom: 1px solid #d8dde5;
+  border-bottom: 1px solid var(--ws-border, #cbd3dc);
   padding: 0.55rem 0.875rem;
   vertical-align: top;
 }
@@ -460,34 +439,36 @@
 }
 
 .accounting-journal-table tr.is-selected td {
-  background: #f1f7fb;
+  background: var(--state-paper-bg, rgba(47, 111, 143, 0.1));
 }
 
 .accounting-journal-support-button {
   display: block;
   width: 100%;
-  border: 1px solid #d8dde5;
-  border-radius: 6px;
-  background: #ffffff;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-button, 2px);
+  background: var(--ws-surface, #ffffff);
   padding: 0.5rem 0.65rem;
   text-align: left;
 }
 
 .accounting-journal-support-button:hover {
-  border-color: #176fa3;
-  background: #f1f7fb;
+  border-color: var(--ws-accent, #2f6f8f);
+  background: var(--state-paper-bg, rgba(47, 111, 143, 0.1));
 }
 
 .accounting-journal-total-row td {
-  border-top: 2px solid #aab5c2;
-  background: #f6f8fb;
-  color: #20242a;
+  border-top: 2px solid var(--ws-border-strong, #99a5b2);
+  background: var(--ws-surface-subtle, #ebeff4);
+  color: var(--ws-text, #22272e);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   font-weight: 700;
 }
 
 .accounting-journal-total-row td:first-child {
-  color: #65717f;
+  color: var(--ws-text-muted, #59636f);
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -500,9 +481,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  border: 1px solid #d8dde5;
-  border-radius: 7px;
-  background: #ffffff;
+  border: 1px solid var(--ws-border, #cbd3dc);
+  border-radius: var(--radius-card, 2px);
+  background: var(--ws-surface, #ffffff);
   padding: 0.75rem 1rem;
 }
 
@@ -525,6 +506,6 @@
 
   .reconcile-pane + .reconcile-pane {
     border-left: 0;
-    border-top: 1px solid var(--ws-border, #d7dce2);
+    border-top: 1px solid var(--ws-border, #cbd3dc);
   }
 }
