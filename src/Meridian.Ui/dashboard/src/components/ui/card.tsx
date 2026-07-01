@@ -37,7 +37,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const cardVariants: Record<NonNullable<CardProps["variant"]>, string> = {
   default: "",
   interactive:
-    "cursor-pointer transition-[background-color,border-color,box-shadow] hover:border-border hover:bg-muted/45 hover:shadow-[var(--shadow-float)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    "cursor-pointer transition-[background-color,border-color] hover:border-[#ADB8C4] hover:bg-[#F3F6F9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -45,7 +45,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-[var(--radius-card,0.5rem)] border border-border bg-card text-card-foreground shadow-panel",
+        "rounded-[2px] border border-border bg-card text-card-foreground",
         cardVariants[variant],
         className
       )}

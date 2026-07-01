@@ -151,7 +151,7 @@ export function SheetContent({ className, side = "right", ...props }: SheetConte
       aria-modal="true"
       tabIndex={-1}
       className={cn(
-        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-float focus:outline-none",
+        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-none",
         side === "left" ? "border-r sheet-slide-left" : "border-l sheet-slide-right",
         className
       )}
@@ -199,7 +199,7 @@ export function SheetCloseButton({ label = "Close panel", className, onClick, ..
       aria-label={label}
       title={label}
       className={cn(
-        "absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-[var(--radius-button,0.375rem)] text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
+        "absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-[2px] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[#EAEEF3] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         className
       )}
       onClick={onClick}

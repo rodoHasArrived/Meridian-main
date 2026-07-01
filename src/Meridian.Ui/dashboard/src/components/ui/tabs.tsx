@@ -77,7 +77,7 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
               data-tab-id={tab.id}
             >
               <span>{tab.label}</span>
-              {tab.count ? <span className="rounded-[var(--radius-chip,0.25rem)] border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{tab.count}</span> : null}
+              {tab.count ? <span className="rounded-[2px] border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{tab.count}</span> : null}
             </button>
           );
         })}

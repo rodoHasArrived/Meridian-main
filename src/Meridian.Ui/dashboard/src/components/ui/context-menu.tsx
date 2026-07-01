@@ -87,7 +87,7 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
         role="menu"
         aria-label={label}
         className={cn(
-          "fixed z-[60] min-w-44 overflow-hidden rounded-[var(--radius-button,0.375rem)] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-[var(--shadow-float)]",
+          "fixed z-[60] min-w-44 overflow-hidden rounded-[2px] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
           className
         )}
         onKeyDown={handleMenuKeyDown}
@@ -102,9 +102,9 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
             role="menuitem"
             disabled={item.disabled}
             className={cn(
-              "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors",
+              "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors [outline-offset:-2px]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-              item.danger ? "text-danger hover:bg-danger/10" : "hover:bg-secondary/70",
+              item.danger ? "text-danger hover:bg-danger/10" : "hover:bg-[#EAEEF3]",
               item.disabled && "cursor-not-allowed opacity-50"
             )}
             onClick={() => {

@@ -307,7 +307,7 @@
 
 .dense-data-table-wrap {
   border-color: var(--ws-border);
-  border-radius: 6px;
+  border-radius: 2px;
   background: var(--ws-surface);
   box-shadow: none;
 }
@@ -354,4 +354,20 @@
 .dense-data-table-empty {
   color: var(--ws-text-muted);
   padding: 2rem 0.75rem;
+}
+
+/* ── Concrete radius normalization ──────────────────────────────────────────
+   Concrete unifies control/card/panel corners to a single tight 2px radius;
+   structure is carried by hairline borders, not rounding. Override the legacy
+   scalable-radius values so these hand-authored primitives read as Concrete
+   regardless of the base --radius-* token resolution.
+──────────────────────────────────────────────────────────────────────────*/
+.meridian-toolbar-strip,
+.entity-summary,
+.entity-summary-field {
+  border-radius: 2px;
+}
+
+.meridian-toolbar-chip {
+  border-radius: 2px;
 }

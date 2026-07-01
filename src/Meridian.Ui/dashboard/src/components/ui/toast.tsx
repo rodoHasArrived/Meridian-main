@@ -85,7 +85,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
   return (
     <div
       className={cn(
-        "flex min-w-72 max-w-md items-start gap-3 rounded-[var(--radius-card,0.5rem)] border border-l-4 border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-[var(--shadow-float)]",
+        "flex min-w-72 max-w-md items-start gap-3 rounded-[2px] border border-l-[3px] border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
         toneClasses[toast.tone],
         className
       )}

@@ -41,10 +41,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           <span
             aria-hidden="true"
             className={cn(
-              "flex h-4 w-4 items-center justify-center rounded-[var(--radius-checkbox,0.1875rem)] border bg-background shadow-[var(--shadow-panel)]",
-              "transition-[background-color,border-color,box-shadow] duration-150",
+              "flex h-4 w-4 items-center justify-center rounded-[2px] border bg-[#F3F6F9]",
+              "transition-[background-color,border-color] duration-150",
               "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40",
-              checkedState ? "border-primary bg-primary" : "border-border",
+              checkedState ? "border-primary bg-primary" : "border-border peer-hover:border-[#ADB8C4]",
               error ? "border-danger" : ""
             )}
           >
@@ -111,13 +111,13 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         <span
           aria-hidden="true"
           className={cn(
-            "relative h-5 w-9 rounded-full border shadow-[var(--shadow-panel)] transition-colors duration-150",
-            checkedState ? "border-primary bg-primary" : "border-border bg-secondary"
+            "relative h-5 w-9 rounded-full border transition-colors duration-150",
+            checkedState ? "border-primary bg-primary" : "border-border bg-[#F3F6F9]"
           )}
         >
           <span
             className={cn(
-              "absolute top-0.5 h-4 w-4 rounded-full bg-background shadow-[var(--shadow-panel)] transition-transform duration-150",
+              "absolute top-0.5 h-4 w-4 rounded-full bg-background transition-transform duration-150",
               checkedState ? "translate-x-[1.0625rem]" : "translate-x-0.5"
             )}
           />
