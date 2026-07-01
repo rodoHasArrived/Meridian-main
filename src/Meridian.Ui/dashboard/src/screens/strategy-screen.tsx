@@ -87,6 +87,17 @@ function strategySeverityStatus(variant: string): string {
   }
 }
 
+/** Map a raw run status string (e.g. `Running`, `Completed`, `Failed`) onto a Concrete
+ * operator severity. `normalizeSeverity` handles most of these, but the explicit mapping keeps
+ * `Queued`/unknowns at info and guards against silent gray fall-through. */
+function strategyRunSeverityStatus(status: string): string {
+  const key = status.trim().toLowerCase();
+  if (key === "completed" || key === "complete" || key === "done" || key === "passed") return "ready";
+  if (key === "failed" || key === "cancelled" || key === "canceled" || key === "error") return "blocked";
+  if (key === "running" || key === "inprogress" || key === "in progress") return "action";
+  return "info";
+}
+
 const plotToolMomentColumns: DenseDataTableColumn<StrategyPlotMomentRow>[] = [
   {
     id: "metric",
@@ -257,7 +268,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (run) => <SeverityBadge status={run.statusText} label={run.statusText} />
+      render: (run) => <SeverityBadge status={strategyRunSeverityStatus(run.statusText)} label={run.statusText} />
     },
     {
       id: "pnl",
@@ -704,7 +715,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   description={vm.inspectedRunDetail.description}
                   fields={vm.inspectedRunDetail.fields}
                   ariaLabel={vm.inspectedRunDetail.ariaLabel}
-                  status={<SeverityBadge status={strategySeverityStatus(vm.inspectedRunDetail.statusVariant)} label={vm.inspectedRunDetail.statusLabel} />}
+                  status={<Badge variant={vm.inspectedRunDetail.statusVariant}>{vm.inspectedRunDetail.statusLabel}</Badge>}
                   actions={(
                     <>
                       <Button
@@ -913,10 +924,9 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     fields={vm.selectedPromotionHistoryDetail.fields}
                     ariaLabel={vm.selectedPromotionHistoryDetail.ariaLabel}
                     status={(
-                      <SeverityBadge
-                        status={strategySeverityStatus(vm.selectedPromotionHistoryDetail.statusVariant)}
-                        label={vm.selectedPromotionHistoryDetail.statusLabel}
-                      />
+                      <Badge variant={vm.selectedPromotionHistoryDetail.statusVariant}>
+                        {vm.selectedPromotionHistoryDetail.statusLabel}
+                      </Badge>
                     )}
                   />
                 </div>
@@ -1018,7 +1028,7 @@ function StrategyDiffDetailPanel({
         description={detail.description}
         fields={detail.fields}
         ariaLabel={detail.ariaLabel}
-        status={<SeverityBadge status={strategySeverityStatus(detail.statusVariant)} label={detail.statusLabel} />}
+        status={<Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>}
       />
     </div>
   );
@@ -1054,7 +1064,9 @@ function PlotToolWorkspacePanel({
     {
       id: "status",
       label: "Status",
-      render: (study) => <SeverityBadge status={strategySeverityStatus(study.statusBadgeVariant)} label={study.statusBadgeLabel} />
+      // Mode-derived chip (LIVE/PAPER/BACKTEST) — a categorical environment badge, not an
+      // operator severity, so it stays a plain Badge.
+      render: (study) => <Badge variant={study.statusBadgeVariant}>{study.statusBadgeLabel}</Badge>
     },
     {
       id: "metric",
@@ -1081,7 +1093,7 @@ function PlotToolWorkspacePanel({
           title={vm.title}
           subtitle={vm.metaItems.join(" · ")}
           description={vm.description}
-          status={<SeverityBadge status={strategySeverityStatus(vm.statusBadgeVariant)} label={vm.statusBadgeLabel} />}
+          status={<Badge variant={vm.statusBadgeVariant}>{vm.statusBadgeLabel}</Badge>}
           fields={vm.studySummary.map((field) => ({ label: field.label, value: field.value }))}
           ariaLabel="PlotTool study brief"
         />
@@ -1265,7 +1277,8 @@ function SelectedPlotStudyDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>{detail.eyebrow}</span>
-        <SeverityBadge status={strategySeverityStatus(detail.statusVariant)} label={detail.statusLabel} />
+        {/* Mode-derived chip (LIVE/PAPER/BACKTEST), not a severity — stays a plain Badge. */}
+        <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
       </div>
       <div className="body">
         <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>

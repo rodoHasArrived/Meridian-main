@@ -191,7 +191,7 @@ export function StrategyFormulaWorkbench({
                 <GateRail
                   gates={initialCells.map((cell) => ({
                     key: cell.cellId,
-                    label: cell.cellId,
+                    label: cell.label,
                     status: cell.status
                   }))}
                 />

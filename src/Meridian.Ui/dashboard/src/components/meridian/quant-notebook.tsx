@@ -11,6 +11,7 @@ import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   cellOutputToneClass,
+  cellStateBadgeVariant,
   cellStateLabel
 } from "@/components/meridian/quant-notebook.view-model";
 import type {
@@ -21,6 +22,18 @@ import type {
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
 import type { CellKind, CellOutput } from "@/types";
+
+/** Map a `Badge` variant onto a Concrete operator-severity status string so notebook cell
+ * execution states resolve to the right severity color through the shared `SeverityBadge`
+ * (`normalizeSeverity` does not recognize raw `idle|running|done|error|stale` states). */
+function notebookSeverityStatus(variant: string): string {
+  switch (variant) {
+    case "success": return "ready";
+    case "danger": return "blocked";
+    case "warning": return "action";
+    default: return "info";
+  }
+}
 
 const dataResultColumns: DenseDataTableColumn<QuantNotebookDataResultRowViewModel>[] = [
   {
@@ -476,7 +489,7 @@ function CellHeader({
           }
         </button>
         {!isMarkdown && (
-          <SeverityBadge status={cell.state} label={cellStateLabel(cell.state)} />
+          <SeverityBadge status={notebookSeverityStatus(cellStateBadgeVariant(cell.state))} label={cellStateLabel(cell.state)} />
         )}
         {!isMarkdown && cell.statusText && cell.statusText !== cellStateLabel(cell.state) && (
           <span className="text-xs text-muted-foreground">{cell.statusText}</span>
