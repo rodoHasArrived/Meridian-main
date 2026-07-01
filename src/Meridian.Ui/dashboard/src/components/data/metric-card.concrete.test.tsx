@@ -26,4 +26,11 @@ describe("MetricCard (Concrete)", () => {
     const { container } = render(<MetricCard label="X" value="1" delta="2%" trend="flat" />);
     expect(container.querySelector(".mds-delta--flat")).not.toBeNull();
   });
+
+  it("composes change and status into the accessible group name", () => {
+    render(<MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />);
+    expect(
+      screen.getByRole("group", { name: "Day P&L, -$4,118.22, change -0.32%, status critical" })
+    ).toBeInTheDocument();
+  });
 });
