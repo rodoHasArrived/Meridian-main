@@ -318,6 +318,9 @@ function buildWorkflowContinuityStepStatus(
       return buildAccountingReconciliationContinuityStatus(context.payload.accounting);
     case "close-support":
     case "close":
+      if (context.error || context.workflowError || !context.payload) {
+        return { label: "Review", tone: "review" };
+      }
       return buildAccountingCloseSupportContinuityStatus(context.payload.accounting);
     case "produce-evidence":
     case "evidence":
