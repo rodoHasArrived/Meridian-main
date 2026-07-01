@@ -1165,7 +1165,7 @@ export function PortfolioScreen({
                     ))}
                   </div>
                   {selectedRunDrillIn?.runId === vm.selectedRun?.id &&
-                  (selectedRunDrillIn?.drawdownProfile?.points.length ?? 0) >= 2 ? (
+                  (selectedRunDrillIn?.drawdownProfile?.points?.length ?? 0) >= 2 ? (
                     <div className="mt-3">
                       <PortfolioDrillInChart
                         profile={selectedRunDrillIn!.drawdownProfile!}
@@ -1428,7 +1428,7 @@ function severityStatusFromTone(tone: PortfolioTone): string {
 }
 
 /** Map a read-model status tone to a {@link TrustStrip} state token. */
-function trustStateFromTone(tone: PortfolioTone): string {
+function trustStateFromTone(tone: PortfolioTone): TrustStripItem["state"] {
   switch (tone) {
     case "success":
       return "ready";
