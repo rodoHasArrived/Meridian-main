@@ -110,6 +110,14 @@ describe("ReportRunParametersScreen", () => {
   it("renders the readiness gate with open breaks and the exports runner for a known template", async () => {
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
+    expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
+    expect(screen.getByLabelText("Ledger book")).toHaveValue("Primary GL");
+    expect(screen.getByLabelText("Accounting basis")).toHaveValue("GAAP");
+    expect(screen.getByLabelText("Output format")).toHaveValue("PDF");
+    expect(screen.getByLabelText("Include supporting schedules")).toBeChecked();
+    expect(screen.getByLabelText("Include evidence appendix")).toBeChecked();
+    expect(screen.getByRole("heading", { name: "Can this report run?" })).toBeInTheDocument();
     expect(await screen.findByText("Warnings present")).toBeInTheDocument();
     expect(screen.getByText("Open reconciliation breaks")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review breaks" })).toHaveAttribute("href", "/accounting/reconciliation");

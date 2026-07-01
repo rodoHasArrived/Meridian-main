@@ -10,7 +10,12 @@ const repoMarkers = ["Meridian.sln", ".git"];
 
 function parseArgs(argv) {
   const values = new Map();
+  const valueLists = new Map();
   const flags = new Set();
+  const recordValue = (name, value) => {
+    values.set(name, value);
+    valueLists.set(name, [...(valueLists.get(name) ?? []), value]);
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -20,21 +25,21 @@ function parseArgs(argv) {
 
     const eqIndex = arg.indexOf("=");
     if (eqIndex > 0) {
-      values.set(arg.slice(2, eqIndex), arg.slice(eqIndex + 1));
+      recordValue(arg.slice(2, eqIndex), arg.slice(eqIndex + 1));
       continue;
     }
 
     const name = arg.slice(2);
     const next = argv[index + 1];
     if (next && !next.startsWith("--")) {
-      values.set(name, next);
+      recordValue(name, next);
       index += 1;
     } else {
       flags.add(name);
     }
   }
 
-  return { values, flags };
+  return { values, valueLists, flags };
 }
 
 async function pathExists(candidate) {
@@ -79,6 +84,50 @@ function normalizeBaseUrl(url) {
 function toRouteUrl(baseUrl, routePath) {
   const normalizedPath = routePath.startsWith("/") ? routePath : `/${routePath}`;
   return `${normalizeBaseUrl(baseUrl)}${normalizedPath}`;
+}
+
+function collectCaptureSelectors(valueLists) {
+  const selectors = [
+    ...(valueLists.get("capture") ?? []),
+    ...(valueLists.get("captures") ?? []),
+    ...(valueLists.get("capture-id") ?? []),
+    ...(valueLists.get("capture-name") ?? [])
+  ];
+
+  return selectors
+    .flatMap((value) => String(value).split(","))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function captureMatchesSelector(capture, selector) {
+  const candidates = [
+    capture.id,
+    capture.name,
+    capture.path,
+    screenshotCoveragePath(capture.path ?? ""),
+    capture.docLabel
+  ]
+    .filter((value) => typeof value === "string")
+    .map((value) => value.trim().toLowerCase());
+
+  return candidates.includes(selector);
+}
+
+function selectCaptures(captures, selectors) {
+  if (selectors.length === 0) {
+    return captures;
+  }
+
+  const selected = captures.filter((capture) =>
+    selectors.some((selector) => captureMatchesSelector(capture, selector))
+  );
+
+  if (selected.length === 0) {
+    throw new Error(`No web screenshot captures matched selector(s): ${selectors.join(", ")}`);
+  }
+
+  return selected;
 }
 
 function npmInvocation(args) {
@@ -170,7 +219,17 @@ async function stopProcess(child) {
 
   if (process.platform === "win32") {
     const taskkill = spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
-    await new Promise((resolve) => taskkill.once("exit", resolve));
+    const taskkillExited = await new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(false), 5000);
+      taskkill.once("exit", () => {
+        clearTimeout(timer);
+        resolve(true);
+      });
+    });
+    if (!taskkillExited) {
+      taskkill.kill("SIGKILL");
+    }
+    await waitForExit(5000);
     return;
   }
 
@@ -439,7 +498,7 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
 }
 
 async function main() {
-  const { values, flags } = parseArgs(process.argv.slice(2));
+  const { values, valueLists, flags } = parseArgs(process.argv.slice(2));
   const repoRoot = values.has("repo-root")
     ? path.resolve(values.get("repo-root"))
     : await findRepoRoot(process.cwd());
@@ -451,10 +510,12 @@ async function main() {
     throw new Error(`Unsupported web screenshot route config version: ${routeConfig.version}`);
   }
 
-  const captures = Array.isArray(routeConfig.captures) ? routeConfig.captures : [];
-  if (captures.length === 0) {
+  const allCaptures = Array.isArray(routeConfig.captures) ? routeConfig.captures : [];
+  if (allCaptures.length === 0) {
     throw new Error(`No web screenshot captures found in ${configPath}`);
   }
+  const captureSelectors = collectCaptureSelectors(valueLists);
+  const captures = selectCaptures(allCaptures, captureSelectors);
 
   if (flags.has("list")) {
     for (const capture of captures) {
@@ -499,12 +560,14 @@ async function main() {
     configPath,
     baseUrl: normalizeBaseUrl(baseUrl),
     outputDir,
+    selectedCaptureCount: captures.length,
+    totalCaptureCount: allCaptures.length,
     captures: results,
     logs: []
   };
 
   try {
-    await assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath);
+    await assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath);
 
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);

@@ -139,6 +139,13 @@ describe("TrialBalanceScreen", () => {
     await waitForAsyncEffects();
 
     expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-42");
+    expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
+    expect(screen.getByLabelText("Book")).toHaveValue("Primary GL");
+    expect(screen.getByLabelText("Period")).toHaveValue("Current period");
+    expect(screen.getByRole("button", { name: "Compare prior period" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Jump to report preview" })).toHaveAttribute("href", "/reporting/preview");
     expect(await screen.findByRole("table", { name: "Primary trial balance lines for run-42" })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).toBeInTheDocument();
   });

@@ -944,6 +944,21 @@
         { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "accountName": "Trading Expenses", "accountType": "Expense", "debit": 1250, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100" }
       ]
     },
+    "/api/workstation/runs/run-42/ledger/journal": [
+      {
+        "journalEntryId": "je-cash-1",
+        "timestamp": "2026-06-30T00:00:00Z",
+        "description": "Cash sweep",
+        "totalDebits": 500,
+        "totalCredits": 500,
+        "lineCount": 2,
+        "accountScopeDisplayName": "Cash",
+        "entityScopeDisplayName": "Fund Alpha",
+        "dimensions": {
+          "instrumentId": "cash-usd"
+        }
+      }
+    ],
     "/api/accounting-system/import/preview": {
       "summary": {
         "importId": "qbo-fixture-20260131",
