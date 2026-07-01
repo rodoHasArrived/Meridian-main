@@ -60,8 +60,13 @@ describe("ReconciliationPanel", () => {
         currency="USD"
       />,
     );
-    expect(screen.getByText("$7.00")).toBeInTheDocument();
-    expect(screen.queryByText("$100.00")).toBeNull();
+    // The configured "fee" column renders inside the data table…
+    const table = document.querySelector(".rec__table") as HTMLElement;
+    expect(within(table).getByText("$7.00")).toBeInTheDocument();
+    // …and the unconfigured `amount` field is not shown as a column. ($100.00 still legitimately
+    // appears in the summary bar, which sums `amount` regardless of the visible columns, so scope
+    // the negative assertion to the table rather than the whole screen.)
+    expect(within(table).queryByText("$100.00")).toBeNull();
   });
 
   it("sorts columns from the keyboard", () => {

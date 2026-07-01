@@ -45,7 +45,10 @@ describe("LedgerTable", () => {
       />,
     );
     const bodyRows = screen.getAllByRole("row").filter((r) => r.closest("tbody"));
-    expect(within(bodyRows[0]).getByText("—")).toBeInTheDocument();
+    // Row 0 has no seed yet, so its balance cell (the last column) stays a dash. Scope to that
+    // cell — the credit column also renders a zero-dash, so a row-wide "—" query is ambiguous.
+    const row0Cells = within(bodyRows[0]).getAllByRole("cell");
+    expect(row0Cells[row0Cells.length - 1]).toHaveTextContent("—");
     expect(within(bodyRows[1]).getByText("$500.00")).toBeInTheDocument();
   });
 

@@ -9273,7 +9273,7 @@ describe("accounting-screen view model", () => {
     expect(state.selectedBreakId).toBe("run-57:fees");
     expect(state.selectedDetail).toMatchObject({
       id: "reconciliation-break-detail-panel",
-      title: "Intraday Vol Carry - FeeMismatch",
+      title: "Intraday Vol Carry - Cash variance needs review",
       statusLabel: "Resolved",
       statusBadgeVariant: "success",
       analysisText: "Provider fees and Meridian ledger fees now match after operator review.",

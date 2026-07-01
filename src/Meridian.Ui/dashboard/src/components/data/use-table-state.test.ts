@@ -104,18 +104,22 @@ describe("useTableState", () => {
 
   it("escapes quotes and newlines in CSV exports", async () => {
     vi.useFakeTimers();
-    const createObjectURL = vi.fn((_blob: Blob) => "blob:csv");
+    const createObjectURL = vi.fn(() => "blob:csv");
     const revokeObjectURL = vi.fn();
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
     Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: revokeObjectURL });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    // jsdom's Blob exposes no reader (`text`/`arrayBuffer`/`stream`), and FileReader stalls under
+    // fake timers — so capture the CSV payload from the Blob constructor args instead of reading
+    // it back off the blob.
+    const blobSpy = vi.spyOn(globalThis, "Blob");
     const csvRows = [{ symbol: "AAPL", sector: "Tech\nGrowth", qty: '10"0' }];
     const { result } = renderHook(() => useTableState(csvRows));
 
     act(() => result.current.exportCSV("positions.csv"));
 
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
-    await expect(blob.text()).resolves.toContain('"Tech\nGrowth","10""0"');
+    const csv = (blobSpy.mock.calls[0][0] as BlobPart[]).join("");
+    expect(csv).toContain('"Tech\nGrowth","10""0"');
     expect(click).toHaveBeenCalledOnce();
     expect(revokeObjectURL).not.toHaveBeenCalled();
     vi.runAllTimers();

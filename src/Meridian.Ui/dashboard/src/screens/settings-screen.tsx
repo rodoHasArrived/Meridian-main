@@ -932,13 +932,16 @@ export function SettingsScreen({
     { id: "profiles", label: "Data profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
     { id: "diagnostics", label: "System details", value: vm.diagnosticCounts.loadedLabel }
   ];
-  const showAccessSection = activeTaskView === "overview";
+  const showAccessSection = activeTaskView === "overview" || activeTaskView === "operations";
   const showOperationsSection = activeTaskView === "operations";
   const showAssetProfileSection = activeTaskView === "operations";
   const showProviderSection = activeTaskView === "providers";
   const showDataProviderModulesSection = activeTaskView === "data-providers";
-  const showBrokerageSection = activeTaskView === "providers";
-  const showDiagnosticsSection = activeTaskView === "diagnostics";
+  const showBrokerageSection = activeTaskView === "brokerage" || activeTaskView === "providers";
+  // Diagnostics + recent events are part of the always-visible operator control surface: the
+  // persistent profile panel anchors to #diagnostic-endpoints, so the section (and that anchor
+  // target) must render on every task view, not only the Diagnostics tab.
+  const showDiagnosticsSection = true;
   const showRuntimeSection = activeTaskView === "runtime";
   const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
 
