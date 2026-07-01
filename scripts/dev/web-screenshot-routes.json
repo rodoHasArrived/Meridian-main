@@ -611,8 +611,8 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Open this page from the Report Library",
-        "Back to Report Library"
+        "Choose a report template to configure and run",
+        "Or browse the Report Library"
       ]
     },
     {
