@@ -170,6 +170,7 @@ export function Combobox({
                 <div
                   key={option.value}
                   role="option"
+                  aria-label={option.label}
                   aria-selected={isSelected}
                   onMouseEnter={() => setHighlighted(index)}
                   onClick={() => commit(option)}
