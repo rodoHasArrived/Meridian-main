@@ -46,11 +46,13 @@ describe("workspace metadata", () => {
     expect(workstationRoute("tradingReadiness")).toBe("/trading/readiness");
     expect(workstationRoute("strategyFormulaWorkbench")).toBe("/strategy/formula-workbench");
     expect(workstationRoute("strategyLab")).toBe("/strategy/lab");
+    expect(workstationRoute("portfolioAssetDetail")).toBe("/portfolio/asset-detail");
     expect(workstationRoute("portfolioFamilyOffice")).toBe("/portfolio/family-office");
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("accountingEntitySetup")).toBe("/accounting/entity-setup");
     expect(workstationRoute("accountingExceptions")).toBe("/accounting/exceptions");
     expect(workstationRoute("reportingReportBuilder")).toBe("/reporting/report-builder");
+    expect(workstationRoute("reportingScheduled")).toBe("/reporting/scheduled");
     expect(workstationRoute("reportingRunStatus")).toBe("/reporting/run-status");
     expect(workstationRoute("reportingOperationsRecord")).toBe("/reporting/operations-record");
     expect(workstationRoute("reportingExports")).toBe("/reporting/exports");

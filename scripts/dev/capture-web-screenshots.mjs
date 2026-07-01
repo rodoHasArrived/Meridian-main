@@ -318,18 +318,31 @@ function collectExpectedCapturePaths(routeCatalog, appRoutes) {
   return expected;
 }
 
+function screenshotCoveragePath(routePath) {
+  if (typeof routePath !== "string" || routePath.trim().length === 0) {
+    return "";
+  }
+
+  const routeUrl = new URL(routePath.trim(), "http://meridian.local");
+  return `${routeUrl.pathname || "/"}${routeUrl.hash}`;
+}
+
 async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath) {
   const capturedPaths = new Set(
     captures
-      .map((capture) => capture.path)
-      .filter((routePath) => typeof routePath === "string" && routePath.trim().length > 0)
+      .map((capture) => screenshotCoveragePath(capture.path))
+      .filter((routePath) => routePath.length > 0)
   );
   const routeCatalog = extractWorkstationRouteCatalog(
     await fs.readFile(routeCatalogPath, "utf8"),
     routeCatalogPath
   );
   const appRoutes = extractExplicitAppRoutes(await fs.readFile(appShellPath, "utf8"));
-  const expectedPaths = collectExpectedCapturePaths(routeCatalog, appRoutes);
+  const expectedPaths = new Set(
+    [...collectExpectedCapturePaths(routeCatalog, appRoutes)]
+      .map((routePath) => screenshotCoveragePath(routePath))
+      .filter((routePath) => routePath.length > 0)
+  );
   const missingPaths = [...expectedPaths]
     .filter((routePath) => !capturedPaths.has(routePath))
     .sort();

@@ -387,6 +387,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
                       portfolio={portfolio}
@@ -654,6 +655,7 @@ function formatRouteSegmentLabel(segment: string): string {
   const knownLabels: Record<string, string> = {
     alerts: "Alerts",
     approvals: "Close Cockpit",
+    "asset-detail": "Asset Detail",
     "capital-accounts": "Capital Accounts",
     configure: "Governance",
     "covered-call": "Covered Call",
@@ -674,7 +676,9 @@ function formatRouteSegmentLabel(segment: string): string {
     readiness: "Readiness",
     reconciliation: "Reconciliation Casework",
     "report-packs": "Delivery Evidence",
+    run: "Run Report",
     "run-status": "Run Status",
+    scheduled: "Scheduled Reports",
     "security-master": "Security Master",
     watchlist: "Watchlist"
   };

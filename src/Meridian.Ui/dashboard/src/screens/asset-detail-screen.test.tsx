@@ -88,6 +88,16 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByLabelText("Search securities")).toBeInTheDocument();
   });
 
+  it("preloads a portfolio holding symbol into asset search", async () => {
+    vi.mocked(api.searchSecurities).mockResolvedValue([entry]);
+
+    await renderScreen("/portfolio/asset-detail?symbol=AAPL");
+
+    expect(screen.getByLabelText("Search securities")).toHaveValue("AAPL");
+    expect(await screen.findByRole("button", { name: /Apple Inc\./ })).toBeInTheDocument();
+    expect(api.searchSecurities).toHaveBeenCalledWith("AAPL");
+  });
+
   it("searches securities and navigates to the selected security's detail", async () => {
     vi.mocked(api.searchSecurities).mockResolvedValue([entry]);
     vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
