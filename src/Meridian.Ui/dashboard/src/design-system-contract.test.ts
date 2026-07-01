@@ -331,15 +331,17 @@ describe("dashboard design-system contract", () => {
     expect(readDashboardPrimitive("toast.tsx")).toContain("export function ToastProvider");
   });
 
-  it("keeps UI primitives on tokenized radii and shallow light-system shadows", () => {
+  it("keeps UI primitives on Concrete 2px radii and shallow light-system shadows", () => {
     const primitiveSource = readdirSync(resolve(process.cwd(), "src/components/ui"))
       .filter((entry) => entry.endsWith(".tsx") && !entry.endsWith(".test.tsx"))
       .map((entry) => readDashboardPrimitive(entry))
       .join("\n");
 
-    expect(primitiveSource).toContain("--radius-button");
-    expect(primitiveSource).toContain("--radius-card");
-    expect(primitiveSource).toContain("--shadow-panel");
+    // Concrete unifies primitives on a single tight 2px corner, and the only
+    // elevation is the detached-overlay menu shadow — surfaces are otherwise flat.
+    // (The --radius-*/--shadow-* tokens themselves are asserted separately above.)
+    expect(primitiveSource).toContain("rounded-[2px]");
+    expect(primitiveSource).toContain("shadow-[0_2px_6px_rgba(0,0,0,0.18)]");
     expect(primitiveSource).not.toContain("1px_1px_0");
     expect(primitiveSource).not.toContain("2px_2px_0");
     expect(primitiveSource).not.toContain("border-slate");
