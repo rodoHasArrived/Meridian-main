@@ -87,13 +87,15 @@ function strategySeverityStatus(variant: string): string {
   }
 }
 
-/** Map a raw run status string (e.g. `Running`, `Completed`, `Failed`) onto a Concrete
- * operator severity. `normalizeSeverity` handles most of these, but the explicit mapping keeps
- * `Queued`/unknowns at info and guards against silent gray fall-through. */
+/** Map a raw run status string onto a Concrete operator severity. Covers the full
+ * `StrategyRunRecord.status` union (`Running` · `Queued` · `Needs Review` · `Completed`) plus
+ * common backend variants so no valid status silently falls through to the neutral `info` gray:
+ * Completed→ready, Needs Review→review, Running→action, failure states→blocked, Queued/unknown→info. */
 function strategyRunSeverityStatus(status: string): string {
   const key = status.trim().toLowerCase();
   if (key === "completed" || key === "complete" || key === "done" || key === "passed") return "ready";
-  if (key === "failed" || key === "cancelled" || key === "canceled" || key === "error") return "blocked";
+  if (key === "needs review" || key === "needsreview" || key === "review" || key === "review required" || key === "reviewrequired") return "review";
+  if (key === "failed" || key === "cancelled" || key === "canceled" || key === "error" || key === "blocked") return "blocked";
   if (key === "running" || key === "inprogress" || key === "in progress") return "action";
   return "info";
 }
