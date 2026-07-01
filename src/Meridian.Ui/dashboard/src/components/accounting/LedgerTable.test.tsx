@@ -45,10 +45,10 @@ describe("LedgerTable", () => {
       />,
     );
     const bodyRows = screen.getAllByRole("row").filter((r) => r.closest("tbody"));
-    const firstRowCells = within(bodyRows[0]).getAllByRole("cell");
-    const seededRowCells = within(bodyRows[1]).getAllByRole("cell");
-    expect(firstRowCells[firstRowCells.length - 1]).toHaveTextContent("—");
-    expect(seededRowCells[seededRowCells.length - 1]).toHaveTextContent("$500.00");
+    // The balance is the last cell; scope to it (zero credit also renders "—").
+    const balanceCell = (row: HTMLElement) => within(row).getAllByRole("cell").at(-1)!;
+    expect(balanceCell(bodyRows[0])).toHaveTextContent("—");
+    expect(balanceCell(bodyRows[1])).toHaveTextContent("$500.00");
   });
 
   it("sorts only when an onSort handler is supplied and supports keyboard activation", async () => {

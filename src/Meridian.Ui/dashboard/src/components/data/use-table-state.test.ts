@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Blob as NodeBlob } from "node:buffer";
 import { useTableState } from "./use-table-state";
 
 interface Row extends Record<string, unknown> {
@@ -13,20 +14,6 @@ const data: Row[] = [
   { symbol: "XOM", sector: "Energy", qty: 40 },
   { symbol: "MSFT", sector: "Tech", qty: 75 },
 ];
-
-function readBlobText(blob: Blob): Promise<string> {
-  const text = (blob as Blob & { text?: () => Promise<string> }).text;
-  if (text) {
-    return text.call(blob);
-  }
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(reader.error ?? new Error("Blob could not be read."));
-    reader.readAsText(blob);
-  });
-}
 
 describe("useTableState", () => {
   const originalCreateObjectURL = URL.createObjectURL;
@@ -122,13 +109,19 @@ describe("useTableState", () => {
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
     Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: revokeObjectURL });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    // jsdom's Blob lacks .text(); use Node's Blob for this export so we can read it back.
+    const OriginalBlob = globalThis.Blob;
+    globalThis.Blob = NodeBlob as unknown as typeof Blob;
     const csvRows = [{ symbol: "AAPL", sector: "Tech\nGrowth", qty: '10"0' }];
     const { result } = renderHook(() => useTableState(csvRows));
 
-    act(() => result.current.exportCSV("positions.csv"));
-
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
-    await expect(readBlobText(blob)).resolves.toContain('"Tech\nGrowth","10""0"');
+    try {
+      act(() => result.current.exportCSV("positions.csv"));
+      const blob = createObjectURL.mock.calls[0][0] as Blob;
+      await expect(blob.text()).resolves.toContain('"Tech\nGrowth","10""0"');
+    } finally {
+      globalThis.Blob = OriginalBlob;
+    }
     expect(click).toHaveBeenCalledOnce();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:csv");
