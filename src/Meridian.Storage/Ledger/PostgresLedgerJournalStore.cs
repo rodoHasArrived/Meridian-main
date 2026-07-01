@@ -24,6 +24,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         LedgerJournalStoreOptions options,
         IFundScopeTenantAccessor? tenantAccessor = null)
     {
+        ArgumentNullException.ThrowIfNull(options);
         _options = options;
         _tenantAccessor = tenantAccessor;
     }

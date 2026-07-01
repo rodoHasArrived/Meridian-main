@@ -117,6 +117,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
@@ -184,6 +185,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationRuns, async (
@@ -220,6 +222,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingMigrationRunExecutionResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
@@ -288,6 +291,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingMigrationRunArtifactDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemMigrationWorkerPlans, async (
@@ -355,6 +359,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingMigrationRunWorkerPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.AccountingSystemImportPreview, async (
@@ -379,6 +384,7 @@ public static class AccountingSystemEndpoints
         })
         .WithName("PreviewAccountingSystemImport")
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemImportLatest, async (
@@ -513,6 +519,7 @@ public static class AccountingSystemEndpoints
         .Produces<ExternalGlMappingProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemExportPackages, async (
@@ -593,6 +600,7 @@ public static class AccountingSystemEndpoints
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemExportPackageManifest, async (
@@ -675,6 +683,7 @@ public static class AccountingSystemEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
+        .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 

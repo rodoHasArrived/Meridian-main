@@ -377,12 +377,23 @@ public sealed class PostgresOperationsContinuityStore :
                 @updated_at_utc,
                 cast(@workflow_json as jsonb),
                 now(),
-                -- SEC-005 slice 4c: inherit the partition tenant from the workflow's ledger book (stamped by
-                -- V_ledger_020 from the authoritative registry). A workflow with no book / an unbound book
-                -- resolves null and stays fail-open until it is attributed.
-                (select b.tenant_id
-                 from {Qualified("ledger_books")} b
-                 where b.ledger_book_id = @tenant_ledger_book_id))
+                -- SEC-005 slice 4c: partition tenant = the fund's AUTHORITATIVE owner, resolved for a
+                -- book-scoped workflow through the ledger book's fund into the fund_profile_tenancy registry
+                -- (NOT the book's cached tenant_id column, which is a stale null for a book saved before its
+                -- fund was claimed — mirroring InsertPeriodAsync). The caller-tenant fallback applies ONLY to
+                -- a genuinely book-less workflow (allowed by OperationsStartWorkflowRequestDto): the
+                -- @caller_tenant_stamp parameter is bound to null whenever a ledger book is present, so a
+                -- book-scoped workflow can never be stamped with a caller tenant that differs from the fund's
+                -- registry owner. A book-scoped workflow whose fund is genuinely unbound resolves null and
+                -- stays fail-open until the fund is claimed and the workflow is next saved. Under
+                -- one-company-per-deployment every path resolves to the single tenant, so behavior is unchanged.
+                coalesce(
+                    (select t.tenant_id
+                     from {Qualified("ledger_books")} b
+                     join {Qualified("fund_profile_tenancy")} t
+                       on t.fund_profile_id = lower(trim(b.fund_profile_id))
+                     where b.ledger_book_id = @tenant_ledger_book_id),
+                    @caller_tenant_stamp))
             on conflict (workflow_id) do update
             set fund_account_id = excluded.fund_account_id,
                 period_id = excluded.period_id,
@@ -410,6 +421,16 @@ public sealed class PostgresOperationsContinuityStore :
         command.Parameters.AddWithValue("updated_at_utc", workflow.UpdatedAtUtc.UtcDateTime);
         command.Parameters.AddWithValue("workflow_json", JsonSerializer.Serialize(workflow, JsonOptions));
         command.Parameters.AddWithValue("tenant_ledger_book_id", (object?)workflow.LedgerBookId ?? DBNull.Value);
+        // Trust-on-first-use fallback tenant for a genuinely BOOK-LESS workflow only: the resolved tenant of
+        // the operator performing the write. Bound to null whenever a ledger book is present, so a
+        // book-scoped workflow always derives its tenant from the authoritative fund registry (see the stamp
+        // SQL) and can never be mis-stamped with a caller tenant that differs from the fund's owner. Null for
+        // a background/non-request writer, which stays fail-open. Trimmed to match the write-side stamp.
+        var callerTenantStamp = ResolveCallerTenant();
+        var bookLessCallerTenant = workflow.LedgerBookId is null && !string.IsNullOrWhiteSpace(callerTenantStamp)
+            ? (object)callerTenantStamp.Trim()
+            : DBNull.Value;
+        command.Parameters.AddWithValue("caller_tenant_stamp", bookLessCallerTenant);
 
         var affected = await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         if (affected != 1)
