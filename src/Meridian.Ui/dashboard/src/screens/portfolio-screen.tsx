@@ -25,6 +25,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
@@ -1079,6 +1080,19 @@ export function PortfolioScreen({
                     </div>
                   ))}
                 </dl>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link
+                      to={workstationRouteWithQuery("portfolioAssetDetail", {
+                        symbol: vm.selectedPosition.title,
+                        source: "portfolio"
+                      })}
+                      aria-label={`Open asset detail for ${vm.selectedPosition.title}`}
+                    >
+                      Open asset detail
+                    </Link>
+                  </Button>
+                </div>
               </>
             ) : (
               <div role="status" className="text-sm leading-6 text-muted-foreground">

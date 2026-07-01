@@ -73,6 +73,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   portfolio: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.portfolio, match: "exact" },
     { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
+    { label: "Asset detail", route: WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail },
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
     { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
   ],
@@ -93,6 +94,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
     { label: "Report Library", route: WORKSTATION_ROUTE_CATALOG.reportingLibrary },
+    { label: "Scheduled Reports", route: WORKSTATION_ROUTE_CATALOG.reportingScheduled },
+    { label: "Run Report", route: WORKSTATION_ROUTE_CATALOG.reportingRunParameters },
     { label: "Operations record", route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord },
     { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },

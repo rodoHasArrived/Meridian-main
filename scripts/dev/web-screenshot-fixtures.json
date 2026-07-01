@@ -188,6 +188,28 @@
         }
       ]
     },
+    "/api/workstation/security-master/securities": [
+      {
+        "securityId": "sec-dev-001",
+        "displayName": "Apple Inc.",
+        "status": "Active",
+        "classification": {
+          "assetClass": "Equity",
+          "subType": "Common Stock",
+          "primaryIdentifierKind": "Ticker",
+          "primaryIdentifierValue": "AAPL"
+        },
+        "economicDefinition": {
+          "currency": "USD",
+          "version": 3,
+          "effectiveFrom": "2020-01-01",
+          "effectiveTo": null,
+          "subType": null,
+          "assetFamily": null,
+          "issuerType": null
+        }
+      }
+    ],
     "/api/workstation/portfolio": {
       "metrics": [
         { "id": "equity", "label": "Total Equity", "value": "$312,400", "delta": "+1.2%", "tone": "success" },

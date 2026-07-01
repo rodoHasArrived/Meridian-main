@@ -141,6 +141,20 @@
       ]
     },
     {
+      "id": "W02D",
+      "name": "web-portfolio-asset-detail",
+      "path": "/portfolio/asset-detail?symbol=AAPL",
+      "docLabel": "Portfolio \u2014 Asset Detail",
+      "waitForText": "Asset Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/security-master/securities"
+      ],
+      "waitForTexts": [
+        "Search for a security",
+        "AAPL"
+      ]
+    },
+    {
       "id": "W02B",
       "name": "web-portfolio-brokerage-sync",
       "path": "/portfolio/brokerage-sync",
@@ -230,6 +244,20 @@
       ]
     },
     {
+      "id": "W03B1",
+      "name": "web-accounting-asset-detail",
+      "path": "/accounting/security-master/detail",
+      "docLabel": "Accounting \u2014 Asset Detail",
+      "waitForText": "Asset Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Search securities",
+        "Search for a security"
+      ]
+    },
+    {
       "id": "W03C",
       "name": "web-accounting-approvals",
       "path": "/accounting/approvals",
@@ -264,6 +292,20 @@
         "External GL",
         "Posting/export",
         "quickbooks-fixture:trial-balance"
+      ]
+    },
+    {
+      "id": "W03D1",
+      "name": "web-accounting-trial-balance-detail",
+      "path": "/accounting/trial-balance?runId=run-42",
+      "docLabel": "Accounting \u2014 Trial Balance Detail",
+      "waitForText": "Trial Balance",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Pick a ledger run",
+        "basis-aware account balances"
       ]
     },
     {
@@ -370,6 +412,20 @@
         "Manual journal entry workbench",
         "MANUAL JOURNAL ENTRIES",
         "quickbooks-fixture:journal"
+      ]
+    },
+    {
+      "id": "W03J1",
+      "name": "web-accounting-journal-entry-detail",
+      "path": "/accounting/journal-entries/detail",
+      "docLabel": "Accounting \u2014 Journal Entry Detail",
+      "waitForText": "Journal Entry Detail",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Open this page from a trial balance",
+        "ledger, or reconciliation row"
       ]
     },
     {
@@ -528,6 +584,50 @@
         "Reporting owns access scope",
         "Governed report templates",
         "Report run audit and lineage"
+      ]
+    },
+    {
+      "id": "W04H",
+      "name": "web-reporting-library",
+      "path": "/reporting/library",
+      "docLabel": "Reporting \u2014 Report Library",
+      "waitForText": "Report Library",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Reporting Hub",
+        "Run a report",
+        "Pick a template"
+      ]
+    },
+    {
+      "id": "W04I",
+      "name": "web-reporting-run-parameters",
+      "path": "/reporting/run",
+      "docLabel": "Reporting \u2014 Run Parameters",
+      "waitForText": "Report Parameters",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Choose a report template to configure and run",
+        "Or browse the Report Library"
+      ]
+    },
+    {
+      "id": "W04J",
+      "name": "web-reporting-scheduled",
+      "path": "/reporting/scheduled",
+      "docLabel": "Reporting \u2014 Scheduled Reports",
+      "waitForText": "Reporting schedules",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting"
+      ],
+      "waitForTexts": [
+        "Schedule delivery",
+        "Run due",
+        "Delivery history"
       ]
     },
     {
