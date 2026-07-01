@@ -12,18 +12,18 @@ public sealed class DataReplacementCostEstimatorTests
         int tradingDays,
         string[] eventTypes,
         long eventCount = 1_000) => new()
-    {
-        Symbol = symbol,
-        EventCount = eventCount,
-        EventTypes = eventTypes,
-        DateRange = new CatalogDateRange
         {
-            Earliest = new DateTime(2026, 1, 1),
-            Latest = new DateTime(2026, 3, 31),
-            CalendarDays = 90,
-            TradingDays = tradingDays
-        }
-    };
+            Symbol = symbol,
+            EventCount = eventCount,
+            EventTypes = eventTypes,
+            DateRange = new CatalogDateRange
+            {
+                Earliest = new DateTime(2026, 1, 1),
+                Latest = new DateTime(2026, 3, 31),
+                CalendarDays = 90,
+                TradingDays = tradingDays
+            }
+        };
 
     private static StorageCatalog MakeCatalog(
         long totalBytesRaw = 0,

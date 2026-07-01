@@ -17,18 +17,18 @@ public sealed class SessionTcaReporterTests
         DateTimeOffset? timestamp = null,
         ExecutionReportType reportType = ExecutionReportType.Fill,
         decimal? orderQuantity = null) => new()
-    {
-        OrderId = orderId ?? $"order-{Guid.NewGuid():N}",
-        ReportType = reportType,
-        Symbol = symbol,
-        Side = side,
-        OrderStatus = OrderStatus.Filled,
-        OrderQuantity = orderQuantity ?? quantity,
-        FilledQuantity = quantity,
-        FillPrice = price,
-        Commission = commission,
-        Timestamp = timestamp ?? DateTimeOffset.UtcNow
-    };
+        {
+            OrderId = orderId ?? $"order-{Guid.NewGuid():N}",
+            ReportType = reportType,
+            Symbol = symbol,
+            Side = side,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = orderQuantity ?? quantity,
+            FilledQuantity = quantity,
+            FillPrice = price,
+            Commission = commission,
+            Timestamp = timestamp ?? DateTimeOffset.UtcNow
+        };
 
     private static OrderState MakeOrder(
         string orderId,
@@ -37,17 +37,17 @@ public sealed class SessionTcaReporterTests
         decimal quantity,
         decimal? limitPrice = null,
         DateTimeOffset? createdAt = null) => new()
-    {
-        OrderId = orderId,
-        Symbol = symbol,
-        Side = side,
-        Type = limitPrice.HasValue ? OrderType.Limit : OrderType.Market,
-        Quantity = quantity,
-        FilledQuantity = quantity,
-        LimitPrice = limitPrice,
-        Status = OrderStatus.Filled,
-        CreatedAt = createdAt ?? DateTimeOffset.UtcNow
-    };
+        {
+            OrderId = orderId,
+            Symbol = symbol,
+            Side = side,
+            Type = limitPrice.HasValue ? OrderType.Limit : OrderType.Market,
+            Quantity = quantity,
+            FilledQuantity = quantity,
+            LimitPrice = limitPrice,
+            Status = OrderStatus.Filled,
+            CreatedAt = createdAt ?? DateTimeOffset.UtcNow
+        };
 
     [Fact]
     public void Generate_EmptyFills_ReturnsZeroedReport()
