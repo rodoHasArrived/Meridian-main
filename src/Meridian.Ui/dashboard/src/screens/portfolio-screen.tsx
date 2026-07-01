@@ -13,7 +13,9 @@ import {
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricCard, type MetricCardTone, EmptyState } from "@/components/data/concrete";
+import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
+import { EquityCurve, ChartCard } from "@/components/charts";
 import {
   getFinancialRecordExplorer,
   getRunAttribution,
@@ -38,7 +40,9 @@ import type {
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
   FinancialRecordExplorerDto,
+  EquityCurveSummary,
   FinancialRecordExplorerSavedViewSaveRequestDto,
+  MetricSnapshot,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -750,18 +754,17 @@ export function PortfolioScreen({
                 <div className="eyebrow-label">Sync trust</div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
-                  <Badge variant={workflowStatusVariant(vm.brokerageTrustSnapshot.statusTone)}>
-                    {vm.brokerageTrustSnapshot.statusLabel}
-                  </Badge>
+                  <SeverityBadge
+                    status={severityStatusFromTone(vm.brokerageTrustSnapshot.statusTone)}
+                    label={vm.brokerageTrustSnapshot.statusLabel}
+                  />
                 </div>
                 <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
                   {vm.brokerageTrustSnapshot.summary}
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                {vm.brokerageTrustSnapshot.chips.map((chip) => (
-                  <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
-                ))}
+              <div className="lg:justify-end">
+                <TrustStrip items={toTrustStripItems(vm.brokerageTrustSnapshot.chips, vm.brokerageTrustSnapshot.statusTone)} />
               </div>
             </div>
             <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -968,19 +971,14 @@ export function PortfolioScreen({
         </CardContent>
       </Card>
 
-      {vm.metricsFromTrading ? (
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {vm.metricCards.map((metric) => (
-            <MetricCard key={metric.id} {...metric} />
-          ))}
-        </section>
-      ) : (
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {vm.fallbackStats.map((stat) => (
-            <MetricCard key={stat.id} {...stat} />
-          ))}
-        </section>
-      )}
+      <section
+        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        aria-label="Portfolio headline metrics"
+      >
+        {(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats).map((metric) => (
+          <PortfolioMetricCard key={metric.id} metric={metric} />
+        ))}
+      </section>
 
       <FinancialRecordExplorerShell
         explorerLabel="Financial Record Explorer"
@@ -1036,11 +1034,8 @@ export function PortfolioScreen({
                   caption="Select a position row to update the holding detail panel."
                 />
               ) : (
-                <div
-                  role="status"
-                  className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
-                >
-                  {vm.positionEmptyText}
+                <div role="status" className="rounded-sm border border-border/70 bg-background/40">
+                  <EmptyState icon="table" title="No open holdings" detail={vm.positionEmptyText} compact />
                 </div>
               )}
             </CardContent>
@@ -1169,6 +1164,15 @@ export function PortfolioScreen({
                       </div>
                     ))}
                   </div>
+                  {selectedRunDrillIn?.runId === vm.selectedRun?.id &&
+                  (selectedRunDrillIn?.drawdownProfile?.points.length ?? 0) >= 2 ? (
+                    <div className="mt-3">
+                      <PortfolioDrillInChart
+                        profile={selectedRunDrillIn!.drawdownProfile!}
+                        runTitle={vm.selectedRun?.title ?? "selected run"}
+                      />
+                    </div>
+                  ) : null}
                   {vm.runDrillInSummary.bridgeRows.length > 0 ? (
                     <div className="mt-3 grid gap-2 lg:grid-cols-2" aria-label="Selected run realized unrealized bridge">
                       {vm.runDrillInSummary.bridgeRows.map((row) => (
@@ -1281,11 +1285,8 @@ export function PortfolioScreen({
                 </div>
               </div>
             ) : (
-              <div
-                role="status"
-                className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
-              >
-                {vm.runEmptyText}
+              <div role="status" className="rounded-sm border border-border/70 bg-background/40">
+                <EmptyState icon="chart" title="No linked runs" detail={vm.runEmptyText} compact />
               </div>
             )}
           </CardContent>
@@ -1329,6 +1330,68 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** Concrete KPI tile fed from a read-model `MetricSnapshot`. The snapshot's `"default"`
+ * tone maps to the Concrete `"neutral"` left-accent; other tones pass through 1:1. */
+const metricSnapshotToneClass: Record<MetricSnapshot["tone"], MetricCardTone> = {
+  default: "neutral",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
+};
+
+/** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
+ * evidence only — rendered when the selected run has a fetched equity/drawdown series. */
+function PortfolioDrillInChart({
+  profile,
+  runTitle
+}: {
+  profile: EquityCurveSummary;
+  runTitle: string;
+}) {
+  const points = profile.points;
+  const equity = points.map((point) => point.totalEquity);
+  const drawdown = points.map((point) => -Math.abs(point.drawdownFromPeakPercent * 100));
+  const labels = points.map((point) => point.date);
+  const currency = (value: number) =>
+    `$${Math.round(value).toLocaleString("en-US")}`;
+
+  return (
+    <ChartCard
+      title="Run equity and drawdown"
+      subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
+      readout={[
+        { label: "Final equity", value: currency(profile.finalEquity) },
+        {
+          label: "Max drawdown",
+          value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
+          color: "var(--chart-drawdown, #BA3F55)"
+        },
+        { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
+      ]}
+      height={280}
+      style={{ flexShrink: 0 }}
+    >
+      <EquityCurve
+        series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
+        drawdown={drawdown}
+        labels={labels}
+        valueFmt={currency}
+      />
+    </ChartCard>
+  );
+}
+
+function PortfolioMetricCard({ metric }: { metric: MetricSnapshot }) {
+  return (
+    <MetricCard
+      label={metric.label}
+      value={metric.value}
+      delta={metric.delta ?? undefined}
+      tone={metricSnapshotToneClass[metric.tone]}
+    />
+  );
+}
+
 function PortfolioWorkflowTaskActionIcon({ actionId }: { actionId: PortfolioWorkflowTaskAction["id"] }) {
   const Icon =
     actionId === "provider-setup"
@@ -1346,4 +1409,56 @@ function PortfolioWorkflowTaskActionIcon({ actionId }: { actionId: PortfolioWork
 
 function workflowStatusVariant(statusTone: "default" | "success" | "warning" | "danger") {
   return statusTone === "default" ? "outline" : statusTone;
+}
+
+type PortfolioTone = "default" | "success" | "warning" | "danger";
+
+/** Map a read-model status tone to a canonical severity string for {@link SeverityBadge}. */
+function severityStatusFromTone(tone: PortfolioTone): string {
+  switch (tone) {
+    case "success":
+      return "Ready";
+    case "warning":
+      return "ReviewRequired";
+    case "danger":
+      return "Blocked";
+    default:
+      return "Info";
+  }
+}
+
+/** Map a read-model status tone to a {@link TrustStrip} state token. */
+function trustStateFromTone(tone: PortfolioTone): string {
+  switch (tone) {
+    case "success":
+      return "ready";
+    case "warning":
+      return "review";
+    case "danger":
+      return "blocked";
+    default:
+      return "muted";
+  }
+}
+
+/** Render the brokerage sync-snapshot chip band as a Concrete {@link TrustStrip}. Each chip
+ * inherits the snapshot's overall tone, except the "Issues" chip which reads healthy only when
+ * its value shows zero issues. */
+function toTrustStripItems(
+  chips: { label: string; value: string }[],
+  statusTone: PortfolioTone
+): TrustStripItem[] {
+  return chips.map((chip) => {
+    const isIssueChip = /issue/i.test(chip.label);
+    const hasIssues = isIssueChip && !/^0\b/.test(chip.value.trim());
+    return {
+      label: chip.label,
+      value: chip.value,
+      state: isIssueChip
+        ? hasIssues
+          ? "review"
+          : "ready"
+        : trustStateFromTone(statusTone)
+    };
+  });
 }
