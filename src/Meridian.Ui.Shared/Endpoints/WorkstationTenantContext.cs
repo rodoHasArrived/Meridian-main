@@ -148,7 +148,8 @@ public static class WorkstationTenantScopeEndpointFilters
 }
 
 /// <summary>
-/// SEC-005 slice 4c-iii runtime switch for the fund-scoped write tenant gate. Off by default: a
+/// SEC-005 slice 4c-iii deployment/startup switch for the fund-scoped write tenant gate — read once at
+/// startup from the environment during DI registration, so changing it requires a restart. Off by default: a
 /// tenantless authenticated session (the legacy <c>MDC_USERNAME</c> admin) can still create/evaluate
 /// fund-scoped accounting artifacts, but the write is logged for detection. A shared multi-tenant
 /// deployment sets <c>MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true</c> to fail closed instead.

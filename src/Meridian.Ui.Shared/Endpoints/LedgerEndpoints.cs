@@ -1411,7 +1411,10 @@ public static class LedgerEndpoints
         .Produces<AccountingReportPackageBundleDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        .Produces(StatusCodes.Status501NotImplemented)
+        // SEC-005 slice 4c-iii: this build route persists a fund-scoped report package but is not on the
+        // MutationRateLimitPolicy set, so it needs the write-tenant gate explicitly (as certification does).
+        .RequireFundScopedWriteTenant();
 
         app.MapPost(UiApiRoutes.LedgerReportsAccountingPackageCertification, async (
             CertifyAccountingReportPackageRequestDto request,

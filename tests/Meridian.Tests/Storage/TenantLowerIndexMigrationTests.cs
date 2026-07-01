@@ -30,8 +30,10 @@ public sealed class TenantLowerIndexMigrationTests
     {
         var sql = ReadMigration();
 
-        // One idempotent `create index if not exists` and one partial filter per fund-scoped table.
-        CountOf(sql, "create index if not exists").Should().Be(3);
+        // One idempotent index statement and one partial filter per fund-scoped table. Match the
+        // statement prefix (…if not exists ix_) so an explanatory mention of the phrase in a comment
+        // is not miscounted as a fourth index.
+        CountOf(sql, "create index if not exists ix_").Should().Be(3);
         CountOf(sql, "where tenant_id is not null").Should().Be(3);
     }
 
