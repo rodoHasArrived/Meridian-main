@@ -98,6 +98,8 @@ to the periodic evaluator. Latency-triggered failover decisions use a bounded re
 and ignore impossible latency samples so stale spikes or malformed telemetry do not distort current
 routing posture. Candidate backups must satisfy the same recent-latency threshold before selection,
 so failover does not route into a provider that is already breaching the rule's SLA window.
+Primary recovery uses that same latency threshold, so success pings alone cannot switch routing
+back to a provider that still breaches the current rule window.
 Cancellation is propagated as cancellation, not treated as a provider failure.
 Backfill worker and queue orchestration consumes ProviderSdk-owned job descriptors and stores
 dependency job IDs on each job so chained jobs resume only after all upstream dependencies complete.

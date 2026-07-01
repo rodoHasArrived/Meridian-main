@@ -97,7 +97,9 @@ Storage profile presets preserve existing persisted identifiers. The default pro
 for historical analysis, backtesting, and paper-validation preparation. The `Archival` preset keeps
 long-retention evidence moving through hot, warm, cold, and archive tiers. Tier migration verifies
 copied payload checksums before deleting source evidence when a rollover is configured to move
-rather than copy files. `Config/StorageConfigExtensions.cs` keeps the shared AppConfig storage
+rather than copy files, and rejects non-positive parallelism before touching hot-tier or target-tier
+files so operator misconfiguration cannot hang a migration or delete evidence.
+`Config/StorageConfigExtensions.cs` keeps the shared AppConfig storage
 section-to-`StorageOptions` mapping in the same project that owns the durable storage option types
 and profile presets.
 

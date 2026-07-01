@@ -143,6 +143,17 @@ public sealed class SymbolSearchService : IDisposable
             );
         }
 
+        if (request.Limit <= 0)
+        {
+            return new SymbolSearchResponse(
+                Results: Array.Empty<SymbolSearchResult>(),
+                TotalCount: 0,
+                Sources: Array.Empty<string>(),
+                ElapsedMs: 0,
+                Query: request.Query
+            );
+        }
+
         // Check cache
         var cacheKey = BuildCacheKey(request);
         if (_searchCache.TryGetValue(cacheKey, out var cached) && !cached.IsExpired)

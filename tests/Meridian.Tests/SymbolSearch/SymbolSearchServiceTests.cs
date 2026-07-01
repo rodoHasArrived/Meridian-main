@@ -518,6 +518,35 @@ public class SymbolSearchServiceTests : IDisposable
 
     #region Limit Tests
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public async Task Scenario_FreeTierLimitGuard_NonPositiveLimitDoesNotQueryProviders(int limit)
+    {
+        // Arrange
+        var mockProvider = new Mock<ISymbolSearchProvider>();
+        mockProvider.Setup(p => p.Name).Returns("finnhub");
+        mockProvider.Setup(p => p.Priority).Returns(1);
+
+        _service = new SymbolSearchService(
+            new[] { mockProvider.Object },
+            null,
+            new MetadataEnrichmentService());
+
+        var request = new SymbolSearchRequest(Query: "AAPL", Limit: limit);
+
+        // Act
+        var result = await _service.SearchAsync(request);
+
+        // Assert
+        result.Results.Should().BeEmpty();
+        result.TotalCount.Should().Be(0);
+        result.Sources.Should().BeEmpty();
+        result.Query.Should().Be("AAPL");
+        mockProvider.Verify(p => p.IsAvailableAsync(It.IsAny<CancellationToken>()), Times.Never);
+        mockProvider.Verify(p => p.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task SearchAsync_RespectsLimit()
     {

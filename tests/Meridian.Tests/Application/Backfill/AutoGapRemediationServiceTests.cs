@@ -75,6 +75,45 @@ public sealed class AutoGapRemediationServiceTests
     }
 
     [Fact]
+    public async Task ProviderCooldown_NormalizesProviderNameAcrossSymbolsAndRetainedEvidence()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.FromMinutes(30),
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+
+        await service.HandleQualityAlertAsync(new QualityAlertRemediationSignal(
+            Symbol: "AAPL",
+            From: new DateOnly(2026, 06, 29),
+            To: new DateOnly(2026, 06, 29),
+            Provider: " Polygon ",
+            AlertId: "dq-provider-001",
+            Reason: "missing-close-bar"));
+        await service.HandleQualityAlertAsync(new QualityAlertRemediationSignal(
+            Symbol: "MSFT",
+            From: new DateOnly(2026, 06, 29),
+            To: new DateOnly(2026, 06, 29),
+            Provider: "polygon",
+            AlertId: "dq-provider-002",
+            Reason: "missing-close-bar"));
+
+        gateway.Calls.Should().Be(1);
+        gateway.Requests.Should().ContainSingle().Which.Provider.Should().Be("polygon");
+
+        var execution = history.GetRecentExecutions(10).Should().ContainSingle().Subject;
+        execution.AutoRemediationIdempotencyKey.Should().Be("AAPL|polygon|2026-06-29|2026-06-29");
+        execution.Warnings.Should().Contain("provider=polygon");
+    }
+
+    [Fact]
     public async Task TransientFailure_AllowsRetryForSameIdempotencyKey()
     {
         var gateway = new FakeGateway

@@ -105,6 +105,8 @@ public sealed class StreamingFailoverService : IDisposable
             state.RecordSuccess();
         }
         _healthMonitor.RecordDataReceived(key);
+
+        EvaluateHealth(null);
     }
 
     /// <summary>
@@ -227,6 +229,7 @@ public sealed class StreamingFailoverService : IDisposable
         // Check if the active provider is unhealthy
         if (_providerHealth.TryGetValue(activeId, out var activeHealth))
         {
+            var failoverReason = $"Consecutive failures ({activeHealth.ConsecutiveFailures}) exceeded threshold ({rule.FailoverThreshold})";
             var shouldFailover = activeHealth.ConsecutiveFailures >= rule.FailoverThreshold;
 
             // Also check latency threshold if configured
@@ -234,6 +237,7 @@ public sealed class StreamingFailoverService : IDisposable
             {
                 _log.Warning("Provider {ProviderId} exceeds latency threshold: {Latency:F1}ms > {Max:F1}ms",
                     activeId, activeHealth.AverageLatencyMs, rule.MaxLatencyMs);
+                failoverReason = $"Latency ({activeHealth.AverageLatencyMs:F1}ms) exceeded threshold ({rule.MaxLatencyMs:F1}ms)";
                 shouldFailover = true;
             }
 
@@ -250,8 +254,7 @@ public sealed class StreamingFailoverService : IDisposable
                     _log.Warning("Automatic failover triggered for rule {RuleId}: {From} -> {To} (failures: {Failures})",
                         rule.Id, previousId, nextProvider, activeHealth.ConsecutiveFailures);
 
-                    RaiseFailoverTriggered(rule.Id, previousId, nextProvider,
-                        $"Consecutive failures ({activeHealth.ConsecutiveFailures}) exceeded threshold ({rule.FailoverThreshold})");
+                    RaiseFailoverTriggered(rule.Id, previousId, nextProvider, failoverReason);
                 }
                 else
                 {
@@ -266,7 +269,8 @@ public sealed class StreamingFailoverService : IDisposable
             var primaryId = ProviderIdentity.NormalizeId(r.PrimaryProviderId);
             if (_providerHealth.TryGetValue(primaryId, out var primaryHealth))
             {
-                if (primaryHealth.ConsecutiveSuccesses >= r.RecoveryThreshold)
+                if (primaryHealth.ConsecutiveSuccesses >= r.RecoveryThreshold &&
+                    IsLatencyWithinRule(primaryHealth, r))
                 {
                     var previousId = ruleState.CurrentActiveProviderId;
                     ruleState.SwitchTo(primaryId);
@@ -295,12 +299,8 @@ public sealed class StreamingFailoverService : IDisposable
         {
             if (_providerHealth.TryGetValue(providerId, out var health))
             {
-                var latencyWithinRule =
-                    rule.MaxLatencyMs <= 0 ||
-                    health.AverageLatencyMs <= 0 ||
-                    health.AverageLatencyMs <= rule.MaxLatencyMs;
-
-                if (health.ConsecutiveFailures < rule.FailoverThreshold && latencyWithinRule)
+                if (health.ConsecutiveFailures < rule.FailoverThreshold &&
+                    IsLatencyWithinRule(health, rule))
                 {
                     return providerId;
                 }
@@ -314,6 +314,11 @@ public sealed class StreamingFailoverService : IDisposable
 
         return null;
     }
+
+    private static bool IsLatencyWithinRule(ProviderHealthState health, FailoverRuleConfig rule)
+        => rule.MaxLatencyMs <= 0 ||
+            health.AverageLatencyMs <= 0 ||
+            health.AverageLatencyMs <= rule.MaxLatencyMs;
 
     private void HandleConnectionLost(ConnectionLostEvent evt)
     {

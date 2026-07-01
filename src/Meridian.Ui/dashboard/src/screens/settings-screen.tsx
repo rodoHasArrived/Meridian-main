@@ -486,9 +486,7 @@ const recentEventColumns: DenseDataTableColumn<SettingsRecentEventTableRow>[] = 
 
 type SettingsTaskViewId =
   | "overview"
-  | "access"
   | "operations"
-  | "asset-profiles"
   | "providers"
   | "data-providers"
   | "brokerage"
@@ -505,27 +503,15 @@ interface SettingsTaskView {
 const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "overview",
-    label: "Overview",
+    label: "Profile",
     href: "#settings-overview",
     sectionId: "settings-overview"
   },
   {
-    id: "access",
-    label: "Access",
-    href: "#scoped-access-control",
-    sectionId: "scoped-access-control"
-  },
-  {
     id: "operations",
-    label: "Operations",
+    label: "Accounting Systems",
     href: "#fund-operations-control-center",
     sectionId: "fund-operations-control-center"
-  },
-  {
-    id: "asset-profiles",
-    label: "Asset Profiles",
-    href: "#asset-profile-accounting",
-    sectionId: "asset-profile-accounting"
   },
   {
     id: "providers",
@@ -541,7 +527,7 @@ const settingsTaskViews: SettingsTaskView[] = [
   },
   {
     id: "brokerage",
-    label: "Brokerage Setup",
+    label: "Provider Setup",
     href: "#alpaca-provider-setup",
     sectionId: "alpaca-provider-setup"
   },
@@ -553,7 +539,7 @@ const settingsTaskViews: SettingsTaskView[] = [
   },
   {
     id: "runtime",
-    label: "Runtime Controls",
+    label: "Feature Coverage",
     href: "#runtime-feature-capabilities",
     sectionId: "runtime-feature-capabilities"
   }
@@ -562,10 +548,16 @@ const settingsTaskViews: SettingsTaskView[] = [
 function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   const normalizedHash = hash.replace(/^#/, "");
   if (normalizedHash === "backend-capability-coverage") {
-    return "diagnostics";
+    return "runtime";
   }
   if (normalizedHash === "robinhood-provider-setup") {
-    return "brokerage";
+    return "providers";
+  }
+  if (normalizedHash === "scoped-access-control") {
+    return "overview";
+  }
+  if (normalizedHash === "asset-profile-accounting") {
+    return "operations";
   }
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
 }
@@ -614,12 +606,12 @@ function inferSettingsTaskView({
   | "error"
   | "workspaceErrors"
 >): SettingsTaskViewId {
-  if (providerConnections || providerRoutingConnections || providerRoutingBindings || providerRoutingTrustSnapshots) {
+  if (providerConnections || providerRoutingConnections || providerRoutingBindings || providerRoutingTrustSnapshots || brokerageConnection) {
     return "providers";
   }
 
   if (securityAssetProfiles) {
-    return "asset-profiles";
+    return "operations";
   }
 
   if (featureCapabilities) {
@@ -628,10 +620,6 @@ function inferSettingsTaskView({
 
   if (rolePermissionCatalog || ledgerMappingWorkbench || operationsApprovalPolicyMatrix || operationsCloseCalendar) {
     return "operations";
-  }
-
-  if (brokerageConnection) {
-    return "brokerage";
   }
 
   if (
@@ -938,19 +926,19 @@ export function SettingsScreen({
     href: view.href
   }));
   const settingsTaskFields = [
-    { id: "providers", label: "Providers", value: String(allProviderRows.length) },
-    { id: "access", label: "Access", value: String(scopedAccessAssignments.length) },
-    { id: "operations", label: "Operations", value: vm.operationsControlCenter.loadedCountLabel },
-    { id: "profiles", label: "Profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
-    { id: "diagnostics", label: "Diagnostics", value: vm.diagnosticCounts.loadedLabel }
+    { id: "providers", label: "Provider connections", value: String(allProviderRows.length) },
+    { id: "access", label: "Profile access", value: String(scopedAccessAssignments.length) },
+    { id: "operations", label: "Accounting systems", value: vm.operationsControlCenter.loadedCountLabel },
+    { id: "profiles", label: "Data profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
+    { id: "diagnostics", label: "System details", value: vm.diagnosticCounts.loadedLabel }
   ];
-  const showAccessSection = activeTaskView === "access" || activeTaskView === "operations";
-  const showOperationsSection = activeTaskView === "operations" || activeTaskView === "access";
-  const showAssetProfileSection = activeTaskView === "asset-profiles";
+  const showAccessSection = activeTaskView === "overview";
+  const showOperationsSection = activeTaskView === "operations";
+  const showAssetProfileSection = activeTaskView === "operations";
   const showProviderSection = activeTaskView === "providers";
   const showDataProviderModulesSection = activeTaskView === "data-providers";
-  const showBrokerageSection = activeTaskView === "brokerage" || activeTaskView === "providers";
-  const showDiagnosticsSection = activeTaskView === "overview" || activeTaskView === "diagnostics" || activeTaskView === "brokerage";
+  const showBrokerageSection = activeTaskView === "providers";
+  const showDiagnosticsSection = activeTaskView === "diagnostics";
   const showRuntimeSection = activeTaskView === "runtime";
   const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
 

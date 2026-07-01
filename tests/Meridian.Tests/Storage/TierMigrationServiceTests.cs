@@ -194,6 +194,28 @@ public sealed class TierMigrationServiceTests : IDisposable
         Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-2)]
+    public async Task Scenario_OperatorMisconfiguredParallelism_FailsClosedWithoutMovingEvidence(int parallelFiles)
+    {
+        var sourceFile = Path.Combine(_hot, "misconfigured-session.jsonl");
+        await File.WriteAllTextAsync(sourceFile, "{\"symbol\":\"MSFT\",\"price\":420.00}");
+
+        var result = await _sut.MigrateAsync(
+            sourceFile,
+            StorageTier.Warm,
+            new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: parallelFiles));
+
+        result.Success.Should().BeFalse();
+        result.FilesProcessed.Should().Be(0);
+        result.FilesFailed.Should().Be(0);
+        result.BytesProcessed.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains("ParallelFiles must be at least 1", StringComparison.Ordinal));
+        File.Exists(sourceFile).Should().BeTrue("operator misconfiguration must not delete hot-tier evidence");
+        Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
     [Fact]
     public async Task Scenario_TierObservability_StatisticsReportHotAndWarmEvidenceInventory()
     {

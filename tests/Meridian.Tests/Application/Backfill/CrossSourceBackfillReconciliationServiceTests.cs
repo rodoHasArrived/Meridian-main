@@ -191,6 +191,34 @@ public sealed class CrossSourceBackfillReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_CrossSourceMissingEvidence_BlocksClosureWhenProvidersReturnNoSymbolScopedBars()
+    {
+        var sessionDate = new DateOnly(2026, 06, 29);
+        var baseline = new FakeHistoricalDataProvider("alpaca");
+        var comparison = new FakeHistoricalDataProvider("polygon");
+        var service = new CrossSourceBackfillReconciliationService([baseline, comparison]);
+
+        var result = await service.ReconcileDailyAsync(new CrossSourceBackfillReconciliationRequest(
+            Symbol: "SPY",
+            From: sessionDate,
+            To: sessionDate,
+            BaselineProvider: "alpaca",
+            ComparisonProviders: ["polygon"]));
+
+        result.IsClean.Should().BeFalse("cross-source remediation cannot close without retained provider evidence");
+        result.IsSlaClosed.Should().BeFalse();
+        result.ClosureDecision.Status.Should().Be(CrossSourceBackfillClosureStatus.BlockedByMissingEvidence);
+        result.SymbolsRequiringReview.Should().Equal(["SPY"]);
+        result.ProviderErrors.Should().BeEmpty();
+        result.Discrepancies.Select(static discrepancy => discrepancy.Kind)
+            .Should()
+            .Equal(["BaselineMissingEvidence", "ComparisonMissingEvidence"]);
+        result.Discrepancies.Should().OnlyContain(discrepancy =>
+            discrepancy.SessionDate == sessionDate &&
+            discrepancy.Message.Contains("returned no symbol-scoped bars", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Scenario_CrossProviderSymbolContamination_BlocksClosureWhenFallbackReturnsWrongSymbol()
     {
         var sessionDate = new DateOnly(2026, 06, 29);
@@ -212,7 +240,7 @@ public sealed class CrossSourceBackfillReconciliationServiceTests
 
         result.IsClean.Should().BeFalse("same-date fallback evidence for a different symbol cannot close SPY remediation");
         result.IsSlaClosed.Should().BeFalse();
-        result.ClosureDecision.Status.Should().Be(CrossSourceBackfillClosureStatus.BlockedByDiscrepancy);
+        result.ClosureDecision.Status.Should().Be(CrossSourceBackfillClosureStatus.BlockedByMissingEvidence);
         result.SymbolsRequiringReview.Should().Equal(["SPY"]);
         result.Discrepancies.Should().Contain(discrepancy =>
             discrepancy.Kind == "ComparisonSymbolMismatch" &&
@@ -220,6 +248,9 @@ public sealed class CrossSourceBackfillReconciliationServiceTests
             discrepancy.ComparisonClose == 500m &&
             discrepancy.ComparisonVolume == 5_000 &&
             discrepancy.Message.Contains("tiingo returned IVV while reconciling SPY", StringComparison.Ordinal));
+        result.Discrepancies.Should().Contain(discrepancy =>
+            discrepancy.Kind == "ComparisonMissingEvidence" &&
+            discrepancy.ComparisonProvider == "tiingo");
         result.Discrepancies.Should().Contain(discrepancy =>
             discrepancy.Kind == "ComparisonMissingSession" &&
             discrepancy.ComparisonProvider == "tiingo");

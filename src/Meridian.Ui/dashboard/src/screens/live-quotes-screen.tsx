@@ -113,16 +113,20 @@ export function LiveQuotesScreen() {
                 {symbolLookupVm.command.label}
                 </span>
               </Button>
-              <WorkspaceCommandButton
-                id="remove-symbol"
-                workspace={workspaceVm}
-                icon={<X className="h-4 w-4" aria-hidden="true" />}
-              />
-              <WorkspaceCommandButton
-                id="pin-set"
-                workspace={workspaceVm}
-                icon={<ListPlus className="h-4 w-4" aria-hidden="true" />}
-              />
+              {activeSymbol ? (
+                <WorkspaceCommandButton
+                  id="remove-symbol"
+                  workspace={workspaceVm}
+                  icon={<X className="h-4 w-4" aria-hidden="true" />}
+                />
+              ) : null}
+              {workspaceVm.symbolSet.length > 0 ? (
+                <WorkspaceCommandButton
+                  id="pin-set"
+                  workspace={workspaceVm}
+                  icon={<ListPlus className="h-4 w-4" aria-hidden="true" />}
+                />
+              ) : null}
               <WorkspaceCommandButton
                 id="pause-updates"
                 workspace={workspaceVm}
@@ -203,6 +207,7 @@ export function LiveQuotesScreen() {
             </div>
           </CardContent>
         </Card>
+        {activeSymbol ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Selected symbol detail</CardTitle>
@@ -221,15 +226,40 @@ export function LiveQuotesScreen() {
             />
           </CardContent>
         </Card>
-      </div>
-
-      {!activeSymbol ? (
+        ) : (
         <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            No symbol selected. Load the starter set, import from the watchlist, or enter symbols above to see live BBO, trade tape, and latency diagnostics.
+          <CardHeader>
+            <CardTitle className="text-base">Start a quote list</CardTitle>
+            <CardDescription>Add symbols before opening detail, order book, replay, or ticket workflows.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Button type="button" variant="default" size="sm" onClick={workspaceVm.loadStarterSet}>
+                <ListPlus className="h-4 w-4" aria-hidden="true" />
+                Add starter symbols
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/data/watchlist" aria-label="Import symbols from watchlist">
+                  <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
+                  Import watchlist
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById(symbolLookupVm.inputId)?.focus()}
+              >
+                <Search className="h-4 w-4" aria-hidden="true" />
+                Search symbol
+              </Button>
+            </div>
           </CardContent>
         </Card>
-      ) : (
+        )}
+      </div>
+
+      {activeSymbol ? (
         <>
         <HistoricalChartCard symbol={activeSymbol} />
         <PriceChartCard
@@ -324,7 +354,7 @@ export function LiveQuotesScreen() {
           </Card>
         </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 }

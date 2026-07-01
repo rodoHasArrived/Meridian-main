@@ -41,6 +41,19 @@ public sealed class TierMigrationService : ITierMigrationService
         long bytesSaved = 0;
         var errors = new List<string>();
 
+        if (options.ParallelFiles <= 0)
+        {
+            return new MigrationResult(
+                Success: false,
+                FilesProcessed: 0,
+                FilesFailed: 0,
+                BytesProcessed: 0,
+                BytesSaved: 0,
+                Duration: DateTime.UtcNow - startTime,
+                Errors: new[] { "ParallelFiles must be at least 1 for tier migration." }
+            );
+        }
+
         var tierConfig = GetTierConfig(targetTier);
         if (tierConfig == null)
         {

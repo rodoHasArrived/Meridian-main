@@ -77,17 +77,17 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
   ],
   accounting: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.accounting, match: "exact" },
-    { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
+    { label: "Today", route: WORKSTATION_ROUTE_CATALOG.accounting, match: "exact" },
+    { label: "Close", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
     { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
-    { label: "Journal entries", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
+    { label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
-    { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
+    { label: "Data Health", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
     { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.accountingEvidence },
-    { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
+    { label: "Reports", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
@@ -115,10 +115,10 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills }
   ],
   settings: [
-    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
-    { label: "Preferences", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
-    { label: "Integrations", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations },
-    { label: "Provider setup", route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup },
+    { label: "Profile", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
+    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
+    { label: "Accounting Systems", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations },
+    { label: "Data Providers", route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup },
     { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints }
   ]
 };
@@ -245,7 +245,7 @@ function workspaceContextEyebrow(workspaceKey: WorkspaceKey): string {
     case "trading":
       return "Trading surfaces";
     case "settings":
-      return "Admin";
+      return "Task pages";
     default:
       return "Workspace";
   }
@@ -266,7 +266,7 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
     case "trading":
       return "Orders, positions, risk, and readiness controls.";
     case "settings":
-      return "Preferences, integrations, and backend coverage.";
+      return "Profile, provider connections, accounting systems, data providers, diagnostics, and feature coverage.";
     default:
       return "Workspace routes.";
   }

@@ -67,7 +67,16 @@ public sealed class CrossSourceBackfillReconciliationService
             baselineProviderKey,
             baselineFetch.Bars,
             isBaseline: true));
-        var baselineBars = IndexBySessionDate(FilterBarsForRequestedSymbol(baselineFetch.Bars, requestedSymbol));
+        var baselineSymbolBars = FilterBarsForRequestedSymbol(baselineFetch.Bars, requestedSymbol);
+        discrepancies.AddRange(CreateMissingEvidenceDiscrepancies(
+            requestedSymbol,
+            baselineProviderKey,
+            baselineProviderKey,
+            request.From,
+            request.To,
+            baselineSymbolBars,
+            isBaseline: true));
+        var baselineBars = IndexBySessionDate(baselineSymbolBars);
 
         foreach (var comparisonProviderKey in comparisonProviderKeys)
         {
@@ -92,7 +101,16 @@ public sealed class CrossSourceBackfillReconciliationService
                 comparisonProviderKey,
                 comparisonFetch.Bars,
                 isBaseline: false));
-            var comparisonBars = IndexBySessionDate(FilterBarsForRequestedSymbol(comparisonFetch.Bars, requestedSymbol));
+            var comparisonSymbolBars = FilterBarsForRequestedSymbol(comparisonFetch.Bars, requestedSymbol);
+            discrepancies.AddRange(CreateMissingEvidenceDiscrepancies(
+                requestedSymbol,
+                baselineProviderKey,
+                comparisonProviderKey,
+                request.From,
+                request.To,
+                comparisonSymbolBars,
+                isBaseline: false));
+            var comparisonBars = IndexBySessionDate(comparisonSymbolBars);
             discrepancies.AddRange(CompareProviderBars(
                 baselineProviderKey,
                 comparisonProviderKey,
@@ -284,6 +302,34 @@ public sealed class CrossSourceBackfillReconciliationService
                 null,
                 $"{provider} returned {actualSymbol} while reconciling {requestedSymbol} for {bar.SessionDate}; cross-source closure requires symbol-scoped evidence.");
         }
+    }
+
+    private static IEnumerable<CrossSourceBackfillDiscrepancy> CreateMissingEvidenceDiscrepancies(
+        string requestedSymbol,
+        string baselineProvider,
+        string provider,
+        DateOnly from,
+        DateOnly to,
+        IReadOnlyList<HistoricalBar> symbolScopedBars,
+        bool isBaseline)
+    {
+        if (symbolScopedBars.Count > 0)
+        {
+            yield break;
+        }
+
+        yield return new CrossSourceBackfillDiscrepancy(
+            from,
+            baselineProvider,
+            provider,
+            isBaseline ? "BaselineMissingEvidence" : "ComparisonMissingEvidence",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            $"{provider} returned no symbol-scoped bars for {requestedSymbol} between {from} and {to}; cross-source closure requires retained provider evidence.");
     }
 
     private static IEnumerable<CrossSourceBackfillDiscrepancy> CompareProviderBars(
@@ -506,6 +552,8 @@ public sealed record CrossSourceBackfillClosureDecision(
         }
 
         var providerErrorCount = symbolResults.Sum(static result => result.ProviderErrors.Count);
+        var missingEvidenceCount = symbolResults.Sum(static result =>
+            result.Discrepancies.Count(static discrepancy => IsMissingEvidenceDiscrepancy(discrepancy.Kind)));
         var discrepancyCount = symbolResults.Sum(static result => result.Discrepancies.Count);
         var symbolsRequiringReview = symbolResults
             .Where(static result => result.ProviderErrors.Count > 0 || result.Discrepancies.Count > 0)
@@ -519,6 +567,15 @@ public sealed record CrossSourceBackfillClosureDecision(
                 CrossSourceBackfillClosureStatus.BlockedByProviderError,
                 "ProviderError",
                 $"{FormatSymbolCount(symbolsRequiringReview.Length)} require operator review because {providerErrorCount} provider error(s) were retained.",
+                symbolsRequiringReview);
+        }
+
+        if (missingEvidenceCount > 0)
+        {
+            return new CrossSourceBackfillClosureDecision(
+                CrossSourceBackfillClosureStatus.BlockedByMissingEvidence,
+                "MissingEvidence",
+                $"{FormatSymbolCount(symbolsRequiringReview.Length)} require operator review because {missingEvidenceCount} provider evidence gap(s) were retained.",
                 symbolsRequiringReview);
         }
 
@@ -540,6 +597,10 @@ public sealed record CrossSourceBackfillClosureDecision(
 
     private static string FormatSymbolCount(int count)
         => count == 1 ? "1 symbol" : $"{count} symbols";
+
+    private static bool IsMissingEvidenceDiscrepancy(string kind)
+        => string.Equals(kind, "BaselineMissingEvidence", StringComparison.Ordinal) ||
+           string.Equals(kind, "ComparisonMissingEvidence", StringComparison.Ordinal);
 }
 
 public sealed record CrossSourceBackfillDiscrepancy(

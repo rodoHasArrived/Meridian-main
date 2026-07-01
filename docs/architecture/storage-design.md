@@ -936,7 +936,8 @@ record MigrationOptions(
 
 When `VerifyChecksum` is enabled, migration verifies the logical payload after copy, including
 decompressing gzip warm-tier targets before comparison. Source evidence is deleted only after that
-verification succeeds.
+verification succeeds. `ParallelFiles` must be at least `1`; invalid non-positive values fail
+closed before file discovery, copy, or source deletion.
 
 ### 4. Unified Query Layer
 

@@ -395,12 +395,13 @@ public sealed class AutoGapRemediationService : IDisposable
             return;
         }
 
+        var normalizedProvider = NormalizeProvider(provider);
         var now = DateTimeOffset.UtcNow;
         var slaDecision = _slaPolicy.Classify(source, severity, downstreamWorkflow, now);
 
-        if (IsCoolingDown(_providerCooldown, provider, _policy.ProviderCooldown, now))
+        if (IsCoolingDown(_providerCooldown, normalizedProvider, _policy.ProviderCooldown, now))
         {
-            _log.Debug("Auto-remediation provider cooldown active for {Provider}", provider);
+            _log.Debug("Auto-remediation provider cooldown active for {Provider}", normalizedProvider);
             return;
         }
 
@@ -414,7 +415,7 @@ public sealed class AutoGapRemediationService : IDisposable
             return;
         }
 
-        var idempotencyKey = BuildIdempotencyKey(eligibleSymbols, provider, from, to);
+        var idempotencyKey = BuildIdempotencyKey(eligibleSymbols, normalizedProvider, from, to);
 
         var state = _idempotency.GetOrAdd(idempotencyKey, _ => new AutoRemediationState());
         lock (state)
@@ -440,7 +441,7 @@ public sealed class AutoGapRemediationService : IDisposable
         {
             var execution = CreateExecutionLog(
                 eligibleSymbols,
-                provider,
+                normalizedProvider,
                 from,
                 to,
                 source,
@@ -452,7 +453,7 @@ public sealed class AutoGapRemediationService : IDisposable
 
             try
             {
-                var request = new BackfillRequest(provider, eligibleSymbols, from, to);
+                var request = new BackfillRequest(normalizedProvider, eligibleSymbols, from, to);
                 var result = await _backfillGateway.RunAsync(request, ct).ConfigureAwait(false);
 
                 execution.CompletedAt = DateTimeOffset.UtcNow;
@@ -466,7 +467,7 @@ public sealed class AutoGapRemediationService : IDisposable
                     ? AutoRemediationOutcome.Completed.ToString()
                     : AutoRemediationOutcome.FailedPermanent.ToString();
 
-                UpdateCooldowns(eligibleSymbols, provider, now);
+                UpdateCooldowns(eligibleSymbols, normalizedProvider, now);
                 UpdateOutcome(state, result.Success ? AutoRemediationOutcome.Completed : AutoRemediationOutcome.FailedPermanent);
             }
             catch (Exception ex)
@@ -494,6 +495,20 @@ public sealed class AutoGapRemediationService : IDisposable
         {
             _concurrencyGate.Release();
         }
+    }
+
+    private string NormalizeProvider(string? provider)
+    {
+        var normalized = provider?.Trim();
+        if (!string.IsNullOrWhiteSpace(normalized))
+        {
+            return normalized.ToLowerInvariant();
+        }
+
+        normalized = _policy.DefaultProvider.Trim();
+        return string.IsNullOrWhiteSpace(normalized)
+            ? "unknown"
+            : normalized.ToLowerInvariant();
     }
 
     private static string BuildIdempotencyKey(IReadOnlyList<string> symbols, string provider, DateOnly from, DateOnly to)

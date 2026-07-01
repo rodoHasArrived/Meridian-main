@@ -273,7 +273,8 @@ Orchestrates automatic failover between streaming providers. Monitors provider h
 2. A periodic timer evaluates each rule against provider health state.
 3. When a provider's consecutive failures exceed the rule's `FailoverThreshold`, the service finds the next healthy backup provider.
 4. `OnFailoverTriggered` event signals `FailoverAwareMarketDataClient` to switch.
-5. Auto-recovery occurs when the primary provider's consecutive successes reach `RecoveryThreshold`.
+5. Auto-recovery occurs when the primary provider's consecutive successes reach
+   `RecoveryThreshold` and its recent latency window is within `MaxLatencyMs`, when configured.
 
 **Failover triggers:**
 
@@ -303,7 +304,9 @@ Provider health snapshots keep a bounded recent latency window for streaming fai
 This makes `MaxLatencyMs` routing responsive to current SLA breaches while allowing stale latency
 spikes to decay after sustained healthy samples. When a latency breach triggers failover, backup
 selection also applies the same `MaxLatencyMs` health rule so routing skips backups whose current
-recent-latency window is already outside the rule threshold.
+recent-latency window is already outside the rule threshold. Recovery uses that same threshold so
+success pings alone do not route back to a primary provider that is still breaching the current
+latency SLA.
 
 ### StreamingFailoverRegistry
 

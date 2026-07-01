@@ -97,7 +97,7 @@ Before accepting outputs, run:
 - bounded cross-source daily backfill reconciliation when an alternate provider is part of the
   acceptance evidence; batch reconciliation normalizes symbols to uppercase, de-duplicates them,
   preserves first-seen request order, filters comparison bars to the requested symbol, and reports
-  clean/drift/symbol-mismatch/error posture per symbol
+  clean/drift/symbol-mismatch/missing-evidence/error posture per symbol
 - review execution history/lineage before promoting archive/parquet transitions.
 
 ## Gap-remediation SLA posture
@@ -125,9 +125,9 @@ timers and escalation end to end:
   preserve the original source/provider evidence for audit comparison.
 - Prove: a gap is not closed until the rerun has execution history, per-symbol validation signals,
   bounded cross-source reconciliation evidence when fallback data is used, no wrong-symbol fallback
-  rows in the accepted evidence set, a retained closure decision with ordered review symbols, and a
-  follow-up gap/quality check showing the affected interval is acceptable for the downstream
-  workflow.
+  rows or zero-evidence provider windows in the accepted evidence set, a retained closure decision
+  with ordered review symbols, and a follow-up gap/quality check showing the affected interval is
+  acceptable for the downstream workflow.
 - Escalate: if provider fallback cannot close the interval or the SLA snapshot marks the remediation
   overdue, attach the failed execution evidence and route the exception to provider readiness,
   reconciliation, or reporting owners according to the blocked workflow.

@@ -224,10 +224,11 @@ and UI presentation concerns in their owning layers.
   and one or more comparison providers for one symbol or a de-duplicated multi-symbol batch. Batch
   reconciliation normalizes symbols to uppercase, preserves the first-seen request order, and
   returns per-symbol price/volume drift, missing-session, symbol-mismatch, provider-error,
-  closure-status, and ordered review-symbol evidence for data-confidence workflows without promoting
-  it to full cross-provider SLA enforcement. Provider responses for the wrong symbol are retained as
-  review-required contamination evidence and filtered out of the matching bar set so same-date
-  fallback data cannot falsely close the requested symbol.
+  missing-evidence, closure-status, and ordered review-symbol evidence for data-confidence workflows
+  without promoting it to full cross-provider SLA enforcement. Provider responses for the wrong
+  symbol are retained as review-required contamination evidence and filtered out of the matching bar
+  set so same-date fallback data cannot falsely close the requested symbol; zero symbol-scoped
+  provider bars likewise block closure until retained evidence exists.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
