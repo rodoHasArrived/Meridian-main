@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { SeverityBadge } from "@/components/operations";
 import {
   activateProviderIntegration,
   approveSecurityAssetProfile,
@@ -390,6 +392,39 @@ const diagnosticToneClass = {
   warning: "border-warning/35 bg-warning/10",
   danger: "border-danger/35 bg-danger/10"
 } as const;
+
+// Concrete severity vocabulary: the settings screen's `default | success | warning | danger`
+// (and Badge `outline`) tones collapse onto the design system's canonical operator
+// severities consumed by SeverityBadge (ready · review · action · blocked · info). Used for
+// connection / diagnostic / capability / readiness health — never for environment or mode
+// chips, which stay on the categorical Badge component.
+type SettingsBadgeVariant = "default" | "outline" | "success" | "warning" | "danger";
+
+function toneToSeverity(tone: SettingsBadgeVariant): string {
+  if (tone === "success") return "ready";
+  if (tone === "warning") return "action";
+  if (tone === "danger") return "blocked";
+  return "info";
+}
+
+// Headline operator counts on the overview → Concrete MetricCard left-accent tone.
+const settingsMetricTone: Record<"default" | "success" | "warning" | "danger", MetricCardTone> = {
+  default: "neutral",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
+};
+
+// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
+// MetricCard accent matches the "Storage health" system item.
+function settingsStorageHealthTone(
+  health: SystemOverviewResponse["storageHealth"] | undefined
+): "default" | "success" | "warning" | "danger" {
+  if (health === "Healthy") return "success";
+  if (health === "Warning") return "warning";
+  if (health === "Critical") return "danger";
+  return "default";
+}
 
 const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
 
@@ -2646,6 +2681,36 @@ export function SettingsScreen({
         </div>
       </section>
 
+      <section
+        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        aria-label="Operator control posture metrics"
+      >
+        <MetricCard
+          label="Providers online"
+          value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"}
+          tone={
+            overview
+              ? settingsMetricTone[overview.providersOnline === overview.providersTotal ? "success" : "warning"]
+              : "neutral"
+          }
+        />
+        <MetricCard
+          label="Active runs"
+          value={overview ? String(overview.activeRuns) : "—"}
+          tone={settingsMetricTone.default}
+        />
+        <MetricCard
+          label="Open positions"
+          value={overview ? String(overview.openPositions) : "—"}
+          tone={settingsMetricTone.default}
+        />
+        <MetricCard
+          label="Storage health"
+          value={overview?.storageHealth ?? "—"}
+          tone={settingsMetricTone[settingsStorageHealthTone(overview?.storageHealth)]}
+        />
+      </section>
+
       <WorkspaceFilterBar
         label="Settings task navigator"
         searchLabel="Settings tasks"
@@ -2676,12 +2741,10 @@ export function SettingsScreen({
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.profileAuthenticationPanel.summary}</CardDescription>
               </div>
-              <Badge
-                variant={vm.profileAuthenticationPanel.badgeVariant}
-                dot={vm.profileAuthenticationPanel.statusTone === "success"}
-              >
-                {vm.profileAuthenticationPanel.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(vm.profileAuthenticationPanel.statusTone)}
+                label={vm.profileAuthenticationPanel.statusLabel}
+              />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -2759,9 +2822,10 @@ export function SettingsScreen({
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.systemSummary}</CardDescription>
               </div>
-              <Badge variant={systemVariant(vm.systemTone)} dot={vm.systemTone === "success"}>
-                {overview?.systemStatus ?? "Unavailable"}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(vm.systemTone)}
+                label={overview?.systemStatus ?? "Unavailable"}
+              />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -3126,12 +3190,10 @@ export function SettingsScreen({
             <div className="flex flex-wrap items-center gap-2">
               <SettingsChip label="Loaded" value={vm.operationsControlCenter.loadedCountLabel} />
               <SettingsChip label="Review" value={vm.operationsControlCenter.reviewCountLabel} />
-              <Badge
-                variant={vm.operationsControlCenter.statusVariant}
-                dot={vm.operationsControlCenter.statusVariant === "success"}
-              >
-                {vm.operationsControlCenter.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(vm.operationsControlCenter.statusVariant)}
+                label={vm.operationsControlCenter.statusLabel}
+              />
             </div>
           </div>
         </CardHeader>
@@ -3151,9 +3213,11 @@ export function SettingsScreen({
                     <h3 className="text-sm font-semibold text-foreground">{card.title}</h3>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.description}</p>
                   </div>
-                  <Badge variant={card.statusVariant} className="shrink-0">
-                    {card.statusLabel}
-                  </Badge>
+                  <SeverityBadge
+                    status={toneToSeverity(card.statusVariant)}
+                    label={card.statusLabel}
+                    className="shrink-0"
+                  />
                 </div>
                 <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   {card.metrics.map((metric) => (
@@ -3669,9 +3733,10 @@ export function SettingsScreen({
               <SettingsChip label="Approved" value={vm.assetProfileGovernancePanel.approvedCountLabel} />
               <SettingsChip label="Projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
               <SettingsChip label="Close IDs" value={vm.assetProfileGovernancePanel.closeIdentifierCountLabel} />
-              <Badge variant={vm.assetProfileGovernancePanel.statusVariant} dot={vm.assetProfileGovernancePanel.statusVariant === "success"}>
-                {vm.assetProfileGovernancePanel.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(vm.assetProfileGovernancePanel.statusVariant)}
+                label={vm.assetProfileGovernancePanel.statusLabel}
+              />
             </div>
           </div>
         </CardHeader>
@@ -3974,12 +4039,10 @@ export function SettingsScreen({
                   {vm.providerConnectionCenter.refreshAction.label}
                 </Button>
               ) : null}
-              <Badge
-                variant={vm.providerConnectionCenter.statusVariant}
-                dot={vm.providerConnectionCenter.statusVariant === "success"}
-              >
-                {vm.providerConnectionCenter.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(vm.providerConnectionCenter.statusVariant)}
+                label={vm.providerConnectionCenter.statusLabel}
+              />
             </div>
           </div>
         </CardHeader>
@@ -4077,13 +4140,15 @@ export function SettingsScreen({
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
                             <Badge variant="outline">{row.capabilityLabel}</Badge>
-                            <Badge variant={toneVariant(row.healthTone)} dot={row.healthTone === "success"}>
-                              {row.healthLabel}
-                            </Badge>
+                            <SeverityBadge
+                              status={toneToSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
+                              label={row.healthLabel}
+                            />
                             {inlineProviderManagementEnabled ? (
-                              <Badge variant={providerDraftStatusVariant(providerInlineState[row.providerId], row)}>
-                                {providerDraftStatusLabel(providerInlineState[row.providerId], row)}
-                              </Badge>
+                              <SeverityBadge
+                                status={toneToSeverity(providerDraftStatusVariant(providerInlineState[row.providerId], row))}
+                                label={providerDraftStatusLabel(providerInlineState[row.providerId], row)}
+                              />
                             ) : null}
                           </div>
                           <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.recommendedAction}</p>
@@ -4166,9 +4231,10 @@ export function SettingsScreen({
               </CardTitle>
               <CardDescription className="mt-2">{vm.alpacaConnectionPanel.statusDetail}</CardDescription>
             </div>
-            <Badge variant={vm.alpacaConnectionPanel.badgeVariant} dot={vm.alpacaConnectionPanel.statusTone === "success"}>
-              {vm.alpacaConnectionPanel.stateLabel}
-            </Badge>
+            <SeverityBadge
+              status={toneToSeverity(vm.alpacaConnectionPanel.statusTone)}
+              label={vm.alpacaConnectionPanel.stateLabel}
+            />
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
@@ -4378,9 +4444,11 @@ export function SettingsScreen({
                       <div className="text-sm font-medium text-foreground">{step.label}</div>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
                     </div>
-                    <Badge variant={step.badgeVariant} className="shrink-0">
-                      {step.statusLabel}
-                    </Badge>
+                    <SeverityBadge
+                      status={toneToSeverity(step.badgeVariant)}
+                      label={step.statusLabel}
+                      className="shrink-0"
+                    />
                   </div>
                   {step.actionHref && step.actionLabel ? (
                     <Button asChild variant="outline" size="sm" className="mt-3">
@@ -4413,9 +4481,10 @@ export function SettingsScreen({
               </CardTitle>
               <CardDescription className="mt-2">{vm.robinhoodConnectionPanel.statusDetail}</CardDescription>
             </div>
-            <Badge variant={vm.robinhoodConnectionPanel.badgeVariant} dot={vm.robinhoodConnectionPanel.statusTone === "success"}>
-              {vm.robinhoodConnectionPanel.stateLabel}
-            </Badge>
+            <SeverityBadge
+              status={toneToSeverity(vm.robinhoodConnectionPanel.statusTone)}
+              label={vm.robinhoodConnectionPanel.stateLabel}
+            />
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
@@ -4524,9 +4593,10 @@ export function SettingsScreen({
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.recentEventsSection.description}</CardDescription>
               </div>
-              <Badge variant={recentEventsVariant(vm.recentEventsSection.state)} dot={vm.recentEventsSection.state === "ready"}>
-                {vm.recentEventsSection.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={recentEventsSeverity(vm.recentEventsSection.state)}
+                label={vm.recentEventsSection.statusLabel}
+              />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -4589,9 +4659,10 @@ export function SettingsScreen({
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
               </div>
-              <Badge variant={vm.diagnosticStatusVariant} dot={vm.diagnosticStatusVariant === "success"}>
-                {vm.diagnosticStatusLabel}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(vm.diagnosticStatusVariant)}
+                label={vm.diagnosticStatusLabel}
+              />
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -4618,9 +4689,11 @@ export function SettingsScreen({
                         {link.label}
                       </span>
                       <span className="inline-flex items-center gap-2">
-                        <Badge variant={link.badgeVariant} className="shrink-0">
-                          {link.statusLabel}
-                        </Badge>
+                        <SeverityBadge
+                          status={toneToSeverity(link.badgeVariant)}
+                          label={link.statusLabel}
+                          className="shrink-0"
+                        />
                         {link.isLoading ? (
                           <LoaderCircle className="h-3 w-3 shrink-0 animate-spin text-warning" aria-hidden="true" />
                         ) : (
@@ -4652,9 +4725,10 @@ export function SettingsScreen({
               </CardTitle>
               <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
             </div>
-            <Badge variant={vm.runtimeCapabilitySection.statusVariant} dot={vm.runtimeCapabilitySection.statusVariant === "success"}>
-              {vm.runtimeCapabilitySection.statusLabel}
-            </Badge>
+            <SeverityBadge
+              status={toneToSeverity(vm.runtimeCapabilitySection.statusVariant)}
+              label={vm.runtimeCapabilitySection.statusLabel}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -4674,9 +4748,11 @@ export function SettingsScreen({
                       <h3 className="mt-2 text-sm font-semibold text-foreground">{capability.displayName}</h3>
                       <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
                     </div>
-                    <Badge variant={capability.statusVariant} className="shrink-0">
-                      {capability.statusLabel}
-                    </Badge>
+                    <SeverityBadge
+                      status={toneToSeverity(capability.statusVariant)}
+                      label={capability.statusLabel}
+                      className="shrink-0"
+                    />
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <SettingsChip label="Default" value={capability.defaultLabel} />
@@ -4716,9 +4792,10 @@ export function SettingsScreen({
               </CardTitle>
               <CardDescription className="mt-2">{vm.backendCapabilitySummary}</CardDescription>
             </div>
-            <Badge variant={vm.backendCapabilityStatusVariant} dot={vm.backendCapabilityStatusVariant === "success"}>
-              {vm.backendCapabilityStatusLabel}
-            </Badge>
+            <SeverityBadge
+              status={toneToSeverity(vm.backendCapabilityStatusVariant)}
+              label={vm.backendCapabilityStatusLabel}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -4735,9 +4812,11 @@ export function SettingsScreen({
                     <h3 className="mt-2 text-sm font-semibold text-foreground">{group.title}</h3>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{group.description}</p>
                   </div>
-                  <Badge variant={group.statusVariant} className="shrink-0">
-                    {group.statusLabel}
-                  </Badge>
+                  <SeverityBadge
+                    status={toneToSeverity(group.statusVariant)}
+                    label={group.statusLabel}
+                    className="shrink-0"
+                  />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <SettingsChip label="Mapped" value={group.endpointCountLabel} />
@@ -4811,9 +4890,11 @@ function ProfileAuthenticationStepRow({ step }: { step: SettingsProfileAuthentic
           <div className="text-sm font-medium text-foreground">{step.label}</div>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
         </div>
-        <Badge variant={step.badgeVariant} className="shrink-0">
-          {step.statusLabel}
-        </Badge>
+        <SeverityBadge
+          status={toneToSeverity(step.badgeVariant)}
+          label={step.statusLabel}
+          className="shrink-0"
+        />
       </div>
       {step.actionHref && step.actionLabel ? (
         <Button asChild variant="outline" size="sm" className="mt-3">
@@ -4860,9 +4941,11 @@ function RecentEventDetailPanel({
                 <h3 className="mt-2 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
-              <Badge variant={detail.statusVariant} className="shrink-0">
-                {detail.statusLabel}
-              </Badge>
+              <SeverityBadge
+                status={toneToSeverity(detail.statusVariant)}
+                label={detail.statusLabel}
+                className="shrink-0"
+              />
             </div>
             <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
@@ -5654,9 +5737,10 @@ function ProviderIntegrationRuntimePanel({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Runtime evidence</h5>
-            <Badge variant={providerRuntimeStatusVariant(state)} dot={state.phase === "loaded"}>
-              {providerRuntimeStatusLabel(state)}
-            </Badge>
+            <SeverityBadge
+              status={toneToSeverity(providerRuntimeStatusVariant(state))}
+              label={providerRuntimeStatusLabel(state)}
+            />
           </div>
           <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.integrationConnectionId}</p>
         </div>
@@ -5800,7 +5884,7 @@ function ProviderIntegrationRuntimePanel({
             <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
-                <Badge variant={providerRuntimeRunVariant(run)}>{run.status}</Badge>
+                <SeverityBadge status={toneToSeverity(providerRuntimeRunVariant(run))} label={run.status} />
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">
                 {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
@@ -5821,7 +5905,7 @@ function ProviderIntegrationRuntimePanel({
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant={providerRuntimeProcessingStatusVariant(record.status)}>{record.status}</Badge>
+                      <SeverityBadge status={toneToSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
                       <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
@@ -5905,7 +5989,7 @@ function ProviderIntegrationRuntimePanel({
           {issueGroups.slice(0, 3).map((group) => (
             <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={providerRuntimeSeverityVariant(group.severity)}>{group.severity}</Badge>
+                <SeverityBadge status={toneToSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
                 <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
                 <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
               </div>
@@ -5919,9 +6003,10 @@ function ProviderIntegrationRuntimePanel({
           {syncPlanItems.slice(0, 3).map((item) => (
             <div key={`${item.capability}-${item.endpointKey ?? "no-service"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={item.isBlocked ? "danger" : item.isDue ? "warning" : "success"}>
-                  {item.isBlocked ? "Blocked" : item.isDue ? "Due" : "Scheduled"}
-                </Badge>
+                <SeverityBadge
+                  status={item.isBlocked ? "blocked" : item.isDue ? "action" : "ready"}
+                  label={item.isBlocked ? "Blocked" : item.isDue ? "Due" : "Scheduled"}
+                />
                 <span className="text-[11px] font-medium text-foreground">{item.capability}</span>
                 <span className="font-mono text-[11px] text-muted-foreground">{item.endpointKey ?? "no service"}</span>
               </div>
@@ -5935,7 +6020,7 @@ function ProviderIntegrationRuntimePanel({
           {state.promotion.rows.slice(0, 3).map((promotionRow) => (
             <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={providerRuntimePromotionVariant(promotionRow.status)}>{promotionRow.status}</Badge>
+                <SeverityBadge status={toneToSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
                 <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
                 <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
               </div>
@@ -6306,7 +6391,10 @@ function ProviderIntegrationWorkbenchPanel({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-foreground">Mapping preview</span>
             <Badge variant="outline">{state.manifest.integrationType}</Badge>
-            <Badge variant={state.manifest.state === "Active" ? "success" : "warning"}>{state.manifest.state}</Badge>
+            <SeverityBadge
+              status={state.manifest.state === "Active" ? "ready" : "action"}
+              label={state.manifest.state}
+            />
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             {mappingPreview.length > 0 ? mappingPreview.slice(0, 4).map((mapping) => (
@@ -6570,9 +6658,11 @@ function ProviderReadinessChecklist({
       <div className="text-xs font-semibold text-foreground">Readiness checks</div>
       <div className="mt-2 flex flex-wrap gap-2">
         {checks.map((check) => (
-          <Badge key={check.label} variant={check.ready ? "success" : "warning"}>
-            {check.label}: {check.ready ? "Ready" : "Review"}
-          </Badge>
+          <SeverityBadge
+            key={check.label}
+            status={check.ready ? "ready" : "action"}
+            label={`${check.label}: ${check.ready ? "Ready" : "Review"}`}
+          />
         ))}
       </div>
     </div>
@@ -7357,10 +7447,12 @@ const PROVIDER_OPEN_API_SAMPLE_DOCUMENT = `{
   "paths": {}
 }`;
 
-function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default" | "outline" | "danger" {
-  if (state === "unavailable") return "danger";
-  if (state === "empty") return "outline";
-  return "default";
+// Event-stream readiness → Concrete severity (SeverityBadge): a live stream is Ready,
+// an empty stream is Info, and an unavailable stream is Blocked.
+function recentEventsSeverity(state: "ready" | "empty" | "unavailable"): string {
+  if (state === "unavailable") return "blocked";
+  if (state === "empty") return "info";
+  return "ready";
 }
 
 function settingsBannerTone(tone: keyof typeof diagnosticToneClass | keyof typeof itemToneClass): "success" | "warning" | "danger" | "info" {
@@ -7368,20 +7460,6 @@ function settingsBannerTone(tone: keyof typeof diagnosticToneClass | keyof typeo
   if (tone === "warning") return "warning";
   if (tone === "danger") return "danger";
   return "info";
-}
-
-function systemVariant(tone: keyof typeof systemToneClass): "outline" | "success" | "warning" | "danger" {
-  if (tone === "success") return "success";
-  if (tone === "warning") return "warning";
-  if (tone === "danger") return "danger";
-  return "outline";
-}
-
-function toneVariant(tone: keyof typeof itemToneClass): "outline" | "success" | "warning" | "danger" {
-  if (tone === "success") return "success";
-  if (tone === "warning") return "warning";
-  if (tone === "danger") return "danger";
-  return "outline";
 }
 
 function capabilityTone(tone: "default" | "success" | "warning" | "danger" | "outline"): keyof typeof diagnosticToneClass {

@@ -1,4 +1,4 @@
-import { Archive, CheckCircle2, Database, HardDrive, PackageCheck, Play, RefreshCcw, ShieldCheck, Trash2, Wrench } from "lucide-react";
+import { Archive, CheckCircle2, Database, PackageCheck, Play, RefreshCcw, ShieldCheck, Trash2, Wrench } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { MetricCard, EmptyState as ConcreteEmptyState } from "@/components/data/concrete";
+import { SeverityBadge } from "@/components/operations";
 import {
   applyAdminRetention,
   createDataPackage,
@@ -299,7 +301,10 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
             <CardDescription>Maintenance, archive storage, retention, diagnostics, schedules, and package handoff for {operatorLabel ?? "the workstation operator"}.</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={loaded ? snapshot?.failures.length ? "warning" : "success" : "outline"}>{loading ? "Checking" : loaded ? snapshot?.failures.length ? "Degraded" : "Loaded" : "Not loaded"}</Badge>
+            <SeverityBadge
+              status={loading ? "review" : loaded ? (snapshot?.failures.length ? "action" : "ready") : "info"}
+              label={loading ? "Checking" : loaded ? (snapshot?.failures.length ? "Degraded" : "Loaded") : "Not loaded"}
+            />
             <Button type="button" variant="outline" size="sm" busy={loading} busyLabel="Refreshing admin operations" onClick={() => void loadSnapshot()}><RefreshCcw className="h-4 w-4" />Refresh</Button>
           </div>
         </div>
@@ -310,10 +315,10 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
         {message ? <div className={cn("rounded-md border px-3 py-2 text-sm", messageToneClass[message.tone])}><div className="font-semibold text-foreground">{message.title}</div>{message.detail ? <div className="mt-1 font-mono text-xs leading-5 text-muted-foreground">{message.detail}</div> : null}</div> : null}
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <MetricTile icon={<Wrench className="h-4 w-4" />} label="Schedules" value={`${enabledSchedules}/${schedules.length}`} detail="enabled maintenance jobs" />
-          <MetricTile icon={<HardDrive className="h-4 w-4" />} label="Archive storage" value={bytes(snapshot?.storageUsage?.totalBytes)} detail={`${count(snapshot?.storageUsage?.fileCount)} files`} />
-          <MetricTile icon={<ShieldCheck className="h-4 w-4" />} label="Permissions" value={permissionLabel} detail={snapshot?.permissions?.rootPath ?? snapshot?.storageUsage?.rootPath ?? "storage root pending"} />
-          <MetricTile icon={<PackageCheck className="h-4 w-4" />} label="Packages" value={count(packages.length)} detail={`error codes ${count(snapshot?.errorCodes?.errorCodes.length)}`} />
+          <MetricCard label="Schedules" value={`${enabledSchedules}/${schedules.length}`} delta="enabled maintenance jobs" trend="flat" />
+          <MetricCard label="Archive storage" value={bytes(snapshot?.storageUsage?.totalBytes)} delta={`${count(snapshot?.storageUsage?.fileCount)} files`} trend="flat" />
+          <MetricCard label="Permissions" value={permissionLabel} delta={snapshot?.permissions?.rootPath ?? snapshot?.storageUsage?.rootPath ?? "storage root pending"} trend="flat" tone={permissions ? (permissions.readable && permissions.writable ? "success" : permissions.readable ? "warning" : "danger") : "neutral"} />
+          <MetricCard label="Packages" value={count(packages.length)} delta={`error codes ${count(snapshot?.errorCodes?.errorCodes.length)}`} trend="flat" />
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -331,7 +336,7 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
 
           <Panel icon={<Database className="h-4 w-4" />} title="Storage tiering" detail="Tier usage, root permissions, and migration planning.">
             <div className="grid gap-2">
-              {tierRows.length ? tierRows.map(([tier, info]) => <div key={tier} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-sm"><div><div className="font-semibold text-foreground">{tier}</div><div className="text-xs text-muted-foreground">{count(info.fileCount)} files</div></div><div className="font-mono text-xs text-muted-foreground">{bytes(info.totalBytes)}</div></div>) : <EmptyState label="No tier statistics loaded" />}
+              {tierRows.length ? tierRows.map(([tier, info]) => <div key={tier} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-sm"><div><div className="font-semibold text-foreground">{tier}</div><div className="text-xs text-muted-foreground">{count(info.fileCount)} files</div></div><div className="font-mono text-xs text-muted-foreground">{bytes(info.totalBytes)}</div></div>) : <ConcreteEmptyState compact title="No tier statistics loaded" />}
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">Target tier<Input value={targetTier} onChange={(event) => setTargetTier(event.target.value)} placeholder="Archive" /></label>
@@ -354,7 +359,7 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
 
           <Panel icon={<PackageCheck className="h-4 w-4" />} title="Data packages" detail="Package creation, validation, and manifest inspection use shared endpoints.">
             <div className="grid gap-2">
-              {packages.length ? packages.slice(0, 3).map((item) => <EvidenceLine key={item.path} label={item.fileName} value={bytes(item.sizeBytes)} detail={item.path ?? item.createdAt ?? "--"} />) : <EmptyState label="No packages loaded" />}
+              {packages.length ? packages.slice(0, 3).map((item) => <EvidenceLine key={item.path} label={item.fileName} value={bytes(item.sizeBytes)} detail={item.path ?? item.createdAt ?? "--"} />) : <ConcreteEmptyState compact title="No packages loaded" />}
             </div>
             <div className="mt-4 grid gap-2">
               <Input value={packageForm.packagePath} onChange={(event) => setPackageForm((current) => ({ ...current, packagePath: event.target.value }))} placeholder="Package path for validation or contents" />
@@ -384,32 +389,12 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
                     </div>
                   </div>
                 );
-              }) : <EmptyState label="No schedules loaded" />}
+              }) : <ConcreteEmptyState compact title="No schedules loaded" />}
             </div>
           </Panel>
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function MetricTile({
-  icon,
-  label,
-  value,
-  detail
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{icon}{label}</div>
-      <div className="mt-2 font-mono text-lg font-semibold text-foreground">{value}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
-    </div>
   );
 }
 
@@ -454,8 +439,4 @@ function EvidenceLine({
       <div className="mt-1 break-words text-xs text-muted-foreground">{detail}</div>
     </div>
   );
-}
-
-function EmptyState({ label }: { label: string }) {
-  return <div className="rounded-md border border-dashed border-border/70 px-3 py-2 text-sm text-muted-foreground">{label}</div>;
 }
