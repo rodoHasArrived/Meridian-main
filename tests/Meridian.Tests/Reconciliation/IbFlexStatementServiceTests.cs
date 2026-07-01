@@ -148,6 +148,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         dividend.TradeDate.Should().Be(new DateOnly(2026, 6, 10)); // date part of dateTime
 
         var fee = result.Rows[4];
+        fee.ActivityType.Should().Be("fee"); // "Other Fees" keeps fee semantics
         fee.CashAmount.Should().Be(-3.50m);
         fee.TradeDate.Should().Be(new DateOnly(2026, 6, 30)); // reportDate fallback
     }
@@ -260,6 +261,19 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         import.RowCount.Should().Be(5);
         import.SourceRows.Should().HaveCount(5);
         import.SourceRows[0].RawSnapshot.Should().ContainKey("symbol");
+    }
+
+    [Fact]
+    public async Task StatementReconciliationService_CaseIntakeMatchesFlexRows()
+    {
+        var service = new StatementReconciliationService();
+        var path = WriteFlexFile(SampleFlexXml);
+
+        var intake = await service.CreateExternalStatementCasesAsync("ib-flex", path, CancellationToken.None);
+
+        // Intake must process real Flex rows, not short-circuit to zero counts.
+        intake.RowCount.Should().Be(5);
+        (intake.MatchCount + intake.Cases.Count).Should().BeGreaterThan(0);
     }
 
     [Fact]

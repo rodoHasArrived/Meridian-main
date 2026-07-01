@@ -198,7 +198,7 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     0m,
                     0m,
                     ParseDecimal(cash, "amount"),
-                    "cash",
+                    MapCashTransactionActivity((string?)cash.Attribute("type")),
                     RequireFirstDate(cash, ["dateTime", "reportDate", "settleDate"], statementToDate, rowNumber),
                     HashElement(cash));
             }
@@ -207,6 +207,17 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
 
     private static string Account(XElement element, string statementAccount) =>
         (string?)element.Attribute("accountId") is { Length: > 0 } account ? account : statementAccount;
+
+    /// <summary>
+    /// Maps a Flex CashTransaction <c>type</c> to the canonical activity type so downstream
+    /// matching applies fee handling to fee-like rows ("Other Fees", "Advisor Fees", …) instead
+    /// of cash tolerance rules. All other cash transaction types (dividends, deposits,
+    /// withholding tax, interest) stay canonical <c>cash</c>.
+    /// </summary>
+    public static string MapCashTransactionActivity(string? flexType) =>
+        flexType is not null && flexType.Contains("fee", StringComparison.OrdinalIgnoreCase)
+            ? "fee"
+            : "cash";
 
     private static decimal ParseDecimal(XElement element, string attribute)
     {
@@ -255,7 +266,7 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
     /// <c>yyyyMMdd</c>, <c>yyyy-MM-dd</c>, and datetime variants with a <c>;HHmmss</c> or
     /// <c> HH:mm:ss</c> suffix (only the date part is kept).
     /// </summary>
-    private static DateOnly? ParseFlexDate(string? raw)
+    public static DateOnly? ParseFlexDate(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return null;

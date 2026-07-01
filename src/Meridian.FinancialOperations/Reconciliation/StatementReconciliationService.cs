@@ -171,6 +171,119 @@ public sealed class StatementReconciliationService
     }
 
     /// <summary>
+    /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
+    /// and CashTransaction element) so case intake matches Flex statements with the same
+    /// engine as canonical CSV rows. Fee-like cash transactions keep fee row semantics via
+    /// <see cref="Infrastructure.Reconciliation.IbFlexBrokerStatementService.MapCashTransactionActivity"/>.
+    /// </summary>
+    private static IReadOnlyList<NormalizedStatementRow> ReadFlexStatementRows(
+        string importId,
+        string normalizedSourceKind,
+        string sourcePath,
+        string content)
+    {
+        var document = System.Xml.Linq.XDocument.Parse(content);
+        var rows = new List<NormalizedStatementRow>();
+        var rowNumber = 0;
+
+        foreach (var statement in document.Descendants("FlexStatement"))
+        {
+            var statementToDate = Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                .ParseFlexDate((string?)statement.Attribute("toDate"));
+
+            foreach (var element in statement.Descendants()
+                         .Where(static e => e.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction"))
+            {
+                rowNumber++;
+                var (activityType, quantity, amount, date) = element.Name.LocalName switch
+                {
+                    "Trade" => (
+                        "trade",
+                        FlexDecimal(element, "quantity"),
+                        FlexFirstDecimal(element, "netCash", "proceeds") is var cash && cash != 0m
+                            ? cash
+                            : FlexDecimal(element, "quantity") * FlexDecimal(element, "tradePrice"),
+                        FlexFirstDate(element, ["tradeDate"], statementToDate)),
+                    "OpenPosition" => (
+                        "position",
+                        FlexDecimal(element, "position"),
+                        FlexFirstDecimal(element, "positionValue") is var value && value != 0m
+                            ? value
+                            : FlexDecimal(element, "position") * FlexFirstDecimal(element, "markPrice", "costBasisPrice"),
+                        FlexFirstDate(element, ["reportDate"], statementToDate)),
+                    _ => (
+                        Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                            .MapCashTransactionActivity((string?)element.Attribute("type")),
+                        0m,
+                        FlexDecimal(element, "amount"),
+                        FlexFirstDate(element, ["dateTime", "reportDate", "settleDate"], statementToDate))
+                };
+
+                var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["importId"] = importId,
+                    ["sourceKind"] = normalizedSourceKind,
+                    ["sourcePath"] = sourcePath,
+                    ["elementName"] = element.Name.LocalName,
+                    ["activityType"] = activityType,
+                    ["rowNumber"] = rowNumber.ToString(CultureInfo.InvariantCulture)
+                };
+                foreach (var attribute in element.Attributes())
+                {
+                    snapshot[attribute.Name.LocalName] = attribute.Value;
+                }
+
+                var elementText = element.ToString(System.Xml.Linq.SaveOptions.DisableFormatting);
+                rows.Add(new NormalizedStatementRow(
+                    $"{importId}:{rowNumber}",
+                    ToStatementRowKind(activityType),
+                    (string?)element.Attribute("symbol") ?? string.Empty,
+                    quantity,
+                    amount,
+                    new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                    (string?)element.Attribute("currency") ?? "USD",
+                    DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{elementText}"),
+                    snapshot));
+            }
+        }
+
+        return rows;
+    }
+
+    private static decimal FlexDecimal(System.Xml.Linq.XElement element, string attribute)
+    {
+        var raw = (string?)element.Attribute(attribute);
+        return string.IsNullOrWhiteSpace(raw)
+            ? 0m
+            : decimal.Parse(raw, NumberStyles.Number, CultureInfo.InvariantCulture);
+    }
+
+    private static decimal FlexFirstDecimal(System.Xml.Linq.XElement element, params string[] attributes)
+    {
+        foreach (var attribute in attributes)
+        {
+            var raw = (string?)element.Attribute(attribute);
+            if (!string.IsNullOrWhiteSpace(raw))
+                return decimal.Parse(raw, NumberStyles.Number, CultureInfo.InvariantCulture);
+        }
+
+        return 0m;
+    }
+
+    private static DateOnly FlexFirstDate(System.Xml.Linq.XElement element, string[] attributes, DateOnly? fallback)
+    {
+        foreach (var attribute in attributes)
+        {
+            if (Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                    .ParseFlexDate((string?)element.Attribute(attribute)) is { } parsed)
+                return parsed;
+        }
+
+        return fallback ?? throw new InvalidDataException(
+            "Flex row has no parseable date attribute and the statement has no toDate fallback.");
+    }
+
+    /// <summary>
     /// Reads an IB Flex report into source-row references (one per Trade, OpenPosition, and
     /// CashTransaction element, with the element's attributes as the raw snapshot) so the
     /// checkpointed ingestion stage reports real row counts. Canonical row construction for
@@ -229,9 +342,24 @@ public sealed class StatementReconciliationService
     private ExternalStatementCaseIntakeResult CreateExternalStatementCases(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
         // Flex XML never parses through the canonical CSV path, regardless of any mapping
-        // profile the caller selected; case intake for Flex runs through the workflow's
-        // Flex-aware broker statement importer instead.
-        if (UsesFlexProcessing(normalizedSourceKind, sourcePath) || !UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
+        // profile the caller selected; its rows are read from the XML sections and matched
+        // with the same engine so CLI/orchestrator intake reports real match/unresolved counts.
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
+        {
+            var flexContent = File.ReadAllText(sourcePath);
+            var flexImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{flexContent}");
+            var flexRows = ReadFlexStatementRows(flexImportId, normalizedSourceKind, sourcePath, flexContent);
+            var (flexMatches, flexCases) = MatchRows(flexRows);
+            return new ExternalStatementCaseIntakeResult(
+                flexImportId,
+                normalizedSourceKind,
+                sourcePath,
+                flexRows.Count,
+                flexMatches.Count,
+                flexCases);
+        }
+
+        if (!UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
             var content = File.ReadAllText(sourcePath);
             var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
