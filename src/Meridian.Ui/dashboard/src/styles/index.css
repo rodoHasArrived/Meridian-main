@@ -31,9 +31,12 @@
 @layer base {
   /* Light appearance remains an explicit alias for nested panels that already
      opt into it. The workstation default below uses the same tokens.
+     Concrete palette: canvas #DEE3EA · panel #FFFFFF · steel accent #2F6F8F ·
+     border #CBD3DC. Radii unified to 2px; card shadow flattened to a hairline
+     (borders carry elevation). Keep in sync with the :root block below.
   ──────────────────────────────────────────────────────────────────────────*/
   [data-appearance="light"] {
-    --background: 214 23% 94%;
+    --background: 215 22% 89%;
     --foreground: 215 15% 16%;
     --card: 0 0% 100%;
     --card-foreground: 215 15% 16%;
@@ -41,47 +44,47 @@
     --popover-foreground: 215 15% 16%;
     --primary: 200 51% 37%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 216 33% 97%;
+    --secondary: 213 29% 94%;
     --secondary-foreground: 215 15% 16%;
-    --muted: 210 27% 96%;
-    --muted-foreground: 212 11% 38%;
+    --muted: 210 33% 96%;
+    --muted-foreground: 213 11% 39%;
     --accent: 200 51% 37%;
     --accent-foreground: 0 0% 100%;
-    --border: 213 16% 86%;
-    --input: 213 16% 86%;
+    --border: 212 20% 83%;
+    --input: 212 20% 83%;
     --ring: 200 51% 37%;
     --paper: 200 51% 37%;
     --live: 200 51% 37%;
-    --live-env: 347 49% 49%;
-    --warning: 35 78% 32%;
-    --success: 159 72% 31%;
-    --danger: 347 49% 49%;
+    --live-env: 349 49% 49%;
+    --warning: 33 82% 30%;
+    --success: 158 72% 31%;
+    --danger: 349 49% 49%;
     --panel-strong: 0 0% 100%;
-    --panel-soft: 216 33% 97%;
-    --surface-raise: 210 25% 98%;
-    --sidebar: 210 22% 96%;
+    --panel-soft: 213 29% 94%;
+    --surface-raise: 210 33% 96%;
+    --sidebar: 213 29% 94%;
     --sidebar-foreground: 212 14% 35%;
     --sidebar-primary: 200 51% 37%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 207 31% 93%;
+    --sidebar-accent: 208 48% 89%;
     --sidebar-accent-foreground: 215 15% 16%;
-    --sidebar-border: 213 16% 86%;
+    --sidebar-border: 212 20% 83%;
     --sidebar-ring: 200 51% 37%;
     --chart-1: 200 51% 37%;
-    --chart-2: 159 72% 31%;
-    --chart-3: 347 49% 49%;
-    --chart-4: 35 71% 42%;
-    --chart-5: 203 27% 59%;
-    --shadow-color: 215 15% 16%;
-    --shadow-opacity: 0.08;
+    --chart-2: 158 72% 31%;
+    --chart-3: 349 49% 49%;
+    --chart-4: 33 82% 30%;
+    --chart-5: 206 16% 51%;
+    --shadow-color: 218 15% 11%;
+    --shadow-opacity: 0.06;
     --shadow-blur: 1px;
     --shadow-spread: 0px;
     --shadow-offset-x: 0px;
     --shadow-offset-y: 1px;
-    --radius-chip: 4px;
-    --radius-button: 6px;
-    --radius-card: 8px;
-    --radius-checkbox: 3px;
+    --radius-chip: 2px;
+    --radius-button: 2px;
+    --radius-card: 2px;
+    --radius-checkbox: 2px;
   }
 
   :root {
@@ -91,9 +94,11 @@
        primitives consume ONLY these variables. Adjust here to change the
        Tailwind palette. Token architecture mirrors the Meridian Institutional
        Ops light design system and WPF theme tokens.
+       Concrete refresh: canvas #DEE3EA, steel accent #2F6F8F, load-bearing
+       #CBD3DC borders, unified 2px radii, and a flat hairline shadow.
        Changes here do NOT automatically update Track B.
     ──────────────────────────────────────────────────────────────────────────*/
-    --background: 214 23% 94%;
+    --background: 215 22% 89%;
     --foreground: 215 15% 16%;
     --card: 0 0% 100%;
     --card-foreground: 215 15% 16%;
@@ -101,94 +106,114 @@
     --popover-foreground: 215 15% 16%;
     --primary: 200 51% 37%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 216 33% 97%;
+    --secondary: 213 29% 94%;
     --secondary-foreground: 215 15% 16%;
-    --muted: 210 27% 96%;
-    --muted-foreground: 212 11% 38%;
+    --muted: 210 33% 96%;
+    --muted-foreground: 213 11% 39%;
     --accent: 200 51% 37%;
     --accent-foreground: 0 0% 100%;
-    --border: 213 16% 86%;
-    --input: 213 16% 86%;
+    --border: 212 20% 83%;
+    --input: 212 20% 83%;
     --ring: 200 51% 37%;
     --paper: 200 51% 37%;
     --live: 200 51% 37%;
-    --live-env: 347 49% 49%;
-    --warning: 35 78% 32%;
-    --success: 159 72% 31%;
-    --danger: 347 49% 49%;
+    --live-env: 349 49% 49%;
+    --warning: 33 82% 30%;
+    --success: 158 72% 31%;
+    --danger: 349 49% 49%;
     --panel-strong: 0 0% 100%;
-    --panel-soft: 216 33% 97%;
-    --surface-raise: 210 25% 98%;
+    --panel-soft: 213 29% 94%;
+    --surface-raise: 210 33% 96%;
     /* ─── Sidebar tokens ─────────────────────────────────────────────────────
        Maps the operator rail surface to the light institutional rail.
     ──────────────────────────────────────────────────────────────────────────*/
-    --sidebar: 210 22% 96%;
+    --sidebar: 213 29% 94%;
     --sidebar-foreground: 212 14% 35%;
     --sidebar-primary: 200 51% 37%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 207 31% 93%;
+    --sidebar-accent: 208 48% 89%;
     --sidebar-accent-foreground: 215 15% 16%;
-    --sidebar-border: 213 16% 86%;
+    --sidebar-border: 212 20% 83%;
     --sidebar-ring: 200 51% 37%;
     /* ─── Chart tokens ───────────────────────────────────────────────────────
        Named --chart-1…5 to match the existing Tailwind contract.
-       Mapped to Meridian's muted semantic chart palette.
+       Mapped to Meridian's muted Concrete semantic chart palette:
+       steel #2F6F8F · spruce #16885F · brick #BA3F55 · ochre #8A520E ·
+       benchmark #6E8597.
     ──────────────────────────────────────────────────────────────────────────*/
     --chart-1: 200 51% 37%;
-    --chart-2: 159 72% 31%;
-    --chart-3: 347 49% 49%;
-    --chart-4: 35 71% 42%;
-    --chart-5: 203 27% 59%;
-    /* ─── Border radii ───────────────────────────────────────────────────────
-       --radius is the base value (lg); all others are derived offsets following
-       the workstation's scalable radius convention.
+    --chart-2: 158 72% 31%;
+    --chart-3: 349 49% 49%;
+    --chart-4: 33 82% 30%;
+    --chart-5: 206 16% 51%;
+    /* ─── Border radii — Concrete: unified 2px everywhere ────────────────────
+       The Concrete system uses one tight 2px corner across chips, controls,
+       and surfaces; structure comes from borders, not rounding. The named
+       scale tops out at 6px (large sheets only). --radius resolves to 2px.
     ──────────────────────────────────────────────────────────────────────────*/
-    --radius: 0.5rem;
-    --radius-xl: 0.625rem;
-    --radius-lg: 0.5rem;
-    --radius-md: 0.375rem;
-    --radius-sm: 0.25rem;
-    --radius-xs: 0.1875rem;
-    --radius-chip: 4px;
-    --radius-button: 6px;
-    --radius-card: 8px;
-    --radius-checkbox: 3px;
+    --radius: 0.125rem;
+    --radius-xl: 0.375rem;
+    --radius-lg: 0.25rem;
+    --radius-md: 0.1875rem;
+    --radius-sm: 0.125rem;
+    --radius-xs: 0.125rem;
+    --radius-chip: 2px;
+    --radius-button: 2px;
+    --radius-card: 2px;
+    --radius-checkbox: 2px;
     --space-panel: 1.5rem;
     /* ─── Shadow tokens ──────────────────────────────────────────────────────
-       The light system uses hairline shadows only; structure comes from borders.
+       Concrete is flat: surfaces carry structure via borders, not shadows.
+       These channels back the Tailwind `flat` hairline only; the panel/card
+       shadow tokens below resolve to `none`.
     ──────────────────────────────────────────────────────────────────────────*/
-    --shadow-color: 215 15% 16%;
-    --shadow-opacity: 0.08;
+    --shadow-color: 218 15% 11%;
+    --shadow-opacity: 0.06;
     --shadow-blur: 1px;
     --shadow-spread: 0px;
     --shadow-offset-x: 0px;
     --shadow-offset-y: 1px;
-    /* ─── Workstation tokens ────────────────────────────────────────────────
+    /* ─── Track B — Workstation tokens (Concrete) ───────────────────────────
        Canonical light Institutional Ops palette for hand-authored workstation
-       CSS. Compatibility aliases below must point at these --ws-* tokens.
+       CSS, aligned to the handoff --ws-* block. Compatibility aliases below
+       must point at these --ws-* tokens.
+         canvas #DEE3EA · band #EBEFF4 · panel #FFFFFF · raised #F3F6F9
+         border #CBD3DC (hover #ADB8C4 · strong #99A5B2) · steel #2F6F8F
     ──────────────────────────────────────────────────────────────────────────*/
-    --ws-page-bg: #ECEFF3;
+    --ws-page-bg: #DEE3EA;
     --ws-surface: #ffffff;
-    --ws-surface-subtle: #F5F7FA;
-    --ws-surface-raised: #FAFBFC;
-    --ws-border: #D7DCE2;
-    --ws-border-strong: #B8C2CC;
+    --ws-surface-subtle: #EBEFF4;
+    --ws-surface-raised: #F3F6F9;
+    --ws-border: #CBD3DC;
+    --ws-border-strong: #99A5B2;
     --ws-text: #22272E;
     --ws-text-muted: #59636F;
     --ws-text-secondary: #4D5967;
     --ws-masthead-bg: #171A1F;
     --ws-masthead-fg: #F4F6F8;
-    --ws-rail-bg: #F4F6F8;
-    --ws-rail-active: #E1EAF2;
-    --ws-row-hover: #F1F4F7;
-    --ws-row-selected: #E6EEF5;
-    --ws-row-border: #DDE3EA;
+    --ws-rail-bg: #EBEFF4;
+    --ws-rail-active: #D7E5F1;
+    --ws-row-hover: #EAEEF3;
+    --ws-row-selected: #D7E5F1;
+    --ws-row-border: #CBD3DC;
     --ws-inspector-bg: #ffffff;
     --ws-canvas-bg: #ffffff;
     --ws-accent: #2F6F8F;
     --ws-accent-hover: #3B82A6;
     --ws-accent-pressed: #255B75;
-    --ws-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+    /* Concrete is flat: the workstation shadow token carries NO card shadow;
+       borders carry structure. Only detached overlays float (--shadow-float). */
+    --ws-shadow: none;
+
+    /* ─── Semantic palette (Tier 2) — Concrete steel/spruce/brick/ochre/slate.
+       Single source of truth for one-off semantic color and the derived
+       severity/state/mode layers below. ────────────────────────────────────*/
+    --accent-ghost: #E1EAF2;
+    --green: #16885F;
+    --red: #BA3F55;
+    --orange: #8A520E;
+    --amber: var(--orange);
+    --purple: #6F5BA7;
 
     --bg: var(--ws-page-bg);
     --bg-medium: var(--ws-surface-subtle);
@@ -204,66 +229,364 @@
     --surface-raise-bg: var(--ws-surface-raised);
     --border-color: var(--ws-border);
     --border-hi: var(--ws-border-strong);
-    --border-strong: #AAB4BF;
+    --border-hover: #ADB8C4;
+    --border-strong: #99A5B2;
+    --border-divider: #D2D9E2;
     --surface-topbar: var(--ws-masthead-bg);
     --surface-input: var(--ws-surface-subtle);
     --cyan-primary: var(--ws-accent);
     --cyan-secondary: var(--ws-accent-hover);
     --cyan-focus: var(--ws-accent);
     --cyan-pressed: var(--ws-accent-pressed);
-    --state-healthy-fg: #16885F;
-    --state-healthy-bd: rgba(22, 136, 95, 0.32);
-    --state-healthy-bg: rgba(22, 136, 95, 0.10);
-    --state-warn-fg: #8A520E;
-    --state-warn-bd: rgba(138, 82, 14, 0.38);
-    --state-warn-bg: rgba(138, 82, 14, 0.11);
-    --state-danger-fg: #BA3F55;
-    --state-danger-bd: rgba(186, 63, 85, 0.35);
-    --state-danger-bg: rgba(186, 63, 85, 0.10);
-    --state-paper-fg: #2F6F8F;
-    --state-paper-bd: rgba(47, 111, 143, 0.34);
-    --state-paper-bg: rgba(47, 111, 143, 0.10);
-    --state-strategy-fg: #6F5BA7;
-    --state-strategy-bd: rgba(111, 91, 167, 0.34);
-    --state-strategy-bg: rgba(111, 91, 167, 0.10);
-    --state-live-fg: #BA3F55;
-    --state-live-bd: rgba(186, 63, 85, 0.42);
-    --state-live-bg: rgba(186, 63, 85, 0.12);
-    --state-muted-fg: #6E7781;
-    --state-muted-bd: #D7DCE2;
-    --state-muted-bg: #F5F7FA;
-    --state-pending-fg: #6F5BA7;
-    --state-pending-bd: rgba(111, 91, 167, 0.34);
-    --state-pending-bg: rgba(111, 91, 167, 0.10);
-    --severity-blocked-fg: #BA3F55;
-    --severity-blocked-bd: rgba(186, 63, 85, 0.40);
-    --severity-blocked-bg: rgba(186, 63, 85, 0.10);
-    --severity-action-fg: #8A520E;
-    --severity-action-bd: rgba(138, 82, 14, 0.42);
-    --severity-action-bg: rgba(138, 82, 14, 0.11);
-    --severity-review-fg: #2F6F8F;
-    --severity-review-bd: rgba(47, 111, 143, 0.36);
-    --severity-review-bg: rgba(47, 111, 143, 0.10);
-    --severity-ready-fg: #16885F;
-    --severity-ready-bd: rgba(22, 136, 95, 0.36);
-    --severity-ready-bg: rgba(22, 136, 95, 0.10);
-    --severity-info-fg: #6E7781;
-    --severity-info-bd: #D7DCE2;
-    --severity-info-bg: #F5F7FA;
-    --chart-grid: #DDE3EA;
+
+    /* ─── Environment modes (Live · Paper · Fixture) — derived from Tier 2.
+       Paper uses the hex steel accent (--ws-accent), NOT the Track-A HSL
+       channel triple, so color-mix() stays valid. ─────────────────────────*/
+    --mode-live: var(--red);
+    --mode-paper: var(--ws-accent);
+    --mode-fixture: var(--orange);
+
+    /* ─── State layer (environment + evidence) — DERIVED trios (fg · bd · bg).
+       Semantic hue · 32–42% alpha border · 10–12% alpha wash. ──────────────*/
+    --state-healthy-fg: var(--green);
+    --state-healthy-bd: color-mix(in srgb, var(--green) 32%, transparent);
+    --state-healthy-bg: color-mix(in srgb, var(--green) 10%, transparent);
+    --state-warn-fg: var(--orange);
+    --state-warn-bd: color-mix(in srgb, var(--orange) 38%, transparent);
+    --state-warn-bg: color-mix(in srgb, var(--orange) 11%, transparent);
+    --state-danger-fg: var(--red);
+    --state-danger-bd: color-mix(in srgb, var(--red) 35%, transparent);
+    --state-danger-bg: color-mix(in srgb, var(--red) 10%, transparent);
+    --state-paper-fg: var(--ws-accent);
+    --state-paper-bd: color-mix(in srgb, var(--ws-accent) 34%, transparent);
+    --state-paper-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+    --state-strategy-fg: var(--purple);
+    --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent);
+    --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+    --state-live-fg: var(--red);
+    --state-live-bd: color-mix(in srgb, var(--red) 42%, transparent);
+    --state-live-bg: color-mix(in srgb, var(--red) 12%, transparent);
+    --state-muted-fg: var(--ws-text-muted);
+    --state-muted-bd: var(--ws-border);
+    --state-muted-bg: var(--ws-surface-subtle);
+    --state-pending-fg: var(--purple);
+    --state-pending-bd: color-mix(in srgb, var(--purple) 34%, transparent);
+    --state-pending-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+
+    /* ─── Severity layer (operator status chips) — DERIVED trios ────────────
+       Blocked (red) · Action (ochre) · Review (steel) · Ready (spruce) · Info.*/
+    --severity-blocked-fg: var(--red);
+    --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);
+    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
+    --severity-action-fg: var(--orange);
+    --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
+    --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
+    --severity-review-fg: var(--ws-accent);
+    --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
+    --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+    --severity-ready-fg: var(--green);
+    --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
+    --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
+    --severity-info-fg: var(--ws-text-muted);
+    --severity-info-bd: var(--ws-border);
+    --severity-info-bg: var(--ws-surface-subtle);
+
+    /* ─── Charts — Concrete series + grid. ─────────────────────────────────*/
+    --chart-grid: #D2D9E2;
     --chart-grid-major: #CBD3DC;
     --chart-up: #16885F;
     --chart-dn: #BA3F55;
     --chart-ma20: #2F6F8F;
-    --chart-ma50: #B7791F;
-    --chart-bench: #7A9DB3;
-    --chart-band: rgba(47, 111, 143, 0.10);
+    --chart-ma50: #8A520E;
+    --chart-bench: #6E8597;
+    --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --chart-crosshair: #2F6F8F;
-    --chart-dd: rgba(186, 63, 85, 0.22);
+    --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
+
+    /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
+       detached overlays (menus/popovers) float. ───────────────────────────*/
     --shadow-workstation: var(--ws-shadow);
     --shadow-panel: var(--ws-shadow);
-    --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.10);
-    --shadow-soft: 0 1px 1px rgba(0, 0, 0, 0.06);
+    --shadow-menu: 0 2px 6px rgba(0, 0, 0, 0.18);
+    --shadow-float: var(--shadow-menu);
+    --shadow-soft: none;
+  }
+
+  /* ─── Dark mode — graphite charcoal, equally flat ───────────────────────────
+     Concrete dark (handoff colors-dark.css): canvas #0E1113 · panel #1A2026 ·
+     band #232A32 · steel accent #5790BE · border #45505C. Only the base tokens
+     flip; every derived severity/state/mode trio re-derives from --green/--red/
+     --orange/--purple/--ws-accent via color-mix(), so the ops layer follows for
+     free. The dark block covers BOTH Track A (HSL channels for Tailwind) and
+     Track B (--ws-* hexes for hand-authored CSS).
+     Two identical scopes: auto (prefers-color-scheme) + manual [data-theme="dark"].
+  ──────────────────────────────────────────────────────────────────────────*/
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+
+      /* Track A — HSL channels */
+      --background: 204 15% 6%;
+      --foreground: 210 24% 92%;
+      --card: 210 19% 13%;
+      --card-foreground: 210 24% 92%;
+      --popover: 210 19% 13%;
+      --popover-foreground: 210 24% 92%;
+      --primary: 207 44% 54%;
+      --primary-foreground: 210 24% 96%;
+      --secondary: 212 18% 17%;
+      --secondary-foreground: 210 24% 92%;
+      --muted: 212 18% 17%;
+      --muted-foreground: 212 11% 58%;
+      --accent: 207 44% 54%;
+      --accent-foreground: 210 24% 96%;
+      --border: 211 14% 32%;
+      --input: 211 14% 32%;
+      --ring: 207 44% 54%;
+      --paper: 207 44% 54%;
+      --live: 207 44% 54%;
+      --live-env: 355 48% 59%;
+      --warning: 40 54% 48%;
+      --success: 152 34% 46%;
+      --danger: 355 48% 59%;
+      --panel-strong: 210 19% 13%;
+      --panel-soft: 212 18% 17%;
+      --surface-raise: 210 17% 15%;
+      --sidebar: 212 18% 17%;
+      --sidebar-foreground: 214 15% 69%;
+      --sidebar-primary: 207 44% 54%;
+      --sidebar-primary-foreground: 210 24% 96%;
+      --sidebar-accent: 204 22% 24%;
+      --sidebar-accent-foreground: 210 24% 92%;
+      --sidebar-border: 211 14% 32%;
+      --sidebar-ring: 207 44% 54%;
+      --chart-1: 207 44% 54%;
+      --chart-2: 152 34% 46%;
+      --chart-3: 355 48% 59%;
+      --chart-4: 40 54% 48%;
+      --chart-5: 212 13% 55%;
+
+      /* Track B — --ws-* + semantic hexes */
+      --ws-page-bg: #0E1113;
+      --ws-surface: #1A2026;
+      --ws-surface-subtle: #232A32;
+      --ws-surface-raised: #20272E;
+      --ws-border: #45505C;
+      --ws-border-strong: #6E7C8A;
+      --ws-text: #E5EAEF;
+      --ws-text-muted: #8893A0;
+      --ws-text-secondary: #A5AFBC;
+      --ws-masthead-bg: #0D1117;
+      --ws-masthead-fg: #E6EAF0;
+      --ws-rail-bg: #232A32;
+      --ws-rail-active: #2F3F4A;
+      --ws-row-hover: #283039;
+      --ws-row-selected: #2F3F4A;
+      --ws-row-border: #45505C;
+      --ws-inspector-bg: #1A2026;
+      --ws-canvas-bg: #1A2026;
+      --ws-accent: #5790BE;
+      --ws-accent-hover: #6BA6D4;
+      --ws-accent-pressed: #3C6688;
+
+      --accent-ghost: #1E2A33;
+      --green: #4D9E78;
+      --red: #C9656E;
+      --orange: #BD9038;
+      --purple: #8B83B8;
+
+      --border-hover: #5A6776;
+      --border-strong: #6E7C8A;
+      --border-divider: #2D353D;
+
+      /* Charts — dark series/grid */
+      --chart-grid: #2D353D;
+      --chart-grid-major: #45505C;
+      --chart-up: #4D9E78;
+      --chart-dn: #C9656E;
+      --chart-ma20: #5790BE;
+      --chart-ma50: #BD9038;
+      --chart-bench: #7E8C9C;
+      --chart-crosshair: #5790BE;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Track A — HSL channels */
+    --background: 204 15% 6%;
+    --foreground: 210 24% 92%;
+    --card: 210 19% 13%;
+    --card-foreground: 210 24% 92%;
+    --popover: 210 19% 13%;
+    --popover-foreground: 210 24% 92%;
+    --primary: 207 44% 54%;
+    --primary-foreground: 210 24% 96%;
+    --secondary: 212 18% 17%;
+    --secondary-foreground: 210 24% 92%;
+    --muted: 212 18% 17%;
+    --muted-foreground: 212 11% 58%;
+    --accent: 207 44% 54%;
+    --accent-foreground: 210 24% 96%;
+    --border: 211 14% 32%;
+    --input: 211 14% 32%;
+    --ring: 207 44% 54%;
+    --paper: 207 44% 54%;
+    --live: 207 44% 54%;
+    --live-env: 355 48% 59%;
+    --warning: 40 54% 48%;
+    --success: 152 34% 46%;
+    --danger: 355 48% 59%;
+    --panel-strong: 210 19% 13%;
+    --panel-soft: 212 18% 17%;
+    --surface-raise: 210 17% 15%;
+    --sidebar: 212 18% 17%;
+    --sidebar-foreground: 214 15% 69%;
+    --sidebar-primary: 207 44% 54%;
+    --sidebar-primary-foreground: 210 24% 96%;
+    --sidebar-accent: 204 22% 24%;
+    --sidebar-accent-foreground: 210 24% 92%;
+    --sidebar-border: 211 14% 32%;
+    --sidebar-ring: 207 44% 54%;
+    --chart-1: 207 44% 54%;
+    --chart-2: 152 34% 46%;
+    --chart-3: 355 48% 59%;
+    --chart-4: 40 54% 48%;
+    --chart-5: 212 13% 55%;
+
+    /* Track B — --ws-* + semantic hexes */
+    --ws-page-bg: #0E1113;
+    --ws-surface: #1A2026;
+    --ws-surface-subtle: #232A32;
+    --ws-surface-raised: #20272E;
+    --ws-border: #45505C;
+    --ws-border-strong: #6E7C8A;
+    --ws-text: #E5EAEF;
+    --ws-text-muted: #8893A0;
+    --ws-text-secondary: #A5AFBC;
+    --ws-masthead-bg: #0B0E10;
+    --ws-masthead-fg: #E6EAF0;
+    --ws-rail-bg: #232A32;
+    --ws-rail-active: #2F3F4A;
+    --ws-row-hover: #283039;
+    --ws-row-selected: #2F3F4A;
+    --ws-row-border: #45505C;
+    --ws-inspector-bg: #1A2026;
+    --ws-canvas-bg: #1A2026;
+    --ws-accent: #5790BE;
+    --ws-accent-hover: #6BA6D4;
+    --ws-accent-pressed: #3C6688;
+
+    --accent-ghost: #1E2A33;
+    --green: #4D9E78;
+    --red: #C9656E;
+    --orange: #BD9038;
+    --purple: #8B83B8;
+
+    --border-hover: #5A6776;
+    --border-strong: #6E7C8A;
+    --border-divider: #2D353D;
+
+    --chart-grid: #2D353D;
+    --chart-grid-major: #45505C;
+    --chart-up: #4D9E78;
+    --chart-dn: #C9656E;
+    --chart-ma20: #5790BE;
+    --chart-ma50: #BD9038;
+    --chart-bench: #7E8C9C;
+    --chart-crosshair: #5790BE;
+  }
+
+  /* ─── Forced-light opt-out ──────────────────────────────────────────────────
+     <html data-theme="light"> re-asserts the Concrete light base values so
+     operators can force light under OS dark. Higher specificity (0,2,0) than the
+     auto-dark :root inside the media query (0,1,0); a harmless no-op under OS
+     light. Only the base tokens are restated — derived trios follow.
+  ──────────────────────────────────────────────────────────────────────────*/
+  :root[data-theme="light"] {
+    color-scheme: light;
+
+    --background: 215 22% 89%;
+    --foreground: 215 15% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 15% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 15% 16%;
+    --primary: 200 51% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 213 29% 94%;
+    --secondary-foreground: 215 15% 16%;
+    --muted: 210 33% 96%;
+    --muted-foreground: 213 11% 39%;
+    --accent: 200 51% 37%;
+    --accent-foreground: 0 0% 100%;
+    --border: 212 20% 83%;
+    --input: 212 20% 83%;
+    --ring: 200 51% 37%;
+    --paper: 200 51% 37%;
+    --live: 200 51% 37%;
+    --live-env: 349 49% 49%;
+    --warning: 33 82% 30%;
+    --success: 158 72% 31%;
+    --danger: 349 49% 49%;
+    --panel-strong: 0 0% 100%;
+    --panel-soft: 213 29% 94%;
+    --surface-raise: 210 33% 96%;
+    --sidebar: 213 29% 94%;
+    --sidebar-foreground: 212 14% 35%;
+    --sidebar-primary: 200 51% 37%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 208 48% 89%;
+    --sidebar-accent-foreground: 215 15% 16%;
+    --sidebar-border: 212 20% 83%;
+    --sidebar-ring: 200 51% 37%;
+    --chart-1: 200 51% 37%;
+    --chart-2: 158 72% 31%;
+    --chart-3: 349 49% 49%;
+    --chart-4: 33 82% 30%;
+    --chart-5: 206 16% 51%;
+
+    --ws-page-bg: #DEE3EA;
+    --ws-surface: #ffffff;
+    --ws-surface-subtle: #EBEFF4;
+    --ws-surface-raised: #F3F6F9;
+    --ws-border: #CBD3DC;
+    --ws-border-strong: #99A5B2;
+    --ws-text: #22272E;
+    --ws-text-muted: #59636F;
+    --ws-text-secondary: #4D5967;
+    --ws-masthead-bg: #171A1F;
+    --ws-masthead-fg: #F4F6F8;
+    --ws-rail-bg: #EBEFF4;
+    --ws-rail-active: #D7E5F1;
+    --ws-row-hover: #EAEEF3;
+    --ws-row-selected: #D7E5F1;
+    --ws-row-border: #CBD3DC;
+    --ws-inspector-bg: #ffffff;
+    --ws-canvas-bg: #ffffff;
+    --ws-accent: #2F6F8F;
+    --ws-accent-hover: #3B82A6;
+    --ws-accent-pressed: #255B75;
+
+    --accent-ghost: #E1EAF2;
+    --green: #16885F;
+    --red: #BA3F55;
+    --orange: #8A520E;
+    --purple: #6F5BA7;
+
+    --border-hover: #ADB8C4;
+    --border-strong: #99A5B2;
+    --border-divider: #D2D9E2;
+
+    --chart-grid: #D2D9E2;
+    --chart-grid-major: #CBD3DC;
+    --chart-up: #16885F;
+    --chart-dn: #BA3F55;
+    --chart-ma20: #2F6F8F;
+    --chart-ma50: #8A520E;
+    --chart-bench: #6E8597;
+    --chart-crosshair: #2F6F8F;
   }
 
   * {
@@ -892,7 +1215,7 @@ body {
 .metric-tile,
 .workspace-region {
   border: 1px solid var(--ws-border);
-  border-radius: 6px;
+  border-radius: var(--radius-card);
   background: var(--ws-surface);
   box-shadow: var(--ws-shadow);
 }
@@ -914,7 +1237,7 @@ body {
 .workspace-inline-select select {
   min-height: 32px;
   border: 1px solid var(--ws-border);
-  border-radius: 4px;
+  border-radius: var(--radius-button);
   background: var(--ws-surface-subtle);
   color: var(--ws-text);
 }
@@ -932,14 +1255,14 @@ body {
   display: grid;
   gap: 0.25rem;
   border: 1px solid var(--ws-border);
-  border-radius: 6px;
+  border-radius: var(--radius-card);
   background: var(--ws-surface);
   padding: 0.625rem;
   box-shadow: var(--ws-shadow);
 }
 
 .workspace-directory-rail a {
-  border-radius: 4px;
+  border-radius: var(--radius-button);
   padding: 0.375rem 0.5rem;
   color: var(--ws-text);
   font-size: 0.75rem;
@@ -949,7 +1272,7 @@ body {
 .workspace-directory-rail a:hover,
 .workspace-directory-rail a[aria-current="page"] {
   background: var(--ws-rail-active);
-  color: #255B75;
+  color: var(--ws-accent-pressed);
 }
 
 .workspace-table-inspector-layout {
