@@ -1,15 +1,35 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
+import { KeyValueGrid, MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
   trustStrip: AppShellTrustStripState;
 }
+
+// Concrete severity layer: the control tower's workflow-continuity tones
+// (ready · review · blocked · pending) resolve to the operator-readiness status
+// strings consumed by SeverityBadge / ReadinessPanel.
+type ControlTowerTone = "ready" | "review" | "blocked" | "pending";
+
+const severityStatusForTone: Record<ControlTowerTone, string> = {
+  ready: "Ready",
+  review: "ReviewRequired",
+  blocked: "Blocked",
+  pending: "Pending"
+};
+
+const badgeVariantToStatus: Record<"outline" | "success" | "warning" | "danger", string> = {
+  success: "Ready",
+  warning: "ReviewRequired",
+  danger: "Blocked",
+  outline: "Info"
+};
 
 export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
@@ -39,25 +59,43 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         </Button>
       </div>
 
-      <PanelSurface flat className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-5">
-        <DailyControlTowerFact label="Status">
-          <Badge variant={model.statusBadgeVariant} dot>{model.statusLabel}</Badge>
-        </DailyControlTowerFact>
-        <DailyControlTowerFact label="Owner">{model.ownerLabel}</DailyControlTowerFact>
-        <DailyControlTowerFact label="Output">{model.outputLabel}</DailyControlTowerFact>
-        <DailyControlTowerFact label="Next action">{model.nextActionLabel}</DailyControlTowerFact>
-        <DailyControlTowerFact label="Evidence">{model.evidenceLabel}</DailyControlTowerFact>
-      </PanelSurface>
+      <ReadinessPanel
+        state={severityStatusForTone[model.statusTone]}
+        statusLabel={model.statusLabel}
+        title={model.decision.title}
+        detail={model.decision.summary}
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
+              <span>{model.nextActionLabel}</span>
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Button>
+        }
+      >
+        <KeyValueGrid
+          columns={2}
+          items={[
+            { label: model.decision.reasonLabel, value: model.decision.reason },
+            { label: "Owner", value: model.ownerLabel },
+            { label: "Output", value: model.outputLabel },
+            { label: "Evidence", value: model.evidenceLabel }
+          ]}
+        />
+      </ReadinessPanel>
 
-      <section aria-label="Daily control tower decision drivers" className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+      <section
+        aria-label="Daily control tower decision drivers"
+        className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+      >
         {model.driverItems.map((item) => (
-          <PanelSurface key={item.id} flat className="space-y-2 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <span className="eyebrow-label">{item.label}</span>
-              <Badge variant={item.badgeVariant}>{item.value}</Badge>
-            </div>
-            <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
-          </PanelSurface>
+          <MetricCard
+            key={item.id}
+            label={item.label}
+            value={item.value}
+            delta={item.detail}
+            tone={metricToneForVariant(item.badgeVariant)}
+          />
         ))}
       </section>
 
@@ -66,7 +104,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
           <PanelSurface key={item.id} flat className="space-y-2 p-4">
             <div className="flex items-center justify-between gap-2">
               <span className="eyebrow-label">{item.label}</span>
-              <Badge variant={badgeVariantForTrustTone(item.tone)}>{item.value}</Badge>
+              <SeverityBadge status={severityStatusForTone[item.tone]} label={item.value} />
             </div>
             <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
             {item.href && item.actionLabel ? (
@@ -83,15 +121,12 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         ))}
       </section>
 
-      <PanelSurface flat className="overflow-hidden">
-        <div className="border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold text-foreground">Finance queue</h3>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            Each row carries the evidence needed to move from source issue to downstream output.
-          </p>
-        </div>
+      <WorkspaceSection
+        title="Finance queue"
+        summary="Each row carries the evidence needed to move from source issue to downstream output."
+      >
         {model.queueRows.length > 0 ? (
-          <div className="overflow-x-auto">
+          <PanelSurface flat className="overflow-x-auto">
             <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
               <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
                 <tr>
@@ -109,7 +144,10 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-medium text-foreground">{row.item.label}</span>
-                          <Badge variant={row.badgeVariant}>{row.statusLabel}</Badge>
+                          <SeverityBadge
+                            status={badgeVariantToStatus[row.badgeVariant]}
+                            label={row.statusLabel}
+                          />
                         </div>
                         <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
                       </div>
@@ -132,26 +170,33 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                           <h3 className="text-sm font-semibold text-foreground">Evidence summary</h3>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.proofPassportSummary}</p>
                         </div>
-                        <dl className="grid gap-2 sm:grid-cols-2">
-                          {row.proofPassportItems.map((passportItem) => (
-                            <div key={passportItem.id} className="rounded border border-border bg-background/60 p-2">
-                              <dt className="eyebrow-label">{passportItem.label}</dt>
-                              <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                              <dd className="mt-1 text-[11px] leading-4 text-muted-foreground">{passportItem.detail}</dd>
-                            </div>
-                          ))}
-                        </dl>
+                        <KeyValueGrid
+                          columns={2}
+                          items={row.proofPassportItems.map((passportItem) => ({
+                            label: passportItem.label,
+                            value: (
+                              <span className="block min-w-0">
+                                <span className="block font-medium leading-5 text-foreground">{passportItem.value}</span>
+                                <span className="mt-1 block text-[11px] font-normal leading-4 text-muted-foreground">
+                                  {passportItem.detail}
+                                </span>
+                              </span>
+                            )
+                          }))}
+                        />
                       </section>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </PanelSurface>
         ) : (
-          <p role="status" className="p-4 text-sm text-muted-foreground">{model.emptyQueueText}</p>
+          <PanelSurface flat role="status" className="p-4 text-sm text-muted-foreground">
+            {model.emptyQueueText}
+          </PanelSurface>
         )}
-      </PanelSurface>
+      </WorkspaceSection>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <SupportingList
@@ -187,18 +232,17 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
   );
 }
 
-interface DailyControlTowerFactProps {
-  label: string;
-  children: React.ReactNode;
-}
-
-function DailyControlTowerFact({ label, children }: DailyControlTowerFactProps) {
-  return (
-    <div className="min-w-0 space-y-1">
-      <div className="eyebrow-label">{label}</div>
-      <div className="min-w-0 text-sm font-medium leading-5 text-foreground">{children}</div>
-    </div>
-  );
+function metricToneForVariant(variant: "outline" | "success" | "warning" | "danger"): MetricCardTone {
+  switch (variant) {
+    case "success":
+      return "success";
+    case "warning":
+      return "warning";
+    case "danger":
+      return "danger";
+    case "outline":
+      return "neutral";
+  }
 }
 
 interface SupportingListItem {
@@ -223,48 +267,35 @@ function SupportingList({
   items: SupportingListItem[];
 }) {
   return (
-    <PanelSurface flat className="space-y-3 p-4">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">{label}</h3>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{summary}</p>
-      </div>
+    <WorkspaceSection title={label} summary={summary}>
       {items.length > 0 ? (
         <ul className="space-y-2" aria-label={label}>
           {items.map((item) => (
-            <li key={item.id} className="flex items-start justify-between gap-3 rounded border border-border bg-background/60 p-3">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-foreground">{item.label}</span>
-                  <Badge variant={badgeVariantForTrustTone(item.tone)}>{item.status}</Badge>
+            <li key={item.id}>
+              <PanelSurface flat className="flex items-start justify-between gap-3 p-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">{item.label}</span>
+                    <SeverityBadge status={severityStatusForTone[item.tone]} label={item.status} />
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
                 </div>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-              </div>
-              <Link
-                to={item.href}
-                className="shrink-0 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                aria-label={item.ariaLabel}
-              >
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
+                <Link
+                  to={item.href}
+                  className="shrink-0 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  aria-label={item.ariaLabel}
+                >
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </PanelSurface>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-muted-foreground">{emptyText}</p>
+        <PanelSurface flat className="p-4 text-sm text-muted-foreground">
+          {emptyText}
+        </PanelSurface>
       )}
-    </PanelSurface>
+    </WorkspaceSection>
   );
-}
-
-function badgeVariantForTrustTone(tone: "ready" | "review" | "blocked" | "pending") {
-  switch (tone) {
-    case "blocked":
-      return "danger";
-    case "review":
-      return "warning";
-    case "ready":
-      return "success";
-    case "pending":
-      return "outline";
-  }
 }

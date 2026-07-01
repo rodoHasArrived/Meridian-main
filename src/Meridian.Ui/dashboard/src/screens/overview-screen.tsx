@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import type { ElementType } from "react";
 import { Link } from "react-router-dom";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricCard as ConcreteMetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ import {
   type TodayTone
 } from "@/screens/today-panel.view-model";
 import type {
+  MetricSnapshot,
   PortfolioWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -259,6 +261,26 @@ const todayFillColumns: DenseDataTableColumn<TodayFillRow>[] = [
   }
 ];
 
+// Concrete KPI tile: render a read-model MetricSnapshot through the shared design-system
+// MetricCard (3px left-accent border, small-caps label, mono tabular value + signed delta).
+const metricSnapshotTone: Record<MetricSnapshot["tone"], MetricCardTone> = {
+  default: "neutral",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
+};
+
+function SnapshotMetricCard({ metric }: { metric: MetricSnapshot }) {
+  return (
+    <ConcreteMetricCard
+      label={metric.label}
+      value={metric.value}
+      delta={metric.delta}
+      tone={metricSnapshotTone[metric.tone]}
+    />
+  );
+}
+
 export function OverviewScreen({ data, session, trading = null, portfolio = null }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data, session);
   const StatusIcon = statusBannerIconConfig[vm.statusBanner.icon];
@@ -404,13 +426,13 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
       {vm.hasMetrics ? (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {vm.metrics.map((metric) => (
-            <MetricCard key={metric.id} {...metric} />
+            <SnapshotMetricCard key={metric.id} metric={metric} />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {vm.fallbackStats.map((stat) => (
-            <MetricCard key={stat.id} {...stat} />
+            <SnapshotMetricCard key={stat.id} metric={stat} />
           ))}
         </div>
       )}
@@ -569,11 +591,13 @@ const portfolioPanelToneClass: Record<PortfolioPanelTone, string> = {
   danger: "text-danger"
 } as const;
 
-const riskBadgeVariant: Record<PortfolioPanelTone, "outline" | "success" | "warning" | "danger"> = {
-  default: "outline",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
+// Concrete severity layer: portfolio-panel risk tone → operator-readiness status string
+// consumed by SeverityBadge (Ready · Review · Action · Blocked · Info).
+const riskSeverityStatus: Record<PortfolioPanelTone, string> = {
+  default: "Info",
+  success: "Ready",
+  warning: "ReviewRequired",
+  danger: "Blocked"
 } as const;
 
 function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
@@ -590,9 +614,7 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
           </div>
           <div className="flex items-center gap-2">
             {panel.hasData && (
-              <Badge variant={riskBadgeVariant[panel.riskTone]} dot={panel.riskTone === "success"}>
-                {panel.riskState}
-              </Badge>
+              <SeverityBadge status={riskSeverityStatus[panel.riskTone]} label={panel.riskState} />
             )}
             <Button asChild variant="outline" size="sm">
               <Link to="/trading">
@@ -611,7 +633,7 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {panel.metrics.map((metric) => (
-                <MetricCard key={metric.id} {...metric} />
+                <SnapshotMetricCard key={metric.id} metric={metric} />
               ))}
             </div>
             {panel.positions.length > 0 ? (
