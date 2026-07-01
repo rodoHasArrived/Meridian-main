@@ -2967,11 +2967,16 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Accounting case workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting case queue" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected accounting case" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected case evidence and actions" })).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Current Accounting route" })).toHaveValue("Accounting / Close Cockpit");
     const navigator = screen.getByRole("region", { name: "Accounting recovery navigator" });
     expect(within(navigator).getByRole("link", { name: "Reconciliation Casework" })).toHaveAttribute("href", "/accounting/reconciliation");
     expect(within(navigator).getByRole("link", { name: "Journal Entry" })).toHaveAttribute("href", "/accounting/journal-entries");
     expect(within(navigator).getByRole("link", { name: "Governance" })).toHaveAttribute("href", "/accounting/configure");
+    fireEvent.click(screen.getByText("System details"));
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
     expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
       "href",
@@ -4088,7 +4093,9 @@ describe("AccountingScreen", () => {
 
     await user.type(screen.getByLabelText("Search securities"), "AAPL");
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Security search failed: Provider offline");
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Security search failed: Provider offline");
+    });
   });
 
   it("accepts and renders alias rows inside identity drill-in for accounting workflows", async () => {
@@ -4158,7 +4165,7 @@ describe("AccountingScreen", () => {
     expect(securityRow).toHaveAttribute("aria-expanded", "false");
     await user.click(securityRow);
 
-    expect(securityRow).toHaveAttribute("aria-expanded", "true");
+    await waitFor(() => expect(securityRow).toHaveAttribute("aria-expanded", "true"));
     expect(securityRow).toHaveAttribute("aria-selected", "true");
     expect(await screen.findByText(/Identity drill-in · Apple Inc\./i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();

@@ -489,7 +489,6 @@ type SettingsTaskViewId =
   | "operations"
   | "providers"
   | "data-providers"
-  | "brokerage"
   | "diagnostics"
   | "runtime";
 
@@ -524,12 +523,6 @@ const settingsTaskViews: SettingsTaskView[] = [
     label: "Data Providers",
     href: "#data-provider-modules",
     sectionId: "data-provider-modules"
-  },
-  {
-    id: "brokerage",
-    label: "Provider Setup",
-    href: "#alpaca-provider-setup",
-    sectionId: "alpaca-provider-setup"
   },
   {
     id: "diagnostics",

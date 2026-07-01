@@ -1300,6 +1300,12 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a symbol before loading live market data.");
     expect(screen.getByText("Enter a symbol to load live BBO, recent trades, and L2 depth.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Start a quote list" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add starter symbols" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Import symbols from watchlist" })).toHaveAttribute("href", "/data/watchlist");
+    expect(screen.getByRole("button", { name: "Search symbol" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Selected symbol detail" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Open replay workflow" })).not.toBeInTheDocument();
     expect(api.getLiveQuote).not.toHaveBeenCalled();
   });
 

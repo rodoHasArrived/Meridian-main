@@ -1043,9 +1043,11 @@ metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, 
 event labels also normalize retained source names before entering the visible evidence timeline.
 The browser workstation root (`/`) now opens the Daily Control Tower, a read-only shell projection
 of workflow continuity, trust posture, linked context, and timestamped evidence. Its landing model
-now exposes decision drivers for blocked outputs, trust posture, linked context, and proof events
-before the blocked-output queue, so the first screen explains why the operator should act, who owns
-the issue, what output is affected, which action is next, and which retained proof supports it.
+now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
+Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
+queue, trust posture, linked context, and evidence events before the queued work, so the first screen
+explains why the operator should act, who owns the issue, what output is affected, which action is
+next, and which retained evidence supports it.
 Legacy `/overview` links redirect to that root while suffixed overview routes continue through the
 retained workspace alias path.
 The app shell exposes the active route as a named workbench landmark and marks that landmark busy

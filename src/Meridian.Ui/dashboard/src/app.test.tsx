@@ -326,10 +326,10 @@ describe("App", () => {
     expect(within(drivers).getByText("Evidence events")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Daily control tower finance queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
-      name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
-    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+      name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
+    }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
 
-    const evidenceSummary = screen.getByRole("region", { name: "Brokerage sync failed Evidence summary" });
+    const evidenceSummary = screen.getByRole("region", { name: "Report pack approval waiting Evidence summary" });
     [
       "Source",
       "Freshness",
@@ -342,7 +342,7 @@ describe("App", () => {
     ].forEach((label) => {
       expect(within(evidenceSummary).getByText(label)).toBeInTheDocument();
     });
-    expect(within(evidenceSummary).getByText("Provider setup or diagnostics")).toBeInTheDocument();
+    expect(within(evidenceSummary).getByText("Reporting package or evidence")).toBeInTheDocument();
     await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
   });
 

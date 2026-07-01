@@ -134,8 +134,8 @@ function buildDriverItems({
       label: "Finance queue",
       value: queueRows.length > 0 ? `${blockedRows} blocked / ${reviewRows} review` : "0 queued",
       detail: queueRows.length > 0
-        ? `${queueRows.length} ranked operator focus item(s) drive the daily decision queue.`
-        : "No operator focus items are currently queued.",
+        ? `${queueRows.length} ranked finance focus item(s) drive the daily decision queue.`
+        : "No finance focus items are currently queued.",
       badgeVariant: blockedRows > 0 ? "danger" : reviewRows > 0 ? "warning" : "success"
     },
     {
@@ -352,11 +352,11 @@ function outputLabelForRoute(route: string, workspaceLabel: string): string {
   }
 
   if (pathname.startsWith("/data")) {
-    return "Market data or provider trust";
+    return "Data health or provider review";
   }
 
   if (pathname.startsWith("/settings")) {
-    return "Provider setup or diagnostics";
+    return "Provider connections or diagnostics";
   }
 
   if (pathname.startsWith("/strategy")) {

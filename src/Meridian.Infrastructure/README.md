@@ -73,6 +73,8 @@ Nasdaq Data Link symbol search is implemented as a credential-gated `ISymbolSear
 the dataset-search endpoint. It reuses `NASDAQ_DATA_LINK_API_KEY`, returns exact
 `DATABASE/DATASET` codes to avoid dataset/ticker ambiguity, supports database-code filtering, and
 keeps the conservative 50-request/day pacing already used by the Nasdaq Data Link backfill family.
+The shared symbol-search base class rejects non-positive result limits before the rate limiter and
+HTTP path so direct secondary-provider calls cannot spend free-tier quota on invalid requests.
 OpenFIGI symbol/reference-data enrichment prefers exchange-scoped mapping candidates when callers
 provide an exchange hint, while preserving upstream ordering as the fallback when no exchange can be
 normalized.
