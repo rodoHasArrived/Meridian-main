@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import "@/styles/app-shell.css";
-import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
+import meridianMarkUrl from "@/assets/brand/meridian-mark-light.svg";
 import {
   buildAppShellViewState,
   isAppShellEditableShortcutTarget,
@@ -290,7 +290,10 @@ function AppShell() {
             <img src={meridianMarkUrl} alt="" aria-hidden="true" />
             <div className="workstation-brand-copy min-w-0">
               <div className="name">Meridian</div>
-              <div className="sub">Operator workstation</div>
+              <div className="sub" aria-hidden="true">
+                <span className="workstation-brand-sep">/</span>
+                {headerWorkspace.label}
+              </div>
             </div>
           </div>
         </div>
@@ -464,6 +467,16 @@ function AppShell() {
           </div>
         </main>
       </div>
+
+      <StatusBar
+        items={buildShellStatusItems({
+          session,
+          workspaceLabel: headerWorkspace.label,
+          usingDevelopmentFixtures,
+          refreshing: loading || refreshStatus.inFlight,
+          hasError: Boolean(error)
+        })}
+      />
 
       <CommandPalette
         open={commandOpen}
@@ -925,6 +938,82 @@ function PriceAlertsBell() {
       </span>
     </Link>
   );
+}
+
+interface ShellStatusBarItem {
+  key: string;
+  label?: string;
+  value: string;
+  status?: "ok" | "warn" | "err";
+  push?: boolean;
+}
+
+/**
+ * Concrete workstation status bar — the near-black 28px telemetry footer that mirrors the
+ * WPF StatusBar palette. Renders a row of label/value fields; items flagged `push` float to
+ * the right edge. Purely presentational; all copy is derived by the caller.
+ */
+function StatusBar({ items }: { items: ShellStatusBarItem[] }) {
+  return (
+    <footer className="workstation-statusbar" aria-label="Workstation status">
+      {items.map((item) => (
+        <span
+          key={item.key}
+          className={cn("workstation-statusbar-item", item.push && "workstation-statusbar-item-push")}
+        >
+          {item.status ? (
+            <span className={`workstation-statusbar-dot workstation-statusbar-dot-${item.status}`} aria-hidden="true" />
+          ) : null}
+          {item.label ? <span className="workstation-statusbar-label">{item.label}</span> : null}
+          <span className="workstation-statusbar-value">{item.value}</span>
+        </span>
+      ))}
+    </footer>
+  );
+}
+
+function buildShellStatusItems({
+  session,
+  workspaceLabel,
+  usingDevelopmentFixtures,
+  refreshing,
+  hasError
+}: {
+  session: { environment?: string } | null;
+  workspaceLabel: string;
+  usingDevelopmentFixtures: boolean;
+  refreshing: boolean;
+  hasError: boolean;
+}): ShellStatusBarItem[] {
+  const environment = session?.environment ?? "loading";
+  const connectionStatus: ShellStatusBarItem["status"] = hasError ? "err" : session ? "ok" : "warn";
+  const dataStatus: ShellStatusBarItem["status"] = usingDevelopmentFixtures ? "warn" : "ok";
+
+  return [
+    {
+      key: "session",
+      status: connectionStatus,
+      label: "Session",
+      value: session ? environment : "connecting"
+    },
+    {
+      key: "data",
+      status: dataStatus,
+      label: "Data",
+      value: usingDevelopmentFixtures ? "demo fixtures" : "live source"
+    },
+    {
+      key: "sync",
+      label: "Sync",
+      value: refreshing ? "refreshing…" : "up to date"
+    },
+    {
+      key: "workspace",
+      label: "Workspace",
+      value: workspaceLabel,
+      push: true
+    }
+  ];
 }
 
 function LegacyWorkspaceRedirect() {

@@ -1,29 +1,28 @@
 import React, { useEffect, useState } from "react";
-import {
-  ChevronRight,
-  DatabaseZap,
-  FileCheck2,
-  FlaskConical,
-  Landmark,
-  RadioTower,
-  Settings,
-  WalletCards
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { WorkspaceKey } from "@/types";
+import tradingIcon from "@/assets/icons/trading.svg";
+import portfolioIcon from "@/assets/icons/account-portfolio.svg";
+import accountingIcon from "@/assets/icons/run-ledger.svg";
+import reportingIcon from "@/assets/icons/governance.svg";
+import strategyIcon from "@/assets/icons/strategy-builder.svg";
+import dataIcon from "@/assets/icons/data-sources.svg";
+import settingsIcon from "@/assets/icons/settings.svg";
 
-const icons: Record<WorkspaceKey, typeof RadioTower> = {
-  trading: RadioTower,
-  portfolio: WalletCards,
-  accounting: Landmark,
-  reporting: FileCheck2,
-  strategy: FlaskConical,
-  data: DatabaseZap,
-  settings: Settings
+// Meridian line-icon module set (24px grid, 1.5px stroke) — one per operator workspace.
+const icons: Record<WorkspaceKey, string> = {
+  trading: tradingIcon,
+  portfolio: portfolioIcon,
+  accounting: accountingIcon,
+  reporting: reportingIcon,
+  strategy: strategyIcon,
+  data: dataIcon,
+  settings: settingsIcon
 };
 
 /**
@@ -108,7 +107,7 @@ export function WorkspaceNav({
           </div>
         ) : null}
         {viewModel.items.map((item) => {
-          const Icon = icons[item.key];
+          const iconSrc = icons[item.key];
           const expanded = expandedWorkspaces.has(item.key);
           const subMenuId = `workspace-nav-${density}-${item.key}-sections`;
           return (
@@ -125,7 +124,7 @@ export function WorkspaceNav({
                     )}
                     onClick={onNavigate}
                   >
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <img className="operator-nav-item__icon" src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                     <span className="truncate font-medium">{item.label}</span>
                     {!compact ? (
                       <span className={`operator-nav-status operator-nav-status-${item.statusTone}`}>
