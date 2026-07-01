@@ -52,6 +52,13 @@ public sealed partial class DuckDbQueryService(
             await CreateCatalogViewAsync(connection, timeoutSource.Token).ConfigureAwait(false);
 
             using var command = connection.CreateCommand();
+            // Executing operator-supplied SQL is this workbench's purpose, so parameterization
+            // does not apply (CodeQL cs/sql-injection fires here by design). Containment instead
+            // of sanitization: SqlStatementGuard admits a single SELECT-family statement with
+            // write/config verbs blocked; the session is in-memory, capped (memory/threads/rows/
+            // timeout), filesystem-sandboxed to the storage root via allowed_directories with
+            // external access otherwise disabled, and its configuration is locked; the endpoint
+            // is rate-limited.
             command.CommandText = sql!;
 
             using var reader = await command.ExecuteReaderAsync(timeoutSource.Token).ConfigureAwait(false);
