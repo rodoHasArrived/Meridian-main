@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 99.2% |
+| Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
-| Workstation contract coverage | 98.1% |
+| Workstation contract coverage | 100.0% |
 | Endpoints documented | 588 / 588 |
-| Workstation contracts documented | 793 / 808 |
+| Workstation contracts documented | 808 / 808 |
 
 ## Endpoint Coverage
 
@@ -1193,32 +1193,32 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `StartWorkflow` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:9` |
 | `StatementBreakDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:175` |
 | `StatementBreakType` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:53` |
-| `StatementColumnConfidenceDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:50` |
-| `StatementColumnMappingDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:57` |
-| `StatementConnectorDescriptorDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9` |
-| `StatementFetchScheduleDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:130` |
-| `StatementFetchScheduleUpsertRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:143` |
-| `StatementImportCommitResultDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116` |
-| `StatementImportIssueDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:64` |
-| `StatementImportPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:101` |
-| `StatementKindSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:91` |
-| `StatementMappingProfileActivityCodeDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:43` |
-| `StatementMappingProfileCsvOptionsDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:32` |
-| `StatementMappingProfileDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19` |
-| `StatementMappingProfileFieldDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:37` |
+| `StatementColumnConfidenceDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:50` |
+| `StatementColumnMappingDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:57` |
+| `StatementConnectorDescriptorDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9` |
+| `StatementFetchScheduleDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:130` |
+| `StatementFetchScheduleUpsertRequestDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:143` |
+| `StatementImportCommitResultDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116` |
+| `StatementImportIssueDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:64` |
+| `StatementImportPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:101` |
+| `StatementKindSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:91` |
+| `StatementMappingProfileActivityCodeDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:43` |
+| `StatementMappingProfileCsvOptionsDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:32` |
+| `StatementMappingProfileDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19` |
+| `StatementMappingProfileFieldDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:37` |
 | `StatementMatchSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:157` |
 | `StatementMatchTier` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:39` |
 | `StatementNormalizedCashDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:125` |
 | `StatementNormalizedPositionDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:106` |
 | `StatementNormalizedTransactionDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:138` |
-| `StatementProfileSuggestionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:97` |
+| `StatementProfileSuggestionDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:97` |
 | `StatementReconciliationBreakExplanationDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:248` |
 | `StatementReconciliationCaseAttachmentDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:239` |
 | `StatementReconciliationCaseAuditEventDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:257` |
 | `StatementReconciliationCaseCommentDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:232` |
 | `StatementReconciliationCaseCommentThreadDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:227` |
 | `StatementReconciliationCaseDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:204` |
-| `StatementRecordPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73` |
+| `StatementRecordPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73` |
 | `StatementRunBreakDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:345` |
 | `StatementRunCreateDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:297` |
 | `StatementRunDto` | Documented | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:268` |
@@ -1425,7 +1425,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 15 workstation contract gap(s).
+No API contract coverage gaps detected.
 
 ---
 

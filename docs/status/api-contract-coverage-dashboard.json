@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.2,
+  "score_percent": 100.0,
   "endpoint_coverage_percent": 100.0,
-  "contract_coverage_percent": 98.1,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 588,
     "documented_endpoint_count": 588,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 808,
-    "documented_workstation_contract_count": 793,
-    "undocumented_workstation_contract_count": 15
+    "documented_workstation_contract_count": 808,
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
@@ -6352,77 +6352,77 @@
     {
       "name": "StatementConnectorDescriptorDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementMappingProfileDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementMappingProfileCsvOptionsDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:32",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementMappingProfileFieldDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:37",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementMappingProfileActivityCodeDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:43",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementColumnConfidenceDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:50",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementColumnMappingDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:57",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementImportIssueDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:64",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementRecordPreviewDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementKindSummaryDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:91",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementProfileSuggestionDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:97",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementImportPreviewDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:101",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementImportCommitResultDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementFetchScheduleDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:130",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementFetchScheduleUpsertRequestDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:143",
-      "documented": false
+      "documented": true
     },
     {
       "name": "StatementRunStatus",
