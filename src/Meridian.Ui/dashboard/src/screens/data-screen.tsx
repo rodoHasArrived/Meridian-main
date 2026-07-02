@@ -18,10 +18,11 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
 import {
   WorkspaceFilterBar,
@@ -313,7 +314,7 @@ export function DataScreen({
       />
 
       <section className="workspace-metric-strip">
-        {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
+        {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
       </section>
 
       <section className="data-management-frame">
@@ -1353,13 +1354,14 @@ function ExportDetailPanel({
 
 function EmptyState({ state }: { state: DataOperationsEmptyState }) {
   return (
-    <div
+    <ConcreteEmptyState
       role="status"
-      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
-    >
-      <div className="font-semibold text-foreground">{state.title}</div>
-      <p className="mt-1 leading-6">{state.description}</p>
-    </div>
+      icon="table"
+      title={state.title}
+      detail={state.description}
+      compact
+      className="rounded-sm border border-dashed border-border/80 bg-secondary/20"
+    />
   );
 }
 

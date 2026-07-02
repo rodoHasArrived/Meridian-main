@@ -2,7 +2,7 @@ import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Pap
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -2488,7 +2488,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
-          <MetricCard key={metric.id} {...metric} />
+          <MetricSnapshotCard key={metric.id} {...metric} />
         ))}
       </section>
 
@@ -4650,7 +4650,7 @@ function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExcepti
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {view.metricRows.map((metric) => (
-          <MetricCard
+          <MetricSnapshotCard
             key={metric.id}
             id={metric.id}
             label={metric.label}
@@ -4786,7 +4786,7 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {view.summaryCards.map((metric) => (
-            <MetricCard
+            <MetricSnapshotCard
               key={metric.id}
               id={metric.id}
               label={metric.label}

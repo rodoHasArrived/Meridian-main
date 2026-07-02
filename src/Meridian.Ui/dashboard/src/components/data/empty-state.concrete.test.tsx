@@ -19,4 +19,9 @@ describe("EmptyState (Concrete)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add row" }));
     expect(onAction).toHaveBeenCalledOnce();
   });
+
+  it("can be named as a status region for screen placeholders", () => {
+    render(<EmptyState title="No rows" role="status" ariaLabel="Provider rows empty state" compact />);
+    expect(screen.getByRole("status", { name: "Provider rows empty state" })).toHaveClass("mds-empty--compact");
+  });
 });

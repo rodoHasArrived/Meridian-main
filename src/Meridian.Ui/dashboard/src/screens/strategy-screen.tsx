@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -382,7 +382,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   return (
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
+        {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
       </section>
 
       <Card>

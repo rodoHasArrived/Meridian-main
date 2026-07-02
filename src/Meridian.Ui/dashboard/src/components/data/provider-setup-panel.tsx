@@ -1,5 +1,4 @@
 import {
-  AlertTriangle,
   CheckCircle2,
   ChevronDown,
   FlaskConical,
@@ -19,6 +18,7 @@ import { Toggle } from "@/components/ui/checkbox";
 import { ProviderCapabilityBadges } from "@/components/data/provider-capability-badges";
 import { AddProviderDrawer } from "@/components/data/add-provider-drawer";
 import { EditProviderDrawer } from "@/components/data/edit-provider-drawer";
+import { EmptyState as ConcreteEmptyState, SkeletonTable } from "@/components/data/concrete";
 import { useProviderSetup } from "@/lib/provider-setup/use-provider-setup";
 import type { ProviderModuleStatus } from "@/types/provider-setup";
 import { cn } from "@/lib/utils";
@@ -150,12 +150,19 @@ export function ProviderSetupPanel() {
 
         <CardContent>
           {loading && modules.length === 0 ? (
-            <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              Loading provider modules…
+            <div role="status" aria-label="Loading provider modules" className="space-y-3 py-2">
+              <p className="text-sm text-muted-foreground">Loading provider modules…</p>
+              <SkeletonTable rows={3} columns={3} />
             </div>
           ) : modules.length === 0 ? (
-            <EmptyState onAdd={() => setAddOpen(true)} />
+            <ConcreteEmptyState
+              icon="inbox"
+              title="No provider modules configured"
+              detail="Add a provider to start receiving market data."
+              action="Add provider"
+              onAction={() => setAddOpen(true)}
+              compact
+            />
           ) : (
             <div className="grid gap-3">
               {modules.map(mod => (
@@ -322,24 +329,6 @@ function CredentialStatusRow({ credentials }: { credentials: ProviderModuleStatu
           </span>
         </span>
       ))}
-    </div>
-  );
-}
-
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-10 text-center">
-      <AlertTriangle className="h-8 w-8 text-muted-foreground/50" aria-hidden="true" />
-      <div>
-        <p className="text-sm font-medium text-foreground">No provider modules configured</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Add a provider to start receiving market data.
-        </p>
-      </div>
-      <Button size="sm" onClick={onAdd}>
-        <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-        Add provider
-      </Button>
     </div>
   );
 }

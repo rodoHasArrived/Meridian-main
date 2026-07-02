@@ -26,6 +26,7 @@ import { CommandPalette } from "@/components/meridian/command-palette";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { Skeleton } from "@/components/data/skeleton";
 import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -1087,7 +1088,7 @@ function LegacyWorkspaceRedirect() {
 function WorkspaceRouteFallback({ title }: { title: string }) {
   return (
     <PanelSurface role="status" aria-live="polite" className="flex items-center gap-3 p-4">
-      <LoaderCircle className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+      <Skeleton variant="circle" width={16} aria-hidden="true" />
       <div>
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <p className="mt-1 text-xs text-muted-foreground">Preparing the workstation route.</p>

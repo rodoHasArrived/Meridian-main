@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
   addSymbol as addSymbolApi,
@@ -50,7 +50,7 @@ export function WatchlistScreen() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
-              <MetricCard key={stat.id} {...stat} />
+              <MetricSnapshotCard key={stat.id} {...stat} />
             ))}
           </div>
 

@@ -1,8 +1,8 @@
 // Meridian KPI tile (Concrete) — mirrors the desktop MetricCardStyle + its
 // success/danger/warning/info variants: a raised paper surface with a 3px LEFT-accent
 // border in the tone color, a small-caps label, a 24px mono value, and a signed delta
-// (green up / red down). This is the design-system MetricCard; the pre-existing
-// read-model tile lives at `components/meridian/metric-card.tsx` and is left untouched.
+// (green up / red down). This is the design-system MetricCard; read-model
+// adapters should derive their state before delegating here.
 import { memo, type ReactNode } from "react";
 import { injectStyle } from "../operations/inject-style";
 
@@ -41,6 +41,8 @@ export interface MetricCardProps {
   trend?: "up" | "down" | "flat";
   /** Override the composed group accessible name (label, value, change, status). */
   ariaLabel?: string;
+  /** Override the delta accessible name when symbols need speech-safe labels. */
+  deltaAriaLabel?: string;
 }
 
 const TONE_STATUS: Record<MetricCardTone, string> = {
@@ -58,7 +60,7 @@ const TONE_STATUS: Record<MetricCardTone, string> = {
  * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
  * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
  */
-function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel }: MetricCardProps) {
+function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel }: MetricCardProps) {
   injectStyle("metric", CSS);
   const t =
     trend ??
@@ -83,7 +85,11 @@ function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ari
     >
       <p className="mds-metric__label">{label}</p>
       <p className="mds-metric__value">{value}</p>
-      {delta && <div className={`mds-metric__delta mds-delta--${t}`}>{delta}</div>}
+      {delta && (
+        <div className={`mds-metric__delta mds-delta--${t}`} aria-label={deltaAriaLabel}>
+          {delta}
+        </div>
+      )}
     </div>
   );
 }

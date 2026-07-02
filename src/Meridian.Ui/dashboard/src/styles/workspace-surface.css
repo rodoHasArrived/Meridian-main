@@ -25,7 +25,6 @@ body {
 .panel-surface-strong,
 .glass-card,
 .workspace-header-card,
-.metric-tile,
 .workspace-region {
   border: 1px solid var(--ws-border);
   border-radius: var(--radius-card);
@@ -146,8 +145,7 @@ body {
   color: var(--ws-text-muted);
 }
 
-.workspace-header-card:hover,
-.metric-tile:hover {
+.workspace-header-card:hover {
   border-color: var(--ws-border-strong);
   background: var(--ws-surface-raised);
   box-shadow: var(--ws-shadow);

@@ -1,6 +1,7 @@
 import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
 import { GateRail, SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,7 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {vm.metrics.map((metric) => (
-          <MetricCard
+          <MetricSnapshotCard
             key={metric.id}
             id={metric.id}
             label={metric.label}
@@ -173,14 +174,15 @@ function FieldCatalogEmptyState({ state }: { state: StrategyBuilderWorkbenchView
   if (!state) return null;
 
   return (
-    <div
+    <ConcreteEmptyState
       role="status"
-      aria-label={state.ariaLabel}
-      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
-    >
-      <div className="font-semibold text-foreground">{state.title}</div>
-      <p className="mt-1 leading-6">{state.description}</p>
-    </div>
+      ariaLabel={state.ariaLabel}
+      icon="search"
+      title={state.title}
+      detail={state.description}
+      compact
+      className="rounded-sm border border-dashed border-border/80 bg-secondary/20"
+    />
   );
 }
 
