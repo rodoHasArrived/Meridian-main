@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox, Toggle } from "@/components/ui/checkbox";
+import { DensityToggle } from "@/components/ui/density-toggle";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
@@ -590,6 +592,17 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
 }
 
+function resolveSettingsTaskViewIdFromPath(pathname: string): SettingsTaskViewId | null {
+  const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase();
+  if (normalizedPath.endsWith("/settings/preferences")) {
+    return "providers";
+  }
+  if (normalizedPath.endsWith("/settings/integrations")) {
+    return "operations";
+  }
+  return null;
+}
+
 function inferSettingsTaskView({
   overview,
   strategy,
@@ -783,8 +796,9 @@ export function SettingsScreen({
     const initialHash = typeof window === "undefined" ? "" : window.location.hash;
     return initialHash ? resolveSettingsTaskViewId(initialHash) : null;
   });
+  const routePathTaskView = resolveSettingsTaskViewIdFromPath(location.pathname);
   const routeHashTaskView = location.hash ? resolveSettingsTaskViewId(location.hash) : null;
-  const activeTaskView = routeHashTaskView ?? hashTaskView ?? inferredTaskView;
+  const activeTaskView = routePathTaskView ?? routeHashTaskView ?? hashTaskView ?? inferredTaskView;
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -2846,6 +2860,36 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      {showAccessSection ? (
+      <Card
+        id="settings-appearance"
+        role="region"
+        aria-label="Appearance preferences"
+        className="panel-surface scroll-mt-6 border border-border/70"
+      >
+        <CardHeader>
+          <div className="eyebrow-label">Operator preferences</div>
+          <CardTitle className="mt-2 flex items-center gap-2 text-base">
+            <MonitorCheck className="h-4 w-4 text-primary" />
+            Appearance
+          </CardTitle>
+          <CardDescription className="mt-2">
+            Choose the workstation theme and screen density for this browser.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Theme</div>
+            <ThemeToggle fullWidth />
+          </div>
+          <div className="grid gap-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Density</div>
+            <DensityToggle persist="meridian.workstation.density.v1" fullWidth />
+          </div>
+        </CardContent>
+      </Card>
+      ) : null}
 
       {showAccessSection ? (
       <Card

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCommandPaletteEntitySearch } from "@/components/meridian/command-palette.entity-search";
+import type { CommandPaletteEntitySearchServices } from "@/components/meridian/command-palette.entity-search";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
@@ -43,6 +45,7 @@ interface CommandPaletteProps {
   operatingContextSymbol?: string | null;
   operatingScope?: AppShellOperatingScopeInput | null;
   onPresetUsed?: (presetId: string) => void | Promise<void>;
+  entitySearchServices?: CommandPaletteEntitySearchServices;
 }
 
 export function CommandPalette({
@@ -54,7 +57,8 @@ export function CommandPalette({
   operatorFocusItems,
   operatingContextSymbol,
   operatingScope,
-  onPresetUsed
+  onPresetUsed,
+  entitySearchServices
 }: CommandPaletteProps) {
   const { pathname, search, hash } = useLocation();
   const [query, setQuery] = useState("");
@@ -62,20 +66,7 @@ export function CommandPalette({
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const currentRoute = `${pathname}${search}${hash}`;
-  const viewModel = buildCommandPaletteViewModel(
-    currentRoute,
-    undefined,
-    {
-      workflowLibrary,
-      workflowPresets,
-      workflowError,
-      operatorFocusItems
-    },
-    query,
-    operatingContextSymbol ?? null,
-    operatingScope ?? null
-  );
+  const entitySearch = useCommandPaletteEntitySearch({ open, query, services: entitySearchServices });
 
   useEffect(() => {
     if (!open) {
@@ -137,6 +128,24 @@ export function CommandPalette({
     return null;
   }
 
+  const currentRoute = `${pathname}${search}${hash}`;
+  const viewModel = buildCommandPaletteViewModel(
+    currentRoute,
+    undefined,
+    {
+      workflowLibrary,
+      workflowPresets,
+      workflowError,
+      operatorFocusItems,
+      entityItems: entitySearch.items,
+      entitySearchStatus: entitySearch.status,
+      entitySearchError: entitySearch.error
+    },
+    query,
+    operatingContextSymbol ?? null,
+    operatingScope ?? null
+  );
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center px-4 py-24"
@@ -185,6 +194,9 @@ export function CommandPalette({
           <span className="command-palette-chip">{viewModel.shortcutHint}</span>
           {viewModel.backendStatusLabel ? (
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
+          ) : null}
+          {viewModel.entitySearchStatusLabel ? (
+            <span className="command-palette-chip">{viewModel.entitySearchStatusLabel}</span>
           ) : null}
         </div>
         <label htmlFor="command-palette-search" className="sr-only">

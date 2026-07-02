@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
 import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts";
 import {
@@ -181,7 +181,7 @@ export function PriceAlertsScreen() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-3">
-            {vm.summaryMetrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
+            {vm.summaryMetrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
           </div>
           {vm.pollErrorPanel ? (
             <p role={vm.pollErrorPanel.role} aria-live={vm.pollErrorPanel.ariaLive} className={vm.pollErrorPanel.className}>

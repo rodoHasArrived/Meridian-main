@@ -1,6 +1,7 @@
 // Meridian EmptyState (Concrete) — a consistent zero-data placeholder for tables and
 // panels. A muted line-icon, a title, an optional detail line, and an optional primary
 // action (steel accent). Flat, no decoration.
+import type { AriaRole } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
@@ -61,6 +62,12 @@ export interface EmptyStateProps {
   onAction?: () => void;
   /** Tighter padding for inline use. @default false */
   compact?: boolean;
+  /** Optional landmark/status role for screen-level empty states. */
+  role?: AriaRole;
+  /** Optional accessible name when the empty state is a status/region. */
+  ariaLabel?: string;
+  /** Optional layout class for panel composition. */
+  className?: string;
 }
 
 /**
@@ -76,10 +83,17 @@ export function EmptyState({
   action,
   onAction,
   compact = false,
+  role,
+  ariaLabel,
+  className,
 }: EmptyStateProps) {
   injectStyle("empty-state", CSS);
   return (
-    <div className={`mds-empty${compact ? " mds-empty--compact" : ""}`}>
+    <div
+      className={`mds-empty${compact ? " mds-empty--compact" : ""}${className ? " " + className : ""}`}
+      role={role}
+      aria-label={ariaLabel}
+    >
       <span className="mds-empty__icon" aria-hidden="true">
         <svg
           width={32}

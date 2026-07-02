@@ -2,7 +2,7 @@ import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Pap
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,7 @@ import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, Close
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
+  buildAccountingSectionVisibility,
   buildAccountingTaskMode,
   resolveAccountingWorkstream,
   type AccountingWorkstream
@@ -1610,15 +1611,6 @@ function formatApprovalError(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message || fallback : fallback;
 }
 
-function normalizeAccountingLandingPath(pathname: string): string {
-  const path = pathname.split("?")[0]?.split("#")[0]?.trim() || WORKSTATION_ROUTE_CATALOG.accounting;
-  if (path.length > 1 && path.endsWith("/")) {
-    return path.slice(0, -1).toLowerCase();
-  }
-
-  return path.toLowerCase();
-}
-
 interface AccountingCaseWorkbenchProps {
   breakRows: ReconciliationBreakRowViewModel[];
   selectedBreakId: string | null;
@@ -1821,12 +1813,11 @@ function AccountingCaseWorkbench({
 }
 
 export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
+  const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
   const workspace = workspaceForPath(pathname);
-  const normalizedAccountingPath = normalizeAccountingLandingPath(pathname);
-  const isCloseCockpitLanding = normalizedAccountingPath === WORKSTATION_ROUTE_CATALOG.accounting || normalizedAccountingPath === "/governance";
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation);
@@ -2330,7 +2321,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         ]}
       />
 
-      {isCloseCockpitLanding ? (
+      {sectionVisibility.showCloseCockpitLanding ? (
         <>
           <AccountingCaseWorkbench
             breakRows={reconciliation.rows}
@@ -2367,16 +2358,18 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </>
       ) : (
         <>
-      {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
+      {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
+      {sectionVisibility.showWorkflowDetails ? (
       <CloseCommandCenterPanel
         view={closeCommandCenter}
         onRefresh={() => void refreshCloseWorkflow()}
       />
+      ) : null}
 
-      <AccountingCloseReportPackagePanel view={closeReportPackage} />
+      {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}
 
-      {multiAssetCoveragePanel ? (
+      {sectionVisibility.showMultiAssetCoverage && multiAssetCoveragePanel ? (
         <Card className="panel-surface" role="region" aria-label="Multi-asset accounting coverage">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -2441,6 +2434,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </Card>
       ) : null}
 
+      {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel
         providers={accountingSystemProviders}
         importDetail={accountingSystemImport}
@@ -2459,27 +2453,29 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         onCreateExportPackage={() => void createExternalGlExportPackage()}
         onCertifyExportPackage={() => void certifyExternalGlExportPackage()}
       />
+      ) : null}
 
-      {workstream === "configure" ? (
+      {sectionVisibility.showConfiguration ? (
         <AccountingConfigurationPanel view={configuration} />
       ) : null}
 
-      {workstream === "journal-entries" ? (
+      {sectionVisibility.showJournalEntries ? (
         <ManualJournalEntryWorkbenchPanel view={journalEntries} />
       ) : null}
 
-      {workstream === "capital-accounts" ? (
+      {sectionVisibility.showCapitalAccounts ? (
         <CapitalAccountWorkbenchPanel view={capitalAccountWorkbench} />
       ) : null}
 
-      {workstream === "approvals" ? (
+      {sectionVisibility.showApprovals ? (
         <AccountingApprovalsWorkstream />
       ) : null}
 
-      {workstream === "exceptions" ? (
+      {sectionVisibility.showExceptionWorkbench ? (
         <OperationalExceptionWorkbenchPanel view={reconciliation.exceptionWorkbench} />
       ) : null}
 
+      {sectionVisibility.showPosture ? (
       <section id="accounting-posture" className="workspace-section-band" aria-labelledby="accounting-posture-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
@@ -2492,7 +2488,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
-          <MetricCard key={metric.id} {...metric} />
+          <MetricSnapshotCard key={metric.id} {...metric} />
         ))}
       </section>
 
@@ -2621,8 +2617,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </Card>
       </section>
       </section>
+      ) : null}
 
-      {workstream === "reconciliation" ? (
+      {sectionVisibility.showReconciliation ? (
         <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
           <div className="workspace-section-subheader">
             <div className="min-w-0">
@@ -2836,7 +2833,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </section>
       ) : null}
 
-      {workstream === "ledger" && selectedReconciliation ? (
+      {sectionVisibility.showLedgerExplorer && selectedReconciliation ? (
         <FinancialRecordExplorerShell
           explorerLabel="Financial Record Explorer"
           title="Ledger Explorer"
@@ -3292,7 +3289,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       </section>
 
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
-      {workstream === "security-master" && (
+      {sectionVisibility.showSecurityMaster && (
         <FinancialRecordExplorerShell
           explorerLabel="Financial Record Explorer"
           title="Security & Instrument Explorer"
@@ -3741,7 +3738,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </FinancialRecordExplorerShell>
       )}
 
-      {(workstream === "reconciliation" || workstream === "exceptions") && (
+      {sectionVisibility.showReconciliationActions && (
         <section id="accounting-actions" className="workspace-section-band" aria-labelledby="accounting-actions-heading">
           <div className="workspace-section-subheader">
             <div className="min-w-0">
@@ -4653,7 +4650,7 @@ function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExcepti
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {view.metricRows.map((metric) => (
-          <MetricCard
+          <MetricSnapshotCard
             key={metric.id}
             id={metric.id}
             label={metric.label}
@@ -4789,7 +4786,7 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {view.summaryCards.map((metric) => (
-            <MetricCard
+            <MetricSnapshotCard
               key={metric.id}
               id={metric.id}
               label={metric.label}

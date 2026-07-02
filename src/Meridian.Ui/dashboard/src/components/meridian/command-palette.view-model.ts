@@ -23,7 +23,7 @@ import type {
   WorkspaceSummary
 } from "@/types";
 
-export type CommandPaletteItemKind = "focus" | "workspace" | "route" | "workflow" | "preset";
+export type CommandPaletteItemKind = "focus" | "entity" | "workspace" | "route" | "workflow" | "preset";
 export type CommandPaletteItemStatusTone = "blocked" | "review" | "ready" | "current" | "neutral";
 export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
 export type CommandPaletteFocusTarget = "search" | "command" | "other";
@@ -78,6 +78,9 @@ export interface CommandPaletteWorkflowData {
   workflowPresets?: WorkflowPresetLibrary | null;
   workflowError?: string | null;
   operatorFocusItems?: CommandPaletteFocusAction[] | null;
+  entityItems?: CommandPaletteEntityItem[] | null;
+  entitySearchStatus?: "idle" | "searching" | "ready" | "degraded" | "error" | null;
+  entitySearchError?: string | null;
 }
 
 export interface CommandPaletteFocusAction {
@@ -89,6 +92,17 @@ export interface CommandPaletteFocusAction {
   actionLabel: string;
   tone: "ready" | "review" | "blocked" | "pending";
   ariaLabel: string;
+}
+
+export interface CommandPaletteEntityItem {
+  id: string;
+  label: string;
+  description: string;
+  route: string;
+  sourceLabel: "Symbol" | "Security";
+  commandLabel: string;
+  ariaLabel: string;
+  statusLabel?: string | null;
 }
 
 interface CommandPaletteRouteDefinition {
@@ -122,17 +136,37 @@ export interface CommandPaletteViewModel {
   recommendedItemsCountLabel: string;
   filteredItemCountLabel: string;
   emptyState: CommandPaletteEmptyState | null;
+  entitySearchStatusLabel: string | null;
 }
 
 const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
   focus: "Focus actions",
+  entity: "Entities",
   workspace: "Workspaces",
   route: "Quick routes",
   preset: "Presets",
   workflow: "Workflows"
 };
 
-const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "workspace", "route", "preset", "workflow"];
+const COMMAND_KIND_SINGULAR_LABELS: Record<CommandPaletteItemKind, string> = {
+  focus: "focus action",
+  entity: "entity",
+  workspace: "workspace",
+  route: "quick route",
+  preset: "preset",
+  workflow: "workflow"
+};
+
+const COMMAND_KIND_PLURAL_LABELS: Record<CommandPaletteItemKind, string> = {
+  focus: "focus actions",
+  entity: "entities",
+  workspace: "workspaces",
+  route: "quick routes",
+  preset: "presets",
+  workflow: "workflows"
+};
+
+const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "entity", "workspace", "route", "preset", "workflow"];
 const COMMAND_PALETTE_FILTER_COUNT_ID = "command-palette-filter-count";
 const COMMAND_PALETTE_EMPTY_STATE_ID = "command-palette-empty-state";
 const COMMAND_PALETTE_EMPTY_STATE_TITLE_ID = "command-palette-empty-state-title";
@@ -273,18 +307,27 @@ export function buildCommandPaletteViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   });
   const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
+  const entityItems = buildEntityItems(workflowData.entityItems ?? [], pathname);
   const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);
-  const items = [...focusItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
+  const items = [...focusItems, ...entityItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
   const commandGroups = buildCommandPaletteGroups(filteredItems);
   const hasWorkflowBackend = Boolean(
     workflowData.workflowLibrary || workflowData.workflowPresets || workflowData.workflowError
   );
-  const emptyState = buildCommandPaletteEmptyState(items.length, filteredItems.length, normalizedQuery, hasWorkflowBackend);
+  const emptyState = buildCommandPaletteEmptyState(
+    items.length,
+    filteredItems.length,
+    normalizedQuery,
+    hasWorkflowBackend,
+    workflowData.entitySearchStatus === "error" || workflowData.entitySearchStatus === "degraded"
+      ? workflowData.entitySearchError
+      : null
+  );
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
   const activeRoute = routeItems.find((item) => item.active);
@@ -309,6 +352,12 @@ export function buildCommandPaletteViewModel(
     scopeLabel: hasWorkflowBackend ? "Shared workflow, route, and workspace routing" : "Canonical workspace and route routing",
     operatingContextLabel: operatingScope.hasScope ? operatingScope.summary : null,
     backendStatusLabel: buildBackendStatusLabel(hasWorkflowBackend, workflowItems.length, presetItems.length, workflowData.workflowError),
+    entitySearchStatusLabel: buildEntitySearchStatusLabel(
+      normalizedQuery,
+      entityItems.length,
+      workflowData.entitySearchStatus ?? "idle",
+      workflowData.entitySearchError ?? null
+    ),
     commandListLabel: hasWorkflowBackend
       ? `${items.length} command${items.length === 1 ? "" : "s"}`
       : `${items.length} workstation command${items.length === 1 ? "" : "s"}`,
@@ -318,9 +367,10 @@ export function buildCommandPaletteViewModel(
           routeItems.length,
           presetItems.length,
           workflowItems.length,
-          focusItems.length
+          focusItems.length,
+          entityItems.length
         )
-      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length, focusItems.length),
+      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length, focusItems.length, entityItems.length),
     activeWorkspaceLabel,
     initialFocusItemId:
       filteredItems.find((item) => item.kind === "focus")?.id
@@ -381,7 +431,8 @@ function buildCommandPaletteEmptyState(
   totalCount: number,
   filteredCount: number,
   normalizedQuery: string,
-  hasWorkflowBackend: boolean
+  hasWorkflowBackend: boolean,
+  entitySearchError: string | null = null
 ): CommandPaletteEmptyState | null {
   if (totalCount === 0) {
     return {
@@ -407,7 +458,9 @@ function buildCommandPaletteEmptyState(
       detailId: COMMAND_PALETTE_EMPTY_STATE_DETAIL_ID,
       actionId: COMMAND_PALETTE_CLEAR_SEARCH_ID,
       title: "No matching commands",
-      detail: `No commands match "${normalizedQuery}". Clear the search to return to all workstation commands.`,
+      detail: entitySearchError
+        ? `No commands match "${normalizedQuery}". Entity search is unavailable; local workstation commands remain available. Clear the search to return to all workstation commands.`
+        : `No commands match "${normalizedQuery}". Clear the search to return to all workstation commands.`,
       statusLabel: "Empty",
       actionLabel: "Clear search",
       actionAriaLabel: `Clear command palette search for ${normalizedQuery}`,
@@ -418,12 +471,42 @@ function buildCommandPaletteEmptyState(
   return null;
 }
 
+function buildEntitySearchStatusLabel(
+  normalizedQuery: string,
+  entityCount: number,
+  status: NonNullable<CommandPaletteWorkflowData["entitySearchStatus"]>,
+  error: string | null
+) {
+  if (normalizedQuery.length < 2) {
+    return null;
+  }
+
+  if (status === "searching") {
+    return "Searching entities";
+  }
+
+  if (status === "degraded") {
+    return error ? `Entity search degraded: ${error}` : "Entity search degraded";
+  }
+
+  if (status === "error") {
+    return error ? `Entity search unavailable: ${error}` : "Entity search unavailable";
+  }
+
+  if (entityCount > 0) {
+    return `${entityCount} entity result${entityCount === 1 ? "" : "s"}`;
+  }
+
+  return null;
+}
+
 export function buildCommandPaletteGroups(items: CommandPaletteItem[]): CommandPaletteGroup[] {
   return COMMAND_KIND_ORDER
     .map((kind) => {
       const groupItems = items.filter((item) => item.kind === kind);
       const label = COMMAND_KIND_LABELS[kind];
-      const countLabel = `${groupItems.length} ${label.toLowerCase().replace(/s$/, "")}${groupItems.length === 1 ? "" : "s"}`;
+      const singularLabel = COMMAND_KIND_SINGULAR_LABELS[kind];
+      const countLabel = `${groupItems.length} ${groupItems.length === 1 ? singularLabel : COMMAND_KIND_PLURAL_LABELS[kind]}`;
 
       return {
         kind,
@@ -533,6 +616,30 @@ function buildFocusItems(
       statusVisible: true,
       commandLabel: action.actionLabel || `Open ${action.label}`,
       ariaLabel: action.ariaLabel || `${action.workspaceLabel}: ${action.label}. ${action.detail}`,
+      presetId: null,
+      active
+    };
+  });
+}
+
+function buildEntityItems(
+  entities: CommandPaletteEntityItem[],
+  pathname: string
+): CommandPaletteItem[] {
+  return entities.map<CommandPaletteItem>((entity) => {
+    const active = isActiveRoute(pathname, entity.route);
+    return {
+      id: `entity:${entity.id}`,
+      kind: "entity",
+      label: entity.label,
+      description: entity.description,
+      route: entity.route,
+      routeLabel: entity.route,
+      statusLabel: active ? "Current" : entity.statusLabel ?? entity.sourceLabel,
+      statusTone: active ? "current" : "neutral",
+      statusVisible: true,
+      commandLabel: entity.commandLabel,
+      ariaLabel: entity.ariaLabel,
       presetId: null,
       active
     };
@@ -722,9 +829,10 @@ function buildBackendStatusLabel(
   return `${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"}`;
 }
 
-function buildLocalItemCountLabel(workspaceCount: number, routeCount: number, focusCount = 0) {
+function buildLocalItemCountLabel(workspaceCount: number, routeCount: number, focusCount = 0, entityCount = 0) {
   return joinCommandPaletteCounts([
     focusCount > 0 ? `${focusCount} focus action${focusCount === 1 ? "" : "s"}` : null,
+    entityCount > 0 ? `${entityCount} entity result${entityCount === 1 ? "" : "s"}` : null,
     `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"}`,
     `${routeCount} quick route${routeCount === 1 ? "" : "s"}`
   ]);
@@ -735,10 +843,12 @@ function buildItemCountLabel(
   routeCount: number,
   presetCount: number,
   workflowActionCount: number,
-  focusCount = 0
+  focusCount = 0,
+  entityCount = 0
 ) {
   return joinCommandPaletteCounts([
     focusCount > 0 ? `${focusCount} focus action${focusCount === 1 ? "" : "s"}` : null,
+    entityCount > 0 ? `${entityCount} entity result${entityCount === 1 ? "" : "s"}` : null,
     `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"}`,
     `${routeCount} quick route${routeCount === 1 ? "" : "s"}`,
     `${presetCount} preset${presetCount === 1 ? "" : "s"}`,

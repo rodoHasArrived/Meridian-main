@@ -83,6 +83,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     providerRoutingRefreshStatus: idleRequestStatus("provider routing refresh"),
     portfolioRefreshStatus: idleRequestStatus("portfolio refresh"),
     refresh: vi.fn(),
+    refreshWorkspace: vi.fn(),
     refreshTrading: vi.fn(),
     refreshPortfolio: vi.fn(),
     refreshProviderRouting: vi.fn(),

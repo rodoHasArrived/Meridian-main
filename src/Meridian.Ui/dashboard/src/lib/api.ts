@@ -2914,9 +2914,9 @@ export function getRunSweeps(limit?: number) {
 
 // --- Security Master search ---
 
-export async function searchSecurities(query: string, take = 25, activeOnly = true) {
+export async function searchSecurities(query: string, take = 25, activeOnly = true, options: ApiRequestOptions = {}) {
   const path = workstationSecurityMasterSearchEndpoint({ query, take, activeOnly });
-  const results = await getJson<SecurityMasterEntry[]>(path);
+  const results = await getJson<SecurityMasterEntry[]>(path, options);
 
   if (import.meta.env.DEV && results.length === 0) {
     const fixtureResults = await getDevelopmentSearchFallback(query, take, activeOnly);

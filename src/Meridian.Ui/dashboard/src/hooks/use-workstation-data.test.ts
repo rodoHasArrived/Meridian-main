@@ -22,6 +22,7 @@ import type {
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
+  WorkspaceKey,
   WorkflowLibrary,
   WorkflowPreset,
   WorkflowPresetLibrary
@@ -63,6 +64,7 @@ type Deferred<T> = {
   promise: Promise<T>;
   resolve: (value: T) => void;
   reject: (reason?: unknown) => void;
+  settled: boolean;
 };
 
 const requests: Record<string, Deferred<unknown>[]> = {
@@ -148,7 +150,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
 
     await act(async () => {
-      resolveRefreshBatch(1, "newer");
+      await resolveRefreshBatch(1, "newer");
       await newerRefresh;
     });
 
@@ -156,7 +158,7 @@ describe("useWorkstationData", () => {
     expect(result.current.loading).toBe(false);
 
     await act(async () => {
-      resolveRefreshBatch(0, "older");
+      await resolveRefreshBatch(0, "older");
       await flushAsync();
     });
 
@@ -181,7 +183,7 @@ describe("useWorkstationData", () => {
     expect(newerSignal?.aborted).toBe(false);
 
     await act(async () => {
-      resolveRefreshBatch(1, "newer");
+      await resolveRefreshBatch(1, "newer");
       await flushAsync();
     });
   });
@@ -193,7 +195,7 @@ describe("useWorkstationData", () => {
 
     unmount();
     await act(async () => {
-      resolveRefreshBatch(0, "unmounted");
+      await resolveRefreshBatch(0, "unmounted");
       await flushAsync();
     });
 
@@ -215,24 +217,24 @@ describe("useWorkstationData", () => {
         })
       ));
       resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
-      resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
+      resolveRequestIfPresent<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
       resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
-      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
-      resolveRequest<MultiAssetCoverageSummary>(
+      resolveRequestIfPresent<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequestIfPresent<MultiAssetCoverageSummary>(
         "portfolioMultiAssetCoverage",
         0,
         { marker: "portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
-      resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
-      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
-      resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
-      resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
-      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
-      resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("session-expired"));
-      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
-      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
-      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
-      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequestIfPresent<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
+      resolveRequestIfPresent<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequestIfPresent<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
+      resolveRequestIfPresent<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
+      resolveRequestIfPresent<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequestIfPresent<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("session-expired"));
+      resolveRequestIfPresent<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequestIfPresent<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequestIfPresent<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveRequestIfPresent<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, { generatedAt: "2026-01-01T00:00:00Z", presets: [] });
       await flushAsync();
@@ -244,7 +246,7 @@ describe("useWorkstationData", () => {
   });
 
   it("translates raw HTML 404 workspace failures before publishing shell errors", async () => {
-    const { result } = renderHook(() => useWorkstationData());
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "reporting" }));
 
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
@@ -257,29 +259,29 @@ describe("useWorkstationData", () => {
         role: "Operator"
       });
       resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
-      resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
-      resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
-      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
-      resolveRequest<MultiAssetCoverageSummary>(
+      resolveRequestIfPresent<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
+      resolveRequestIfPresent<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
+      resolveRequestIfPresent<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequestIfPresent<MultiAssetCoverageSummary>(
         "portfolioMultiAssetCoverage",
         0,
         { marker: "portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
-      resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
-      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequestIfPresent<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
+      resolveRequestIfPresent<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
       rejectRequest("reporting", 0, createApiErrorFromResponseBody(
         "/api/workstation/reporting",
         404,
         "<!DOCTYPE HTML><html><body><h1>404</h1><p>File not found</p></body></html>"
       ));
-      resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
-      resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", 0, { marker: "robinhood" } as unknown as BrokerageConnectionStatus);
-      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
-      resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("reporting-html-404"));
-      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
-      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
-      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
-      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequestIfPresent<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
+      resolveRequestIfPresent<BrokerageConnectionStatus>("robinhoodConnection", 0, { marker: "robinhood" } as unknown as BrokerageConnectionStatus);
+      resolveRequestIfPresent<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequestIfPresent<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("reporting-html-404"));
+      resolveRequestIfPresent<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequestIfPresent<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequestIfPresent<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveRequestIfPresent<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, { generatedAt: "2026-01-01T00:00:00Z", presets: [] });
       await flushAsync();
@@ -297,14 +299,14 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
 
     await act(async () => {
-      resolveRefreshBatch(1, "strict-active");
+      await resolveRefreshBatch(1, "strict-active");
       await flushAsync();
     });
 
     await waitFor(() => expect(result.current.session?.displayName).toBe("strict-active session"));
 
     await act(async () => {
-      resolveRefreshBatch(0, "strict-stale");
+      await resolveRefreshBatch(0, "strict-stale");
       await flushAsync();
     });
 
@@ -315,6 +317,9 @@ describe("useWorkstationData", () => {
     const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "accounting" }));
 
     await waitFor(() => expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1));
+    expect(api.getStrategyWorkspace).not.toHaveBeenCalled();
+    expect(api.getTradingWorkspace).not.toHaveBeenCalled();
+    expect(api.getPortfolioWorkspace).not.toHaveBeenCalled();
 
     await act(async () => {
       resolveRequest<SessionInfo>("session", 0, {
@@ -354,6 +359,131 @@ describe("useWorkstationData", () => {
     expect(result.current.refreshStatus.inFlight).toBe(false);
   });
 
+  it("runs later manual refreshes against only the active workspace scope", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "data" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    let scopedRefresh!: Promise<void>;
+    act(() => {
+      scopedRefresh = result.current.refresh();
+    });
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 1, {
+        activeWorkspace: "data",
+        commandCount: 2,
+        displayName: "scoped session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "scoped overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<DataWorkspaceResponse>("data", 1, { marker: "scoped data" } as unknown as DataWorkspaceResponse);
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 1, buildProviderReadiness("scoped"));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "scoped workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:01:00Z", presets: [] });
+      await scopedRefresh;
+    });
+
+    expect(result.current.data).toEqual({ marker: "scoped data" });
+    expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("refetches stale active workspace slices when the active workspace changes", async () => {
+    let now = 1_000;
+    vi.spyOn(Date, "now").mockImplementation(() => now);
+    const { result, rerender } = renderHook(
+      ({ workspace }) => useWorkstationData({ activeWorkspace: workspace }),
+      { initialProps: { workspace: "trading" as WorkspaceKey } }
+    );
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    now = 32_000;
+    rerender({ workspace: "data" });
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 1, {
+        activeWorkspace: "data",
+        commandCount: 2,
+        displayName: "navigation session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "navigation overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<DataWorkspaceResponse>("data", 1, { marker: "navigation data" } as unknown as DataWorkspaceResponse);
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 1, buildProviderReadiness("navigation"));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "navigation workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:02:00Z", presets: [] });
+      await flushAsync();
+    });
+
+    expect(result.current.data).toEqual({ marker: "navigation data" });
+  });
+
+  it("preserves unrelated workspace errors during scoped refresh replacement", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "trading" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    let tradingRefresh!: Promise<void>;
+    act(() => {
+      tradingRefresh = result.current.refreshTrading();
+    });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      rejectRequest("trading", 1, new Error("Trading scoped failure."));
+      await tradingRefresh;
+    });
+
+    let dataRefresh!: Promise<void>;
+    act(() => {
+      dataRefresh = result.current.refreshWorkspace("data");
+    });
+    await waitFor(() => expect(api.getDataWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 1, {
+        activeWorkspace: "data",
+        commandCount: 2,
+        displayName: "data session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 1, { marker: "data overview" } as unknown as SystemOverviewResponse);
+      rejectRequest("data", 1, new Error("Data scoped failure."));
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 1, buildProviderReadiness("data"));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 1, { marker: "data workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 1, { generatedAt: "2026-01-01T00:03:00Z", presets: [] });
+      await dataRefresh;
+    });
+
+    expect(result.current.workspaceErrors.trading).toBe("Trading scoped failure.");
+    expect(result.current.workspaceErrors.data).toBe("Data scoped failure.");
+  });
+
   it("passes account scope into the shared workflow summary request", async () => {
     const scopedSummary = buildWorkflowSummary("scoped");
     vi.mocked(api.getWorkstationWorkflowSummary).mockResolvedValue(scopedSummary);
@@ -368,7 +498,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getWorkstationWorkflowSummary).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "scoped");
+      await resolveRefreshBatch(0, "scoped");
       await flushAsync();
     });
 
@@ -391,7 +521,7 @@ describe("useWorkstationData", () => {
 
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -418,7 +548,7 @@ describe("useWorkstationData", () => {
 
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -437,7 +567,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(true);
 
     await act(async () => {
-      resolveRefreshBatch(0, "fixture");
+      await resolveRefreshBatch(0, "fixture");
       await flushAsync();
     });
 
@@ -451,7 +581,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "workflow");
+      await resolveRefreshBatch(0, "workflow");
       await flushAsync();
     });
 
@@ -478,7 +608,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -552,7 +682,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -611,7 +741,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -629,7 +759,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(3));
 
     await act(async () => {
-      resolveRefreshBatchWithIndexes({
+      await resolveRefreshBatchWithIndexes({
         marker: "fresh",
         defaultIndex: 1,
         tradingIndex: 2
@@ -653,7 +783,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -676,7 +806,7 @@ describe("useWorkstationData", () => {
   });
 
   it("preserves multiple request failures for a shared workspace slice", async () => {
-    const { result } = renderHook(() => useWorkstationData());
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "portfolio" }));
 
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
@@ -689,24 +819,24 @@ describe("useWorkstationData", () => {
         role: "Operator"
       });
       resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
-      resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
-      resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
+      resolveRequestIfPresent<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
+      resolveRequestIfPresent<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
       rejectRequest("portfolio", 0, new Error("Portfolio workspace timed out."));
       resolveRequest<MultiAssetCoverageSummary>(
         "portfolioMultiAssetCoverage",
         0,
         { marker: "portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
-      resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
-      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
-      resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
+      resolveRequestIfPresent<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
+      resolveRequestIfPresent<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequestIfPresent<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
-      resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", 0, { marker: "robinhood" } as unknown as BrokerageConnectionStatus);
-      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
-      resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("partial-failure"));
-      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
-      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
-      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveRequestIfPresent<BrokerageConnectionStatus>("robinhoodConnection", 0, { marker: "robinhood" } as unknown as BrokerageConnectionStatus);
+      resolveRequestIfPresent<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequestIfPresent<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("partial-failure"));
+      resolveRequestIfPresent<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequestIfPresent<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequestIfPresent<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
       rejectRequest("brokeragePortfolio", 0, new Error("Brokerage household sync failed."));
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
@@ -728,7 +858,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -763,7 +893,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -803,7 +933,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -861,7 +991,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
 
     await act(async () => {
-      resolveRefreshBatch(0, "initial");
+      await resolveRefreshBatch(0, "initial");
       await flushAsync();
     });
 
@@ -903,12 +1033,26 @@ function track<T>(key: keyof typeof requests): Promise<T> {
 function createDeferred<T>(): Deferred<T> {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
+  let settled = false;
   const promise = new Promise<T>((promiseResolve, promiseReject) => {
-    resolve = promiseResolve;
-    reject = promiseReject;
+    resolve = (value) => {
+      settled = true;
+      promiseResolve(value);
+    };
+    reject = (reason) => {
+      settled = true;
+      promiseReject(reason);
+    };
   });
 
-  return { promise, resolve, reject };
+  return {
+    promise,
+    resolve,
+    reject,
+    get settled() {
+      return settled;
+    }
+  };
 }
 
 function buildWorkflowSummary(marker: string): OperatorWorkflowHomeSummary {
@@ -949,7 +1093,7 @@ function buildWorkflowSummary(marker: string): OperatorWorkflowHomeSummary {
 }
 
 function resolveRefreshBatch(index: number, marker: string) {
-  resolveRefreshBatchWithIndexes({ marker, defaultIndex: index, tradingIndex: index });
+  return resolveRefreshBatchWithIndexes({ marker, defaultIndex: index, tradingIndex: index });
 }
 
 function resolveSecondaryRefreshBatch(index: number, marker: string) {
@@ -968,7 +1112,7 @@ function resolveSecondaryRefreshBatch(index: number, marker: string) {
   resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", index, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
 }
 
-function resolveRefreshBatchWithIndexes({
+async function resolveRefreshBatchWithIndexes({
   marker,
   defaultIndex,
   tradingIndex
@@ -985,30 +1129,57 @@ function resolveRefreshBatchWithIndexes({
     role: "Operator"
   });
   resolveRequest<SystemOverviewResponse>("overview", defaultIndex, { marker: `${marker} overview` } as unknown as SystemOverviewResponse);
-  resolveRequest<StrategyWorkspaceResponse>("strategy", defaultIndex, { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
-  resolveRequest<TradingWorkspaceResponse>("trading", tradingIndex, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
-  resolveRequest<PortfolioWorkspaceResponse>("portfolio", defaultIndex, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
-  resolveRequest<MultiAssetCoverageSummary>(
+  resolveRequestIfPresent<StrategyWorkspaceResponse>("strategy", defaultIndex, { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
+  resolveRequestIfPresent<TradingWorkspaceResponse>("trading", tradingIndex, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
+  resolveRequestIfPresent<PortfolioWorkspaceResponse>("portfolio", defaultIndex, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
+  resolveRequestIfPresent<MultiAssetCoverageSummary>(
     "portfolioMultiAssetCoverage",
     defaultIndex,
     { marker: `${marker} portfolio coverage` } as unknown as MultiAssetCoverageSummary
   );
-  resolveRequest<DataWorkspaceResponse>("data", defaultIndex, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
-  resolveRequest<AccountingWorkspaceResponse>("accounting", defaultIndex, { marker: `${marker} accounting` } as unknown as AccountingWorkspaceResponse);
-  resolveRequest<ReportingWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
-  resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
-  resolveRequest<BrokerageConnectionStatus>("robinhoodConnection", defaultIndex, { marker: `${marker} robinhood` } as unknown as BrokerageConnectionStatus);
-  resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
-  resolveRequest<ProviderReadinessSummary>("providerReadiness", defaultIndex, buildProviderReadiness(marker));
-  resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
-  resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", defaultIndex, []);
-  resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", defaultIndex, []);
-  resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
+  resolveRequestIfPresent<DataWorkspaceResponse>("data", defaultIndex, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
+  resolveRequestIfPresent<AccountingWorkspaceResponse>("accounting", defaultIndex, { marker: `${marker} accounting` } as unknown as AccountingWorkspaceResponse);
+  resolveRequestIfPresent<ReportingWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
+  resolveRequestIfPresent<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequestIfPresent<BrokerageConnectionStatus>("robinhoodConnection", defaultIndex, { marker: `${marker} robinhood` } as unknown as BrokerageConnectionStatus);
+  resolveRequestIfPresent<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
+  resolveRequestIfPresent<ProviderReadinessSummary>("providerReadiness", defaultIndex, buildProviderReadiness(marker));
+  resolveRequestIfPresent<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
+  resolveRequestIfPresent<ProviderRoutingBinding[]>("providerRoutingBindings", defaultIndex, []);
+  resolveRequestIfPresent<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", defaultIndex, []);
+  resolveRequestIfPresent<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
   resolveRequest<WorkflowLibrary>("workflowLibrary", defaultIndex, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
   resolveRequest<WorkflowPresetLibrary>("workflowPresets", defaultIndex, {
     generatedAt: "2026-01-01T00:00:00Z",
     presets: []
   });
+  await resolveDeferredRefreshBatch(marker);
+}
+
+async function resolveDeferredRefreshBatch(marker: string) {
+  await flushTimers();
+  resolveFirstPendingRequestIfPresent<StrategyWorkspaceResponse>("strategy", { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
+  resolveFirstPendingRequestIfPresent<TradingWorkspaceResponse>("trading", { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
+  resolveFirstPendingRequestIfPresent<PortfolioWorkspaceResponse>("portfolio", { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
+  resolveFirstPendingRequestIfPresent<MultiAssetCoverageSummary>(
+    "portfolioMultiAssetCoverage",
+    { marker: `${marker} portfolio coverage` } as unknown as MultiAssetCoverageSummary
+  );
+  resolveFirstPendingRequestIfPresent<DataWorkspaceResponse>("data", { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
+  resolveFirstPendingRequestIfPresent<AccountingWorkspaceResponse>("accounting", { marker: `${marker} accounting` } as unknown as AccountingWorkspaceResponse);
+  resolveFirstPendingRequestIfPresent<ReportingWorkspaceResponse>("reporting", { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
+  resolveFirstPendingRequestIfPresent<BrokerageConnectionStatus>("brokerageConnection", { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveFirstPendingRequestIfPresent<BrokerageConnectionStatus>("robinhoodConnection", { marker: `${marker} robinhood` } as unknown as BrokerageConnectionStatus);
+  resolveFirstPendingRequestIfPresent<ProviderConnectionRow[]>("providerConnections", []);
+  resolveFirstPendingRequestIfPresent<ProviderReadinessSummary>("providerReadiness", buildProviderReadiness(marker));
+  resolveFirstPendingRequestIfPresent<ProviderRoutingConnection[]>("providerRoutingConnections", []);
+  resolveFirstPendingRequestIfPresent<ProviderRoutingBinding[]>("providerRoutingBindings", []);
+  resolveFirstPendingRequestIfPresent<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", []);
+  resolveFirstPendingRequestIfPresent<BrokerageHouseholdPortfolio>("brokeragePortfolio", { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
+}
+
+function flushTimers() {
+  return new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function resolveRequest<T>(key: keyof typeof requests, index: number, value: T) {
@@ -1018,6 +1189,16 @@ function resolveRequest<T>(key: keyof typeof requests, index: number, value: T) 
   }
 
   request.resolve(value);
+}
+
+function resolveRequestIfPresent<T>(key: keyof typeof requests, index: number, value: T) {
+  const request = requests[key][index] as Deferred<T> | undefined;
+  request?.resolve(value);
+}
+
+function resolveFirstPendingRequestIfPresent<T>(key: keyof typeof requests, value: T) {
+  const request = requests[key].find((entry) => !entry.settled) as Deferred<T> | undefined;
+  request?.resolve(value);
 }
 
 function rejectRequest(key: keyof typeof requests, index: number, reason: unknown) {

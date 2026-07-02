@@ -33,4 +33,9 @@ describe("MetricCard (Concrete)", () => {
       screen.getByRole("group", { name: "Day P&L, -$4,118.22, change -0.32%, status critical" })
     ).toBeInTheDocument();
   });
+
+  it("accepts a speech-safe delta label", () => {
+    render(<MetricCard label="Drawdown" value="-2.41%" delta="▼ -0.30%" deltaAriaLabel="Change down -0.30%" />);
+    expect(screen.getByLabelText("Change down -0.30%")).toHaveTextContent("▼ -0.30%");
+  });
 });

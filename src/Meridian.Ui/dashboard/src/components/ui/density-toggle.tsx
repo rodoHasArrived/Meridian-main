@@ -116,7 +116,7 @@ export function DensityToggle({
       role="radiogroup"
       aria-label="Display density"
       className={cn(
-        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-[#F3F6F9] p-0.5",
+        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-card p-0.5",
         fullWidth && "flex w-full",
         className
       )}
@@ -136,8 +136,8 @@ export function DensityToggle({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active
-                ? "bg-card font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
-                : "bg-transparent text-muted-foreground hover:bg-[#EAEEF3] hover:text-foreground"
+                ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
+                : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
             <Glyph gap={level.gap} />

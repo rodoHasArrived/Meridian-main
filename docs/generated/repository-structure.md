@@ -1221,6 +1221,7 @@ Meridian-main
 │   │   ├── 016-custody-cash-reconciliation-break-typing.md
 │   │   ├── 016-platform-architecture-migration.md
 │   │   ├── 017-modular-operational-monolith.md
+│   │   ├── 018-declarative-statement-mapping-profiles.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -3301,6 +3302,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
+│   │   │   ├── StatementConnectorDtos.cs
 │   │   │   ├── StatementReconciliationDtos.cs
 │   │   │   ├── StrategyBriefingDtos.cs
 │   │   │   ├── StrategyDesignDtos.cs
@@ -3666,6 +3668,31 @@ Meridian-main
 │   │   │   ├── PrivateCapitalFundEventLedgerRecordBuilder.cs
 │   │   │   └── PrivateCapitalPaymentIntentEvidenceBuilder.cs
 │   │   ├── Reconciliation
+│   │   │   ├── Connectors
+│   │   │   │   ├── Alpaca
+│   │   │   │   │   ├── AlpacaActivityStatementConnector.cs
+│   │   │   │   │   └── AlpacaStatementSnapshot.cs
+│   │   │   │   ├── IbFlex
+│   │   │   │   │   └── IbFlexStatementConnector.cs
+│   │   │   │   ├── Ofx
+│   │   │   │   │   ├── OfxDocumentParser.cs
+│   │   │   │   │   └── OfxStatementConnector.cs
+│   │   │   │   ├── CsvLineSplitter.cs
+│   │   │   │   ├── CsvStatementConnector.cs
+│   │   │   │   ├── FileStatementMappingProfileStore.cs
+│   │   │   │   ├── StatementBuiltInProfiles.cs
+│   │   │   │   ├── StatementColumnConfidenceScorer.cs
+│   │   │   │   ├── StatementConnectorContracts.cs
+│   │   │   │   ├── StatementConnectorRegistry.cs
+│   │   │   │   ├── StatementFetchScheduleRunner.cs
+│   │   │   │   ├── StatementFetchScheduleStore.cs
+│   │   │   │   ├── StatementImportService.cs
+│   │   │   │   ├── StatementMappingProfileCatalog.cs
+│   │   │   │   ├── StatementMappingProfileDocument.cs
+│   │   │   │   ├── StatementMappingProfileJsonContext.cs
+│   │   │   │   ├── StatementMappingProfileLoader.cs
+│   │   │   │   ├── StatementRecordMapper.cs
+│   │   │   │   └── StatementValueParser.cs
 │   │   │   ├── BrokerCustodianReconciliationModels.cs
 │   │   │   ├── BrokerReconciliationFeedModels.cs
 │   │   │   ├── CanonicalReconciliationEngine.cs
@@ -4659,6 +4686,8 @@ Meridian-main
 │   ├── Meridian.Ui
 │   │   ├── dashboard
 │   │   │   ├── scripts
+│   │   │   │   ├── eslint-rules
+│   │   │   │   │   └── kebab-filename.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   └── smoke-workstation.mjs
 │   │   │   ├── src
@@ -4756,19 +4785,11 @@ Meridian-main
 │   │   │   │   │   ├── data
 │   │   │   │   │   │   ├── add-provider-drawer.tsx
 │   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
-│   │   │   │   │   │   ├── column-chooser.concrete.test.tsx
-│   │   │   │   │   │   ├── column-chooser.tsx
 │   │   │   │   │   │   ├── concrete.ts
-│   │   │   │   │   │   ├── dense-data-table.concrete.test.tsx
-│   │   │   │   │   │   ├── dense-data-table.tsx
 │   │   │   │   │   │   ├── edit-provider-drawer.tsx
 │   │   │   │   │   │   ├── empty-state.concrete.test.tsx
 │   │   │   │   │   │   ├── empty-state.tsx
 │   │   │   │   │   │   ├── entity-summary.tsx
-│   │   │   │   │   │   ├── expandable-data-table.concrete.test.tsx
-│   │   │   │   │   │   ├── expandable-data-table.tsx
-│   │   │   │   │   │   ├── filtered-data-table.concrete.test.tsx
-│   │   │   │   │   │   ├── filtered-data-table.tsx
 │   │   │   │   │   │   ├── key-value-grid.concrete.test.tsx
 │   │   │   │   │   │   ├── key-value-grid.tsx
 │   │   │   │   │   │   ├── metric-card.concrete.test.tsx
@@ -4785,6 +4806,8 @@ Meridian-main
 │   │   │   │   │   │   ├── use-table-state.test.ts
 │   │   │   │   │   │   └── use-table-state.ts
 │   │   │   │   │   ├── meridian
+│   │   │   │   │   │   ├── command-palette.entity-search.test.ts
+│   │   │   │   │   │   ├── command-palette.entity-search.ts
 │   │   │   │   │   │   ├── command-palette.test.tsx
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
@@ -4932,6 +4955,8 @@ Meridian-main
 │   │   │   │   │       ├── stepper.tsx
 │   │   │   │   │       ├── tabs.tsx
 │   │   │   │   │       ├── text-area.tsx
+│   │   │   │   │       ├── theme-toggle.test.tsx
+│   │   │   │   │       ├── theme-toggle.tsx
 │   │   │   │   │       ├── toast.tsx
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── features
@@ -4974,6 +4999,8 @@ Meridian-main
 │   │   │   │   │   ├── api.reconciliation.test.ts
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── csv.test.ts
+│   │   │   │   │   ├── csv.ts
 │   │   │   │   │   ├── daily-control-tower.test.ts
 │   │   │   │   │   ├── daily-control-tower.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
@@ -4988,6 +5015,10 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
+│   │   │   │   │   ├── sql-workbench-storage.test.ts
+│   │   │   │   │   ├── sql-workbench-storage.ts
+│   │   │   │   │   ├── theme.test.ts
+│   │   │   │   │   ├── theme.ts
 │   │   │   │   │   ├── ui-api-routes.generated.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace-catalog.generated.ts
@@ -4997,16 +5028,28 @@ Meridian-main
 │   │   │   │   │   └── workstation-endpoints.ts
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
+│   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.ts
 │   │   │   │   │   ├── accounting-screen.close-cockpit-panels.tsx
+│   │   │   │   │   ├── accounting-screen.close-cockpit.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.close-cockpit.view-model.ts
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
+│   │   │   │   │   ├── accounting-screen.governance.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.governance.view-model.ts
+│   │   │   │   │   ├── accounting-screen.journal-entries.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.journal-entries.view-model.ts
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.styles.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.task-modes.tsx
 │   │   │   │   │   ├── accounting-screen.test.tsx
 │   │   │   │   │   ├── accounting-screen.tsx
+│   │   │   │   │   ├── accounting-screen.view-model.shared.test.ts
+│   │   │   │   │   ├── accounting-screen.view-model.shared.ts
 │   │   │   │   │   ├── accounting-screen.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.view-model.ts
 │   │   │   │   │   ├── accounting-screen.workbench-context.tsx
@@ -5057,10 +5100,6 @@ Meridian-main
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
 │   │   │   │   │   ├── operator-readiness-console.view-model.ts
-│   │   │   │   │   ├── overview-screen.test.tsx
-│   │   │   │   │   ├── overview-screen.tsx
-│   │   │   │   │   ├── overview-screen.view-model.test.ts
-│   │   │   │   │   ├── overview-screen.view-model.ts
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.ts
 │   │   │   │   │   ├── portfolio-screen.linked-context.ts
 │   │   │   │   │   ├── portfolio-screen.operator-focus.ts
@@ -5102,12 +5141,16 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.view-model.ts
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
-│   │   │   │   │   ├── settings-admin-operations-console.tsx
 │   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
 │   │   │   │   │   ├── settings-screen.workflow-continuity.ts
+│   │   │   │   │   ├── statement-import-panel.test.tsx
+│   │   │   │   │   ├── statement-import-panel.tsx
+│   │   │   │   │   ├── statement-import-panel.view-model.test.ts
+│   │   │   │   │   ├── statement-import-panel.view-model.ts
+│   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
@@ -5121,8 +5164,6 @@ Meridian-main
 │   │   │   │   │   ├── strategy-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-screen.view-model.ts
 │   │   │   │   │   ├── strategy-screen.workflow-continuity.ts
-│   │   │   │   │   ├── today-panel.view-model.test.ts
-│   │   │   │   │   ├── today-panel.view-model.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
@@ -5179,6 +5220,7 @@ Meridian-main
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
+│   │   │   ├── eslint.config.mjs
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
 │   │   │   ├── package.json
@@ -5432,6 +5474,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
+│   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -5541,6 +5584,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── SensitiveActionGovernance.cs
+│   │   │   ├── StatementFetchSchedulerService.cs
 │   │   │   ├── StrategyRunComparisonService.cs
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
@@ -6960,6 +7004,17 @@ Meridian-main
 │   │   │   ├── PluginLoaderServiceTests.cs
 │   │   │   └── ProviderModuleLoaderTests.cs
 │   │   ├── Reconciliation
+│   │   │   ├── Connectors
+│   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
+│   │   │   │   ├── CsvLineSplitterTests.cs
+│   │   │   │   ├── CsvStatementConnectorTests.cs
+│   │   │   │   ├── IbFlexStatementConnectorTests.cs
+│   │   │   │   ├── OfxStatementConnectorTests.cs
+│   │   │   │   ├── StatementColumnConfidenceScorerTests.cs
+│   │   │   │   ├── StatementConnectorTestData.cs
+│   │   │   │   ├── StatementImportServiceTests.cs
+│   │   │   │   ├── StatementMappingProfileLoaderTests.cs
+│   │   │   │   └── StatementMappingProfileStoreTests.cs
 │   │   │   ├── Fixtures
 │   │   │   │   ├── statement-clean-reconciles.csv
 │   │   │   │   ├── statement-invalid-blockers.csv
@@ -7116,6 +7171,15 @@ Meridian-main
 │   │   │   └── SymbolSearchServiceTests.cs
 │   │   ├── TestData
 │   │   │   └── Golden
+│   │   │       ├── statement-connectors
+│   │   │       │   ├── alpaca-combined-snapshot.json
+│   │   │       │   ├── csv-drifted-headers.csv
+│   │   │       │   ├── csv-mixed-kinds.csv
+│   │   │       │   ├── csv-quoted-bom.csv
+│   │   │       │   ├── csv-semicolon.csv
+│   │   │       │   ├── ib-flex-sample.xml
+│   │   │       │   ├── ofx-102-bank.ofx
+│   │   │       │   └── ofx-211-investment.ofx
 │   │   │       └── alpaca-quote-pipeline.json
 │   │   ├── TestHelpers
 │   │   │   ├── Builders

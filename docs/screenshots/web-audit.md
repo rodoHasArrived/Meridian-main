@@ -27,7 +27,7 @@ Evidence used:
 | 7 | `web-portfolio-workspace.png` | `/portfolio` | Watch | Portfolio metrics and evidence are visible, but similar card weights make the first decision point less obvious. |
 | 8 | `web-portfolio-attribution.png` | `/portfolio/attribution` | Watch | Attribution content is structured, but the shared shell and overview materials still push task content down. |
 | 9 | `web-portfolio-brokerage-sync.png` | `/portfolio/brokerage-sync` | Healthy | Brokerage state and account sync evidence have a clear frame and readable summary posture. |
-| 10 | `web-accounting-workspace.png` | `/accounting` | Watch | The recovery navigator and compact workflow dock improve the top of the page, but the full-page capture still combines close control, GL evidence, private capital, reconciliation, reporting, and review proof in one long route. |
+| 10 | `web-accounting-workspace.png` | `/accounting` | Watch | Source now gates the close-cockpit landing through task-mode section visibility, with hash deep links forcing requested proof sections visible; screenshot regeneration is still needed before this row can be promoted. |
 | 11 | `web-accounting-reconciliation.png` | `/accounting/reconciliation` | Watch | Reconciliation evidence grouping is strong, but many same-weight panels still make escalation priority hard to scan. |
 | 12 | `web-accounting-security-master.png` | `/accounting/security-master` | Watch | Security coverage is visible, but dense status tiles and compact route actions need keyboard and screen-reader verification. |
 | 13 | `web-accounting-approvals.png` | `/accounting/approvals` | Watch | Approval queue has a clear purpose, but approval posture still relies on many small badges and table rows. |
@@ -44,11 +44,11 @@ Evidence used:
 | 24 | `web-strategy-designer.png` | `/strategy/designer` | Healthy | Builder layout has strong three-column structure, visible validation state, and clear proof output. |
 | 25 | `web-data-workspace.png` | `/data` | Healthy | Data command deck and provider management are discoverable with a clear workspace frame. |
 | 26 | `web-data-watchlist.png` | `/data/watchlist` | Healthy | Watchlist empty and add states are understandable and not visually overloaded. |
-| 27 | `web-data-live-quotes.png` | `/data/quotes` | Needs attention | Empty quote state is valid but ambiguous: the primary next action competes with disabled detail controls and a selected-symbol panel with no selection. |
+| 27 | `web-data-live-quotes.png` | `/data/quotes` | Watch | Source now renders the no-symbol state as a guided empty state with starter-symbol, watchlist, and search actions; screenshot regeneration is still needed before this row can be promoted. |
 | 28 | `web-data-backfills.png` | `/data/backfills` | Watch | Backfill route is readable, but it resembles the Data workspace capture closely. |
-| 29 | `web-settings-workspace.png` | `/settings` | Needs attention | Settings remains too long for recovery work in the catalog capture, with access, operations, providers, runtime, and diagnostics visible in one long page. |
-| 30 | `web-settings-preferences.png` | `/settings/preferences` | Needs attention | The capture renders effectively the same state as Settings overview, so route intent is not visible from the screenshot. |
-| 31 | `web-settings-integrations.png` | `/settings/integrations` | Needs attention | The capture also renders effectively the same state as Settings overview, leaving provider/integration recovery work indistinct. |
+| 29 | `web-settings-workspace.png` | `/settings` | Watch | Source now includes a Profile appearance panel with theme and density controls; screenshot regeneration is still needed before this row can be promoted. |
+| 30 | `web-settings-preferences.png` | `/settings/preferences` | Watch | Source/tests now route this path to provider connection tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
+| 31 | `web-settings-integrations.png` | `/settings/integrations` | Watch | Source/tests now route this path to accounting systems tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
 
 ## Strengths
 
@@ -66,16 +66,17 @@ Evidence used:
 
 ## UX Risks
 
-1. Several route variants remain near-duplicates in the screenshot catalog. Settings
-   `/settings`, `/settings/preferences`, and `/settings/integrations` currently capture the same
-   long rendered state, and Trading/Reporting variants still share substantial above-fold material.
-2. Accounting improved above the fold, but the full page remains high-load because several proof
-   lanes are visible in one capture. Operators can find recovery jumps faster, but the route still
-   needs stronger progressive disclosure for repeated recovery work.
-3. Settings is now the highest-risk screenshot group. The route is comprehensive, but the catalog
-   evidence does not show distinct task states for preferences or integrations.
-4. Empty states vary in clarity. Data Live Quotes shows the valid no-symbol state, but selected
-   symbol controls still read as inactive UI rather than a guided next step.
+1. Several route variants remain near-duplicates in the screenshot catalog. Settings source now
+   resolves `/settings/preferences` and `/settings/integrations` to distinct task states, but the
+   screenshots still need regeneration; Trading/Reporting variants also share substantial above-fold
+   material.
+2. Accounting source now has task-mode section visibility for the close cockpit and hash-targeted
+   proof sections, but the screenshot catalog still needs regeneration before the shorter landing is
+   visible as evidence.
+3. Settings still needs refreshed catalog proof. The source route state is distinct, but current
+   screenshot evidence does not yet show the preferences or integrations task views.
+4. Empty states vary in clarity. Data Live Quotes now has source coverage for a guided no-symbol
+   state, but the screenshot catalog still needs regeneration before that improvement is visible.
 5. Detail panels and selected-row evidence are sometimes visually far from the row or card that
    controls them, especially in long trading and accounting screenshots.
 
@@ -94,14 +95,15 @@ Evidence used:
 
 ## Recommendations
 
-1. Make Settings path variants route-aware in the screenshot catalog, or update the route config to
-   use hash/task targets that show distinct Preferences and Integrations states.
+1. Regenerate Settings path screenshots so the catalog shows the route-aware Preferences and
+   Integrations task states now covered by source tests.
 2. Continue reducing duplication by either capturing more distinct route states or documenting when
    a route intentionally shares the same view.
-3. Split Accounting recovery evidence into clearer route-specific captures for close control,
-   reconciliation, ledger inquiry, external GL, private capital, and reporting support.
-4. Tighten empty states so the next productive action is first, and hide or de-emphasize disabled
-   dependent controls until there is a selected row or symbol.
+3. Regenerate Accounting captures for close control, reconciliation, ledger inquiry, external GL,
+   private capital, and reporting support so the task-mode visibility changes are represented.
+4. Regenerate the Live Quotes capture and continue tightening empty states so the next productive
+   action is first, with dependent controls hidden or de-emphasized until there is a selected row or
+   symbol.
 5. Run a rendered accessibility pass for keyboard order, focus indicators, target sizes, and
    contrast. Screenshots support likely-risk findings, not compliance claims.
 

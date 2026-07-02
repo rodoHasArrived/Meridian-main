@@ -590,6 +590,35 @@ describe("SettingsScreen", () => {
     expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
 
+  it("routes Settings preferences to provider connection tasks before hash inference", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/preferences#settings-overview"]
+    });
+
+    expect(document.querySelector("#provider-connection-center")).toBeInTheDocument();
+    expect(document.querySelector("#fund-operations-control-center")).not.toBeInTheDocument();
+    expect(document.querySelector("#settings-appearance")).not.toBeInTheDocument();
+  });
+
+  it("routes Settings integrations to operations tasks before hash inference", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/integrations#provider-connection-center"]
+    });
+
+    expect(document.querySelector("#fund-operations-control-center")).toBeInTheDocument();
+    expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
+  });
+
+  it("renders appearance controls in the profile task view", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings#settings-overview"]
+    });
+
+    const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
+    expect(within(appearanceRegion).getByRole("radiogroup", { name: "Appearance" })).toBeInTheDocument();
+    expect(within(appearanceRegion).getByRole("radiogroup", { name: "Display density" })).toBeInTheDocument();
+  });
+
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {
     renderWithRouter(
       <SettingsScreen

@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
   AlertTriangle,
@@ -26,6 +26,7 @@ import { CommandPalette } from "@/components/meridian/command-palette";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { Skeleton } from "@/components/data/skeleton";
 import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -48,13 +49,13 @@ import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
-const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: module.DataScreen })));
-const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: module.DailyControlTowerScreen })));
+const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
+const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
-const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: module.AccountingScreen })));
+const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
-const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
+const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
 const TrialBalanceScreen = lazy(() => import("@/screens/trial-balance-screen").then((module) => ({ default: module.TrialBalanceScreen })));
 const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
@@ -72,16 +73,16 @@ const ReportLibraryScreen = lazy(() => import("@/screens/report-library-screen")
 const ReportRunParametersScreen = lazy(() => import("@/screens/report-run-parameters-screen").then((module) => ({ default: module.ReportRunParametersScreen })));
 const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-record-release-screen").then((module) => ({ default: module.OperationsRecordReleaseScreen })));
 const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
-const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
+const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
-const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
-const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: module.StrategyScreen })));
+const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
+const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
 const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
-const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: module.SettingsScreen })));
-const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: module.TradingScreen })));
+const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
+const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
 const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
 
 export function App() {
@@ -105,8 +106,11 @@ function AppShell() {
   const navigate = useNavigate();
   const { hash, pathname, search } = useLocation();
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
-  const routeOperatingScope = readOperatingScopeFromSearch(search);
-  const operatingScopeInput = mergeOperatingScopes(storedOperatingScope, routeOperatingScope);
+  const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
+  const operatingScopeInput = useMemo(
+    () => mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
+    [storedOperatingScope, routeOperatingScope]
+  );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   const {
     session,
@@ -212,7 +216,7 @@ function AppShell() {
     return () => window.removeEventListener("keydown", handleCommandShortcut);
   }, [commandOpen, setCommandOpen]);
 
-  const shell = buildAppShellViewState({
+  const shell = useMemo(() => buildAppShellViewState({
     pathname,
     search,
     hash,
@@ -235,9 +239,36 @@ function AppShell() {
       workflowSummary
     },
     operatingContextScope: operatingScopeInput
-  });
-  const breadcrumbItems = buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate);
-  const headerWorkspace = buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace);
+  }), [
+    pathname,
+    search,
+    hash,
+    operatingContextSymbol,
+    commandOpen,
+    loading,
+    error,
+    workflowError,
+    workspaceErrors,
+    usingDevelopmentFixtures,
+    session,
+    overview,
+    strategy,
+    trading,
+    portfolio,
+    data,
+    accounting,
+    reporting,
+    workflowSummary,
+    operatingScopeInput
+  ]);
+  const breadcrumbItems = useMemo(
+    () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
+    [pathname, shell.activeWorkspace, navigate]
+  );
+  const headerWorkspace = useMemo(
+    () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
+    [pathname, shell.activeWorkspace]
+  );
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -1057,7 +1088,7 @@ function LegacyWorkspaceRedirect() {
 function WorkspaceRouteFallback({ title }: { title: string }) {
   return (
     <PanelSurface role="status" aria-live="polite" className="flex items-center gap-3 p-4">
-      <LoaderCircle className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+      <Skeleton variant="circle" width={16} aria-hidden="true" />
       <div>
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <p className="mt-1 text-xs text-muted-foreground">Preparing the workstation route.</p>

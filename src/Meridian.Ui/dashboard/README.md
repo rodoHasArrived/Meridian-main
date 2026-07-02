@@ -40,6 +40,10 @@ instead of introducing one-off screen styling.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
 
+Legacy `/overview/*` links remain compatibility redirects in the app shell. The retired overview
+screen, Today panel, and unrouted Settings admin operations console are recorded as comment-only
+tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/`.
+
 
 ## Dense row detail accessibility contract
 

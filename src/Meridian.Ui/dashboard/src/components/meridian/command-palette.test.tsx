@@ -1,9 +1,15 @@
 import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { axe } from "jest-axe";
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { renderWithRouter } from "@/test/render";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
+import type { CommandPaletteEntitySearchServices } from "@/components/meridian/command-palette.entity-search";
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function getRenderedCommandCount(kind: "workstation" | "shared" = "workstation") {
   const pattern = kind === "workstation" ? /^(\d+) workstation commands$/ : /^(\d+) commands$/;
@@ -46,6 +52,19 @@ describe("CommandPalette", () => {
     await user.keyboard("{Escape}");
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, {
+      initialEntries: ["/data"]
+    });
+
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target),
+      summaries: violation.nodes.map((node) => node.failureSummary)
+    }))).toEqual([]);
   });
 
   it("keeps Tab focus inside the modal command surface", () => {
@@ -108,6 +127,62 @@ describe("CommandPalette", () => {
       "/settings#alpaca-provider-setup"
     );
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
+  });
+
+  it("renders debounced entity search results as command groups", async () => {
+    const user = userEvent.setup();
+    const services: CommandPaletteEntitySearchServices = {
+      searchSymbols: vi.fn().mockResolvedValue([
+        {
+          symbol: "AAPL",
+          status: "Active",
+          provider: "Polygon",
+          lastEventAt: "2026-01-01T00:00:00Z",
+          eventCount: 42,
+          hasHistoricalData: true
+        }
+      ]),
+      searchSecurities: vi.fn().mockResolvedValue([
+        {
+          securityId: "sec-aapl",
+          displayName: "Apple Inc.",
+          status: "Active",
+          classification: {
+            assetClass: "Equity",
+            subType: "Common",
+            primaryIdentifierKind: "Ticker",
+            primaryIdentifierValue: "AAPL"
+          },
+          economicDefinition: {
+            currency: "USD",
+            version: 1,
+            effectiveFrom: null,
+            effectiveTo: null,
+            subType: "Common",
+            assetFamily: "Equity",
+            issuerType: "Corporate"
+          }
+        }
+      ])
+    };
+
+    renderWithRouter(
+      <CommandPalette open onOpenChange={vi.fn()} entitySearchServices={services} />,
+      { initialEntries: ["/data"] }
+    );
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "aapl");
+
+    expect(await screen.findByLabelText("Entities: 2 entities")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open symbol AAPL in Live quotes")).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=AAPL"
+    );
+    expect(screen.getByLabelText("Open security Apple Inc. in Security Master detail")).toHaveAttribute(
+      "href",
+      "/accounting/security-master/detail?securityId=sec-aapl"
+    );
+    expect(screen.getByText("2 entity results")).toBeInTheDocument();
   });
 
   it("opens the first filtered command when Enter is pressed from search", async () => {

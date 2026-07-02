@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 
-describe("MetricCard", () => {
-  it("renders the KPI as a named metric group with the derived delta label", () => {
+describe("MetricSnapshotCard", () => {
+  it("adapts snapshot view-model state to the Concrete metric card", () => {
     render(
-      <MetricCard
+      <MetricSnapshotCard
         id="drawdown"
         label="DRAWDOWN"
         value="-2.41%"
@@ -16,6 +16,6 @@ describe("MetricCard", () => {
 
     expect(screen.getByRole("group", { name: /DRAWDOWN metric/ })).toBeInTheDocument();
     expect(screen.getByLabelText("Change down -0.30% · 90D")).toHaveTextContent("▼ -0.30% · 90D");
-    expect(screen.getByText("-2.41%")).toHaveClass("text-danger");
+    expect(screen.getByRole("group", { name: /Status critical/ })).toHaveClass("mds-metric--danger");
   });
 });

@@ -115,6 +115,9 @@ export interface FamilyOfficeOwnershipGraphViewModel {
 
 export interface FamilyOfficeScreenViewModel {
   route: FamilyOfficeRouteMetadata;
+  notConnected: boolean;
+  emptyActionHref: string;
+  emptyActionLabel: string;
   statusChips: Array<{ label: string; value: string }>;
   panels: FamilyOfficePanelViewModel[];
   ownershipGraph: FamilyOfficeOwnershipGraphViewModel;
@@ -131,7 +134,7 @@ const FAMILY_OFFICE_ROUTE_METADATA: FamilyOfficeRouteMetadata = {
   disabledReason: null
 };
 
-const DEFAULT_FAMILY_OFFICE_ENTITY_STRUCTURE: FamilyOfficeEntityStructure = {
+export const FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE: FamilyOfficeEntityStructure = {
   familyOfficeId: "family-holdco",
   displayName: "Meridian Family HoldCo",
   baseCurrency: "USD",
@@ -238,8 +241,12 @@ const DEFAULT_FAMILY_OFFICE_ENTITY_STRUCTURE: FamilyOfficeEntityStructure = {
 
 export function buildFamilyOfficeScreenViewModel(
   selectedNodeId: string | null = null,
-  entityStructure: FamilyOfficeEntityStructure = DEFAULT_FAMILY_OFFICE_ENTITY_STRUCTURE
+  entityStructure: FamilyOfficeEntityStructure | null = null
 ): FamilyOfficeScreenViewModel {
+  if (!entityStructure) {
+    return buildNotConnectedFamilyOfficeScreenViewModel();
+  }
+
   const baseNodes = buildOwnershipNodes(entityStructure);
   const stableSelectedNodeId = baseNodes.some((node) => node.id === selectedNodeId)
     ? selectedNodeId
@@ -261,6 +268,9 @@ export function buildFamilyOfficeScreenViewModel(
 
   return {
     route: FAMILY_OFFICE_ROUTE_METADATA,
+    notConnected: false,
+    emptyActionHref: "/accounting/entity-setup",
+    emptyActionLabel: "Connect entity setup",
     statusChips: [
       { label: "Workspace", value: FAMILY_OFFICE_ROUTE_METADATA.workspaceLabel },
       { label: "Route", value: FAMILY_OFFICE_ROUTE_METADATA.path },
@@ -290,8 +300,12 @@ export function buildFamilyOfficeScreenViewModel(
 export function selectAdjacentFamilyOfficeNode(
   currentNodeId: string | null,
   direction: "next" | "previous" | "first" | "last",
-  entityStructure: FamilyOfficeEntityStructure = DEFAULT_FAMILY_OFFICE_ENTITY_STRUCTURE
+  entityStructure: FamilyOfficeEntityStructure | null = null
 ): string | null {
+  if (!entityStructure) {
+    return null;
+  }
+
   const nodeOrder = buildOwnershipNodes(entityStructure).map((node) => node.id);
   if (nodeOrder.length === 0) {
     return null;
@@ -310,6 +324,41 @@ export function selectAdjacentFamilyOfficeNode(
     case "next":
       return nodeOrder[Math.min(nodeOrder.length - 1, safeIndex + 1)];
   }
+}
+
+function buildNotConnectedFamilyOfficeScreenViewModel(): FamilyOfficeScreenViewModel {
+  return {
+    route: {
+      ...FAMILY_OFFICE_ROUTE_METADATA,
+      disabledReason: FAMILY_OFFICE_ROUTE_METADATA.emptyState
+    },
+    notConnected: true,
+    emptyActionHref: "/accounting/entity-setup",
+    emptyActionLabel: "Connect entity setup",
+    statusChips: [
+      { label: "Workspace", value: FAMILY_OFFICE_ROUTE_METADATA.workspaceLabel },
+      { label: "Route", value: FAMILY_OFFICE_ROUTE_METADATA.path },
+      { label: "Entity source", value: "Not connected" },
+      { label: "Graph mode", value: "Unavailable" }
+    ],
+    panels: [],
+    ownershipGraph: {
+      title: "Ownership graph",
+      description: "Connect entity setup before using household ownership graph review.",
+      ariaLabel: "Family office ownership graph",
+      keyboardInstructions: "Ownership graph controls become available after entity setup is connected.",
+      tableFallbackLabel: "Family office ownership table fallback",
+      graphToggleLabel: "Show ownership graph",
+      tableToggleLabel: "Show ownership table fallback",
+      emptyState: "No family-office entity setup is connected.",
+      selectedDetailTitle: "Selected ownership detail",
+      selectedDetailEmptyTitle: "No ownership node selected",
+      selectedNodeId: null,
+      selectedNode: null,
+      nodes: [],
+      edges: []
+    }
+  };
 }
 
 function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): FamilyOfficePanelViewModel[] {

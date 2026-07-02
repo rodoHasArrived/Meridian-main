@@ -176,6 +176,32 @@
   color: var(--fg);
 }
 
+.dense-data-table-row-cap {
+  display: flex;
+  justify-content: center;
+  padding: 0.625rem;
+  border-top: 1px solid rgba(31, 52, 76, 0.66);
+  background: rgba(8, 16, 26, 0.72);
+}
+
+.dense-data-table-row-cap button {
+  min-height: 1.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid rgba(42, 178, 212, 0.32);
+  border-radius: var(--radius-sm);
+  background: rgba(42, 178, 212, 0.10);
+  color: var(--cyan-primary);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dense-data-table-row-cap button:focus-visible {
+  outline: 2px solid rgba(42, 178, 212, 0.45);
+  outline-offset: 2px;
+}
+
 .entity-summary {
   border: 1px solid rgba(31, 52, 76, 0.95);
   border-radius: var(--radius-xl);
