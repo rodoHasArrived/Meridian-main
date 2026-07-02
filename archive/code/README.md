@@ -26,6 +26,13 @@ surface but still explain a migration or compatibility decision.
   Chief of Staff source-generated JSON context removed (2026-05-23).
 - `src/Meridian.Contracts/Workstation/ChiefOfStaffDtos.cs` - comment-only tombstone after Chief of
   Staff contract DTOs removed (2026-05-23).
+- `src/Meridian.Ui/dashboard/src/screens/overview-screen*.ts*` - comment-only tombstones after the
+  legacy browser workstation overview screen was retired; `/overview/*` remains a redirect handled
+  by the active app shell (2026-07-02).
+- `src/Meridian.Ui/dashboard/src/screens/today-panel.view-model*.ts` - comment-only tombstones after
+  the legacy overview Today panel was retired with the orphaned overview screen (2026-07-02).
+- `src/Meridian.Ui/dashboard/src/screens/settings-admin-operations-console.tsx` - comment-only
+  tombstone after the unrouted Settings admin operations console was retired (2026-07-02).
 
 Active source remains under `src/`. Files here are reference material only and should not be
 reintroduced without moving them back into the correct active project and validating the build.
