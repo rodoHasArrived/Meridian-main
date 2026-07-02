@@ -10,7 +10,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Version 0.21)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update, the v0.19 no-code provider integration manifest, the v0.20 customer-neutral operational-finance architecture clarification, and the v0.21 LedgerGraph OS / Close, Data and Evidence Control Tower positioning addendum
+  - [Meridian Design Document (Version 0.22)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update, the v0.19 no-code provider integration manifest, the v0.20 customer-neutral operational-finance architecture clarification, and the v0.21 LedgerGraph OS / Close, Data and Evidence Control Tower positioning addendum, and the v0.22 reconciliation of the design document with current roadmap and implementation-tracker evidence
   - [Meridian Implementation TODO List](implementation-todo-list.md) — single planning-tooling tracker for implemented design-document items and remaining TODOs
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
@@ -66,10 +66,10 @@ Scope guidance is evidence-led. Use current source, the roadmap registry, and th
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Version 0.21)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 0.22)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 0.21)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, and the operational proof layer thesis.
+- Design Baseline: `Meridian Design Document (Version 0.22)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, and the operational proof layer thesis.
 
 ## Stakeholder Narrative
 
@@ -148,7 +148,7 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Version 0.21)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 0.22)](meridian-design-document.md) | Core design source for stakeholder framing |
 | Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
@@ -173,7 +173,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Version 0.21)](meridian-design-document.md)
+- [Meridian Design Document (Version 0.22)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item list](../roadmap/README.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

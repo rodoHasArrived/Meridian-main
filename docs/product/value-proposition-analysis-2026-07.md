@@ -86,8 +86,9 @@ enterprise-heavy**, and SimCorp is "more platform than [smaller funds] need."
 
 **Three trends worth pricing in:**
 
-1. **Agentic reconciliation is the dominant 2026 theme.** 54% of CFOs name integrating AI agents as
-   their #1 digital-transformation priority; vendors cite 90%+ auto-reconciliation rates, 50%
+1. **Agentic reconciliation is the dominant 2026 theme.** 54% of CFOs name integrating AI agents
+   into finance a top finance-transformation priority for 2026 (Deloitte Q4 2025 CFO Signals
+   Survey); vendors cite 90%+ auto-reconciliation rates, 50%
    faster close, and "route only true exceptions with full context." Reconciliation is described as
    the most-demanded *and* messiest agentic use case. Meridian already has the two ingredients no
    incumbent ships together: a reconciliation engine **and** a deterministic-AI-controls model.
@@ -285,7 +286,8 @@ reconciliation** — at a price and deployment model the enterprise incumbents c
 - Enfusion — [Software Pricing, Alternatives & More (Capterra)](https://www.capterra.com/p/165409/Enfusion/)
 - Serchen — [Hedge Funds Run on Spreadsheets](https://blog.serchen.com/hedge-funds-run-on-spreadsheets/)
 - BizTech Magazine — [How AI Is Reshaping Financial Workflows in 2026](https://biztechmagazine.com/article/2026/03/how-artificial-intelligence-reshaping-financial-workflows-2026)
-- assistents.ai — [Agentic AI in Finance and Accounting: The 2026 CFO Guide](https://assistents.ai/blogs/agentic-ai-in-finance-and-accounting)
+- Deloitte — [Technology Transformation Emerges as a Top Priority for CFOs in 2026 (Q4 2025 CFO Signals Survey)](https://www.deloitte.com/us/en/about/press-room/deloitte-q4-2025-cfo-signals-survey.html) (source for the 54%-of-CFOs agentic-AI priority figure)
+- CFO Dive — [CFOs face expanded mandate, pressures in a volatile 2026: Deloitte](https://www.cfodive.com/news/cfos-face-expanded-mandate-pressures-volatile-2026-deloitte-ai/816558/)
 - BCG — [Global Asset Management Report 2026](https://www.bcg.com/publications/2026/rebuilding-asset-management-for-an-ai-first-world)
 - INDATA — [Investment Management Software](https://www.indataipm.com/investment-management-software/)
 - Charles River — [Investment Management Solution](https://www.crd.com/solutions/charles-river-ims/)
