@@ -17,6 +17,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization of the next highest-value implementable features, sequenced against the W6/W7
     roadmap lanes
+  - [Value-Proposition Analysis & Improvement Brainstorm (2026-07)](value-proposition-analysis-2026-07.md) —
+    strategy-altitude companion to the code brainstorm: program analysis, July 2026 competitive/market
+    research, an honest current value-proposition assessment, and prioritized positioning improvements
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.

@@ -1,11 +1,11 @@
 {
-  "total_files": 536,
-  "total_lines": 87844,
+  "total_files": 537,
+  "total_lines": 88139,
   "orphaned_count": 205,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 199,
-  "average_lines": 163.9,
+  "average_lines": 164.1,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2138,7 +2138,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7739,
+      "line_count": 7740,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3090,9 +3090,17 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 201,
+      "line_count": 204,
       "has_heading": true,
       "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/value-proposition-analysis-2026-07.md",
+      "line_count": 291,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
