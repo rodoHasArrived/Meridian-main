@@ -63,6 +63,11 @@ export function formatDateTimeLabel(value: string | null | undefined): string {
   return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
 }
 
+export function formatDateOnly(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toISOString().slice(0, 10);
+}
+
 function padUtc(value: number): string {
   return String(value).padStart(2, "0");
 }
