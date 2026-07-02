@@ -1,4 +1,5 @@
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import type { ApiErrorDisplay } from "@/lib/api-errors";
 import type { PrivateCapitalFundEventLedgerRecord } from "@/types";
 
 export function normalizeQueryValue(value: string | null): string | null {
@@ -32,6 +33,18 @@ export function manualJournalPrivateCapitalReadinessTone(
   if (readiness === "Blocked") return "danger";
   if (readiness === "Ready" || readiness === "Published") return "success";
   return readiness ? "warning" : "outline";
+}
+
+export function normalizeApiErrorDisplay(error: string | ApiErrorDisplay | null): ApiErrorDisplay | null {
+  if (!error) {
+    return null;
+  }
+
+  if (typeof error === "string") {
+    return { summary: error, details: [] };
+  }
+
+  return error;
 }
 
 function normalizePrivateCapitalRouteId(value: string | null | undefined): string | null {
