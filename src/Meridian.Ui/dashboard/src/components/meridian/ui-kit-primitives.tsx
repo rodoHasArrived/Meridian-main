@@ -1,4 +1,4 @@
-import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import { memo, useId, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS,
   buildDenseRowDetailAnnouncement,
@@ -56,24 +56,7 @@ export interface DenseDataTableSortState {
   direction: "asc" | "desc";
 }
 
-export function DenseDataTable<T>({
-  columns,
-  rows,
-  getRowId,
-  getRowAriaLabel,
-  getRowAriaControls,
-  getRowAriaExpanded,
-  getRowClassName,
-  getRowSelectAriaLabel,
-  onRowSelect,
-  selectedRowId,
-  emptyText,
-  ariaLabel,
-  tableId,
-  caption,
-  sort = null,
-  onToggleSort
-}: {
+export interface DenseDataTableProps<T> {
   columns: DenseDataTableColumn<T>[];
   rows: T[];
   getRowId: (row: T) => string;
@@ -90,7 +73,26 @@ export function DenseDataTable<T>({
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
-}) {
+}
+
+function DenseDataTableComponent<T>({
+  columns,
+  rows,
+  getRowId,
+  getRowAriaLabel,
+  getRowAriaControls,
+  getRowAriaExpanded,
+  getRowClassName,
+  getRowSelectAriaLabel,
+  onRowSelect,
+  selectedRowId,
+  emptyText,
+  ariaLabel,
+  tableId,
+  caption,
+  sort = null,
+  onToggleSort
+}: DenseDataTableProps<T>) {
   const generatedKeyboardInstructionsId = useId();
   const selectableRows = onRowSelect !== undefined && rows.length > 0;
   const exposesExpandedRows = getRowAriaExpanded !== undefined;
@@ -212,6 +214,8 @@ export function DenseDataTable<T>({
     </div>
   );
 }
+
+export const DenseDataTable = memo(DenseDataTableComponent) as typeof DenseDataTableComponent;
 
 function resolveFocusableDenseRowId<T>(
   rows: T[],

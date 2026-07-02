@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { buildMetricCardViewModel } from "@/components/meridian/metric-card.view-model";
 import type { MetricSnapshot } from "@/types";
@@ -21,7 +22,7 @@ import type { MetricSnapshot } from "@/types";
  * // or with explicit spread:
  * <MetricCard id="pnl" label="Daily P&L" value="$4,210" tone="success" delta="+3.2%" />
  */
-export function MetricCard(metric: MetricSnapshot) {
+function MetricCardComponent(metric: MetricSnapshot) {
   const vm = buildMetricCardViewModel(metric);
 
   return (
@@ -41,3 +42,5 @@ export function MetricCard(metric: MetricSnapshot) {
     </div>
   );
 }
+
+export const MetricCard = memo(MetricCardComponent);

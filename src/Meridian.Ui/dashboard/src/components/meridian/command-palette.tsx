@@ -62,20 +62,6 @@ export function CommandPalette({
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const currentRoute = `${pathname}${search}${hash}`;
-  const viewModel = buildCommandPaletteViewModel(
-    currentRoute,
-    undefined,
-    {
-      workflowLibrary,
-      workflowPresets,
-      workflowError,
-      operatorFocusItems
-    },
-    query,
-    operatingContextSymbol ?? null,
-    operatingScope ?? null
-  );
 
   useEffect(() => {
     if (!open) {
@@ -136,6 +122,21 @@ export function CommandPalette({
   if (!open) {
     return null;
   }
+
+  const currentRoute = `${pathname}${search}${hash}`;
+  const viewModel = buildCommandPaletteViewModel(
+    currentRoute,
+    undefined,
+    {
+      workflowLibrary,
+      workflowPresets,
+      workflowError,
+      operatorFocusItems
+    },
+    query,
+    operatingContextSymbol ?? null,
+    operatingScope ?? null
+  );
 
   return (
     <div

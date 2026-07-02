@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS, DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -215,4 +216,43 @@ describe("DenseDataTable", () => {
     expect(screen.getByRole("row", { name: "AAPL Active" })).not.toHaveClass("state-disabled");
     expect(screen.getByRole("row", { name: "MSFT Monitored" })).toHaveClass("state-disabled");
   });
+
+  it("skips cell rendering when parent state changes but table props stay stable", async () => {
+    const user = userEvent.setup();
+    const renderSymbol = vi.fn((row: TestRow) => row.symbol);
+    const stableColumns: DenseDataTableColumn<TestRow>[] = [
+      { id: "symbol", label: "Symbol", render: renderSymbol }
+    ];
+
+    function StableTableHost() {
+      const [tick, setTick] = useState(0);
+      return (
+        <>
+          <button type="button" onClick={() => setTick((current) => current + 1)}>
+            Parent tick {tick}
+          </button>
+          <DenseDataTable
+            columns={stableColumns}
+            rows={rows}
+            getRowId={getTestRowId}
+            emptyText="No rows"
+            ariaLabel="Memoized table"
+          />
+        </>
+      );
+    }
+
+    render(<StableTableHost />);
+
+    expect(renderSymbol).toHaveBeenCalledTimes(rows.length);
+
+    await user.click(screen.getByRole("button", { name: "Parent tick 0" }));
+
+    expect(screen.getByRole("button", { name: "Parent tick 1" })).toBeInTheDocument();
+    expect(renderSymbol).toHaveBeenCalledTimes(rows.length);
+  });
 });
+
+function getTestRowId(row: TestRow) {
+  return row.id;
+}

@@ -3,7 +3,7 @@
 // border in the tone color, a small-caps label, a 24px mono value, and a signed delta
 // (green up / red down). This is the design-system MetricCard; the pre-existing
 // read-model tile lives at `components/meridian/metric-card.tsx` and is left untouched.
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
@@ -58,7 +58,7 @@ const TONE_STATUS: Record<MetricCardTone, string> = {
  * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
  * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
  */
-export function MetricCard({ label, value, delta, tone = "neutral", trend, ariaLabel }: MetricCardProps) {
+function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel }: MetricCardProps) {
   injectStyle("metric", CSS);
   const t =
     trend ??
@@ -87,3 +87,5 @@ export function MetricCard({ label, value, delta, tone = "neutral", trend, ariaL
     </div>
   );
 }
+
+export const MetricCard = memo(MetricCardComponent);
