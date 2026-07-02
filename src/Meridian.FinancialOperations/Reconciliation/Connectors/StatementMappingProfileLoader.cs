@@ -41,12 +41,13 @@ public static class StatementMappingProfileLoader
             errors.Add($"Profile format '{document.Format}' is not supported. Use '{StatementMappingProfileDocument.CsvFormat}' or '{StatementMappingProfileDocument.OfxFormat}'.");
         }
 
-        if (document.Csv is { Delimiter.Length: not 1 })
+        // Also reject null options (possible on hand-edited or partially deserialized documents).
+        if (document.Csv is { Delimiter: null or { Length: not 1 } })
         {
             errors.Add("CSV delimiter must be a single character.");
         }
 
-        if (document.Csv is { Quote.Length: not 1 })
+        if (document.Csv is { Quote: null or { Length: not 1 } })
         {
             errors.Add("CSV quote must be a single character.");
         }

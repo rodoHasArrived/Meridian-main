@@ -75,7 +75,12 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
         var dataStartIndex = 0;
         if (hasHeader)
         {
-            var headerIndex = Array.FindIndex(lines.ToArray(), static line => !string.IsNullOrWhiteSpace(line));
+            var headerIndex = 0;
+            while (string.IsNullOrWhiteSpace(lines[headerIndex]))
+            {
+                headerIndex++;
+            }
+
             detectedColumns = CsvLineSplitter.Split(lines[headerIndex], delimiter, quote)
                 .Select(static column => column.Trim())
                 .ToArray();

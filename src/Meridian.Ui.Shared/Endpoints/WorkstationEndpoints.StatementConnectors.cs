@@ -440,7 +440,7 @@ public static partial class WorkstationEndpoints
 
         byte[] fileBytes;
         await using (var stream = file.OpenReadStream())
-        using (var buffer = new MemoryStream())
+        using (var buffer = new MemoryStream((int)file.Length))
         {
             await stream.CopyToAsync(buffer, context.RequestAborted).ConfigureAwait(false);
             fileBytes = buffer.ToArray();

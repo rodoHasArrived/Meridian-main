@@ -99,7 +99,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         try
         {
             snapshot = JsonSerializer.Deserialize(
-                Encoding.UTF8.GetString(document.Content.Span),
+                document.Content.Span,
                 AlpacaStatementSnapshotJsonContext.Default.AlpacaStatementSnapshot);
         }
         catch (JsonException ex)

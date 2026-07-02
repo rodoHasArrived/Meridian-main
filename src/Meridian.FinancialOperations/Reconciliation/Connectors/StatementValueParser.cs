@@ -13,6 +13,8 @@ internal static class StatementValueParser
     private const NumberStyles DecimalStyles =
         NumberStyles.Number | NumberStyles.AllowCurrencySymbol | NumberStyles.AllowParentheses;
 
+    private static readonly char[] DateTimeSeparators = [';', 'T', ' '];
+
     public static bool TryParseDecimal(string? value, StatementMappingProfileDocument profile, out decimal result)
     {
         result = 0m;
@@ -53,7 +55,8 @@ internal static class StatementValueParser
 
         // Timestamped exports (e.g. "2026-06-01T14:30:00Z" or "20260601;093000") reduce to
         // their date component rather than failing the row.
-        var datePortion = trimmed.Split(';', 'T', ' ')[0];
+        var separatorIndex = trimmed.IndexOfAny(DateTimeSeparators);
+        var datePortion = separatorIndex >= 0 ? trimmed[..separatorIndex] : trimmed;
         if (datePortion.Length != trimmed.Length)
         {
             foreach (var format in profile.DateFormats ?? [])
