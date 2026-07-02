@@ -1982,6 +1982,7 @@ Meridian-main
 │   │   │   ├── web-accounting-reconciliation-match.png
 │   │   │   ├── web-accounting-reconciliation.png
 │   │   │   ├── web-accounting-security-master.png
+│   │   │   ├── web-accounting-statement-import.png
 │   │   │   ├── web-accounting-trial-balance-detail.png
 │   │   │   ├── web-accounting-workspace.png
 │   │   │   ├── web-daily-control-tower.png

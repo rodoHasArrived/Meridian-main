@@ -73,14 +73,14 @@ Total items: **207**
 | `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 848 | `NOTE` | ❌ | note: "Promote ready rows", |
 | `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 858 | `NOTE` | ❌ | note: "Reviewed" |
 | `src/Meridian.Ui/dashboard/src/lib/daily-control-tower.test.ts` | 75 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 679 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 693 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1345 | `NOTE` | ❌ | note: "Board portal delivery." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1351 | `NOTE` | ❌ | note: "Investor email-link delivery." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1373 | `NOTE` | ❌ | note: "Board portal delivery.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1397 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1502 | `NOTE` | ❌ | note: "pricing-correction" |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 2188 | `NOTE` | ❌ | note: "Fixture handoff retained after identity review.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 682 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 696 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1348 | `NOTE` | ❌ | note: "Board portal delivery." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1354 | `NOTE` | ❌ | note: "Investor email-link delivery." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1376 | `NOTE` | ❌ | note: "Board portal delivery.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1400 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1505 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 2191 | `NOTE` | ❌ | note: "Fixture handoff retained after identity review.", |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 145 | `NOTE` | ❌ | note: alert.note |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 227 | `NOTE` | ❌ | note: draft.note?.trim() ? draft.note.trim() : null, |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.test.ts` | 31 | `NOTE` | ❌ | note: null, |
