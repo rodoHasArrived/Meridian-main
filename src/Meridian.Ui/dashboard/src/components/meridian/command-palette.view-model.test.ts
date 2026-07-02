@@ -60,6 +60,51 @@ describe("command palette view model", () => {
     expect(model.initialFocusItemId).toBe("portfolio");
   });
 
+  it("groups entity search results ahead of workspace routes", () => {
+    const model = buildCommandPaletteViewModel("/data/quotes", undefined, {
+      entityItems: [
+        {
+          id: "symbol:AAPL",
+          label: "AAPL",
+          description: "Provider Polygon - Active - Historical data retained - 42 events",
+          route: "/data/quotes?symbol=AAPL",
+          sourceLabel: "Symbol",
+          statusLabel: "Active",
+          commandLabel: "Open AAPL quotes",
+          ariaLabel: "Open symbol AAPL in Live quotes"
+        }
+      ],
+      entitySearchStatus: "ready"
+    }, "aapl");
+
+    expect(model.itemCountLabel).toBe("1 entity result - 7 workspaces - 18 quick routes");
+    expect(model.entitySearchStatusLabel).toBe("1 entity result");
+    expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
+      "Entities:1 entity"
+    ]);
+    expect(model.filteredItems[0]).toMatchObject({
+      id: "entity:symbol:AAPL",
+      kind: "entity",
+      route: "/data/quotes?symbol=AAPL",
+      commandLabel: "Open AAPL quotes",
+      statusLabel: "Active"
+    });
+  });
+
+  it("surfaces degraded entity-search copy in no-match states", () => {
+    const model = buildCommandPaletteViewModel("/data", undefined, {
+      entitySearchStatus: "error",
+      entitySearchError: "symbol search and security search unavailable"
+    }, "zzzzzz");
+
+    expect(model.entitySearchStatusLabel).toBe(
+      "Entity search unavailable: symbol search and security search unavailable"
+    );
+    expect(model.emptyState?.detail).toBe(
+      'No commands match "zzzzzz". Entity search is unavailable; local workstation commands remain available. Clear the search to return to all workstation commands.'
+    );
+  });
+
   it("promotes ranked operator focus actions ahead of route navigation", () => {
     const model = buildCommandPaletteViewModel("/data/quotes?symbol=MSFT", undefined, {
       operatorFocusItems: [
