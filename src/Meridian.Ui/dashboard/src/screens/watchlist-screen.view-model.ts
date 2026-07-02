@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 
@@ -32,6 +33,7 @@ const STATUS_RANK: Record<SymbolRecord["status"], number> = {
 };
 
 const QUOTE_POLL_INTERVAL_MS = 2000;
+export const WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS = 2 * QUOTE_POLL_INTERVAL_MS;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
 export const WATCHLIST_EMPTY_VALUE = "—";
 export const WATCHLIST_NO_QUOTE_LABEL = "No quote";
@@ -218,6 +220,8 @@ export interface WatchlistScreenViewModel {
   quoteStatusLabel: string;
   quoteStatusTone: WatchlistQuoteStatusTone;
   quoteStatusDetails: string[];
+  quoteFreshnessTimestamp: string | null;
+  quoteFreshnessError: string | null;
   quoteProviderSetupHandoff: WatchlistProviderSetupHandoff | null;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
   starterPackGroupLabel: string;
@@ -663,6 +667,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     quoteStatusLabel: quoteStatus.label,
     quoteStatusTone: quoteStatus.tone,
     quoteStatusDetails: quoteStatus.details,
+    quoteFreshnessTimestamp: quoteFetchedAt ? new Date(quoteFetchedAt).toISOString() : null,
+    quoteFreshnessError: quoteError?.summary ?? null,
     quoteProviderSetupHandoff: quoteError ? buildProviderSetupHandoff("live-quotes") : null,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
     starterPackGroupLabel: "Watchlist starter packs",
@@ -917,39 +923,7 @@ export function buildWatchlistStats(stats: SymbolStatistics | null): MetricSnaps
   ];
 }
 
-export function formatRelative(iso: string | null, now = Date.now()): string {
-  if (!iso) {
-    return "Never";
-  }
-
-  const timestamp = new Date(iso).getTime();
-  if (Number.isNaN(timestamp)) {
-    return "Never";
-  }
-
-  const diff = now - timestamp;
-  if (diff < 0) {
-    return new Date(iso).toLocaleString();
-  }
-
-  const seconds = Math.round(diff / 1000);
-  if (seconds < 60) {
-    return `${seconds}s ago`;
-  }
-
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) {
-    return `${minutes}m ago`;
-  }
-
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-
-  const days = Math.round(hours / 24);
-  return `${days}d ago`;
-}
+export { formatRelativeAge as formatRelative } from "@/lib/time";
 
 export function validatePendingSymbol(value: string): string | null {
   return parseWatchlistSymbols(value).length === 0 ? "Enter at least one symbol before adding it." : null;

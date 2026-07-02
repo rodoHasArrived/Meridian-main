@@ -2451,6 +2451,7 @@ export interface CloseCommandCenterViewState {
   fundAccountLabel: string;
   summary: string;
   updatedLabel: string;
+  updatedAtUtc: string | null;
   metricRows: CloseCommandCenterMetricViewModel[];
   blockerRows: CloseCommandCenterBlockerViewModel[];
   actionRows: CloseCommandCenterActionViewModel[];

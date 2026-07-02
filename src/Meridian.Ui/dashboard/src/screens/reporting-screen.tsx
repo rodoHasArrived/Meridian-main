@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Select } from "@/components/ui/select";
 import { SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -146,6 +147,7 @@ const reportingStatusFromVariant: Record<
   research: "Info"
 };
 const livePortfolioAutoRefreshIntervalMs = 60_000;
+const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
 const defaultExportsReportRunRequester = "browser-workstation";
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
@@ -1193,8 +1195,13 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
                       {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
                     </p>
-                    <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
-                      Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}
+                    <p className="mt-1 flex flex-wrap items-center gap-2 break-all font-mono text-[11px] text-muted-foreground">
+                      <span>Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}</span>
+                      <FreshnessChip
+                        label={`${view.label} source data`}
+                        staleBudgetMs={LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS}
+                        timestamp={view.sourceAsOfUtc ?? null}
+                      />
                     </p>
                     <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
                       Market tick: {view.isMarketTickLinked ? "linked" : "snapshot"} · provider={view.marketDataProvider ?? "unavailable"} · age={view.marketTickAgeSeconds ?? "n/a"}s · seq={view.marketTickSequence ?? "n/a"} · tick={view.marketTickAsOfUtc ?? view.sourceAsOfUtc ?? "unavailable"}

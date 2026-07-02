@@ -1144,6 +1144,15 @@ describe("LiveQuotesScreen quick trade", () => {
     vi.restoreAllMocks();
   });
 
+  it("shows freshness chips for the market panels and quote matrix after data loads", async () => {
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    await waitForAsyncEffects();
+
+    expect(screen.getByLabelText(/Market panels updated/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Quote matrix updated/)).toBeInTheDocument();
+  });
+
   it("seeds a buy ticket at the ask price when ask is clicked and submits", async () => {
     const submitSpy = vi.spyOn(api, "submitOrder").mockResolvedValue({
       success: true,

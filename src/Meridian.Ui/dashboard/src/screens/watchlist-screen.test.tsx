@@ -159,6 +159,14 @@ describe("WatchlistScreen", () => {
     expect(vi.mocked(api.getLiveQuotesSnapshot).mock.calls[0]?.[0]).toEqual(["MSFT", "AAPL"]);
   });
 
+  it("shows a freshness chip once live quotes have loaded", async () => {
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
+
+    expect(screen.getByLabelText(/Watchlist quotes updated/)).toBeInTheDocument();
+  });
+
   it("lets operators manually refresh live quotes", async () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });

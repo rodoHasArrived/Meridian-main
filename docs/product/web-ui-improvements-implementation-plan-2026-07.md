@@ -45,7 +45,7 @@ No feature work; confirm and document the rules each later phase must follow.
   `buildMutationHeaders()` (`mdc-csrf` cookie → `X-CSRF-Token`).
 
 **Checklist**
-- [ ] Conventions above linked from the first implementation PR description.
+- [x] Conventions above linked from the first implementation PR description.
 
 ---
 
@@ -73,9 +73,9 @@ No feature work; confirm and document the rules each later phase must follow.
 - **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test`
 
 **Checklist**
-- [ ] `lastSucceededAt` added to `use-request-lifecycle.ts` with tests.
-- [ ] `FreshnessChip` primitive + view-model + tests.
-- [ ] Adopted on the five surfaces above.
+- [x] `lastSucceededAt` added to `use-request-lifecycle.ts` with tests.
+- [x] `FreshnessChip` primitive + view-model + tests.
+- [x] Adopted on the five surfaces above.
 
 ---
 

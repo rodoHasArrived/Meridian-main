@@ -2262,6 +2262,7 @@ describe("accounting-screen close-cockpit view model", () => {
       "/accounting/approvals",
       "/reporting/evidence"
     ]);
+    expect(state.updatedAtUtc).toBe(closeWorkflow.updatedAtUtc);
   });
 
   it("marks the controller close command center ready only when all close signals clear", () => {

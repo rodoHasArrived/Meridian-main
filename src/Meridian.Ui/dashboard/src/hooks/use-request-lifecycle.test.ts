@@ -145,4 +145,49 @@ describe("useRequestLifecycle", () => {
       maxRetries: 2
     });
   });
+
+  it("Scenario_PollingFailsAfterSuccess_LastSucceededAtSurvivesTheFailure", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "quote refresh" }));
+
+    expect(result.current.status.lastSucceededAt).toBeNull();
+
+    let token: ReturnType<typeof result.current.start>;
+    act(() => {
+      token = result.current.start();
+    });
+    act(() => {
+      result.current.succeed(token!);
+    });
+
+    const lastSucceededAt = result.current.status.lastSucceededAt;
+    expect(lastSucceededAt).not.toBeNull();
+    expect(result.current.status.settledAt).toBe(lastSucceededAt);
+
+    act(() => {
+      token = result.current.start();
+    });
+    act(() => {
+      result.current.fail(token!, new Error("provider outage"));
+    });
+
+    expect(result.current.status.phase).toBe("failed");
+    expect(result.current.status.lastSucceededAt).toBe(lastSucceededAt);
+    expect(result.current.status.settledAt).not.toBeNull();
+  });
+
+  it("Scenario_StaleSucceedDiscarded_DoesNotAdvanceLastSucceededAt", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "quote refresh" }));
+
+    let older: ReturnType<typeof result.current.start>;
+    act(() => {
+      older = result.current.start();
+      result.current.start();
+    });
+    act(() => {
+      result.current.succeed(older!);
+    });
+
+    expect(result.current.status.lastSucceededAt).toBeNull();
+    expect(result.current.status.staleDiscardCount).toBe(1);
+  });
 });

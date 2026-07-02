@@ -380,6 +380,31 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
+  it("shows a workspace freshness chip when a refresh status is provided", async () => {
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "succeeded",
+          inFlight: false,
+          version: 1,
+          message: "Refresh complete.",
+          error: null,
+          startedAt: new Date().toISOString(),
+          settledAt: new Date().toISOString(),
+          lastSucceededAt: new Date().toISOString(),
+          staleDiscardCount: 0,
+          backoff: { attempt: 1, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    expect(screen.getByLabelText(/Portfolio workspace updated/)).toBeInTheDocument();
+  });
+
   it("renders positions and runs from the Portfolio workspace payload when available", async () => {
     await renderPortfolioScreen(
       <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />

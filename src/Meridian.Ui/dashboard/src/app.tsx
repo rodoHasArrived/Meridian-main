@@ -146,6 +146,7 @@ function AppShell() {
     error,
     workspaceErrors,
     refreshStatus,
+    portfolioRefreshStatus,
     refresh,
     refreshPortfolio,
     refreshProviderRouting,
@@ -437,6 +438,7 @@ function AppShell() {
                       brokerageConnection={brokerageConnection}
                       brokeragePortfolio={brokeragePortfolio}
                       multiAssetCoverage={portfolioMultiAssetCoverage}
+                      refreshStatus={portfolioRefreshStatus}
                     />
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />

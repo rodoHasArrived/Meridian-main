@@ -19,6 +19,8 @@ export interface RequestLifecycleStatus {
   error: string | null;
   startedAt: string | null;
   settledAt: string | null;
+  /** Timestamp of the most recent successful settle; survives later failures. */
+  lastSucceededAt: string | null;
   staleDiscardCount: number;
   backoff: RequestBackoffMetadata;
 }
@@ -87,6 +89,7 @@ export function useRequestLifecycle({
     error: null,
     startedAt: null,
     settledAt: null,
+    lastSucceededAt: null,
     staleDiscardCount: 0,
     backoff: {
       attempt: 0,
@@ -218,6 +221,7 @@ export function useRequestLifecycle({
       controllerRef.current = null;
     }
     inFlightRef.current = false;
+    const settledAt = new Date().toISOString();
     setStatus((current) => ({
       ...current,
       phase: "succeeded",
@@ -225,7 +229,8 @@ export function useRequestLifecycle({
       version: token.version,
       message: options.message ?? successMessage,
       error: null,
-      settledAt: new Date().toISOString(),
+      settledAt,
+      lastSucceededAt: settledAt,
       backoff: {
         ...current.backoff,
         nextRetryDelayMs: null

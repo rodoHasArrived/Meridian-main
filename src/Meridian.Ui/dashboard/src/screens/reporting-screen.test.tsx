@@ -1540,6 +1540,7 @@ describe("ReportingScreen", () => {
     expect(fundView).toHaveTextContent("Shadow NAV");
     expect(fundView).toHaveTextContent("$3,650");
     expect(fundView).toHaveTextContent("Freshness: LiveLinked · cut=2026-04-11T16:00:00Z · source=2026-04-11T15:58:00Z");
+    expect(within(fundView).getByLabelText(/Consolidated fund source data/)).toBeInTheDocument();
     expect(fundView).toHaveTextContent("Market tick: linked · provider=portfolio-summary-live · age=120s · seq=1775923080000 · tick=2026-04-11T15:58:00Z");
     expect(fundView).toHaveTextContent("Policy: LivePortfolioView · evaluated=2026-04-11T16:00:00Z · sourceAge=120s · liveWindow=300s · staleWindow=86400s");
     expect(fundView).toHaveTextContent("Source age is 120 second(s), inside the 5-minute live-link window.");

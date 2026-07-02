@@ -15,8 +15,10 @@ import {
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
 import {
   useWatchlistScreenViewModel,
+  WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS,
   type WatchlistDetailFieldTone,
   type WatchlistRowViewModel,
   type WatchlistSelectedDetail,
@@ -253,7 +255,15 @@ export function WatchlistScreen() {
                 className={`flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${quoteStatusClass[vm.quoteStatusTone]}`}
               >
                 <div className="min-w-0">
-                  <div>{vm.quoteStatusLabel}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span>{vm.quoteStatusLabel}</span>
+                    <FreshnessChip
+                      errorMessage={vm.quoteFreshnessError}
+                      label="Watchlist quotes"
+                      staleBudgetMs={WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS}
+                      timestamp={vm.quoteFreshnessTimestamp}
+                    />
+                  </div>
                   {vm.quoteStatusDetails.length > 0 ? (
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                       {vm.quoteStatusDetails.map((detail) => (

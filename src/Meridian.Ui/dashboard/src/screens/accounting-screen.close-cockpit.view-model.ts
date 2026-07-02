@@ -3174,6 +3174,7 @@ export function buildCloseCommandCenterViewState({
     fundAccountLabel: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "All accounts",
     summary: buildCloseCommandCenterSummary(status, metricRows, workflowError),
     updatedLabel,
+    updatedAtUtc: workflow?.updatedAtUtc ?? accountingSystemReconciliation?.generatedAtUtc ?? multiAssetCoverage?.asOfUtc ?? null,
     metricRows,
     blockerRows,
     actionRows: [
@@ -3343,6 +3344,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     fundAccountLabel: commandCenter.fundAccountId ?? commandCenter.fundProfileId ?? "All accounts",
     summary: errorText ? `${closeSupportDecision?.summary ?? commandCenter.summary} ${errorText}` : closeSupportDecision?.summary ?? commandCenter.summary,
     updatedLabel: commandCenter.generatedAtUtc,
+    updatedAtUtc: commandCenter.generatedAtUtc ?? null,
     metricRows,
     blockerRows,
     actionRows,
