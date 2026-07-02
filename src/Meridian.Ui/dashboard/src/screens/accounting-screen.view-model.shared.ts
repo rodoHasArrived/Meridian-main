@@ -1,6 +1,8 @@
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
-import type { PrivateCapitalFundEventLedgerRecord } from "@/types";
+import type { AccountingBasisKind, PrivateCapitalFundEventLedgerRecord } from "@/types";
+
+export const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
 
 export function normalizeQueryValue(value: string | null): string | null {
   const normalized = value?.trim();
