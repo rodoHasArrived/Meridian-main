@@ -7,6 +7,7 @@
 > **Session date:** 2026-07-02
 > **Grounding:** `src/Meridian.Ui/dashboard/src/` (app shell, screens, hooks, charts, design
 > primitives), `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`, prior brainstorm ledger.
+> **Implementation plan:** [Browser Workstation UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md)
 
 ## What already exists (and is therefore not proposed here)
 
@@ -223,7 +224,12 @@ window that remembers its size/position (`localStorage`), tracks the main window
 scope, and closes gracefully when the session ends. Tradeoffs: a second render surface means the
 pane components must be shell-independent (no masthead/nav assumptions); auth/session expiry has
 to propagate to children; and without #1 each pop-out polls independently, so sequencing this
-after the live spine is the cheaper path.
+after the live spine is the cheaper path. One browser-compatibility rule the design must carry:
+open companion windows with `noopener`, and because `window.open` with `noopener` returns `null`
+even on success, do not infer popup-blocker state from the return value — instead surface a
+persistent, visible fallback link (`target="_blank" rel="noopener noreferrer"`) so a blocked
+pop-out degrades to a user-clickable path; cross-window state still flows over the same-origin
+`BroadcastChannel`, which does not depend on the opener reference.
 
 ---
 
