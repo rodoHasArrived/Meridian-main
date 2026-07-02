@@ -17,6 +17,12 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization of the next highest-value implementable features, sequenced against the W6/W7
     roadmap lanes
+  - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
+    nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
+    and sequencing
+  - [Browser Workstation UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) —
+    phased, code-ready implementation plan for the nine brainstorm ideas with per-phase file
+    anchors, contracts, test plans, and validation commands
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
