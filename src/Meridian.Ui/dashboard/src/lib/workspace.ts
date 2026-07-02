@@ -38,6 +38,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingCapitalAccounts: "/accounting/capital-accounts",
   accountingReconciliation: "/accounting/reconciliation",
   accountingReconciliationMatch: "/accounting/reconciliation/match",
+  accountingStatementImport: "/accounting/statement-import",
   accountingCloseCalendar: "/accounting/close-calendar",
   accountingExceptions: "/accounting/exceptions",
   accountingSecurityMaster: "/accounting/security-master",

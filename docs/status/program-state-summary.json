@@ -128,6 +128,19 @@
       "Last Reviewed": "2026-06-02"
     },
     {
+      "ID": "W5X-CONNECT-001",
+      "Wave": "W5X",
+      "Title": "Custodian and broker statement connector library",
+      "Workspaces": "Accounting; Data",
+      "Status": "done",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs; docs/adr/018-declarative-statement-mapping-profiles.md; tests/Meridian.Tests/Reconciliation/Connectors/StatementImportServiceTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/IbFlexStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/OfxStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/AlpacaActivityStatementConnectorTests.cs",
+      "Last Reviewed": "2026-07-02"
+    },
+    {
       "ID": "W5X-FINOPS-001",
       "Wave": "W5X",
       "Title": "Financial operations control center",

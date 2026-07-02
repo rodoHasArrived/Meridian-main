@@ -59,6 +59,7 @@ public static class UiEndpoints
 
         services.AddMutationRateLimiter();
         services.AddLeanAutoExportHostedService();
+        services.AddStatementFetchSchedulerHostedService();
         return services;
     }
 

@@ -140,6 +140,7 @@ describe("workspace nav view model", () => {
       "/accounting/trial-balance",
       "/accounting/journal-entries",
       "/accounting/reconciliation",
+      "/accounting/statement-import",
       "/accounting/exceptions",
       "/accounting/security-master",
       "/accounting/approvals",

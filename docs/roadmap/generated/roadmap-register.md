@@ -249,6 +249,36 @@ Completed the first shared multi-asset operations proof lane by exposing Securit
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
+## W5X-CONNECT-001 - Custodian and broker statement connector library
+| Field | Value |
+| --- | --- |
+| Wave | W5X |
+| Status | done |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-07-02 |
+
+### Current Summary
+
+Delivered 2026-07-02. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. Scheduled fetches run through persisted schedules with duplicate-key idempotency; the Accounting workspace gains an Import Statement surface with a live mapping-profile editor.
+
+### Exit Criteria
+
+- Operators onboard a new custodian CSV or OFX layout by authoring a mapping profile document without a release.
+- Statement imports preview detected columns with per-column mapping confidence and per-kind (position, transaction, cash, fee, dividend) record breakdowns before commit.
+- Committed imports enter the existing reconciliation queue with retained raw and canonical evidence and duplicate-key idempotency.
+- IB Flex XML, OFX bank and investment, Alpaca activity plus portfolio, and profile-driven CSV statements all normalize through one connector seam with golden-file regression coverage.
+- Format drift against a profile's last accepted layout is surfaced as a warning before rows map incorrectly.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
 ## W5X-FINOPS-001 - Financial operations control center
 | Field | Value |
 | --- | --- |

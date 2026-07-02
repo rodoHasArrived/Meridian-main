@@ -345,6 +345,18 @@ export const RECONCILIATION_API_ENDPOINTS = {
   calibrationSummary: UI_API_ROUTES.ReconciliationCalibrationSummary
 } as const;
 
+export const STATEMENT_CONNECTOR_API_ENDPOINTS = {
+  connectors: UI_API_ROUTES.ReconciliationStatementConnectors,
+  mappingProfiles: UI_API_ROUTES.ReconciliationStatementMappingProfiles,
+  mappingProfile: UI_API_ROUTES.ReconciliationStatementMappingProfileById,
+  importPreview: UI_API_ROUTES.ReconciliationStatementImportPreview,
+  importCommit: UI_API_ROUTES.ReconciliationStatementImportCommit,
+  fetchPreview: UI_API_ROUTES.ReconciliationStatementFetchPreview,
+  fetchSchedules: UI_API_ROUTES.ReconciliationStatementFetchSchedules,
+  fetchSchedule: UI_API_ROUTES.ReconciliationStatementFetchScheduleById,
+  fetchScheduleRun: UI_API_ROUTES.ReconciliationStatementFetchScheduleRun
+} as const;
+
 export const BACKFILL_API_ENDPOINTS = {
   checkpoints: UI_API_ROUTES.BackfillCheckpoints,
   checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
@@ -1475,6 +1487,18 @@ export function reconciliationStatementRunEndpoint(runId: string): string {
 
 export function reconciliationStatementExceptionsEndpoint(): string {
   return RECONCILIATION_API_ENDPOINTS.statementExceptions;
+}
+
+export function reconciliationStatementMappingProfileEndpoint(profileId: string): string {
+  return routeWithParam(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfile, "profileId", profileId);
+}
+
+export function reconciliationStatementFetchScheduleEndpoint(scheduleId: string): string {
+  return routeWithParam(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedule, "scheduleId", scheduleId);
+}
+
+export function reconciliationStatementFetchScheduleRunEndpoint(scheduleId: string): string {
+  return routeWithParam(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchScheduleRun, "scheduleId", scheduleId);
 }
 
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {
