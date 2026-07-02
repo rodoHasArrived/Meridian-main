@@ -420,6 +420,21 @@
       ]
     },
     {
+      "id": "W03I2A",
+      "name": "web-accounting-statement-import",
+      "path": "/accounting/statement-import",
+      "docLabel": "Accounting \u2014 Statement Import",
+      "waitForText": "Import statement",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForTexts": [
+        "Statement source",
+        "Statement file",
+        "Mapping profile"
+      ]
+    },
+    {
       "id": "W03I3",
       "name": "web-accounting-close-calendar",
       "path": "/accounting/close-calendar",
