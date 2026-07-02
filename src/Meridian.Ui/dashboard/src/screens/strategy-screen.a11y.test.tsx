@@ -49,7 +49,7 @@ describe("StrategyScreen accessibility", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("has no basic accessibility violations with run history data outside known issues", async () => {
+  it("has no basic accessibility violations with run history data", async () => {
     const { container } = renderWithRouter(<StrategyScreen data={twoRuns} />);
 
     const results = await axe(container);

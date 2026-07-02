@@ -49,14 +49,7 @@ describe("SettingsScreen accessibility", () => {
     apiMocks.listScopedAccessAssignments.mockImplementation(() => new Promise(() => undefined));
   });
 
-  // Known real violations in settings-screen.tsx (reported, intentionally not fixed here):
-  // - aria-required-children: <div role="list"> containers ("Profile authentication and
-  //   authorization readiness steps", "Alpaca provider setup checklist") hold h3[tabindex]
-  //   children instead of listitem children, and the empty "Scoped access assignments"
-  //   role="list" renders a <p> empty state without any listitem.
-  // - aria-allowed-role (operations view): fund operations configuration surfaces render
-  //   <article role="listitem">, and role "listitem" is not allowed on <article>.
-  it("has no basic accessibility violations in the overview/profile task view outside known issues", async () => {
+  it("has no basic accessibility violations in the overview/profile task view", async () => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings"]
     });
@@ -65,7 +58,7 @@ describe("SettingsScreen accessibility", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("has no basic accessibility violations in the providers task view outside known issues", async () => {
+  it("has no basic accessibility violations in the providers task view", async () => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings/preferences"]
     });
@@ -74,7 +67,7 @@ describe("SettingsScreen accessibility", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("has no basic accessibility violations in the operations task view outside known issues", async () => {
+  it("has no basic accessibility violations in the operations task view", async () => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings/integrations"]
     });
