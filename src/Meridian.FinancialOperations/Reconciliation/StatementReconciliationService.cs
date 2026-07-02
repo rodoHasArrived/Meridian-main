@@ -22,7 +22,16 @@ public sealed class StatementReconciliationService
         ct.ThrowIfCancellationRequested();
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         var profileId = mappingProfileId;
-        if (UsesCanonicalSchema(normalizedSourceKind, profileId))
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
+        {
+            // Flex reports are XML; the canonical CSV header check does not apply. Validate the
+            // document shape instead so the workflow rejects non-Flex files before import.
+            ValidateFlexDocument(sourcePath);
+            profileId = string.IsNullOrWhiteSpace(profileId)
+                ? StatementMappingProfileRegistry.IbFlexV1ProfileId
+                : profileId;
+        }
+        else if (UsesCanonicalSchema(normalizedSourceKind, profileId))
         {
             var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, profileId);
             profileId = profile.ProfileId;
@@ -39,6 +48,11 @@ public sealed class StatementReconciliationService
     {
         var normalizedSourceKind = ValidateSourceAccess(sourceKind, sourcePath);
         ct.ThrowIfCancellationRequested();
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
+        {
+            return await ReadFlexStatementImportAsync(normalizedSourceKind, sourcePath, ct).ConfigureAwait(false);
+        }
+
         if (UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
             return await ReadNormalizedStatementImportAsync(normalizedSourceKind, sourcePath, mappingProfileId, ct).ConfigureAwait(false);
@@ -96,16 +110,220 @@ public sealed class StatementReconciliationService
             throw new ArgumentException("Statement source path is required.", nameof(sourcePath));
 
         var normalizedSourceKind = sourceKind.Trim().ToLowerInvariant();
-        if (!string.Equals(normalizedSourceKind, "local", StringComparison.Ordinal)
+        if (IsIbFlexSourceKind(normalizedSourceKind))
+        {
+            normalizedSourceKind = IbFlexSourceKind;
+        }
+        else if (!string.Equals(normalizedSourceKind, "local", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "broker", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "custodian", StringComparison.Ordinal)
             && !string.Equals(normalizedSourceKind, "sample-broker", StringComparison.Ordinal))
-            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local', 'broker', 'custodian', or 'sample-broker'.");
+        {
+            throw new NotSupportedException($"Statement source kind '{sourceKind}' is not supported. Use 'local', 'broker', 'custodian', 'sample-broker', or 'ib-flex'.");
+        }
 
         if (!File.Exists(sourcePath))
             throw new FileNotFoundException($"Statement source file '{sourcePath}' was not found.", sourcePath);
 
         return normalizedSourceKind;
+    }
+
+    private const string IbFlexSourceKind = "ib-flex";
+
+    private static bool IsIbFlexSourceKind(string normalizedSourceKind) =>
+        normalizedSourceKind is "ib-flex" or "ibflex" or "ibkr" or "interactive-brokers" or "interactivebrokers";
+
+    // Mirrors RoutingBrokerStatementService: an explicit Flex source kind always uses Flex
+    // processing, and a canonical broker/custodian kind with an .xml file routes to Flex too,
+    // so the workflow's validation stage agrees with where the import router will send the file.
+    private static bool UsesFlexProcessing(string normalizedSourceKind, string sourcePath) =>
+        IsIbFlexSourceKind(normalizedSourceKind)
+        || (RequiresCanonicalStatementSchema(normalizedSourceKind)
+            && string.Equals(Path.GetExtension(sourcePath), ".xml", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Validates that <paramref name="sourcePath"/> is a well-formed IB Flex Query document
+    /// (root element <c>FlexQueryResponse</c>) without loading the full report.
+    /// </summary>
+    private static void ValidateFlexDocument(string sourcePath)
+    {
+        var settings = new System.Xml.XmlReaderSettings
+        {
+            DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+            XmlResolver = null,
+            CloseInput = true
+        };
+
+        try
+        {
+            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), settings);
+            reader.MoveToContent();
+            if (!string.Equals(reader.LocalName, "FlexQueryResponse", StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    $"Statement source '{sourcePath}' is not an IB Flex Query report (root element '{reader.LocalName}').");
+            }
+        }
+        catch (System.Xml.XmlException ex)
+        {
+            throw new InvalidDataException($"Statement source '{sourcePath}' is not well-formed XML: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
+    /// and CashTransaction element) so case intake matches Flex statements with the same
+    /// engine as canonical CSV rows. Fee-like cash transactions keep fee row semantics via
+    /// <see cref="Infrastructure.Reconciliation.IbFlexBrokerStatementService.MapCashTransactionActivity"/>.
+    /// </summary>
+    private static IReadOnlyList<NormalizedStatementRow> ReadFlexStatementRows(
+        string importId,
+        string normalizedSourceKind,
+        string sourcePath,
+        string content)
+    {
+        var document = System.Xml.Linq.XDocument.Parse(content);
+        var rows = new List<NormalizedStatementRow>();
+        var rowNumber = 0;
+
+        foreach (var statement in document.Descendants("FlexStatement"))
+        {
+            var statementToDate = Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                .ParseFlexDate((string?)statement.Attribute("toDate"));
+
+            foreach (var element in statement.Descendants()
+                         .Where(static e => e.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction"))
+            {
+                rowNumber++;
+                var (activityType, quantity, amount, date) = element.Name.LocalName switch
+                {
+                    "Trade" => (
+                        "trade",
+                        FlexDecimal(element, "quantity"),
+                        FlexFirstDecimal(element, "netCash", "proceeds") is var cash && cash != 0m
+                            ? cash
+                            : FlexDecimal(element, "quantity") * FlexDecimal(element, "tradePrice"),
+                        FlexFirstDate(element, ["tradeDate"], statementToDate)),
+                    "OpenPosition" => (
+                        "position",
+                        FlexDecimal(element, "position"),
+                        FlexFirstDecimal(element, "positionValue") is var value && value != 0m
+                            ? value
+                            : FlexDecimal(element, "position") * FlexFirstDecimal(element, "markPrice", "costBasisPrice"),
+                        FlexFirstDate(element, ["reportDate"], statementToDate)),
+                    _ => (
+                        Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                            .MapCashTransactionActivity((string?)element.Attribute("type")),
+                        0m,
+                        FlexDecimal(element, "amount"),
+                        FlexFirstDate(element, ["dateTime", "reportDate", "settleDate"], statementToDate))
+                };
+
+                var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["importId"] = importId,
+                    ["sourceKind"] = normalizedSourceKind,
+                    ["sourcePath"] = sourcePath,
+                    ["elementName"] = element.Name.LocalName,
+                    ["activityType"] = activityType,
+                    ["rowNumber"] = rowNumber.ToString(CultureInfo.InvariantCulture)
+                };
+                foreach (var attribute in element.Attributes())
+                {
+                    snapshot[attribute.Name.LocalName] = attribute.Value;
+                }
+
+                var elementText = element.ToString(System.Xml.Linq.SaveOptions.DisableFormatting);
+                rows.Add(new NormalizedStatementRow(
+                    $"{importId}:{rowNumber}",
+                    ToStatementRowKind(activityType),
+                    (string?)element.Attribute("symbol") ?? string.Empty,
+                    quantity,
+                    amount,
+                    new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                    (string?)element.Attribute("currency") ?? "USD",
+                    DeterministicFingerprint.Compute($"{importId}|{rowNumber}|{elementText}"),
+                    snapshot));
+            }
+        }
+
+        return rows;
+    }
+
+    private static decimal FlexDecimal(System.Xml.Linq.XElement element, string attribute)
+    {
+        var raw = (string?)element.Attribute(attribute);
+        return string.IsNullOrWhiteSpace(raw)
+            ? 0m
+            : decimal.Parse(raw, NumberStyles.Number, CultureInfo.InvariantCulture);
+    }
+
+    private static decimal FlexFirstDecimal(System.Xml.Linq.XElement element, params string[] attributes)
+    {
+        foreach (var attribute in attributes)
+        {
+            var raw = (string?)element.Attribute(attribute);
+            if (!string.IsNullOrWhiteSpace(raw))
+                return decimal.Parse(raw, NumberStyles.Number, CultureInfo.InvariantCulture);
+        }
+
+        return 0m;
+    }
+
+    private static DateOnly FlexFirstDate(System.Xml.Linq.XElement element, string[] attributes, DateOnly? fallback)
+    {
+        foreach (var attribute in attributes)
+        {
+            if (Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                    .ParseFlexDate((string?)element.Attribute(attribute)) is { } parsed)
+                return parsed;
+        }
+
+        return fallback ?? throw new InvalidDataException(
+            "Flex row has no parseable date attribute and the statement has no toDate fallback.");
+    }
+
+    /// <summary>
+    /// Reads an IB Flex report into source-row references (one per Trade, OpenPosition, and
+    /// CashTransaction element, with the element's attributes as the raw snapshot) so the
+    /// checkpointed ingestion stage reports real row counts. Canonical row construction for
+    /// the workflow path is owned by the Flex-aware broker statement importer.
+    /// </summary>
+    private static async Task<NormalizedStatementImportResult> ReadFlexStatementImportAsync(
+        string normalizedSourceKind,
+        string sourcePath,
+        CancellationToken ct)
+    {
+        var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
+        var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
+
+        var document = System.Xml.Linq.XDocument.Parse(content);
+        var sourceRows = new List<StatementSourceRowReference>();
+        var rowNumber = 0;
+        foreach (var element in document.Descendants()
+                     .Where(static e => e.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction"))
+        {
+            ct.ThrowIfCancellationRequested();
+            rowNumber++;
+            var snapshot = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["sourceKind"] = normalizedSourceKind,
+                ["sourcePath"] = sourcePath,
+                ["elementName"] = element.Name.LocalName
+            };
+            foreach (var attribute in element.Attributes())
+            {
+                snapshot[attribute.Name.LocalName] = attribute.Value;
+            }
+
+            sourceRows.Add(CreateSourceRowReference(
+                importId,
+                rowNumber,
+                element.ToString(System.Xml.Linq.SaveOptions.DisableFormatting),
+                snapshot));
+        }
+
+        return new NormalizedStatementImportResult(importId, normalizedSourceKind, sourcePath, sourceRows.Count, [], [], [], [], sourceRows);
     }
 
     private static bool RequiresCanonicalStatementSchema(string normalizedSourceKind) =>
@@ -123,6 +341,24 @@ public sealed class StatementReconciliationService
 
     private ExternalStatementCaseIntakeResult CreateExternalStatementCases(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
+        // Flex XML never parses through the canonical CSV path, regardless of any mapping
+        // profile the caller selected; its rows are read from the XML sections and matched
+        // with the same engine so CLI/orchestrator intake reports real match/unresolved counts.
+        if (UsesFlexProcessing(normalizedSourceKind, sourcePath))
+        {
+            var flexContent = File.ReadAllText(sourcePath);
+            var flexImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{flexContent}");
+            var flexRows = ReadFlexStatementRows(flexImportId, normalizedSourceKind, sourcePath, flexContent);
+            var (flexMatches, flexCases) = MatchRows(flexRows);
+            return new ExternalStatementCaseIntakeResult(
+                flexImportId,
+                normalizedSourceKind,
+                sourcePath,
+                flexRows.Count,
+                flexMatches.Count,
+                flexCases);
+        }
+
         if (!UsesCanonicalSchema(normalizedSourceKind, mappingProfileId))
         {
             var content = File.ReadAllText(sourcePath);

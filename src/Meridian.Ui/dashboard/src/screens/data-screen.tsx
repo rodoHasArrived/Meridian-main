@@ -33,6 +33,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
+import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_EXPORT_DETAIL_PANEL_ID,
@@ -257,6 +258,7 @@ export function DataScreen({
     providerRoutingTrustSnapshots
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
+  const queryPanel = useDataQueryPanel();
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -316,6 +318,7 @@ export function DataScreen({
           <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
           <a href="#data-backfill-queue-title">Backfill queue</a>
           <a href="#data-recent-exports-title">Export packages</a>
+          <a href="#data-query-title">SQL query</a>
           <Link to="/data/watchlist">Watchlist</Link>
           <Link to="/data/quotes">Live quotes</Link>
         </nav>
@@ -547,6 +550,66 @@ export function DataScreen({
                 detail={vm.exportSection.selectedDetail}
                 emptyState={vm.exportSection.detailEmptyState ?? vm.exportSection.emptyState}
               />
+            </div>
+          </CardContent>
+        </section>
+
+        <section aria-labelledby="data-query-title" className="workspace-region">
+          <CardHeader>
+            <CardTitle id="data-query-title">SQL query</CardTitle>
+            <CardDescription>
+              Read-only DuckDB analytics over the local store. Start from the <code>meridian_files</code> catalog
+              view, then feed paths into <code>read_parquet</code> or <code>read_json_auto</code>.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              <textarea
+                value={queryPanel.sql}
+                onChange={(event) => queryPanel.setSql(event.target.value)}
+                rows={5}
+                spellCheck={false}
+                aria-label="SQL statement"
+                className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
+              />
+              <div className="flex items-center gap-3">
+                <Button type="button" onClick={() => void queryPanel.run()} disabled={queryPanel.busy}>
+                  {queryPanel.busy ? "Running…" : "Run query"}
+                </Button>
+                {queryPanel.result ? (
+                  <span className="text-sm text-muted-foreground" role="status">
+                    {queryPanel.result.rowCount} row{queryPanel.result.rowCount === 1 ? "" : "s"}
+                    {queryPanel.result.truncated ? " (truncated)" : ""} · {queryPanel.result.elapsedMs} ms
+                  </span>
+                ) : null}
+              </div>
+              {queryPanel.error ? (
+                <StatusBanner tone="danger" title="Query failed" detail={queryPanel.error} />
+              ) : null}
+              {queryPanel.result && queryPanel.result.columns.length > 0 ? (
+                <div className="overflow-x-auto rounded-md border border-border/70" aria-label="Query results">
+                  <table className="dense-data-table min-w-full">
+                    <thead>
+                      <tr>
+                        {queryPanel.result.columns.map((column) => (
+                          <th key={column} scope="col">{column}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {queryPanel.result.rows.map((row, rowIndex) => (
+                        <tr key={rowIndex}>
+                          {row.map((value, columnIndex) => (
+                            <td key={`${rowIndex}-${queryPanel.result?.columns[columnIndex] ?? columnIndex}`}>
+                              {value ?? "∅"}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </section>

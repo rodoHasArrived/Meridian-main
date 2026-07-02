@@ -55,6 +55,7 @@ using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
+using Meridian.Storage.Query;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
 using Meridian.Workflow.EnvironmentDesign;
@@ -164,6 +165,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         });
         services.TryAddSingleton<IStorageCatalogService>(sp => sp.GetRequiredService<StorageCatalogService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, StorageCatalogInitializationHostedService>());
+        services.TryAddSingleton<DuckDbQueryService>(sp => new DuckDbQueryService(
+            sp.GetRequiredService<IStorageCatalogService>(),
+            sp.GetRequiredService<StorageOptions>()));
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
         services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();

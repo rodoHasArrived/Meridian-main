@@ -54,6 +54,7 @@ public sealed class StatementMappingProfileRegistry
 {
     public const string CanonicalCsvV1ProfileId = "canonical-csv-v1";
     public const string SampleBrokerCsvV1ProfileId = "sample-broker-csv-v1";
+    public const string IbFlexV1ProfileId = "ib-flex-v1";
 
     private readonly Dictionary<string, StatementMappingProfile> _profiles;
 
@@ -85,6 +86,7 @@ public sealed class StatementMappingProfileRegistry
         return Resolve(normalizedSourceKind switch
         {
             "sample-broker" => SampleBrokerCsvV1ProfileId,
+            "ib-flex" or "ibflex" or "ibkr" or "interactive-brokers" or "interactivebrokers" => IbFlexV1ProfileId,
             _ => CanonicalCsvV1ProfileId
         });
     }
@@ -149,6 +151,39 @@ public sealed class StatementMappingProfileRegistry
                 new("SELL", "trade"),
                 new("FEE", "fee"),
                 new("DIV", "dividend")
+            ]),
+        new StatementMappingProfile(
+            IbFlexV1ProfileId,
+            "Interactive Brokers Flex Query v1",
+            [
+                // Source columns are Flex XML attribute names; the Flex importer emits the
+                // canonical activity types (trade/position/cash) directly per section.
+                new(StatementCanonicalField.Account, "accountId"),
+                new(StatementCanonicalField.SecurityIdentifier, "symbol"),
+                new(StatementCanonicalField.Quantity, "quantity"),
+                new(StatementCanonicalField.Price, "tradePrice"),
+                new(StatementCanonicalField.CashAmount, "netCash"),
+                new(StatementCanonicalField.ActivityType, "activityType"),
+                new(StatementCanonicalField.TradeDate, "tradeDate"),
+                new(StatementCanonicalField.SettlementDate, "settleDateTarget", Required: false),
+                new(StatementCanonicalField.Currency, "currency", Required: false),
+                new(StatementCanonicalField.FeesCommission, "ibCommission", Required: false),
+                new(StatementCanonicalField.ExternalTransactionId, "tradeID", Required: false),
+                new(StatementCanonicalField.MarketValue, "positionValue", Required: false),
+                new(StatementCanonicalField.Amount, "amount", Required: false)
+            ],
+            [
+                new("BUY", "trade"),
+                new("SELL", "trade"),
+                new("trade", "trade"),
+                new("position", "position"),
+                new("cash", "cash"),
+                new("Dividends", "cash"),
+                new("Deposits/Withdrawals", "cash"),
+                new("Broker Interest Paid", "cash"),
+                new("Broker Interest Received", "cash"),
+                new("Withholding Tax", "cash"),
+                new("Other Fees", "fee")
             ])
     ];
 }

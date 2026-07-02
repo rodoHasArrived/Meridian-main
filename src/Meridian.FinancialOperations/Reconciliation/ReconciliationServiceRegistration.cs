@@ -48,6 +48,17 @@ public static class ReconciliationServiceRegistration
         return services;
     }
 
+    private static void AddBrokerStatementServices(IServiceCollection services)
+    {
+        services.TryAddSingleton<CsvBrokerStatementService>(sp =>
+            new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        services.TryAddSingleton<IbFlexBrokerStatementService>(sp =>
+            new IbFlexBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        services.TryAddSingleton<IBrokerStatementService>(sp => new RoutingBrokerStatementService(
+            sp.GetRequiredService<CsvBrokerStatementService>(),
+            sp.GetRequiredService<IbFlexBrokerStatementService>()));
+    }
+
     private static void AddSharedServices(IServiceCollection services)
     {
         services.TryAddSingleton<StatementReconciliationService>();

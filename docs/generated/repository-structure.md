@@ -1766,6 +1766,7 @@ Meridian-main
 │   │   └── web-ui-development-pivot.md
 │   ├── product
 │   │   ├── deferred-expansion-boundaries.md
+│   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
 │   │   └── README.md
@@ -3581,7 +3582,8 @@ Meridian-main
 │   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   ├── PositionSyncOptions.cs
-│   │   │   └── ReplayDriftDetector.cs
+│   │   │   ├── ReplayDriftDetector.cs
+│   │   │   └── SessionTcaReporter.cs
 │   │   ├── TaxLotAccounting
 │   │   │   ├── ITaxLotSelector.cs
 │   │   │   ├── TaxLotAccountingMethod.cs
@@ -3974,6 +3976,7 @@ Meridian-main
 │   │   ├── Reconciliation
 │   │   │   ├── BrokerStatementInfrastructure.cs
 │   │   │   ├── BrokerStatementNormalizer.cs
+│   │   │   ├── IbFlexStatementService.cs
 │   │   │   └── ReconciliationCaseInfrastructure.cs
 │   │   ├── Resilience
 │   │   │   ├── HttpResiliencePolicy.cs
@@ -4482,6 +4485,8 @@ Meridian-main
 │   │   │   └── PortableDataPackager.Validation.cs
 │   │   ├── Policies
 │   │   │   └── JsonlStoragePolicy.cs
+│   │   ├── Query
+│   │   │   └── DuckDbQueryService.cs
 │   │   ├── Replay
 │   │   │   ├── JsonlReplayer.cs
 │   │   │   └── MemoryMappedJsonlReader.cs
@@ -4559,6 +4564,7 @@ Meridian-main
 │   │   │   ├── DataLineageService.cs
 │   │   │   ├── DataQualityScoringService.cs
 │   │   │   ├── DataQualityService.cs
+│   │   │   ├── DataReplacementCostEstimator.cs
 │   │   │   ├── EventBuffer.cs
 │   │   │   ├── FileMaintenanceService.cs
 │   │   │   ├── FilePermissionsService.cs
@@ -5017,6 +5023,8 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
 │   │   │   │   │   ├── data-screen.linked-context.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
+│   │   │   │   │   ├── data-screen.query-panel.view-model.test.ts
+│   │   │   │   │   ├── data-screen.query-panel.view-model.ts
 │   │   │   │   │   ├── data-screen.security-master.ts
 │   │   │   │   │   ├── data-screen.test.tsx
 │   │   │   │   │   ├── data-screen.tsx
@@ -6707,6 +6715,7 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
+│   │   │   ├── SessionTcaReporterTests.cs
 │   │   │   └── TradierExecutionReconciliationTests.cs
 │   │   ├── FinancialOperations
 │   │   │   ├── AccountingClose
@@ -6956,6 +6965,7 @@ Meridian-main
 │   │   │   │   ├── statement-invalid-blockers.csv
 │   │   │   │   └── statement-unresolved-breaks.csv
 │   │   │   ├── BrokerCustodianMatchingPipelineTests.cs
+│   │   │   ├── IbFlexStatementServiceTests.cs
 │   │   │   ├── ReconciliationCaseServiceTests.cs
 │   │   │   ├── ReconciliationContractsTests.cs
 │   │   │   ├── StatementBreakClassifierTests.cs
@@ -7036,8 +7046,10 @@ Meridian-main
 │   │   │   ├── CompositeSinkTests.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
+│   │   │   ├── DataReplacementCostEstimatorTests.cs
 │   │   │   ├── DataValidatorTests.cs
 │   │   │   ├── DirectLendingMigrationTests.cs
+│   │   │   ├── DuckDbQueryServiceTests.cs
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs

@@ -4026,6 +4026,21 @@ export interface DataUploadPreviewResult {
   nextAction: string;
 }
 
+export interface DataQueryRequest {
+  sql: string;
+}
+
+export interface DataQueryResult {
+  success: boolean;
+  error: string | null;
+  columns: string[];
+  columnTypes: string[];
+  rows: (string | null)[][];
+  rowCount: number;
+  truncated: boolean;
+  elapsedMs: number;
+}
+
 export interface DataWorkspaceResponse {
   metrics: MetricSnapshot[];
   providers: DataProviderRecord[];

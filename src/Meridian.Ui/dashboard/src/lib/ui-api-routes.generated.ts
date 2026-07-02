@@ -488,6 +488,8 @@ export const UI_API_ROUTES = {
   WorkstationTrading: "/api/workstation/trading",
   WorkstationDataOperations: "/api/workstation/data-operations",
   WorkstationData: "/api/workstation/data",
+  WorkstationDataQuery: "/api/workstation/data/query",
+  WorkstationDataReplacementCost: "/api/workstation/data/replacement-cost",
   WorkstationDataUploadTemplates: "/api/workstation/data/uploads/templates",
   WorkstationDataUploadPreview: "/api/workstation/data/uploads/preview",
   WorkstationBankStatementImport: "/api/workstation/data/uploads/bank-statements/import",

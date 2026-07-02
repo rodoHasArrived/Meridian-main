@@ -50,6 +50,8 @@ import type {
   ExternalGlMappingProfile,
   DataFetchRequest,
   DataFetchResult,
+  DataQueryRequest,
+  DataQueryResult,
   DataUploadPreviewResult,
   DataUploadTemplateCatalog,
   DataWorkspaceResponse,
@@ -1853,6 +1855,10 @@ export function deleteWorkflowPreset(presetId: string) {
 
 export function getDataWorkspace(options: ApiRequestOptions = {}) {
   return getJson<DataWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
+}
+
+export function runDataQuery(request: DataQueryRequest, options: ApiRequestOptions = {}) {
+  return postJson<DataQueryResult>(WORKSTATION_API_ENDPOINTS.dataQuery, request, options);
 }
 
 export function getDataUploadTemplates(options: ApiRequestOptions = {}) {
