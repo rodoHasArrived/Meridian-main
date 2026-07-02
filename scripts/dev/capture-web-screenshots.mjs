@@ -585,7 +585,10 @@ async function main() {
 
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
-    browser = await chromium.launch();
+    // Sandboxes and CI images often provide a system Chromium instead of the exact
+    // browser build the pinned Playwright version would download.
+    const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+    browser = await chromium.launch(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {});
     const page = await browser.newPage();
     await setupApiMocking(page, fixtureRoutes);
 

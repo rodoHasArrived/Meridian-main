@@ -1,6 +1,15 @@
 # Web Workstation Screenshot Audit
 
-Date: 2026-06-20 UTC
+Date: 2026-06-20 UTC (catalog regenerated 2026-07-02 UTC)
+
+Catalog refresh 2026-07-02: the full web catalog was regenerated after the web UI improvement
+round (route-aware Settings task states, appearance controls, Accounting progressive disclosure,
+honest not-connected states, SQL workbench deepening) so the captures below reflect current
+source. The catalog also gained `web-accounting-statement-import.png` for the
+`/accounting/statement-import` route, backed by new statement-connector fixture routes in
+`scripts/dev/web-screenshot-fixtures.json`. Step-health grades below are from the 2026-06-20
+review pass; rows whose blocking note was "screenshot regeneration is still needed" now have
+fresh captures and are marked accordingly, pending the next full review pass.
 
 Scope: combined UX and accessibility audit of the regenerated browser workstation screenshot
 catalog in `docs/screenshots/web`. The evidence is fixture-backed, captured at a 1440 x 1100
@@ -27,7 +36,7 @@ Evidence used:
 | 7 | `web-portfolio-workspace.png` | `/portfolio` | Watch | Portfolio metrics and evidence are visible, but similar card weights make the first decision point less obvious. |
 | 8 | `web-portfolio-attribution.png` | `/portfolio/attribution` | Watch | Attribution content is structured, but the shared shell and overview materials still push task content down. |
 | 9 | `web-portfolio-brokerage-sync.png` | `/portfolio/brokerage-sync` | Healthy | Brokerage state and account sync evidence have a clear frame and readable summary posture. |
-| 10 | `web-accounting-workspace.png` | `/accounting` | Watch | Source now gates the close-cockpit landing through task-mode section visibility, with hash deep links forcing requested proof sections visible; screenshot regeneration is still needed before this row can be promoted. |
+| 10 | `web-accounting-workspace.png` | `/accounting` | Watch | Source now gates the close-cockpit landing through task-mode section visibility, with hash deep links forcing requested proof sections visible; the 2026-07-02 catalog refresh captures this state; promotion awaits the next review pass. |
 | 11 | `web-accounting-reconciliation.png` | `/accounting/reconciliation` | Watch | Reconciliation evidence grouping is strong, but many same-weight panels still make escalation priority hard to scan. |
 | 12 | `web-accounting-security-master.png` | `/accounting/security-master` | Watch | Security coverage is visible, but dense status tiles and compact route actions need keyboard and screen-reader verification. |
 | 13 | `web-accounting-approvals.png` | `/accounting/approvals` | Watch | Approval queue has a clear purpose, but approval posture still relies on many small badges and table rows. |
@@ -44,11 +53,11 @@ Evidence used:
 | 24 | `web-strategy-designer.png` | `/strategy/designer` | Healthy | Builder layout has strong three-column structure, visible validation state, and clear proof output. |
 | 25 | `web-data-workspace.png` | `/data` | Healthy | Data command deck and provider management are discoverable with a clear workspace frame. |
 | 26 | `web-data-watchlist.png` | `/data/watchlist` | Healthy | Watchlist empty and add states are understandable and not visually overloaded. |
-| 27 | `web-data-live-quotes.png` | `/data/quotes` | Watch | Source now renders the no-symbol state as a guided empty state with starter-symbol, watchlist, and search actions; screenshot regeneration is still needed before this row can be promoted. |
+| 27 | `web-data-live-quotes.png` | `/data/quotes` | Watch | Source now renders the no-symbol state as a guided empty state with starter-symbol, watchlist, and search actions; the 2026-07-02 catalog refresh captures this state; promotion awaits the next review pass. |
 | 28 | `web-data-backfills.png` | `/data/backfills` | Watch | Backfill route is readable, but it resembles the Data workspace capture closely. |
-| 29 | `web-settings-workspace.png` | `/settings` | Watch | Source now includes a Profile appearance panel with theme and density controls; screenshot regeneration is still needed before this row can be promoted. |
-| 30 | `web-settings-preferences.png` | `/settings/preferences` | Watch | Source/tests now route this path to provider connection tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
-| 31 | `web-settings-integrations.png` | `/settings/integrations` | Watch | Source/tests now route this path to accounting systems tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
+| 29 | `web-settings-workspace.png` | `/settings` | Watch | Source now includes a Profile appearance panel with theme and density controls; the 2026-07-02 catalog refresh captures this state; promotion awaits the next review pass. |
+| 30 | `web-settings-preferences.png` | `/settings/preferences` | Watch | Source/tests now route this path to provider connection tasks ahead of hash inference; the 2026-07-02 capture shows the distinct task-view state. |
+| 31 | `web-settings-integrations.png` | `/settings/integrations` | Watch | Source/tests now route this path to accounting systems tasks ahead of hash inference; the 2026-07-02 capture shows the distinct task-view state. |
 
 ## Strengths
 
@@ -67,16 +76,15 @@ Evidence used:
 ## UX Risks
 
 1. Several route variants remain near-duplicates in the screenshot catalog. Settings source now
-   resolves `/settings/preferences` and `/settings/integrations` to distinct task states, but the
-   screenshots still need regeneration; Trading/Reporting variants also share substantial above-fold
+   resolves `/settings/preferences` and `/settings/integrations` to distinct task states, and the
+   2026-07-02 captures show the distinct states; Trading/Reporting variants also share substantial above-fold
    material.
 2. Accounting source now has task-mode section visibility for the close cockpit and hash-targeted
-   proof sections, but the screenshot catalog still needs regeneration before the shorter landing is
-   visible as evidence.
+   proof sections, and the 2026-07-02 capture shows the shorter close-cockpit landing.
 3. Settings still needs refreshed catalog proof. The source route state is distinct, but current
    screenshot evidence does not yet show the preferences or integrations task views.
 4. Empty states vary in clarity. Data Live Quotes now has source coverage for a guided no-symbol
-   state, but the screenshot catalog still needs regeneration before that improvement is visible.
+   state, and the 2026-07-02 capture shows the guided no-symbol state.
 5. Detail panels and selected-row evidence are sometimes visually far from the row or card that
    controls them, especially in long trading and accounting screenshots.
 
@@ -97,13 +105,18 @@ Evidence used:
 
 1. Regenerate Settings path screenshots so the catalog shows the route-aware Preferences and
    Integrations task states now covered by source tests.
+   Done 2026-07-02: `web-settings-preferences.png` and `web-settings-integrations.png` now capture
+   the distinct provider-connection and accounting-systems task views.
 2. Continue reducing duplication by either capturing more distinct route states or documenting when
    a route intentionally shares the same view.
 3. Regenerate Accounting captures for close control, reconciliation, ledger inquiry, external GL,
    private capital, and reporting support so the task-mode visibility changes are represented.
+   Done 2026-07-02: the full Accounting capture set was regenerated with the gated close-cockpit
+   landing and task-mode routes, and the catalog gained the statement-import route capture.
 4. Regenerate the Live Quotes capture and continue tightening empty states so the next productive
    action is first, with dependent controls hidden or de-emphasized until there is a selected row or
    symbol.
+   Done 2026-07-02 for the capture refresh; the guided no-symbol state is now in the catalog.
 5. Run a rendered accessibility pass for keyboard order, focus indicators, target sizes, and
    contrast. Screenshots support likely-risk findings, not compliance claims.
    Partially addressed in source (2026-07-02): jsdom axe suites now cover all seven workspaces —
