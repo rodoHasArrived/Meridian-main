@@ -203,6 +203,9 @@ jobs:
       - name: Install dashboard dependencies
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
+      - name: Lint dashboard source
+        run: npm --prefix src/Meridian.Ui/dashboard run lint
+
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test
 

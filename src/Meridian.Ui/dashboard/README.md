@@ -1178,10 +1178,19 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 ## Validation
 
 ```bash
+npm --prefix src/Meridian.Ui/dashboard run lint
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
+
+Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
+recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
+PascalCase/camelCase directories (`components/accounting`, `components/charts`,
+`features/accounting`). No stylistic or formatting rules are enforced. `react-hooks/exhaustive-deps`
+stays a warning; treat new warnings in touched files as part of the change. Screen-level
+accessibility is exercised by the `src/screens/*.a11y.test.tsx` suites plus axe assertions embedded
+in the larger screen tests; keep new screens covered by at least one axe render.
 
 ## Change rules
 

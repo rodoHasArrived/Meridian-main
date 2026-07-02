@@ -207,41 +207,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   const navigate = useNavigate();
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  if (!data) {
-    return (
-      <Card
-        role={vm.loadingState.role}
-        aria-busy={vm.loadingState.ariaBusy}
-        aria-live={vm.loadingState.ariaLive}
-        aria-labelledby={vm.loadingState.titleId}
-        aria-describedby={vm.loadingState.detailId}
-        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
-      >
-        <CardHeader className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
-              dot
-            >
-              {vm.loadingState.badgeLabel}
-            </Badge>
-            <span className="toolbar-chip" aria-label={`Route ${vm.loadingState.routeLabel}`}>
-              <span className="text-muted-foreground">Route</span>
-              <b>{vm.loadingState.routeLabel}</b>
-            </span>
-          </div>
-          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
-          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   const runColumns = useMemo<DenseDataTableColumn<StrategyRunTableRow>[]>(() => [
     {
       id: "compare",
       label: "",
+      srLabel: "Select for comparison",
       render: (run) => (
         <input
           type="checkbox"
@@ -378,6 +348,39 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
       render: (row) => row.fillCountText
     }
   ], []);
+
+  // Keep this after every hook call: an early return before the useMemo columns would
+  // change the hook order when the strategy slice arrives and crash the mounted screen.
+  if (!data) {
+    return (
+      <Card
+        role={vm.loadingState.role}
+        aria-busy={vm.loadingState.ariaBusy}
+        aria-live={vm.loadingState.ariaLive}
+        aria-labelledby={vm.loadingState.titleId}
+        aria-describedby={vm.loadingState.detailId}
+        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+      >
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
+              dot
+            >
+              {vm.loadingState.badgeLabel}
+            </Badge>
+            <span className="toolbar-chip" aria-label={`Route ${vm.loadingState.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{vm.loadingState.routeLabel}</b>
+            </span>
+          </div>
+          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
+          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -1258,14 +1261,14 @@ function SelectedPlotStudyDetail({
 }) {
   if (!detail) {
     return (
-      <aside
+      <div
         id={id}
         role="status"
         aria-live="polite"
         className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
       >
         {emptyText}
-      </aside>
+      </div>
     );
   }
 

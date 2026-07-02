@@ -1641,14 +1641,6 @@ export function historicalBarsEndpoint(
   return `${MARKET_DATA_API_ENDPOINTS.historical}/${pathSegment(symbol, "symbol")}/bars${queryString(request)}`;
 }
 
-function workstationRunBaseEndpoint(runId: string): string {
-  return `/api/workstation/runs/${pathSegment(runId, "runId")}`;
-}
-
-function workstationRunRootEndpoint(): string {
-  return "/api/workstation/runs";
-}
-
 function reportingTemplateLifecycleEndpoint(
   templateName: string,
   version: number,

@@ -309,7 +309,7 @@ describe("dashboard design-system contract", () => {
 
     for (const state of ["Success", "Warning", "Danger"]) {
       expect(wpfThemeTokens).toContain(`${state}ColorBrush`);
-      expect(wpfThemeSurfaces).toContain(`Binding=\"{Binding Tone}\" Value=\"${state}\"`);
+      expect(wpfThemeSurfaces).toContain(`Binding="{Binding Tone}" Value="${state}"`);
       expect(wpfThemeSurfaces).toContain(`Badge${state}BackgroundBrush`);
       expect(wpfThemeSurfaces).toContain(`Badge${state}ForegroundBrush`);
     }

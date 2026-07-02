@@ -3643,7 +3643,7 @@ describe("ReportingScreen", () => {
   });
 
   it("saves operator-authored report schedules through the shared schedule endpoint", async () => {
-    const user = userEvent.setup();
+    userEvent.setup();
     fetchMock.mockResolvedValueOnce({
       ok: true,
       text: async () => JSON.stringify({

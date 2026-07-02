@@ -106,6 +106,16 @@ Evidence used:
    symbol.
 5. Run a rendered accessibility pass for keyboard order, focus indicators, target sizes, and
    contrast. Screenshots support likely-risk findings, not compliance claims.
+   Partially addressed in source (2026-07-02): jsdom axe suites now cover all seven workspaces —
+   dedicated `src/screens/*.a11y.test.tsx` suites were added for Settings (per task view), Trading,
+   Portfolio, Reporting, Strategy, and Watchlist alongside the existing embedded axe assertions —
+   and the violations they surfaced were fixed: empty control-column table headers in the Trading
+   blotters and Strategy run library now carry screen-reader-only names, the Portfolio detail
+   panels no longer nest `complementary` landmarks (now labeled `region`s), the Strategy study
+   detail empty state no longer puts `role="status"` on an `aside`, and the Settings
+   profile-steps/scoped-access/Alpaca-checklist lists now have valid list semantics. Axe in jsdom
+   does not prove rendered keyboard order, focus visibility, pointer-target sizes, or contrast —
+   that rendered pass remains open.
 
 ## Evidence Limits
 

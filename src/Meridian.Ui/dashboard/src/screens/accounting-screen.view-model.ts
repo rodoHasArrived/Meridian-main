@@ -23,7 +23,6 @@ import {
   type AccountingReportPackageHistoryQuery,
   type CapitalAccountWorkbenchQuery,
   type ManualJournalEntryWorkbenchQuery,
-  type ReferenceDataEndpointProbeStatus,
   type ReferenceDataEndpointProbeResult,
   type ReferenceDataWorkbenchCoverage
 } from "@/lib/api";
@@ -34,27 +33,16 @@ import { EXPORT_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { formatBytes, formatCount, formatCurrency, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
-  buildCalibrationSummaryViewState,
-  type CalibrationProfileDetailViewModel,
-  type CalibrationProfileRowViewModel,
-  type CalibrationStatusIcon,
-  type CalibrationStatusTone,
-  type CalibrationSummaryMetricViewModel,
-  type CalibrationSummaryRefreshCommandViewModel,
-  type CalibrationSummaryViewModel,
-  type CalibrationSummaryViewState
+  buildCalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
 import {
   buildAccountingTaskMode,
-  resolveAccountingWorkstream,
   type AccountingTaskModeViewModel,
   type AccountingWorkstream
 } from "./accounting-screen.task-mode-view-model";
 import {
   DEFAULT_ACCOUNTING_BASIS,
-  manualJournalPrivateCapitalReadinessTone,
-  normalizeApiErrorDisplay,
-  normalizeQueryValue
+  normalizeApiErrorDisplay
 } from "./accounting-screen.view-model.shared";
 import {
   buildOperationalExceptionWorkbenchState,
@@ -97,52 +85,32 @@ export {
 } from "./accounting-screen.reconciliation.view-model";
 import type {
   AccountingBasisKind,
-  AccountingCertificationState,
   AccountingConfigurationWorkspace,
-  AccountingMigrationRunArtifact,
   AccountingMigrationRunArtifactList,
-  AccountingMigrationRunWorkerPlan,
   AccountingMigrationRunWorkerPlanList,
-  AccountingMigrationRolloutPlanItem,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingProductionCertificationProfile,
   AccountingProductionCertificationProfileUpsertRequest,
-  AccountingDimensionalCertificationArtifact,
-  AccountingDimensionalCertificationLane,
-  AccountingTenantAdminCertificationArtifact,
-  AccountingTenantAdminCertificationLane,
   AccountingTenantAdministrationProfile,
-  AccountingApprovalQueueConfiguration,
-  AccountingDimensionMappingConfiguration,
   AccountingTenantAdministrationProfileUpsertRequest,
-  AccountingWorkflowCertificationArtifact,
-  AccountingWorkflowCertificationLane,
   AccountingReportPackageBundle,
   AccountingReportPackageRequest,
   CertifyAccountingReportPackageRequest,
   ReportExportArtifactManifest,
   AccountingJournalTemplatePreview,
   AccountingTemplateLineSide,
-  AccountingRuleDryRunMatch,
-  AccountingRuleTestCase,
   AccountingRuleTestSuiteResult,
-  AllocationRule,
   CreateLedgerBookRequest,
   CorporateAction,
   ExportAnalysisResult,
-  GeneratedPostingLine,
   AccountingCashFlowSummary,
   AccountingReportingProfile,
   AccountingReportingSummary,
   AccountingWorkspaceResponse,
-  AccountingSystemImportDetail,
   AccountingSystemMappingProfileUpsertRequest,
-  AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   ExternalGlMappingProfile,
-  AccountingRulesStudioPromotionQueueItem,
-  AccountingRulesStudioRuleRow,
   ClosePeriodPlan,
   ClosePeriodLockResult,
   UpsertClosePeriodPlanConfigurationRequest,
@@ -151,17 +119,14 @@ import type {
   ReviewLateAdjustmentRequest,
   SignOffCloseTaskRequest,
   LedgerBook,
-  LedgerDimensionSet,
   LedgerJournalLine,
   LedgerTrialBalanceLine,
-  MultiAssetCoverageSummary,
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
   InvestmentAccountingTransactionLabPreview,
   InvestmentAccountingTransactionLabRequest,
   ResolveConflictRequest,
   PreviewJournalTemplateRequest,
-  PostingRule,
   PostingRuleJournalCandidateRequest,
   PostingRuleJournalCandidateResult,
   RuleDryRunRequest,
@@ -3062,7 +3027,6 @@ export function useGovernanceCashFlowViewModel(
 export function buildAccountingLoadingViewState(pathname: string): AccountingLoadingViewState {
   const workspaceLabel = pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting) ? "Reporting" : "Accounting";
   const slug = workspaceLabel.toLowerCase();
-  const workstream = workspaceLabel === "Accounting" ? resolveAccountingWorkstream(pathname) : "reporting";
   const workstreamLabel = workspaceLabel === "Accounting"
     ? buildAccountingTaskMode(pathname).label
     : "Reporting";

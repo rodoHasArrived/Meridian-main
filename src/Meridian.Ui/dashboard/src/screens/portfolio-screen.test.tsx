@@ -376,7 +376,7 @@ describe("PortfolioScreen", () => {
     expect(screen.getByLabelText("Portfolio Explorer proof actions")).toHaveTextContent("Open evidence packet");
     expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();
+    expect(screen.getByRole("region", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
@@ -418,7 +418,7 @@ describe("PortfolioScreen", () => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect mean reversion run evidence/i })).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("complementary", { name: /mean reversion run detail/i })).toBeDefined();
+    expect(screen.getByRole("region", { name: /mean reversion run detail/i })).toBeDefined();
     expect(screen.getByText(/running paper run with \+4.2% p&l/i)).toBeDefined();
   });
 
@@ -459,12 +459,12 @@ describe("PortfolioScreen", () => {
     expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /show alpaca paper roth ira account/i })).toBeDefined();
     expect(screen.getByRole("treegrid", { name: /alpaca paper brokerage accounts/i })).toBeDefined();
-    expect(screen.getByRole("complementary", { name: /all brokerage accounts detail/i })).toBeDefined();
+    expect(screen.getByRole("region", { name: /all brokerage accounts detail/i })).toBeDefined();
     expect(screen.getByRole("treegrid", { name: /alpaca paper current positions/i })).toBeDefined();
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
 
-    const defaultDetail = screen.getByRole("complementary", { name: /aapl brokerage position detail/i });
+    const defaultDetail = screen.getByRole("region", { name: /aapl brokerage position detail/i });
     expect(within(defaultDetail).getByText(/brokerage position inspector/i)).toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
 
@@ -474,7 +474,7 @@ describe("PortfolioScreen", () => {
     expect(msftRow).toHaveClass("bg-warning/5");
     await user.click(msftRow);
 
-    const updatedDetail = screen.getByRole("complementary", { name: /msft brokerage position detail/i });
+    const updatedDetail = screen.getByRole("region", { name: /msft brokerage position detail/i });
     expect(within(updatedDetail).getByText(/alpaca paper \/ alpaca brokerage \/ equity/i)).toBeInTheDocument();
     expect(within(updatedDetail).getByText("$1,750")).toBeInTheDocument();
     expect(msftRow).toHaveAttribute("aria-selected", "true");
@@ -501,7 +501,7 @@ describe("PortfolioScreen", () => {
 
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("complementary", { name: /msft brokerage position detail/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /msft brokerage position detail/i })).toBeInTheDocument();
   });
 
   it("offers a provider setup handoff when brokerage portfolio sync is unavailable", async () => {
@@ -540,7 +540,7 @@ describe("PortfolioScreen", () => {
 
     const warningSummary = screen.getByRole("status", { name: "2 brokerage warnings" });
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
-    const accountDetail = screen.getByRole("complementary", { name: /all brokerage accounts detail/i });
+    const accountDetail = screen.getByRole("region", { name: /all brokerage accounts detail/i });
     expect(within(trustSnapshot).getByText(/review sync/i)).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 issues")).toBeInTheDocument();
     expect(within(warningSummary).getByText("Portfolio sync is stale.")).toBeInTheDocument();
@@ -582,7 +582,7 @@ describe("PortfolioScreen", () => {
     const rothRow = screen.getByRole("row", { name: /filter brokerage positions to roth ira account/i });
     expect(rothRow).toHaveAttribute("aria-selected", "true");
     expect(rothRow).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("complementary", { name: /roth ira brokerage account detail/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /roth ira brokerage account detail/i })).toBeInTheDocument();
     let brokerageTable = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("AAPL")).toBeDefined();
     expect(within(brokerageTable).queryByText("MSFT")).toBeNull();
@@ -620,7 +620,7 @@ describe("PortfolioScreen", () => {
     expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-account-detail");
     expect(taxableRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: /show alpaca paper brokerage account/i })).toHaveAttribute("aria-pressed", "true");
-    const accountDetail = screen.getByRole("complementary", { name: /brokerage brokerage account detail/i });
+    const accountDetail = screen.getByRole("region", { name: /brokerage brokerage account detail/i });
     expect(within(accountDetail).getByText(/alpaca paper \/ alpaca brokerage/i)).toBeInTheDocument();
     const brokerageTable = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
@@ -676,7 +676,7 @@ describe("PortfolioScreen", () => {
 
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("complementary", { name: /msft holding detail/i })).toBeDefined();
+    expect(screen.getByRole("region", { name: /msft holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$10,250 exposure with \+\$52.50 unrealized p&l/i)).toBeDefined();
     expect(screen.getByRole("link", { name: "Open asset detail for MSFT" })).toHaveAttribute(
       "href",
@@ -724,7 +724,7 @@ describe("PortfolioScreen", () => {
 
     expect(volatilityRow).toHaveAttribute("aria-selected", "true");
     expect(volatilityRow).toHaveAttribute("aria-expanded", "true");
-    const detail = screen.getByRole("complementary", { name: /volatility carry run detail/i });
+    const detail = screen.getByRole("region", { name: /volatility carry run detail/i });
     expect(detail).toBeDefined();
     expect(screen.getByText(/drawdown review required/i)).toBeDefined();
     expect(within(detail).getAllByText("Needs Review").length).toBeGreaterThan(0);

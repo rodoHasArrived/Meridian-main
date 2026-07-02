@@ -1889,42 +1889,6 @@ describe("trading readiness named operator states", () => {
     mismatchReasons: []
   };
 
-  const healthyBrokerageSync = {
-    fundAccountId: "fund-1",
-    providerId: "alpaca",
-    externalAccountId: "ACCT-1",
-    health: "Healthy" as const,
-    isLinked: true,
-    isStale: false,
-    lastAttemptedSyncAt: "2026-04-01T01:00:00Z",
-    lastSuccessfulSyncAt: "2026-04-01T01:00:00Z",
-    lastError: null,
-    positionCount: 1,
-    openOrderCount: 0,
-    fillCount: 5,
-    cashTransactionCount: 0,
-    securityMissingCount: 0,
-    warnings: []
-  };
-
-  const signedTrustGate: TradingTrustGateReadiness = {
-    gateId: "dk1",
-    status: "signed",
-    readyForOperatorReview: true,
-    operatorSignoffRequired: true,
-    operatorSignoffStatus: "signed",
-    generatedAt: "2026-04-01T00:00:00Z",
-    packetPath: "artifacts/dk1-packet.json",
-    sourceSummary: "wave1-summary.json",
-    requiredSampleCount: 4,
-    readySampleCount: 4,
-    validatedEvidenceDocumentCount: 4,
-    requiredOwners: ["ops"],
-    blockers: [],
-    detail: "Signed.",
-    operatorSignoff: null
-  };
-
   it("context-required: missing session blocks cockpit with paper-session-missing work item", () => {
     const readiness: TradingOperatorReadiness = {
       ...blockedReadiness,

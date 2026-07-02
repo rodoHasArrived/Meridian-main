@@ -1926,7 +1926,6 @@ export function useAccountingConfigurationViewModel(
     const activeRuleCount = workspace?.postingRules.filter((item) => !item.isArchived).length ?? 0;
     const activeChartNodeCount = workspace?.chartOfAccounts.filter((item) => !item.isArchived).length ?? 0;
     const hasTemplate = activeTemplateCount > 0;
-    const hasChart = activeChartNodeCount > 0;
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const savedRuleTestCases = workspace?.ruleTestCases ?? [];
     const studioSummary = workspace?.rulesStudio?.summary ?? null;
@@ -1934,9 +1933,6 @@ export function useAccountingConfigurationViewModel(
     const studioRuleRowsById = new Map(studioRuleRows.map((row) => [row.ruleId, row]));
     const studioPromotionQueue = workspace?.rulesStudio?.promotionQueue ?? [];
     const studioPromotionQueueById = new Map(studioPromotionQueue.map((item) => [item.ruleId, item]));
-    const savedRuleTestExpectedRuleVersions = new Set(savedRuleTestCases
-      .filter((testCase) => Boolean(testCase.expectedRuleId) && Boolean(testCase.expectedRuleVersion))
-      .map((testCase) => `${testCase.expectedRuleId}:${testCase.expectedRuleVersion}`));
     const resolvedSelectedRuleId = selectedRuleId && activeRules.some((rule) => rule.ruleId === selectedRuleId)
       ? selectedRuleId
       : activeRules[0]?.ruleId ?? null;

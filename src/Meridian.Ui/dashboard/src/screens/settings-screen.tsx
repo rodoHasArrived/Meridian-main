@@ -2811,13 +2811,15 @@ export function SettingsScreen({
               </div>
             </div>
 
-            <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
+            <div className="grid gap-2">
               <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                 {vm.profileAuthenticationPanel.stepsTitle}
               </h3>
-              {vm.profileAuthenticationPanel.steps.map((step) => (
-                <ProfileAuthenticationStepRow key={step.id} step={step} />
-              ))}
+              <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
+                {vm.profileAuthenticationPanel.steps.map((step) => (
+                  <ProfileAuthenticationStepRow key={step.id} step={step} />
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -2939,10 +2941,10 @@ export function SettingsScreen({
             </div>
           </div>
 
-          <div role="list" aria-label="Scoped access assignments" className="grid gap-2">
-            {scopedAccessAssignments.length > 0 ? (
-              scopedAccessAssignments.map((assignment) => (
-                <article
+          {scopedAccessAssignments.length > 0 ? (
+            <div role="list" aria-label="Scoped access assignments" className="grid gap-2">
+              {scopedAccessAssignments.map((assignment) => (
+                <div
                   key={assignment.assignmentId}
                   role="listitem"
                   className={cn(
@@ -3006,14 +3008,14 @@ export function SettingsScreen({
                       Revoked by {assignment.revokedBy ?? "unknown"}: {assignment.revocationReason}
                     </p>
                   ) : null}
-                </article>
-              ))
-            ) : (
-              <p className="rounded-md border border-border/70 bg-secondary/25 px-4 py-4 text-center text-sm text-muted-foreground">
-                No scoped access assignments are loaded for the selected filter.
-              </p>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-md border border-border/70 bg-secondary/25 px-4 py-4 text-center text-sm text-muted-foreground">
+              No scoped access assignments are loaded for the selected filter.
+            </p>
+          )}
 
           <form
             className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
@@ -3241,7 +3243,7 @@ export function SettingsScreen({
         <CardContent className="grid gap-4">
           <div className="grid gap-3 xl:grid-cols-4" role="list" aria-label={vm.operationsControlCenter.listLabel}>
             {vm.operationsControlCenter.cards.map((card) => (
-              <article
+              <div
                 key={card.id}
                 role="listitem"
                 className={cn(
@@ -3293,7 +3295,7 @@ export function SettingsScreen({
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />
                   </a>
                 </div>
-              </article>
+              </div>
             ))}
           </div>
           <form
@@ -3784,7 +3786,7 @@ export function SettingsScreen({
         <CardContent className="grid gap-4">
           <div className="grid gap-3 xl:grid-cols-5" role="list" aria-label={vm.assetProfileGovernancePanel.listLabel}>
             {vm.assetProfileGovernancePanel.rows.map((row) => (
-              <article
+              <div
                 key={`${row.profileId}-${row.versionLabel}`}
                 role="listitem"
                 className={cn("grid gap-3 rounded-md border px-3 py-3", diagnosticToneClass[capabilityTone(row.statusVariant)])}
@@ -3803,7 +3805,7 @@ export function SettingsScreen({
                   <SettingsFieldRow label="Close ID" value={row.requiredCloseIdentifierLabel} tone="warning" />
                 </dl>
                 <p className="text-xs leading-5 text-foreground/75">{row.accountingImpactLabel}</p>
-              </article>
+              </div>
             ))}
           </div>
 
@@ -4461,11 +4463,7 @@ export function SettingsScreen({
                 {vm.alpacaConnectionPanel.warnings[0]}
               </div>
             ) : null}
-            <div
-              role="list"
-              aria-label={vm.alpacaConnectionPanel.setupChecklistAriaLabel}
-              className="grid gap-2"
-            >
+            <div className="grid gap-2">
               <div className="min-w-0">
                 <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                   {vm.alpacaConnectionPanel.setupChecklistTitle}
@@ -4474,6 +4472,11 @@ export function SettingsScreen({
                   {vm.alpacaConnectionPanel.setupChecklistDetail}
                 </p>
               </div>
+              <div
+                role="list"
+                aria-label={vm.alpacaConnectionPanel.setupChecklistAriaLabel}
+                className="grid gap-2"
+              >
               {vm.alpacaConnectionPanel.setupChecklist.map((step) => (
                 <div
                   key={step.id}
@@ -4501,6 +4504,7 @@ export function SettingsScreen({
                   ) : null}
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -6133,7 +6137,7 @@ function ProviderIntegrationWorkbenchPanel({
     }
   };
 
-  const useTemplate = async () => {
+  const applyTemplate = async () => {
     const selectedManifestId = state.selectedManifestId.trim();
     if (!selectedManifestId) {
       setState((current) => ({ ...current, message: "Select or enter a manifest id before loading a template.", details: [], tone: "warning" }));
@@ -6384,7 +6388,7 @@ function ProviderIntegrationWorkbenchPanel({
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Load templates
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void useTemplate()} disabled={busy || !state.selectedManifestId.trim()} busy={state.busyAction === "template"} aria-label={`Use selected provider integration template for ${row.displayName}`}>
+          <Button type="button" variant="outline" size="sm" onClick={() => void applyTemplate()} disabled={busy || !state.selectedManifestId.trim()} busy={state.busyAction === "template"} aria-label={`Use selected provider integration template for ${row.displayName}`}>
             <Save className="h-3.5 w-3.5" aria-hidden="true" />
             Use template
           </Button>
