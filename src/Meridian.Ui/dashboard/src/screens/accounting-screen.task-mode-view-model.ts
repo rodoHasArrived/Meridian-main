@@ -38,6 +38,23 @@ export interface AccountingTaskModeLinkViewModel {
   href: string;
 }
 
+export interface AccountingSectionVisibilityViewModel {
+  showCloseCockpitLanding: boolean;
+  showWorkflowDetails: boolean;
+  showMultiAssetCoverage: boolean;
+  showExternalGl: boolean;
+  showConfiguration: boolean;
+  showJournalEntries: boolean;
+  showCapitalAccounts: boolean;
+  showApprovals: boolean;
+  showExceptionWorkbench: boolean;
+  showPosture: boolean;
+  showReconciliation: boolean;
+  showLedgerExplorer: boolean;
+  showSecurityMaster: boolean;
+  showReconciliationActions: boolean;
+}
+
 type AccountingTaskModeDefinition = Omit<AccountingTaskModeViewModel, "workstream" | "ariaLabel">;
 
 const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTaskModeDefinition> = {
@@ -170,6 +187,46 @@ export function buildAccountingTaskMode(pathname: string): AccountingTaskModeVie
   return buildAccountingTaskModeViewModel(accountingTaskModeDefinitions[taskModeId], workstream);
 }
 
+export function buildAccountingSectionVisibility(
+  taskMode: AccountingTaskModeViewModel,
+  hash: string = ""
+): AccountingSectionVisibilityViewModel {
+  const isCloseCockpitLanding = taskMode.id === "close-cockpit" && taskMode.workstream === "ledger";
+  const visibility: AccountingSectionVisibilityViewModel = {
+    showCloseCockpitLanding: isCloseCockpitLanding,
+    showWorkflowDetails: !isCloseCockpitLanding,
+    showMultiAssetCoverage: !isCloseCockpitLanding,
+    showExternalGl: !isCloseCockpitLanding,
+    showConfiguration: taskMode.workstream === "configure",
+    showJournalEntries: taskMode.workstream === "journal-entries",
+    showCapitalAccounts: taskMode.workstream === "capital-accounts",
+    showApprovals: taskMode.workstream === "approvals",
+    showExceptionWorkbench: taskMode.workstream === "exceptions",
+    showPosture: !isCloseCockpitLanding,
+    showReconciliation: taskMode.workstream === "reconciliation",
+    showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding,
+    showSecurityMaster: taskMode.workstream === "security-master",
+    showReconciliationActions: taskMode.workstream === "reconciliation" || taskMode.workstream === "exceptions"
+  };
+
+  const targetId = normalizeAccountingHashTarget(hash);
+  if (!targetId) {
+    return visibility;
+  }
+
+  const forcedVisibility = accountingSectionHashVisibility[targetId];
+  if (!forcedVisibility) {
+    return visibility;
+  }
+
+  return {
+    ...visibility,
+    showCloseCockpitLanding: false,
+    showWorkflowDetails: true,
+    ...forcedVisibility
+  };
+}
+
 export function resolveGovernanceWorkstream(pathname: string): AccountingWorkstream {
   return resolveAccountingWorkstream(pathname);
 }
@@ -206,6 +263,24 @@ function normalizeAccountingTaskModePath(pathname: string): string {
 
   return path.toLowerCase();
 }
+
+function normalizeAccountingHashTarget(hash: string): string | null {
+  const target = hash.replace(/^#/, "").trim();
+  return target.length > 0 ? target : null;
+}
+
+const accountingSectionHashVisibility: Record<string, Partial<AccountingSectionVisibilityViewModel>> = {
+  "accounting-posture": { showPosture: true },
+  "accounting-exceptions": { showReconciliation: true },
+  "accounting-actions": { showReconciliationActions: true },
+  "accounting-history": { showReconciliationActions: true },
+  "reconciliation-break-queue": { showReconciliationActions: true },
+  "manual-je-heading": { showJournalEntries: true },
+  "manual-je-balance-impact-heading": { showJournalEntries: true },
+  "accounting-configure-heading": { showConfiguration: true },
+  "security-master-search": { showSecurityMaster: true },
+  "security-detail-page-title": { showSecurityMaster: true }
+};
 
 function buildAccountingTaskModeViewModel(
   definition: AccountingTaskModeDefinition,

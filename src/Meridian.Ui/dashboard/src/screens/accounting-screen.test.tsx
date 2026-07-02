@@ -3023,6 +3023,15 @@ describe("AccountingScreen", () => {
     expect(screen.queryByText("Reporting profiles")).not.toBeInTheDocument();
   });
 
+  it("renders hash-targeted Accounting sections from the close cockpit route", async () => {
+    await renderAccountingScreen(data, "/accounting#accounting-exceptions");
+
+    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Reconciliation exceptions and evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Accounting case workbench" })).not.toBeInTheDocument();
+  });
+
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
 

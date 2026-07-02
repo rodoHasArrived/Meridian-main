@@ -27,7 +27,7 @@ Evidence used:
 | 7 | `web-portfolio-workspace.png` | `/portfolio` | Watch | Portfolio metrics and evidence are visible, but similar card weights make the first decision point less obvious. |
 | 8 | `web-portfolio-attribution.png` | `/portfolio/attribution` | Watch | Attribution content is structured, but the shared shell and overview materials still push task content down. |
 | 9 | `web-portfolio-brokerage-sync.png` | `/portfolio/brokerage-sync` | Healthy | Brokerage state and account sync evidence have a clear frame and readable summary posture. |
-| 10 | `web-accounting-workspace.png` | `/accounting` | Watch | The recovery navigator and compact workflow dock improve the top of the page, but the full-page capture still combines close control, GL evidence, private capital, reconciliation, reporting, and review proof in one long route. |
+| 10 | `web-accounting-workspace.png` | `/accounting` | Watch | Source now gates the close-cockpit landing through task-mode section visibility, with hash deep links forcing requested proof sections visible; screenshot regeneration is still needed before this row can be promoted. |
 | 11 | `web-accounting-reconciliation.png` | `/accounting/reconciliation` | Watch | Reconciliation evidence grouping is strong, but many same-weight panels still make escalation priority hard to scan. |
 | 12 | `web-accounting-security-master.png` | `/accounting/security-master` | Watch | Security coverage is visible, but dense status tiles and compact route actions need keyboard and screen-reader verification. |
 | 13 | `web-accounting-approvals.png` | `/accounting/approvals` | Watch | Approval queue has a clear purpose, but approval posture still relies on many small badges and table rows. |
@@ -70,9 +70,9 @@ Evidence used:
    resolves `/settings/preferences` and `/settings/integrations` to distinct task states, but the
    screenshots still need regeneration; Trading/Reporting variants also share substantial above-fold
    material.
-2. Accounting improved above the fold, but the full page remains high-load because several proof
-   lanes are visible in one capture. Operators can find recovery jumps faster, but the route still
-   needs stronger progressive disclosure for repeated recovery work.
+2. Accounting source now has task-mode section visibility for the close cockpit and hash-targeted
+   proof sections, but the screenshot catalog still needs regeneration before the shorter landing is
+   visible as evidence.
 3. Settings still needs refreshed catalog proof. The source route state is distinct, but current
    screenshot evidence does not yet show the preferences or integrations task views.
 4. Empty states vary in clarity. Data Live Quotes now has source coverage for a guided no-symbol
@@ -99,8 +99,8 @@ Evidence used:
    Integrations task states now covered by source tests.
 2. Continue reducing duplication by either capturing more distinct route states or documenting when
    a route intentionally shares the same view.
-3. Split Accounting recovery evidence into clearer route-specific captures for close control,
-   reconciliation, ledger inquiry, external GL, private capital, and reporting support.
+3. Regenerate Accounting captures for close control, reconciliation, ledger inquiry, external GL,
+   private capital, and reporting support so the task-mode visibility changes are represented.
 4. Regenerate the Live Quotes capture and continue tightening empty states so the next productive
    action is first, with dependent controls hidden or de-emphasized until there is a selected row or
    symbol.
