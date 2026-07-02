@@ -46,9 +46,9 @@ Evidence used:
 | 26 | `web-data-watchlist.png` | `/data/watchlist` | Healthy | Watchlist empty and add states are understandable and not visually overloaded. |
 | 27 | `web-data-live-quotes.png` | `/data/quotes` | Needs attention | Empty quote state is valid but ambiguous: the primary next action competes with disabled detail controls and a selected-symbol panel with no selection. |
 | 28 | `web-data-backfills.png` | `/data/backfills` | Watch | Backfill route is readable, but it resembles the Data workspace capture closely. |
-| 29 | `web-settings-workspace.png` | `/settings` | Needs attention | Settings remains too long for recovery work in the catalog capture, with access, operations, providers, runtime, and diagnostics visible in one long page. |
-| 30 | `web-settings-preferences.png` | `/settings/preferences` | Needs attention | The capture renders effectively the same state as Settings overview, so route intent is not visible from the screenshot. |
-| 31 | `web-settings-integrations.png` | `/settings/integrations` | Needs attention | The capture also renders effectively the same state as Settings overview, leaving provider/integration recovery work indistinct. |
+| 29 | `web-settings-workspace.png` | `/settings` | Watch | Source now includes a Profile appearance panel with theme and density controls; screenshot regeneration is still needed before this row can be promoted. |
+| 30 | `web-settings-preferences.png` | `/settings/preferences` | Watch | Source/tests now route this path to provider connection tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
+| 31 | `web-settings-integrations.png` | `/settings/integrations` | Watch | Source/tests now route this path to accounting systems tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
 
 ## Strengths
 
@@ -66,14 +66,15 @@ Evidence used:
 
 ## UX Risks
 
-1. Several route variants remain near-duplicates in the screenshot catalog. Settings
-   `/settings`, `/settings/preferences`, and `/settings/integrations` currently capture the same
-   long rendered state, and Trading/Reporting variants still share substantial above-fold material.
+1. Several route variants remain near-duplicates in the screenshot catalog. Settings source now
+   resolves `/settings/preferences` and `/settings/integrations` to distinct task states, but the
+   screenshots still need regeneration; Trading/Reporting variants also share substantial above-fold
+   material.
 2. Accounting improved above the fold, but the full page remains high-load because several proof
    lanes are visible in one capture. Operators can find recovery jumps faster, but the route still
    needs stronger progressive disclosure for repeated recovery work.
-3. Settings is now the highest-risk screenshot group. The route is comprehensive, but the catalog
-   evidence does not show distinct task states for preferences or integrations.
+3. Settings still needs refreshed catalog proof. The source route state is distinct, but current
+   screenshot evidence does not yet show the preferences or integrations task views.
 4. Empty states vary in clarity. Data Live Quotes shows the valid no-symbol state, but selected
    symbol controls still read as inactive UI rather than a guided next step.
 5. Detail panels and selected-row evidence are sometimes visually far from the row or card that
@@ -94,8 +95,8 @@ Evidence used:
 
 ## Recommendations
 
-1. Make Settings path variants route-aware in the screenshot catalog, or update the route config to
-   use hash/task targets that show distinct Preferences and Integrations states.
+1. Regenerate Settings path screenshots so the catalog shows the route-aware Preferences and
+   Integrations task states now covered by source tests.
 2. Continue reducing duplication by either capturing more distinct route states or documenting when
    a route intentionally shares the same view.
 3. Split Accounting recovery evidence into clearer route-specific captures for close control,
