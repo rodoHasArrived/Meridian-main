@@ -860,7 +860,7 @@ export function normalizeLiveQuoteSymbols(value: string): string[] {
   const seen = new Set<string>();
   const symbols: string[] = [];
   for (const candidate of value.split(/[\s,;|]+/)) {
-    const symbol = normalizeLiveQuoteSymbol(candidate).replace(/[^A-Z0-9.\-]/g, "");
+    const symbol = normalizeLiveQuoteSymbol(candidate).replace(/[^A-Z0-9.-]/g, "");
     if (!symbol || seen.has(symbol)) {
       continue;
     }

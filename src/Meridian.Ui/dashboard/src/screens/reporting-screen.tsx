@@ -1,6 +1,6 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,14 +14,12 @@ import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian
 import {
   apiPostJson,
   approveReportTemplateDraft,
-  createReportTemplateDraft,
   deliverReportPack,
   generateReportPack,
   pauseReportingSchedule,
   previewReportPack,
   recordReportPackDeliveryFailure,
   rejectReportTemplateDraft,
-  renderReportTemplate,
   resumeReportingSchedule,
   runDueReportingSchedules,
   runReportingNow,
@@ -33,7 +31,6 @@ import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/reporting-periods";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
-import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
@@ -68,8 +65,6 @@ import {
   isBlankFilterOperator,
   normalizeReportWriterFilterOperator,
   normalizeReportWriterGridKind,
-  normalizeReportWriterPreviewDatasetProfile,
-  normalizeReportWriterTopNText,
   parseReportWriterTopN,
   useReportingReportWriter,
   type ReportWriterChartDraft,
@@ -93,7 +88,6 @@ import { ReportingGeneratedGridExportLinks, ReportingRunVersionFields } from "@/
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
-  ReportingScheduleField,
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
 import { ReportingTaskModeLauncher } from "@/screens/reporting-screen.task-modes";
@@ -113,7 +107,6 @@ import type {
   ReportWriterAggregateFunction,
   ReportWriterChartDefinition,
   ReportWriterFilterDefinition,
-  ReportWriterFilterOperator,
   ReportWriterFormatRule,
   ReportWriterGridDefinition,
   ReportWriterGridKind,

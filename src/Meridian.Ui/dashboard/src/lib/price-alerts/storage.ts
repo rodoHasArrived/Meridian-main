@@ -38,7 +38,7 @@ export function loadPriceAlertState(storage?: StorageLike | null): PriceAlertSto
     return emptyState();
   }
 
-  let raw: string | null = null;
+  let raw: string | null;
   try {
     raw = target.getItem(PRICE_ALERT_STORAGE_KEY);
   } catch {

@@ -374,7 +374,6 @@ function NotebookCellItem({
   onSourceChange,
   onKindChange
 }: NotebookCellItemProps) {
-  const isRunning = cell.state === "running";
   const isMarkdown = cell.kind === "markdown";
 
   return (
@@ -670,7 +669,7 @@ function renderInlineMarkdown(text: string): ReactNode {
   }
 
   if (last < text.length) {
-    parts.push(<span key={`t-${(keyIndex++).toString()}`}>{text.slice(last)}</span>);
+    parts.push(<span key={`t-${keyIndex.toString()}`}>{text.slice(last)}</span>);
   }
 
   return <>{parts}</>;

@@ -455,7 +455,6 @@ import {
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
   strategyDesignerDraftEndpoint,
-  strategyRunsEndpoint,
   symbolArchiveEndpoint,
   symbolRemoveEndpoint,
   symbolSearchEndpoint,
@@ -913,8 +912,10 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     try {
       return JSON.parse(text) as T;
     } catch {
+      // Deliberately reports the enclosing catch's `error` (the response.json() failure),
+      // not the fallback JSON.parse failure — the original error is the actionable one.
       const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-      throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+      throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
     }
   }
 
@@ -927,7 +928,7 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     return JSON.parse(text) as T;
   } catch (error) {
     const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-    throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+    throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
   }
 }
 

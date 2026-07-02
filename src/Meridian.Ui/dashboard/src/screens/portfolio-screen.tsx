@@ -844,7 +844,7 @@ export function PortfolioScreen({
             />
             <aside
               id={vm.brokerageAccountDetailId}
-              role="complementary"
+              role="region"
               aria-live="polite"
               aria-label={vm.selectedBrokerageAccount.ariaLabel}
               className={cn(
@@ -904,7 +904,7 @@ export function PortfolioScreen({
               />
               <aside
                 id={vm.brokeragePositionDetailId}
-                role="complementary"
+                role="region"
                 aria-live="polite"
                 aria-label={vm.selectedBrokeragePosition?.ariaLabel ?? "Brokerage position detail"}
                 className={cn(
@@ -1044,7 +1044,7 @@ export function PortfolioScreen({
 
           <aside
             id={vm.positionDetailId}
-            role="complementary"
+            role="region"
             aria-live="polite"
             aria-label={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
             className={cn(
@@ -1244,7 +1244,7 @@ export function PortfolioScreen({
                 />
                 <aside
                   id={vm.runDetailId}
-                  role="complementary"
+                  role="region"
                   aria-live="polite"
                   aria-label={vm.selectedRun?.ariaLabel ?? "Run evidence detail"}
                   className={cn(

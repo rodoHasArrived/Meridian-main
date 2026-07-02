@@ -36,12 +36,20 @@ export default tseslint.config(
     rules: {
       "no-undef": "off",
       "no-unused-vars": "off",
-      "no-useless-assignment": "warn",
-      "no-useless-escape": "warn",
-      "preserve-caught-error": "warn",
-      "@typescript-eslint/no-empty-object-type": "off",
+      "no-useless-assignment": "error",
+      "no-useless-escape": "error",
+      "preserve-caught-error": "error",
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrors: "none",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: true
+        }
+      ],
       "meridian/kebab-filename": [
         "error",
         {
@@ -54,15 +62,6 @@ export default tseslint.config(
       ],
       "react-hooks/exhaustive-deps": "warn",
       "react-hooks/rules-of-hooks": "error"
-    }
-  },
-  {
-    files: [
-      "src/screens/settings-screen.tsx",
-      "src/screens/strategy-screen.tsx"
-    ],
-    rules: {
-      "react-hooks/rules-of-hooks": "warn"
     }
   }
 );

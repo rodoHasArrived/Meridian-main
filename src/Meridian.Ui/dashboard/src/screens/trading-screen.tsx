@@ -255,6 +255,7 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "actions",
       label: "",
+      srLabel: "Row actions",
       align: "right",
       render: (position) => (
         <button
@@ -329,6 +330,7 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     {
       id: "actions",
       label: "",
+      srLabel: "Row actions",
       align: "right",
       render: (order) => (
         <button
@@ -2435,14 +2437,6 @@ function TradingBlotterDetailPanel({
         <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
       )}
     </DenseRowDetailPanel>
-  );
-}
-
-function EmptyEvidenceState({ text }: { text: string }) {
-  return (
-    <div role="status" className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
-      {text}
-    </div>
   );
 }
 

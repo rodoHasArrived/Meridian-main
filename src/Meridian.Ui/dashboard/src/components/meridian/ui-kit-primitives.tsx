@@ -45,6 +45,8 @@ export function ToolbarStrip({
 export interface DenseDataTableColumn<T> {
   id: string;
   label: string;
+  /** Screen-reader-only header text for control columns whose visible label is empty. */
+  srLabel?: string;
   align?: "left" | "right";
   className?: string;
   sortable?: boolean;
@@ -155,7 +157,7 @@ function DenseDataTableComponent<T>({
                         {sorted ? sort.direction === "asc" ? "↑" : "↓" : "↕"}
                       </span>
                     </button>
-                  ) : column.label}
+                  ) : column.label || (column.srLabel ? <span className="sr-only">{column.srLabel}</span> : null)}
                 </th>
               );
             })}

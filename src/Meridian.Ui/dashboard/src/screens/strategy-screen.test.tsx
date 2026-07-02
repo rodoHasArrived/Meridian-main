@@ -752,7 +752,7 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
     await user.click(screen.getByRole("button", { name: /promote to paper/i }));
 
-    const cashInput = await screen.findByLabelText("Initial cash ($)");
+    await screen.findByLabelText("Initial cash ($)");
     const acknowledgement = screen.getByRole("checkbox", {
       name: "I reviewed the promotion gates and paper-capital impact."
     });

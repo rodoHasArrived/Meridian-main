@@ -181,8 +181,7 @@
       ],
       "waitForTexts": [
         "Household-level net worth",
-        "Family office summary panels",
-        "$128.4M"
+        "Family office data is not connected"
       ]
     },
     {
@@ -530,6 +529,20 @@
       ]
     },
     {
+      "id": "W03M",
+      "docLabel": "Accounting \u2014 Statement Import",
+      "name": "web-accounting-statement-import",
+      "path": "/accounting/statement-import",
+      "requiredApiRoutes": [
+        "/api/workstation/reconciliation/statement-connectors",
+        "/api/workstation/reconciliation/statement-mapping-profiles"
+      ],
+      "waitForText": "Import statement",
+      "waitForTexts": [
+        "Statement source"
+      ]
+    },
+    {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",
@@ -811,9 +824,8 @@
         "/api/workstation/strategy"
       ],
       "waitForTexts": [
-        "Field picker",
-        "Active cell",
-        "Run preview"
+        "Formula catalog is not connected",
+        "Open Strategy workspace"
       ]
     },
     {
@@ -913,7 +925,7 @@
       ],
       "waitForTexts": [
         "ACTIVE ALERTS",
-        "Browser notifications are blocked",
+        "Browser notifications are",
         "New alert"
       ]
     },
@@ -975,7 +987,7 @@
       ],
       "waitForTexts": [
         "Operator control posture",
-        "Profile and access posture"
+        "Provider Connection Center"
       ]
     },
     {
@@ -998,7 +1010,7 @@
       ],
       "waitForTexts": [
         "Operator control posture",
-        "Profile and access posture"
+        "Fund operations control center"
       ]
     },
     {

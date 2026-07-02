@@ -39,14 +39,6 @@ export interface SecurityPassportWorkbenchService {
   publish: typeof defaultPublish;
 }
 
-const defaultService: SecurityPassportWorkbenchService = {
-  updateField: defaultUpdateField,
-  resolveConflict: defaultResolveConflict,
-  submit: defaultSubmit,
-  approve: defaultApprove,
-  publish: defaultPublish
-};
-
 export interface PassportApprovalContext {
   workflowId: string;
   expectedWorkflowVersion: number;

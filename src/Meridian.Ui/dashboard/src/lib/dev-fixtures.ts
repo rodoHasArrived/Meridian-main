@@ -70,6 +70,8 @@ import type {
   RiskRuleConfig,
   RiskRuleStatus,
   RuleDryRunResult,
+  StatementConnectorDescriptor,
+  StatementMappingProfile,
   StatementRunSummary,
   StrategyBriefingResponse,
   StrategyWorkspaceResponse,
@@ -112,6 +114,7 @@ import {
   REPLAY_API_ENDPOINTS,
   RISK_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
+  STATEMENT_CONNECTOR_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
@@ -3291,6 +3294,77 @@ const fixtureStatementRuns: StatementRunSummary[] = [
   }
 ];
 
+// Mirrors the registered connector descriptors in
+// Meridian.FinancialOperations/Reconciliation/Connectors (csv-mapped, ofx, ib-flex,
+// alpaca-activity) so the statement-import screen demos the real connector catalog.
+const fixtureStatementConnectors: StatementConnectorDescriptor[] = [
+  {
+    connectorId: "csv-mapped",
+    displayName: "Custodian/Broker CSV (mapping profile)",
+    fileExtensions: [".csv", ".txt"],
+    supportsFileImport: true,
+    supportsRemoteFetch: false,
+    requiresMappingProfile: true,
+    defaultProfileId: "canonical-csv-v1"
+  },
+  {
+    connectorId: "ofx",
+    displayName: "OFX / QFX statement",
+    fileExtensions: [".ofx", ".qfx"],
+    supportsFileImport: true,
+    supportsRemoteFetch: false,
+    requiresMappingProfile: true,
+    defaultProfileId: "ofx-bank-v1"
+  },
+  {
+    connectorId: "ib-flex",
+    displayName: "Interactive Brokers Flex Report (XML)",
+    fileExtensions: [".xml"],
+    supportsFileImport: true,
+    supportsRemoteFetch: false,
+    requiresMappingProfile: false,
+    defaultProfileId: "ib-flex-v1"
+  },
+  {
+    connectorId: "alpaca-activity",
+    displayName: "Alpaca account activity",
+    fileExtensions: [".json"],
+    supportsFileImport: true,
+    supportsRemoteFetch: true,
+    requiresMappingProfile: false,
+    defaultProfileId: "alpaca-activity-v1"
+  }
+];
+
+const fixtureStatementMappingProfiles: StatementMappingProfile[] = [
+  {
+    schemaVersion: 1,
+    profileId: "canonical-csv-v1",
+    displayName: "Canonical CSV (v1)",
+    format: "csv",
+    csv: { delimiter: ",", quote: "\"", hasHeader: true },
+    culture: null,
+    dateFormats: null,
+    fields: [
+      { canonicalField: "Account", sourceColumn: "Account", aliases: null, required: true },
+      { canonicalField: "SecurityIdentifier", sourceColumn: "Symbol", aliases: ["Ticker"], required: false },
+      { canonicalField: "ActivityType", sourceColumn: "ActivityType", aliases: ["Type"], required: true },
+      { canonicalField: "Quantity", sourceColumn: "Quantity", aliases: null, required: false },
+      { canonicalField: "Price", sourceColumn: "Price", aliases: null, required: false },
+      { canonicalField: "CashAmount", sourceColumn: "Amount", aliases: ["CashAmount"], required: false },
+      { canonicalField: "TradeDate", sourceColumn: "TradeDate", aliases: ["Date"], required: true }
+    ],
+    activityCodes: [
+      { sourceCode: "BUY", canonicalActivityType: "Buy" },
+      { sourceCode: "SELL", canonicalActivityType: "Sell" },
+      { sourceCode: "DIV", canonicalActivityType: "Dividend" }
+    ],
+    lastAcceptedFingerprint: null,
+    isBuiltIn: true,
+    notes: "Demo fixture mirroring the built-in canonical CSV mapping profile."
+  }
+];
+
 function buildFixtureProviderMappingRequirements(providerId: string): AccountingSystemProviderMappingRequirement[] {
   const normalized = providerId.toLowerCase();
   const accountEvidenceKind = normalized.includes("xero")
@@ -6453,6 +6527,8 @@ const fixtures = {
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
   [RECONCILIATION_API_ENDPOINTS.statementRuns]: fixtureStatementRuns,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
+  [STATEMENT_CONNECTOR_API_ENDPOINTS.connectors]: fixtureStatementConnectors,
+  [STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles]: fixtureStatementMappingProfiles,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
   [STRATEGY_DESIGNER_API_ENDPOINTS.templates]: fixtureStrategyDesignerTemplates,
