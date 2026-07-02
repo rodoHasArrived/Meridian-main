@@ -13,6 +13,7 @@ import {
   type AppShellOperatingScopeInput,
   type AppShellOperatingScopeState
 } from "@/app-shell.operating-scope";
+import type { CommandPaletteActionItem } from "@/components/meridian/command-palette.actions";
 import type {
   WorkflowAction,
   WorkflowDefinition,
@@ -23,12 +24,13 @@ import type {
   WorkspaceSummary
 } from "@/types";
 
-export type CommandPaletteItemKind = "focus" | "entity" | "workspace" | "route" | "workflow" | "preset";
+export type CommandPaletteItemKind = "focus" | "action" | "entity" | "workspace" | "route" | "workflow" | "preset";
 export type CommandPaletteItemStatusTone = "blocked" | "review" | "ready" | "current" | "neutral";
 export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
 export type CommandPaletteFocusTarget = "search" | "command" | "other";
 export type CommandPaletteKeyCommand =
   | "close"
+  | "disarm-action"
   | "activate-first-command"
   | "focus-first"
   | "focus-last"
@@ -49,6 +51,8 @@ export interface CommandPaletteItem {
   commandLabel: string;
   ariaLabel: string;
   presetId: string | null;
+  /** Set for runnable action items; the component resolves the handler by item id. */
+  action?: { actionId: string; confirm: boolean } | null;
   active: boolean;
 }
 
@@ -79,6 +83,7 @@ export interface CommandPaletteWorkflowData {
   workflowError?: string | null;
   operatorFocusItems?: CommandPaletteFocusAction[] | null;
   entityItems?: CommandPaletteEntityItem[] | null;
+  actionItems?: CommandPaletteActionItem[] | null;
   entitySearchStatus?: "idle" | "searching" | "ready" | "degraded" | "error" | null;
   entitySearchError?: string | null;
 }
@@ -141,6 +146,7 @@ export interface CommandPaletteViewModel {
 
 const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
   focus: "Focus actions",
+  action: "Actions",
   entity: "Entities",
   workspace: "Workspaces",
   route: "Quick routes",
@@ -150,6 +156,7 @@ const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
 
 const COMMAND_KIND_SINGULAR_LABELS: Record<CommandPaletteItemKind, string> = {
   focus: "focus action",
+  action: "action",
   entity: "entity",
   workspace: "workspace",
   route: "quick route",
@@ -159,6 +166,7 @@ const COMMAND_KIND_SINGULAR_LABELS: Record<CommandPaletteItemKind, string> = {
 
 const COMMAND_KIND_PLURAL_LABELS: Record<CommandPaletteItemKind, string> = {
   focus: "focus actions",
+  action: "actions",
   entity: "entities",
   workspace: "workspaces",
   route: "quick routes",
@@ -166,7 +174,7 @@ const COMMAND_KIND_PLURAL_LABELS: Record<CommandPaletteItemKind, string> = {
   workflow: "workflows"
 };
 
-const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "entity", "workspace", "route", "preset", "workflow"];
+const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "action", "entity", "workspace", "route", "preset", "workflow"];
 const COMMAND_PALETTE_FILTER_COUNT_ID = "command-palette-filter-count";
 const COMMAND_PALETTE_EMPTY_STATE_ID = "command-palette-empty-state";
 const COMMAND_PALETTE_EMPTY_STATE_TITLE_ID = "command-palette-empty-state-title";
@@ -289,6 +297,8 @@ export interface CommandPaletteKeyboardState {
   shiftKey?: boolean;
   focusBoundary: CommandPaletteFocusBoundary;
   focusTarget?: CommandPaletteFocusTarget;
+  /** True while a confirm-required action item is armed awaiting its second activation. */
+  actionArmed?: boolean;
 }
 
 export function buildCommandPaletteViewModel(
@@ -307,12 +317,13 @@ export function buildCommandPaletteViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   });
   const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
+  const actionItems = buildActionItems(workflowData.actionItems ?? []);
   const entityItems = buildEntityItems(workflowData.entityItems ?? [], pathname);
   const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);
-  const items = [...focusItems, ...entityItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
+  const items = [...focusItems, ...actionItems, ...entityItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
   const commandGroups = buildCommandPaletteGroups(filteredItems);
@@ -368,9 +379,10 @@ export function buildCommandPaletteViewModel(
           presetItems.length,
           workflowItems.length,
           focusItems.length,
-          entityItems.length
+          entityItems.length,
+          actionItems.length
         )
-      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length, focusItems.length, entityItems.length),
+      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length, focusItems.length, entityItems.length, actionItems.length),
     activeWorkspaceLabel,
     initialFocusItemId:
       filteredItems.find((item) => item.kind === "focus")?.id
@@ -523,10 +535,11 @@ export function resolveCommandPaletteKeyCommand({
   key,
   shiftKey = false,
   focusBoundary,
-  focusTarget = "other"
+  focusTarget = "other",
+  actionArmed = false
 }: CommandPaletteKeyboardState): CommandPaletteKeyCommand {
   if (key === "Escape") {
-    return "close";
+    return actionArmed ? "disarm-action" : "close";
   }
 
   if (key === "Enter" && focusTarget === "search") {
@@ -585,6 +598,27 @@ function buildWorkspaceItems(
       active
     };
   });
+}
+
+function buildActionItems(actions: CommandPaletteActionItem[]): CommandPaletteItem[] {
+  return actions.map<CommandPaletteItem>((action) => ({
+    id: `action:${action.id}`,
+    kind: "action",
+    label: action.verbLabel,
+    description: [action.description, ...(action.keywords ?? [])].join(" ").trim(),
+    route: "",
+    routeLabel: "Action",
+    statusLabel: action.disabled ? action.disabledReason ?? "Unavailable" : action.confirm ? "Confirm to run" : "Runs now",
+    statusTone: action.disabled ? "blocked" : "ready",
+    statusVisible: Boolean(action.disabled || action.confirm),
+    commandLabel: action.verbLabel,
+    ariaLabel: action.disabled
+      ? `${action.verbLabel}. Unavailable: ${action.disabledReason ?? "not available right now"}`
+      : `${action.verbLabel}. ${action.description}`,
+    presetId: null,
+    action: { actionId: action.id, confirm: Boolean(action.confirm) },
+    active: false
+  }));
 }
 
 function buildFocusItems(
@@ -829,9 +863,10 @@ function buildBackendStatusLabel(
   return `${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"}`;
 }
 
-function buildLocalItemCountLabel(workspaceCount: number, routeCount: number, focusCount = 0, entityCount = 0) {
+function buildLocalItemCountLabel(workspaceCount: number, routeCount: number, focusCount = 0, entityCount = 0, actionCount = 0) {
   return joinCommandPaletteCounts([
     focusCount > 0 ? `${focusCount} focus action${focusCount === 1 ? "" : "s"}` : null,
+    actionCount > 0 ? `${actionCount} action${actionCount === 1 ? "" : "s"}` : null,
     entityCount > 0 ? `${entityCount} entity result${entityCount === 1 ? "" : "s"}` : null,
     `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"}`,
     `${routeCount} quick route${routeCount === 1 ? "" : "s"}`
@@ -844,10 +879,12 @@ function buildItemCountLabel(
   presetCount: number,
   workflowActionCount: number,
   focusCount = 0,
-  entityCount = 0
+  entityCount = 0,
+  actionCount = 0
 ) {
   return joinCommandPaletteCounts([
     focusCount > 0 ? `${focusCount} focus action${focusCount === 1 ? "" : "s"}` : null,
+    actionCount > 0 ? `${actionCount} action${actionCount === 1 ? "" : "s"}` : null,
     entityCount > 0 ? `${entityCount} entity result${entityCount === 1 ? "" : "s"}` : null,
     `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"}`,
     `${routeCount} quick route${routeCount === 1 ? "" : "s"}`,

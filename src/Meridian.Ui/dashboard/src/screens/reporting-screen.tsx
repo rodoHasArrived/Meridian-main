@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Select } from "@/components/ui/select";
 import { SeverityBadge } from "@/components/operations";
+import { registerCommandPaletteActions } from "@/components/meridian/command-palette.actions";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
@@ -401,6 +402,38 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       "Exports report run"
     );
   }
+
+  const handleExportsReportRunRef = useRef(handleExportsReportRun);
+  handleExportsReportRunRef.current = handleExportsReportRun;
+
+  useEffect(() => {
+    if (!selectedExportsTemplate) {
+      return;
+    }
+
+    const disabled = !selectedExportsTemplate.canRunOnDemand || Boolean(runningTemplateRunId);
+    return registerCommandPaletteActions("reporting-screen", [
+      {
+        id: "reporting-run-exports",
+        verbLabel: `Run exports report: ${selectedExportsTemplate.name}`,
+        description: "Start the selected on-demand exports report run with the drafted as-of date.",
+        keywords: ["report", "export", "run"],
+        confirm: true,
+        disabled,
+        disabledReason: runningTemplateRunId
+          ? "A template run is already in progress."
+          : selectedExportsTemplate.runDisabledReason,
+        run: async () => {
+          await handleExportsReportRunRef.current();
+          return {
+            title: `${selectedExportsTemplate.name} run requested.`,
+            detail: "Track progress under Reporting exports run status.",
+            tone: "success" as const
+          };
+        }
+      }
+    ]);
+  }, [runningTemplateRunId, selectedExportsTemplate]);
 
   async function executeTemplateRun(
     template: ReportingTemplateRow,

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
+import { getCommandPaletteActionsSnapshot } from "@/components/meridian/command-palette.actions";
 import { renderWithRouter } from "@/test/render";
 import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
 
@@ -1673,6 +1674,22 @@ describe("ReportingScreen", () => {
 
     const fundRow = screen.getByRole("listitem", { name: "fund-alpha Fund cross-fund consolidation" });
     expect(fundRow).toHaveTextContent("cross-fund:20260411160000:funds-1:entities-1:sources-3");
+  });
+
+  it("registers the exports-run palette action while mounted and unregisters on unmount", () => {
+    const { unmount } = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: ["/reporting/report-builder"]
+    });
+
+    const registered = getCommandPaletteActionsSnapshot().find((item) => item.id === "reporting-run-exports");
+    expect(registered).toBeDefined();
+    expect(registered?.confirm).toBe(true);
+    expect(registered?.verbLabel).toMatch(/^Run exports report: /);
+
+    unmount();
+    expect(
+      getCommandPaletteActionsSnapshot().some((item) => item.id === "reporting-run-exports")
+    ).toBe(false);
   });
 
   it("renders structured exports from the shared reporting payload", () => {

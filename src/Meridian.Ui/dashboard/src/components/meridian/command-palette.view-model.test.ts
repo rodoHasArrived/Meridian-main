@@ -1063,8 +1063,68 @@ describe("command palette view model", () => {
     );
   });
 
+  it("builds runnable action items ordered after focus actions", () => {
+    const model = buildCommandPaletteViewModel("/reporting", undefined, {
+      actionItems: [
+        {
+          id: "reporting-run-exports",
+          verbLabel: "Run exports report: Monthly NAV pack",
+          description: "Start the selected on-demand exports report run.",
+          keywords: ["report", "run"],
+          confirm: true,
+          run: async () => undefined
+        },
+        {
+          id: "preset-pin:morning",
+          verbLabel: "Pin preset Morning close",
+          description: "Keep Morning close at the top of the palette preset list.",
+          disabled: true,
+          disabledReason: "Preset library unavailable.",
+          run: async () => undefined
+        }
+      ]
+    });
+
+    const actionItems = model.items.filter((item) => item.kind === "action");
+    expect(actionItems.map((item) => item.id)).toEqual([
+      "action:reporting-run-exports",
+      "action:preset-pin:morning"
+    ]);
+    expect(actionItems[0]).toMatchObject({
+      commandLabel: "Run exports report: Monthly NAV pack",
+      statusLabel: "Confirm to run",
+      statusTone: "ready",
+      action: { actionId: "reporting-run-exports", confirm: true }
+    });
+    expect(actionItems[1]).toMatchObject({
+      statusLabel: "Preset library unavailable.",
+      statusTone: "blocked",
+      action: { actionId: "preset-pin:morning", confirm: false }
+    });
+
+    const groupKinds = model.commandGroups.map((group) => group.kind);
+    expect(groupKinds.indexOf("action")).toBeLessThan(groupKinds.indexOf("workspace"));
+    expect(model.itemCountLabel).toContain("2 actions");
+
+    const filtered = buildCommandPaletteViewModel("/reporting", undefined, {
+      actionItems: [
+        {
+          id: "reporting-run-exports",
+          verbLabel: "Run exports report: Monthly NAV pack",
+          description: "Start the selected on-demand exports report run.",
+          keywords: ["report", "run"],
+          run: async () => undefined
+        }
+      ]
+    }, "run exports");
+    expect(filtered.filteredItems.some((item) => item.id === "action:reporting-run-exports")).toBe(true);
+  });
+
   it("keeps command palette keyboard commands in the view model", () => {
     expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle" })).toBe("close");
+    expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle", actionArmed: true })).toBe(
+      "disarm-action"
+    );
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "last" })).toBe("focus-first");
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "first" })).toBe("focus-last");
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "outside" })).toBe("focus-first");

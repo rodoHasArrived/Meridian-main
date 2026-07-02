@@ -43,7 +43,11 @@ import {
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
-import { markWorkflowPresetUsed } from "@/lib/api";
+import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
+import {
+  useCommandPaletteActions,
+  type CommandPaletteActionItem
+} from "@/components/meridian/command-palette.actions";
 import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
@@ -163,6 +167,30 @@ function AppShell() {
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
     });
+
+  const screenActionItems = useCommandPaletteActions();
+  const presetPinActionItems = useMemo<CommandPaletteActionItem[]>(
+    () => (workflowPresets?.presets ?? []).map((preset) => ({
+      id: `preset-pin:${preset.presetId}`,
+      verbLabel: preset.isPinned ? `Unpin preset ${preset.name}` : `Pin preset ${preset.name}`,
+      description: preset.isPinned
+        ? `Remove ${preset.name} from the pinned presets shown first in the palette.`
+        : `Keep ${preset.name} at the top of the palette preset list.`,
+      keywords: ["preset", "pin", preset.workflowTitle],
+      run: () => pinWorkflowPreset(preset.presetId, !preset.isPinned).then((updated) => {
+        upsertWorkflowPreset(updated);
+        return {
+          title: updated.isPinned ? `Pinned ${updated.name}.` : `Unpinned ${updated.name}.`,
+          tone: "success" as const
+        };
+      })
+    })),
+    [upsertWorkflowPreset, workflowPresets]
+  );
+  const paletteActionItems = useMemo(
+    () => [...presetPinActionItems, ...screenActionItems],
+    [presetPinActionItems, screenActionItems]
+  );
 
   useEffect(() => {
     if (suppressScopePersistRef.current) {
@@ -547,6 +575,7 @@ function AppShell() {
         workflowPresets={workflowPresets}
         workflowError={workflowError}
         operatorFocusItems={shell.workflowContinuity.operatorFocusCommandItems}
+        actionItems={paletteActionItems}
         operatingContextSymbol={operatingContextSymbol}
         operatingScope={operatingScopeInput}
         onPresetUsed={handleWorkflowPresetUsed}

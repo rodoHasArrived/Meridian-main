@@ -92,9 +92,13 @@ No feature work; confirm and document the rules each later phase must follow.
   into the existing `COMMAND_KIND_ORDER` flow. Items with `confirmLabel` render an inline
   confirm row (no modal) before `run()` fires; results surface via the existing `useToast` API.
 - **First providers (delegating to existing surfaces, no new business logic):**
-  - workflow preset pin / mark-used (`POST /api/workstation/workflows/presets/{id}/pin`, `/used`);
-  - reporting export run (`screens/reporting-screen.exports-runner.tsx` command path);
-  - close-calendar item creation (`OperationsContinuityCloseCalendarItems` POST).
+  - workflow preset pin / unpin (`POST /api/workstation/workflows/presets/{id}/pin`), built at shell
+    level from the preset library;
+  - reporting export run (`screens/reporting-screen.exports-runner.tsx` command path), registered by
+    the reporting screen while mounted with confirm required.
+  - *Amended at implementation:* close-calendar item creation was dropped as a palette verb — it
+    requires a six-field form, which is a navigation target rather than a verb; it remains reachable
+    through existing workflow route items.
 - **Governance rule (enforced by convention + review):** approval-gated or destructive mutations
   are never palette-registered; providers must delegate to existing view-model commands.
 - **Tests:** extend `command-palette.view-model.test.ts` (action merge, ordering, confirm flow)
@@ -102,9 +106,10 @@ No feature work; confirm and document the rules each later phase must follow.
 - **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test`
 
 **Checklist**
-- [ ] `action` kind + provider registry + inline confirm.
-- [ ] Three launch providers wired to existing POST surfaces.
-- [ ] Palette keyboard tests cover the action path.
+- [x] `action` kind + provider registry + inline confirm.
+- [x] Launch providers wired to existing POST surfaces (preset pin/unpin + reporting export run;
+      close-calendar dropped as form-shaped).
+- [x] Palette keyboard tests cover the action path.
 
 ---
 
