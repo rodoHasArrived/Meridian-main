@@ -48,6 +48,8 @@ import {
   useCommandPaletteActions,
   type CommandPaletteActionItem
 } from "@/components/meridian/command-palette.actions";
+import { CopyLinkButton } from "@/components/meridian/copy-link-button";
+import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
@@ -422,6 +424,16 @@ function AppShell() {
           tabIndex={-1}
         >
           <WorkspaceHeader
+            actions={(
+              <>
+                <CopyLinkButton />
+                <SaveViewButton
+                  workflowLibrary={workflowLibrary}
+                  workflowError={workflowError}
+                  onPresetSaved={upsertWorkflowPreset}
+                />
+              </>
+            )}
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}
             session={session}

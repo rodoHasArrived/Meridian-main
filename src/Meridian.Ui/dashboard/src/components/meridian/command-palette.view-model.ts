@@ -1,4 +1,5 @@
 import {
+  appendRouteQuery,
   canonicalizeWorkspaceSummaries,
   normalizeWorkspacePath,
   WORKSPACES,
@@ -6,6 +7,7 @@ import {
   workflowTargetPath,
   workspacePath
 } from "@/lib/workspace";
+import { decodeViewStateEnvelope, VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
@@ -740,7 +742,8 @@ function buildPresetItems(
   return [...presets]
     .sort(comparePresets)
     .map<CommandPaletteItem>((preset) => {
-      const route = materializeCommandRoute(workflowTargetPath(preset.targetPageTag, preset.workspaceId), operatingScope);
+      const baseRoute = materializeCommandRoute(workflowTargetPath(preset.targetPageTag, preset.workspaceId), operatingScope);
+      const route = appendPresetViewState(baseRoute, preset.viewStateEnvelope ?? null);
       const current = isExactActivePath(pathname, route);
 
       return {
@@ -759,6 +762,14 @@ function buildPresetItems(
         active: false
       };
     });
+}
+
+function appendPresetViewState(route: string, viewStateEnvelope: string | null): string {
+  if (!viewStateEnvelope || !decodeViewStateEnvelope(viewStateEnvelope)) {
+    return route;
+  }
+
+  return appendRouteQuery(route, { [VIEW_STATE_QUERY_KEY]: viewStateEnvelope });
 }
 
 function buildWorkflowItems(

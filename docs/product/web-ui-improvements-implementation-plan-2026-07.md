@@ -132,16 +132,19 @@ No feature work; confirm and document the rules each later phase must follow.
   `FileWorkflowPresetStore` (`{dataRoot}/workstation/workflows/workflow-presets.json`, atomic
   writes via `AtomicFileWriter`, versioned `WorkflowPresetSnapshot`) with an optional
   `viewStateEnvelope` field — no new store. Saved views then surface through the existing preset
-  items in the palette and workflow continuity dock.
+  items in the palette and workflow continuity dock. *Implementation note:* the field landed as an
+  additive nullable property on snapshot v1 (no v2 bump — additive nullable is bidirectionally
+  compatible under System.Text.Json Web defaults), capped at 4096 chars server-side.
 - **Tests:** envelope round-trip + version-tolerance unit tests; `WorkflowPresetService` payload
   extension tests in `tests/Meridian.Tests/Ui/WorkflowLibraryEndpointTests.cs` style.
 - **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test` and
   `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter FullyQualifiedName~WorkflowLibraryEndpointTests`
 
 **Checklist**
-- [ ] `view-state-envelope.ts` with round-trip tests.
-- [ ] `workspace-header.tsx` `actions` slot + Copy-link button.
-- [ ] Preset payload extension + server tests.
+- [x] `view-state-envelope.ts` with round-trip tests (table-state helpers shipped as the Phases 5–6
+      contract; no screen consumer yet since `useTableState` is currently unconsumed).
+- [x] `workspace-header.tsx` `actions` slot + Copy-link button (+ Save-view dialog).
+- [x] Preset payload extension + server tests.
 
 ---
 

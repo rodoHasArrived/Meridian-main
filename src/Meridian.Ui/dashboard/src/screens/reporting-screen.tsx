@@ -1,6 +1,6 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,12 @@ import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Select } from "@/components/ui/select";
 import { SeverityBadge } from "@/components/operations";
 import { registerCommandPaletteActions } from "@/components/meridian/command-palette.actions";
+import {
+  encodeViewStateEnvelope,
+  readViewStateFromSearch,
+  stripViewStateFromSearch,
+  VIEW_STATE_QUERY_KEY
+} from "@/lib/view-state-envelope";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
@@ -150,6 +156,8 @@ const reportingStatusFromVariant: Record<
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
 const defaultExportsReportRunRequester = "browser-workstation";
+const EXPORTS_VIEW_STATE_SCREEN = "reporting-exports";
+const exportsViewReflectDebounceMs = 300;
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "profile",
@@ -194,7 +202,8 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 ];
 
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
@@ -315,6 +324,66 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     });
   }, [data?.reporting, templateRowsKey]);
 
+  const exportsViewHydratedRef = useRef(false);
+  useEffect(() => {
+    if (exportsViewHydratedRef.current || vm.templateRows.length === 0) {
+      return;
+    }
+
+    exportsViewHydratedRef.current = true;
+    const envelope = readViewStateFromSearch(search, EXPORTS_VIEW_STATE_SCREEN);
+    if (!envelope) {
+      return;
+    }
+
+    const templateRowId = typeof envelope.state.selectedExportsTemplateId === "string"
+      ? envelope.state.selectedExportsTemplateId
+      : null;
+    const asOfDate = typeof envelope.state.asOfDate === "string" ? envelope.state.asOfDate : null;
+    const template = templateRowId ? vm.templateRows.find((row) => row.id === templateRowId) : null;
+    if (!template || !template.canRunOnDemand) {
+      return;
+    }
+
+    setExportsRunDraft((current) => ({
+      ...current,
+      templateRowId: template.id,
+      asOfDate: asOfDate ?? current.asOfDate
+    }));
+  }, [search, templateRowsKey, vm.templateRows]);
+
+  const reflectExportsViewTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (reflectExportsViewTimer.current !== null) {
+      window.clearTimeout(reflectExportsViewTimer.current);
+    }
+  }, []);
+
+  function reflectExportsViewState(nextDraft: ExportsReportRunDraftState) {
+    if (reflectExportsViewTimer.current !== null) {
+      window.clearTimeout(reflectExportsViewTimer.current);
+    }
+
+    reflectExportsViewTimer.current = window.setTimeout(() => {
+      reflectExportsViewTimer.current = null;
+      const template = resolveSelectedExportsTemplate(vm.templateRows, nextDraft);
+      const token = template
+        ? encodeViewStateEnvelope({
+            v: 1,
+            screen: EXPORTS_VIEW_STATE_SCREEN,
+            state: { selectedExportsTemplateId: template.id, asOfDate: nextDraft.asOfDate }
+          })
+        : null;
+      if (!token) {
+        return;
+      }
+
+      const params = new URLSearchParams(stripViewStateFromSearch(search));
+      params.set(VIEW_STATE_QUERY_KEY, token);
+      navigate(`${pathname}?${params.toString()}`, { replace: true });
+    }, exportsViewReflectDebounceMs);
+  }
+
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
     if (!command) {
@@ -385,10 +454,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
-    setExportsRunDraft((current) => ({
-      ...current,
-      [field]: value
-    }));
+    setExportsRunDraft((current) => {
+      const next = { ...current, [field]: value };
+      reflectExportsViewState(next);
+      return next;
+    });
   }
 
   async function handleExportsReportRun() {

@@ -1058,6 +1058,7 @@ export interface WorkflowPreset {
   createdAt: string;
   updatedAt: string;
   lastUsedAt: string | null;
+  viewStateEnvelope?: string | null;
 }
 
 export interface WorkflowPresetLibrary {
@@ -1114,6 +1115,7 @@ export interface WorkflowPresetSaveRequest {
   actionId?: string | null;
   tags?: string[] | null;
   isPinned: boolean;
+  viewStateEnvelope?: string | null;
 }
 
 export type OperationsWorkflowStatus =

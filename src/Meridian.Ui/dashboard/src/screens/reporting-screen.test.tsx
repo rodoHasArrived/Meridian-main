@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { getCommandPaletteActionsSnapshot } from "@/components/meridian/command-palette.actions";
+import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import { renderWithRouter } from "@/test/render";
 import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
 
@@ -1674,6 +1675,46 @@ describe("ReportingScreen", () => {
 
     const fundRow = screen.getByRole("listitem", { name: "fund-alpha Fund cross-fund consolidation" });
     expect(fundRow).toHaveTextContent("cross-fund:20260411160000:funds-1:entities-1:sources-3");
+  });
+
+  it("hydrates the exports draft from a valid view-state link", () => {
+    const token = encodeViewStateEnvelope({
+      v: 1,
+      screen: "reporting-exports",
+      state: { selectedExportsTemplateId: "investor-monthly-statement:1.0.0", asOfDate: "2026-06-30" }
+    })!;
+
+    renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: [`/reporting/report-builder?view=${token}`]
+    });
+
+    expect(screen.getByLabelText("Exports report as-of date")).toHaveValue("2026-06-30");
+    expect(screen.getByLabelText("Exports report template")).toHaveValue("investor-monthly-statement:1.0.0");
+  });
+
+  it("ignores view-state links for unknown templates or foreign screens", () => {
+    const unknownTemplate = encodeViewStateEnvelope({
+      v: 1,
+      screen: "reporting-exports",
+      state: { selectedExportsTemplateId: "not-a-real-template:9.9.9", asOfDate: "2026-06-30" }
+    })!;
+
+    const { unmount } = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: [`/reporting/report-builder?view=${unknownTemplate}`]
+    });
+    expect(screen.getByLabelText("Exports report as-of date")).not.toHaveValue("2026-06-30");
+    unmount();
+
+    const foreignScreen = encodeViewStateEnvelope({
+      v: 1,
+      screen: "trial-balance",
+      state: { selectedExportsTemplateId: "investor-monthly-statement:1.0.0", asOfDate: "2026-06-30" }
+    })!;
+
+    renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: [`/reporting/report-builder?view=${foreignScreen}`]
+    });
+    expect(screen.getByLabelText("Exports report as-of date")).not.toHaveValue("2026-06-30");
   });
 
   it("registers the exports-run palette action while mounted and unregisters on unmount", () => {

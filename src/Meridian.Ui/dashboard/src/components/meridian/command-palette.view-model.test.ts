@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand
@@ -1118,6 +1119,64 @@ describe("command palette view model", () => {
       ]
     }, "run exports");
     expect(filtered.filteredItems.some((item) => item.id === "action:reporting-run-exports")).toBe(true);
+  });
+
+  it("appends a saved view's state token to the preset route", () => {
+    const viewStateEnvelope = encodeViewStateEnvelope({
+      v: 1,
+      screen: "reporting-exports",
+      state: { selectedExportsTemplateId: "investor-monthly-statement" }
+    })!;
+
+    const model = buildCommandPaletteViewModel("/trading", undefined, {
+      workflowPresets: {
+        generatedAt: "2026-07-01T00:00:00Z",
+        presets: [
+          {
+            presetId: "saved-view-1",
+            name: "Month-end exports",
+            description: "Saved exports view",
+            workflowId: "reporting-delivery",
+            workflowTitle: "Reporting Delivery",
+            actionId: "reporting.exports",
+            actionLabel: "Open exports",
+            workspaceId: "reporting",
+            workspaceTitle: "Reporting",
+            targetPageTag: "ReportingExports",
+            tags: [],
+            isPinned: false,
+            createdAt: "2026-07-01T00:00:00Z",
+            updatedAt: "2026-07-01T00:00:00Z",
+            lastUsedAt: null,
+            viewStateEnvelope
+          },
+          {
+            presetId: "tampered-view",
+            name: "Tampered view",
+            description: "Bad token stays off the route",
+            workflowId: "reporting-delivery",
+            workflowTitle: "Reporting Delivery",
+            actionId: "reporting.exports",
+            actionLabel: "Open exports",
+            workspaceId: "reporting",
+            workspaceTitle: "Reporting",
+            targetPageTag: "ReportingExports",
+            tags: [],
+            isPinned: false,
+            createdAt: "2026-07-01T00:00:00Z",
+            updatedAt: "2026-07-01T00:00:00Z",
+            lastUsedAt: null,
+            viewStateEnvelope: "!!not-a-valid-token!!"
+          }
+        ]
+      }
+    });
+
+    const presets = model.items.filter((item) => item.kind === "preset");
+    const saved = presets.find((item) => item.presetId === "saved-view-1");
+    const tampered = presets.find((item) => item.presetId === "tampered-view");
+    expect(saved?.route).toContain(`view=${viewStateEnvelope}`);
+    expect(tampered?.route ?? "").not.toContain("view=");
   });
 
   it("keeps command palette keyboard commands in the view model", () => {
