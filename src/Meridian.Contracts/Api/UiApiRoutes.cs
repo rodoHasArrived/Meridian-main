@@ -705,6 +705,15 @@ public static class UiApiRoutes
     public const string ReconciliationStatementRunReconcile = "/api/workstation/reconciliation/statement-runs/{runId}/reconcile";
     public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
     public const string ReconciliationStatementBreaks = "/api/workstation/reconciliation/statement-breaks";
+    public const string ReconciliationStatementConnectors = "/api/workstation/reconciliation/statement-connectors";
+    public const string ReconciliationStatementMappingProfiles = "/api/workstation/reconciliation/statement-mapping-profiles";
+    public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
+    public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
+    public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementFetchPreview = "/api/workstation/reconciliation/statement-imports/fetch-preview";
+    public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
+    public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
+    public const string ReconciliationStatementFetchScheduleRun = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}/run";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";

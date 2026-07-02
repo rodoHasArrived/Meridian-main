@@ -14,6 +14,7 @@ Snapshot date: 2026-06-24
 | W4-RPT-001 | W4 | Governed report pack readiness | Reporting; Accounting | done | green | high | Accounting and Ledger | complete | 2026-05-29 |
 | W5-ACCT-001 | W5 | Accounting records and operational evidence | Accounting; Reporting; Portfolio; Data | done | green | high | Accounting and Ledger | complete | 2026-06-04 |
 | W5-MASSET-001 | W5 | Multi-asset operational coverage proof lane | Portfolio; Accounting; Data; Settings | done | green | high | Accounting and Ledger | complete | 2026-06-02 |
+| W5X-CONNECT-001 | W5X | Custodian and broker statement connector library | Accounting; Data | done | green | high | Accounting and Ledger | complete | 2026-07-02 |
 | W5X-FINOPS-001 | W5X | Financial operations control center | Accounting; Reporting; Portfolio; Data | done | green | high | Accounting and Ledger | complete | 2026-06-24 |
 | W5X-FREX-001 | W5X | Shared financial record explorers | Accounting; Portfolio; Data; Reporting | done | green | high | Workstation Shell and UX | complete | 2026-06-22 |
 | W6-BTSTUDIO-001 | W6 | Backtesting studio evidence loop | Strategy | planned | green | medium | Strategy Analytics | planned_evidence | 2026-06-04 |

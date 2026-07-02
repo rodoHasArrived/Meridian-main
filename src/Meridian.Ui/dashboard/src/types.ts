@@ -4353,6 +4353,161 @@ export interface StatementRunException {
   status: string;
 }
 
+export interface StatementConnectorDescriptor {
+  connectorId: string;
+  displayName: string;
+  fileExtensions: string[];
+  supportsFileImport: boolean;
+  supportsRemoteFetch: boolean;
+  requiresMappingProfile: boolean;
+  defaultProfileId: string | null;
+}
+
+export interface StatementMappingProfileField {
+  canonicalField: string;
+  sourceColumn: string;
+  aliases: string[] | null;
+  required: boolean;
+}
+
+export interface StatementMappingProfileActivityCode {
+  sourceCode: string;
+  canonicalActivityType: string;
+}
+
+export interface StatementMappingProfileCsvOptions {
+  delimiter: string;
+  quote: string;
+  hasHeader: boolean;
+}
+
+export interface StatementMappingProfile {
+  schemaVersion: number;
+  profileId: string;
+  displayName: string;
+  format: string;
+  csv: StatementMappingProfileCsvOptions | null;
+  culture: string | null;
+  dateFormats: string[] | null;
+  fields: StatementMappingProfileField[];
+  activityCodes: StatementMappingProfileActivityCode[];
+  lastAcceptedFingerprint: string | null;
+  isBuiltIn: boolean;
+  notes: string | null;
+}
+
+export type StatementColumnConfidence = "Exact" | "Alias" | "Fuzzy" | "Unmapped";
+
+export interface StatementColumnMapping {
+  sourceColumn: string;
+  canonicalField: string | null;
+  confidence: StatementColumnConfidence;
+  score: number;
+  rationale: string;
+}
+
+export interface StatementImportIssue {
+  code: string;
+  severity: "Error" | "Warning" | "Info" | string;
+  rowNumber: number | null;
+  field: string | null;
+  message: string;
+}
+
+export interface StatementRecordPreview {
+  kind: string;
+  account: string;
+  symbol: string;
+  quantity: number;
+  price: number;
+  cashAmount: number;
+  activityType: string;
+  tradeDate: string;
+  settlementDate: string | null;
+  currency: string | null;
+  feesCommission: number | null;
+  externalTransactionId: string | null;
+}
+
+export interface StatementKindSummary {
+  kind: string;
+  recordCount: number;
+  sampleRecords: StatementRecordPreview[];
+}
+
+export interface StatementProfileSuggestion {
+  profileId: string;
+  displayName: string;
+  score: number;
+}
+
+export interface StatementImportPreview {
+  connectorId: string;
+  connectorDisplayName: string;
+  profileId: string | null;
+  fileName: string;
+  fileSizeBytes: number;
+  detectedColumns: string[];
+  columnMappings: StatementColumnMapping[];
+  recordCount: number;
+  kindSummaries: StatementKindSummary[];
+  issues: StatementImportIssue[];
+  profileSuggestions: StatementProfileSuggestion[];
+  status: "ReadyToImport" | "NeedsAttention" | string;
+  nextAction: string;
+}
+
+export interface StatementImportCommitResult {
+  runId: string;
+  duplicate: boolean;
+  recordCount: number;
+  kindSummaries: StatementKindSummary[];
+  breakCount: number;
+  caseCount: number;
+  retainedSourcePath: string;
+  retainedCanonicalPath: string;
+  status: string;
+  nextAction: string;
+}
+
+export interface StatementFetchSchedule {
+  scheduleId: string;
+  connectorId: string;
+  externalAccountId: string;
+  fundAccountId: string;
+  sourceInstitution: string;
+  mappingProfileId: string | null;
+  toleranceProfileId: string;
+  cadenceHours: number;
+  enabled: boolean;
+  lastRunAtUtc: string | null;
+  lastRunStatus: string | null;
+  nextDueAtUtc: string | null;
+}
+
+export type StatementImportSourceKind = "broker" | "custodian";
+export type StatementFetchDatasets = "activity" | "positions" | "all";
+
+export interface StatementFetchPreviewRequest {
+  connectorId: string;
+  externalAccountId: string;
+  since?: string | null;
+  mappingProfileId?: string | null;
+  datasets?: StatementFetchDatasets | null;
+}
+
+export interface StatementFetchScheduleUpsertRequest {
+  scheduleId?: string | null;
+  connectorId: string;
+  externalAccountId: string;
+  fundAccountId: string;
+  sourceInstitution: string;
+  mappingProfileId?: string | null;
+  toleranceProfileId?: string | null;
+  cadenceHours: number;
+  enabled: boolean;
+}
+
 export interface AccountingReconciliationRecord {
   runId: string;
   strategyName: string;

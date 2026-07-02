@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexQueryResponse queryName="Meridian Daily Statement" type="AF">
+  <FlexStatements count="1">
+    <FlexStatement accountId="U1234567" fromDate="2026-06-01" toDate="2026-06-30" period="LastMonth" whenGenerated="2026-07-01;063000">
+      <Trades>
+        <Trade accountId="U1234567" symbol="AAPL" quantity="100" tradePrice="187.25" netCash="-18725" tradeDate="20260602" settleDateTarget="20260604" ibCommission="-1.05" tradeID="7001001" currency="USD" buySell="BUY" />
+        <Trade accountId="U1234567" symbol="MSFT" quantity="-50" tradePrice="412.10" netCash="20605" tradeDate="2026-06-15" settleDateTarget="2026-06-17" ibCommission="-1.02" tradeID="7001002" currency="USD" buySell="SELL" />
+      </Trades>
+      <CashTransactions>
+        <CashTransaction accountId="U1234567" type="Dividends" amount="132.50" dateTime="20260610;093000" currency="USD" symbol="AAPL" transactionID="9002001" />
+        <CashTransaction accountId="U1234567" type="Other Fees" amount="-15.00" dateTime="20260612;110000" currency="USD" symbol="" transactionID="9002002" />
+        <CashTransaction accountId="U1234567" type="Deposits/Withdrawals" amount="50000.00" dateTime="20260605;080000" currency="USD" symbol="" transactionID="9002003" />
+      </CashTransactions>
+      <OpenPositions>
+        <OpenPosition accountId="U1234567" symbol="AAPL" position="100" markPrice="190.10" positionValue="19010" reportDate="20260630" currency="USD" />
+        <OpenPosition accountId="U1234567" symbol="TLT" position="200" markPrice="95.40" positionValue="19080" reportDate="20260630" currency="USD" />
+      </OpenPositions>
+    </FlexStatement>
+  </FlexStatements>
+</FlexQueryResponse>

@@ -65,6 +65,7 @@ const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-
 const EvidenceDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.EvidenceDetailScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
+const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
 const ReportPreviewValidationScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportPreviewValidationScreen })));
 const ReportRunDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportRunDetailScreen })));
 const ReportLibraryScreen = lazy(() => import("@/screens/report-library-screen").then((module) => ({ default: module.ReportLibraryScreen })));
@@ -414,6 +415,7 @@ function AppShell() {
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
+                  <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
@@ -696,6 +698,7 @@ function formatRouteSegmentLabel(segment: string): string {
     "run-status": "Run Status",
     scheduled: "Scheduled Reports",
     "security-master": "Security Master",
+    "statement-import": "Import Statement",
     watchlist: "Watchlist"
   };
 

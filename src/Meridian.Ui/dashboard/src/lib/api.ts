@@ -156,6 +156,14 @@ import type {
   ReconciliationBulkCaseworkRequest,
   ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  StatementConnectorDescriptor,
+  StatementFetchPreviewRequest,
+  StatementFetchSchedule,
+  StatementFetchScheduleUpsertRequest,
+  StatementImportCommitResult,
+  StatementImportPreview,
+  StatementImportSourceKind,
+  StatementMappingProfile,
   StatementRunException,
   StatementRunSummary,
   ReconciliationCaseworkCommand,
@@ -414,8 +422,12 @@ import {
   reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementExceptionsEndpoint,
+  reconciliationStatementFetchScheduleEndpoint,
+  reconciliationStatementFetchScheduleRunEndpoint,
+  reconciliationStatementMappingProfileEndpoint,
   reconciliationStatementRunEndpoint,
   reconciliationStatementRunsEndpoint,
+  STATEMENT_CONNECTOR_API_ENDPOINTS,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   reportingPackDeliveriesEndpoint,
@@ -3004,6 +3016,104 @@ export function getReconciliationStatementExceptions(options: ApiRequestOptions 
 export const getStatementRuns = getReconciliationStatementRuns;
 export const getStatementRun = getReconciliationStatementRun;
 export const getStatementRunExceptions = getReconciliationStatementExceptions;
+
+// --- Statement connector library ---
+
+export function getStatementConnectors(options: ApiRequestOptions = {}) {
+  return getJson<StatementConnectorDescriptor[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.connectors, options);
+}
+
+export function listStatementMappingProfiles(options: ApiRequestOptions = {}) {
+  return getJson<StatementMappingProfile[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, options);
+}
+
+export function upsertStatementMappingProfile(profile: StatementMappingProfile, options: ApiRequestOptions = {}) {
+  return putJson<StatementMappingProfile>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, profile, options);
+}
+
+export function deleteStatementMappingProfile(profileId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<void>(reconciliationStatementMappingProfileEndpoint(profileId), options);
+}
+
+export function previewStatementImport(
+  request: {
+    file: File;
+    connectorId?: string | null;
+    mappingProfileId?: string | null;
+    externalAccountId?: string | null;
+  },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
+  appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
+  appendOptionalStatementFormField(formData, "externalAccountId", request.externalAccountId);
+  return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
+}
+
+export function commitStatementImport(
+  request: {
+    file: File;
+    connectorId?: string | null;
+    mappingProfileId?: string | null;
+    externalAccountId: string;
+    sourceKind: StatementImportSourceKind;
+    sourceInstitution: string;
+    fundAccountId: string;
+    periodStart: string;
+    periodEnd: string;
+    toleranceProfileId?: string | null;
+  },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
+  appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
+  formData.append("externalAccountId", request.externalAccountId);
+  formData.append("sourceKind", request.sourceKind);
+  formData.append("sourceInstitution", request.sourceInstitution);
+  formData.append("fundAccountId", request.fundAccountId);
+  formData.append("periodStart", request.periodStart);
+  formData.append("periodEnd", request.periodEnd);
+  appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
+  return postFormData<StatementImportCommitResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.importCommit, formData, options);
+}
+
+export function fetchStatementPreview(request: StatementFetchPreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchPreview, request, options);
+}
+
+export function listStatementFetchSchedules(options: ApiRequestOptions = {}) {
+  return getJson<StatementFetchSchedule[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedules, options);
+}
+
+export function upsertStatementFetchSchedule(
+  request: StatementFetchScheduleUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<StatementFetchSchedule>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedules, request, options);
+}
+
+export function deleteStatementFetchSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<void>(reconciliationStatementFetchScheduleEndpoint(scheduleId), options);
+}
+
+export function runStatementFetchSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<StatementImportCommitResult>(
+    reconciliationStatementFetchScheduleRunEndpoint(scheduleId),
+    undefined,
+    options
+  );
+}
+
+function appendOptionalStatementFormField(formData: FormData, name: string, value: string | null | undefined) {
+  const trimmed = value?.trim();
+  if (trimmed) {
+    formData.append(name, trimmed);
+  }
+}
 
 export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
   return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
