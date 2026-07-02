@@ -60,7 +60,7 @@ import {
   WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath
 } from "@/lib/workspace";
-import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
+import { EXPORT_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatCurrencyWithCode, formatDateOnly, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
@@ -80,6 +80,11 @@ import {
   type AccountingTaskModeViewModel,
   type AccountingWorkstream
 } from "./accounting-screen.task-mode-view-model";
+import {
+  buildPrivateCapitalFundEventCommandCenterRoute,
+  manualJournalPrivateCapitalReadinessTone,
+  normalizeQueryValue
+} from "./accounting-screen.view-model.shared";
 export {
   buildAccountingWorkflowLaunchViewState,
   buildCloseCommandCenterViewState,
@@ -9560,11 +9565,6 @@ function capitalAccountReadinessTone(readiness: CapitalAccountWorkbench["investo
   return tone === "outline" ? "default" : tone;
 }
 
-function normalizeQueryValue(value: string | null): string | null {
-  const normalized = value?.trim();
-  return normalized ? normalized : null;
-}
-
 function buildManualJournalPrivateCapitalActivityView(
   activity: PrivateCapitalActivityProjection | null
 ): ManualJournalPrivateCapitalActivityViewModel {
@@ -9840,35 +9840,6 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
   };
 }
 
-function buildPrivateCapitalFundEventCommandCenterRoute(
-  fundProfileId: string | null | undefined,
-  ledgerBookId: string | null | undefined,
-  fundEventId: string
-): string {
-  const params = new URLSearchParams();
-  const normalizedFundProfileId = normalizePrivateCapitalRouteId(fundProfileId);
-  const normalizedLedgerBookId = normalizePrivateCapitalRouteId(ledgerBookId);
-  if (normalizedFundProfileId) {
-    params.set("fundProfileId", normalizedFundProfileId);
-  }
-
-  if (normalizedLedgerBookId && isGuid(normalizedLedgerBookId)) {
-    params.set("ledgerBookId", normalizedLedgerBookId);
-  }
-
-  params.set("fundEventId", fundEventId);
-  return `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventCommandCenter}?${params.toString()}`;
-}
-
-function normalizePrivateCapitalRouteId(value: string | null | undefined): string | null {
-  const normalized = value?.trim();
-  return normalized ? normalized : null;
-}
-
-function isGuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-}
-
 function buildManualJournalPaymentIntentWorkflowRow(
   workflow: PaymentIntentWorkflow
 ): ManualJournalPaymentIntentWorkflowRowViewModel {
@@ -10030,14 +10001,6 @@ function paymentIntentWorkflowTone(status: PaymentIntentWorkflow["status"]): Man
   if (status === "Blocked" || status === "BankReturned") return "danger";
   if (status === "EvidenceMissing" || status === "BankEvidencePending" || status === "ReconciliationPending" || status === "ApprovalPending") return "warning";
   return "outline";
-}
-
-function manualJournalPrivateCapitalReadinessTone(
-  readiness: PrivateCapitalFundEventLedgerRecord["readiness"]
-): ManualJournalPrivateCapitalFundEventLedgerRecordViewModel["readinessTone"] {
-  if (readiness === "Blocked") return "danger";
-  if (readiness === "Ready" || readiness === "Published") return "success";
-  return readiness ? "warning" : "outline";
 }
 
 function buildManualJournalPrivateCapitalFundEventRow(
