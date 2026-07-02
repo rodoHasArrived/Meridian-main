@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  ClipboardCopy,
   DatabaseZap,
   Download,
   FileSpreadsheet,
@@ -9,16 +10,19 @@ import {
   Plus,
   RadioTower,
   RefreshCcw,
+  Save,
   ShieldCheck,
-  TimerReset
+  TimerReset,
+  Trash2
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { Pagination } from "@/components/data/pagination";
 import {
   WorkspaceFilterBar,
   WorkspaceInspectorHost
@@ -259,6 +263,7 @@ export function DataScreen({
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   const queryPanel = useDataQueryPanel();
+  const [savedQueryName, setSavedQueryName] = useState("");
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -462,6 +467,7 @@ export function DataScreen({
                   emptyText={vm.providerSection.emptyState.description}
                   ariaLabel={vm.providerSection.tableLabel}
                   caption={vm.providerSection.description}
+                  maxVisibleRows={100}
                 />
                 </div>
                 <ProviderDetailPanel
@@ -508,6 +514,7 @@ export function DataScreen({
                   emptyText={vm.backfillSection.emptyState.description}
                   ariaLabel={vm.backfillSection.tableLabel}
                   caption={vm.backfillSection.description}
+                  maxVisibleRows={100}
                 />
               ) : (
                 <EmptyState state={vm.backfillSection.emptyState} />
@@ -542,6 +549,7 @@ export function DataScreen({
                   emptyText={vm.exportSection.emptyState.description}
                   ariaLabel={vm.exportSection.tableLabel}
                   caption={vm.exportSection.description}
+                  maxVisibleRows={100}
                 />
               ) : (
                 <EmptyState state={vm.exportSection.emptyState} />
@@ -572,17 +580,125 @@ export function DataScreen({
                 aria-label="SQL statement"
                 className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
               />
-              <div className="flex items-center gap-3">
+              <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Recent queries
+                  <select
+                    className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
+                    aria-label="Recent SQL query history"
+                    defaultValue=""
+                    onChange={(event) => {
+                      if (event.currentTarget.value) {
+                        queryPanel.loadQuery(event.currentTarget.value);
+                        event.currentTarget.value = "";
+                      }
+                    }}
+                  >
+                    <option value="">Select a recent query</option>
+                    {queryPanel.history.map((entry) => (
+                      <option key={`${entry.lastUsedAt}-${entry.sql}`} value={entry.sql}>
+                        {entry.sql}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="grid gap-1">
+                  <label
+                    htmlFor="data-query-save-name"
+                    className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    Save query
+                  </label>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      id="data-query-save-name"
+                      type="text"
+                      value={savedQueryName}
+                      onChange={(event) => setSavedQueryName(event.currentTarget.value)}
+                      placeholder="Query name"
+                      aria-label="Saved SQL query name"
+                      className="min-h-9 flex-1 rounded-md border border-border/70 bg-background px-2 py-1 text-sm text-foreground"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        queryPanel.saveCurrentQuery(savedQueryName);
+                        setSavedQueryName("");
+                      }}
+                      disabled={savedQueryName.trim().length === 0 || queryPanel.sql.trim().length === 0}
+                    >
+                      <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              {queryPanel.savedQueries.length > 0 ? (
+                <div className="flex flex-wrap gap-2" aria-label="Saved SQL queries">
+                  {queryPanel.savedQueries.map((savedQuery) => (
+                    <span
+                      key={savedQuery.id}
+                      className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2 py-1"
+                    >
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => queryPanel.loadQuery(savedQuery.sql)}
+                        aria-label={`Load saved SQL query ${savedQuery.name}`}
+                      >
+                        {savedQuery.name}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => queryPanel.deleteSavedQuery(savedQuery.id)}
+                        aria-label={`Delete saved SQL query ${savedQuery.name}`}
+                        title={`Delete ${savedQuery.name}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-center gap-3">
                 <Button type="button" onClick={() => void queryPanel.run()} disabled={queryPanel.busy}>
                   {queryPanel.busy ? "Running…" : "Run query"}
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void queryPanel.copyResults()}
+                  disabled={!queryPanel.canCopyOrExport}
+                >
+                  <ClipboardCopy className="h-3.5 w-3.5" aria-hidden="true" />
+                  Copy CSV
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => queryPanel.exportCsv()}
+                  disabled={!queryPanel.canCopyOrExport}
+                >
+                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                  Download CSV
+                </Button>
                 {queryPanel.result ? (
                   <span className="text-sm text-muted-foreground" role="status">
-                    {queryPanel.result.rowCount} row{queryPanel.result.rowCount === 1 ? "" : "s"}
-                    {queryPanel.result.truncated ? " (truncated)" : ""} · {queryPanel.result.elapsedMs} ms
+                    {queryPanel.resultStatus}
                   </span>
                 ) : null}
               </div>
+              {queryPanel.copyStatus ? (
+                <p className="text-sm text-muted-foreground" role="status">{queryPanel.copyStatus}</p>
+              ) : null}
+              {queryPanel.truncationMessage ? (
+                <StatusBanner tone="warning" title="Result window" detail={queryPanel.truncationMessage} />
+              ) : null}
               {queryPanel.error ? (
                 <StatusBanner tone="danger" title="Query failed" detail={queryPanel.error} />
               ) : null}
@@ -597,7 +713,7 @@ export function DataScreen({
                       </tr>
                     </thead>
                     <tbody>
-                      {queryPanel.result.rows.map((row, rowIndex) => (
+                      {queryPanel.visibleRows.map((row, rowIndex) => (
                         <tr key={rowIndex}>
                           {row.map((value, columnIndex) => (
                             <td key={`${rowIndex}-${queryPanel.result?.columns[columnIndex] ?? columnIndex}`}>
@@ -609,6 +725,15 @@ export function DataScreen({
                     </tbody>
                   </table>
                 </div>
+              ) : null}
+              {queryPanel.result && queryPanel.resultRowCount > queryPanel.rowsPerPage ? (
+                <Pagination
+                  currentPage={queryPanel.currentPage}
+                  totalPages={queryPanel.totalPages}
+                  totalItems={queryPanel.resultRowCount}
+                  itemsPerPage={queryPanel.rowsPerPage}
+                  onPageChange={queryPanel.setPage}
+                />
               ) : null}
             </div>
           </CardContent>

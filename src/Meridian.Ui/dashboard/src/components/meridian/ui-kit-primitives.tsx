@@ -73,6 +73,7 @@ export interface DenseDataTableProps<T> {
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
+  maxVisibleRows?: number | null;
 }
 
 function DenseDataTableComponent<T>({
@@ -91,13 +92,18 @@ function DenseDataTableComponent<T>({
   tableId,
   caption,
   sort = null,
-  onToggleSort
+  onToggleSort,
+  maxVisibleRows = null
 }: DenseDataTableProps<T>) {
   const generatedKeyboardInstructionsId = useId();
-  const selectableRows = onRowSelect !== undefined && rows.length > 0;
+  const [showAllRows, setShowAllRows] = useState(false);
+  const visibleRowLimit = typeof maxVisibleRows === "number" && maxVisibleRows > 0 ? maxVisibleRows : null;
+  const cappedRows = visibleRowLimit && !showAllRows ? rows.slice(0, visibleRowLimit) : rows;
+  const hiddenRowCount = Math.max(0, rows.length - cappedRows.length);
+  const selectableRows = onRowSelect !== undefined && cappedRows.length > 0;
   const exposesExpandedRows = getRowAriaExpanded !== undefined;
   const keyboardInstructionsId = `${tableId ?? generatedKeyboardInstructionsId}-keyboard-instructions`;
-  const focusableRowId = resolveFocusableDenseRowId(rows, getRowId, selectedRowId);
+  const focusableRowId = resolveFocusableDenseRowId(cappedRows, getRowId, selectedRowId);
   const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
 
   return (
@@ -156,7 +162,7 @@ function DenseDataTableComponent<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.length > 0 ? rows.map((row, rowIndex) => {
+          {rows.length > 0 ? cappedRows.map((row, rowIndex) => {
             const rowId = getRowId(row);
             const selected = selectedRowId === rowId;
             const selectable = onRowSelect !== undefined;
@@ -183,7 +189,7 @@ function DenseDataTableComponent<T>({
                   handleSelectableRowKeyDown(event, {
                     row,
                     rowIndex,
-                    rows,
+                    rows: cappedRows,
                     getRowId,
                     getRowAriaControls,
                     getRowAnnouncementLabel: (item) => getRowSelectAriaLabel?.(item) ?? getRowAriaLabel?.(item),
@@ -211,6 +217,13 @@ function DenseDataTableComponent<T>({
           )}
         </tbody>
       </table>
+      {hiddenRowCount > 0 ? (
+        <div className="dense-data-table-row-cap">
+          <button type="button" onClick={() => setShowAllRows(true)}>
+            Show all {rows.length} rows
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

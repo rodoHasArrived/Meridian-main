@@ -296,6 +296,36 @@ describe("DataScreen", () => {
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
   });
 
+  it("runs SQL queries with paged results and export actions", async () => {
+    const user = userEvent.setup();
+    const rows = Array.from({ length: 102 }, (_, index) => [`SYM${index}`, String(index)]);
+    const runDataQuery = vi.spyOn(api, "runDataQuery").mockResolvedValueOnce({
+      success: true,
+      error: null,
+      columns: ["symbol", "event_count"],
+      columnTypes: ["VARCHAR", "BIGINT"],
+      rows,
+      rowCount: rows.length,
+      truncated: false,
+      elapsedMs: 18
+    });
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: "Run query" }));
+
+    expect(runDataQuery).toHaveBeenCalledWith({ sql: expect.stringContaining("FROM meridian_files") });
+    expect(await screen.findByText("SYM0")).toBeInTheDocument();
+    expect(screen.queryByText("SYM101")).not.toBeInTheDocument();
+    expect(screen.getByText("Showing 100 of 102 returned rows on this page.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy CSV" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Download CSV" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Page 2" }));
+
+    expect(screen.getByText("SYM101")).toBeInTheDocument();
+  });
+
   it("has no basic accessibility violations on the provider-management route", async () => {
     const { container } = renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 

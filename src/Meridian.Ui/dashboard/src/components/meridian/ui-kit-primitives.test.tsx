@@ -251,6 +251,34 @@ describe("DenseDataTable", () => {
     expect(screen.getByRole("button", { name: "Parent tick 1" })).toBeInTheDocument();
     expect(renderSymbol).toHaveBeenCalledTimes(rows.length);
   });
+
+  it("can cap initially visible rows without changing the default table behavior", async () => {
+    const user = userEvent.setup();
+    const extendedRows = [
+      ...rows,
+      { id: "nvda", symbol: "NVDA", status: "Watched" }
+    ];
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={extendedRows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="Capped table"
+        maxVisibleRows={2}
+      />
+    );
+
+    expect(screen.getByRole("row", { name: "AAPL Active" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "MSFT Monitored" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "NVDA Watched" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show all 3 rows" }));
+
+    expect(screen.getByRole("row", { name: "NVDA Watched" })).toBeInTheDocument();
+  });
 });
 
 function getTestRowId(row: TestRow) {
