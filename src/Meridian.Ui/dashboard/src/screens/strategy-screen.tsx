@@ -1429,6 +1429,8 @@ function PlotToolScatterChart({
 }: {
   chart: StrategyPlotScatterChartState;
 }) {
+  const hasObservations = chart.points.length > 0;
+
   return (
     <svg
       viewBox={chart.viewBox}
@@ -1468,33 +1470,37 @@ function PlotToolScatterChart({
         <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
         <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
       </g>
-      <polyline
-        fill="none"
-        stroke={chart.trendLine.stroke}
-        strokeWidth={chart.trendLine.strokeWidth}
-        strokeDasharray={chart.trendLine.strokeDasharray}
-        points={chart.trendLine.points}
-      />
-      <line
-        x1={chart.marker.verticalGuide.x1}
-        y1={chart.marker.verticalGuide.y1}
-        x2={chart.marker.verticalGuide.x2}
-        y2={chart.marker.verticalGuide.y2}
-        stroke={chart.marker.verticalGuide.stroke}
-        strokeWidth={chart.marker.verticalGuide.strokeWidth}
-        strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
-        opacity={chart.marker.verticalGuide.opacity}
-      />
-      <line
-        x1={chart.marker.horizontalGuide.x1}
-        y1={chart.marker.horizontalGuide.y1}
-        x2={chart.marker.horizontalGuide.x2}
-        y2={chart.marker.horizontalGuide.y2}
-        stroke={chart.marker.horizontalGuide.stroke}
-        strokeWidth={chart.marker.horizontalGuide.strokeWidth}
-        strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
-        opacity={chart.marker.horizontalGuide.opacity}
-      />
+      {hasObservations ? (
+        <>
+          <polyline
+            fill="none"
+            stroke={chart.trendLine.stroke}
+            strokeWidth={chart.trendLine.strokeWidth}
+            strokeDasharray={chart.trendLine.strokeDasharray}
+            points={chart.trendLine.points}
+          />
+          <line
+            x1={chart.marker.verticalGuide.x1}
+            y1={chart.marker.verticalGuide.y1}
+            x2={chart.marker.verticalGuide.x2}
+            y2={chart.marker.verticalGuide.y2}
+            stroke={chart.marker.verticalGuide.stroke}
+            strokeWidth={chart.marker.verticalGuide.strokeWidth}
+            strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
+            opacity={chart.marker.verticalGuide.opacity}
+          />
+          <line
+            x1={chart.marker.horizontalGuide.x1}
+            y1={chart.marker.horizontalGuide.y1}
+            x2={chart.marker.horizontalGuide.x2}
+            y2={chart.marker.horizontalGuide.y2}
+            stroke={chart.marker.horizontalGuide.stroke}
+            strokeWidth={chart.marker.horizontalGuide.strokeWidth}
+            strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
+            opacity={chart.marker.horizontalGuide.opacity}
+          />
+        </>
+      ) : null}
       {chart.points.map((point) => (
         <circle
           key={point.id}
@@ -1505,26 +1511,30 @@ function PlotToolScatterChart({
           fillOpacity={point.fillOpacity}
         />
       ))}
-      <circle
-        cx={chart.marker.x}
-        cy={chart.marker.y}
-        r={chart.marker.radius}
-        fill={chart.marker.fill}
-        stroke={chart.marker.stroke}
-        strokeWidth={chart.marker.strokeWidth}
-      />
-      <rect
-        x={chart.marker.labelX}
-        y={chart.marker.labelY}
-        width={chart.marker.labelWidth}
-        height={chart.marker.labelHeight}
-        rx={chart.marker.labelRadius}
-        fill={chart.marker.labelFill}
-        stroke={chart.marker.labelStroke}
-      />
-      <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="Cascadia Mono" fontSize="10">
-        {chart.marker.labelText}
-      </text>
+      {hasObservations ? (
+        <>
+          <circle
+            cx={chart.marker.x}
+            cy={chart.marker.y}
+            r={chart.marker.radius}
+            fill={chart.marker.fill}
+            stroke={chart.marker.stroke}
+            strokeWidth={chart.marker.strokeWidth}
+          />
+          <rect
+            x={chart.marker.labelX}
+            y={chart.marker.labelY}
+            width={chart.marker.labelWidth}
+            height={chart.marker.labelHeight}
+            rx={chart.marker.labelRadius}
+            fill={chart.marker.labelFill}
+            stroke={chart.marker.labelStroke}
+          />
+          <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="Cascadia Mono" fontSize="10">
+            {chart.marker.labelText}
+          </text>
+        </>
+      ) : null}
     </svg>
   );
 }
@@ -1539,14 +1549,4 @@ function PlotToolLegendItem({ item }: { item: StrategyPlotLegendItem }) {
       <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
     </div>
   );
-}
-
-function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | undefined {
-  for (let index = items.length - 1; index >= 0; index -= 1) {
-    if (predicate(items[index])) {
-      return items[index];
-    }
-  }
-
-  return undefined;
 }

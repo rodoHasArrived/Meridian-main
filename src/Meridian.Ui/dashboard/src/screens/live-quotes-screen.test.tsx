@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { useNavigate } from "react-router-dom";
 
 import { ApiError } from "@/lib/api-errors";
@@ -1300,13 +1301,20 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a symbol before loading live market data.");
     expect(screen.getByText("Enter a symbol to load live BBO, recent trades, and L2 depth.")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Start a quote list" })).toBeInTheDocument();
+    expect(screen.getByText("Start a quote list")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add starter symbols" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Import symbols from watchlist" })).toHaveAttribute("href", "/data/watchlist");
     expect(screen.getByRole("button", { name: "Search symbol" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Selected symbol detail" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Open replay workflow" })).not.toBeInTheDocument();
     expect(api.getLiveQuote).not.toHaveBeenCalled();
+  });
+
+  it("has no basic accessibility violations in the no-symbol state", async () => {
+    const { container } = renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it("renders loading states while initial market data is pending", async () => {

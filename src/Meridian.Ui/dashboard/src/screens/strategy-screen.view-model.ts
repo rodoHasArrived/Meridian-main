@@ -1080,7 +1080,6 @@ export function useStrategyRunLibraryViewModel(
 }
 
 export function buildStrategyRunLibraryState({
-  metrics = [],
   runs,
   plotToolFromApi = null,
   selectedIds,
@@ -1178,16 +1177,7 @@ export function buildStrategyRunLibraryState({
     ? promotionHistory.find((record) => record.promotionId === resolvedPromotionHistoryId) ?? null
     : null;
   const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory, resolvedPromotionHistoryId);
-  const basePlotTool = buildPlotToolStateFromApiOrFallback(
-    plotToolFromApi,
-    {
-      metrics,
-      runs,
-      selectedRuns,
-      comparison,
-      runDiff
-    }
-  );
+  const basePlotTool = buildPlotToolStateFromApiOrFallback(plotToolFromApi);
   const resolvedPlotStudyId = resolveSelectedPlotStudyId(basePlotTool.studies, selectedPlotStudyId);
   const plotTool: StrategyPlotToolState = {
     ...basePlotTool,
@@ -1195,7 +1185,9 @@ export function buildStrategyRunLibraryState({
       ...basePlotTool.workspace,
       notebookToolbarAriaLabel: "Strategy notebook filters",
       notebookToolbarItems: buildPlotNotebookToolbarItems(basePlotTool.studies, resolvedPlotStudyId),
-      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableEmptyText: basePlotTool.studies.length > 0
+        ? "No retained PlotTool studies are available."
+        : basePlotTool.workspace.studyTableEmptyText,
       studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
       selectedStudyEmptyText: "No PlotTool study is selected."
     },
@@ -1764,14 +1756,7 @@ export function buildRunTable(
 }
 
 function buildPlotToolStateFromApiOrFallback(
-  plotToolFromApi: StrategyPlotToolPayload | null | undefined,
-  fallbackArgs: {
-    metrics: MetricSnapshot[];
-    runs: StrategyRunRecord[];
-    selectedRuns: StrategyRunRecord[];
-    comparison: RunComparisonRow[];
-    runDiff: RunDiff | null;
-  }
+  plotToolFromApi: StrategyPlotToolPayload | null | undefined
 ): StrategyPlotToolState {
   if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
     const workspace = plotToolFromApi.workspace as StrategyPlotWorkspaceState;
@@ -1784,7 +1769,98 @@ function buildPlotToolStateFromApiOrFallback(
     };
   }
 
-  return buildPlotToolState(fallbackArgs);
+  return buildEmptyPlotToolState();
+}
+
+function buildEmptyPlotToolState(): StrategyPlotToolState {
+  const xAxisLabel = "Spread";
+  const yAxisLabel = "Implied volatility";
+  const focusPoint: StrategyPlotFocusPointState = {
+    label: "No marker",
+    xValueText: "N/A",
+    yValueText: "N/A",
+    detail: "Connect a governed PlotTool payload before inspecting scatter observations."
+  };
+
+  return {
+    studies: [],
+    workspace: {
+      eyebrow: "Strategy Lane · PlotTool",
+      title: "PlotTool catalog not connected",
+      description: "No Strategy PlotTool payload is available. Connect a governed strategy analytics endpoint before inspecting notebooks, scatter analysis, or statistics.",
+      statusBadgeLabel: "NOT CONNECTED",
+      statusBadgeVariant: "outline",
+      expression: "Connect strategy PlotTool API payload",
+      toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: [],
+      studyTableEmptyText: "No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.",
+      studyTableCaption: "PlotTool notebooks are available after the Strategy endpoint returns retained studies.",
+      selectedStudyEmptyText: "No PlotTool study is selected.",
+      metaItems: ["Catalog not connected", "0 obs"],
+      xAxisLabel,
+      yAxisLabel,
+      xTicks: [],
+      yTicks: [],
+      points: [],
+      scatterChart: buildPlotToolScatterChartState({
+        points: [],
+        xTicks: [],
+        yTicks: [],
+        xAxisLabel,
+        yAxisLabel,
+        markerPoint: { x: 0, y: 0, emphasis: false },
+        focusPoint,
+        chartStudyLabel: "Unconnected PlotTool"
+      }),
+      studySummary: [
+        { id: "source", label: "Source", value: "Not connected" },
+        { id: "catalog", label: "Formula catalog", value: "Unavailable" },
+        { id: "samples", label: "Samples", value: "0" }
+      ],
+      legendItems: [
+        { id: "history", label: "History", detail: "No observations", tone: "muted" },
+        { id: "current", label: "Current", detail: "No marker", tone: "muted" },
+        { id: "trend", label: "OLS fit", detail: "Unavailable", tone: "muted" }
+      ],
+      focusPoint,
+      signalCards: [
+        {
+          id: "connection",
+          label: "Connection",
+          value: "Unavailable",
+          detail: "Strategy analytics endpoint has not returned a PlotTool payload.",
+          tone: "warning"
+        }
+      ],
+      consoleTitle: "Expression editor unavailable",
+      consoleBody: "Connect a governed formula catalog before authoring or previewing PlotTool expressions here.",
+      overlayTitle: "Meridian overlays",
+      overlayItems: [
+        "Notebook coverage: no retained PlotTool studies.",
+        "Evidence posture: unavailable until a PlotTool payload is connected.",
+        "Diff posture: unavailable until a PlotTool payload is connected."
+      ]
+    },
+    statistics: {
+      eyebrow: "Statistics view",
+      title: "PlotTool statistics not connected",
+      description: "No PlotTool distribution, regression, or observation sheet is available from the Strategy endpoint.",
+      summaryTiles: [],
+      distributionBars: [],
+      distributionChart: buildPlotToolDistributionChartState([]),
+      distributionSummary: "Connect a PlotTool payload before reviewing residual distributions.",
+      distributionFootnote: "No latest observation is available.",
+      moments: [],
+      momentsTable: buildPlotToolMomentsTable([]),
+      regression: {
+        equation: "Unavailable",
+        detailItems: ["Connect a governed PlotTool payload before reviewing regression output."]
+      },
+      sampleRows: [],
+      sampleTable: buildPlotToolSampleTable([])
+    }
+  };
 }
 
 export function buildPlotToolState({

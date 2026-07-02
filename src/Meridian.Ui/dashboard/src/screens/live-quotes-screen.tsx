@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
+import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DepthChart } from "@/components/charts";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -230,11 +231,13 @@ export function LiveQuotesScreen() {
         </Card>
         ) : (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Start a quote list</CardTitle>
-            <CardDescription>Add symbols before opening detail, order book, replay, or ticket workflows.</CardDescription>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3 pt-6">
+            <EmptyState
+              icon="search"
+              title="Start a quote list"
+              detail="Add symbols before opening detail, order book, replay, or ticket workflows."
+              compact
+            />
             <div className="grid gap-2 sm:grid-cols-3">
               <Button type="button" variant="default" size="sm" onClick={workspaceVm.loadStarterSet}>
                 <ListPlus className="h-4 w-4" aria-hidden="true" />

@@ -1,6 +1,7 @@
 import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrategyScreen } from "@/screens/strategy-screen";
+import { buildPlotToolState } from "@/screens/strategy-screen.view-model";
 import * as api from "@/lib/api";
 import { afterEach } from "vitest";
 import { renderWithRouter } from "@/test/render";
@@ -41,6 +42,23 @@ const twoRuns: StrategyWorkspaceResponse = {
       notes: "Completed backtest run."
     }
   ]
+};
+
+const plotToolState = buildPlotToolState({
+  metrics: twoRuns.metrics,
+  runs: twoRuns.runs,
+  selectedRuns: twoRuns.runs,
+  comparison: [],
+  runDiff: null
+});
+
+const twoRunsWithPlotTool: StrategyWorkspaceResponse = {
+  ...twoRuns,
+  plotTool: {
+    ...plotToolState,
+    tabs: [],
+    activeView: "workspace"
+  }
 };
 
 describe("StrategyScreen", () => {
@@ -100,8 +118,17 @@ describe("StrategyScreen", () => {
     expect(screen.getAllByText("PAPER").length).toBeGreaterThan(0);
   });
 
-  it("renders the PlotTool workstation view inside the Strategy lane by default", () => {
+  it("renders an honest PlotTool not-connected state when no payload is available", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />);
+
+    expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
+    expect(screen.getAllByText("PlotTool catalog not connected").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).not.toBeInTheDocument();
+  });
+
+  it("renders the payload-backed PlotTool workstation view inside the Strategy lane", () => {
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
@@ -116,7 +143,7 @@ describe("StrategyScreen", () => {
 
   it("links PlotTool notebook rows to the selected study detail panel", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={twoRuns} />);
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
 
     const firstStudy = screen.getByRole("row", { name: "Inspect Mean Reversion FX PlotTool study detail" });
     const secondStudy = screen.getByRole("row", { name: "Inspect Index Momentum PlotTool study detail" });
@@ -142,7 +169,7 @@ describe("StrategyScreen", () => {
 
   it("switches to the PlotTool statistics view", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={twoRuns} />);
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
 
     await user.click(screen.getByRole("tab", { name: "Statistics" }));
 
@@ -159,7 +186,7 @@ describe("StrategyScreen", () => {
 
   it("switches PlotTool tabs from keyboard navigation", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={twoRuns} />);
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
 
     screen.getByRole("tab", { name: "Workstation" }).focus();
     await user.keyboard("{ArrowRight}");
@@ -289,12 +316,12 @@ describe("StrategyScreen", () => {
     expect(firstComparisonRow).toHaveAttribute("aria-controls", "strategy-run-comparison-selected-detail");
     expect(firstComparisonRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected comparison evidence for Carry Alpha" })).toBeInTheDocument();
+    expect(screen.getAllByText("Ledger missing; Audit missing").length).toBeGreaterThanOrEqual(1);
     await user.click(secondComparisonRow);
     expect(secondComparisonRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected comparison evidence for Index Momentum" })).toBeInTheDocument();
     expect(screen.getByText("+4.20%")).toBeInTheDocument();
     expect(screen.getByText("-1.80%")).toBeInTheDocument();
-    expect(screen.getAllByText("Ledger missing; Audit missing").length).toBeGreaterThanOrEqual(1);
     expect(api.compareRuns).toHaveBeenCalledOnce();
   });
 

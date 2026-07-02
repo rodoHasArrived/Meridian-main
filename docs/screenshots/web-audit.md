@@ -44,7 +44,7 @@ Evidence used:
 | 24 | `web-strategy-designer.png` | `/strategy/designer` | Healthy | Builder layout has strong three-column structure, visible validation state, and clear proof output. |
 | 25 | `web-data-workspace.png` | `/data` | Healthy | Data command deck and provider management are discoverable with a clear workspace frame. |
 | 26 | `web-data-watchlist.png` | `/data/watchlist` | Healthy | Watchlist empty and add states are understandable and not visually overloaded. |
-| 27 | `web-data-live-quotes.png` | `/data/quotes` | Needs attention | Empty quote state is valid but ambiguous: the primary next action competes with disabled detail controls and a selected-symbol panel with no selection. |
+| 27 | `web-data-live-quotes.png` | `/data/quotes` | Watch | Source now renders the no-symbol state as a guided empty state with starter-symbol, watchlist, and search actions; screenshot regeneration is still needed before this row can be promoted. |
 | 28 | `web-data-backfills.png` | `/data/backfills` | Watch | Backfill route is readable, but it resembles the Data workspace capture closely. |
 | 29 | `web-settings-workspace.png` | `/settings` | Watch | Source now includes a Profile appearance panel with theme and density controls; screenshot regeneration is still needed before this row can be promoted. |
 | 30 | `web-settings-preferences.png` | `/settings/preferences` | Watch | Source/tests now route this path to provider connection tasks ahead of hash inference; the screenshot still needs regeneration to prove the distinct state visually. |
@@ -75,8 +75,8 @@ Evidence used:
    needs stronger progressive disclosure for repeated recovery work.
 3. Settings still needs refreshed catalog proof. The source route state is distinct, but current
    screenshot evidence does not yet show the preferences or integrations task views.
-4. Empty states vary in clarity. Data Live Quotes shows the valid no-symbol state, but selected
-   symbol controls still read as inactive UI rather than a guided next step.
+4. Empty states vary in clarity. Data Live Quotes now has source coverage for a guided no-symbol
+   state, but the screenshot catalog still needs regeneration before that improvement is visible.
 5. Detail panels and selected-row evidence are sometimes visually far from the row or card that
    controls them, especially in long trading and accounting screenshots.
 
@@ -101,8 +101,9 @@ Evidence used:
    a route intentionally shares the same view.
 3. Split Accounting recovery evidence into clearer route-specific captures for close control,
    reconciliation, ledger inquiry, external GL, private capital, and reporting support.
-4. Tighten empty states so the next productive action is first, and hide or de-emphasize disabled
-   dependent controls until there is a selected row or symbol.
+4. Regenerate the Live Quotes capture and continue tightening empty states so the next productive
+   action is first, with dependent controls hidden or de-emphasized until there is a selected row or
+   symbol.
 5. Run a rendered accessibility pass for keyboard order, focus indicators, target sizes, and
    contrast. Screenshots support likely-risk findings, not compliance claims.
 

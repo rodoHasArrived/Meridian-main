@@ -1,8 +1,10 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/data/empty-state";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   MetricCard,
@@ -14,6 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   buildFamilyOfficeScreenViewModel,
   selectAdjacentFamilyOfficeNode,
+  type FamilyOfficeEntityStructure,
   type FamilyOfficeOwnershipNode,
   type FamilyOfficePanelViewModel,
   type FamilyOfficeTone
@@ -72,10 +75,10 @@ const ownershipColumns: DenseDataTableColumn<FamilyOfficeOwnershipNode>[] = [
   }
 ];
 
-export function FamilyOfficeScreen() {
+export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure?: FamilyOfficeEntityStructure | null }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showTableFallback, setShowTableFallback] = useState(false);
-  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId);
+  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, entityStructure);
   const graphNodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusGraphNode = useRef(false);
 
@@ -93,7 +96,7 @@ export function FamilyOfficeScreen() {
   };
 
   const moveGraphSelection = (direction: "next" | "previous" | "first" | "last") => {
-    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction);
+    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, entityStructure);
     if (nextNodeId) {
       shouldFocusGraphNode.current = true;
       setSelectedNodeId(nextNodeId);
@@ -143,13 +146,33 @@ export function FamilyOfficeScreen() {
         </div>
       </header>
 
+      {vm.notConnected ? (
+      <Card className="panel-surface border-border/80">
+        <CardContent className="space-y-4">
+          <EmptyState
+            icon="inbox"
+            title="Family office data is not connected"
+            detail={vm.route.emptyState}
+          />
+          <div className="flex justify-center">
+            <Button asChild>
+              <Link to={vm.emptyActionHref}>{vm.emptyActionLabel}</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      ) : null}
+
+      {!vm.notConnected ? (
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Family office summary panels">
         <h2 className="sr-only">Family office summary panels</h2>
         {vm.panels.map((panel) => (
           <FamilyOfficePanel key={panel.id} panel={panel} />
         ))}
       </section>
+      ) : null}
 
+      {!vm.notConnected ? (
       <Card className="panel-surface border-border/80">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -277,6 +300,7 @@ export function FamilyOfficeScreen() {
           </section>
         </CardContent>
       </Card>
+      ) : null}
     </section>
   );
 }
