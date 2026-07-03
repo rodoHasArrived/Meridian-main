@@ -177,6 +177,16 @@ public sealed partial class WorkstationEndpointsTests
         bond!.Subject.AssetClass.Should().Be("Bond");
         loan.ProjectedCashFlows.Should().ContainSingle(static flow => flow.FlowType == "Interest");
         bond.ProjectedCashFlows.Should().ContainSingle(static flow => flow.FlowType == "Coupon");
+        loan.TermsObligationsTimeline.Should().NotBeNull();
+        bond.TermsObligationsTimeline.Should().NotBeNull();
+        loan.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "Interest" &&
+            timelineEvent.EventLane == "Interest" &&
+            timelineEvent.ExpectedAmount == 100m);
+        bond.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "Coupon" &&
+            timelineEvent.EventLane == "Coupon" &&
+            timelineEvent.ExpectedAmount == 100m);
         loan.Readiness.Capabilities.Should().BeEquivalentTo(bond.Readiness.Capabilities);
     }
 

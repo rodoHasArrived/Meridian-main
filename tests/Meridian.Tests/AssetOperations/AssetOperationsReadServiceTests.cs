@@ -28,7 +28,16 @@ public sealed class AssetOperationsReadServiceTests
                 "Meridian Funding LLC",
                 "Senior",
                 "CUSIP:123456789",
-                new BondLifecycleDto(securityId, BondLifecycleStat.Active, new DateOnly(2026, 1, 1), null, new DateOnly(2031, 1, 1), false, 3),
+                new BondLifecycleDto(
+                    securityId,
+                    BondLifecycleStat.Active,
+                    new DateOnly(2026, 1, 1),
+                    null,
+                    new DateOnly(2031, 1, 1),
+                    false,
+                    3,
+                    Par: 100m,
+                    PaymentFrequency: "SemiAnnual"),
                 new BondAccrualConventionDto(securityId, "30/360", 2, "US", "Fixed", 5.875m, null, null, 3),
                 3));
 
@@ -40,6 +49,28 @@ public sealed class AssetOperationsReadServiceTests
         detail!.Subject.AssetClass.Should().Be("Bond");
         detail.Subject.OperationalProfile.Should().Contain(["ProjectedCashFlows", "LedgerProjection", "Readiness"]);
         detail.ProjectedCashFlows.Select(static flow => flow.FlowType).Should().Contain(["Coupon", "Maturity"]);
+        detail.ProjectedCashFlows.Where(static flow => flow.FlowType == "Coupon").Should().HaveCount(10);
+        detail.ProjectedCashFlows.First(static flow => flow.FlowType == "Coupon").Should().Match<AssetProjectedCashFlowDto>(flow =>
+            flow.DueDate == new DateOnly(2026, 7, 1) &&
+            flow.AccrualStartDate == new DateOnly(2026, 1, 1) &&
+            flow.AccrualEndDate == new DateOnly(2026, 7, 1) &&
+            flow.Amount == 2.9375m &&
+            flow.PrincipalBasis == 100m &&
+            flow.AnnualRate == 0.05875m);
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "Maturity").Should().Match<AssetProjectedCashFlowDto>(flow =>
+            flow.DueDate == new DateOnly(2031, 1, 1) &&
+            flow.Amount == 100m &&
+            flow.PrincipalBasis == 100m);
+        detail.TermsObligationsTimeline.Should().NotBeNull();
+        detail.TermsObligationsTimeline!.Events.Should().Contain(static timelineEvent =>
+            timelineEvent.EventKind == "Coupon" &&
+            timelineEvent.EventLane == "Coupon" &&
+            timelineEvent.ExpectedAmount == 2.9375m &&
+            timelineEvent.LedgerReferenceId == "security-master:11111111-1111-1111-1111-111111111111");
+        detail.TermsObligationsTimeline.Events.Should().Contain(static timelineEvent =>
+            timelineEvent.EventKind == "PrincipalMaturity" &&
+            timelineEvent.EventLane == "Principal" &&
+            timelineEvent.ExpectedAmount == 100m);
         detail.Readiness.ReadyCapabilities.Should().Contain(["TermsHistory", "LifecycleState", "ProjectedCashFlows", "LedgerProjection"]);
     }
 
@@ -131,6 +162,15 @@ public sealed class AssetOperationsReadServiceTests
         projection.ActualActivity.Should().ContainSingle(static row => row.ActivityType == "InterestPayment");
         projection.ReconciliationResults.Should().ContainSingle(static row => row.MatchStatus == "Matched");
         projection.LedgerProjections.Should().ContainSingle(static row => row.SourceDomain == "LoanAccountingProjector");
+        projection.TermsObligationsTimeline.Should().NotBeNull();
+        projection.TermsObligationsTimeline!.Events.Should().ContainSingle(timelineEvent =>
+            timelineEvent.EventKind == "Interest" &&
+            timelineEvent.EventLane == "Interest" &&
+            timelineEvent.Status == "Matched" &&
+            timelineEvent.ExpectedAmount == 1_000m &&
+            timelineEvent.ActualAmount == 1_000m &&
+            timelineEvent.VarianceAmount == 0m &&
+            timelineEvent.EvidenceLink == cash.CashTransactionId.ToString("D"));
         projection.Readiness.ReadyCapabilities.Should().Contain(["TermsHistory", "ProjectedCashFlows", "ActualActivity", "Reconciliation", "LedgerProjection"]);
     }
 

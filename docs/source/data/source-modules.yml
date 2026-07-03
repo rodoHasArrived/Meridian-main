@@ -67,6 +67,9 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5X-CONNECT-001
+      - W5X-EVIDENCE-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -90,7 +93,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-02
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -700,6 +703,8 @@ modules:
       - W4-RECON-001
       - W5-ACCT-001
       - W5X-FINOPS-001
+      - W5X-CONNECT-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -719,7 +724,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-10
+    last_reviewed: 2026-07-02
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -891,6 +896,9 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5X-CONNECT-001
+      - W5X-EVIDENCE-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -903,7 +911,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-02
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -920,6 +928,9 @@ modules:
       - W4-RPT-001
       - W5-ACCT-001
       - W5-MASSET-001
+      - W5X-CONNECT-001
+      - W5X-EVIDENCE-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -936,7 +947,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-02
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
