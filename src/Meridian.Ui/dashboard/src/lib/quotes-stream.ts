@@ -15,9 +15,14 @@ interface QuotesStreamConnection {
   handlers: Set<QuotesStreamHandlers>;
   healthy: boolean;
   lastSnapshot: QuotesSnapshotResponse | null;
+  closeTimer: ReturnType<typeof setTimeout> | null;
 }
 
 const connections = new Map<string, QuotesStreamConnection>();
+
+// Grace period before an unreferenced connection closes, so StrictMode
+// double-mounts and quick same-stream transitions reuse it instead of churning.
+const CLOSE_LINGER_MS = 1000;
 
 export function buildQuotesStreamUrl(symbols: readonly string[]): string {
   const normalized = [...new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean))].sort();
@@ -49,6 +54,9 @@ export function subscribeQuotesStream(
   if (!connection) {
     connection = openConnection(url);
     connections.set(url, connection);
+  } else if (connection.closeTimer !== null) {
+    clearTimeout(connection.closeTimer);
+    connection.closeTimer = null;
   }
 
   connection.handlers.add(handlers);
@@ -64,9 +72,13 @@ export function subscribeQuotesStream(
     }
 
     current.handlers.delete(handlers);
-    if (current.handlers.size === 0) {
-      current.source.close();
-      connections.delete(url);
+    if (current.handlers.size === 0 && current.closeTimer === null) {
+      current.closeTimer = setTimeout(() => {
+        if (current.handlers.size === 0) {
+          current.source.close();
+          connections.delete(url);
+        }
+      }, CLOSE_LINGER_MS);
     }
   };
 }
@@ -77,7 +89,8 @@ function openConnection(url: string): QuotesStreamConnection {
     source,
     handlers: new Set(),
     healthy: false,
-    lastSnapshot: null
+    lastSnapshot: null,
+    closeTimer: null
   };
 
   const setHealthy = (healthy: boolean) => {

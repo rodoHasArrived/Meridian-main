@@ -1,8 +1,10 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Domain.Collectors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -34,7 +36,7 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            if (LiveDataEndpoints.TryBuildQuotesSnapshotResponse(context.RequestServices, normalizedSymbols) is null)
+            if (context.RequestServices.GetService<QuoteCollector>() is null)
             {
                 return Results.Json(
                     new { error = "Quote collector not available" },
@@ -46,7 +48,7 @@ public static partial class WorkstationEndpoints
             context.Response.Headers.CacheControl = "no-cache";
             context.Response.Headers.Connection = "keep-alive";
 
-            string? lastQuotesSignature = null;
+            IReadOnlyList<QuotesSnapshotItem>? lastQuotes = null;
             var lastWriteUtc = DateTimeOffset.MinValue;
 
             try
@@ -57,12 +59,13 @@ public static partial class WorkstationEndpoints
                     var wrote = false;
                     if (snapshot is not null)
                     {
-                        // Coalesce on the quote rows only: the envelope timestamp moves
-                        // every tick even when no quote changed.
-                        var signature = JsonSerializer.Serialize(snapshot.Quotes, jsonOptions);
-                        if (!string.Equals(signature, lastQuotesSignature, StringComparison.Ordinal))
+                        // Coalesce on the quote rows only: the envelope timestamp moves every
+                        // tick even when no quote changed. QuotesSnapshotItem is a sealed record
+                        // of scalars, so value equality covers every serialized field without
+                        // allocating a serialization per idle tick.
+                        if (!QuoteRowsEqual(lastQuotes, snapshot.Quotes))
                         {
-                            lastQuotesSignature = signature;
+                            lastQuotes = snapshot.Quotes;
                             var payload = JsonSerializer.Serialize(snapshot, jsonOptions);
                             await context.Response.WriteAsync($"event: quotes\ndata: {payload}\n\n", ct).ConfigureAwait(false);
                             wrote = true;
@@ -96,6 +99,24 @@ public static partial class WorkstationEndpoints
         .Produces(200)
         .Produces(400)
         .Produces(503);
+    }
+
+    private static bool QuoteRowsEqual(IReadOnlyList<QuotesSnapshotItem>? previous, IReadOnlyList<QuotesSnapshotItem> current)
+    {
+        if (previous is null || previous.Count != current.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < current.Count; i++)
+        {
+            if (!current[i].Equals(previous[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

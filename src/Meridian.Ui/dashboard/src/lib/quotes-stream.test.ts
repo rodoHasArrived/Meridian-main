@@ -56,11 +56,15 @@ const snapshot: QuotesSnapshotResponse = {
 
 describe("quotes stream client", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     FakeEventSource.instances = [];
     vi.stubGlobal("EventSource", FakeEventSource);
   });
 
   afterEach(() => {
+    // Drain any pending close-linger timers so connections never leak into the next test.
+    vi.runAllTimers();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -70,15 +74,32 @@ describe("quotes stream client", () => {
     );
   });
 
-  it("shares one EventSource per symbol set and closes on last unsubscribe", () => {
+  it("shares one EventSource per symbol set and closes after the linger on last unsubscribe", () => {
     const first = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
     const second = subscribeQuotesStream(["spy"], { onSnapshot: vi.fn() });
 
     expect(FakeEventSource.instances).toHaveLength(1);
 
     first();
-    expect(FakeEventSource.instances[0]!.closed).toBe(false);
     second();
+    expect(FakeEventSource.instances[0]!.closed).toBe(false);
+
+    vi.runAllTimers();
+    expect(FakeEventSource.instances[0]!.closed).toBe(true);
+  });
+
+  it("reuses a lingering connection when a subscriber returns before the close fires", () => {
+    const first = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+    first();
+
+    const second = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+    vi.runAllTimers();
+
+    expect(FakeEventSource.instances).toHaveLength(1);
+    expect(FakeEventSource.instances[0]!.closed).toBe(false);
+
+    second();
+    vi.runAllTimers();
     expect(FakeEventSource.instances[0]!.closed).toBe(true);
   });
 

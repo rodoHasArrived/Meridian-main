@@ -30,11 +30,15 @@ class FakeEventSource {
 
 describe("useQuotesStream", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     FakeEventSource.instances = [];
     vi.stubGlobal("EventSource", FakeEventSource);
   });
 
   afterEach(() => {
+    // Drain any pending close-linger timers so connections never leak into the next test.
+    vi.runAllTimers();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -56,6 +60,9 @@ describe("useQuotesStream", () => {
     expect(result.current.snapshot).toEqual(payload);
 
     unmount();
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(FakeEventSource.instances[0]!.closed).toBe(true);
   });
 });
