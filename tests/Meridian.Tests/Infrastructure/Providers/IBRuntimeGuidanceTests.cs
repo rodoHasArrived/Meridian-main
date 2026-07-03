@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Tests.TestHelpers;
@@ -19,6 +20,41 @@ public sealed class IBRuntimeGuidanceTests
             .WithMessage("*EnableIbApiVendor=true*")
             .WithMessage("*EnableIbApiSmoke=true*")
             .WithMessage("*DefineConstants=IBAPI*");
+    }
+
+    [Theory]
+    [InlineData(InstrumentType.Equity, "STK")]
+    [InlineData(InstrumentType.IndexOption, "OPT")]
+    [InlineData(InstrumentType.Bond, "BOND")]
+    [InlineData(InstrumentType.Swap, "SWAP")]
+    [InlineData(InstrumentType.DirectLoan, "LOAN")]
+    [InlineData(InstrumentType.Repo, "REPO")]
+    [InlineData(InstrumentType.Deposit, "DEPOSIT")]
+    public void ContractFactory_ResolveSecType_UsesInstrumentTypeDescriptorCatalog(
+        InstrumentType instrumentType,
+        string expectedSecurityType)
+    {
+        var cfg = new SymbolConfig(
+            Symbol: "TEST",
+            SecurityType: "STK",
+            InstrumentType: instrumentType);
+
+        var securityType = ContractFactory.ResolveSecType(cfg);
+
+        securityType.Should().Be(expectedSecurityType);
+    }
+
+    [Fact]
+    public void ContractFactory_ResolveSecType_PreservesExplicitProviderSecurityType()
+    {
+        var cfg = new SymbolConfig(
+            Symbol: "912828YY0",
+            SecurityType: "GOVT",
+            InstrumentType: InstrumentType.Bond);
+
+        var securityType = ContractFactory.ResolveSecType(cfg);
+
+        securityType.Should().Be("GOVT");
     }
 
     [Fact]

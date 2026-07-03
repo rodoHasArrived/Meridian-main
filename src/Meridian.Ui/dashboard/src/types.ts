@@ -10253,6 +10253,31 @@ export interface InstrumentPassportOperationsWorkbench {
   handoffs: InstrumentPassportOperationsHandoff[];
 }
 
+export interface InstrumentPassportClassificationProfile {
+  instrumentType: string;
+  displayName: string;
+  securityMasterAssetClass: string;
+  assetFamily?: string | null;
+  subType?: string | null;
+  defaultProviderSecurityType: string;
+  isTradeable: boolean;
+  isReferenceOnly: boolean;
+  isDerivative: boolean;
+  requiresUnderlying: boolean;
+  producesCashFlows: boolean;
+  requiresLotTracking: boolean;
+  settlementModel: string;
+  compatibleSecurityMasterAssetClasses: string[];
+  preferredIdentifierKinds: string[];
+  requiredEconomicTerms: string[];
+  providerCapabilities: string[];
+  lifecycleEvents: string[];
+  validationRules: string[];
+  ledgerBehaviorHints: string[];
+  riskModelHints: string[];
+  summary: string;
+}
+
 export interface SecurityMasterOperatingModelStage {
   stageId: string;
   title: string;
@@ -10354,6 +10379,7 @@ export interface InstrumentPassport {
   referenceDataWorkbench?: InstrumentPassportReferenceDataWorkbench | null;
   operatingModel?: SecurityMasterOperatingModel | null;
   operationsWorkbench?: InstrumentPassportOperationsWorkbench | null;
+  classificationProfile?: InstrumentPassportClassificationProfile | null;
 }
 
 export interface SessionStatsDto {

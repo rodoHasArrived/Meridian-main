@@ -1,5 +1,6 @@
 using Meridian.Core.Config;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
@@ -92,41 +93,6 @@ public static class ContractFactory
         return c;
     }
 
-    /// <summary>
-    /// Resolves the IB SecType string from SymbolConfig, preferring the explicit
-    /// <see cref="SymbolConfig.SecurityType"/> field but falling back to
-    /// <see cref="SymbolConfig.InstrumentType"/> when the caller only sets the enum.
-    /// </summary>
-    /// <remarks>
-    /// For US Treasuries and government bonds, set <c>cfg.SecurityType = "GOVT"</c> explicitly
-    /// — <see cref="InstrumentType.Bond"/> maps to <c>"BOND"</c>
-    /// (corporate bonds) which uses a different IB routing desk.
-    /// </remarks>
-    private static string ResolveSecType(SymbolConfig cfg)
-    {
-        // If the caller set an explicit SecType string (e.g. "FUT", "CASH"), honour it.
-        if (!string.IsNullOrWhiteSpace(cfg.SecurityType) && cfg.SecurityType != "STK")
-            return cfg.SecurityType;
-
-        // Otherwise derive from the strongly-typed InstrumentType enum.
-        return cfg.InstrumentType switch
-        {
-            InstrumentType.Equity            => "STK",
-            InstrumentType.EquityOption      => "OPT",
-            InstrumentType.IndexOption       => "OPT",
-            InstrumentType.Future            => "FUT",
-            InstrumentType.SingleStockFuture => "SSF",
-            InstrumentType.Forex             => "CASH",
-            InstrumentType.Commodity         => "CMDTY",
-            InstrumentType.Crypto            => "CRYPTO",
-            InstrumentType.Bond              => "BOND",
-            InstrumentType.FuturesOption     => "FOP",
-            InstrumentType.Index             => "IND",
-            InstrumentType.CFD               => "CFD",
-            InstrumentType.Warrant           => "WAR",
-            _                                                       => cfg.SecurityType
-        };
-    }
 #else
     /// <summary>
     /// Centralizes the non-IBAPI guard so every conditional-compilation stub throws the same guidance.
@@ -137,6 +103,30 @@ public static class ContractFactory
     public static object Create(SymbolConfig cfg)
         => throw ThrowPlatformNotSupported();
 #endif
+
+    /// <summary>
+    /// Resolves the IB SecType string from SymbolConfig, preferring the explicit
+    /// <see cref="SymbolConfig.SecurityType"/> field but falling back to the contract-owned
+    /// <see cref="InstrumentTypeDescriptorCatalog"/> when the caller only sets the enum.
+    /// </summary>
+    /// <remarks>
+    /// For US Treasuries and government bonds, set <c>cfg.SecurityType = "GOVT"</c> explicitly
+    /// — <see cref="InstrumentType.Bond"/> maps to <c>"BOND"</c>
+    /// (corporate bonds) which uses a different IB routing desk.
+    /// </remarks>
+    internal static string ResolveSecType(SymbolConfig cfg)
+    {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        // If the caller set an explicit SecType string (e.g. "FUT", "CASH"), honour it.
+        if (!string.IsNullOrWhiteSpace(cfg.SecurityType) && cfg.SecurityType != "STK")
+        {
+            return cfg.SecurityType.Trim();
+        }
+
+        return InstrumentTypeDescriptorCatalog.Find(cfg.InstrumentType)?.DefaultProviderSecurityType
+            ?? cfg.SecurityType;
+    }
 
     private static (string ibSymbol, string? localSymbolFallback) InferPreferredLocalSymbol(string symbol)
     {

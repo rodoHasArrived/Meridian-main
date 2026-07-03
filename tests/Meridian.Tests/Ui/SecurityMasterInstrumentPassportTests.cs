@@ -54,6 +54,15 @@ public sealed class SecurityMasterInstrumentPassportTests
         passport.Pricing.TickSize.Should().Be(0.01m);
         passport.Usage.IsScoped.Should().BeFalse();
         passport.TrustPosture.TrustScore.Should().BeGreaterThan(0);
+        passport.ClassificationProfile.Should().NotBeNull();
+        passport.ClassificationProfile!.InstrumentType.Should().Be("Equity");
+        passport.ClassificationProfile.DisplayName.Should().Be("Equity");
+        passport.ClassificationProfile.SecurityMasterAssetClass.Should().Be("Equity");
+        passport.ClassificationProfile.DefaultProviderSecurityType.Should().Be("STK");
+        passport.ClassificationProfile.ProviderCapabilities.Should().Contain("Quote");
+        passport.ClassificationProfile.LifecycleEvents.Should().Contain("Dividend");
+        passport.ClassificationProfile.LedgerBehaviorHints.Should().Contain(hint =>
+            hint.Contains("tax-lot", StringComparison.OrdinalIgnoreCase));
         passport.ReferenceDataWorkbench.Should().NotBeNull();
         passport.ReferenceDataWorkbench!.Sections.Select(section => section.SectionId).Should().Contain(
             [
@@ -90,6 +99,12 @@ public sealed class SecurityMasterInstrumentPassportTests
         passport.OperationsWorkbench.Panels.Should().Contain(panel =>
             panel.PanelId == "identity" &&
             panel.Items.Any(item => item.ItemId == "primary-identifier" && item.Value == "AAPL"));
+        passport.OperationsWorkbench.Panels.Should().Contain(panel =>
+            panel.PanelId == "terms" &&
+            panel.Items.Any(item =>
+                item.ItemId == "instrument-type-profile" &&
+                item.Value.Contains("Equity", StringComparison.OrdinalIgnoreCase) &&
+                item.Detail.Contains("Provider route", StringComparison.OrdinalIgnoreCase)));
         passport.OperationsWorkbench.Panels.Should().Contain(panel =>
             panel.PanelId == "provider-evidence" &&
             panel.Items.Any(item =>

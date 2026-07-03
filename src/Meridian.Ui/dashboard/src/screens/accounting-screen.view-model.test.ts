@@ -243,6 +243,30 @@ const instrumentPassport: InstrumentPassport = {
       overrideHistory: []
     }
   ],
+  classificationProfile: {
+    instrumentType: "Equity",
+    displayName: "Equity",
+    securityMasterAssetClass: "Equity",
+    assetFamily: "CommonEquity",
+    subType: "CommonShare",
+    defaultProviderSecurityType: "STK",
+    isTradeable: true,
+    isReferenceOnly: false,
+    isDerivative: false,
+    requiresUnderlying: false,
+    producesCashFlows: true,
+    requiresLotTracking: true,
+    settlementModel: "Cash security settlement with dividend and corporate-action events.",
+    compatibleSecurityMasterAssetClasses: ["Equity", "MoneyMarketFund"],
+    preferredIdentifierKinds: ["Ticker", "ISIN", "CUSIP", "FIGI"],
+    requiredEconomicTerms: ["issuer", "share class", "currency", "primary exchange"],
+    providerCapabilities: ["Quote", "Trade", "Position", "CorporateAction"],
+    lifecycleEvents: ["Purchase", "Sale", "Dividend", "Split", "Merger", "Delisting"],
+    validationRules: ["primary identifier present", "listing venue known"],
+    ledgerBehaviorHints: ["security position", "dividend income", "realized and unrealized P&L", "tax-lot tracking"],
+    riskModelHints: ["equity exposure", "issuer concentration"],
+    summary: "Equity maps to Security Master Equity for provider routing and operations checks. Provider route STK; 5 required term(s); 6 lifecycle event(s)."
+  },
   referenceDataWorkbench: {
     status: "Ready",
     summary: "Multi-asset reference-data workbench is ready for downstream FINOPS use.",
@@ -2050,6 +2074,10 @@ describe("accounting-screen view model", () => {
       providerEmptyText: "No provider confidence rows are available for sec-1."
     });
     expect(view.fields).toEqual(expect.arrayContaining([
+      { label: "Instrument type", value: "Equity (Equity)", tone: "success" },
+      { label: "Provider routing", value: "STK: Quote, Trade, Position, CorporateAction" },
+      { label: "Lifecycle profile", value: "Purchase, Sale, Dividend, Split, +2 more" },
+      { label: "Ledger behavior", value: "security position, dividend income, realized and unrealized P&L, tax-lot tracking" },
       { label: "Identifiers", value: "Primary identifiers are aligned." },
       { label: "Provider confidence", value: "1 active / 2 total" },
       { label: "Pricing", value: "Ready: Trading parameters are active." },
@@ -2236,6 +2264,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.trustSnapshot).toBe(securityTrustSnapshot);
     expect(result.current.instrumentPassportErrorText).toBeNull();
     expect(result.current.instrumentPassportView.fields).toEqual(expect.arrayContaining([
+      { label: "Instrument type", value: "Equity (Equity)", tone: "success" },
       { label: "Provider confidence", value: "1 active / 2 total" }
     ]));
   });

@@ -9,6 +9,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -236,6 +237,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             providerConfidence,
             pricing,
             operatingModel);
+        var classificationProfile = BuildClassificationProfile(snapshot);
 
         return new InstrumentPassportDto(
             SecurityId: snapshot.SecurityId,
@@ -258,7 +260,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 identifierSummary,
                 providerConfidence,
                 pricing,
-                referenceDataWorkbench)
+                referenceDataWorkbench,
+                classificationProfile),
+            ClassificationProfile = classificationProfile
         };
     }
 
@@ -360,7 +364,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         SecurityMasterIdentifierSummaryDto identifierSummary,
         IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
         InstrumentPassportPricingDto pricing,
-        InstrumentPassportReferenceDataWorkbenchDto referenceDataWorkbench)
+        InstrumentPassportReferenceDataWorkbenchDto referenceDataWorkbench,
+        InstrumentPassportClassificationProfileDto? classificationProfile)
     {
         var handoffs = referenceDataWorkbench.OperationsHandoffs;
         var readiness = BuildOperationsReadiness(snapshot, identifierSummary, providerConfidence, pricing, handoffs);
@@ -368,7 +373,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         {
             BuildIdentityPanel(snapshot, identifierSummary, providerConfidence),
             BuildProviderEvidencePanel(snapshot, providerConfidence),
-            BuildTermsPanel(snapshot, pricing),
+            BuildTermsPanel(snapshot, pricing, classificationProfile),
             BuildReadinessPanel(readiness),
             BuildHandoffPanel(snapshot, handoffs)
         };
@@ -540,7 +545,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
     private static InstrumentPassportOperationsWorkbenchPanelDto BuildTermsPanel(
         SecurityMasterTrustSnapshotDto snapshot,
-        InstrumentPassportPricingDto pricing)
+        InstrumentPassportPricingDto pricing,
+        InstrumentPassportClassificationProfileDto? classificationProfile)
     {
         var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
         var factorCount = snapshot.ScheduleBook?.FactorHistory.Count ?? 0;
@@ -560,6 +566,23 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 Detail: BuildLedgerClassificationSummary(snapshot),
                 EvidenceCount: hasClassification ? 1 : 0,
                 BlockingIssueCount: hasClassification ? 0 : 1),
+            new(
+                ItemId: "instrument-type-profile",
+                Label: "Instrument type profile",
+                Value: classificationProfile is null
+                    ? "Unavailable"
+                    : $"{classificationProfile.DisplayName} ({classificationProfile.InstrumentType})",
+                Status: classificationProfile is null ? "Review" : "Ready",
+                Detail: classificationProfile?.Summary
+                    ?? "No InstrumentType compatibility profile is available for this Security Master asset class.",
+                EvidenceCount: classificationProfile is null
+                    ? 0
+                    : Math.Max(
+                        1,
+                        classificationProfile.ProviderCapabilities.Count +
+                        classificationProfile.LifecycleEvents.Count +
+                        classificationProfile.LedgerBehaviorHints.Count),
+                BlockingIssueCount: classificationProfile is null ? 1 : 0),
             new(
                 ItemId: "economics",
                 Label: "Economics",
@@ -814,6 +837,86 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ToArray();
 
         return parts.Length == 0 ? "Unavailable" : string.Join(" / ", parts);
+    }
+
+    private static InstrumentPassportClassificationProfileDto? BuildClassificationProfile(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var assetClass = NormalizeSecurityMasterText(snapshot.EconomicDefinition.AssetClass);
+        if (assetClass is null)
+        {
+            return null;
+        }
+
+        var compatibility = SecurityKindMapping.GetCompatibilityProfile(assetClass);
+        var descriptors = SecurityKindMapping.ToInstrumentTypeDescriptors(assetClass);
+        var hasMultipleDirectInstrumentTypes = compatibility?.InstrumentTypes.Count > 1;
+        var primaryDescriptor = compatibility?.PrimaryInstrumentType is { } primaryInstrumentType
+            ? InstrumentTypeDescriptorCatalog.Find(primaryInstrumentType)
+            : hasMultipleDirectInstrumentTypes == true
+                ? null
+                : descriptors.FirstOrDefault();
+
+        if (compatibility is null && primaryDescriptor is null)
+        {
+            return null;
+        }
+
+        var descriptorNames = descriptors.Select(static descriptor => descriptor.DisplayName).ToArray();
+        var displayName = primaryDescriptor?.DisplayName
+            ?? (descriptorNames.Length > 1 ? $"{assetClass} family" : assetClass);
+        var instrumentType = primaryDescriptor?.InstrumentType.ToString()
+            ?? (compatibility?.InstrumentTypes.Count > 0
+                ? string.Join(", ", compatibility.InstrumentTypes)
+                : "Unmapped");
+        var providerSecurityTypes = DistinctProfileValues(descriptors.Select(static descriptor => descriptor.DefaultProviderSecurityType));
+        var preferredIdentifierKinds = DistinctProfileValues(
+            descriptors.SelectMany(static descriptor => descriptor.PreferredIdentifierKinds),
+            SecurityAssetClassCatalog.GetPreferredIdentifierKinds(assetClass).Select(static kind => kind.ToString()));
+        var requiredEconomicTerms = compatibility?.RequiredEconomicTerms
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.RequiredEconomicTerms));
+        var providerCapabilities = compatibility?.ProviderCapabilities
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.ProviderCapabilities));
+        var lifecycleEvents = compatibility?.LifecycleEvents
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.LifecycleEvents));
+        var validationRules = compatibility?.ValidationRules
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.ValidationRules));
+        var ledgerBehaviorHints = compatibility?.LedgerBehaviorHints
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.LedgerBehaviorHints));
+        var riskModelHints = compatibility?.RiskModelHints
+            ?? DistinctProfileValues(descriptors.SelectMany(static descriptor => descriptor.RiskModelHints));
+        var compatibleAssetClasses = compatibility?.CompatibleSecurityMasterAssetClasses
+            ?? DistinctProfileValues([assetClass], descriptors.SelectMany(static descriptor => descriptor.CompatibleSecurityMasterAssetClasses));
+        var summary = compatibility?.Summary
+            ?? $"{displayName} retains an InstrumentType descriptor for provider routing and downstream operations.";
+
+        if (providerCapabilities.Count > 0 || lifecycleEvents.Count > 0)
+        {
+            summary = $"{summary} Provider route {SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a")}; {requiredEconomicTerms.Count} required term(s); {lifecycleEvents.Count} lifecycle event(s).";
+        }
+
+        return new InstrumentPassportClassificationProfileDto(
+            InstrumentType: instrumentType,
+            DisplayName: displayName,
+            SecurityMasterAssetClass: assetClass,
+            AssetFamily: NormalizeSecurityMasterText(snapshot.EconomicDefinition.AssetFamily) ?? primaryDescriptor?.SecurityMasterAssetFamily,
+            SubType: NormalizeSecurityMasterText(snapshot.EconomicDefinition.SubType) ?? primaryDescriptor?.SecurityMasterSubType,
+            DefaultProviderSecurityType: SecurityMasterText(string.Join(", ", providerSecurityTypes), "n/a"),
+            IsTradeable: primaryDescriptor?.IsTradeable ?? descriptors.Any(static descriptor => descriptor.IsTradeable),
+            IsReferenceOnly: primaryDescriptor?.IsReferenceOnly ?? (descriptors.Count > 0 && descriptors.All(static descriptor => descriptor.IsReferenceOnly)),
+            IsDerivative: primaryDescriptor?.IsDerivative ?? descriptors.Any(static descriptor => descriptor.IsDerivative),
+            RequiresUnderlying: primaryDescriptor?.RequiresUnderlying ?? descriptors.Any(static descriptor => descriptor.RequiresUnderlying),
+            ProducesCashFlows: primaryDescriptor?.ProducesCashFlows ?? descriptors.Any(static descriptor => descriptor.ProducesCashFlows),
+            RequiresLotTracking: primaryDescriptor?.RequiresLotTracking ?? descriptors.Any(static descriptor => descriptor.RequiresLotTracking),
+            SettlementModel: primaryDescriptor?.SettlementModel ?? "Security Master reference-data settlement model is not mapped to a direct InstrumentType.",
+            CompatibleSecurityMasterAssetClasses: compatibleAssetClasses,
+            PreferredIdentifierKinds: preferredIdentifierKinds,
+            RequiredEconomicTerms: requiredEconomicTerms,
+            ProviderCapabilities: providerCapabilities,
+            LifecycleEvents: lifecycleEvents,
+            ValidationRules: validationRules,
+            LedgerBehaviorHints: ledgerBehaviorHints,
+            RiskModelHints: riskModelHints,
+            Summary: summary);
     }
 
     private async Task<ClearwaterReferenceDataEvidence> BuildClearwaterEvidenceAsync(
@@ -1160,6 +1263,14 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     private static string? NormalizeSecurityMasterText(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    private static IReadOnlyList<string> DistinctProfileValues(params IEnumerable<string>[] values) =>
+        values
+            .SelectMany(static value => value)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
     private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildPricingHierarchySection(
         ClearwaterReferenceDataEvidence evidence)
     {
@@ -1356,7 +1467,9 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var prefix = classification.Length == 0
             ? "Ledger classification is unavailable"
             : string.Join(" / ", classification);
-        return $"{prefix}. {snapshot.DownstreamImpact.LedgerExposureSummary}";
+        var compatibility = SecurityKindMapping.GetCompatibilityProfile(snapshot.EconomicDefinition.AssetClass);
+        var compatibilitySummary = compatibility is null ? string.Empty : $" {compatibility.Summary}";
+        return $"{prefix}. {snapshot.DownstreamImpact.LedgerExposureSummary}{compatibilitySummary}";
     }
 
     private static IReadOnlyList<InstrumentPassportOperationsHandoffDto> BuildOperationsHandoffs(

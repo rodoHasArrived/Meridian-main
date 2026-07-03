@@ -6755,6 +6755,37 @@ export function buildInstrumentPassportViewState({
     value: `${section.status}: ${section.summary} Evidence ${section.evidenceCount}; blockers ${section.blockingIssueCount}.`,
     tone: section.status.toLowerCase() === "ready" ? "success" as const : "warning" as const
   }));
+  const classificationProfile = passport?.classificationProfile ?? null;
+  const classificationFields: InstrumentPassportFieldViewModel[] = classificationProfile
+    ? [
+        {
+          label: "Instrument type",
+          value: `${classificationProfile.displayName} (${classificationProfile.instrumentType})`,
+          tone: classificationProfile.isReferenceOnly ? "default" : "success"
+        },
+        {
+          label: "Provider routing",
+          value: `${classificationProfile.defaultProviderSecurityType}: ${formatInstrumentPassportProfileList(
+            classificationProfile.providerCapabilities,
+            "No provider capabilities mapped."
+          )}`
+        },
+        {
+          label: "Lifecycle profile",
+          value: formatInstrumentPassportProfileList(
+            classificationProfile.lifecycleEvents,
+            "No lifecycle events mapped."
+          )
+        },
+        {
+          label: "Ledger behavior",
+          value: formatInstrumentPassportProfileList(
+            classificationProfile.ledgerBehaviorHints,
+            "No ledger behavior hints mapped."
+          )
+        }
+      ]
+    : [];
   const enabledHandoffs = referenceDataWorkbench?.operationsHandoffs.filter((handoff) => handoff.isEnabled).length ?? 0;
   const totalHandoffs = referenceDataWorkbench?.operationsHandoffs.length ?? 0;
   const operationsWorkbench = passport?.operationsWorkbench ?? null;
@@ -6780,6 +6811,7 @@ export function buildInstrumentPassportViewState({
       { label: "Security ID", value: passport?.securityId ?? displaySecurityId },
       { label: "Display name", value: passport?.identity.displayName ?? "-" },
       { label: "Asset class", value: passport?.identity.assetClass ?? "-" },
+      ...classificationFields,
       { label: "Trust", value: trustSummary, tone: statusBadgeVariant === "success" ? "success" : statusBadgeVariant === "warning" ? "warning" : "default" },
       { label: "Identifiers", value: identifierSummary },
       { label: "Provider confidence", value: `${activeProviderCount} active / ${providerRows.length} total` },
@@ -6842,6 +6874,23 @@ export function buildInstrumentPassportViewState({
           ? `Instrument passport loaded for ${displaySecurityId}.`
           : ""
   };
+}
+
+function formatInstrumentPassportProfileList(values: string[] | null | undefined, fallback: string): string {
+  const normalized = Array.from(new Set(
+    (values ?? [])
+      .map((value) => value.trim())
+      .filter(Boolean)
+  ));
+
+  if (normalized.length === 0) {
+    return fallback;
+  }
+
+  const visible = normalized.slice(0, 4);
+  return normalized.length > visible.length
+    ? `${visible.join(", ")}, +${normalized.length - visible.length} more`
+    : visible.join(", ");
 }
 
 function buildInstrumentPassportOperationsReadinessRows(
