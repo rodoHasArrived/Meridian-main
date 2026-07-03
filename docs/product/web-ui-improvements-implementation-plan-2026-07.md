@@ -182,10 +182,16 @@ No feature work; confirm and document the rules each later phase must follow.
   `npm --prefix src/Meridian.Ui/dashboard run test`
 
 **Checklist**
-- [ ] `WorkstationEndpoints.Stream.cs` poll-bridge SSE endpoint + route constant + TS mirror.
-- [ ] `use-workstation-stream.ts` shared EventSource hook with fallback semantics.
-- [ ] Poller suspension wired on the four polling sites.
-- [ ] Step-2 fan-out seam (separate PR, hot-path review required).
+- [x] `WorkstationEndpoints.Stream.cs` poll-bridge SSE endpoint + route constant + TS mirror
+      (quotes topic; snapshot builder shared with the REST endpoint; coalesced frames + heartbeats).
+- [x] Shared EventSource client with fallback semantics (`lib/quotes-stream.ts` framework-agnostic
+      manager + `hooks/use-quotes-stream.ts` React binding; landed under these names rather than a
+      single `use-workstation-stream.ts`).
+- [x] Poller suspension wired on the three quote-driven polling sites (watchlist, live-quotes
+      matrix, price alerts); the `use-workstation-data` workspace poller is deferred to step 2 —
+      workspace topics need the event-driven fan-out seam, not a 30s poll-bridge.
+- [ ] Step-2 fan-out seam (separate PR, hot-path review required) + workspace topics + per-session
+      stream caps.
 
 ---
 
