@@ -274,8 +274,9 @@ and UI presentation concerns in their owning layers.
   structured audit path before the event store is touched.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
-  futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`
-  records. It declares required identifiers, economics, provider evidence, ledger classification,
+  futures, FX, fixed income, direct loans, structured credit, private fund interests, private
+  company equity, real estate holdings, commitment/guarantee exposures, governed `CustomAsset`,
+  and `OtherSecurity` records. It declares required identifiers, economics, provider evidence, ledger classification,
   reconciliation signals, and close blockers while leaving missing live provider evidence as
   review-required/blocking evidence instead of fabricating completeness. It also projects the
   contract-owned `SecurityAssetPackRegistry` into the shared multi-asset coverage payload so
@@ -285,10 +286,16 @@ and UI presentation concerns in their owning layers.
   Bond rows expose factor and corporate-action drill-through proof, including retained factor
   evidence blockers, while private-credit depth is represented on the canonical `DirectLoan` row
   with commitment, unfunded-commitment, paydown, covenant, obligation, and
-  `Meridian.FSharp.DirectLending.Aggregates` rule-kernel evidence requirements. Structured and
-  private assets stay on governed profile-backed `CustomAsset` rows, where servicer/trustee
-  reports, warehouse tapes, NAV, capital calls, distributions, obligation schedules, and valuation
-  approvals are treated as retained provider evidence before close readiness can become complete.
+  `Meridian.FSharp.DirectLending.Aggregates` rule-kernel evidence requirements. Alternative asset
+  rows now declare class-specific retained evidence: structured credit needs trustee/servicer,
+  factor, collateral-tape, valuation-source, and cash-remittance support; private fund interests
+  need administrator/GP, capital-call, distribution, NAV, and capital-account support; private
+  company equity needs cap-table, share-class, financing, valuation/409A, transaction, exit, and
+  dividend support; real estate holdings need property-manager, rent-roll, lease, appraisal,
+  debt-service, ownership, and SPV support; commitments and guarantees need agreements, draw/usage
+  notices, fee/accrual schedules, collateral/covenants, and release/expiry support. Profile-backed
+  `CustomAsset` records remain the compatibility fallback when old profile metadata cannot be
+  upgraded to one of those first-class rows.
 - Asset-specific instrument projection services for bonds, options, equity, futures, FX spot,
   crypto, deposits, certificates of deposit, commodities, swaps, money-market funds, and shared
   Asset Operations read/projection flows are owned by `Meridian.Instruments`. Money-market fund

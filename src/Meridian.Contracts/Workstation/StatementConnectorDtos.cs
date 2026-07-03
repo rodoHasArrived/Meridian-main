@@ -124,7 +124,13 @@ public sealed record StatementImportCommitResultDto(
     string RetainedSourcePath,
     string RetainedCanonicalPath,
     string Status,
-    string NextAction);
+    string NextAction)
+{
+    public EvidenceVaultIdentityDto? EvidenceVaultIdentity { get; init; }
+    public string? EvidenceWorkbenchRoute { get; init; }
+    public string? ReconciliationRoute { get; init; }
+    public IReadOnlyList<string> NextActions { get; init; } = [];
+}
 
 /// <summary>A persisted scheduled-fetch configuration for a fetch-capable connector.</summary>
 public sealed record StatementFetchScheduleDto(

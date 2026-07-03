@@ -23,6 +23,11 @@ public sealed class SecurityMasterAssetClassSupportTests
     [InlineData("CryptoCurrency")]
     [InlineData("Cfd")]
     [InlineData("Warrant")]
+    [InlineData("StructuredCredit")]
+    [InlineData("PrivateFundInterest")]
+    [InlineData("PrivateCompanyEquity")]
+    [InlineData("RealEstateHolding")]
+    [InlineData("CommitmentGuarantee")]
     public async Task CreateAsync_SupportsCashAndShortTermSecurityAssetClasses(string assetClass)
     {
         var securityId = Guid.NewGuid();
@@ -92,7 +97,7 @@ public sealed class SecurityMasterAssetClassSupportTests
     }
 
     [Fact]
-    public async Task CreateAsync_ProfileBackedCustomAsset_PreservesPinnedProfileTerms()
+    public async Task CreateAsync_ProfileBackedCustomAsset_MapsKnownProfileToFirstClassAssetAndPreservesPinnedTerms()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -141,14 +146,14 @@ public sealed class SecurityMasterAssetClassSupportTests
                 "profile backed create"),
             CancellationToken.None);
 
-        detail.AssetClass.Should().Be("CustomAsset");
+        detail.AssetClass.Should().Be("PrivateFundInterest");
         detail.AssetSpecificTerms.GetProperty("customProfileId").GetString().Should().Be("private-fund-interest");
         detail.AssetSpecificTerms.GetProperty("profileVersion").GetInt32().Should().Be(1);
         detail.AssetSpecificTerms.GetProperty("profileFields").GetProperty("navDate").GetString().Should().Be("2026-04-30");
 
         await store.Received(1).UpsertProjectionAsync(
             Arg.Is<SecurityProjectionRecord>(projection =>
-                projection.AssetClass == "CustomAsset"
+                projection.AssetClass == "PrivateFundInterest"
                 && ProjectionCarriesPinnedProfileTerms(projection, "private-fund-interest", "2026-04-30")),
             Arg.Any<CancellationToken>());
 
@@ -158,12 +163,12 @@ public sealed class SecurityMasterAssetClassSupportTests
             Arg.Is<IReadOnlyList<SecurityMasterEventEnvelope>>(events =>
                 events.Count == 1
                 && events[0].EventType == "SecurityCreated"
-                && PayloadCarriesPinnedProfileTerms(events[0].Payload, "CustomAsset", "private-fund-interest", "2026-04-30")),
+                && PayloadCarriesPinnedProfileTerms(events[0].Payload, "PrivateFundInterest", "private-fund-interest", "2026-04-30")),
             Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task AmendTermsAsync_ProfileBackedCustomAsset_PreservesPinnedProfileTerms()
+    public async Task AmendTermsAsync_ProfileBackedCustomAsset_MapsKnownProfileToFirstClassAssetAndPreservesPinnedTerms()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -205,14 +210,14 @@ public sealed class SecurityMasterAssetClassSupportTests
                 "update NAV date"),
             CancellationToken.None);
 
-        detail.AssetClass.Should().Be("CustomAsset");
+        detail.AssetClass.Should().Be("PrivateFundInterest");
         detail.Version.Should().Be(2);
         detail.AssetSpecificTerms.GetProperty("customProfileId").GetString().Should().Be("private-fund-interest");
         detail.AssetSpecificTerms.GetProperty("profileFields").GetProperty("navDate").GetString().Should().Be("2026-05-31");
 
         await store.Received(1).UpsertProjectionAsync(
             Arg.Is<SecurityProjectionRecord>(projection =>
-                projection.AssetClass == "CustomAsset"
+                projection.AssetClass == "PrivateFundInterest"
                 && projection.Version == 2
                 && ProjectionCarriesPinnedProfileTerms(projection, "private-fund-interest", "2026-05-31")),
             Arg.Any<CancellationToken>());
@@ -223,7 +228,7 @@ public sealed class SecurityMasterAssetClassSupportTests
             Arg.Is<IReadOnlyList<SecurityMasterEventEnvelope>>(events =>
                 events.Count == 1
                 && events[0].EventType == "TermsAmended"
-                && PayloadCarriesPinnedProfileTerms(events[0].Payload, "CustomAsset", "private-fund-interest", "2026-05-31")),
+                && PayloadCarriesPinnedProfileTerms(events[0].Payload, "PrivateFundInterest", "private-fund-interest", "2026-05-31")),
             Arg.Any<CancellationToken>());
     }
 
@@ -319,6 +324,62 @@ public sealed class SecurityMasterAssetClassSupportTests
                 strike = 150m,
                 expiry = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(12)),
                 multiplier = 1m
+            }),
+            "StructuredCredit" => JsonSerializer.SerializeToElement(new
+            {
+                tranche = "A-1",
+                poolId = "POOL-2026-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                currentFactor = 0.9825m,
+                couponOrIndex = "SOFR+250",
+                factorSchedule = "monthly-trustee"
+            }),
+            "PrivateFundInterest" => JsonSerializer.SerializeToElement(new
+            {
+                gpSponsor = "GP Capital",
+                strategy = "Private Credit",
+                vintage = 2025,
+                commitment = 1000000m,
+                fundedAmount = 250000m,
+                unfundedAmount = 750000m,
+                navDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
+                lockup = "3 years"
+            }),
+            "PrivateCompanyEquity" => JsonSerializer.SerializeToElement(new
+            {
+                issuer = "ExampleCo",
+                shareClass = "Series B Preferred",
+                round = "Series B",
+                ownershipPercent = 2.5m,
+                costBasis = 500000m,
+                latestValuation = 750000m,
+                transferRestrictions = "Board consent required"
+            }),
+            "RealEstateHolding" => JsonSerializer.SerializeToElement(new
+            {
+                propertyType = "Multifamily",
+                addressOrMarket = "Phoenix, AZ",
+                ownershipPercent = 35m,
+                appraisalValue = 12500000m,
+                valuationDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-45)),
+                debtStack = "Senior mortgage",
+                sponsor = "Desert Properties"
+            }),
+            "CommitmentGuarantee" => JsonSerializer.SerializeToElement(new
+            {
+                counterparty = "Sponsor Holdings LLC",
+                beneficiary = "Portfolio SPV",
+                committedAmount = 2000000m,
+                unfundedAmount = 1500000m,
+                effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-90)),
+                expiryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)),
+                feeRate = 0.0125m,
+                collateral = "Cash reserve",
+                covenants = new[]
+                {
+                    new { covenantType = "Liquidity", threshold = "Minimum cash reserve", notes = "Quarterly test" }
+                }
             }),
             _ => throw new ArgumentOutOfRangeException(nameof(assetClass), assetClass, "Unsupported test asset class.")
         };

@@ -235,6 +235,69 @@ public static class SecurityAssetClassCatalog
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending),
         new(
+            AssetClass: "StructuredCredit",
+            SupportsCashflowScheduleByDefault: true,
+            UsesFaceValueLots: true,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Figi,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+        new(
+            AssetClass: "PrivateFundInterest",
+            SupportsCashflowScheduleByDefault: true,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+        new(
+            AssetClass: "PrivateCompanyEquity",
+            SupportsCashflowScheduleByDefault: false,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.Cik,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+        new(
+            AssetClass: "RealEstateHolding",
+            SupportsCashflowScheduleByDefault: true,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+        new(
+            AssetClass: "CommitmentGuarantee",
+            SupportsCashflowScheduleByDefault: true,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+        new(
             AssetClass: "Commodity",
             SupportsCashflowScheduleByDefault: false,
             UsesFaceValueLots: false,
@@ -338,6 +401,20 @@ public static class AssetOperationsCapabilitySet
     ];
 
     public static readonly IReadOnlyList<string> DirectLending =
+    [
+        "Identity",
+        "TermsHistory",
+        "LifecycleState",
+        "ProjectedCashFlows",
+        "ActualActivity",
+        "Reconciliation",
+        "LedgerProjection",
+        "Evidence",
+        "WorkflowAudit",
+        "Readiness"
+    ];
+
+    public static readonly IReadOnlyList<string> AlternativeAssetOperations =
     [
         "Identity",
         "TermsHistory",

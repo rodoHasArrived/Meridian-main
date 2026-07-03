@@ -1418,10 +1418,17 @@ shared Security Master-keyed operations detail for loans, bonds, and later asset
 surface-specific read models. Missing retained provider inputs remain review-required or blocked rows; clients must not
 mark asset classes ready with UI-local checks. The shared read model treats private-credit
 commitments, unfunded commitments, paydowns, covenant notices, and obligation schedules as
-`DirectLoan` provider evidence. Governed structured/private assets remain profile-backed
-`CustomAsset` coverage rows and require retained servicer/trustee report, warehouse tape, NAV,
-capital-call, distribution, obligation-schedule, and valuation evidence before the provider and
-close-readiness targets can move to ready.
+`DirectLoan` provider evidence. Structured credit, private fund interests, private company equity,
+real estate holdings, and commitment/guarantee exposures render as first-class coverage rows with
+class-specific target types for trustee/servicer reports, factor schedules, collateral tapes,
+administrator or GP statements, capital calls, distributions, NAV statements, capital-account
+schedules, cap tables, share-class documents, valuation memos or 409A support, transaction/exit
+evidence, property-manager statements, rent rolls, lease schedules, appraisals, debt-service and
+SPV evidence, commitment or guarantee agreements, draw/usage notices, fee/accrual schedules,
+collateral/covenant evidence, and release/expiry evidence. Governed `CustomAsset` rows remain the
+profile-backed compatibility fallback and still require retained servicer/trustee, warehouse tape,
+NAV, capital-call, distribution, obligation-schedule, and valuation evidence before the provider
+and close-readiness targets can move to ready.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to

@@ -188,6 +188,55 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredString("borrower", "SM_DIRECT_LOAN_BORROWER_REQUIRED", "Direct loan borrower is missing", "Direct loans must include a borrower.")
                 ]),
             new JsonAssetClassValidator(
+                "StructuredCredit",
+                [
+                    FieldRule.RequiredString("tranche", "SM_STRUCTURED_CREDIT_TRANCHE_REQUIRED", "Structured credit tranche is missing", "Structured credit records must include a tranche."),
+                    FieldRule.RequiredString("collateralType", "SM_STRUCTURED_CREDIT_COLLATERAL_REQUIRED", "Structured credit collateral type is missing", "Structured credit records must include a pool or collateral type."),
+                    FieldRule.RequiredPositive("originalFace", "SM_STRUCTURED_CREDIT_ORIGINAL_FACE_INVALID", "Structured credit original face is invalid", "Structured credit original face must be greater than zero."),
+                    FieldRule.OptionalNonNegative("currentFactor", "SM_STRUCTURED_CREDIT_CURRENT_FACTOR_INVALID", "Structured credit current factor is invalid", "Structured credit current factor must be zero or greater when supplied."),
+                    FieldRule.RequiredString("couponOrIndex", "SM_STRUCTURED_CREDIT_COUPON_INDEX_REQUIRED", "Structured credit coupon/index is missing", "Structured credit records must include a coupon or index reference.")
+                ]),
+            new JsonAssetClassValidator(
+                "PrivateFundInterest",
+                [
+                    FieldRule.RequiredString("gpSponsor", "SM_PRIVATE_FUND_GP_REQUIRED", "Private fund GP/sponsor is missing", "Private fund interests must include a GP or sponsor."),
+                    FieldRule.RequiredString("strategy", "SM_PRIVATE_FUND_STRATEGY_REQUIRED", "Private fund strategy is missing", "Private fund interests must include a strategy."),
+                    FieldRule.RequiredPositive("vintage", "SM_PRIVATE_FUND_VINTAGE_INVALID", "Private fund vintage is invalid", "Private fund interests must include a positive vintage year."),
+                    FieldRule.RequiredPositive("commitment", "SM_PRIVATE_FUND_COMMITMENT_INVALID", "Private fund commitment is invalid", "Private fund commitments must be greater than zero."),
+                    FieldRule.OptionalNonNegative("fundedAmount", "SM_PRIVATE_FUND_FUNDED_INVALID", "Private fund funded amount is invalid", "Private fund funded amounts must be zero or greater when supplied."),
+                    FieldRule.OptionalNonNegative("unfundedAmount", "SM_PRIVATE_FUND_UNFUNDED_INVALID", "Private fund unfunded amount is invalid", "Private fund unfunded amounts must be zero or greater when supplied."),
+                    FieldRule.RequiredDate("navDate", "SM_PRIVATE_FUND_NAV_DATE_REQUIRED", "Private fund NAV date is missing", "Private fund interests must include the retained NAV date.")
+                ]),
+            new JsonAssetClassValidator(
+                "PrivateCompanyEquity",
+                [
+                    FieldRule.RequiredString("issuer", "SM_PRIVATE_COMPANY_ISSUER_REQUIRED", "Private company issuer is missing", "Private company equity records must include the issuer."),
+                    FieldRule.RequiredString("shareClass", "SM_PRIVATE_COMPANY_SHARE_CLASS_REQUIRED", "Private company share class is missing", "Private company equity records must include a share class."),
+                    FieldRule.RequiredString("round", "SM_PRIVATE_COMPANY_ROUND_REQUIRED", "Private company financing round is missing", "Private company equity records must include the financing round or acquisition round."),
+                    FieldRule.OptionalNonNegative("ownershipPercent", "SM_PRIVATE_COMPANY_OWNERSHIP_INVALID", "Private company ownership percent is invalid", "Private company ownership percentages must be zero or greater when supplied."),
+                    FieldRule.RequiredPositive("costBasis", "SM_PRIVATE_COMPANY_COST_BASIS_INVALID", "Private company cost basis is invalid", "Private company equity records must include a positive cost basis."),
+                    FieldRule.OptionalNonNegative("latestValuation", "SM_PRIVATE_COMPANY_VALUATION_INVALID", "Private company valuation is invalid", "Private company latest valuation must be zero or greater when supplied.")
+                ]),
+            new JsonAssetClassValidator(
+                "RealEstateHolding",
+                [
+                    FieldRule.RequiredString("propertyType", "SM_REAL_ESTATE_PROPERTY_TYPE_REQUIRED", "Real estate property type is missing", "Real estate holdings must include a property type."),
+                    FieldRule.RequiredString("addressOrMarket", "SM_REAL_ESTATE_MARKET_REQUIRED", "Real estate market/address is missing", "Real estate holdings must include a market or address."),
+                    FieldRule.RequiredPositive("ownershipPercent", "SM_REAL_ESTATE_OWNERSHIP_INVALID", "Real estate ownership percent is invalid", "Real estate ownership percentages must be greater than zero."),
+                    FieldRule.RequiredPositive("appraisalValue", "SM_REAL_ESTATE_APPRAISAL_INVALID", "Real estate appraisal value is invalid", "Real estate holdings must include a positive appraisal value."),
+                    FieldRule.RequiredDate("valuationDate", "SM_REAL_ESTATE_VALUATION_DATE_REQUIRED", "Real estate valuation date is missing", "Real estate holdings must include an appraisal or valuation date.")
+                ]),
+            new JsonAssetClassValidator(
+                "CommitmentGuarantee",
+                [
+                    FieldRule.RequiredString("counterparty", "SM_COMMITMENT_GUARANTEE_COUNTERPARTY_REQUIRED", "Commitment/guarantee counterparty is missing", "Commitment and guarantee records must include the counterparty."),
+                    FieldRule.RequiredPositive("committedAmount", "SM_COMMITMENT_GUARANTEE_AMOUNT_INVALID", "Committed or guaranteed amount is invalid", "Commitment and guarantee amounts must be greater than zero."),
+                    FieldRule.OptionalNonNegative("unfundedAmount", "SM_COMMITMENT_GUARANTEE_EXPOSURE_INVALID", "Unfunded/exposure amount is invalid", "Unfunded or exposure amounts must be zero or greater when supplied."),
+                    FieldRule.RequiredDate("effectiveDate", "SM_COMMITMENT_GUARANTEE_EFFECTIVE_DATE_REQUIRED", "Commitment/guarantee effective date is missing", "Commitments and guarantees must include an effective date."),
+                    DateOrderRule.Optional("effectiveDate", "expiryDate", "SM_COMMITMENT_GUARANTEE_DATE_RANGE_INVALID", "Commitment/guarantee date range is invalid", "Commitment or guarantee effective date must be on or before expiry date."),
+                    FieldRule.OptionalNonNegative("feeRate", "SM_COMMITMENT_GUARANTEE_FEE_INVALID", "Commitment/guarantee fee rate is invalid", "Commitment or guarantee fee rates must be zero or greater when supplied.")
+                ]),
+            new JsonAssetClassValidator(
                 "Commodity",
                 [
                     FieldRule.RequiredString("commodityType", "SM_COMMODITY_TYPE_REQUIRED", "Commodity type is missing", "Commodities must include a commodity type."),
@@ -614,7 +663,7 @@ internal sealed record FieldRule(
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
         var field = $"assetSpecificTerms.{FieldPath}";
-        if (!JsonValidationReader.TryGetProperty(context.Record.AssetSpecificTerms, FieldPath, out var property))
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, FieldPath, out var property))
         {
             return RequiresPresence(RuleKind)
                 ? Issue(field)
@@ -671,8 +720,8 @@ internal sealed record DateOrderRule(
 
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
-        var hasStart = JsonValidationReader.TryGetDate(context.Record.AssetSpecificTerms, StartFieldPath, out var start);
-        var hasEnd = JsonValidationReader.TryGetDate(context.Record.AssetSpecificTerms, EndFieldPath, out var end);
+        var hasStart = JsonValidationReader.TryGetAssetTermDate(context.Record.AssetSpecificTerms, StartFieldPath, out var start);
+        var hasEnd = JsonValidationReader.TryGetAssetTermDate(context.Record.AssetSpecificTerms, EndFieldPath, out var end);
         if (!hasStart || !hasEnd)
         {
             return RequiresBothFields
@@ -705,8 +754,8 @@ internal sealed record DistinctStringRule(
 
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
-        if (!JsonValidationReader.TryGetString(context.Record.AssetSpecificTerms, LeftFieldPath, out var left)
-            || !JsonValidationReader.TryGetString(context.Record.AssetSpecificTerms, RightFieldPath, out var right))
+        if (!JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, LeftFieldPath, out var left)
+            || !JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, RightFieldPath, out var right))
         {
             return null;
         }
@@ -758,6 +807,23 @@ internal static class JsonValidationReader
         return true;
     }
 
+    public static bool TryGetAssetTermProperty(JsonElement root, string path, out JsonElement property)
+    {
+        if (TryGetProperty(root, path, out property))
+        {
+            return true;
+        }
+
+        if (TryGetProperty(root, "profileFields", out var profileFields)
+            && TryGetProperty(profileFields, path, out property))
+        {
+            return true;
+        }
+
+        property = default;
+        return false;
+    }
+
     public static bool HasNonBlankString(JsonElement property)
         => property.ValueKind == JsonValueKind.String
            && !string.IsNullOrWhiteSpace(property.GetString());
@@ -793,6 +859,24 @@ internal static class JsonValidationReader
         return true;
     }
 
+    public static bool TryGetAssetTermString(JsonElement root, string path, out string value)
+    {
+        value = string.Empty;
+        if (!TryGetAssetTermProperty(root, path, out var property) || property.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var raw = property.GetString();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        value = raw;
+        return true;
+    }
+
     public static bool TryGetDecimal(JsonElement property, out decimal value)
     {
         value = default;
@@ -814,6 +898,17 @@ internal static class JsonValidationReader
     {
         value = default;
         if (!TryGetProperty(root, path, out var property) || property.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        return DateOnly.TryParse(property.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+    }
+
+    public static bool TryGetAssetTermDate(JsonElement root, string path, out DateOnly value)
+    {
+        value = default;
+        if (!TryGetAssetTermProperty(root, path, out var property) || property.ValueKind != JsonValueKind.String)
         {
             return false;
         }

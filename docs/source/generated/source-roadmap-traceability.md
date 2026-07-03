@@ -23,6 +23,7 @@ do_not_edit: true
 | `SRC-APP` | Meridian application layer | `W3-CONT-001` | Research to paper continuity |
 | `SRC-APP` | Meridian application layer | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-BACKTESTING` | Meridian backtesting | `W3-CONT-001` | Research to paper continuity |
+| `SRC-BACKTESTING` | Meridian backtesting | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-BACKTESTING` | Meridian backtesting | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-BACKTESTING-SDK` | Backtesting SDK | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-CONTRACTS` | Meridian contracts | `W1-DATA-001` | Provider trust gate and data confidence baseline |

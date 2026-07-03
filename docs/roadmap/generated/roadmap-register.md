@@ -228,15 +228,16 @@ Closed 2026-06-02. Accounting record summaries with all six evidence categories 
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-06-02 |
+| Last reviewed | 2026-07-02 |
 
 ### Current Summary
 
-Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The next feature slice is the still-partial multi-asset reference-data workbench completion inside the existing Security Master detail/passport flow, not a new route.
+Completed the shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The v1 alternative-asset baseline now promotes `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and `CommitmentGuarantee` into first-class Security Master classes while retaining `DirectLoan` and governed `CustomAsset` compatibility fallback rows. Live eFront/Yardi/cap-table/trustee adapter builds, new root workspaces, and core-ledger rewrites remain out of scope.
 
 ### Exit Criteria
 
-- Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
+- Equities, options, futures, FX, fixed income, loans, `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
+- Structured credit, private fund, private company equity, real estate, and commitment/guarantee rows expose class-specific trustee/servicer, factor schedule, collateral tape, administrator/GP, capital call, distribution, NAV, capital account, cap table, valuation, appraisal, debt-service, fee/accrual, covenant, and release/expiry evidence targets.
 - Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
 - Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
 - Follow-on multi-asset reference-data workbench work extends the existing Security Master detail/passport flow with provider evidence, identifier confidence, terms and obligations, projected cash-flow readiness, ledger classification, and operations handoff without introducing a new route.
@@ -276,6 +277,34 @@ Delivered 2026-07-02. Statement connectors ship as data, not code - declarative 
 
 - `SRC-CONTRACTS`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
+## W5X-EVIDENCE-001 - Evidence Vault productization
+| Field | Value |
+| --- | --- |
+| Wave | W5X |
+| Status | in_progress |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-02 |
+
+### Current Summary
+
+Active 2026-07-02. Productizes the existing Evidence Vault identity, intake, request-list, document-list, extracted-field review, object-link, immutable-manifest, and audit primitives as a reusable evidence layer. The first implemented acceptance path is browser-first statement reconciliation onboarding; WPF UI parity is intentionally omitted from this v1 slice while shared DTO/API support remains compatible.
+
+### Exit Criteria
+
+- Evidence Vault retains imported source documents with immutable vault identity, manifest route, source hash, source record, reviewer state, and audit trail.
+- Request-list and document-list queries can filter retained documents by subject, classification, review status, and object links.
+- Document authority stays bounded to support, block, suggest, and link; documents cannot approve, post, certify, or release.
+- Browser Accounting, Reporting, and Data evidence workbench routes can deep-link into retained support for a selected subject without WPF-specific UI work.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 
@@ -345,6 +374,35 @@ Completed shared Ledger, Portfolio, Security & Instrument, and Report-Line Prove
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
+
+## W5X-STMT-ONBOARD-001 - Statement reconciliation onboarding wedge
+| Field | Value |
+| --- | --- |
+| Wave | W5X |
+| Status | in_progress |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-02 |
+
+### Current Summary
+
+Active 2026-07-02. Turns the delivered statement connector library into the browser-first onboarding wedge: operators can import custodian or broker CSV, OFX, IB Flex, or mapped connector files, commit them into reconciliation, and immediately drill into retained Evidence Vault proof for the statement run. WPF implementation is omitted for this v1 wedge.
+
+### Exit Criteria
+
+- Browser statement import commit returns Evidence Vault identity, Evidence workbench route, reconciliation route, and next actions.
+- The retained raw statement source is copied into Evidence Vault as a Statement document linked to statement run, fund account, period, and import source.
+- Statement imports with reconciliation breaks mark retained statement evidence as review-required and route operators into reconciliation casework.
+- The wedge reuses W5X-CONNECT-001 mapping profiles and connector parsing without requiring code releases for CSV/OFX layout onboarding.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
 
 ## W6-BTSTUDIO-001 - Backtesting studio evidence loop
 | Field | Value |

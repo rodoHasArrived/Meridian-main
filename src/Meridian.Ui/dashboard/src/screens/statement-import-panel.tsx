@@ -668,11 +668,14 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
 
   if (viewModel.commitOutcome === "duplicate") {
     return (
-      <StatusBanner
-        tone="warning"
-        title="Duplicate statement detected"
-        detail={`This statement was already imported as run ${result.runId}. No new records were committed. ${result.nextAction}`}
-      />
+      <PanelSurface role="status" className="flex flex-col gap-3 p-4">
+        <StatusBanner
+          tone="warning"
+          title="Duplicate statement detected"
+          detail={`This statement was already imported as run ${result.runId}. No new records were committed. ${result.nextAction}`}
+        />
+        <CommitResultActions result={result} />
+      </PanelSurface>
     );
   }
 
@@ -692,15 +695,47 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retained canonical</dt>
           <dd className="font-mono">{result.retainedCanonicalPath}</dd>
         </div>
+        {result.evidenceVaultIdentity ? (
+          <div>
+            <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Evidence vault</dt>
+            <dd className="font-mono">{result.evidenceVaultIdentity.vaultId}</dd>
+          </div>
+        ) : null}
       </dl>
-      <div>
-        <Button asChild variant="outline" size="sm">
-          <Link to={WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch}>
-            <span>Open reconciliation queue</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
-      </div>
+      {result.nextActions && result.nextActions.length > 0 ? (
+        <ul className="flex flex-col gap-1 text-xs text-muted-foreground" aria-label="Statement import next actions">
+          {result.nextActions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ul>
+      ) : null}
+      <CommitResultActions result={result} />
     </PanelSurface>
+  );
+}
+
+function CommitResultActions({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
+  if (!result) {
+    return null;
+  }
+
+  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.accountingEvidence;
+  const reconciliationRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button asChild variant="outline" size="sm">
+        <Link to={evidenceRoute}>
+          <span>Open Evidence Vault</span>
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </Button>
+      <Button asChild variant="outline" size="sm">
+        <Link to={reconciliationRoute}>
+          <span>Open reconciliation queue</span>
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </Button>
+    </div>
   );
 }

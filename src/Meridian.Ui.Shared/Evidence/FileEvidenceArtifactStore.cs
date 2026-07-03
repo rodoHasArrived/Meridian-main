@@ -77,6 +77,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         "report",
         "report-pack",
         "approval",
+        "statement-run",
         EvidenceSubjectResolver.StrategyRunKind,
         EvidenceSubjectResolver.PaperReadinessKind,
         EvidenceSubjectResolver.ReconciliationReviewKind,

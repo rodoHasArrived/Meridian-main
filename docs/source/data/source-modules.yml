@@ -185,7 +185,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-07-02
 
   - id: SRC-STORAGE
     path: src/Meridian.Storage
@@ -319,6 +319,7 @@ modules:
     readme: src/Meridian.Backtesting/README.md
     roadmap_items:
       - W3-CONT-001
+      - W5-MASSET-001
       - W6-BTSTUDIO-001
     stage_gates:
       - ResearchContinuity

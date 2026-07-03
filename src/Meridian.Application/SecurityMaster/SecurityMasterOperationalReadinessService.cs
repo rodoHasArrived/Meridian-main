@@ -103,6 +103,56 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             ["quantity", "market value", "cash", "accrual", "loan schedule", "commitment", "paydown", "obligation"],
             hardBlocker: true),
         Listed(
+            "StructuredCredit",
+            "Structured credit",
+            "Structured-credit readiness requires tranche and pool identity, trustee or servicer reporting, factor schedules, collateral tape support, valuation evidence, and cash remittance reconciliation.",
+            ["Internal code", "CUSIP/ISIN/FIGI when available", "Provider symbol"],
+            ["tranche", "pool/collateral type", "original/current factor", "coupon/index", "factor schedule"],
+            ["Trustee report", "Servicer report", "Factor schedule", "Collateral tape", "Dealer pricing", "Valuation source", "Cash remittance"],
+            "Structured credit security / factor amortization / interest income / realized and unrealized P&L",
+            ["quantity", "market value", "cash remittance", "factor schedule", "collateral tape", "trustee report"],
+            hardBlocker: true),
+        Listed(
+            "PrivateFundInterest",
+            "Private fund interests",
+            "Private-fund readiness requires GP or sponsor identity, commitment and funded/unfunded balances, retained administrator or GP statements, NAV support, and capital-account evidence.",
+            ["Internal code", "LEI or provider symbol when available"],
+            ["GP/sponsor", "strategy", "vintage", "commitment", "funded/unfunded", "NAV date", "lockup"],
+            ["Administrator statement", "GP statement", "Capital call", "Distribution notice", "NAV statement", "Capital account schedule"],
+            "Private fund interest / capital call receivable-payable / distribution income / NAV adjustment",
+            ["commitment", "funded", "unfunded", "NAV", "capital call", "distribution", "capital account"],
+            hardBlocker: true),
+        Listed(
+            "PrivateCompanyEquity",
+            "Private company equity",
+            "Private-company equity readiness requires issuer and share-class terms, cap-table or transfer-agent evidence, financing-round documentation, valuation support, and transaction evidence.",
+            ["Internal code", "LEI/CIK or provider symbol when available"],
+            ["issuer", "share class", "round", "ownership %", "cost basis", "latest valuation", "restrictions"],
+            ["Cap table", "Transfer-agent evidence", "Financing documents", "Share-class documents", "Valuation memo", "409A", "Transaction evidence", "Exit evidence", "Dividend evidence"],
+            "Private company equity / cost basis / valuation adjustment / dividend and realized gain/loss",
+            ["ownership", "market value", "cost basis", "cap table", "valuation", "transaction", "restriction"],
+            hardBlocker: true),
+        Listed(
+            "RealEstateHolding",
+            "Real estate holdings",
+            "Real-estate readiness requires property identity, ownership and appraisal terms, property-manager evidence, rent-roll and lease schedules, debt-service evidence, and SPV ownership support.",
+            ["Internal code", "LEI or provider symbol when available"],
+            ["property type", "market/address", "ownership %", "appraisal value/date", "debt stack", "sponsor"],
+            ["Property manager statement", "Rent roll", "Lease schedule", "Appraisal", "Debt-service statement", "Ownership evidence", "SPV evidence"],
+            "Real estate holding / rental income / appraisal adjustment / debt-service and ownership accounting",
+            ["ownership", "market value", "cash", "rent roll", "lease", "appraisal", "debt service", "SPV"],
+            hardBlocker: true),
+        Listed(
+            "CommitmentGuarantee",
+            "Commitments and guarantees",
+            "Commitment and guarantee readiness requires counterparty or beneficiary terms, committed and exposure amounts, effective/expiry dates, fee schedules, covenant evidence, and release controls.",
+            ["Internal code", "LEI or provider symbol when available"],
+            ["counterparty/beneficiary", "committed/guaranteed amount", "unfunded/exposure amount", "effective/expiry dates", "fee/rate", "collateral/covenants"],
+            ["Commitment agreement", "Guarantee agreement", "Draw notice", "Usage notice", "Fee schedule", "Accrual schedule", "Collateral evidence", "Covenant evidence", "Release evidence", "Expiry evidence"],
+            "Commitment or guarantee exposure / fee accrual / contingent obligation / release accounting",
+            ["commitment", "guarantee", "exposure", "fee accrual", "draw", "usage", "collateral", "covenant", "release"],
+            hardBlocker: true),
+        Listed(
             "CustomAsset",
             "MBS / ABS / CLO / CMBS / private assets",
             "Structured and private assets require governed custom profiles, servicer/trustee reports, factor or NAV evidence, obligation events, valuation approval, and profile-aware ledger classification.",
@@ -459,6 +509,199 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 "Meridian.FSharp.DirectLending.Aggregates"));
         }
 
+        if (string.Equals(spec.AssetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:trustee-servicer-remittance",
+                "StructuredCreditTrusteeEvidence",
+                "Trustee, servicer, and cash remittance evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:factor-schedule",
+                "FactorScheduleEvidence",
+                "Factor schedule evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:collateral-tape",
+                "StructuredCollateralTape",
+                "Collateral tape evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:valuation-source",
+                "StructuredValuationEvidence",
+                "Dealer or valuation-source evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+        }
+
+        if (string.Equals(spec.AssetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:administrator-gp-statement",
+                "FundAdministratorStatement",
+                "Administrator or GP statement",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:capital-call-distribution",
+                "CapitalCallDistributionEvidence",
+                "Capital call and distribution notice evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:nav-statement",
+                "PrivateFundNavEvidence",
+                "NAV statement evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:capital-account-schedule",
+                "CapitalAccountScheduleEvidence",
+                "Capital account schedule evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+        }
+
+        if (string.Equals(spec.AssetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:cap-table",
+                "CapTableEvidence",
+                "Cap table or transfer-agent evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:financing-share-class",
+                "FinancingShareClassEvidence",
+                "Financing and share-class documents",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:valuation",
+                "PrivateCompanyValuationEvidence",
+                "Valuation memo or 409A evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:transaction-exit-dividend",
+                "TransactionExitDividendEvidence",
+                "Transaction, exit, and dividend evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+        }
+
+        if (string.Equals(spec.AssetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:property-manager",
+                "PropertyManagerEvidence",
+                "Property manager statement evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:rent-roll-lease",
+                "RentRollLeaseEvidence",
+                "Rent roll and lease schedule evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:appraisal",
+                "RealEstateAppraisalEvidence",
+                "Appraisal evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:debt-service-ownership",
+                "DebtServiceOwnershipEvidence",
+                "Debt-service and ownership/SPV evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+        }
+
+        if (string.Equals(spec.AssetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:agreement",
+                "CommitmentAgreementEvidence",
+                "Commitment or guarantee agreement",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:draw-usage",
+                "DrawUsageNoticeEvidence",
+                "Draw or usage notice evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:fee-accrual",
+                "FeeAccrualScheduleEvidence",
+                "Fee and accrual schedule evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:collateral-covenant",
+                "CollateralCovenantEvidence",
+                "Collateral and covenant evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:release-expiry",
+                "ReleaseExpiryEvidence",
+                "Release or expiry evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+        }
+
         if (string.Equals(spec.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
         {
             var governanceStatus = RequirementStatus(requirements, "Governance");
@@ -753,6 +996,11 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         {
             "bond" => normalizedActual is "fixedincome" or "fixedincomesecurity" or "debt" or "mbs" or "abs" or "clo" or "cmbs",
             "directloan" => normalizedActual is "loan" or "directloan" or "privatecredit",
+            "structuredcredit" => normalizedActual is "structuredcredit" or "structuredproduct" or "mbs" or "abs" or "clo" or "cmbs",
+            "privatefundinterest" => normalizedActual is "privatefundinterest" or "privatefund" or "partnershipinterest" or "limitedpartnershipinterest" or "privateasset",
+            "privatecompanyequity" => normalizedActual is "privatecompanyequity" or "privateequity" or "privatecompany" or "venturecapital",
+            "realestateholding" => normalizedActual is "realestateholding" or "realestate" or "realestateinterest" or "property" or "spv",
+            "commitmentguarantee" => normalizedActual is "commitmentguarantee" or "unfundedcommitment" or "guarantee" or "creditfacility" or "commitment",
             "customasset" => normalizedActual is "structuredproduct" or "structuredcredit" or "privateasset" or "privatefund" or "privateequity" or "mbs" or "abs" or "clo" or "cmbs" or "customasset",
             "othersecurity" => normalizedActual is "other" or "othersecurity" or "customasset",
             "fxspot" => normalizedActual is "fx" or "foreignexchange" or "currency",
@@ -770,6 +1018,11 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         {
             "Bond" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
             "DirectLoan" => "Meridian.FSharp.DirectLending.Aggregates, LoanAccountingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
+            "StructuredCredit" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
+            "PrivateFundInterest" => "DailyPortfolioPricingProjector, Security Master accounting-event services, FundAccountCloseReadinessService",
+            "PrivateCompanyEquity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",
+            "RealEstateHolding" => "DailyPortfolioPricingProjector, Security Master accounting-event services, FundAccountCloseReadinessService",
+            "CommitmentGuarantee" => "Security Master accounting-event services, FundAccountCloseReadinessService",
             "FxSpot" => "MultiCurrency remeasurement projectors",
             "Option" or "Future" => "DailyPortfolioPricingProjector, LedgerTaxLotReliefProjector",
             "CustomAsset" or "OtherSecurity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",

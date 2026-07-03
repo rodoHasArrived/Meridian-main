@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -153,7 +154,8 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementImportCommit), async (
             HttpContext context,
             HttpRequest request,
-            [FromServices] StatementImportService? importService) =>
+            [FromServices] StatementImportService? importService,
+            [FromServices] StatementImportEvidenceBridge? evidenceBridge) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -232,6 +234,22 @@ public static partial class WorkstationEndpoints
                             currentUser),
                         context.RequestAborted)
                     .ConfigureAwait(false);
+                if (evidenceBridge is not null)
+                {
+                    result = await evidenceBridge.RetainAsync(
+                            result,
+                            new StatementImportEvidenceBridgeRequest(
+                                sourceKind,
+                                sourceInstitution,
+                                fundAccountId,
+                                externalAccountId,
+                                periodStart,
+                                periodEnd,
+                                currentUser),
+                            context.RequestAborted)
+                        .ConfigureAwait(false);
+                }
+
                 return Results.Json(result, jsonOptions);
             }
             catch (Exception ex) when (ex is InvalidDataException or NotSupportedException)
@@ -377,7 +395,9 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchScheduleRun), async (
             string scheduleId,
             HttpContext context,
-            [FromServices] StatementFetchScheduleRunner? runner) =>
+            [FromServices] StatementFetchScheduleRunner? runner,
+            [FromServices] IStatementFetchScheduleStore? scheduleStore,
+            [FromServices] StatementImportEvidenceBridge? evidenceBridge) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -389,7 +409,29 @@ public static partial class WorkstationEndpoints
                 return StatementConnectorsNotRegistered();
             }
 
-            var result = await runner.RunScheduleAsync(scheduleId, DateTimeOffset.UtcNow, context.RequestAborted).ConfigureAwait(false);
+            var nowUtc = DateTimeOffset.UtcNow;
+            var schedule = scheduleStore is null
+                ? null
+                : (await scheduleStore.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                    .FirstOrDefault(candidate => string.Equals(candidate.ScheduleId, scheduleId?.Trim(), StringComparison.OrdinalIgnoreCase));
+            var since = schedule?.LastRunAtUtc ?? nowUtc.AddHours(-Math.Max(1, schedule?.CadenceHours ?? 24));
+            var result = await runner.RunScheduleAsync(scheduleId, nowUtc, context.RequestAborted).ConfigureAwait(false);
+            if (result is not null && schedule is not null && evidenceBridge is not null)
+            {
+                result = await evidenceBridge.RetainAsync(
+                        result,
+                        new StatementImportEvidenceBridgeRequest(
+                            SourceKind: "broker",
+                            SourceInstitution: schedule.SourceInstitution,
+                            FundAccountId: schedule.FundAccountId,
+                            ExternalAccountId: schedule.ExternalAccountId,
+                            PeriodStart: DateOnly.FromDateTime(since.UtcDateTime),
+                            PeriodEnd: DateOnly.FromDateTime(nowUtc.UtcDateTime),
+                            ImportedBy: "statement-fetch-scheduler"),
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+            }
+
             return result is null
                 ? Results.NotFound()
                 : Results.Json(result, jsonOptions);

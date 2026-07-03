@@ -192,6 +192,56 @@ module SecurityMasterLegacyUpgrade =
                 RiskCountry = None
                 Taxonomy = None
             }
+        | SecurityKind.StructuredCredit _ ->
+            {
+                AssetClass = AssetClass.FixedIncome
+                Family = Some AssetFamily.StructuredCash
+                SubType = SecuritySubType.StructuredCredit
+                TypeName = "StructuredCredit"
+                IssuerType = Some "StructuredVehicle"
+                RiskCountry = None
+                Taxonomy = None
+            }
+        | SecurityKind.PrivateFundInterest _ ->
+            {
+                AssetClass = AssetClass.Fund
+                Family = Some AssetFamily.PartnershipEquity
+                SubType = SecuritySubType.LimitedPartnershipInterest
+                TypeName = "PrivateFundInterest"
+                IssuerType = Some "FundVehicle"
+                RiskCountry = None
+                Taxonomy = None
+            }
+        | SecurityKind.PrivateCompanyEquity _ ->
+            {
+                AssetClass = AssetClass.Equity
+                Family = Some (AssetFamily.OtherFamily "PrivateCompanyEquity")
+                SubType = SecuritySubType.PrivateCompanyEquity
+                TypeName = "PrivateCompanyEquity"
+                IssuerType = Some "PrivateCompany"
+                RiskCountry = None
+                Taxonomy = None
+            }
+        | SecurityKind.RealEstateHolding _ ->
+            {
+                AssetClass = AssetClass.Other
+                Family = Some (AssetFamily.OtherFamily "RealEstate")
+                SubType = SecuritySubType.RealEstateHolding
+                TypeName = "RealEstateHolding"
+                IssuerType = Some "PropertyOrSpv"
+                RiskCountry = None
+                Taxonomy = None
+            }
+        | SecurityKind.CommitmentGuarantee _ ->
+            {
+                AssetClass = AssetClass.Financing
+                Family = Some (AssetFamily.OtherFamily "CommitmentGuarantee")
+                SubType = SecuritySubType.CommitmentGuarantee
+                TypeName = "CommitmentGuarantee"
+                IssuerType = Some "Counterparty"
+                RiskCountry = None
+                Taxonomy = None
+            }
         | SecurityKind.Commodity _ ->
             {
                 AssetClass = AssetClass.Other
@@ -590,6 +640,128 @@ module SecurityMasterLegacyUpgrade =
                             IssuerName = Some terms.Borrower
                             InstitutionName = None
                             IssuerProgram = None
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.StructuredCredit terms ->
+            {
+                SecurityTermModules.empty with
+                    Issuer =
+                        Some {
+                            IssuerName = terms.PoolId
+                            InstitutionName = None
+                            IssuerProgram = Some terms.CollateralType
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+                    Coupon =
+                        Some {
+                            CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
+                            CouponRate = None
+                            PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency
+                            DayCount = None
+                        }
+                    FloatingRate =
+                        Some {
+                            ReferenceIndex = Some terms.CouponOrIndex
+                            SpreadBps = None
+                            ResetFrequency = terms.FactorSchedule
+                            FloorRate = None
+                            CapRate = None
+                        }
+                    StructuredProduct =
+                        Some {
+                            Factor = terms.CurrentFactor
+                            FactorDate = None
+                            WeightedAvgCoupon = None
+                            WeightedAvgMaturityMonths = None
+                            WeightedAvgLoanAgeMos = None
+                            CollateralType = Some terms.CollateralType
+                            PoolIdentifier = terms.PoolId
+                            TrancheClass = Some terms.Tranche
+                            PrepaymentAssumption = None
+                            AverageLifeYears = None
+                            IsInterestOnly = terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
+                            IsPrincipalOnly = terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
+                            NotionalBalance = Some terms.OriginalFace
+                            Originator = None
+                            CreditEnhancementPct = None
+                        }
+            }
+        | SecurityKind.PrivateFundInterest terms ->
+            {
+                SecurityTermModules.empty with
+                    Fund =
+                        Some {
+                            FundFamily = Some terms.GpSponsor
+                            WeightedAverageMaturityDays = None
+                            SweepEligible = None
+                            LiquidityFeeEligible = None
+                        }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.GpSponsor
+                            InstitutionName = None
+                            IssuerProgram = Some terms.Strategy
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.PrivateCompanyEquity terms ->
+            {
+                SecurityTermModules.empty with
+                    EquityBehavior =
+                        Some {
+                            ShareClass = Some terms.ShareClass
+                            VotingRights = None
+                            DistributionType = None
+                        }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.Issuer
+                            InstitutionName = None
+                            IssuerProgram = Some terms.Round
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.RealEstateHolding terms ->
+            {
+                SecurityTermModules.empty with
+                    Issuer =
+                        Some {
+                            IssuerName = terms.Sponsor
+                            InstitutionName = None
+                            IssuerProgram = Some terms.PropertyType
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = Some "RealEstate"
+                            IssuerCountry = None
+                        }
+            }
+        | SecurityKind.CommitmentGuarantee terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.EffectiveDate
+                            IssueDate = Some terms.EffectiveDate
+                            MaturityDate = terms.ExpiryDate
+                        }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.Counterparty
+                            InstitutionName = None
+                            IssuerProgram = terms.Beneficiary
                             LeiCode = None
                             UltimateParentName = None
                             IssuerSector = None

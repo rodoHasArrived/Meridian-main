@@ -803,6 +803,11 @@ Data, Settings, browser, WPF, and endpoint flows validate the same no-code custo
 instead of accepting client-local JSON shapes.
 `SecurityAssetClassCatalog` also exposes `CustomAsset` so create workflows and projection consumers
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
+Alternative asset operations are represented as first-class Security Master asset classes for
+`StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
+that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
 narrow automation: each pack declares contract schema dimensions, lifecycle events, valuation
 methods, lifecycle-event automation coverage, journal-template rule hooks, structured template
@@ -863,10 +868,13 @@ The same workstation contract file owns the multi-asset operational coverage DTO
 `MultiAssetDrillThroughTargetDto` entries for Security Master passport/profile, provider evidence,
 reconciliation casework, ledger mapping/evidence, Asset Operations detail, and close readiness.
 Private-credit `DirectLoan` rows can also carry loan-schedule, commitment/covenant, and paydown/obligation targets, while
-structured/private `CustomAsset` rows can carry profile-lineage, servicer/trustee, valuation/NAV,
-and obligation close-readiness targets. Browser, WPF, and shared endpoint clients should render
-those rows as supplied instead of recalculating asset-class readiness, ledger coverage,
-reconciliation status, or close blockers locally.
+structured credit, private-fund, private-company, real-estate, and commitment/guarantee rows carry
+class-specific trustee/servicer, factor, collateral tape, administrator/GP, capital call,
+distribution, NAV, cap-table, appraisal, debt-service, fee-accrual, covenant, and release/expiry
+targets. `CustomAsset` rows remain available for profile-lineage, servicer/trustee, valuation/NAV,
+and obligation close-readiness compatibility coverage. Browser, WPF, and shared endpoint clients
+should render those rows as supplied instead of recalculating asset-class readiness, ledger
+coverage, reconciliation status, or close blockers locally.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

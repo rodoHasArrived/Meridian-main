@@ -395,6 +395,59 @@ type DirectLoanTerms = {
     PricingSource: string option
 }
 
+type StructuredCreditTerms = {
+    Tranche: string
+    PoolId: string option
+    CollateralType: string
+    OriginalFace: decimal
+    CurrentFactor: decimal option
+    CouponOrIndex: string
+    FactorSchedule: string option
+}
+
+type PrivateFundInterestTerms = {
+    GpSponsor: string
+    Strategy: string
+    Vintage: int
+    Commitment: decimal
+    FundedAmount: decimal option
+    UnfundedAmount: decimal option
+    NavDate: DateOnly
+    Lockup: string option
+}
+
+type PrivateCompanyEquityTerms = {
+    Issuer: string
+    ShareClass: string
+    Round: string
+    OwnershipPercent: decimal option
+    CostBasis: decimal
+    LatestValuation: decimal option
+    TransferRestrictions: string option
+}
+
+type RealEstateHoldingTerms = {
+    PropertyType: string
+    AddressOrMarket: string
+    OwnershipPercent: decimal
+    AppraisalValue: decimal
+    ValuationDate: DateOnly
+    DebtStack: string option
+    Sponsor: string option
+}
+
+type CommitmentGuaranteeTerms = {
+    Counterparty: string
+    Beneficiary: string option
+    CommittedAmount: decimal
+    UnfundedAmount: decimal option
+    EffectiveDate: DateOnly
+    ExpiryDate: DateOnly option
+    FeeRate: decimal option
+    Collateral: string option
+    Covenants: Covenant list
+}
+
 /// Terms for mutual funds, ETFs, hedge funds, REITs, and closed-end funds.
 /// These instruments generally do not amortize; market value is units × NAV/price.
 type InvestmentFundTerms = {
@@ -454,6 +507,11 @@ type SecurityKind =
     | OtherSecurity of OtherSecurityTerms
     | Swap of SwapTerms
     | DirectLoan of DirectLoanTerms
+    | StructuredCredit of StructuredCreditTerms
+    | PrivateFundInterest of PrivateFundInterestTerms
+    | PrivateCompanyEquity of PrivateCompanyEquityTerms
+    | RealEstateHolding of RealEstateHoldingTerms
+    | CommitmentGuarantee of CommitmentGuaranteeTerms
     | Commodity of CommodityTerms
     | CryptoCurrency of CryptoTerms
     | Cfd of CfdTerms
@@ -517,6 +575,11 @@ module SecurityMasterRecord =
         | SecurityKind.OtherSecurity _ -> "OtherSecurity"
         | SecurityKind.Swap _ -> "Swap"
         | SecurityKind.DirectLoan _ -> "DirectLoan"
+        | SecurityKind.StructuredCredit _ -> "StructuredCredit"
+        | SecurityKind.PrivateFundInterest _ -> "PrivateFundInterest"
+        | SecurityKind.PrivateCompanyEquity _ -> "PrivateCompanyEquity"
+        | SecurityKind.RealEstateHolding _ -> "RealEstateHolding"
+        | SecurityKind.CommitmentGuarantee _ -> "CommitmentGuarantee"
         | SecurityKind.Commodity _ -> "Commodity"
         | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
         | SecurityKind.Cfd _ -> "Cfd"
@@ -586,6 +649,11 @@ module SecurityKind =
         | SecurityKind.OtherSecurity _ -> "OtherSecurity"
         | SecurityKind.Swap _ -> "Swap"
         | SecurityKind.DirectLoan _ -> "DirectLoan"
+        | SecurityKind.StructuredCredit _ -> "StructuredCredit"
+        | SecurityKind.PrivateFundInterest _ -> "PrivateFundInterest"
+        | SecurityKind.PrivateCompanyEquity _ -> "PrivateCompanyEquity"
+        | SecurityKind.RealEstateHolding _ -> "RealEstateHolding"
+        | SecurityKind.CommitmentGuarantee _ -> "CommitmentGuarantee"
         | SecurityKind.Commodity _ -> "Commodity"
         | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
         | SecurityKind.Cfd _ -> "Cfd"
@@ -617,6 +685,11 @@ module SecurityKind =
         | SecurityKind.CashSweep _
         | SecurityKind.OtherSecurity _
         | SecurityKind.DirectLoan _
+        | SecurityKind.StructuredCredit _
+        | SecurityKind.PrivateFundInterest _
+        | SecurityKind.PrivateCompanyEquity _
+        | SecurityKind.RealEstateHolding _
+        | SecurityKind.CommitmentGuarantee _
         | SecurityKind.Commodity _
         | SecurityKind.CryptoCurrency _
         | SecurityKind.InvestmentFund _ -> false

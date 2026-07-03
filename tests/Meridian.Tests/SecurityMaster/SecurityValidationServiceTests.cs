@@ -507,6 +507,51 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_StructuredCreditDirectTerms_MissingCollateralType_BlocksReadiness()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                originalFace = 1000000m,
+                currentFactor = 0.98m,
+                couponOrIndex = "SOFR+250"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_STRUCTURED_CREDIT_COLLATERAL_REQUIRED"
+            && issue.AffectedFields.Contains("assetSpecificTerms.collateralType"));
+    }
+
+    [Fact]
+    public void Scenario_ProfileBackedPrivateFundInterest_AsFirstClass_UsesProfileFieldsForValidation()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "PrivateFundInterest",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "PFI-001", isPrimary: true)],
+            assetSpecificTerms: CreatePrivateFundProfileTerms(includeNavDate: true));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().NotContain(static issue => issue.Code.StartsWith("SM_PRIVATE_FUND_", StringComparison.Ordinal));
+        report.Issues.Should().NotContain(static issue => issue.Code == "SM_ASSET_SPECIFIC_SCHEMA_VERSION_UNSUPPORTED");
+    }
+
+    [Fact]
     public void Scenario_ProfileBackedOtherSecurity_MissingApprovalMetadata_BlocksGovernedUse()
     {
         var record = CreateProjection(

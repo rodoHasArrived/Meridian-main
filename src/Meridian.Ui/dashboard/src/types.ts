@@ -2205,7 +2205,9 @@ export type EvidenceDocumentLinkKind =
   | "ReconciliationCase"
   | "ReportLine"
   | "CloseTask"
-  | "Fund";
+  | "Fund"
+  | "StatementRun"
+  | "StatementImport";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -4485,6 +4487,10 @@ export interface StatementImportCommitResult {
   retainedCanonicalPath: string;
   status: string;
   nextAction: string;
+  evidenceVaultIdentity?: EvidenceVaultIdentity | null;
+  evidenceWorkbenchRoute?: string | null;
+  reconciliationRoute?: string | null;
+  nextActions?: string[];
 }
 
 export interface StatementFetchSchedule {

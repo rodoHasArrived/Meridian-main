@@ -255,6 +255,64 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                         |> List.map (fun entry ->
                             {| paymentDate = entry.PaymentDate
                                amount = entry.Amount |}) |})
+        | SecurityKind.StructuredCredit terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   tranche = terms.Tranche
+                   poolId = terms.PoolId
+                   collateralType = terms.CollateralType
+                   originalFace = terms.OriginalFace
+                   currentFactor = terms.CurrentFactor
+                   couponOrIndex = terms.CouponOrIndex
+                   factorSchedule = terms.FactorSchedule |})
+        | SecurityKind.PrivateFundInterest terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   gpSponsor = terms.GpSponsor
+                   strategy = terms.Strategy
+                   vintage = terms.Vintage
+                   commitment = terms.Commitment
+                   fundedAmount = terms.FundedAmount
+                   unfundedAmount = terms.UnfundedAmount
+                   navDate = terms.NavDate
+                   lockup = terms.Lockup |})
+        | SecurityKind.PrivateCompanyEquity terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   issuer = terms.Issuer
+                   shareClass = terms.ShareClass
+                   round = terms.Round
+                   ownershipPercent = terms.OwnershipPercent
+                   costBasis = terms.CostBasis
+                   latestValuation = terms.LatestValuation
+                   transferRestrictions = terms.TransferRestrictions |})
+        | SecurityKind.RealEstateHolding terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   propertyType = terms.PropertyType
+                   addressOrMarket = terms.AddressOrMarket
+                   ownershipPercent = terms.OwnershipPercent
+                   appraisalValue = terms.AppraisalValue
+                   valuationDate = terms.ValuationDate
+                   debtStack = terms.DebtStack
+                   sponsor = terms.Sponsor |})
+        | SecurityKind.CommitmentGuarantee terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   counterparty = terms.Counterparty
+                   beneficiary = terms.Beneficiary
+                   committedAmount = terms.CommittedAmount
+                   unfundedAmount = terms.UnfundedAmount
+                   effectiveDate = terms.EffectiveDate
+                   expiryDate = terms.ExpiryDate
+                   feeRate = terms.FeeRate
+                   collateral = terms.Collateral
+                   covenants =
+                        terms.Covenants
+                        |> List.map (fun covenant ->
+                            {| covenantType = covenant.CovenantType
+                               threshold = covenant.Threshold
+                               notes = covenant.Notes |}) |})
         | SecurityKind.Commodity terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

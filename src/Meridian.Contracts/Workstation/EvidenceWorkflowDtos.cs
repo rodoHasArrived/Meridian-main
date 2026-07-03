@@ -112,7 +112,9 @@ public enum EvidenceDocumentLinkKindDto
     ReconciliationCase = 6,
     ReportLine = 7,
     CloseTask = 8,
-    Fund = 9
+    Fund = 9,
+    StatementRun = 10,
+    StatementImport = 11
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentReviewStatusDto>))]

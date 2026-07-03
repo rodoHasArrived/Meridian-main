@@ -31,7 +31,9 @@ Snapshot date: 2026-06-24
 | W5-ACCT-001 | Accounting records and operational evidence | done | green | high | Accounting and Ledger |
 | W5-MASSET-001 | Multi-asset operational coverage proof lane | done | green | high | Accounting and Ledger |
 | W5X-CONNECT-001 | Custodian and broker statement connector library | done | green | high | Accounting and Ledger |
+| W5X-EVIDENCE-001 | Evidence Vault productization | in_progress | green | high | Accounting and Ledger |
 | W5X-FINOPS-001 | Financial operations control center | done | green | high | Accounting and Ledger |
 | W5X-FREX-001 | Shared financial record explorers | done | green | high | Workstation Shell and UX |
+| W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | in_progress | green | high | Accounting and Ledger |
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | planned | green | medium | Accounting and Ledger |

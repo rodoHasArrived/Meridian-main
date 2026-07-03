@@ -577,6 +577,37 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
     payload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
 
 [<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
+    let terms = {
+        Tranche = "A-1"
+        PoolId = Some "POOL-2026-1"
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = Some 0.9825m
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule = Some "monthly-trustee"
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    wrapper.AssetClass |> should equal "StructuredCredit"
+    payload.GetProperty("tranche").GetString() |> should equal "A-1"
+    payload.GetProperty("poolId").GetString() |> should equal "POOL-2026-1"
+    payload.GetProperty("collateralType").GetString() |> should equal "CLO"
+    payload.GetProperty("originalFace").GetDecimal() |> should equal 1_000_000m
+    payload.GetProperty("currentFactor").GetDecimal() |> should equal 0.9825m
+
+[<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
     let record = createSecurityRecord (Some classification)
@@ -740,6 +771,10 @@ let ``SecurityClassification.subTypeName returns canonical string for common sub
             SecuritySubType.FutureContract,  "FutureContract"
             SecuritySubType.Repo,            "Repo"
             SecuritySubType.MoneyMarketFund, "MoneyMarketFund"
+            SecuritySubType.StructuredCredit, "StructuredCredit"
+            SecuritySubType.PrivateCompanyEquity, "PrivateCompanyEquity"
+            SecuritySubType.RealEstateHolding, "RealEstateHolding"
+            SecuritySubType.CommitmentGuarantee, "CommitmentGuarantee"
             SecuritySubType.OtherSubType "DigitalAsset", "DigitalAsset"
         ]
 

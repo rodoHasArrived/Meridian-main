@@ -104,8 +104,8 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
   entity: "portfolio",
   asOfUtc: "2026-06-02T00:00:00Z",
   metrics: [
-    { id: "multi-asset-classes", label: "Asset classes", value: "4", delta: "covered", tone: "default" },
-    { id: "multi-asset-review", label: "Review required", value: "3", delta: "evidence gaps", tone: "warning" }
+    { id: "multi-asset-classes", label: "Asset classes", value: "5", delta: "covered", tone: "default" },
+    { id: "multi-asset-review", label: "Review required", value: "4", delta: "evidence gaps", tone: "warning" }
   ],
   assetClasses: [
     {
@@ -176,6 +176,32 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
       ],
       ledgerClassification: { classification: "Loan receivable / unfunded commitment obligation" },
       reconciliationSignals: { breaks: "loan schedule, commitment, paydown, obligation" }
+    },
+    {
+      assetClass: "StructuredCredit",
+      displayName: "Structured credit",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Structured-credit coverage requires trustee, servicer, factor, collateral tape, valuation, and remittance evidence.",
+      evidenceRequirements: [
+        { requirementId: "StructuredCredit:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true },
+        { requirementId: "StructuredCredit:provider-evidence", label: "Provider evidence feeds: Trustee report, Factor schedule, Collateral tape, Dealer pricing, Cash remittance", category: "ProviderEvidence", status: "ReviewRequired", evidenceRoute: "/api/workstation/data-operations", required: true }
+      ],
+      blockers: [
+        { code: "StructuredCredit:provider-evidence-review", severity: "Review", message: "Structured credit needs retained trustee, factor schedule, collateral tape, valuation, and cash remittance evidence.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      drillThroughTargets: [
+        { targetId: "StructuredCredit:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: "structured://passport/clo", status: "Ready", source: "SecurityMaster" },
+        { targetId: "StructuredCredit:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://structured/clo", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "StructuredCredit:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "case://structured-factor-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "StructuredCredit:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "StructuredCredit:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "ReviewRequired", source: "FundAccountCloseReadinessService" },
+        { targetId: "StructuredCredit:trustee-servicer-remittance", targetType: "StructuredCreditTrusteeEvidence", label: "Trustee, servicer, and cash remittance evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://structured/clo", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "StructuredCredit:factor-schedule", targetType: "FactorScheduleEvidence", label: "Factor schedule evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://structured/clo", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "StructuredCredit:collateral-tape", targetType: "StructuredCollateralTape", label: "Collateral tape evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://structured/clo", status: "ReviewRequired", source: "ProviderLedgerReconciliation" }
+      ],
+      ledgerClassification: { classification: "Structured credit security / factor amortization" },
+      reconciliationSignals: { breaks: "factor schedule, collateral tape, trustee report" }
     },
     {
       assetClass: "CustomAsset",
@@ -477,15 +503,16 @@ describe("buildPortfolioScreenViewModel", () => {
     const customAssetRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "CustomAsset");
     const fixedIncomeRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "FixedIncome");
     const directLoanRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "DirectLoan");
+    const structuredCreditRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "StructuredCredit");
 
-    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("3 review");
-    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(4);
+    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("4 review");
+    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(5);
     expect(vm.multiAssetCoveragePanel?.groups.map((group) => ({
       id: group.id,
       label: group.label,
       summary: group.summary
     }))).toEqual([
-      { id: "review", label: "Review required", summary: "3 asset classes" },
+      { id: "review", label: "Review required", summary: "4 asset classes" },
       { id: "ready", label: "Ready", summary: "1 asset class" }
     ]);
     expect(fixedIncomeRow).toMatchObject({
@@ -521,6 +548,18 @@ describe("buildPortfolioScreenViewModel", () => {
       { type: "PaydownObligationLedger", href: "/api/workstation/accounting", statusLabel: "Ready", source: "LoanAccountingProjector" },
       { type: "DirectLendingRuleKernel", href: "/api/workstation/accounting", statusLabel: "Ready", source: "Meridian.FSharp.DirectLending.Aggregates" }
     ]);
+    expect(structuredCreditRow).toMatchObject({
+      displayName: "Structured credit",
+      statusLabel: "Review required",
+      evidenceLabel: "1/2 ready",
+      ledgerLabel: "Structured credit security / factor amortization",
+      readinessGroupId: "review",
+      readinessDetail: "Review required: 1/2 evidence targets ready with 1 blocker.",
+      primaryEvidenceRoute: "/api/workstation/data-operations"
+    });
+    expect(structuredCreditRow?.drillThroughTargets.map((target) => target.type)).toContain("StructuredCreditTrusteeEvidence");
+    expect(structuredCreditRow?.drillThroughTargets.map((target) => target.type)).toContain("FactorScheduleEvidence");
+    expect(structuredCreditRow?.drillThroughTargets.map((target) => target.type)).toContain("StructuredCollateralTape");
     expect(customAssetRow).toMatchObject({
       displayName: "MBS / ABS / CLO / CMBS / private assets",
       statusLabel: "Review required",
