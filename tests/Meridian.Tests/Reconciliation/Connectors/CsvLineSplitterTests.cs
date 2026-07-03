@@ -37,4 +37,15 @@ public sealed class CsvLineSplitterTests
 
         lines.Should().Equal("header", "row1", "row2", "row3");
     }
+
+    [Fact]
+    public void SplitLines_QuotedFieldWithEmbeddedNewline_KeepsLogicalRecordIntact()
+    {
+        var lines = CsvLineSplitter.SplitLines("account,memo,amount\r\nFUND-A,\"line one\r\nline two\",10\nFUND-B,ok,20");
+
+        lines.Should().Equal(
+            "account,memo,amount",
+            "FUND-A,\"line one\r\nline two\",10",
+            "FUND-B,ok,20");
+    }
 }

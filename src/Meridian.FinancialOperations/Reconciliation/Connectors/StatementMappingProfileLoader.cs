@@ -80,7 +80,8 @@ public static class StatementMappingProfileLoader
                 continue;
             }
 
-            if (string.IsNullOrWhiteSpace(field.SourceColumn))
+            var sourceColumn = field.SourceColumn?.Trim();
+            if (string.IsNullOrWhiteSpace(sourceColumn))
             {
                 errors.Add($"Field '{field.CanonicalField}' must name a source column.");
                 continue;
@@ -91,9 +92,9 @@ public static class StatementMappingProfileLoader
                 errors.Add($"Canonical field '{canonical}' is mapped more than once.");
             }
 
-            if (!seenColumns.Add(field.SourceColumn))
+            if (!seenColumns.Add(sourceColumn))
             {
-                errors.Add($"Source column '{field.SourceColumn}' is mapped more than once.");
+                errors.Add($"Source column '{sourceColumn}' is mapped more than once.");
             }
         }
 

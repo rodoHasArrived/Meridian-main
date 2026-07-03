@@ -80,6 +80,19 @@ public sealed class StatementMappingProfileLoaderTests
     }
 
     [Fact]
+    public void Validate_DuplicateSourceColumnAfterTrim_Fails()
+    {
+        var document = ValidDocument with
+        {
+            Fields = [.. ValidDocument.Fields, new StatementProfileFieldMapping("Price", " Acct # ")]
+        };
+
+        var errors = StatementMappingProfileLoader.Validate(document);
+
+        errors.Should().Contain(error => error.Contains("Source column 'Acct #' is mapped more than once."));
+    }
+
+    [Fact]
     public void Validate_MissingMandatoryField_Fails()
     {
         var document = ValidDocument with

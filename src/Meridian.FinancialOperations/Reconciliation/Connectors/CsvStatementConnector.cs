@@ -53,8 +53,9 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
             return EmptyResult(profileId, issues, []);
         }
 
+        var quote = profile.Csv?.Quote is { Length: 1 } quoteOption ? quoteOption[0] : '"';
         var content = Encoding.UTF8.GetString(document.Content.Span);
-        var lines = CsvLineSplitter.SplitLines(content);
+        var lines = CsvLineSplitter.SplitLines(content, quote);
         var firstContentLine = lines.FirstOrDefault(static line => !string.IsNullOrWhiteSpace(line));
         if (firstContentLine is null)
         {
@@ -68,7 +69,6 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
             issues.Add(delimiterIssue);
         }
 
-        var quote = profile.Csv?.Quote is { Length: 1 } quoteOption ? quoteOption[0] : '"';
         var hasHeader = profile.Csv?.HasHeader ?? true;
 
         string[] detectedColumns;

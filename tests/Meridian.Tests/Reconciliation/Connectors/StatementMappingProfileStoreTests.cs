@@ -144,6 +144,19 @@ public sealed class StatementMappingProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Catalog_RecordAcceptedFingerprint_PersistsColumnsInStableSortedOrder()
+    {
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        await catalog.UpsertAsync(CustomProfile());
+        var fingerprint = new StatementFormatFingerprint("hash", ["net", "Acct", "date", "acct", "code"], ",");
+
+        await catalog.RecordAcceptedFingerprintAsync("acme-custodian-csv-v1", fingerprint);
+
+        var profile = await catalog.FindAsync("acme-custodian-csv-v1");
+        profile!.LastAcceptedFingerprint.Should().Be("Acct|code|date|net");
+    }
+
+    [Fact]
     public async Task Catalog_RecordAcceptedFingerprint_IgnoresBuiltIns()
     {
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));

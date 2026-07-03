@@ -75,6 +75,21 @@ public sealed class CsvStatementConnectorTests : IDisposable
     }
 
     [Fact]
+    public async Task Parse_QuotedUnmappedFieldWithEmbeddedNewline_KeepsOneLogicalRecord()
+    {
+        var content = "account,symbol,quantity,price,cashAmount,activityType,tradeDate,memo\n" +
+                      "FUND-A,AAPL,1,10,-10,trade,2026-06-01,\"first line\nsecond line\"\n";
+        var document = new StatementSourceDocument("embedded-newline.csv", Encoding.UTF8.GetBytes(content));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().ContainSingle();
+        result.Records[0].Symbol.Should().Be("AAPL");
+        result.Issues.Should().NotContain(issue => issue.Code == "COLUMN_COUNT_MISMATCH");
+    }
+
+    [Fact]
     public async Task Parse_SemicolonDelimitedAliasHeaders_SniffsDelimiterAndMapsWithAliasConfidence()
     {
         var document = new StatementSourceDocument(

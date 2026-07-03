@@ -299,7 +299,8 @@ public sealed class StatementImportServiceTests : IDisposable
         ran.Should().Be(1);
         var updated = (await scheduleStore.ListAsync()).Single();
         updated.LastRunAtUtc.Should().Be(previousRun, "failed fetch attempts must not advance the next successful fetch watermark");
-        updated.LastRunStatus.Should().StartWith("Failed:");
+        updated.LastRunStatus.Should().Be("Failed: NotSupportedException");
+        updated.LastRunStatus.Should().NotContain(CsvStatementConnector.ConnectorId, "operator status should avoid connector ids, URLs, paths, or payload fragments");
         updated.IsDue(failedAttempt.AddMinutes(1)).Should().BeTrue("the scheduler should retry after a transient fetch failure");
     }
 

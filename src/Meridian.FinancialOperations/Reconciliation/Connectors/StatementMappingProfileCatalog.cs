@@ -117,7 +117,13 @@ public sealed class StatementMappingProfileCatalog(IStatementMappingProfileStore
             return;
         }
 
-        var accepted = string.Join(FingerprintSeparator, fingerprint.NormalizedColumns);
+        var accepted = string.Join(
+            FingerprintSeparator,
+            fingerprint.NormalizedColumns
+                .Select(static column => column.Trim())
+                .Where(static column => column.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Order(StringComparer.OrdinalIgnoreCase));
         if (string.Equals(profile.LastAcceptedFingerprint, accepted, StringComparison.OrdinalIgnoreCase))
         {
             return;
