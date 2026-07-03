@@ -32,14 +32,13 @@ function routeMatchSpecificity(action: WorkflowAction, pathname: string): number
   const prefixes = action.routePrefixes ?? [];
   let specificity = 0;
   for (const prefix of prefixes) {
-    const normalized = prefix.trim();
+    const normalized = prefix.trim().replace(/\/$/, "");
     if (!normalized) {
       continue;
     }
 
-    if (pathname === normalized || pathname.startsWith(`${normalized.replace(/\/$/, "")}/`)) {
-      specificity = Math.max(specificity, normalized.length);
-    } else if (pathname.startsWith(normalized)) {
+    // Segment-boundary match only: "/reporting/report" must not claim "/reporting/report-builder".
+    if (pathname === normalized || pathname.startsWith(`${normalized}/`)) {
       specificity = Math.max(specificity, normalized.length);
     }
   }

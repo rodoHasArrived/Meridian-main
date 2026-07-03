@@ -374,13 +374,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             state: { selectedExportsTemplateId: template.id, asOfDate: nextDraft.asOfDate }
           })
         : null;
-      if (!token) {
-        return;
+
+      // When the state cannot encode, strip any carried token so a stale view
+      // param never lingers in the shareable URL.
+      const params = new URLSearchParams(stripViewStateFromSearch(search));
+      if (token) {
+        params.set(VIEW_STATE_QUERY_KEY, token);
       }
 
-      const params = new URLSearchParams(stripViewStateFromSearch(search));
-      params.set(VIEW_STATE_QUERY_KEY, token);
-      navigate(`${pathname}?${params.toString()}`, { replace: true });
+      const nextSearch = params.toString();
+      navigate(nextSearch ? `${pathname}?${nextSearch}` : pathname, { replace: true });
     }, exportsViewReflectDebounceMs);
   }
 

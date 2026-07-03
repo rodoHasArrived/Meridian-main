@@ -63,6 +63,13 @@ describe("findWorkflowActionForRoute", () => {
     );
   });
 
+  it("does not match sibling routes that merely share a string prefix", () => {
+    expect(findWorkflowActionForRoute(library, "/reporting-sibling")).toBeNull();
+    expect(findWorkflowActionForRoute(library, "/reporting/report-builder-archive")?.action.actionId).not.toBe(
+      "reporting.exports"
+    );
+  });
+
   it("returns null without a library or a match", () => {
     expect(findWorkflowActionForRoute(null, "/reporting")).toBeNull();
     expect(findWorkflowActionForRoute(library, "/settings")).toBeNull();
