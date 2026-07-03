@@ -884,7 +884,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -3232,6 +3231,7 @@ Meridian-main
 │   │   │   ├── DataVendorEntitlement.cs
 │   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── IDataVendorEntitlementService.cs
+│   │   │   ├── InstrumentTypeDescriptorCatalog.cs
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterCashFlowService.cs
 │   │   │   ├── ISecurityMasterDataQualityService.cs
@@ -5511,7 +5511,8 @@ Meridian-main
 │   │   │   ├── EvidenceSubjectResolver.cs
 │   │   │   ├── EvidenceTemplateRegistry.cs
 │   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
-│   │   │   └── FileEvidenceArtifactStore.cs
+│   │   │   ├── FileEvidenceArtifactStore.cs
+│   │   │   └── StatementImportEvidenceBridge.cs
 │   │   ├── Extensibility
 │   │   │   ├── ExtensibilityCatalogService.cs
 │   │   │   ├── ExtensibilityConfigurationService.cs
@@ -7289,6 +7290,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
+│   │   │   ├── StatementImportEvidenceBridgeTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
