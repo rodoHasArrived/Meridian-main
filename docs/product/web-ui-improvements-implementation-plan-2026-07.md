@@ -45,7 +45,7 @@ No feature work; confirm and document the rules each later phase must follow.
   `buildMutationHeaders()` (`mdc-csrf` cookie → `X-CSRF-Token`).
 
 **Checklist**
-- [ ] Conventions above linked from the first implementation PR description.
+- [x] Conventions above linked from the first implementation PR description.
 
 ---
 
@@ -73,9 +73,9 @@ No feature work; confirm and document the rules each later phase must follow.
 - **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test`
 
 **Checklist**
-- [ ] `lastSucceededAt` added to `use-request-lifecycle.ts` with tests.
-- [ ] `FreshnessChip` primitive + view-model + tests.
-- [ ] Adopted on the five surfaces above.
+- [x] `lastSucceededAt` added to `use-request-lifecycle.ts` with tests.
+- [x] `FreshnessChip` primitive + view-model + tests.
+- [x] Adopted on the five surfaces above.
 
 ---
 
@@ -92,9 +92,13 @@ No feature work; confirm and document the rules each later phase must follow.
   into the existing `COMMAND_KIND_ORDER` flow. Items with `confirmLabel` render an inline
   confirm row (no modal) before `run()` fires; results surface via the existing `useToast` API.
 - **First providers (delegating to existing surfaces, no new business logic):**
-  - workflow preset pin / mark-used (`POST /api/workstation/workflows/presets/{id}/pin`, `/used`);
-  - reporting export run (`screens/reporting-screen.exports-runner.tsx` command path);
-  - close-calendar item creation (`OperationsContinuityCloseCalendarItems` POST).
+  - workflow preset pin / unpin (`POST /api/workstation/workflows/presets/{id}/pin`), built at shell
+    level from the preset library;
+  - reporting export run (`screens/reporting-screen.exports-runner.tsx` command path), registered by
+    the reporting screen while mounted with confirm required.
+  - *Amended at implementation:* close-calendar item creation was dropped as a palette verb — it
+    requires a six-field form, which is a navigation target rather than a verb; it remains reachable
+    through existing workflow route items.
 - **Governance rule (enforced by convention + review):** approval-gated or destructive mutations
   are never palette-registered; providers must delegate to existing view-model commands.
 - **Tests:** extend `command-palette.view-model.test.ts` (action merge, ordering, confirm flow)
@@ -102,9 +106,10 @@ No feature work; confirm and document the rules each later phase must follow.
 - **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test`
 
 **Checklist**
-- [ ] `action` kind + provider registry + inline confirm.
-- [ ] Three launch providers wired to existing POST surfaces.
-- [ ] Palette keyboard tests cover the action path.
+- [x] `action` kind + provider registry + inline confirm.
+- [x] Launch providers wired to existing POST surfaces (preset pin/unpin + reporting export run;
+      close-calendar dropped as form-shaped).
+- [x] Palette keyboard tests cover the action path.
 
 ---
 
@@ -127,16 +132,19 @@ No feature work; confirm and document the rules each later phase must follow.
   `FileWorkflowPresetStore` (`{dataRoot}/workstation/workflows/workflow-presets.json`, atomic
   writes via `AtomicFileWriter`, versioned `WorkflowPresetSnapshot`) with an optional
   `viewStateEnvelope` field — no new store. Saved views then surface through the existing preset
-  items in the palette and workflow continuity dock.
+  items in the palette and workflow continuity dock. *Implementation note:* the field landed as an
+  additive nullable property on snapshot v1 (no v2 bump — additive nullable is bidirectionally
+  compatible under System.Text.Json Web defaults), capped at 4096 chars server-side.
 - **Tests:** envelope round-trip + version-tolerance unit tests; `WorkflowPresetService` payload
   extension tests in `tests/Meridian.Tests/Ui/WorkflowLibraryEndpointTests.cs` style.
 - **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test` and
   `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter FullyQualifiedName~WorkflowLibraryEndpointTests`
 
 **Checklist**
-- [ ] `view-state-envelope.ts` with round-trip tests.
-- [ ] `workspace-header.tsx` `actions` slot + Copy-link button.
-- [ ] Preset payload extension + server tests.
+- [x] `view-state-envelope.ts` with round-trip tests (table-state helpers shipped as the Phases 5–6
+      contract; no screen consumer yet since `useTableState` is currently unconsumed).
+- [x] `workspace-header.tsx` `actions` slot + Copy-link button (+ Save-view dialog).
+- [x] Preset payload extension + server tests.
 
 ---
 

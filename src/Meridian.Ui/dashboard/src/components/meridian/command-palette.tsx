@@ -2,17 +2,24 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { useCommandPaletteEntitySearch } from "@/components/meridian/command-palette.entity-search";
 import type { CommandPaletteEntitySearchServices } from "@/components/meridian/command-palette.entity-search";
+import type {
+  CommandPaletteActionItem,
+  CommandPaletteActionResult
+} from "@/components/meridian/command-palette.actions";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
   type CommandPaletteFocusAction,
   type CommandPaletteFocusBoundary,
-  type CommandPaletteFocusTarget
+  type CommandPaletteFocusTarget,
+  type CommandPaletteItem
 } from "@/components/meridian/command-palette.view-model";
 import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
+import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 
@@ -42,6 +49,7 @@ interface CommandPaletteProps {
   workflowPresets?: WorkflowPresetLibrary | null;
   workflowError?: string | null;
   operatorFocusItems?: CommandPaletteFocusAction[] | null;
+  actionItems?: CommandPaletteActionItem[] | null;
   operatingContextSymbol?: string | null;
   operatingScope?: AppShellOperatingScopeInput | null;
   onPresetUsed?: (presetId: string) => void | Promise<void>;
@@ -55,6 +63,7 @@ export function CommandPalette({
   workflowPresets,
   workflowError,
   operatorFocusItems,
+  actionItems,
   operatingContextSymbol,
   operatingScope,
   onPresetUsed,
@@ -62,15 +71,20 @@ export function CommandPalette({
 }: CommandPaletteProps) {
   const { pathname, search, hash } = useLocation();
   const [query, setQuery] = useState("");
+  const [armedActionId, setArmedActionId] = useState<string | null>(null);
+  const armedActionIdRef = useRef<string | null>(null);
+  armedActionIdRef.current = armedActionId;
   const dialogRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const toast = useToast();
   const entitySearch = useCommandPaletteEntitySearch({ open, query, services: entitySearchServices });
 
   useEffect(() => {
     if (!open) {
       setQuery("");
+      setArmedActionId(null);
     }
   }, [open]);
 
@@ -87,8 +101,15 @@ export function CommandPalette({
         key: event.key,
         shiftKey: event.shiftKey,
         focusBoundary: getCommandPaletteFocusBoundary(dialogRef.current, document.activeElement),
-        focusTarget: getCommandPaletteFocusTarget(searchInputRef.current, document.activeElement)
+        focusTarget: getCommandPaletteFocusTarget(searchInputRef.current, document.activeElement),
+        actionArmed: armedActionIdRef.current !== null
       });
+
+      if (command === "disarm-action") {
+        event.preventDefault();
+        setArmedActionId(null);
+        return;
+      }
 
       if (command === "close") {
         event.preventDefault();
@@ -121,7 +142,42 @@ export function CommandPalette({
   const closePalette = () => {
     onOpenChange(false);
     setQuery("");
+    setArmedActionId(null);
     restoreFocusRef.current?.focus();
+  };
+
+  const runActionItem = (item: CommandPaletteItem) => {
+    const meta = item.action;
+    if (!meta) {
+      return;
+    }
+
+    const handler = (actionItems ?? []).find((candidate) => candidate.id === meta.actionId);
+    if (!handler || handler.disabled) {
+      return;
+    }
+
+    if (meta.confirm && armedActionId !== item.id) {
+      setArmedActionId(item.id);
+      return;
+    }
+
+    setArmedActionId(null);
+    closePalette();
+    void handler
+      .run()
+      .then((result) => {
+        const outcome = (result ?? undefined) as CommandPaletteActionResult | undefined;
+        toast.show({
+          title: outcome?.title ?? `${handler.verbLabel} complete.`,
+          detail: outcome?.detail,
+          tone: outcome?.tone ?? "success"
+        });
+      })
+      .catch((error) => {
+        const display = describeApiError(error, `${handler.verbLabel} failed.`);
+        toast.danger(display.summary, display.details.join(" ") || undefined);
+      });
   };
 
   if (!open) {
@@ -137,6 +193,7 @@ export function CommandPalette({
       workflowPresets,
       workflowError,
       operatorFocusItems,
+      actionItems,
       entityItems: entitySearch.items,
       entitySearchStatus: entitySearch.status,
       entitySearchError: entitySearch.error
@@ -312,7 +369,54 @@ export function CommandPalette({
                 <span className="font-mono text-[10px] text-muted-foreground">{group.countLabel}</span>
               </div>
               <div className="grid gap-1">
-                {group.items.map((item) => (
+                {group.items.map((item) => item.action ? (
+                  <button
+                    key={item.id}
+                    type="button"
+                    data-command-id={item.id}
+                    data-command-list-item="true"
+                    disabled={item.statusTone === "blocked"}
+                    aria-label={item.ariaLabel}
+                    className={cn(
+                      "command-palette-command rounded-md border px-3 py-2.5 text-left text-sm transition-colors",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      "disabled:cursor-not-allowed disabled:opacity-60",
+                      armedActionId === item.id
+                        ? "border-warning/50 bg-warning/10 text-foreground"
+                        : "border-transparent hover:border-border/70 hover:bg-secondary/70"
+                    )}
+                    onClick={() => runActionItem(item)}
+                    onBlur={() => {
+                      if (armedActionId === item.id) {
+                        setArmedActionId(null);
+                      }
+                    }}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span aria-live="polite" className="block font-semibold leading-snug">
+                          {armedActionId === item.id
+                            ? `Press Enter again to confirm — ${item.commandLabel}`
+                            : item.commandLabel}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
+                      </span>
+                      <span className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className="command-palette-route">{item.routeLabel}</span>
+                        {item.statusVisible && (
+                          <span
+                            className={cn(
+                              "command-palette-status",
+                              `command-palette-status-${item.statusTone}`
+                            )}
+                          >
+                            {item.statusLabel}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                  </button>
+                ) : (
                   <Link
                     key={item.id}
                     ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}
@@ -387,12 +491,12 @@ function getCommandPaletteFocusableElements(dialog: HTMLDivElement | null): HTML
   );
 }
 
-function getCommandPaletteCommandElements(dialog: HTMLDivElement | null): HTMLAnchorElement[] {
+function getCommandPaletteCommandElements(dialog: HTMLDivElement | null): HTMLElement[] {
   if (!dialog) {
     return [];
   }
 
-  return Array.from(dialog.querySelectorAll<HTMLAnchorElement>("[data-command-list-item='true']"));
+  return Array.from(dialog.querySelectorAll<HTMLElement>("[data-command-list-item='true']"));
 }
 
 function getCommandPaletteFocusTarget(

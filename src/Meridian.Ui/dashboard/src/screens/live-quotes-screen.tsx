@@ -22,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
+import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DepthChart } from "@/components/charts";
@@ -32,6 +34,7 @@ import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, s
 import { cn } from "@/lib/utils";
 import {
   computeIntradayMetrics,
+  LIVE_QUOTES_FRESHNESS_BUDGET_MS,
   useLiveQuotesScreenViewModel,
   type LiveMarketDataCommandId,
   type LiveMarketDataWorkspaceViewModel,
@@ -192,6 +195,12 @@ export function LiveQuotesScreen() {
             <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
             {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+            <FreshnessChip
+              {...freshnessInputFromLifecycle(vm.requestStatus.market, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Market panels")}
+            />
+            <FreshnessChip
+              {...freshnessInputFromLifecycle(vm.requestStatus.snapshot, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Quote matrix")}
+            />
             {activeSymbol ? <span>Selected {activeSymbol}; last update {marketVm.lastUpdateLabel}</span> : null}
           </div>
         </CardContent>

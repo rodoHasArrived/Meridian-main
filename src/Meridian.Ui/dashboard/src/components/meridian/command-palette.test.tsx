@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { axe } from "jest-axe";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { ToastProvider } from "@/components/ui/toast";
 import { renderWithRouter } from "@/test/render";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 import type { CommandPaletteEntitySearchServices } from "@/components/meridian/command-palette.entity-search";
@@ -381,5 +382,102 @@ describe("CommandPalette", () => {
 
     expect(onPresetUsed).toHaveBeenCalledWith("preset-1");
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("runs a non-confirm action immediately and reports the result as a toast", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const run = vi.fn().mockResolvedValue({ title: "Pinned Morning close.", tone: "success" as const });
+
+    renderWithRouter(
+      <ToastProvider>
+        <CommandPalette
+          open
+          onOpenChange={onOpenChange}
+          actionItems={[
+            {
+              id: "preset-pin:morning",
+              verbLabel: "Pin preset Morning close",
+              description: "Keep Morning close at the top of the palette preset list.",
+              run
+            }
+          ]}
+        />
+      </ToastProvider>,
+      { initialEntries: ["/trading"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: /Pin preset Morning close/ }));
+
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(await screen.findByText("Pinned Morning close.")).toBeInTheDocument();
+  });
+
+  it("requires a second activation for confirm actions and disarms on Escape without closing", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const run = vi.fn().mockResolvedValue(undefined);
+
+    renderWithRouter(
+      <ToastProvider>
+        <CommandPalette
+          open
+          onOpenChange={onOpenChange}
+          actionItems={[
+            {
+              id: "reporting-run-exports",
+              verbLabel: "Run exports report: Monthly NAV pack",
+              description: "Start the selected on-demand exports report run.",
+              confirm: true,
+              run
+            }
+          ]}
+        />
+      </ToastProvider>,
+      { initialEntries: ["/reporting"] }
+    );
+
+    const actionButton = screen.getByRole("button", { name: /Run exports report/ });
+    await user.click(actionButton);
+
+    expect(run).not.toHaveBeenCalled();
+    expect(screen.getByText(/Press Enter again to confirm/)).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(screen.queryByText(/Press Enter again to confirm/)).not.toBeInTheDocument();
+
+    await user.click(actionButton);
+    await user.click(actionButton);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("surfaces action failures as danger toasts", async () => {
+    const user = userEvent.setup();
+    const run = vi.fn().mockRejectedValue(new Error("preset service offline"));
+
+    renderWithRouter(
+      <ToastProvider>
+        <CommandPalette
+          open
+          onOpenChange={vi.fn()}
+          actionItems={[
+            {
+              id: "preset-pin:morning",
+              verbLabel: "Pin preset Morning close",
+              description: "Keep Morning close at the top of the palette preset list.",
+              run
+            }
+          ]}
+        />
+      </ToastProvider>,
+      { initialEntries: ["/trading"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: /Pin preset Morning close/ }));
+
+    expect(await screen.findByText("preset service offline")).toBeInTheDocument();
   });
 });

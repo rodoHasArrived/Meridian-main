@@ -5,6 +5,9 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
+import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
+import type { RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
   FinancialRecordExplorerShell,
   type FinancialRecordExplorerAction,
@@ -58,7 +61,10 @@ interface PortfolioScreenProps {
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
+  refreshStatus?: RequestLifecycleStatus | null;
 }
+
+export const PORTFOLIO_FRESHNESS_BUDGET_MS = 5 * 60_000;
 
 const pnlToneClass = {
   success: "text-success",
@@ -274,7 +280,8 @@ export function PortfolioScreen({
   accounting,
   brokerageConnection,
   brokeragePortfolio,
-  multiAssetCoverage
+  multiAssetCoverage,
+  refreshStatus
 }: PortfolioScreenProps) {
   const location = useLocation();
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -497,6 +504,11 @@ export function PortfolioScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          {refreshStatus ? (
+            <FreshnessChip
+              {...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace")}
+            />
+          ) : null}
           {vm.headerChips.map((chip) => (
             <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
           ))}

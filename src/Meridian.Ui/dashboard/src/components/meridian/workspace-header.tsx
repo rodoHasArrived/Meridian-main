@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb";
@@ -35,6 +36,8 @@ interface WorkspaceHeaderProps {
   session: SessionInfo | null;
   onRefresh?: () => void;
   refreshing?: boolean;
+  /** Shell-provided header actions (e.g. copy link, save view), rendered before refresh. */
+  actions?: ReactNode;
 }
 
 export function WorkspaceHeader({
@@ -42,7 +45,8 @@ export function WorkspaceHeader({
   workspace,
   session,
   onRefresh,
-  refreshing = false
+  refreshing = false,
+  actions
 }: WorkspaceHeaderProps) {
   const viewModel = buildWorkspaceHeaderViewModel({
     workspace,
@@ -90,6 +94,7 @@ export function WorkspaceHeader({
             </div>
 
             <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+              {actions}
               {viewModel.refreshAction && onRefresh ? (
                 <Button
                   variant="ghost"

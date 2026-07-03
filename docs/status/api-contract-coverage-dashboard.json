@@ -7106,17 +7106,17 @@
     },
     {
       "name": "WorkflowPresetLibraryDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:63",
+      "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:64",
       "documented": true
     },
     {
       "name": "WorkflowPresetSaveRequest",
-      "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:70",
+      "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:71",
       "documented": true
     },
     {
       "name": "WorkflowPresetPinRequest",
-      "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:82",
+      "source": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:84",
       "documented": true
     },
     {

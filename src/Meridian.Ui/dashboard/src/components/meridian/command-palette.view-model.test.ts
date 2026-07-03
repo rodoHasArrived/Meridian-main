@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand
@@ -1063,8 +1064,126 @@ describe("command palette view model", () => {
     );
   });
 
+  it("builds runnable action items ordered after focus actions", () => {
+    const model = buildCommandPaletteViewModel("/reporting", undefined, {
+      actionItems: [
+        {
+          id: "reporting-run-exports",
+          verbLabel: "Run exports report: Monthly NAV pack",
+          description: "Start the selected on-demand exports report run.",
+          keywords: ["report", "run"],
+          confirm: true,
+          run: async () => undefined
+        },
+        {
+          id: "preset-pin:morning",
+          verbLabel: "Pin preset Morning close",
+          description: "Keep Morning close at the top of the palette preset list.",
+          disabled: true,
+          disabledReason: "Preset library unavailable.",
+          run: async () => undefined
+        }
+      ]
+    });
+
+    const actionItems = model.items.filter((item) => item.kind === "action");
+    expect(actionItems.map((item) => item.id)).toEqual([
+      "action:reporting-run-exports",
+      "action:preset-pin:morning"
+    ]);
+    expect(actionItems[0]).toMatchObject({
+      commandLabel: "Run exports report: Monthly NAV pack",
+      statusLabel: "Confirm to run",
+      statusTone: "ready",
+      action: { actionId: "reporting-run-exports", confirm: true }
+    });
+    expect(actionItems[1]).toMatchObject({
+      statusLabel: "Preset library unavailable.",
+      statusTone: "blocked",
+      action: { actionId: "preset-pin:morning", confirm: false }
+    });
+
+    const groupKinds = model.commandGroups.map((group) => group.kind);
+    expect(groupKinds.indexOf("action")).toBeLessThan(groupKinds.indexOf("workspace"));
+    expect(model.itemCountLabel).toContain("2 actions");
+
+    const filtered = buildCommandPaletteViewModel("/reporting", undefined, {
+      actionItems: [
+        {
+          id: "reporting-run-exports",
+          verbLabel: "Run exports report: Monthly NAV pack",
+          description: "Start the selected on-demand exports report run.",
+          keywords: ["report", "run"],
+          run: async () => undefined
+        }
+      ]
+    }, "run exports");
+    expect(filtered.filteredItems.some((item) => item.id === "action:reporting-run-exports")).toBe(true);
+  });
+
+  it("appends a saved view's state token to the preset route", () => {
+    const viewStateEnvelope = encodeViewStateEnvelope({
+      v: 1,
+      screen: "reporting-exports",
+      state: { selectedExportsTemplateId: "investor-monthly-statement" }
+    })!;
+
+    const model = buildCommandPaletteViewModel("/trading", undefined, {
+      workflowPresets: {
+        generatedAt: "2026-07-01T00:00:00Z",
+        presets: [
+          {
+            presetId: "saved-view-1",
+            name: "Month-end exports",
+            description: "Saved exports view",
+            workflowId: "reporting-delivery",
+            workflowTitle: "Reporting Delivery",
+            actionId: "reporting.exports",
+            actionLabel: "Open exports",
+            workspaceId: "reporting",
+            workspaceTitle: "Reporting",
+            targetPageTag: "ReportingExports",
+            tags: [],
+            isPinned: false,
+            createdAt: "2026-07-01T00:00:00Z",
+            updatedAt: "2026-07-01T00:00:00Z",
+            lastUsedAt: null,
+            viewStateEnvelope
+          },
+          {
+            presetId: "tampered-view",
+            name: "Tampered view",
+            description: "Bad token stays off the route",
+            workflowId: "reporting-delivery",
+            workflowTitle: "Reporting Delivery",
+            actionId: "reporting.exports",
+            actionLabel: "Open exports",
+            workspaceId: "reporting",
+            workspaceTitle: "Reporting",
+            targetPageTag: "ReportingExports",
+            tags: [],
+            isPinned: false,
+            createdAt: "2026-07-01T00:00:00Z",
+            updatedAt: "2026-07-01T00:00:00Z",
+            lastUsedAt: null,
+            viewStateEnvelope: "!!not-a-valid-token!!"
+          }
+        ]
+      }
+    });
+
+    const presets = model.items.filter((item) => item.kind === "preset");
+    const saved = presets.find((item) => item.presetId === "saved-view-1");
+    const tampered = presets.find((item) => item.presetId === "tampered-view");
+    expect(saved?.route).toContain(`view=${viewStateEnvelope}`);
+    expect(tampered?.route ?? "").not.toContain("view=");
+  });
+
   it("keeps command palette keyboard commands in the view model", () => {
     expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle" })).toBe("close");
+    expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle", actionArmed: true })).toBe(
+      "disarm-action"
+    );
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "last" })).toBe("focus-first");
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "first" })).toBe("focus-last");
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "outside" })).toBe("focus-first");

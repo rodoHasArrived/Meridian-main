@@ -38,6 +38,7 @@ function idleRequestStatus(operation: string) {
     error: null,
     startedAt: null,
     settledAt: null,
+    lastSucceededAt: null,
     staleDiscardCount: 0,
     backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
   };

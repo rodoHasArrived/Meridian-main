@@ -4809,12 +4809,16 @@ Meridian-main
 │   │   │   │   │   │   ├── use-table-state.test.ts
 │   │   │   │   │   │   └── use-table-state.ts
 │   │   │   │   │   ├── meridian
+│   │   │   │   │   │   ├── command-palette.actions.test.ts
+│   │   │   │   │   │   ├── command-palette.actions.ts
 │   │   │   │   │   │   ├── command-palette.entity-search.test.ts
 │   │   │   │   │   │   ├── command-palette.entity-search.ts
 │   │   │   │   │   │   ├── command-palette.test.tsx
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── copy-link-button.test.tsx
+│   │   │   │   │   │   ├── copy-link-button.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.test.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.test.ts
@@ -4847,6 +4851,7 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-period-switcher.tsx
+│   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── security-details-tracker.test.tsx
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
@@ -4925,6 +4930,10 @@ Meridian-main
 │   │   │   │   │       ├── file-upload.test.tsx
 │   │   │   │   │       ├── file-upload.tsx
 │   │   │   │   │       ├── form.tsx
+│   │   │   │   │       ├── freshness-chip.test.tsx
+│   │   │   │   │       ├── freshness-chip.tsx
+│   │   │   │   │       ├── freshness-chip.view-model.test.ts
+│   │   │   │   │       ├── freshness-chip.view-model.ts
 │   │   │   │   │       ├── gauge.test.tsx
 │   │   │   │   │       ├── gauge.tsx
 │   │   │   │   │       ├── input.tsx
@@ -5022,8 +5031,14 @@ Meridian-main
 │   │   │   │   │   ├── sql-workbench-storage.ts
 │   │   │   │   │   ├── theme.test.ts
 │   │   │   │   │   ├── theme.ts
+│   │   │   │   │   ├── time.test.ts
+│   │   │   │   │   ├── time.ts
 │   │   │   │   │   ├── ui-api-routes.generated.ts
 │   │   │   │   │   ├── utils.ts
+│   │   │   │   │   ├── view-state-envelope.test.ts
+│   │   │   │   │   ├── view-state-envelope.ts
+│   │   │   │   │   ├── workflow-route-match.test.ts
+│   │   │   │   │   ├── workflow-route-match.ts
 │   │   │   │   │   ├── workspace-catalog.generated.ts
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   ├── workspace.ts

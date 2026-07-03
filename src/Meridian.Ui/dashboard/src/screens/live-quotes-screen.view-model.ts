@@ -17,6 +17,7 @@ import type {
 } from "@/types";
 
 export const LIVE_QUOTES_POLL_INTERVAL_MS = 2000;
+export const LIVE_QUOTES_FRESHNESS_BUDGET_MS = 2 * LIVE_QUOTES_POLL_INTERVAL_MS;
 export const LIVE_QUOTES_TRADE_HISTORY_LIMIT = 200;
 export const LIVE_QUOTES_TRADE_TABLE_LIMIT = 25;
 export const LIVE_QUOTES_EMPTY_VALUE = "—";
@@ -502,6 +503,7 @@ const idleOrderSubmissionStatus: RequestLifecycleStatus = {
   error: null,
   startedAt: null,
   settledAt: null,
+  lastSucceededAt: null,
   staleDiscardCount: 0,
   backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
 };

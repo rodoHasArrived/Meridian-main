@@ -11,6 +11,10 @@ namespace Meridian.Ui.Shared.Workflows;
 /// </summary>
 public sealed class FileWorkflowPresetStore : IWorkflowPresetStore
 {
+    // Additive nullable DTO properties (e.g. ViewStateEnvelope) stay on version 1: older
+    // snapshots deserialize them as null and older binaries ignore them. Bump the version
+    // only for breaking shape changes, and add a v(n-1)->v(n) migration in LoadAsync
+    // instead of relying on the unsupported-version throw below.
     private const int SnapshotVersion = 1;
 
     private readonly string _snapshotPath;

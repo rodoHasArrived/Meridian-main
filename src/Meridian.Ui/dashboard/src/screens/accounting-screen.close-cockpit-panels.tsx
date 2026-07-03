@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
@@ -14,6 +15,8 @@ import type {
   AccountingWorkflowLaunchViewState,
   CloseCommandCenterViewState
 } from "@/screens/accounting-screen.view-model";
+
+export const CLOSE_COCKPIT_FRESHNESS_BUDGET_MS = 15 * 60_000;
 
 const accountingWorkflowStepIcons: Record<AccountingWorkflowLaunchViewState["steps"][number]["id"], typeof ShieldCheck> = {
   ledger: Table2,
@@ -151,6 +154,12 @@ export function CloseCommandCenterPanel({
             <div className="grid gap-2 text-sm">
               <CloseCommandCenterValue label="Fund account" value={view.fundAccountLabel} />
               <CloseCommandCenterValue label="Updated" value={view.updatedLabel} />
+              <FreshnessChip
+                className="w-fit"
+                label="Close command center"
+                staleBudgetMs={CLOSE_COCKPIT_FRESHNESS_BUDGET_MS}
+                timestamp={view.updatedAtUtc}
+              />
             </div>
           </div>
         </CardHeader>
