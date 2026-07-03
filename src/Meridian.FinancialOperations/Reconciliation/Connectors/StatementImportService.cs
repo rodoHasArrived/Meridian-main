@@ -111,12 +111,13 @@ public sealed class StatementImportService(
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
         var uploadId = "sc-" + Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
+        var canonicalFileName = "canonical-" + Convert.ToHexString(SHA256.HashData(artifactBytes))[..16].ToLowerInvariant() + ".csv";
         var retainedDirectory = Path.Combine(_retainedRoot, uploadId);
         Directory.CreateDirectory(retainedDirectory);
 
         var safeSourceName = SanitizeFileName(request.Document.FileName);
         var rawPath = Path.Combine(retainedDirectory, safeSourceName);
-        var canonicalPath = Path.Combine(retainedDirectory, "canonical.csv");
+        var canonicalPath = Path.Combine(retainedDirectory, canonicalFileName);
         await AtomicFileWriter.WriteAsync(rawPath, request.Document.Content.ToArray(), ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
 
@@ -139,7 +140,7 @@ public sealed class StatementImportService(
 
         var kindSummaries = BuildKindSummaries(parse.Records);
         var relativeRaw = ToRelativeRetainedPath(uploadId, safeSourceName);
-        var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
+        var relativeCanonical = ToRelativeRetainedPath(uploadId, canonicalFileName);
 
         StatementRunWorkflowResult result;
         try

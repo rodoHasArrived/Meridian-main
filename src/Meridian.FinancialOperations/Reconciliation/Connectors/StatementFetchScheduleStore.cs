@@ -40,6 +40,7 @@ public interface IStatementFetchScheduleStore
     Task<StatementFetchSchedule> UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);
     Task<bool> DeleteAsync(string scheduleId, CancellationToken ct = default);
     Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);
+    Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -159,6 +160,34 @@ public sealed class FileStatementFetchScheduleStore : IStatementFetchScheduleSto
             }
 
             var updated = existing with { LastRunAtUtc = ranAtUtc, LastRunStatus = status };
+            var retained = snapshot.Schedules
+                .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
+                    ? updated
+                    : candidate)
+                .ToArray();
+            await PersistAsync(new StatementFetchScheduleSnapshot(SnapshotVersion, retained), ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var snapshot = await LoadCoreAsync(ct).ConfigureAwait(false);
+            var existing = snapshot.Schedules.FirstOrDefault(candidate =>
+                string.Equals(candidate.ScheduleId, scheduleId.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existing is null)
+            {
+                return;
+            }
+
+            var updated = existing with { LastRunStatus = status };
             var retained = snapshot.Schedules
                 .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
                     ? updated

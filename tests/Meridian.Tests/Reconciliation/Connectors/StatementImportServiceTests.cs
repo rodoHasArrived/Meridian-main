@@ -172,6 +172,38 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_SameRawStatementWithDifferentCanonicalOutput_RetainsDistinctCanonicalArtifacts()
+    {
+        var tradeProfile = SampleBrokerProfile("same-raw-trade-v1", "trade");
+        var feeProfile = SampleBrokerProfile("same-raw-fee-v1", "fee");
+        await _catalog.UpsertAsync(tradeProfile);
+        await _catalog.UpsertAsync(feeProfile);
+
+        var rawBytes = Encoding.UTF8.GetBytes(
+            "BrokerAccount,Ticker,Units,ExecutionPrice,NetCash,TxnCode,TradeDate\n" +
+            "FUND-A,AAPL,1,100,-100,BUY,2026-06-01\n");
+        var tradeDocument = new StatementSourceDocument("same-raw.csv", rawBytes, tradeProfile.ProfileId);
+        var feeDocument = new StatementSourceDocument("same-raw.csv", rawBytes, feeProfile.ProfileId);
+
+        var tradeResult = await _service.CommitAsync(CommitRequest(tradeDocument, fundAccountId: "FUND-RAW"));
+        var feeResult = await _service.CommitAsync(CommitRequest(feeDocument, fundAccountId: "FUND-RAW"));
+
+        tradeResult.Duplicate.Should().BeFalse();
+        feeResult.Duplicate.Should().BeFalse();
+        tradeResult.RetainedSourcePath.Should().Be(feeResult.RetainedSourcePath, "the raw upload bytes are identical");
+        tradeResult.RetainedCanonicalPath.Should().NotBe(
+            feeResult.RetainedCanonicalPath,
+            "canonical evidence must be keyed by the rendered canonical rows, not only by the raw upload");
+        Path.GetFileName(tradeResult.RetainedCanonicalPath).Should().MatchRegex("^canonical-[0-9a-f]{16}\\.csv$");
+        Path.GetFileName(feeResult.RetainedCanonicalPath).Should().MatchRegex("^canonical-[0-9a-f]{16}\\.csv$");
+
+        var tradeArtifact = await File.ReadAllTextAsync(Path.Combine(_root, tradeResult.RetainedCanonicalPath));
+        var feeArtifact = await File.ReadAllTextAsync(Path.Combine(_root, feeResult.RetainedCanonicalPath));
+        tradeArtifact.Should().Contain(",trade,");
+        feeArtifact.Should().Contain(",fee,");
+    }
+
+    [Fact]
     public async Task Commit_OfxAndFlexStatements_LandInTheSameQueue()
     {
         var ofxResult = await _service.CommitAsync(CommitRequest(FixtureDocument("ofx-102-bank.ofx"), "FUND-OFX"));
@@ -247,6 +279,8 @@ public sealed class StatementImportServiceTests : IDisposable
     {
         var scheduleStore = new FileStatementFetchScheduleStore(_root);
         var runner = new StatementFetchScheduleRunner(scheduleStore, _service);
+        var previousRun = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
+        var failedAttempt = previousRun.AddHours(25);
         await scheduleStore.UpsertAsync(new StatementFetchSchedule(
             ScheduleId: "sched-bad",
             ConnectorId: CsvStatementConnector.ConnectorId,
@@ -256,13 +290,38 @@ public sealed class StatementImportServiceTests : IDisposable
             MappingProfileId: null,
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
-            Enabled: true));
+            Enabled: true,
+            LastRunAtUtc: previousRun,
+            LastRunStatus: "Imported run prior"));
 
-        var ran = await runner.RunDueSchedulesAsync(DateTimeOffset.UtcNow);
+        var ran = await runner.RunDueSchedulesAsync(failedAttempt);
 
         ran.Should().Be(1);
         var updated = (await scheduleStore.ListAsync()).Single();
+        updated.LastRunAtUtc.Should().Be(previousRun, "failed fetch attempts must not advance the next successful fetch watermark");
         updated.LastRunStatus.Should().StartWith("Failed:");
+        updated.IsDue(failedAttempt.AddMinutes(1)).Should().BeTrue("the scheduler should retry after a transient fetch failure");
+    }
+
+    private static StatementMappingProfileDocument SampleBrokerProfile(string profileId, string buyCanonicalActivity)
+    {
+        var sample = StatementBuiltInProfiles.All.Single(profile =>
+            profile.ProfileId == StatementMappingProfileRegistry.SampleBrokerCsvV1ProfileId);
+        return sample with
+        {
+            ProfileId = profileId,
+            DisplayName = profileId,
+            ActivityCodes =
+            [
+                new("BUY", buyCanonicalActivity),
+                new("SELL", "trade"),
+                new("POS", "position"),
+                new("CASH", "cash"),
+                new("FEE", "fee"),
+                new("DIV", "dividend")
+            ],
+            IsBuiltIn = false
+        };
     }
 
     /// <summary>A fetch-capable connector returning a canonical CSV document, for scheduler tests.</summary>
