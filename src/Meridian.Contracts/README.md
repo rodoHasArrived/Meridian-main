@@ -26,10 +26,13 @@ or provider implementations.
 
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
-  and query/command service contracts.
+  terms/obligations timeline payloads, and query/command service contracts.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
-  contract used by HTTP endpoints, imports, provider backfills, and workstation commands.
+  contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
+  contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
+  validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
+  changing enum wire values.
   Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
   operator metadata scope so the shared Instrument Passport operating model can identify the
   most-specific applicable vendor/data-type control without browser-only or WPF-only rules.

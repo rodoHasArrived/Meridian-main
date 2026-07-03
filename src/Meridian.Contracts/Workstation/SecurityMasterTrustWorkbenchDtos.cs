@@ -492,6 +492,30 @@ public sealed record SecurityMasterManualChangeApprovalPostureDto(
     int UnapprovedManualChangeCount,
     string Summary);
 
+public sealed record InstrumentPassportClassificationProfileDto(
+    string InstrumentType,
+    string DisplayName,
+    string SecurityMasterAssetClass,
+    string? AssetFamily,
+    string? SubType,
+    string DefaultProviderSecurityType,
+    bool IsTradeable,
+    bool IsReferenceOnly,
+    bool IsDerivative,
+    bool RequiresUnderlying,
+    bool ProducesCashFlows,
+    bool RequiresLotTracking,
+    string SettlementModel,
+    IReadOnlyList<string> CompatibleSecurityMasterAssetClasses,
+    IReadOnlyList<string> PreferredIdentifierKinds,
+    IReadOnlyList<string> RequiredEconomicTerms,
+    IReadOnlyList<string> ProviderCapabilities,
+    IReadOnlyList<string> LifecycleEvents,
+    IReadOnlyList<string> ValidationRules,
+    IReadOnlyList<string> LedgerBehaviorHints,
+    IReadOnlyList<string> RiskModelHints,
+    string Summary);
+
 public sealed record InstrumentPassportDto(
     Guid SecurityId,
     SecurityIdentityDrillInDto Identity,
@@ -509,6 +533,7 @@ public sealed record InstrumentPassportDto(
     public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }
     public SecurityMasterOperatingModelDto? OperatingModel { get; init; }
     public InstrumentPassportOperationsWorkbenchDto? OperationsWorkbench { get; init; }
+    public InstrumentPassportClassificationProfileDto? ClassificationProfile { get; init; }
 }
 
 public sealed record InstrumentPassportPricingDto(
