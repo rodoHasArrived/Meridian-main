@@ -4979,6 +4979,8 @@ Meridian-main
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
 │   │   │   │   │       └── entity-setup-wizard.tsx
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-quotes-stream.test.ts
+│   │   │   │   │   ├── use-quotes-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
 │   │   │   │   │   ├── use-request-lifecycle.ts
 │   │   │   │   │   ├── use-workstation-data.test.ts
@@ -5019,6 +5021,8 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── plaid-link.ts
+│   │   │   │   │   ├── quotes-stream.test.ts
+│   │   │   │   │   ├── quotes-stream.ts
 │   │   │   │   │   ├── report-writer-grid-diff.test.ts
 │   │   │   │   │   ├── report-writer-grid-diff.ts
 │   │   │   │   │   ├── report-writer-grid-format.test.ts
@@ -5500,6 +5504,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
+│   │   │   ├── WorkstationEndpoints.Stream.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -7312,6 +7317,7 @@ Meridian-main
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationServiceCollectionExtensionsTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
+│   │   │   ├── WorkstationStreamEndpointTests.cs
 │   │   │   ├── WorkstationTenantContextTests.cs
 │   │   │   └── WorkstationWorkflowSummaryFinancialOperationsTests.cs
 │   │   ├── Workflow

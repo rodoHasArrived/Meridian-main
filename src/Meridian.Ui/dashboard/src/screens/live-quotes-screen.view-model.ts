@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -483,6 +484,7 @@ export interface LiveQuotesScreenViewModel {
   submitLookup: (event: FormEvent<HTMLFormElement>) => void;
   refreshMarketData: () => Promise<void>;
   requestStatus: LiveQuotesRequestStatusModel;
+  quoteStreamHealthy: boolean;
 }
 
 export interface LiveQuoteRefreshCommandViewModel {
@@ -540,6 +542,8 @@ export function useLiveQuotesScreenViewModel(
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingSnapshot, setRefreshingSnapshot] = useState(false);
   const [paused, setPaused] = useState(false);
+  const streamSymbols = useMemo(() => (paused ? [] : symbolSet), [paused, symbolSet]);
+  const quotesStream = useQuotesStream(streamSymbols);
   const marketLifecycle = useRequestLifecycle({
     operation: "live quote market panels",
     runningMessage: "Refreshing live quote, trade, and order-book panels.",
@@ -663,14 +667,28 @@ export function useLiveQuotesScreenViewModel(
   }, [activeSymbol, fetchMarketData, paused]);
 
   useEffect(() => {
+    if (!quotesStream.snapshot) {
+      return;
+    }
+
+    const pushed = quotesStream.snapshot;
+    setSnapshot((current) => mergeLiveQuotesLoadState({ status: "fulfilled", value: pushed }, current, "Failed to load quote matrix"));
+  }, [quotesStream.snapshot]);
+
+  useEffect(() => {
     if (symbolSet.length === 0 || paused) {
       return;
     }
 
     void fetchSnapshotData(symbolSet);
+    if (quotesStream.healthy) {
+      // The SSE stream feeds the matrix; polling stays suspended until it degrades.
+      return;
+    }
+
     const interval = window.setInterval(() => void fetchSnapshotData(symbolSet), LIVE_QUOTES_POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
-  }, [fetchSnapshotData, paused, symbolSet]);
+  }, [fetchSnapshotData, paused, quotesStream.healthy, symbolSet]);
 
   useEffect(() => {
     const nextSymbolSet = initialLiveMarketDataSymbolSet(route.routeSymbols, route.routeSymbol);
@@ -850,7 +868,8 @@ export function useLiveQuotesScreenViewModel(
       market: marketLifecycle.status,
       snapshot: snapshotLifecycle.status,
       orderSubmission: quickTrade.requestStatus
-    }
+    },
+    quoteStreamHealthy: quotesStream.healthy
   };
 }
 

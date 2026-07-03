@@ -200,6 +200,7 @@ export function LiveQuotesScreen() {
             />
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.snapshot, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Quote matrix")}
+              live={vm.quoteStreamHealthy}
             />
             {activeSymbol ? <span>Selected {activeSymbol}; last update {marketVm.lastUpdateLabel}</span> : null}
           </div>
