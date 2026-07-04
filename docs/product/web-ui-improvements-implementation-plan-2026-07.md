@@ -248,6 +248,16 @@ No feature work; confirm and document the rules each later phase must follow.
   explicit "not filtered by fund" hint. Migrate workspace-by-workspace: Portfolio → Accounting →
   Reporting → Trading.
 
+  **Landed:** the sticky persistence, route-change merge, and per-route dimension application
+  already existed in `app.tsx` (persisted under the existing `meridian.workstation.operatingContext.v1`
+  store, so no new `operatingScope.v1` key was introduced). This unit added the missing write path:
+  an editable `ScopePicker` dialog (`components/meridian/scope-picker.tsx`, symbol live-search + fund-account
+  suggestions from the brokerage payload + free-text provider), reachable from a `WorkflowContinuityDock`
+  "Change scope" control and an `operating-scope-edit` palette action, plus dimmed/dashed scope chips with a
+  "carried, but not applied on this workspace" hint driven by the new `operatingScopeDimensionsForRoute`
+  export. Because every workspace already consumes the shared scope engine per-route, the per-workspace
+  migration is covered by that single wiring rather than screen-by-screen edits.
+
 ### 6b. Virtualized dense grids (#7)
 - `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) soft-caps via
   `maxVisibleRows`/`rows.slice` + "show all" — not windowing. Add real row virtualization inside
@@ -280,7 +290,7 @@ additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 `dense-row-detail-accessibility.test.tsx`).
 
 **Checklist**
-- [ ] 6a scope picker + persistence + Portfolio migration.
+- [x] 6a scope picker + persistence + Portfolio migration.
 - [ ] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
 - [ ] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
 - [ ] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
