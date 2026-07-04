@@ -26,12 +26,21 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
             Duplicate: false,
             RecordCount: 1,
             KindSummaries: [],
-            BreakCount: 1,
-            CaseCount: 1,
+            BreakCount: 2,
+            CaseCount: 2,
             RetainedSourcePath: "reconciliation/statement-connector-imports/sc-123/statement.csv",
             RetainedCanonicalPath: "reconciliation/statement-connector-imports/sc-123/canonical.csv",
             Status: "Imported",
-            NextAction: "Review the reconciliation queue.");
+            NextAction: "Review the reconciliation queue.")
+        {
+            BreakIds = ["break-cash-1", "break-position-2"],
+            CaseIds = ["case:break-cash-1", "case:break-position-2"],
+            ReconciliationCaseRoutes =
+            [
+                "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1",
+                "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-position-2&breakId=break-position-2"
+            ]
+        };
 
         var retained = await bridge.RetainAsync(
             result,
@@ -69,6 +78,14 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
         document.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.Account &&
             link.ObjectId == "FUND-A");
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase &&
+            link.ObjectId == "case:break-cash-1" &&
+            link.Route == "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1");
+        document.ObjectLinks.Should().Contain(link =>
+            link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase &&
+            link.ObjectId == "case:break-position-2" &&
+            link.Route == "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-position-2&breakId=break-position-2");
 
         var matches = await store.FindByLinkageAsync(new EvidenceVaultLookupRequestDto(
             EvidenceSubject: null,
@@ -77,6 +94,14 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
             ReportPackId: null,
             ReconciliationCaseId: null));
         matches.Should().ContainSingle(match => match.VaultId == retained.EvidenceVaultIdentity.VaultId);
+
+        var caseMatches = await store.FindByLinkageAsync(new EvidenceVaultLookupRequestDto(
+            EvidenceSubject: null,
+            RunId: null,
+            PeriodId: null,
+            ReportPackId: null,
+            ReconciliationCaseId: "case:break-position-2"));
+        caseMatches.Should().ContainSingle(match => match.VaultId == retained.EvidenceVaultIdentity.VaultId);
     }
 
     public void Dispose()

@@ -132,6 +132,13 @@ public sealed class StatementImportServiceTests : IDisposable
         // position, fee, and dividend rows match. Each break becomes a queue case.
         result.BreakCount.Should().Be(3);
         result.CaseCount.Should().Be(3);
+        result.BreakIds.Should().HaveCount(3);
+        result.CaseIds.Should().HaveCount(3);
+        result.CaseIds.Should().OnlyContain(caseId => caseId.StartsWith("case:", StringComparison.OrdinalIgnoreCase));
+        result.ReconciliationCaseRoutes.Should().HaveCount(3);
+        result.ReconciliationCaseRoutes.Should().OnlyContain(route =>
+            route.StartsWith($"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}&caseId=", StringComparison.OrdinalIgnoreCase) &&
+            route.Contains("&breakId=", StringComparison.OrdinalIgnoreCase));
         result.Status.Should().Be("Imported");
 
         var run = await _workflow.GetAsync(result.RunId);

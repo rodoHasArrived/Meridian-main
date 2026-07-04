@@ -709,8 +709,44 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           ))}
         </ul>
       ) : null}
+      <CommitCaseLinks result={result} />
       <CommitResultActions result={result} />
     </PanelSurface>
+  );
+}
+
+function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
+  const caseIds = result?.caseIds ?? [];
+  if (!result || caseIds.length === 0) {
+    return null;
+  }
+
+  const visibleCaseIds = caseIds.slice(0, 5);
+  const remainingCount = caseIds.length - visibleCaseIds.length;
+
+  return (
+    <div className="flex flex-col gap-2" aria-label="Statement import reconciliation cases">
+      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Reconciliation cases
+      </span>
+      <ul className="flex flex-wrap gap-2">
+        {visibleCaseIds.map((caseId, index) => (
+          <li key={caseId}>
+            <Button asChild variant="outline" size="sm">
+              <Link to={resolveStatementCaseRoute(result, caseId, index)}>
+                <span className="max-w-[14rem] truncate font-mono text-[11px]">{caseId}</span>
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </Button>
+          </li>
+        ))}
+      </ul>
+      {remainingCount > 0 ? (
+        <span className="text-xs text-muted-foreground">
+          {remainingCount} more case{remainingCount === 1 ? "" : "s"} are available from the reconciliation queue.
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -738,4 +774,23 @@ function CommitResultActions({ result }: { result: StatementImportPanelViewModel
       </Button>
     </div>
   );
+}
+
+function resolveStatementCaseRoute(
+  result: NonNullable<StatementImportPanelViewModel["commitResult"]>,
+  caseId: string,
+  index: number
+) {
+  const explicitRoute = result.reconciliationCaseRoutes?.[index];
+  if (explicitRoute && explicitRoute.trim()) {
+    return explicitRoute;
+  }
+
+  const baseRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
+  const separator = baseRoute.includes("?") ? "&" : "?";
+  const caseParam = `caseId=${encodeURIComponent(caseId)}`;
+  const breakId = caseId.toLowerCase().startsWith("case:") ? caseId.slice("case:".length).trim() : "";
+  return breakId
+    ? `${baseRoute}${separator}${caseParam}&breakId=${encodeURIComponent(breakId)}`
+    : `${baseRoute}${separator}${caseParam}`;
 }

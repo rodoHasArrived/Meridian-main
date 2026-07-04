@@ -53,7 +53,7 @@ public sealed class StatementImportEvidenceBridge(
                         RunId: result.RunId,
                         PeriodId: BuildPeriodId(request.PeriodStart, request.PeriodEnd),
                         ReportPackId: null,
-                        ReconciliationCaseId: null))
+                        ReconciliationCaseId: result.CaseIds.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))))
                 {
                     Classification = EvidenceDocumentClassificationDto.Statement,
                     Actor = request.ImportedBy,
@@ -115,8 +115,9 @@ public sealed class StatementImportEvidenceBridge(
         StatementImportCommitResultDto result,
         StatementImportEvidenceBridgeRequest request,
         string reconciliationRoute)
-        =>
-        [
+    {
+        var links = new List<EvidenceDocumentLinkDto>
+        {
             new(
                 EvidenceDocumentLinkKindDto.StatementRun,
                 result.RunId,
@@ -141,7 +142,20 @@ public sealed class StatementImportEvidenceBridge(
                 Label: $"Statement import {result.RunId}",
                 Route: reconciliationRoute,
                 Relationship: "retains-import-source")
-        ];
+        };
+
+        foreach (var caseId in result.CaseIds.Where(static value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            links.Add(new EvidenceDocumentLinkDto(
+                EvidenceDocumentLinkKindDto.ReconciliationCase,
+                caseId,
+                Label: $"Reconciliation case {caseId}",
+                Route: ResolveReconciliationCaseRoute(result, caseId),
+                Relationship: "supports-reconciliation-case"));
+        }
+
+        return links;
+    }
 
     private static IReadOnlyList<EvidenceArtifactExtractionFieldDto> BuildExtractedFields(
         StatementImportCommitResultDto result,
@@ -200,6 +214,35 @@ public sealed class StatementImportEvidenceBridge(
         }
 
         return nextActions;
+    }
+
+    private static string ResolveReconciliationCaseRoute(StatementImportCommitResultDto result, string caseId)
+    {
+        var index = result.CaseIds
+            .Select((value, itemIndex) => new { value, itemIndex })
+            .FirstOrDefault(item => string.Equals(item.value, caseId, StringComparison.OrdinalIgnoreCase))
+            ?.itemIndex;
+        if (index is int routeIndex &&
+            routeIndex >= 0 &&
+            routeIndex < result.ReconciliationCaseRoutes.Count &&
+            !string.IsNullOrWhiteSpace(result.ReconciliationCaseRoutes[routeIndex]))
+        {
+            return result.ReconciliationCaseRoutes[routeIndex];
+        }
+
+        var route = BuildReconciliationRoute(result.RunId)
+            + $"&caseId={Uri.EscapeDataString(caseId)}";
+        const string casePrefix = "case:";
+        if (caseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var breakId = caseId[casePrefix.Length..].Trim();
+            if (!string.IsNullOrWhiteSpace(breakId))
+            {
+                route += $"&breakId={Uri.EscapeDataString(breakId)}";
+            }
+        }
+
+        return route;
     }
 
     private static string BuildEvidenceWorkbenchRoute(string runId)

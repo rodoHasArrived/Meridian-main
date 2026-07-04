@@ -129,6 +129,9 @@ public sealed record StatementImportCommitResultDto(
     public EvidenceVaultIdentityDto? EvidenceVaultIdentity { get; init; }
     public string? EvidenceWorkbenchRoute { get; init; }
     public string? ReconciliationRoute { get; init; }
+    public IReadOnlyList<string> BreakIds { get; init; } = [];
+    public IReadOnlyList<string> CaseIds { get; init; } = [];
+    public IReadOnlyList<string> ReconciliationCaseRoutes { get; init; } = [];
     public IReadOnlyList<string> NextActions { get; init; } = [];
 }
 

@@ -4490,6 +4490,9 @@ export interface StatementImportCommitResult {
   evidenceVaultIdentity?: EvidenceVaultIdentity | null;
   evidenceWorkbenchRoute?: string | null;
   reconciliationRoute?: string | null;
+  breakIds?: string[];
+  caseIds?: string[];
+  reconciliationCaseRoutes?: string[];
   nextActions?: string[];
 }
 

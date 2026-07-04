@@ -164,6 +164,18 @@ public sealed class StatementImportService(
         }
 
         await catalog.RecordAcceptedFingerprintAsync(parse.ProfileId, parse.Fingerprint, ct).ConfigureAwait(false);
+        var breakIds = result.Breaks
+            .Select(static item => item.BreakId)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var caseIds = result.Cases
+            .Select(static item => item.CaseId)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         return new StatementImportCommitResultDto(
             RunId: result.Import.ImportId,
@@ -177,7 +189,14 @@ public sealed class StatementImportService(
             Status: "Imported",
             NextAction: result.Cases.Count > 0
                 ? $"{result.Cases.Count} reconciliation case(s) entered the queue; review and disposition them in the reconciliation workspace."
-                : "All rows matched within tolerance; no reconciliation cases were opened.");
+                : "All rows matched within tolerance; no reconciliation cases were opened.")
+        {
+            BreakIds = breakIds,
+            CaseIds = caseIds,
+            ReconciliationCaseRoutes = caseIds
+                .Select(caseId => BuildReconciliationCaseRoute(result.Import.ImportId, caseId))
+                .ToArray()
+        };
     }
 
     /// <summary>Fetches a remote statement document through a fetch-capable connector.</summary>
@@ -381,4 +400,22 @@ public sealed class StatementImportService(
 
     private static string ToRelativeRetainedPath(string uploadId, string fileName)
         => string.Join('/', "reconciliation", "statement-connector-imports", uploadId, fileName);
+
+    private static string BuildReconciliationCaseRoute(string runId, string caseId)
+    {
+        var route = "/accounting/reconciliation/match"
+            + $"?runId={Uri.EscapeDataString(runId)}"
+            + $"&caseId={Uri.EscapeDataString(caseId)}";
+        const string casePrefix = "case:";
+        if (caseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var breakId = caseId[casePrefix.Length..].Trim();
+            if (!string.IsNullOrWhiteSpace(breakId))
+            {
+                route += $"&breakId={Uri.EscapeDataString(breakId)}";
+            }
+        }
+
+        return route;
+    }
 }
