@@ -53,7 +53,7 @@ public sealed class StatementImportEvidenceBridge(
                         RunId: result.RunId,
                         PeriodId: BuildPeriodId(request.PeriodStart, request.PeriodEnd),
                         ReportPackId: null,
-                        ReconciliationCaseId: result.CaseIds.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))))
+                        ReconciliationCaseId: ResolvePrimaryCaseId(result)))
                 {
                     Classification = EvidenceDocumentClassificationDto.Statement,
                     Actor = request.ImportedBy,
@@ -144,13 +144,15 @@ public sealed class StatementImportEvidenceBridge(
                 Relationship: "retains-import-source")
         };
 
-        foreach (var caseId in result.CaseIds.Where(static value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.OrdinalIgnoreCase))
+        foreach (var caseLink in ResolveReconciliationCaseLinks(result))
         {
             links.Add(new EvidenceDocumentLinkDto(
                 EvidenceDocumentLinkKindDto.ReconciliationCase,
-                caseId,
-                Label: $"Reconciliation case {caseId}",
-                Route: ResolveReconciliationCaseRoute(result, caseId),
+                caseLink.CaseId,
+                Label: caseLink.Label,
+                Route: string.IsNullOrWhiteSpace(caseLink.Route)
+                    ? ResolveReconciliationCaseRoute(result, caseLink.CaseId)
+                    : caseLink.Route,
                 Relationship: "supports-reconciliation-case"));
         }
 
@@ -216,6 +218,39 @@ public sealed class StatementImportEvidenceBridge(
         return nextActions;
     }
 
+    private static string? ResolvePrimaryCaseId(StatementImportCommitResultDto result)
+        => ResolveReconciliationCaseLinks(result).FirstOrDefault()?.CaseId
+           ?? result.CaseIds.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
+
+    private static IReadOnlyList<StatementImportReconciliationCaseLinkDto> ResolveReconciliationCaseLinks(
+        StatementImportCommitResultDto result)
+    {
+        if (result.ReconciliationCaseLinks.Count > 0)
+        {
+            return result.ReconciliationCaseLinks
+                .Where(static link => !string.IsNullOrWhiteSpace(link.CaseId))
+                .GroupBy(static link => link.CaseId, StringComparer.OrdinalIgnoreCase)
+                .Select(static group => group.First())
+                .OrderBy(static link => link.CaseId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        return result.CaseIds
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .Select(caseId => new StatementImportReconciliationCaseLinkDto(
+                CaseId: caseId,
+                BreakId: ResolveBreakIdFromCaseId(caseId),
+                Route: ResolveReconciliationCaseRoute(result, caseId),
+                Label: $"Reconciliation case {caseId}",
+                Status: "Open",
+                Priority: "Normal",
+                Reason: "Statement import created a reconciliation case.",
+                SuggestedNextAction: "Review the reconciliation case and linked statement evidence."))
+            .ToArray();
+    }
+
     private static string ResolveReconciliationCaseRoute(StatementImportCommitResultDto result, string caseId)
     {
         var index = result.CaseIds
@@ -232,17 +267,25 @@ public sealed class StatementImportEvidenceBridge(
 
         var route = BuildReconciliationRoute(result.RunId)
             + $"&caseId={Uri.EscapeDataString(caseId)}";
-        const string casePrefix = "case:";
-        if (caseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
+        var breakId = ResolveBreakIdFromCaseId(caseId);
+        if (!string.IsNullOrWhiteSpace(breakId))
         {
-            var breakId = caseId[casePrefix.Length..].Trim();
-            if (!string.IsNullOrWhiteSpace(breakId))
-            {
-                route += $"&breakId={Uri.EscapeDataString(breakId)}";
-            }
+            route += $"&breakId={Uri.EscapeDataString(breakId)}";
         }
 
         return route;
+    }
+
+    private static string? ResolveBreakIdFromCaseId(string caseId)
+    {
+        const string casePrefix = "case:";
+        if (!caseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var breakId = caseId[casePrefix.Length..].Trim();
+        return string.IsNullOrWhiteSpace(breakId) ? null : breakId;
     }
 
     private static string BuildEvidenceWorkbenchRoute(string runId)

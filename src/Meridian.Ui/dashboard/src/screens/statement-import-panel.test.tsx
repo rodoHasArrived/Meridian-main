@@ -114,7 +114,18 @@ const commitResult: StatementImportCommitResult = {
   reconciliationRoute: "/accounting/reconciliation/match?runId=stmt-run-77",
   breakIds: ["break-cash-1"],
   caseIds: ["case:break-cash-1"],
-  reconciliationCaseRoutes: ["/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1"],
+  reconciliationCaseLinks: [
+    {
+      caseId: "case:break-cash-1",
+      breakId: "break-cash-1",
+      route: "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1",
+      label: "Cash break case",
+      status: "Open",
+      priority: "High",
+      reason: "Cash statement break from imported file.",
+      suggestedNextAction: "Assign the case and attach cash support."
+    }
+  ],
   nextActions: ["Open retained statement evidence in Evidence Vault.", "Review reconciliation cases and linked statement evidence."]
 };
 
@@ -185,6 +196,10 @@ describe("StatementImportPanel", () => {
       "/accounting/reconciliation/match?runId=stmt-run-77"
     );
     expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("case:break-cash-1");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Cash break case");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("High");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Cash statement break from imported file.");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Assign the case and attach cash support.");
     expect(screen.getByRole("link", { name: /case:break-cash-1/ })).toHaveAttribute(
       "href",
       "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1"

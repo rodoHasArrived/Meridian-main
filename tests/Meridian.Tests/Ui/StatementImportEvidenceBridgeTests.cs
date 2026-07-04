@@ -35,10 +35,26 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
         {
             BreakIds = ["break-cash-1", "break-position-2"],
             CaseIds = ["case:break-cash-1", "case:break-position-2"],
-            ReconciliationCaseRoutes =
+            ReconciliationCaseLinks =
             [
-                "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1",
-                "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-position-2&breakId=break-position-2"
+                new(
+                    "case:break-cash-1",
+                    "break-cash-1",
+                    "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1",
+                    "Cash break case",
+                    "Open",
+                    "High",
+                    "Cash balance break from imported statement.",
+                    "Assign the case and attach cash support."),
+                new(
+                    "case:break-position-2",
+                    "break-position-2",
+                    "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-position-2&breakId=break-position-2",
+                    "Position break case",
+                    "Open",
+                    "Normal",
+                    "Position break from imported statement.",
+                    "Compare the retained statement row to position evidence.")
             ]
         };
 
@@ -81,6 +97,7 @@ public sealed class StatementImportEvidenceBridgeTests : IDisposable
         document.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase &&
             link.ObjectId == "case:break-cash-1" &&
+            link.Label == "Cash break case" &&
             link.Route == "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1");
         document.ObjectLinks.Should().Contain(link =>
             link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase &&

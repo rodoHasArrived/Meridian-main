@@ -1564,8 +1564,8 @@ events.
 Statement connector commit endpoints pass the Financial Operations commit result through
 `StatementImportEvidenceBridge`, which retains the raw imported-file reference in Evidence Vault,
 links the vault document to the statement run and returned reconciliation cases, and preserves the
-case routes in the response so workstation clients can open proof and casework from the same
-operator handoff.
+structured case links in the response so workstation clients can open proof and casework from the
+same operator handoff without depending on legacy parallel case-route arrays.
 The shared workstation service graph registers that reconciliation API adapter over the Financial
 Operations statement-run workflow, so browser, host-served workstation, and desktop composition can
 resolve the same source-backed statement-run list, detail, break, case, and queue-status

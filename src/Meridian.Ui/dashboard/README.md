@@ -97,9 +97,10 @@ tenant/scope, extraction status, reviewer state, linked operational objects, ope
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
 Statement import commit results render the shared Evidence Vault identity, Evidence Workbench route,
-reconciliation route, and returned reconciliation case links directly from the commit response, so
-operators can move from imported custodian/broker source to retained proof and exact casework without
-browser-local routing rules.
+reconciliation route, and structured reconciliation case links directly from the commit response,
+including status, priority, reason, and suggested next action. The browser blocks commit while
+preview errors remain, so operators can move from imported custodian/broker source to retained
+proof and exact casework without browser-local routing rules or avoidable server rejections.
 The request-list queue renders typed close, audit, tax, report-package, and operational-event family
 badges beside each frozen support list so operators can distinguish close binder blockers from audit
 or report-support package gaps without parsing manifest JSON.
