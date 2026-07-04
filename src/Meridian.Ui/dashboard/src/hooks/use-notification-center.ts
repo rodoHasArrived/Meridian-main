@@ -53,13 +53,18 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
     };
   }, []);
 
+  // Hold fetchInbox in a ref so an inline (unstable) fetchInbox prop cannot re-run
+  // the poll effect every render — the effect only reacts to fund account + cadence.
+  const fetchInboxRef = useRef(fetchInbox);
+  fetchInboxRef.current = fetchInbox;
+
   const normalizedFundAccountId = fundAccountId ?? undefined;
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
-        const next = await fetchInbox(normalizedFundAccountId);
+        const next = await fetchInboxRef.current(normalizedFundAccountId);
         if (!cancelled && mountedRef.current) {
           setInbox(next);
         }
@@ -74,7 +79,7 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [fetchInbox, normalizedFundAccountId, pollIntervalMs]);
+  }, [normalizedFundAccountId, pollIntervalMs]);
 
   const model = useMemo(
     () =>

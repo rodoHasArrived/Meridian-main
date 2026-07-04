@@ -61,6 +61,17 @@ describe("notification read-state", () => {
     expect(state.readIds).toContain("inbox:a");
   });
 
+  it("returns the same reference when marking an already-read batch (no re-render churn)", () => {
+    const state = markNotificationsRead(emptyNotificationReadState(), ["inbox:a", "inbox:b"]);
+    const again = markNotificationsRead(state, ["inbox:a", "inbox:b"]);
+    expect(again).toBe(state);
+
+    // A batch with one new id still produces a new state.
+    const grown = markNotificationsRead(state, ["inbox:a", "inbox:c"]);
+    expect(grown).not.toBe(state);
+    expect(grown.readIds).toContain("inbox:c");
+  });
+
   it("caps stored id lists to the FIFO limit", () => {
     let state = emptyNotificationReadState();
     for (let index = 0; index < NOTIFICATION_READ_STATE_LIMIT + 25; index += 1) {

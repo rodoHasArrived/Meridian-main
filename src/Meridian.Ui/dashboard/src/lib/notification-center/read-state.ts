@@ -104,9 +104,16 @@ export function saveNotificationReadState(
   }
 }
 
-/** Appends an id to a bounded set, moving it to the newest position. */
+/** Appends an id to a bounded set, moving it to the newest position. Returns the
+ *  same array reference when the id is already present as the sole newest entry. */
 export function withId(ids: string[], id: string): string[] {
-  return [...ids.filter((entry) => entry !== id), id].slice(-NOTIFICATION_READ_STATE_LIMIT);
+  const filtered = ids.filter((entry) => entry !== id);
+  if (filtered.length === ids.length - 1 && ids[ids.length - 1] === id) {
+    // Already present exactly once and already newest — no change.
+    return ids;
+  }
+  const next = [...filtered, id];
+  return next.length > NOTIFICATION_READ_STATE_LIMIT ? next.slice(-NOTIFICATION_READ_STATE_LIMIT) : next;
 }
 
 export function markNotificationRead(state: NotificationReadState, id: string): NotificationReadState {
@@ -117,11 +124,16 @@ export function markNotificationRead(state: NotificationReadState, id: string): 
 }
 
 export function markNotificationsRead(state: NotificationReadState, ids: readonly string[]): NotificationReadState {
+  // Only touch ids that aren't already read, so an all-read batch is a no-op.
+  const missing = ids.filter((id) => !state.readIds.includes(id));
+  if (missing.length === 0) {
+    return state;
+  }
   let readIds = state.readIds;
-  for (const id of ids) {
+  for (const id of missing) {
     readIds = withId(readIds, id);
   }
-  return readIds === state.readIds ? state : { ...state, readIds };
+  return { ...state, readIds };
 }
 
 export function dismissNotification(state: NotificationReadState, id: string): NotificationReadState {
