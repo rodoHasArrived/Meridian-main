@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,22 +52,26 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
   }, [open, scope.symbol, scope.fundAccountId, scope.provider]);
 
   const symbolQuery = symbol.trim();
-  const suggestionsRef = useRef(setSymbolSuggestions);
-  suggestionsRef.current = setSymbolSuggestions;
   useEffect(() => {
     if (!open || symbolQuery.length < SYMBOL_SEARCH_MIN_LENGTH) {
-      suggestionsRef.current([]);
+      setSymbolSuggestions([]);
       return;
     }
 
+    let active = true;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       void searchSymbols(symbolQuery, { signal: controller.signal })
-        .then((records) => suggestionsRef.current(records.slice(0, SYMBOL_SUGGESTION_LIMIT)))
+        .then((records) => {
+          if (active) {
+            setSymbolSuggestions(records.slice(0, SYMBOL_SUGGESTION_LIMIT));
+          }
+        })
         .catch(() => undefined);
     }, SYMBOL_SEARCH_DEBOUNCE_MS);
 
     return () => {
+      active = false;
       controller.abort();
       window.clearTimeout(timer);
     };
@@ -119,7 +123,7 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
             {symbolSuggestions.length > 0 ? (
               <ul className="mt-1 max-h-40 overflow-y-auto rounded-md border border-border/70 bg-background" aria-label="Symbol suggestions">
                 {symbolSuggestions.map((record) => (
-                  <li key={record.symbol}>
+                  <li key={`${record.symbol}-${record.provider ?? ""}`}>
                     <button
                       type="button"
                       className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-secondary/60 focus-visible:outline-none focus-visible:bg-secondary/60"
