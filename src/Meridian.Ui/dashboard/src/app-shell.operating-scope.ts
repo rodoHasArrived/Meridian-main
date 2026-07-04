@@ -141,6 +141,16 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
     .reduce((current, item) => appendSearchValue(current, item.key, item.value, true), route);
 }
 
+/**
+ * The scope dimensions that actually filter data on the given route's workspace.
+ * A set dimension not in this list is carried (sticky) but not applied here — the
+ * basis for the "not filtered on this workspace" hint in the scope display.
+ */
+export function operatingScopeDimensionsForRoute(route: string): AppShellOperatingScopeQueryKey[] {
+  const keys = operatingScopeKeysForRoute(route);
+  return keys ? [...keys] : [];
+}
+
 export function summarizeOperatingScopeForRoute(
   route: string,
   operatingScope: AppShellOperatingScopeState
