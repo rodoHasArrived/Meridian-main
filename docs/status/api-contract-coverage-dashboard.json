@@ -6421,12 +6421,12 @@
     },
     {
       "name": "StatementFetchScheduleDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:136",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139",
       "documented": true
     },
     {
       "name": "StatementFetchScheduleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:149",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:152",
       "documented": true
     },
     {
