@@ -211,20 +211,28 @@ No feature work; confirm and document the rules each later phase must follow.
   (`components/ui/sheet.tsx`) with severity grouping and per-item deep links. Every toast shown
   via `useToast` for these feeds is also written to the center — nothing is toast-only.
   Low-severity events default to inbox-silent (no toast).
-- **Read state:** net-new small file-backed store following the `FileWorkflowPresetStore`
-  template (snapshot record, `SemaphoreSlim`, `AtomicFileWriter`, STJ source-gen) — the only
-  mutable inbox store today (`InMemoryOperatorInboxService`) is `INonProductionOnlyService`.
-  Endpoints: `GET/POST /api/workstation/notifications/read-state` in a new partial.
-- **Delivery:** polls on the workspace cadence until Phase 4; then subscribes to the `inbox` topic.
-- **Tests:** merge/dedup/severity unit tests; read-state endpoint tests; bell + sheet interaction
-  tests.
-- **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test` and
-  `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter FullyQualifiedName~NotificationReadState`
+- **Read state:** *Amended at implementation — client-side (localStorage), not the server file
+  store the plan first sketched.* Exploration showed the feeds have mismatched persistence: price
+  alerts already carry durable read/acknowledged state client-side (`meridian.priceAlerts.v1`),
+  the operator inbox is server-*derived* but stateless (recomputed each request), and system
+  events are client-visible via the overview payload's `recentEvents`. So read/dismissed state for
+  the inbox + system feeds lives client-side under `meridian.workstation.notifications.v1`
+  (`lib/notification-center/read-state.ts`), matching the theme / SQL-workbench / price-alerts
+  convention — no net-new server persistence surface. Server-durable, cross-device read-state is a
+  possible later step (like the SSE fan-out was). Confirmed with the user before building.
+- **Delivery:** the center fetches the operator inbox on a 60s poll (degradable — a failed fetch
+  never blanks the other feeds), reads system events off the already-fetched overview payload, and
+  reads price-alert triggers off the price-alerts context.
+- **Tests:** merge/severity/read-state unit tests; bell + sheet interaction tests (open, mark-all,
+  deep link, inbox-failure resilience).
+- **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test` (no server changes this phase).
 
 **Checklist**
-- [ ] Notification envelope + three-feed merge with dedup tests.
-- [ ] Bell + sheet UI; toasts mirrored into the center.
-- [ ] File-backed read-state store + endpoints + tests.
+- [x] Notification envelope + three-feed merge with unit tests (`lib/notification-center/merge.ts`).
+- [x] Bell + sheet UI (`components/meridian/notification-center.tsx`) replacing the price-alerts
+      bell; per-item deep links via `routeForOperatorWorkItem`; severity grouping.
+- [x] Client-side read-state store + tests (`lib/notification-center/read-state.ts`) — server
+      file store deferred (client-side chosen; see amendment above).
 
 ---
 

@@ -4838,6 +4838,8 @@ Meridian-main
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
+│   │   │   │   │   │   ├── notification-center.test.tsx
+│   │   │   │   │   │   ├── notification-center.tsx
 │   │   │   │   │   │   ├── number-passport.test.ts
 │   │   │   │   │   │   ├── number-passport.tsx
 │   │   │   │   │   │   ├── quant-notebook.test.tsx
@@ -4979,6 +4981,7 @@ Meridian-main
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
 │   │   │   │   │       └── entity-setup-wizard.tsx
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-notification-center.ts
 │   │   │   │   │   ├── use-quotes-stream.test.ts
 │   │   │   │   │   ├── use-quotes-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
@@ -4995,6 +4998,12 @@ Meridian-main
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
 │   │   │   │   │   │   └── payoff.ts
+│   │   │   │   │   ├── notification-center
+│   │   │   │   │   │   ├── merge.test.ts
+│   │   │   │   │   │   ├── merge.ts
+│   │   │   │   │   │   ├── read-state.test.ts
+│   │   │   │   │   │   ├── read-state.ts
+│   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── price-alerts
 │   │   │   │   │   │   ├── evaluator.test.ts
 │   │   │   │   │   │   ├── evaluator.ts
