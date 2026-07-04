@@ -2,7 +2,6 @@ import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, 
 import {
   ArrowRight,
   AlertTriangle,
-  Bell,
   LoaderCircle,
   Menu,
   Search
@@ -50,7 +49,8 @@ import {
 } from "@/components/meridian/command-palette.actions";
 import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
-import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
+import { NotificationCenter } from "@/components/meridian/notification-center";
+import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
@@ -391,7 +391,7 @@ function AppShell() {
         <WorkstationTrustStrip viewModel={shell.trustStrip} />
 
         <div className="workstation-actions">
-          <PriceAlertsBell />
+          <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
           {session ? (
             <div
               className="workstation-session-card"
@@ -1017,33 +1017,6 @@ function WorkstationTrustStrip({
         );
       })}
     </section>
-  );
-}
-
-function PriceAlertsBell() {
-  const { unacknowledgedCount } = usePriceAlerts();
-  const hasUnread = unacknowledgedCount > 0;
-  if (!hasUnread) {
-    return null;
-  }
-
-  const label = `${unacknowledgedCount} unacknowledged price alert${unacknowledgedCount === 1 ? "" : "s"}`;
-
-  return (
-    <Link
-      to="/data/alerts"
-      aria-label={label}
-      title={label}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-    >
-      <Bell className="h-4 w-4" aria-hidden="true" />
-      <span
-        aria-hidden="true"
-        className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
-      >
-        {unacknowledgedCount > 99 ? "99+" : unacknowledgedCount}
-      </span>
-    </Link>
   );
 }
 

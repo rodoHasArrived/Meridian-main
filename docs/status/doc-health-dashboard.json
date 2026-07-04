@@ -1,11 +1,11 @@
 {
   "total_files": 538,
-  "total_lines": 88572,
+  "total_lines": 88589,
   "orphaned_count": 205,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 199,
-  "average_lines": 164.6,
+  "average_lines": 164.7,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2138,7 +2138,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7772,
+      "line_count": 7781,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3106,7 +3106,7 @@
     },
     {
       "path": "docs/product/web-ui-improvements-implementation-plan-2026-07.md",
-      "line_count": 291,
+      "line_count": 299,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
