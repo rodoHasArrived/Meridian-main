@@ -1,20 +1,27 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown, GitBranch, X } from "lucide-react";
+import { ArrowRight, ChevronDown, GitBranch, SlidersHorizontal, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import type { AppShellOperatingScopeQueryKey } from "@/app-shell.operating-scope";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function WorkflowContinuityDock({
   viewModel,
-  onClearOperatingContext
+  onClearOperatingContext,
+  onEditOperatingContext,
+  scopeDimensionsInEffect
 }: {
   viewModel: AppShellWorkflowContinuityViewModel;
   onClearOperatingContext?: () => void;
+  onEditOperatingContext?: () => void;
+  scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
 }) {
   const decision = viewModel.decisionBrief;
   const scopeSummary = viewModel.operatingScope.items.map((item) => `${item.label} ${item.value}`).join(", ");
+  const isDimensionInEffect = (id: string) =>
+    !scopeDimensionsInEffect || scopeDimensionsInEffect.includes(id as AppShellOperatingScopeQueryKey);
   const [operatorFlowOpen, setOperatorFlowOpen] = useState(false);
   const toggleOperatorFlow = () => setOperatorFlowOpen((isOpen) => !isOpen);
 
@@ -39,6 +46,17 @@ export function WorkflowContinuityDock({
         <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
           <span>{viewModel.contextValue}</span>
           <span>{viewModel.routeLabel}</span>
+          {onEditOperatingContext ? (
+            <button
+              type="button"
+              className="workflow-continuity-clear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onClick={onEditOperatingContext}
+              aria-label={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
+              title={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          ) : null}
           {viewModel.operatingScope.hasScope && viewModel.clearSubjectAriaLabel && onClearOperatingContext ? (
             <button
               type="button"
@@ -54,12 +72,20 @@ export function WorkflowContinuityDock({
         {scopeSummary ? <p className="sr-only">Operating scope: {scopeSummary}.</p> : null}
         {viewModel.operatingScope.items.length > 0 ? (
           <dl className="workflow-continuity-scope" aria-label={viewModel.operatingScope.label}>
-            {viewModel.operatingScope.items.map((item) => (
-              <div key={item.id} className="workflow-continuity-scope-chip" aria-label={item.ariaLabel}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
+            {viewModel.operatingScope.items.map((item) => {
+              const inEffect = isDimensionInEffect(item.id);
+              return (
+                <div
+                  key={item.id}
+                  className={cn("workflow-continuity-scope-chip", !inEffect && "workflow-continuity-scope-chip-inactive")}
+                  aria-label={inEffect ? item.ariaLabel : `${item.ariaLabel}. Not applied on this workspace.`}
+                  title={inEffect ? undefined : "Carried, but not applied on this workspace"}
+                >
+                  <dt>{item.label}</dt>
+                  <dd>{item.value}</dd>
+                </div>
+              );
+            })}
           </dl>
         ) : null}
       </div>

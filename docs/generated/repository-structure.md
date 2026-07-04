@@ -4854,6 +4854,8 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-period-switcher.tsx
 │   │   │   │   │   │   ├── save-view-dialog.tsx
+│   │   │   │   │   │   ├── scope-picker.test.tsx
+│   │   │   │   │   │   ├── scope-picker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.test.tsx
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
@@ -5003,6 +5005,9 @@ Meridian-main
 │   │   │   │   │   │   ├── read-state.test.ts
 │   │   │   │   │   │   ├── read-state.ts
 │   │   │   │   │   │   └── types.ts
+│   │   │   │   │   ├── operating-scope
+│   │   │   │   │   │   ├── fund-accounts.test.ts
+│   │   │   │   │   │   └── fund-accounts.ts
 │   │   │   │   │   ├── price-alerts
 │   │   │   │   │   │   ├── evaluator.test.ts
 │   │   │   │   │   │   ├── evaluator.ts
@@ -5239,6 +5244,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.development-fixture-notice.ts
 │   │   │   │   ├── app-shell.evidence-timeline.ts
 │   │   │   │   ├── app-shell.linked-context.ts
+│   │   │   │   ├── app-shell.operating-scope.test.ts
 │   │   │   │   ├── app-shell.operating-scope.ts
 │   │   │   │   ├── app-shell.operator-focus.ts
 │   │   │   │   ├── app-shell.route-focus.ts
