@@ -85,6 +85,11 @@
   padding: 0.0625rem 0.3125rem;
 }
 
+.workflow-continuity-scope-chip-inactive {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
 .workflow-continuity-scope-chip dt {
   color: var(--ws-text-muted, #59636F);
   font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;

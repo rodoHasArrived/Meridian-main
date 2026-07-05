@@ -1,4 +1,5 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { getLiveQuotesSnapshot } from "@/lib/api";
 import type { QuotesSnapshotItem, QuotesSnapshotResponse } from "@/types";
 import { describeCondition, shouldTrigger } from "./evaluator";
@@ -181,6 +182,18 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     return Array.from(symbols).sort();
   }, [state.alerts]);
 
+  const quotesStream = useQuotesStream(watchedSymbols);
+
+  useEffect(() => {
+    if (!quotesStream.snapshot || watchedSymbols.length === 0) {
+      return;
+    }
+
+    evaluateSnapshot(quotesStream.snapshot);
+    setLastPollAt(now().toISOString());
+    setPollErrorMessage(null);
+  }, [evaluateSnapshot, now, quotesStream.snapshot, watchedSymbols.length]);
+
   useEffect(() => {
     if (watchedSymbols.length === 0) {
       setPollErrorMessage(null);
@@ -208,13 +221,21 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     };
 
     void tick();
+    if (quotesStream.healthy) {
+      // Pushed snapshots drive alert evaluation; polling resumes if the stream degrades.
+      return () => {
+        cancelled = true;
+        controller.abort();
+      };
+    }
+
     const interval = window.setInterval(() => void tick(), pollIntervalMs);
     return () => {
       cancelled = true;
       controller.abort();
       window.clearInterval(interval);
     };
-  }, [evaluateSnapshot, fetchSnapshot, pollIntervalMs, watchedSymbols.join("|")]);
+  }, [evaluateSnapshot, fetchSnapshot, pollIntervalMs, quotesStream.healthy, watchedSymbols.join("|")]);
 
   const createAlert = useCallback((draft: PriceAlertDraft) => {
     const id = `alert-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;

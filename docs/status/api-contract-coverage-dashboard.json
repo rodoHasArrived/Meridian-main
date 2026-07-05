@@ -2165,31 +2165,31 @@
     {
       "method": "GET",
       "path": "/api/data/orderbook/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:188",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:127",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/l3-orderbook/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:260",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:199",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/bbo/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:330",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:269",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/orderflow/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:370",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:309",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/data/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:411",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:350",
       "documented": true
     },
     {
@@ -3533,13 +3533,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2577",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2578",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2698",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2699",
       "documented": true
     }
   ],

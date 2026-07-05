@@ -481,6 +481,7 @@ export const UI_API_ROUTES = {
   PromotionReject: "/api/promotion/reject",
   PromotionHistory: "/api/promotion/history",
   WorkstationSession: "/api/workstation/session",
+  WorkstationStream: "/api/workstation/stream",
   WorkstationResearch: "/api/workstation/research",
   WorkstationStrategy: "/api/workstation/strategy",
   WorkstationResearchBriefing: "/api/workstation/research/briefing",

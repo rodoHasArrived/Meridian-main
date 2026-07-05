@@ -260,6 +260,7 @@ export function WatchlistScreen() {
                     <FreshnessChip
                       errorMessage={vm.quoteFreshnessError}
                       label="Watchlist quotes"
+                      live={vm.quoteStreamHealthy}
                       staleBudgetMs={WATCHLIST_QUOTE_FRESHNESS_BUDGET_MS}
                       timestamp={vm.quoteFreshnessTimestamp}
                     />

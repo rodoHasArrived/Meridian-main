@@ -182,10 +182,16 @@ No feature work; confirm and document the rules each later phase must follow.
   `npm --prefix src/Meridian.Ui/dashboard run test`
 
 **Checklist**
-- [ ] `WorkstationEndpoints.Stream.cs` poll-bridge SSE endpoint + route constant + TS mirror.
-- [ ] `use-workstation-stream.ts` shared EventSource hook with fallback semantics.
-- [ ] Poller suspension wired on the four polling sites.
-- [ ] Step-2 fan-out seam (separate PR, hot-path review required).
+- [x] `WorkstationEndpoints.Stream.cs` poll-bridge SSE endpoint + route constant + TS mirror
+      (quotes topic; snapshot builder shared with the REST endpoint; coalesced frames + heartbeats).
+- [x] Shared EventSource client with fallback semantics (`lib/quotes-stream.ts` framework-agnostic
+      manager + `hooks/use-quotes-stream.ts` React binding; landed under these names rather than a
+      single `use-workstation-stream.ts`).
+- [x] Poller suspension wired on the three quote-driven polling sites (watchlist, live-quotes
+      matrix, price alerts); the `use-workstation-data` workspace poller is deferred to step 2 —
+      workspace topics need the event-driven fan-out seam, not a 30s poll-bridge.
+- [ ] Step-2 fan-out seam (separate PR, hot-path review required) + workspace topics + per-session
+      stream caps.
 
 ---
 
@@ -205,20 +211,28 @@ No feature work; confirm and document the rules each later phase must follow.
   (`components/ui/sheet.tsx`) with severity grouping and per-item deep links. Every toast shown
   via `useToast` for these feeds is also written to the center — nothing is toast-only.
   Low-severity events default to inbox-silent (no toast).
-- **Read state:** net-new small file-backed store following the `FileWorkflowPresetStore`
-  template (snapshot record, `SemaphoreSlim`, `AtomicFileWriter`, STJ source-gen) — the only
-  mutable inbox store today (`InMemoryOperatorInboxService`) is `INonProductionOnlyService`.
-  Endpoints: `GET/POST /api/workstation/notifications/read-state` in a new partial.
-- **Delivery:** polls on the workspace cadence until Phase 4; then subscribes to the `inbox` topic.
-- **Tests:** merge/dedup/severity unit tests; read-state endpoint tests; bell + sheet interaction
-  tests.
-- **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test` and
-  `dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter FullyQualifiedName~NotificationReadState`
+- **Read state:** *Amended at implementation — client-side (localStorage), not the server file
+  store the plan first sketched.* Exploration showed the feeds have mismatched persistence: price
+  alerts already carry durable read/acknowledged state client-side (`meridian.priceAlerts.v1`),
+  the operator inbox is server-*derived* but stateless (recomputed each request), and system
+  events are client-visible via the overview payload's `recentEvents`. So read/dismissed state for
+  the inbox + system feeds lives client-side under `meridian.workstation.notifications.v1`
+  (`lib/notification-center/read-state.ts`), matching the theme / SQL-workbench / price-alerts
+  convention — no net-new server persistence surface. Server-durable, cross-device read-state is a
+  possible later step (like the SSE fan-out was). Confirmed with the user before building.
+- **Delivery:** the center fetches the operator inbox on a 60s poll (degradable — a failed fetch
+  never blanks the other feeds), reads system events off the already-fetched overview payload, and
+  reads price-alert triggers off the price-alerts context.
+- **Tests:** merge/severity/read-state unit tests; bell + sheet interaction tests (open, mark-all,
+  deep link, inbox-failure resilience).
+- **Validation:** `npm --prefix src/Meridian.Ui/dashboard run test` (no server changes this phase).
 
 **Checklist**
-- [ ] Notification envelope + three-feed merge with dedup tests.
-- [ ] Bell + sheet UI; toasts mirrored into the center.
-- [ ] File-backed read-state store + endpoints + tests.
+- [x] Notification envelope + three-feed merge with unit tests (`lib/notification-center/merge.ts`).
+- [x] Bell + sheet UI (`components/meridian/notification-center.tsx`) replacing the price-alerts
+      bell; per-item deep links via `routeForOperatorWorkItem`; severity grouping.
+- [x] Client-side read-state store + tests (`lib/notification-center/read-state.ts`) — server
+      file store deferred (client-side chosen; see amendment above).
 
 ---
 
@@ -233,6 +247,16 @@ No feature work; confirm and document the rules each later phase must follow.
   scope params survive navigation. Screens that ignore a dimension render it dimmed with an
   explicit "not filtered by fund" hint. Migrate workspace-by-workspace: Portfolio → Accounting →
   Reporting → Trading.
+
+  **Landed:** the sticky persistence, route-change merge, and per-route dimension application
+  already existed in `app.tsx` (persisted under the existing `meridian.workstation.operatingContext.v1`
+  store, so no new `operatingScope.v1` key was introduced). This unit added the missing write path:
+  an editable `ScopePicker` dialog (`components/meridian/scope-picker.tsx`, symbol live-search + fund-account
+  suggestions from the brokerage payload + free-text provider), reachable from a `WorkflowContinuityDock`
+  "Change scope" control and an `operating-scope-edit` palette action, plus dimmed/dashed scope chips with a
+  "carried, but not applied on this workspace" hint driven by the new `operatingScopeDimensionsForRoute`
+  export. Because every workspace already consumes the shared scope engine per-route, the per-workspace
+  migration is covered by that single wiring rather than screen-by-screen edits.
 
 ### 6b. Virtualized dense grids (#7)
 - `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) soft-caps via
@@ -266,7 +290,7 @@ additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 `dense-row-detail-accessibility.test.tsx`).
 
 **Checklist**
-- [ ] 6a scope picker + persistence + Portfolio migration.
+- [x] 6a scope picker + persistence + Portfolio migration.
 - [ ] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
 - [ ] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
 - [ ] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.

@@ -86,8 +86,8 @@
       "id": "SRC-DESIGN-INSTRUMENTS",
       "path": "src/Meridian.Instruments",
       "readme": "src/Meridian.Instruments/README.md",
-      "readme_hash": "9e8700c10e9d07f9180bbee3549ea955b079690ba3fbbd202789d59b0678245b",
-      "source_hash": "36e1f250961230ee7803db362461c63a1ab4c7287b8c7e75b845a87fc9fbdb10"
+      "readme_hash": "ff499f4abf1171607f39045dbdbc821135ed476721510002d43e8c8749cbcaec",
+      "source_hash": "3fd6b5c56203839d7267e047e7fae06e6e8c1522f91548b725b5a4ce5a9038f9"
     },
     {
       "id": "SRC-DESIGN-PLATFORM",

@@ -2,7 +2,6 @@ import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, 
 import {
   ArrowRight,
   AlertTriangle,
-  Bell,
   LoaderCircle,
   Menu,
   Search
@@ -18,11 +17,16 @@ import {
   type ShellStatusPanel
 } from "@/app-shell.view-model";
 import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
   type AppShellOperatingScopeInput
 } from "@/app-shell.operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { ScopePicker } from "@/components/meridian/scope-picker";
+import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
@@ -50,7 +54,8 @@ import {
 } from "@/components/meridian/command-palette.actions";
 import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
-import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
+import { NotificationCenter } from "@/components/meridian/notification-center";
+import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
@@ -104,6 +109,7 @@ export function App() {
 function AppShell() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
   const workbenchRef = useRef<HTMLElement | null>(null);
@@ -189,9 +195,21 @@ function AppShell() {
     })),
     [upsertWorkflowPreset, workflowPresets]
   );
+  const scopeActionItem = useMemo<CommandPaletteActionItem>(
+    () => ({
+      id: "operating-scope-edit",
+      verbLabel: "Set operating scope…",
+      description: "Set the subject, fund account, and provider carried across the workstation.",
+      keywords: ["scope", "fund account", "subject", "filter"],
+      run: async () => {
+        setScopePickerOpen(true);
+      }
+    }),
+    []
+  );
   const paletteActionItems = useMemo(
-    () => [...presetPinActionItems, ...screenActionItems],
-    [presetPinActionItems, screenActionItems]
+    () => [scopeActionItem, ...presetPinActionItems, ...screenActionItems],
+    [scopeActionItem, presetPinActionItems, screenActionItems]
   );
 
   useEffect(() => {
@@ -223,6 +241,22 @@ function AppShell() {
     setStoredOperatingScope(emptyScope);
     navigate(`${pathname}${removeOperatingScopeFromSearch(search)}${hash}`, { replace: true });
   };
+
+  // Replace the operating scope from the picker: persist it and reflect the
+  // applicable dimensions into the current route so URL-reading screens filter,
+  // preserving any non-scope query params already on the route.
+  const handleSetOperatingScope = (next: AppShellOperatingScopeInput) => {
+    const compacted = compactOperatingScope(next);
+    suppressScopePersistRef.current = false;
+    writeStoredOperatingScope(compacted);
+    setStoredOperatingScope(compacted);
+    const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
+    const scopeState = buildOperatingScopeFromSearch("", compacted);
+    navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
+  };
+
+  const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
+  const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
 
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
@@ -391,7 +425,7 @@ function AppShell() {
         <WorkstationTrustStrip viewModel={shell.trustStrip} />
 
         <div className="workstation-actions">
-          <PriceAlertsBell />
+          <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
           {session ? (
             <div
               className="workstation-session-card"
@@ -443,6 +477,8 @@ function AppShell() {
           <WorkflowContinuityDock
             viewModel={shell.workflowContinuity}
             onClearOperatingContext={handleClearOperatingContext}
+            onEditOperatingContext={() => setScopePickerOpen(true)}
+            scopeDimensionsInEffect={scopeDimensionsInEffect}
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
@@ -591,6 +627,13 @@ function AppShell() {
         operatingContextSymbol={operatingContextSymbol}
         operatingScope={operatingScopeInput}
         onPresetUsed={handleWorkflowPresetUsed}
+      />
+      <ScopePicker
+        open={scopePickerOpen}
+        onOpenChange={setScopePickerOpen}
+        scope={operatingScopeInput}
+        fundAccounts={scopeFundAccountOptions}
+        onApply={handleSetOperatingScope}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
         <SheetContent
@@ -1017,33 +1060,6 @@ function WorkstationTrustStrip({
         );
       })}
     </section>
-  );
-}
-
-function PriceAlertsBell() {
-  const { unacknowledgedCount } = usePriceAlerts();
-  const hasUnread = unacknowledgedCount > 0;
-  if (!hasUnread) {
-    return null;
-  }
-
-  const label = `${unacknowledgedCount} unacknowledged price alert${unacknowledgedCount === 1 ? "" : "s"}`;
-
-  return (
-    <Link
-      to="/data/alerts"
-      aria-label={label}
-      title={label}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-    >
-      <Bell className="h-4 w-4" aria-hidden="true" />
-      <span
-        aria-hidden="true"
-        className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
-      >
-        {unacknowledgedCount > 99 ? "99+" : unacknowledgedCount}
-      </span>
-    </Link>
   );
 }
 

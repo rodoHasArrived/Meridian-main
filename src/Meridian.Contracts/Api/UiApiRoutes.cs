@@ -599,6 +599,7 @@ public static class UiApiRoutes
 
     // Workstation root and compatibility workspace endpoints
     public const string WorkstationSession = "/api/workstation/session";
+    public const string WorkstationStream = "/api/workstation/stream";
     public const string WorkstationResearch = "/api/workstation/research";
     public const string WorkstationStrategy = "/api/workstation/strategy";
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
