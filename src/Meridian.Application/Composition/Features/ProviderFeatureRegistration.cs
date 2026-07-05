@@ -18,6 +18,7 @@ using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -112,6 +113,13 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
 
     private static void RegisterCorporateActionProviders(IServiceCollection services)
     {
+        // Corporate action providers take IConfiguration for credential lookup. Hosted
+        // compositions (web/WPF) already carry the host configuration; bare compositions
+        // (CLI wiring, composition tests) get an environment-variable-backed fallback,
+        // matching the providers' own env-var credential fallbacks.
+        services.TryAddSingleton<IConfiguration>(static _ =>
+            new ConfigurationBuilder().AddEnvironmentVariables().Build());
+
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
             if (descriptor.CorporateActions is null)
