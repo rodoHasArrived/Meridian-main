@@ -255,6 +255,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
             services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<ICorporateActionCommandService, CorporateActionCommandService>();
+            // Period-aware supersede routing: singleton over IServiceScopeFactory because the
+            // workstation restatement stack it consumes is scoped; hosts without that stack
+            // degrade to no proposal at call time.
+            services.AddSingleton<ICorporateActionRestatementTrigger, CorporateActionSupersedeRestatementTrigger>();
             services.AddSingleton<IBondReferenceService, BondProjectionService>();
             services.AddSingleton<IOptionReferenceService, OptionProjectionService>();
             services.AddSingleton<IOptionChainImportService>(sp => (OptionProjectionService)sp.GetRequiredService<IOptionReferenceService>());
@@ -333,6 +337,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
+        services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
         services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();

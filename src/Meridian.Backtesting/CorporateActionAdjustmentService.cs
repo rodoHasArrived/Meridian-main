@@ -113,7 +113,12 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)
             .ConfigureAwait(false);
 
-        return actions.OrderBy(a => a.ExDate).ToList();
+        // Fold supersede chains and drop cancellations so adjustment math sees each
+        // action's latest terms exactly once.
+        return CorporateActionEffectiveStateProjector
+            .ProjectEffectiveActions(actions, DateTimeOffset.UtcNow)
+            .OrderBy(static a => a.ExDate)
+            .ToList();
     }
 
     private static HistoricalBar ApplyAdjustments(
@@ -130,15 +135,16 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             if (action.ExDate <= barDate)
                 continue;
 
-            var eventType = CorporateActionEventTypes.Normalize(action.EventType);
-            if ((eventType == CorporateActionEventTypes.StockSplit ||
-                    eventType == CorporateActionEventTypes.ReverseStockSplit) &&
+            if (!CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor))
+                continue;
+
+            if (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.PriceScaling &&
                 action.SplitRatio is > 0m)
             {
                 priceFactor /= action.SplitRatio.Value;
                 volumeFactor *= action.SplitRatio.Value;
             }
-            else if (eventType == CorporateActionEventTypes.Dividend &&
+            else if (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution &&
                      dividendFactorsByExDate.TryGetValue(action.ExDate, out var dividendFactor))
             {
                 priceFactor *= dividendFactor;
@@ -171,7 +177,8 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
 
         foreach (var dividendGroup in sortedActions
                      .Where(static action =>
-                         CorporateActionEventTypes.Normalize(action.EventType) == CorporateActionEventTypes.Dividend &&
+                         CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor) &&
+                         descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution &&
                          action.DividendPerShare is > 0m)
                      .GroupBy(static action => action.ExDate))
         {
@@ -225,7 +232,8 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)
             .ConfigureAwait(false);
 
-        var relevantActions = actions
+        var relevantActions = CorporateActionEffectiveStateProjector
+            .ProjectEffectiveActions(actions, DateTimeOffset.UtcNow)
             .Where(a => a.ExDate > DateOnly.FromDateTime(positionOpenedAt.UtcDateTime))
             .OrderBy(static a => a.ExDate)
             .ToList();
@@ -242,8 +250,8 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         foreach (var action in relevantActions)
         {
             var eventType = CorporateActionEventTypes.Normalize(action.EventType);
-            if ((eventType == CorporateActionEventTypes.StockSplit ||
-                    eventType == CorporateActionEventTypes.ReverseStockSplit) &&
+            if (CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor) &&
+                descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.PriceScaling &&
                 action.SplitRatio.HasValue &&
                 action.SplitRatio.Value != 0m)
             {

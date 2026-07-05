@@ -452,6 +452,14 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
                 sp.GetRequiredService<IAccountingConfigurationService>()));
+        services.TryAddSingleton(sp =>
+        {
+            var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
+            return new AutomatedJournalIntakeRunner(
+                sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
+                new FeeScheduleAccrualEventProducer(),
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster));
+        });
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
