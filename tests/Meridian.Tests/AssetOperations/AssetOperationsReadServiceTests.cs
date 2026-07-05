@@ -174,6 +174,122 @@ public sealed class AssetOperationsReadServiceTests
         projection.Readiness.ReadyCapabilities.Should().Contain(["TermsHistory", "ProjectedCashFlows", "ActualActivity", "Reconciliation", "LedgerProjection"]);
     }
 
+    [Fact]
+    public async Task GetOperationsAsync_ForBondWithSinkingFund_ShouldEmitPrincipalRepaymentRowsAndReduceMaturityPrincipal()
+    {
+        var securityId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, "Bond", "Test Sinking Fund Bond 6% 2028"));
+        var bondService = Substitute.For<IBondReferenceService>();
+        bondService.GetReferenceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new BondReferenceDto(
+                securityId,
+                "Test Sinking Fund Bond 6% 2028",
+                "USD",
+                "Test Issuer",
+                "Senior",
+                "CUSIP:999999999",
+                new BondLifecycleDto(
+                    securityId,
+                    BondLifecycleStat.Active,
+                    new DateOnly(2025, 1, 1),
+                    null,
+                    new DateOnly(2028, 1, 1),
+                    false,
+                    1,
+                    Par: 100m,
+                    PaymentFrequency: "Annual"),
+                new BondAccrualConventionDto(securityId, "30/360", 2, null, "Fixed", 6m, null, null, 1),
+                1,
+                SinkingFund: new BondSinkingFundDto(
+                    securityId,
+                    [new BondSinkingFundEntryDto(new DateOnly(2026, 1, 1), 40m)],
+                    "Annual",
+                    false,
+                    1)));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster, bondReferenceService: bondService);
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.ProjectedCashFlows.Where(static f => f.FlowType == "Coupon").Should().HaveCount(3);
+        detail.ProjectedCashFlows.Where(static f => f.FlowType == "PrincipalRepayment").Should().HaveCount(1);
+
+        // first coupon is on the full 100m outstanding
+        detail.ProjectedCashFlows.First(static f => f.FlowType == "Coupon").Should().Match<AssetProjectedCashFlowDto>(f =>
+            f.DueDate == new DateOnly(2026, 1, 1) &&
+            f.Amount == 6m &&
+            f.PrincipalBasis == 100m);
+
+        // sinking-fund repayment of 40m reduces outstanding principal
+        detail.ProjectedCashFlows.Single(static f => f.FlowType == "PrincipalRepayment").Should().Match<AssetProjectedCashFlowDto>(f =>
+            f.DueDate == new DateOnly(2026, 1, 1) &&
+            f.Amount == 40m);
+
+        // subsequent coupons accrue on the reduced 60m outstanding
+        detail.ProjectedCashFlows
+            .Where(static f => f.FlowType == "Coupon" && f.DueDate > new DateOnly(2026, 1, 1))
+            .Should().AllSatisfy(f => f.Amount.Should().Be(3.6m));
+
+        // maturity carries only the remaining 60m outstanding principal
+        detail.ProjectedCashFlows.Single(static f => f.FlowType == "Maturity").Should().Match<AssetProjectedCashFlowDto>(f =>
+            f.DueDate == new DateOnly(2028, 1, 1) &&
+            f.Amount == 60m);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ForInflationLinkedBond_ShouldAdjustPrincipalBasisByInflationFactor()
+    {
+        var securityId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, "Bond", "Test TIPS 5% 2027"));
+        var bondService = Substitute.For<IBondReferenceService>();
+        bondService.GetReferenceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new BondReferenceDto(
+                securityId,
+                "Test TIPS 5% 2027",
+                "USD",
+                "Test Issuer",
+                "Senior",
+                "CUSIP:888888888",
+                new BondLifecycleDto(
+                    securityId,
+                    BondLifecycleStat.Active,
+                    new DateOnly(2026, 1, 1),
+                    null,
+                    new DateOnly(2027, 1, 1),
+                    false,
+                    1,
+                    Par: 100m,
+                    PaymentFrequency: "Annual"),
+                new BondAccrualConventionDto(securityId, "30/360", 2, null, "Fixed", 5m, null, null, 1),
+                1,
+                InflationLinked: new BondInflationLinkedDto(
+                    securityId,
+                    "CPI-U",
+                    100m,
+                    new DateOnly(2026, 1, 1),
+                    1.03m,
+                    new DateOnly(2026, 12, 1),
+                    1.0m,
+                    1)));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster, bondReferenceService: bondService);
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        // principal basis = 100 * 1.03 = 103m
+        detail!.ProjectedCashFlows.Single(static f => f.FlowType == "Coupon").Should().Match<AssetProjectedCashFlowDto>(f =>
+            f.DueDate == new DateOnly(2027, 1, 1) &&
+            f.Amount == 5.15m &&
+            f.PrincipalBasis == 103m);
+        detail.ProjectedCashFlows.Single(static f => f.FlowType == "Maturity").Should().Match<AssetProjectedCashFlowDto>(f =>
+            f.DueDate == new DateOnly(2027, 1, 1) &&
+            f.Amount == 103m);
+    }
+
     private static SecurityDetailDto BuildSecurity(Guid securityId, string assetClass, string displayName)
         => new(
             securityId,
