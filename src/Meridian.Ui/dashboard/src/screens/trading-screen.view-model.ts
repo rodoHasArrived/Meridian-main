@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import type {
@@ -788,6 +789,14 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
         detail: "Review execution guardrails and circuit-breaker state in Trading."
       };
 
+    case "BrokerExecutionReconciliation":
+      return {
+        label: "Review broker orders",
+        href: sharedTargetHref ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        ariaLabel: `Open broker execution reconciliation for ${item.label}`,
+        detail: "Review broker/OMS open-order parity before live operation."
+      };
+
     case "PromotionReview": {
       const href = sharedTargetHref ?? `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
       return {
@@ -909,12 +918,19 @@ export function mapBrokerageSyncLevel(status: WorkstationBrokerageSyncStatus): A
 function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): TradingReadinessSummaryRow[] {
   const overallValue = formatReadinessStatusValue(readiness.overallStatus);
   const paperValue = readiness.readyForPaperOperation ? "Ready for paper" : "Not paper ready";
+  const liveBlockers = readiness.liveOperationBlockers ?? [];
+  const liveOperationRequirements = readiness.liveOperationRequirements ?? [];
+  const liveValue = readiness.readyForLiveOperation
+    ? "Ready for live"
+    : liveBlockers.length > 0
+      ? `${liveBlockers.length} blocker${liveBlockers.length === 1 ? "" : "s"}`
+      : "Not live ready";
   const brokerageValue = readiness.brokerageSync
     ? formatBrokerageSyncValue(readiness.brokerageSync)
     : "No account sync";
+  const executionReconciliation = readiness.executionReconciliation ?? null;
   const asOfLabel = formatUtcDateTime(readiness.asOf);
-
-  return [
+  const rows: TradingReadinessSummaryRow[] = [
     {
       id: "overall",
       label: "Overall",
@@ -930,12 +946,44 @@ function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): 
       ariaLabel: `Paper operation readiness: ${paperValue}`
     },
     {
+      id: "live",
+      label: "Live",
+      value: liveValue,
+      level: readiness.readyForLiveOperation ? "ready" : liveBlockers.length > 0 ? "atRisk" : "review",
+      ariaLabel: `Live operation readiness: ${liveValue}${liveBlockers.length > 0 ? `. Blockers: ${liveBlockers.join(", ")}` : ""}`
+    },
+    {
       id: "brokerage",
       label: "Brokerage",
       value: brokerageValue,
       level: readiness.brokerageSync ? mapBrokerageSyncLevel(readiness.brokerageSync) : "review",
       ariaLabel: `Brokerage sync: ${brokerageValue}`
-    },
+    }
+  ];
+
+  for (const requirement of liveOperationRequirements) {
+    const requirementValue = formatReadinessStatusValue(requirement.status);
+    rows.push({
+      id: `live-requirement-${requirement.requirementId}`,
+      label: requirement.label,
+      value: requirementValue,
+      level: mapReadinessStatusLevel(requirement.status),
+      ariaLabel: formatLiveOperationRequirementAriaLabel(requirement, requirementValue)
+    });
+  }
+
+  if (executionReconciliation) {
+    const executionValue = formatExecutionReconciliationValue(executionReconciliation);
+    rows.push({
+      id: "broker-execution",
+      label: "Broker orders",
+      value: executionValue,
+      level: mapReadinessStatusLevel(executionReconciliation.status),
+      ariaLabel: `Broker execution reconciliation: ${executionValue}`
+    });
+  }
+
+  rows.push(
     {
       id: "as-of",
       label: "As of",
@@ -943,12 +991,34 @@ function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): 
       level: "review",
       ariaLabel: `Readiness snapshot timestamp: ${asOfLabel}`
     }
-  ];
+  );
+
+  return rows;
+}
+
+function formatLiveOperationRequirementAriaLabel(
+  requirement: NonNullable<TradingOperatorReadiness["liveOperationRequirements"]>[number],
+  requirementValue: string
+): string {
+  const blocker = requirement.blockerCode ? ` Blocker: ${requirement.blockerCode}.` : "";
+  return `${requirement.label}: ${requirementValue}. ${requirement.detail}${blocker}`;
 }
 
 function formatBrokerageSyncValue(status: WorkstationBrokerageSyncStatus): string {
   const staleSuffix = status.isStale && status.health !== "Stale" ? " stale" : "";
   return `${status.health}${staleSuffix}`;
+}
+
+function formatExecutionReconciliationValue(reconciliation: NonNullable<TradingOperatorReadiness["executionReconciliation"]>): string {
+  if (reconciliation.status === "Ready") {
+    return `${reconciliation.matchedOpenOrderCount} matched`;
+  }
+
+  if (reconciliation.breakCount > 0) {
+    return `${reconciliation.breakCount} break${reconciliation.breakCount === 1 ? "" : "s"}`;
+  }
+
+  return formatReadinessStatusValue(reconciliation.status);
 }
 
 function buildTradingReadinessAnnouncement({
@@ -2851,7 +2921,7 @@ export interface TradingConfirmDialogState {
 export interface TradingConfirmServices {
   cancelOrder: (orderId: string) => Promise<TradingActionResult>;
   cancelAllOrders: () => Promise<TradingActionResult>;
-  closePosition: (positionKey: string) => Promise<TradingActionResult>;
+  closePosition: (positionKey: string, fundAccountId?: string | null) => Promise<TradingActionResult>;
   pauseStrategy: (strategyId: string) => Promise<{ success: boolean; reason: string | null }>;
   stopStrategy: (strategyId: string) => Promise<{ success: boolean; reason: string | null }>;
 }
@@ -2867,17 +2937,19 @@ export interface TradingConfirmViewModel extends TradingConfirmDialogState {
 const defaultTradingConfirmServices: TradingConfirmServices = {
   cancelOrder: (orderId) => workstationApi.cancelOrder(orderId),
   cancelAllOrders: () => workstationApi.cancelAllOrders(),
-  closePosition: (positionKey) => workstationApi.closePosition(positionKey),
+  closePosition: (positionKey, fundAccountId) => workstationApi.closePosition(positionKey, fundAccountId),
   pauseStrategy: (strategyId) => workstationApi.pauseStrategy(strategyId),
   stopStrategy: (strategyId) => workstationApi.stopStrategy(strategyId)
 };
 
 export function useTradingConfirmViewModel({
   services = defaultTradingConfirmServices,
-  onActionSettled
+  onActionSettled,
+  fundAccountId
 }: {
   services?: TradingConfirmServices;
   onActionSettled?: () => Promise<void> | void;
+  fundAccountId?: string | null;
 } = {}): TradingConfirmViewModel {
   const [state, setState] = useState<TradingConfirmState>(() => createTradingConfirmState());
   const executingRef = useRef(false);
@@ -2910,7 +2982,7 @@ export function useTradingConfirmViewModel({
     setState((current) => ({ ...current, busy: true, result: null, error: null }));
 
     try {
-      const result = await executeTradingConfirmAction(action, services);
+      const result = await executeTradingConfirmAction(action, services, fundAccountId);
       await onActionSettled?.();
       setState((current) => ({ ...current, busy: false, result }));
     } catch (err) {
@@ -2922,7 +2994,7 @@ export function useTradingConfirmViewModel({
     } finally {
       executingRef.current = false;
     }
-  }, [onActionSettled, services, state]);
+  }, [fundAccountId, onActionSettled, services, state]);
 
   const dialogState = useMemo(() => buildTradingConfirmDialogState(state), [state]);
 
@@ -3036,7 +3108,8 @@ function buildTradingConfirmResultPanel(result: TradingActionResult): TradingCon
 
 async function executeTradingConfirmAction(
   action: TradingConfirmAction,
-  services: TradingConfirmServices
+  services: TradingConfirmServices,
+  fundAccountId?: string | null
 ): Promise<TradingActionResult> {
   if (action.kind === "cancel-order") {
     return services.cancelOrder(action.orderId);
@@ -3047,7 +3120,7 @@ async function executeTradingConfirmAction(
   }
 
   if (action.kind === "close-position") {
-    return services.closePosition(action.positionKey);
+    return services.closePosition(action.positionKey, fundAccountId);
   }
 
   const raw = action.kind === "pause-strategy"
@@ -3246,11 +3319,13 @@ const defaultOrderTicketServices: OrderTicketServices = {
 export function useOrderTicketViewModel({
   services = defaultOrderTicketServices,
   onOrderAccepted,
+  fundAccountId,
   positions = [],
   risk = null
 }: {
   services?: OrderTicketServices;
   onOrderAccepted?: () => Promise<void> | void;
+  fundAccountId?: string | null;
   positions?: TradingPosition[];
   risk?: TradingRiskState | null;
 } = {}) {
@@ -3345,7 +3420,7 @@ export function useOrderTicketViewModel({
     setErrorText(null);
 
     try {
-      const result = await services.submitOrder(buildOrderSubmitRequest(form));
+      const result = await services.submitOrder(buildOrderSubmitRequest(form, fundAccountId));
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3365,7 +3440,7 @@ export function useOrderTicketViewModel({
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, onOrderAccepted, phase, services]);
+  }, [acknowledged, form, fundAccountId, onOrderAccepted, phase, services]);
 
   return {
     ...state,
@@ -3529,16 +3604,21 @@ export function updateOrderTicketForm(
   return { ...current, limitPrice: parsePositiveNumber(value) };
 }
 
-export function buildOrderSubmitRequest(form: OrderSubmitRequest): OrderSubmitRequest {
+export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
   const request: OrderSubmitRequest = {
     symbol: normalizeOrderSymbol(form.symbol),
     side: form.side,
     type: form.type,
     quantity: form.quantity
   };
+  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId ?? form.fundAccountId);
 
   if (orderTypeRequiresPrice(form.type)) {
     request.limitPrice = form.limitPrice;
+  }
+
+  if (normalizedFundAccountId) {
+    request.fundAccountId = normalizedFundAccountId;
   }
 
   return request;
@@ -4081,7 +4161,8 @@ export type PromotionGateField =
   | "approvalReason"
   | "rejectionReason"
   | "reviewNotes"
-  | "manualOverrideId";
+  | "manualOverrideId"
+  | "evidenceReferences";
 
 export interface PromotionGateForm {
   runId: string;
@@ -4090,6 +4171,7 @@ export interface PromotionGateForm {
   rejectionReason: string;
   reviewNotes: string;
   manualOverrideId: string;
+  evidenceReferences: string;
   approvalChecklist: string[];
 }
 
@@ -4201,6 +4283,7 @@ export const emptyPromotionGateForm: PromotionGateForm = {
   rejectionReason: "",
   reviewNotes: "",
   manualOverrideId: "",
+  evidenceReferences: "",
   approvalChecklist: []
 };
 
@@ -4209,6 +4292,20 @@ export const paperPromotionApprovalChecklist: string[] = [
   "RUN_LINEAGE_REVIEWED",
   "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
   "RISK_CONTROLS_REVIEWED"
+];
+
+export const livePromotionApprovalChecklist: string[] = [
+  ...paperPromotionApprovalChecklist,
+  "PAPER_VALIDATION_REVIEWED",
+  "RECONCILIATION_EVIDENCE_REVIEWED",
+  "BROKER_EXECUTION_RECONCILIATION_REVIEWED",
+  "ACCOUNTING_RECORDS_REVIEWED",
+  "GOVERNED_REPORTING_REVIEWED",
+  "GOVERNANCE_SIGNOFF_REVIEWED",
+  "EXCEPTION_HANDLING_REVIEWED",
+  "ROLLBACK_KILL_SWITCH_REVIEWED",
+  "AUDIT_RETENTION_REVIEWED",
+  "LIVE_OVERRIDE_REVIEWED"
 ];
 
 const defaultPromotionServices: PromotionGateServices = {
@@ -4319,7 +4416,7 @@ export function usePromotionGateViewModel(
       setEvaluation(result);
       setForm((current) => ({
         ...current,
-        approvalChecklist: result.isEligible ? paperPromotionApprovalChecklist : []
+        approvalChecklist: result.isEligible ? buildPromotionApprovalChecklistTokens(result) : []
       }));
     } catch (err) {
       if (isCurrentCommandRevision(commandRevision)) {
@@ -4637,6 +4734,17 @@ function buildPromotionGateFields(): Record<PromotionGateField, PromotionGateFie
       helpText: null,
       helpId: null,
       required: false
+    },
+    evidenceReferences: {
+      field: "evidenceReferences",
+      id: "promotion-evidence-references",
+      label: "Evidence references",
+      ariaLabel: "Promotion evidence references",
+      placeholder: "TOKEN:evidence-path, one per line",
+      describedBy: "promotion-evidence-references-help",
+      helpText: "Live approvals require retained evidence references for every live checklist item.",
+      helpId: "promotion-evidence-references-help",
+      required: false
     }
   };
 }
@@ -4809,6 +4917,27 @@ export function validatePromotionApproval(
     return "Approval checklist must be completed before promoting. Evaluate gate checks to populate the checklist.";
   }
 
+  if (isLivePromotionTarget(evaluation)) {
+    if (!trimmedForm.manualOverrideId) {
+      return "Live promotion approval requires an active AllowLivePromotion override id.";
+    }
+
+    const missingEvidence = getMissingPromotionEvidenceReferences(
+      livePromotionApprovalChecklist,
+      parsePromotionEvidenceReferences(trimmedForm.evidenceReferences));
+    if (missingEvidence.length > 0) {
+      return `Live promotion evidence references are incomplete: ${missingEvidence.join(", ")}.`;
+    }
+
+    const invalidEvidence = getInvalidPromotionEvidenceReferences(
+      livePromotionApprovalChecklist,
+      parsePromotionEvidenceReferences(trimmedForm.evidenceReferences),
+      trimmedForm.manualOverrideId);
+    if (invalidEvidence.length > 0) {
+      return `Live promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
+    }
+  }
+
   return null;
 }
 
@@ -4824,11 +4953,13 @@ export function validatePromotionRejection(form: PromotionGateForm): string | nu
 
 export function buildPromotionApprovalRequest(form: PromotionGateForm): ApprovePromotionRequest {
   const trimmedForm = trimPromotionGateForm(form);
+  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
   return {
     runId: trimmedForm.runId,
     approvedBy: trimmedForm.approvedBy,
     approvalReason: trimmedForm.approvalReason,
     approvalChecklist: trimmedForm.approvalChecklist.length > 0 ? trimmedForm.approvalChecklist : undefined,
+    evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
     reviewNotes: trimmedForm.reviewNotes || undefined,
     manualOverrideId: trimmedForm.manualOverrideId || undefined
   };
@@ -4853,6 +4984,7 @@ function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
     rejectionReason: form.rejectionReason.trim(),
     reviewNotes: form.reviewNotes.trim(),
     manualOverrideId: form.manualOverrideId.trim(),
+    evidenceReferences: form.evidenceReferences.trim(),
     approvalChecklist: form.approvalChecklist
   };
 }
@@ -5025,7 +5157,7 @@ export interface PromotionHistoryRow {
 export function buildPromotionApprovalChecklist(
   evaluation: PromotionEvaluationResult | null
 ): PromotionApprovalChecklistItem[] {
-  const items = [
+  const items: Array<Omit<PromotionApprovalChecklistItem, "ariaLabel">> = [
     {
       id: "dk1-data-trust",
       label: "DK1 data trust",
@@ -5058,12 +5190,147 @@ export function buildPromotionApprovalChecklist(
         ? "Run portfolio and ledger state verified"
         : "Awaiting run state verification"
     }
-  ] satisfies Array<Omit<PromotionApprovalChecklistItem, "ariaLabel">>;
+  ];
+
+  if (isLivePromotionTarget(evaluation)) {
+    const status = evaluation?.isEligible ? "ready" : "review";
+    items.push(
+      {
+        id: "paper-validation",
+        label: "Paper validation",
+        status,
+        description: "Retained paper-run validation evidence reviewed"
+      },
+      {
+        id: "reconciliation-evidence",
+        label: "Reconciliation evidence",
+        status,
+        description: "Portfolio, ledger, and operations reconciliation evidence reviewed"
+      },
+      {
+        id: "broker-execution-reconciliation",
+        label: "Broker order parity",
+        status,
+        description: "Broker and OMS open-order reconciliation evidence reviewed"
+      },
+      {
+        id: "accounting-records",
+        label: "Accounting records",
+        status,
+        description: "Accounting-record evidence is retained for the live readiness scope"
+      },
+      {
+        id: "governed-reporting",
+        label: "Governed reporting",
+        status,
+        description: "Governed report-pack evidence supports the live readiness decision"
+      },
+      {
+        id: "governance-signoff",
+        label: "Governance sign-off",
+        status,
+        description: "Required governance sign-off is retained"
+      },
+      {
+        id: "exception-handling",
+        label: "Exception handling",
+        status,
+        description: "Open exceptions and escalation posture have been reviewed"
+      },
+      {
+        id: "rollback-kill-switch",
+        label: "Rollback/kill-switch",
+        status,
+        description: "Rollback and kill-switch posture are ready before live operation"
+      },
+      {
+        id: "audit-retention",
+        label: "Audit retention",
+        status,
+        description: "Audit-retention evidence is retained for the approval"
+      },
+      {
+        id: "live-override",
+        label: "Live override",
+        status,
+        description: "Active AllowLivePromotion override evidence is attached"
+      }
+    );
+  }
 
   return items.map((item) => ({
     ...item,
     ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
   }));
+}
+
+function buildPromotionApprovalChecklistTokens(evaluation: PromotionEvaluationResult | null): string[] {
+  return isLivePromotionTarget(evaluation)
+    ? livePromotionApprovalChecklist
+    : paperPromotionApprovalChecklist;
+}
+
+function parsePromotionEvidenceReferences(value: string): string[] {
+  return value
+    .split(/[\n,;]+/u)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
+}
+
+function getMissingPromotionEvidenceReferences(requiredTokens: string[], evidenceReferences: string[]): string[] {
+  const evidenceKeys = new Set(evidenceReferences.map((reference) => getPromotionEvidenceReferenceKey(reference)));
+  return requiredTokens.filter((token) => !evidenceKeys.has(token));
+}
+
+function getInvalidPromotionEvidenceReferences(
+  requiredTokens: string[],
+  evidenceReferences: string[],
+  manualOverrideId: string
+): string[] {
+  return requiredTokens.flatMap((token) => {
+    const reference = evidenceReferences.find((item) => getPromotionEvidenceReferenceKey(item) === token);
+    if (!reference) {
+      return [];
+    }
+
+    const retainedReference = getPromotionEvidenceReferenceValue(reference);
+    if (!retainedReference) {
+      return [`${token} must include retained evidence after ':'`];
+    }
+
+    if (token === "LIVE_OVERRIDE_REVIEWED" && manualOverrideId && !containsPromotionEvidenceReferenceToken(retainedReference, manualOverrideId)) {
+      return [`${token} must reference active manual override ${manualOverrideId}`];
+    }
+
+    return [];
+  });
+}
+
+function getPromotionEvidenceReferenceKey(reference: string): string {
+  const [key] = reference.split(":", 1);
+  return key.trim().replace(/[ -]/gu, "_").toUpperCase();
+}
+
+function getPromotionEvidenceReferenceValue(reference: string): string {
+  const separatorIndex = reference.indexOf(":");
+  return separatorIndex < 0 ? "" : reference.slice(separatorIndex + 1).trim();
+}
+
+function containsPromotionEvidenceReferenceToken(referenceValue: string, token: string): boolean {
+  if (referenceValue.toLowerCase() === token.toLowerCase()) {
+    return true;
+  }
+
+  return referenceValue
+    .split(/[\/\\#?&=,;\s]+/u)
+    .filter((segment) => segment.length > 0)
+    .some((segment) => segment.toLowerCase() === token.toLowerCase());
+}
+
+function isLivePromotionTarget(evaluation: PromotionEvaluationResult | null): boolean {
+  return typeof evaluation?.targetMode === "string" &&
+    evaluation.targetMode.trim().toLowerCase() === "live";
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

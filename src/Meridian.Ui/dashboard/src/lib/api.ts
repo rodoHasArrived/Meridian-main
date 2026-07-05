@@ -526,6 +526,7 @@ import {
   workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingEndpoint,
   workstationTradingReadinessEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
@@ -538,6 +539,7 @@ import {
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 const csrfCookieName = "mdc-csrf";
@@ -1088,8 +1090,9 @@ export function getStrategyBriefing(options: ApiRequestOptions = {}) {
   return getJson<StrategyBriefingResponse>(WORKSTATION_API_ENDPOINTS.strategyBriefing, options);
 }
 
-export function getTradingWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
+export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
+  const { fundAccountId, ...requestOptions } = options;
+  return getJson<TradingWorkspaceResponse>(workstationTradingEndpoint(fundAccountId), requestOptions);
 }
 
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
@@ -2710,8 +2713,15 @@ export function cancelAllOrders() {
   return postJson<TradingActionResult>(EXECUTION_API_ENDPOINTS.ordersCancelAll);
 }
 
-export function closePosition(positionKey: string) {
-  return postJson<TradingActionResult>(executionPositionCloseEndpoint(), { positionKey });
+export function closePosition(positionKey: string, fundAccountId?: string | null) {
+  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId);
+  return postJson<TradingActionResult>(
+    executionPositionCloseEndpoint(),
+    {
+      positionKey,
+      ...(normalizedFundAccountId ? { fundAccountId: normalizedFundAccountId } : {})
+    }
+  );
 }
 
 // --- Paper session management ---

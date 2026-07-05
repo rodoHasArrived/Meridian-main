@@ -45,8 +45,11 @@ vocabulary.
 Paper-to-live promotion requires the live approval checklist, explicit evidence references for
 each live checklist item, and an active `AllowLivePromotion` manual override. The live checklist
 includes paper-validation, reconciliation, accounting-record, governed-reporting, governance
-sign-off, exception-handling, rollback or kill-switch, and audit-retention evidence before a live
-readiness claim can create a live run. Approved and execution-control-blocked live promotion
+sign-off, exception-handling, rollback or kill-switch, audit-retention, and broker execution
+reconciliation evidence before a live readiness claim can create a live run. Live evidence
+references must use `TOKEN:retained-evidence` rather than bare checklist tokens, and the
+`LIVE_OVERRIDE_REVIEWED` reference must name the active manual override id. Approved,
+checklist-blocked, missing-evidence, invalid-evidence, and execution-control-blocked live promotion
 attempts are written to the durable execution audit trail with source run, target mode, required
 override kind, checklist count, evidence reference count, and control rejection evidence so
 operations review can trace human approval gates even when no live run is created.

@@ -601,6 +601,8 @@ public sealed class PromotionServiceTests
             "Paper-validation evidence is required in Live mode");
         liveChecklist.Should().Contain(PromotionApprovalChecklist.ReconciliationEvidenceReviewed,
             "Reconciliation evidence is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed,
+            "Broker/OMS open-order reconciliation evidence is required in Live mode");
         liveChecklist.Should().Contain(PromotionApprovalChecklist.AccountingRecordsReviewed,
             "Accounting-record evidence is required in Live mode");
         liveChecklist.Should().Contain(PromotionApprovalChecklist.GovernedReportingReviewed,
@@ -613,5 +615,43 @@ public sealed class PromotionServiceTests
             "Rollback or kill-switch posture is required in Live mode");
         liveChecklist.Should().Contain(PromotionApprovalChecklist.AuditRetentionReviewed,
             "Audit-retention evidence is required in Live mode");
+    }
+
+    [Fact]
+    public async Task Wave7_Scenario_ApprovedLivePromotionRecordValidation_RequiresActiveOverrideEvidence()
+    {
+        var evidenceReferences = PromotionApprovalChecklist
+            .CreateRequiredFor(RunType.Live)
+            .Select(static item => string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                ? $"{item}:manual-override/override-live"
+                : $"{item}:evidence/{item.ToLowerInvariant()}")
+            .ToArray();
+        var record = new StrategyPromotionRecord(
+            PromotionId: "promotion-live",
+            StrategyId: "s-live",
+            StrategyName: "Live Strategy",
+            SourceRunType: RunType.Paper,
+            TargetRunType: RunType.Live,
+            SourceRunId: "run-paper",
+            TargetRunId: "run-live",
+            QualifyingSharpe: 1.1d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: DateTimeOffset.UtcNow,
+            ApprovalReason: "approved",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
+            AuditReference: "audit-live",
+            ApprovedBy: "ops");
+
+        var store = new JsonlPromotionRecordStore(
+            new PromotionRecordStoreOptions(Path.Combine(CreateTempRoot(), "promotion-history")),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+
+        var append = async () => await store.AppendAsync(record);
+
+        await append.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*{PromotionApprovalChecklist.LiveOverrideReviewed}*active manual override id*");
     }
 }

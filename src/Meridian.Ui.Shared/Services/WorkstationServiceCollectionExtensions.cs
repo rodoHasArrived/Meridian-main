@@ -21,6 +21,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -237,6 +238,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
+            sp.GetRequiredService<TradingOperatorReadinessService>());
+        services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();

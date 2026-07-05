@@ -29,11 +29,12 @@ public sealed class WorkstationEndpointContractCompatibilityTests
             typeof(OperatorWorkItemDto),
             typeof(TradingReplayReadinessDto),
             typeof(TradingReportPackReadinessDto),
+            typeof(TradingLiveOperationRequirementDto),
             typeof(PaperSessionReplayVerificationDto)
         ]);
 
         var hash = ComputeSha256(descriptor);
-        hash.Should().Be("4E8F51A2210675DFEDA7DFC634CF639BC37729DDEC313BE213B341D6E16106D3");
+        hash.Should().Be("73C3BD6E2530E37B71DA84C833428453D1F6E7230B0CD19E10D8E574FA3C9573");
     }
 
     [Fact]
@@ -57,7 +58,8 @@ public sealed class WorkstationEndpointContractCompatibilityTests
             ["ReportPackApproval"] = 5,
             ["ProviderTrustGate"] = 6,
             ["ExecutionControl"] = 7,
-            ["LedgerPeriodClose"] = 8
+            ["LedgerPeriodClose"] = 8,
+            ["BrokerExecutionReconciliation"] = 9
         });
 
         AssertEnumHasStableMembers<OperatorWorkItemToneDto>(new Dictionary<string, int>
@@ -76,8 +78,9 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         readinessShape.Should().Contain(new[]
         {
             "asOf", "activeSession", "sessions", "replay", "controls", "promotion", "trustGate", "brokerageSync",
-            "workItems", "warnings", "overallStatus", "readyForPaperOperation", "acceptanceGates", "reportPack",
-            "evidenceCompleteness", "snapshotMaterializedAt", "snapshotVersion", "providerPromotionChecklist"
+            "workItems", "warnings", "overallStatus", "readyForPaperOperation", "readyForLiveOperation",
+            "liveOperationBlockers", "liveOperationRequirements", "acceptanceGates", "reportPack", "evidenceCompleteness", "snapshotMaterializedAt", "snapshotVersion", "providerPromotionChecklist",
+            "executionReconciliation"
         });
 
         var inboxShape = ExtractTopLevelProperties(CreateInboxFixture());

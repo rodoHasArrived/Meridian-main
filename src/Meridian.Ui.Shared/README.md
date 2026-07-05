@@ -157,6 +157,33 @@ desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book
 for a single source event while keeping ledger posting behind explicit approval. The generated
 candidate append endpoint is separate from preview/projection, requires `AdminMaintenance`, stamps
 the trusted tenant/company/actor context, and delegates durable append to Financial Operations.
+Trading operator readiness treats retained Live promotion evidence as a fail-closed shared control:
+the promotion gate requires the full live approval checklist plus evidence-reference keys for each
+W7 live-readiness item, including broker execution reconciliation, before a live promotion trace can
+be reported ready. The shared payload also emits `ReadyForLiveOperation` and
+`LiveOperationBlockers`, which stay separate from `ReadyForPaperOperation` so browser and WPF
+clients cannot show a live desk as ready from paper-only evidence. It also emits
+`LiveOperationRequirements`, a requirement-by-requirement W7 matrix derived from the same promotion
+checklist and evidence-reference keys, so trusted data, paper validation, reconciliation, approvals,
+accounting records, governed reporting, governance sign-off, exception handling,
+rollback/kill-switch, audit retention, and broker parity share one service-owned projection. When
+retained live-promotion evidence is incomplete, the blocker list preserves the exact missing
+checklist or evidence-reference keys, such as governance sign-off or audit-retention evidence, so
+operator clients can route review to the failing W7 item instead of showing only a generic
+promotion blocker. Evidence references must also retain a value after `TOKEN:` before the shared
+readiness surface marks a W7 item ready, and `LIVE_OVERRIDE_REVIEWED` must name the active
+`AllowLivePromotion` override as an exact retained-evidence segment rather than a substring match.
+The shared workstation trading endpoint accepts the same optional GUID `fundAccountId` query as the
+standalone trading-readiness and operator-inbox endpoints. When present, the embedded readiness
+payload resolves account-scoped brokerage-sync and broker-execution reconciliation evidence so
+initial browser payloads and refresh-only calls evaluate the same W7 live-readiness account.
+`TradingOperatorLiveOrderReadinessGate` adapts that service-owned W7 projection into
+`Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
+approved live promotion target, retained audit reference, ready live-operation requirements, and a
+retained snapshot version before the execution layer can attach live-readiness evidence to an order.
+Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
+their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
+readiness projection as the workstation payload.
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
@@ -1320,6 +1347,10 @@ attention through Accounting. Report-pack readiness and evidence warnings use ne
 wording instead of exposing the retained Governance repository type name to operators; repository
 validation errors and Evidence Workbench node source labels follow the same wording while retaining
 the contract-owned type names.
+Trading readiness now projects broker execution reconciliation when the active execution gateway is
+broker backed: `TradingOperatorReadinessService` compares broker open orders with the OMS ledger,
+emits the shared broker execution reconciliation gate, and raises a Trading work item before live
+operators rely on divergent broker/order-manager evidence.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. Copied vault

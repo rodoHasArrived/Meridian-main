@@ -2444,10 +2444,14 @@ public sealed partial class WorkstationEndpointsTests
                 fundAccountId,
                 new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
 
-            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(brokerageSync);
+            });
+            var client = app.GetTestClient();
 
-            var readiness = await app
-                .GetTestClient()
+            var readiness = await client
                 .GetFromJsonAsync<TradingOperatorReadinessDto>(
                     $"/api/workstation/trading/readiness?fundAccountId={fundAccountId:D}",
                     ServerJsonOptions);
@@ -2463,6 +2467,16 @@ public sealed partial class WorkstationEndpointsTests
                 item.FundAccountId == fundAccountId &&
                 item.Workspace == "Settings" &&
                 item.TargetRoute == "/settings#alpaca-provider-setup");
+
+            var trading = await client.GetFromJsonAsync<WorkstationTradingPayload>(
+                $"/api/workstation/trading?fundAccountId={fundAccountId:D}",
+                ServerJsonOptions);
+            trading.Should().NotBeNull();
+            trading!.Readiness.BrokerageSync.Should().NotBeNull();
+            trading.Readiness.BrokerageSync!.FundAccountId.Should().Be(fundAccountId);
+            trading.Readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == fundAccountId);
         }
         finally
         {

@@ -510,6 +510,64 @@ describe("useWorkstationData", () => {
     expect(result.current.workflowSummary).toBe(scopedSummary);
   });
 
+  it("passes GUID account scope into trading workspace requests", async () => {
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const { result } = renderHook(() => useWorkstationData({
+      activeWorkspace: "trading",
+      workflowSummaryScope: {
+        hasOperatingContext: true,
+        fundAccountId
+      }
+    }));
+
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1));
+    expect(api.getTradingWorkspace).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundAccountId,
+      signal: expect.any(AbortSignal)
+    }));
+
+    await act(async () => {
+      await resolveRefreshBatch(0, "scoped-trading");
+      await flushAsync();
+    });
+
+    let tradingRefresh!: Promise<void>;
+    act(() => {
+      tradingRefresh = result.current.refreshTrading();
+    });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    expect(api.getTradingWorkspace).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundAccountId,
+      signal: expect.any(AbortSignal)
+    }));
+
+    await act(async () => {
+      resolveRequest<TradingWorkspaceResponse>("trading", 1, { marker: "scoped trading refresh" } as unknown as TradingWorkspaceResponse);
+      await tradingRefresh;
+    });
+  });
+
+  it("omits non-GUID operating account labels from trading workspace requests", async () => {
+    renderHook(() => useWorkstationData({
+      activeWorkspace: "trading",
+      workflowSummaryScope: {
+        hasOperatingContext: true,
+        fundAccountId: "brokerage-account-label"
+      }
+    }));
+
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1));
+    expect(api.getTradingWorkspace).toHaveBeenLastCalledWith(expect.objectContaining({
+      signal: expect.any(AbortSignal)
+    }));
+    expect(vi.mocked(api.getTradingWorkspace).mock.calls[0]?.[0]?.fundAccountId).toBeUndefined();
+
+    await act(async () => {
+      await resolveRefreshBatch(0, "label-scope");
+      await flushAsync();
+    });
+  });
+
   it("polls only the visible route-relevant refresh lanes", async () => {
     const intervals: Array<{ handler: TimerHandler; delay?: number }> = [];
     vi.spyOn(window, "setInterval").mockImplementation((handler: TimerHandler, delay?: number) => {

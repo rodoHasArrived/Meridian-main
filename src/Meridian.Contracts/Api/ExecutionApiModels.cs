@@ -42,4 +42,5 @@ public sealed record ExecutionPositionDetailResponse(
 public sealed record ExecutionPositionActionRequest(
     string PositionKey,
     decimal? Quantity = null,
-    PositionLotSelection? LotSelection = null);
+    PositionLotSelection? LotSelection = null,
+    Guid? FundAccountId = null);

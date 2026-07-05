@@ -14,6 +14,7 @@ public static class PromotionApprovalChecklist
     public const string RiskControlsReviewed = "RISK_CONTROLS_REVIEWED";
     public const string PaperValidationReviewed = "PAPER_VALIDATION_REVIEWED";
     public const string ReconciliationEvidenceReviewed = "RECONCILIATION_EVIDENCE_REVIEWED";
+    public const string BrokerExecutionReconciliationReviewed = "BROKER_EXECUTION_RECONCILIATION_REVIEWED";
     public const string AccountingRecordsReviewed = "ACCOUNTING_RECORDS_REVIEWED";
     public const string GovernedReportingReviewed = "GOVERNED_REPORTING_REVIEWED";
     public const string GovernanceSignoffReviewed = "GOVERNANCE_SIGNOFF_REVIEWED";
@@ -38,6 +39,7 @@ public static class PromotionApprovalChecklist
         RiskControlsReviewed,
         PaperValidationReviewed,
         ReconciliationEvidenceReviewed,
+        BrokerExecutionReconciliationReviewed,
         AccountingRecordsReviewed,
         GovernedReportingReviewed,
         GovernanceSignoffReviewed,
