@@ -4,7 +4,7 @@
 // normalized on the TIMESTAMP, not the point index, so charts with different
 // x-domains (e.g. a candle series and an equity curve sampled at different rates)
 // stay aligned. Scope this per screen — never globally.
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 export interface ChartSyncState {
   /** Timestamp (epoch ms) currently hovered across the synced charts, or null. */
@@ -41,22 +41,34 @@ export function useChartSync(): ChartSyncApi {
 /**
  * Index of the timestamp closest to `target`, or null when there is no target or
  * no timestamps. Used to translate the shared (timestamp-based) sync state back
- * into a per-chart point index.
+ * into a per-chart point index. Ties resolve to the earlier index.
+ *
+ * `timestamps` is assumed ascending (chart x-axes are chronological), which lets
+ * this run in O(log N) — it is called per pointer-move frame per synced chart.
  */
 export function nearestTimestampIndex(timestamps: number[], target: number | null): number | null {
   if (target == null || timestamps.length === 0) {
     return null;
   }
-  let bestIndex = 0;
-  let bestDistance = Infinity;
-  for (let index = 0; index < timestamps.length; index++) {
-    const distance = Math.abs(timestamps[index] - target);
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestIndex = index;
+  let low = 0;
+  let high = timestamps.length - 1;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (timestamps[mid] === target) {
+      return mid;
+    }
+    if (timestamps[mid] < target) {
+      low = mid + 1;
+    } else {
+      high = mid;
     }
   }
-  return bestIndex;
+  // `low` is the first candidate at or after the target; the earlier neighbour can
+  // be closer (and wins ties).
+  if (low > 0 && Math.abs(timestamps[low - 1] - target) <= Math.abs(timestamps[low] - target)) {
+    return low - 1;
+  }
+  return low;
 }
 
 export interface ChartCrosshairSync {
@@ -77,23 +89,31 @@ export function useChartCrosshairSync(
   timestamps: number[],
   options?: { onActivate?: (index: number, timestamp: number) => void }
 ): ChartCrosshairSync {
-  const sync = useChartSync();
+  const { hoveredTimestamp, setHoveredTimestamp, setSelectedTimestamp } = useChartSync();
+  const onActivate = options?.onActivate;
   const crosshairIndex = useMemo(
-    () => nearestTimestampIndex(timestamps, sync.hoveredTimestamp),
-    [timestamps, sync.hoveredTimestamp]
+    () => nearestTimestampIndex(timestamps, hoveredTimestamp),
+    [timestamps, hoveredTimestamp]
   );
 
-  const onCrosshairChange = (index: number | null) => {
-    sync.setHoveredTimestamp(index == null ? null : timestamps[index] ?? null);
-  };
+  // Stable identities so downstream charts don't re-render on every sync update.
+  const onCrosshairChange = useCallback(
+    (index: number | null) => {
+      setHoveredTimestamp(index == null ? null : timestamps[index] ?? null);
+    },
+    [setHoveredTimestamp, timestamps]
+  );
 
-  const onPointActivate = (index: number) => {
-    const timestamp = timestamps[index] ?? null;
-    sync.setSelectedTimestamp(timestamp);
-    if (timestamp != null) {
-      options?.onActivate?.(index, timestamp);
-    }
-  };
+  const onPointActivate = useCallback(
+    (index: number) => {
+      const timestamp = timestamps[index] ?? null;
+      setSelectedTimestamp(timestamp);
+      if (timestamp != null) {
+        onActivate?.(index, timestamp);
+      }
+    },
+    [setSelectedTimestamp, timestamps, onActivate]
+  );
 
   return { crosshairIndex, onCrosshairChange, onPointActivate };
 }

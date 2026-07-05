@@ -19,6 +19,13 @@ describe("nearestTimestampIndex", () => {
     expect(nearestTimestampIndex([0, 100, 200, 300], 190)).toBe(2);
     expect(nearestTimestampIndex([50, 150, 250], 200)).toBe(1); // 150 and 250 both 50 away -> first
   });
+
+  it("clamps to the ends and hits exact matches", () => {
+    expect(nearestTimestampIndex([10, 20, 30], 5)).toBe(0); // before first
+    expect(nearestTimestampIndex([10, 20, 30], 100)).toBe(2); // after last
+    expect(nearestTimestampIndex([10, 20, 30], 20)).toBe(1); // exact
+    expect(nearestTimestampIndex([10, 20, 30, 40, 50], 34)).toBe(2); // closer to 30 than 40
+  });
 });
 
 function BoundEquityCurve({ timestamps, points }: { timestamps: number[]; points: number[] }) {
