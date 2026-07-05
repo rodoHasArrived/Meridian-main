@@ -23,3 +23,11 @@ export type { CorrelationHeatmapProps } from "./CorrelationHeatmap";
 
 export { Sparkline } from "./Sparkline";
 export type { SparklineProps } from "./Sparkline";
+
+export {
+  ChartSyncProvider,
+  useChartSync,
+  useChartCrosshairSync,
+  nearestTimestampIndex
+} from "./chart-sync";
+export type { ChartSyncState, ChartSyncApi, ChartCrosshairSync } from "./chart-sync";

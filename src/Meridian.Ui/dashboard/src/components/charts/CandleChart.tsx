@@ -2,6 +2,7 @@
 // readout with a right-axis price chip, and an optional volume histogram subpane. Up candles use
 // --chart-equity (green, hollow body); down use --chart-drawdown (red, filled). SVG, flex-fills
 // its container — give the wrapper a definite height (see ChartCard).
+import { ChartInteractionOverlay } from "./chart-interaction";
 import { niceTicks } from "./ticks";
 
 export interface Candle {
@@ -29,6 +30,13 @@ export interface CandleChartProps {
   overlays?: CandleOverlay[];
   /** Bar index to mark with the crosshair + price chip. */
   crosshairIndex?: number | null;
+  /**
+   * Emit the hovered/keyboard-focused bar index (null on leave). Providing this
+   * (or `onPointActivate`) enables an interactive overlay over the plot area.
+   */
+  onCrosshairChange?: (index: number | null) => void;
+  /** Emit the activated bar index (click, Enter, or Space). */
+  onPointActivate?: (index: number) => void;
   /** Show the volume histogram subpane. @default true */
   showVolume?: boolean;
   /** Approx. number of price gridlines. @default 6 */
@@ -54,6 +62,8 @@ export function CandleChart({
   bars,
   overlays = DEFAULT_OVERLAYS,
   crosshairIndex = null,
+  onCrosshairChange,
+  onPointActivate,
   showVolume = true,
   priceTicks = 6,
   timeTicks = 7
@@ -209,6 +219,19 @@ export function CandleChart({
           </text>
         </g>
       )}
+
+      {/* interaction overlay (crosshair + activation) */}
+      <ChartInteractionOverlay
+        x={plotL}
+        y={priceT}
+        width={plotR - plotL}
+        height={volB - priceT}
+        count={bars.length}
+        crosshairIndex={crosshairIndex}
+        onCrosshairChange={onCrosshairChange}
+        onPointActivate={onPointActivate}
+        ariaLabel="Move crosshair across price bars; activate to drill into the selected bar"
+      />
     </svg>
   );
 }

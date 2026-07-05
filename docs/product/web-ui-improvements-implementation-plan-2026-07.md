@@ -288,6 +288,20 @@ No feature work; confirm and document the rules each later phase must follow.
   existing `*.linked-context.ts` / `*.evidence-timeline.ts` modules. Scope the context per screen
   — never global.
 
+  **Landed:** `CandleChart` and `EquityCurve` gained optional `onCrosshairChange`/`onPointActivate`
+  props. When either is set they render a transparent, focusable `ChartInteractionOverlay`
+  (`components/charts/chart-interaction.tsx`, pure index-from-pointer + keyboard-step helpers,
+  unit-tested) with slider semantics over the plot area — pointer move/leave, click, and
+  Arrow/Home/End/Enter/Space drive crosshair + activation. `ChartSyncContext`
+  (`components/charts/chart-sync.tsx`) holds hovered/selected state normalized on the **timestamp**,
+  so linked charts with different x-domains stay aligned; `useChartCrosshairSync(timestamps)` maps a
+  chart's indices to/from the shared timestamp (via the pure, tested `nearestTimestampIndex`) and
+  fires `onActivate` for the drill. Scoped per screen via `ChartSyncProvider`. Exemplar wiring: the
+  Portfolio run drill-in equity curve now emits crosshair/activation and renders a per-point
+  evidence readout (date, equity, drawdown) driven by the shared selected timestamp — ready for a
+  second linked chart in the same provider. The props are absent for every other chart usage, so
+  existing charts are unchanged (overlay only renders when a callback is supplied).
+
 ### 6d. Pop-out companion panes (#9)
 - Every route currently renders inside masthead + shell chrome in `app.tsx` — add an early
   chrome-less branch (`/panes/watchlist`, `/panes/live-quotes`) returning a blank layout before
@@ -305,7 +319,7 @@ additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 **Checklist**
 - [x] 6a scope picker + persistence + Portfolio migration.
 - [x] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
-- [ ] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
+- [x] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
 - [ ] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
 
 ---

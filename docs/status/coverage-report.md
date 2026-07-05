@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2634 / 7322** items documented (**36.0%**) &mdash; Grade: **F**
+**2634 / 7324** items documented (**36.0%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 36.0%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2513 | 6826 | 36.8% | F |
+| Public Classes / Interfaces | 2513 | 6828 | 36.8% | F |
 | API Endpoints | 107 | 349 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4313 undocumented)
+### Public Classes / Interfaces (4315 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `SecurityMasterActiveImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13` |
 | `SecurityMasterCompletedImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:26` |
 | `ISecurityMasterIngestStatusService` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:41` |
-| ... and 4263 more | |
+| ... and 4265 more | |
 
 ### API Endpoints (242 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4313 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4315 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 242 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
