@@ -715,7 +715,8 @@ public static class AssetOperationsProjectionBuilder
         }
 
         var actualDays = accrualEnd.DayNumber - accrualStart.DayNumber;
-        if (normalized is not null && normalized.Contains("ACT/360", StringComparison.OrdinalIgnoreCase))
+        if (normalized is not null && (normalized.Contains("ACT/360", StringComparison.OrdinalIgnoreCase) ||
+                                       normalized.Contains("ACTUAL/360", StringComparison.OrdinalIgnoreCase)))
         {
             return actualDays / 360m;
         }
