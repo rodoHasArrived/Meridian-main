@@ -368,6 +368,7 @@ public static class AssetOperationsProjectionBuilder
         var periodMonths = Math.Max(1, 12 / paymentFrequency);
         var principalBasis = ResolveBondPrincipalBasis(bond);
         var outstandingPrincipal = principalBasis;
+        var normalizedDayCountConvention = NormalizeDayCountConvention(bond.AccrualConvention?.DayCountConvention);
         var sinkingFundEntries = bond.SinkingFund?.Schedule
             .Where(static entry => entry.Amount > 0m)
             .OrderBy(static entry => entry.SinkDate)
@@ -389,7 +390,7 @@ public static class AssetOperationsProjectionBuilder
                 var couponAmount = CalculateBondCouponAmount(
                     outstandingPrincipal,
                     coupon,
-                    bond.AccrualConvention.DayCountConvention,
+                    normalizedDayCountConvention,
                     accrualStart,
                     accrualEnd,
                     paymentFrequency);
@@ -556,12 +557,10 @@ public static class AssetOperationsProjectionBuilder
         IReadOnlyList<AssetReconciliationResultDto> reconciliationResults,
         IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
     {
-        var latestRun = projectionRuns
-            .OrderByDescending(static run => run.GeneratedAt)
-            .FirstOrDefault();
+        var latestRun = projectionRuns.MaxBy(static run => run.GeneratedAt);
         var projectionAsOf = latestRun?.ProjectionAsOf
-            ?? projectedCashFlows.OrderBy(static flow => flow.DueDate).FirstOrDefault()?.DueDate
-            ?? terms.OrderByDescending(static row => row.EffectiveDate).FirstOrDefault()?.EffectiveDate
+            ?? projectedCashFlows.MinBy(static flow => flow.DueDate)?.DueDate
+            ?? terms.MaxBy(static row => row.EffectiveDate)?.EffectiveDate
             ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
         var generatedAt = latestRun?.GeneratedAt ?? DateTimeOffset.UtcNow;
         var events = new List<AssetTermsObligationTimelineEventDto>();
@@ -688,17 +687,26 @@ public static class AssetOperationsProjectionBuilder
     private static decimal CalculateBondCouponAmount(
         decimal principalBasis,
         decimal couponRatePercent,
-        string? dayCountConvention,
+        string? normalizedDayCountConvention,
         DateOnly accrualStart,
         DateOnly accrualEnd,
         int paymentFrequency)
     {
-        var yearFraction = CalculateYearFraction(dayCountConvention, accrualStart, accrualEnd, paymentFrequency);
+        var yearFraction = CalculateYearFraction(normalizedDayCountConvention, accrualStart, accrualEnd, paymentFrequency);
         return RoundCash(principalBasis * (couponRatePercent / 100m) * yearFraction);
     }
 
+    private static string? NormalizeDayCountConvention(string? dayCountConvention)
+        => string.IsNullOrWhiteSpace(dayCountConvention)
+            ? null
+            : dayCountConvention
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("-", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToUpperInvariant();
+
     private static decimal CalculateYearFraction(
-        string? dayCountConvention,
+        string? normalizedDayCountConvention,
         DateOnly accrualStart,
         DateOnly accrualEnd,
         int paymentFrequency)
@@ -708,20 +716,19 @@ public static class AssetOperationsProjectionBuilder
             return 0m;
         }
 
-        var normalized = dayCountConvention?.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
-        if (normalized is not null && normalized.Contains("30/360", StringComparison.OrdinalIgnoreCase))
+        if (normalizedDayCountConvention is not null &&
+            normalizedDayCountConvention.Contains("30/360", StringComparison.Ordinal))
         {
             return Days360(accrualStart, accrualEnd) / 360m;
         }
 
         var actualDays = accrualEnd.DayNumber - accrualStart.DayNumber;
-        if (normalized is not null && normalized.Contains("ACT/360", StringComparison.OrdinalIgnoreCase))
+        if (IsActual360(normalizedDayCountConvention))
         {
             return actualDays / 360m;
         }
 
-        if (normalized is not null && (normalized.Contains("ACT/365", StringComparison.OrdinalIgnoreCase) ||
-                                       normalized.Contains("ACTUAL/365", StringComparison.OrdinalIgnoreCase)))
+        if (IsActual365(normalizedDayCountConvention))
         {
             return actualDays / 365m;
         }
@@ -729,10 +736,24 @@ public static class AssetOperationsProjectionBuilder
         return 1m / Math.Max(1, paymentFrequency);
     }
 
+    private static bool IsActual360(string? normalizedDayCountConvention)
+        => normalizedDayCountConvention is not null &&
+           (normalizedDayCountConvention.Contains("ACT/360", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACT360", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL/360", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL360", StringComparison.Ordinal));
+
+    private static bool IsActual365(string? normalizedDayCountConvention)
+        => normalizedDayCountConvention is not null &&
+           (normalizedDayCountConvention.Contains("ACT/365", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACT365", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL/365", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL365", StringComparison.Ordinal));
+
     private static decimal Days360(DateOnly start, DateOnly end)
     {
-        var startDay = Math.Min(start.Day, 30);
-        var endDay = end.Day == 31 && startDay == 30 ? 30 : Math.Min(end.Day, 30);
+        var startDay = start.Day == 31 ? 30 : start.Day;
+        var endDay = end.Day == 31 && startDay >= 30 ? 30 : end.Day;
         return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
     }
 
@@ -752,7 +773,7 @@ public static class AssetOperationsProjectionBuilder
         {
             formula,
             engineVersion = FixedIncomeCashFlowEngineVersion,
-            bond.AccrualConvention?.DayCountConvention,
+            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
             paymentFrequencyPerYear = paymentFrequency,
             principalBasis,
             outstandingPrincipal,
@@ -765,12 +786,27 @@ public static class AssetOperationsProjectionBuilder
     private static AssetReconciliationResultDto? FindReconciliation(
         AssetProjectedCashFlowDto flow,
         IReadOnlyList<AssetReconciliationResultDto> reconciliationResults)
-        => reconciliationResults
-            .Where(result =>
-                result.ExpectedDate == flow.DueDate ||
-                (result.ExpectedAmount.HasValue && decimal.Round(result.ExpectedAmount.Value, 4, MidpointRounding.AwayFromZero) == flow.Amount))
-            .OrderByDescending(result => result.ExpectedDate == flow.DueDate && result.ExpectedAmount == flow.Amount)
-            .FirstOrDefault();
+    {
+        AssetReconciliationResultDto? firstDateMatch = null;
+        foreach (var result in reconciliationResults)
+        {
+            if (result.ExpectedDate != flow.DueDate)
+            {
+                continue;
+            }
+
+            firstDateMatch ??= result;
+            if (AmountMatches(result.ExpectedAmount, flow.Amount))
+            {
+                return result;
+            }
+        }
+
+        return firstDateMatch;
+    }
+
+    private static bool AmountMatches(decimal? expectedAmount, decimal actualAmount)
+        => expectedAmount.HasValue && RoundCash(expectedAmount.Value) == RoundCash(actualAmount);
 
     private static AssetActualActivityDto? FindActivity(
         AssetProjectedCashFlowDto flow,
@@ -797,8 +833,8 @@ public static class AssetOperationsProjectionBuilder
         AssetProjectedCashFlowDto flow,
         IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
         => ledgerProjections
-            .OrderBy(row => Math.Abs(row.AccountingDate.DayNumber - flow.DueDate.DayNumber))
-            .FirstOrDefault(row => string.Equals(row.Currency, flow.Currency, StringComparison.OrdinalIgnoreCase));
+            .Where(row => string.Equals(row.Currency, flow.Currency, StringComparison.OrdinalIgnoreCase))
+            .MinBy(row => Math.Abs(row.AccountingDate.DayNumber - flow.DueDate.DayNumber));
 
     private static string ResolveTimelineStatus(
         AssetProjectedCashFlowDto flow,

@@ -75,6 +75,128 @@ public sealed class AssetOperationsReadServiceTests
     }
 
     [Fact]
+    public async Task GetOperationsAsync_ForShortThirty360UsBondPeriod_ShouldPreserveMonthEndWhenStartDayIsBelowThirty()
+    {
+        var securityId = Guid.Parse("12121212-1212-1212-1212-121212121212");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, "Bond", "Meridian Short 30/360 Test Bond"));
+        var bondService = Substitute.For<IBondReferenceService>();
+        bondService.GetReferenceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new BondReferenceDto(
+                securityId,
+                "Meridian Short 30/360 Test Bond",
+                "USD",
+                "Meridian Funding LLC",
+                "Senior",
+                "CUSIP:303603160",
+                new BondLifecycleDto(
+                    securityId,
+                    BondLifecycleStat.Active,
+                    new DateOnly(2026, 1, 15),
+                    null,
+                    new DateOnly(2026, 1, 31),
+                    false,
+                    1,
+                    Par: 100m,
+                    PaymentFrequency: "Annual"),
+                new BondAccrualConventionDto(securityId, "30/360 US", 2, "US", "Fixed", 9m, null, null, 1),
+                1));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster, bondReferenceService: bondService);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        var coupon = detail!.ProjectedCashFlows.Single(static flow => flow.FlowType == "Coupon");
+        coupon.Should().Match<AssetProjectedCashFlowDto>(flow =>
+            flow.AccrualStartDate == new DateOnly(2026, 1, 15) &&
+            flow.AccrualEndDate == new DateOnly(2026, 1, 31) &&
+            flow.Amount == 0.4m &&
+            flow.PrincipalBasis == 100m);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ForInflationLinkedSinkingFundBond_ShouldAmortizePrincipalAndSuppressMaturityAfterFullRepayment()
+    {
+        var securityId = Guid.Parse("13131313-1313-1313-1313-131313131313");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(securityId, "Bond", "Meridian CPI Linked Sinking Fund Bond"));
+        var bondService = Substitute.For<IBondReferenceService>();
+        bondService.GetReferenceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new BondReferenceDto(
+                securityId,
+                "Meridian CPI Linked Sinking Fund Bond",
+                "USD",
+                "Meridian Funding LLC",
+                "Senior",
+                "CUSIP:131313131",
+                new BondLifecycleDto(
+                    securityId,
+                    BondLifecycleStat.Active,
+                    new DateOnly(2026, 1, 1),
+                    null,
+                    new DateOnly(2029, 1, 1),
+                    false,
+                    2,
+                    Par: 100m,
+                    PaymentFrequency: "Annual"),
+                new BondAccrualConventionDto(securityId, "Actual/360", 2, "US", "Fixed", 3.6m, null, null, 2),
+                2,
+                SinkingFund: new BondSinkingFundDto(
+                    securityId,
+                    [
+                        new BondSinkingFundEntryDto(new DateOnly(2027, 1, 1), 40m),
+                        new BondSinkingFundEntryDto(new DateOnly(2028, 1, 1), 70m)
+                    ],
+                    "Annual",
+                    true,
+                    2),
+                InflationLinked: new BondInflationLinkedDto(
+                    securityId,
+                    "CPI-U",
+                    100m,
+                    new DateOnly(2026, 1, 1),
+                    1.10m,
+                    new DateOnly(2026, 1, 1),
+                    1m,
+                    2)));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster, bondReferenceService: bondService);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.ProjectedCashFlows.Should().HaveCount(4);
+        detail.ProjectedCashFlows.Should().NotContain(static flow => flow.FlowType == "Maturity");
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "Coupon" && flow.DueDate == new DateOnly(2027, 1, 1))
+            .Should().Match<AssetProjectedCashFlowDto>(flow =>
+                flow.Amount == 4.015m &&
+                flow.PrincipalBasis == 110m &&
+                flow.AnnualRate == 0.036m);
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "Coupon" && flow.DueDate == new DateOnly(2028, 1, 1))
+            .Should().Match<AssetProjectedCashFlowDto>(flow =>
+                flow.Amount == 2.555m &&
+                flow.PrincipalBasis == 70m);
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "PrincipalRepayment" && flow.DueDate == new DateOnly(2027, 1, 1))
+            .Should().Match<AssetProjectedCashFlowDto>(flow =>
+                flow.Amount == 40m &&
+                flow.PrincipalBasis == 110m);
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "PrincipalRepayment" && flow.DueDate == new DateOnly(2028, 1, 1))
+            .Should().Match<AssetProjectedCashFlowDto>(flow =>
+                flow.Amount == 70m &&
+                flow.PrincipalBasis == 70m);
+        detail.TermsObligationsTimeline.Should().NotBeNull();
+        detail.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "PrincipalRepayment" &&
+            timelineEvent.EventLane == "Principal" &&
+            timelineEvent.ExpectedAmount == 70m);
+        detail.TermsObligationsTimeline.Events.Should().NotContain(static timelineEvent =>
+            timelineEvent.EventKind == "PrincipalMaturity");
+    }
+
+    [Fact]
     public void FromDirectLending_ShouldPublishSecurityIdBackedTermsCashFlowsReconciliationAndLedgerProjection()
     {
         var securityId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -172,6 +294,118 @@ public sealed class AssetOperationsReadServiceTests
             timelineEvent.VarianceAmount == 0m &&
             timelineEvent.EvidenceLink == cash.CashTransactionId.ToString("D"));
         projection.Readiness.ReadyCapabilities.Should().Contain(["TermsHistory", "ProjectedCashFlows", "ActualActivity", "Reconciliation", "LedgerProjection"]);
+    }
+
+    [Fact]
+    public void FromDirectLending_ForRecurringSameAmountCashFlows_ShouldAttachReconciliationOnlyToMatchingDueDate()
+    {
+        var securityId = Guid.Parse("23232323-2323-2323-2323-232323232323");
+        var loanId = Guid.Parse("24242424-2424-2424-2424-242424242424");
+        var projectionRunId = Guid.Parse("25252525-2525-2525-2525-252525252525");
+        var reconciliationRunId = Guid.Parse("26262626-2626-2626-2626-262626262626");
+        var contract = BuildLoanContract(loanId, securityId);
+        var projectionRun = new ProjectionRunDto(
+            projectionRunId,
+            loanId,
+            1,
+            2,
+            new DateOnly(2026, 6, 30),
+            null,
+            Guid.NewGuid(),
+            "unit-test",
+            contract.TermsVersions[0].TermsHash,
+            "dl-engine-v1",
+            ProjectionRunStatus.Completed,
+            null,
+            DateTimeOffset.UtcNow);
+        var juneFlow = new ProjectedCashFlowDto(
+            Guid.NewGuid(),
+            projectionRunId,
+            loanId,
+            1,
+            "Interest",
+            new DateOnly(2026, 6, 30),
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            1_000m,
+            CurrencyCode.USD,
+            500_000m,
+            0.08m,
+            JsonSerializer.Serialize(new { type = "interest" }),
+            DateTimeOffset.UtcNow);
+        var julyFlow = new ProjectedCashFlowDto(
+            Guid.NewGuid(),
+            projectionRunId,
+            loanId,
+            2,
+            "Interest",
+            new DateOnly(2026, 7, 31),
+            new DateOnly(2026, 7, 1),
+            new DateOnly(2026, 7, 31),
+            1_000m,
+            CurrencyCode.USD,
+            500_000m,
+            0.08m,
+            JsonSerializer.Serialize(new { type = "interest" }),
+            DateTimeOffset.UtcNow);
+        var cash = new CashTransactionDto(
+            Guid.NewGuid(),
+            loanId,
+            "InterestPayment",
+            new DateOnly(2026, 6, 30),
+            new DateOnly(2026, 6, 30),
+            new DateOnly(2026, 7, 1),
+            1_000m,
+            CurrencyCode.USD,
+            "servicer://cash/june",
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            false);
+        var reconciliationRun = new ReconciliationRunDto(
+            reconciliationRunId,
+            loanId,
+            projectionRunId,
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow,
+            "Completed");
+        var reconciliationResult = new ReconciliationResultDto(
+            Guid.NewGuid(),
+            reconciliationRunId,
+            loanId,
+            juneFlow.ProjectedCashFlowId,
+            cash.CashTransactionId,
+            "Matched",
+            1_000m,
+            1_000m,
+            0m,
+            juneFlow.DueDate,
+            cash.EffectiveDate,
+            "exact",
+            null,
+            [],
+            DateTimeOffset.UtcNow);
+
+        var projection = AssetOperationsProjectionBuilder.FromDirectLending(
+            contract,
+            [projectionRun],
+            new Dictionary<Guid, IReadOnlyList<ProjectedCashFlowDto>> { [projectionRunId] = [juneFlow, julyFlow] },
+            [cash],
+            [reconciliationRun],
+            new Dictionary<Guid, IReadOnlyList<ReconciliationResultDto>> { [reconciliationRunId] = [reconciliationResult] });
+
+        projection.TermsObligationsTimeline.Should().NotBeNull();
+        var juneEvent = projection.TermsObligationsTimeline!.Events.Single(static timelineEvent =>
+            timelineEvent.EventKind == "Interest" &&
+            timelineEvent.EffectiveDate == new DateOnly(2026, 6, 30));
+        var julyEvent = projection.TermsObligationsTimeline.Events.Single(static timelineEvent =>
+            timelineEvent.EventKind == "Interest" &&
+            timelineEvent.EffectiveDate == new DateOnly(2026, 7, 31));
+        juneEvent.Status.Should().Be("Matched");
+        juneEvent.ActualAmount.Should().Be(1_000m);
+        juneEvent.EvidenceLink.Should().Be(cash.CashTransactionId.ToString("D"));
+        julyEvent.Status.Should().Be("Projected");
+        julyEvent.ActualAmount.Should().BeNull();
+        julyEvent.EvidenceLink.Should().BeNull();
     }
 
     private static SecurityDetailDto BuildSecurity(Guid securityId, string assetClass, string displayName)

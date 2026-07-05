@@ -1838,7 +1838,6 @@ public sealed class FinancialRecordExplorerReadService
             .OrderByDescending(static terms => terms.EffectiveDate)
             .FirstOrDefault();
         var nextTimelineEvent = operations.TermsObligationsTimeline?.Events
-            .OrderBy(static timelineEvent => timelineEvent.EffectiveDate)
             .FirstOrDefault(static timelineEvent => !string.Equals(timelineEvent.EventLane, "Lifecycle", StringComparison.OrdinalIgnoreCase));
         var nextFlow = nextTimelineEvent is null
             ? operations.ProjectedCashFlows

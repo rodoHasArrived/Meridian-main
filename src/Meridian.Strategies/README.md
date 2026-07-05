@@ -77,6 +77,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W7-LIVE-001` | Live-readiness governance |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
