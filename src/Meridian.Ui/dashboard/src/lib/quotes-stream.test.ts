@@ -229,6 +229,19 @@ describe("quotes stream client", () => {
       unsubscribe();
     });
 
+    it("warms up once per symbol set, not once per subscriber", () => {
+      const first = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+      const second = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+
+      const requests = fakeChannel.posted.filter(
+        (message) => (message as { type?: string }).type === "quotes-request"
+      );
+      expect(requests).toHaveLength(1);
+
+      first();
+      second();
+    });
+
     it("degrades to unhealthy after the stale watchdog when snapshots stop", () => {
       const onHealthChange = vi.fn();
       const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn(), onHealthChange });

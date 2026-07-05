@@ -247,6 +247,7 @@ function subscribeAsFollower(symbolsKey: string, handlers: QuotesStreamHandlers)
   ensureFollowerListener(bridge);
 
   let connection = followerConnections.get(symbolsKey);
+  const isNewConnection = !connection;
   if (!connection) {
     connection = {
       symbolsKey,
@@ -259,14 +260,17 @@ function subscribeAsFollower(symbolsKey: string, handlers: QuotesStreamHandlers)
   }
 
   connection.handlers.add(handlers);
-  armFollowerStaleTimer(connection);
   handlers.onHealthChange?.(connection.healthy);
   if (connection.lastSnapshot) {
     handlers.onSnapshot(connection.lastSnapshot);
   }
 
-  // Ask the opener to send the current snapshot immediately (fast warm-up).
-  bridge.post({ type: "quotes-request", symbolsKey });
+  // Warm up the opener once, when this symbol set is first followed. Re-mounts of
+  // additional subscribers reuse the connection and must not re-request or reset
+  // the stale watchdog — the watchdog is (re)armed only on real snapshot receipt.
+  if (isNewConnection) {
+    bridge.post({ type: "quotes-request", symbolsKey });
+  }
 
   return () => {
     const current = followerConnections.get(symbolsKey);
@@ -332,6 +336,12 @@ function setFollowerHealthy(connection: FollowerConnection, healthy: boolean): v
     return;
   }
   connection.healthy = healthy;
+  // Once unhealthy, the watchdog has nothing left to do — drop it so it cannot
+  // fire redundantly. A later snapshot re-arms it via armFollowerStaleTimer.
+  if (!healthy && connection.staleTimer !== null) {
+    clearTimeout(connection.staleTimer);
+    connection.staleTimer = null;
+  }
   for (const handler of connection.handlers) {
     handler.onHealthChange?.(healthy);
   }
