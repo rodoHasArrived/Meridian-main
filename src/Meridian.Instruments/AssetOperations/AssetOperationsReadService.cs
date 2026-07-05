@@ -13,15 +13,18 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     private readonly IAssetOperationsProjectionStore? _projectionStore;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IBondReferenceService? _bondReferenceService;
+    private readonly AssetObligationProjectionService _obligationProjectionService;
 
     public AssetOperationsReadService(
         IAssetOperationsProjectionStore? projectionStore = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
-        IBondReferenceService? bondReferenceService = null)
+        IBondReferenceService? bondReferenceService = null,
+        AssetObligationProjectionService? obligationProjectionService = null)
     {
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
+        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService();
     }
 
     public async Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
@@ -46,7 +49,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
 
         return string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
             ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
-            : BuildIdentityOnlyOperations(security);
+            : _obligationProjectionService.ProjectFromSecurityMaster(security);
     }
 
     public async Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)
@@ -62,7 +65,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             : await _bondReferenceService.GetReferenceAsync(security.SecurityId, ct).ConfigureAwait(false);
         if (bond is null)
         {
-            return BuildIdentityOnlyOperations(security);
+            return _obligationProjectionService.ProjectFromSecurityMaster(security);
         }
 
         return AssetOperationsProjectionBuilder.FromBondReference(bond, BuildSubject(security));
@@ -168,7 +171,8 @@ public static class AssetOperationsProjectionBuilder
             version.RecordedAt,
             "DirectLending",
             contract.LoanId.ToString("D"),
-            $"{contract.FacilityName} terms version {version.VersionNumber}")).ToArray();
+            $"{contract.FacilityName} terms version {version.VersionNumber}",
+            BuildDirectLendingTermsPayload(contract, version.Terms))).ToArray();
         var lifecycle = new[]
         {
             new AssetLifecycleEventDto(
@@ -291,9 +295,10 @@ public static class AssetOperationsProjectionBuilder
                 $"bond-reference:{bond.Version}",
                 bond.Lifecycle?.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date),
                 DateTimeOffset.UtcNow,
-                "SecurityMaster",
-                subject.SecurityId.ToString("D"),
-                $"{bond.DisplayName} maturity/coupon reference terms")
+            "SecurityMaster",
+            subject.SecurityId.ToString("D"),
+            $"{bond.DisplayName} maturity/coupon reference terms",
+            BuildBondTermsPayload(bond))
         };
         IReadOnlyList<AssetLifecycleEventDto> lifecycle = bond.Lifecycle is null
             ? []
@@ -320,7 +325,7 @@ public static class AssetOperationsProjectionBuilder
             DateTimeOffset.UtcNow,
             "SecurityMaster",
             subject.SecurityId.ToString("D"));
-        var flows = BuildBondProjectedCashFlows(bond, projectionRunId).ToArray();
+        var flows = ProjectFixedIncomeCashFlows(bond, projectionRunId).ToArray();
         var ledger = new[]
         {
             new AssetLedgerProjectionDto(
@@ -354,6 +359,11 @@ public static class AssetOperationsProjectionBuilder
             lifecycle);
         return WithTermsObligationsTimeline(detail);
     }
+
+    internal static IReadOnlyList<AssetProjectedCashFlowDto> ProjectFixedIncomeCashFlows(
+        BondReferenceDto bond,
+        Guid projectionRunId)
+        => BuildBondProjectedCashFlows(bond, projectionRunId).ToArray();
 
     private static IEnumerable<AssetProjectedCashFlowDto> BuildBondProjectedCashFlows(BondReferenceDto bond, Guid projectionRunId)
     {
@@ -596,8 +606,19 @@ public static class AssetOperationsProjectionBuilder
                 reconciliation?.EvidenceLink ?? activity?.EvidenceLink,
                 ledgerProjection?.LedgerReferenceId,
                 BuildCashFlowTimelineSummary(flow, status),
-                BuildTimelineFlowPayload(flow, reconciliation, activity, ledgerProjection)));
+                BuildTimelineFlowPayload(flow, reconciliation, activity, ledgerProjection))
+            {
+                FormulaTrace = BuildCashFlowFormulaTrace(flow),
+                LedgerReference = ledgerProjection?.LedgerReferenceId,
+                NextAction = ResolveTimelineNextAction(status, ledgerProjection)
+            });
         }
+
+        events.AddRange(AssetObligationProjectionService.BuildProjectedObligationEvents(
+            subject,
+            terms,
+            projectionAsOf,
+            ledgerProjections));
 
         foreach (var lifecycle in lifecycleEvents.OrderBy(static row => row.EffectiveDate))
         {
@@ -620,7 +641,13 @@ public static class AssetOperationsProjectionBuilder
                 null,
                 null,
                 lifecycle.Summary,
-                lifecycle.ExtensionPayload));
+                lifecycle.ExtensionPayload)
+            {
+                FormulaTrace = "Lifecycle event retained from source domain.",
+                NextAction = lifecycle.LifecycleState.Contains("Inactive", StringComparison.OrdinalIgnoreCase)
+                    ? "Review inactive subject before downstream support consumes it."
+                    : "No action required unless source evidence changes."
+            });
         }
 
         var warnings = new List<string>();
@@ -634,6 +661,13 @@ public static class AssetOperationsProjectionBuilder
             warnings.Add("No projected cash-flow obligations are available for the timeline.");
         }
 
+        var variances = AssetObligationProjectionService.BuildTimelineVariances(
+            subject,
+            projectedCashFlows,
+            actualActivity,
+            reconciliationResults,
+            projectionAsOf);
+
         return new AssetTermsObligationsTimelineDto(
             subject.SecurityId,
             projectionAsOf,
@@ -643,7 +677,11 @@ public static class AssetOperationsProjectionBuilder
             warnings,
             generatedAt,
             latestRun?.SourceDomain ?? "AssetOperations",
-            latestRun?.SourceEntityId ?? subject.SecurityId.ToString("D"));
+            latestRun?.SourceEntityId ?? subject.SecurityId.ToString("D"))
+        {
+            AssetClass = subject.AssetClass,
+            Variances = variances
+        };
     }
 
     private static decimal ResolveBondPrincipalBasis(BondReferenceDto bond)
@@ -854,6 +892,68 @@ public static class AssetOperationsProjectionBuilder
     private static string BuildCashFlowTimelineSummary(AssetProjectedCashFlowDto flow, string status)
         => $"{flow.FlowType} obligation due {flow.DueDate:yyyy-MM-dd} for {flow.Amount} {flow.Currency}; status {status}.";
 
+    private static string BuildCashFlowFormulaTrace(AssetProjectedCashFlowDto flow)
+    {
+        if (flow.ExtensionPayload is { } payload && payload.ValueKind == JsonValueKind.Object)
+        {
+            if (TryReadPayloadString(payload, "formula", out var formula))
+            {
+                return formula;
+            }
+
+            if (TryReadPayloadString(payload, "type", out var type))
+            {
+                return $"{flow.FlowType}: {type}";
+            }
+        }
+
+        if (flow.PrincipalBasis.HasValue && flow.AnnualRate.HasValue && flow.AccrualStartDate.HasValue && flow.AccrualEndDate.HasValue)
+        {
+            return $"{flow.FlowType}: principal {flow.PrincipalBasis.Value} x rate {flow.AnnualRate.Value:P4} over {flow.AccrualStartDate:yyyy-MM-dd} to {flow.AccrualEndDate:yyyy-MM-dd}.";
+        }
+
+        return $"{flow.FlowType}: amount retained from {flow.SourceDomain ?? "AssetOperations"} projection.";
+    }
+
+    private static string ResolveTimelineNextAction(string status, AssetLedgerProjectionDto? ledgerProjection)
+    {
+        if (string.Equals(status, "Matched", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(status, "Reconciled", StringComparison.OrdinalIgnoreCase))
+        {
+            return ledgerProjection is null
+                ? "Review ledger support before close."
+                : "No action required unless evidence changes.";
+        }
+
+        if (string.Equals(status, "MissingEvidence", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Attach actual activity evidence or open a reconciliation case.";
+        }
+
+        return ledgerProjection is null
+            ? "Review ledger classification before posting support."
+            : "Monitor due date and retain actual evidence when it arrives.";
+    }
+
+    private static bool TryReadPayloadString(JsonElement payload, string propertyName, out string value)
+    {
+        foreach (var property in payload.EnumerateObject())
+        {
+            if (!string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            value = property.Value.ValueKind == JsonValueKind.String
+                ? property.Value.GetString() ?? string.Empty
+                : property.Value.ToString();
+            return !string.IsNullOrWhiteSpace(value);
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
     private static JsonElement BuildTimelineFlowPayload(
         AssetProjectedCashFlowDto flow,
         AssetReconciliationResultDto? reconciliation,
@@ -871,7 +971,75 @@ public static class AssetOperationsProjectionBuilder
             ledgerProjectionId = ledgerProjection?.LedgerProjectionId
         });
 
-    private static IReadOnlyList<string> ReadyCapabilities(
+    private static JsonElement BuildDirectLendingTermsPayload(LoanContractDetailDto contract, DirectLendingTermsDto terms)
+        => JsonSerializer.SerializeToElement(new
+        {
+            engineVersion = AssetObligationProjectionService.EngineVersion,
+            assetClass = "DirectLoan",
+            currency = terms.BaseCurrency.ToString(),
+            baseCurrency = terms.BaseCurrency.ToString(),
+            contract.LoanId,
+            contract.FacilityName,
+            borrowerName = contract.Borrower.BorrowerName,
+            terms.OriginationDate,
+            terms.MaturityDate,
+            terms.CommitmentAmount,
+            terms.RateTypeKind,
+            rateType = terms.RateTypeKind.ToString(),
+            terms.FixedAnnualRate,
+            terms.InterestIndexName,
+            terms.SpreadBps,
+            terms.FloorRate,
+            terms.CapRate,
+            terms.DayCountBasis,
+            dayCountBasis = terms.DayCountBasis.ToString(),
+            terms.PaymentFrequency,
+            paymentFrequency = terms.PaymentFrequency.ToString(),
+            terms.AmortizationType,
+            amortizationType = terms.AmortizationType.ToString(),
+            terms.CommitmentFeeRate,
+            terms.DefaultRateSpreadBps,
+            terms.PrepaymentAllowed,
+            terms.CovenantsJson,
+            terms.InterestOnlyMonths,
+            terms.GracePeriodDays,
+            terms.EffectiveRateFloor,
+            terms.EffectiveRateCap,
+            terms.PrepaymentPenaltyRate,
+            securityMasterReference = terms.SecurityMasterReference
+        });
+
+    private static JsonElement BuildBondTermsPayload(BondReferenceDto bond)
+        => JsonSerializer.SerializeToElement(new
+        {
+            engineVersion = AssetObligationProjectionService.EngineVersion,
+            assetClass = "Bond",
+            currency = bond.Currency,
+            bond.DisplayName,
+            bond.IssuerName,
+            bond.PrimaryIdentifier,
+            issueDate = bond.Lifecycle?.IssueDate,
+            callDate = bond.Lifecycle?.CallDate,
+            maturityDate = bond.Lifecycle?.MaturityDate,
+            legalFinalMaturity = bond.Lifecycle?.LegalFinalMaturity,
+            preRefundDate = bond.Lifecycle?.PreRefundDate,
+            mandatoryPutDate = bond.Lifecycle?.MandatoryPutDate,
+            par = bond.Lifecycle?.Par,
+            paymentFrequency = bond.Lifecycle?.PaymentFrequency,
+            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
+            couponKind = bond.AccrualConvention?.CouponKind,
+            fixedCouponRate = bond.AccrualConvention?.FixedCouponRate,
+            floatingRateIndex = bond.AccrualConvention?.FloatingRateIndex,
+            floatingSpreadBps = bond.AccrualConvention?.FloatingSpreadBps,
+            sinkingFundSchedule = bond.SinkingFund?.Schedule,
+            factorSchedule = bond.SinkingFund is null ? null : "sinking-fund",
+            inflationIndex = bond.InflationLinked?.InflationIndex,
+            currentFactor = bond.InflationLinked?.CurrentFactor,
+            factorDate = bond.InflationLinked?.FactorDate,
+            cashFlowSource = bond.AccountingElections?.CashFlowSource
+        });
+
+    internal static IReadOnlyList<string> ReadyCapabilities(
         IReadOnlyList<string> capabilities,
         IReadOnlyList<AssetTermsVersionDto> terms,
         IReadOnlyList<AssetLifecycleEventDto> lifecycle,
@@ -915,7 +1083,7 @@ public static class AssetOperationsProjectionBuilder
             .ToArray();
     }
 
-    private static AssetOperationsReadinessDto BuildReadiness(
+    internal static AssetOperationsReadinessDto BuildReadiness(
         AssetOperationSubjectDto subject,
         IReadOnlyList<string> readyCapabilities,
         string sourceDomain,

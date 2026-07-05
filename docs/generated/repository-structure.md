@@ -4031,6 +4031,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
+│   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   └── AssetOperationsReadService.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
@@ -6689,7 +6690,8 @@ Meridian-main
 │   │   │   ├── OperationsContinuityPostgresRoundTripTests.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
-│   │   │   └── ReconciliationRunServiceTests.cs
+│   │   │   ├── ReconciliationRunServiceTests.cs
+│   │   │   └── SecurityMasterCashFlowServiceTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   └── LayerBoundaryTests.cs

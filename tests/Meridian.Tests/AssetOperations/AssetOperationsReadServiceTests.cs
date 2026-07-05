@@ -171,6 +171,15 @@ public sealed class AssetOperationsReadServiceTests
             timelineEvent.ActualAmount == 1_000m &&
             timelineEvent.VarianceAmount == 0m &&
             timelineEvent.EvidenceLink == cash.CashTransactionId.ToString("D"));
+        projection.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "CovenantTest" &&
+            timelineEvent.EventLane == "Obligations" &&
+            timelineEvent.FormulaTrace!.Contains("direct-lending covenant", StringComparison.OrdinalIgnoreCase) &&
+            timelineEvent.NextAction!.Contains("covenant", StringComparison.OrdinalIgnoreCase));
+        projection.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "CommitmentFee" &&
+            timelineEvent.EventLane == "CashFlow" &&
+            timelineEvent.LedgerReference == "ledger-map:direct-lending:NWTERM26");
         projection.Readiness.ReadyCapabilities.Should().Contain(["TermsHistory", "ProjectedCashFlows", "ActualActivity", "Reconciliation", "LedgerProjection"]);
     }
 
@@ -290,7 +299,142 @@ public sealed class AssetOperationsReadServiceTests
             f.Amount == 103m);
     }
 
-    private static SecurityDetailDto BuildSecurity(Guid securityId, string assetClass, string displayName)
+    [Fact]
+    public async Task GetOperationsAsync_ForPrivateFundInterest_ShouldGenerateNonCashObligationTimelineFromTerms()
+    {
+        var securityId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                "PrivateFundInterest",
+                "Meridian Private Credit Fund I",
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "private-fund-interest",
+                    profileVersion = 1,
+                    profileFields = new
+                    {
+                        gpSponsor = "GP Capital",
+                        strategy = "Private Credit",
+                        commitment = 1_000_000m,
+                        fundedAmount = 250_000m,
+                        unfundedAmount = 750_000m,
+                        navDate = "2026-06-30"
+                    }
+                })));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.Subject.AssetClass.Should().Be("PrivateFundInterest");
+        detail.ProjectedCashFlows.Should().BeEmpty();
+        detail.TermsObligationsTimeline.Should().NotBeNull();
+        detail.TermsObligationsTimeline!.AssetClass.Should().Be("PrivateFundInterest");
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "NavStatement" &&
+            timelineEvent.EventLane == "Evidence" &&
+            timelineEvent.FormulaTrace!.Contains("Quarterly NAV", StringComparison.OrdinalIgnoreCase));
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "CapitalAccountStatement" &&
+            timelineEvent.NextAction!.Contains("capital-account", StringComparison.OrdinalIgnoreCase));
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "UnfundedCommitmentReview" &&
+            timelineEvent.ExpectedAmount == 750_000m);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ForStructuredCredit_ShouldGenerateFactorEvidenceAndProjectedPrincipalFromTerms()
+    {
+        var securityId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var maturity = asOf.AddYears(1);
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                "StructuredCredit",
+                "Meridian CLO A-1",
+                JsonSerializer.SerializeToElement(new
+                {
+                    tranche = "A-1",
+                    poolId = "POOL-2026-1",
+                    collateralType = "CLO",
+                    originalFace = 1_000_000m,
+                    currentFactor = 0.9825m,
+                    couponRate = 6m,
+                    dayCountConvention = "30/360",
+                    paymentFrequency = "SemiAnnual",
+                    issueDate = asOf,
+                    maturityDate = maturity,
+                    factorSchedule = "monthly-trustee"
+                })));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.ProjectedCashFlows.Should().Contain(static flow => flow.FlowType == "Coupon");
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "Maturity").Should().Match<AssetProjectedCashFlowDto>(flow =>
+            flow.Amount == 982_500m &&
+            flow.DueDate == maturity);
+        detail.TermsObligationsTimeline.Should().NotBeNull();
+        detail.TermsObligationsTimeline!.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "TrusteeReport" &&
+            timelineEvent.EventLane == "Evidence");
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "CollateralTape" &&
+            timelineEvent.NextAction!.Contains("collateral tape", StringComparison.OrdinalIgnoreCase));
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "FactorUpdate" &&
+            timelineEvent.LedgerReference == $"security-master:{securityId:D}");
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ForCustomAsset_ShouldGenerateGovernedProfileAndCloseEvidenceObligations()
+    {
+        var securityId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                "CustomAsset",
+                "Specialized Holding",
+                JsonSerializer.SerializeToElement(new
+                {
+                    customProfileId = "specialized-holding",
+                    profileVersion = 2,
+                    profileFields = new
+                    {
+                        valuationDate = "2026-06-30",
+                        latestValuation = 725_000m,
+                        evidencePolicy = "controller-review"
+                    }
+                })));
+
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.TermsObligationsTimeline.Should().NotBeNull();
+        detail.TermsObligationsTimeline!.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "ValuationReview" &&
+            timelineEvent.EventLane == "Obligations");
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "CustomProfileEvidenceReview" &&
+            timelineEvent.FormulaTrace!.Contains("Custom profile", StringComparison.OrdinalIgnoreCase));
+        detail.TermsObligationsTimeline.Events.Should().Contain(timelineEvent =>
+            timelineEvent.EventKind == "ObligationCloseEvidence" &&
+            timelineEvent.EventLane == "Handoff" &&
+            timelineEvent.NextAction!.Contains("close", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static SecurityDetailDto BuildSecurity(
+        Guid securityId,
+        string assetClass,
+        string displayName,
+        JsonElement? assetSpecificTerms = null)
         => new(
             securityId,
             assetClass,
@@ -298,7 +442,7 @@ public sealed class AssetOperationsReadServiceTests
             displayName,
             "USD",
             JsonSerializer.SerializeToElement(new { displayName, currency = "USD" }),
-            JsonSerializer.SerializeToElement(new { maturity = "2031-01-01", couponRate = 5.875m }),
+            assetSpecificTerms ?? JsonSerializer.SerializeToElement(new { maturity = "2031-01-01", couponRate = 5.875m }),
             [new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456789", true, DateTimeOffset.Parse("2026-01-01T00:00:00Z"))],
             [],
             3,
@@ -321,10 +465,10 @@ public sealed class AssetOperationsReadServiceTests
             DayCountBasis.Act360,
             PaymentFrequency.Monthly,
             AmortizationType.Bullet,
-            null,
+            0.01m,
             null,
             true,
-            null,
+            "{\"leverage\":\"tested quarterly\"}",
             SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(
                 securityId,
                 "NWTERM26",
