@@ -4776,6 +4776,10 @@ Meridian-main
 │   │   │   │   │   │   └── TrialBalanceRowDetail.tsx
 │   │   │   │   │   ├── charts
 │   │   │   │   │   │   ├── CandleChart.tsx
+│   │   │   │   │   │   ├── chart-interaction.test.ts
+│   │   │   │   │   │   ├── chart-interaction.tsx
+│   │   │   │   │   │   ├── chart-sync.test.tsx
+│   │   │   │   │   │   ├── chart-sync.tsx
 │   │   │   │   │   │   ├── ChartCard.tsx
 │   │   │   │   │   │   ├── charts.test.tsx
 │   │   │   │   │   │   ├── CorrelationHeatmap.tsx
