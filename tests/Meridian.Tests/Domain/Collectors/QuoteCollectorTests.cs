@@ -213,6 +213,56 @@ public class QuoteCollectorTests
         snapshot.Should().ContainKey("GOOGL");
     }
 
+    [Fact]
+    public void Upsert_NotifiesQuoteChangedWithStoredSymbol()
+    {
+        // Arrange
+        var notifier = new RecordingQuoteUpdateNotifier();
+        var collector = new QuoteCollector(_publisher, notifier);
+
+        // Act
+        collector.OnQuote(CreateQuote("SPY", 450m, 451m));
+
+        // Assert
+        notifier.Symbols.Should().ContainSingle().Which.Should().Be("SPY");
+    }
+
+    [Fact]
+    public void Upsert_WithThrowingNotifier_StillPublishesAndDoesNotThrow()
+    {
+        // Arrange — the notifier must never surface on the ingestion path.
+        var collector = new QuoteCollector(_publisher, new ThrowingQuoteUpdateNotifier());
+
+        // Act
+        var act = () => collector.OnQuote(CreateQuote("SPY", 450m, 451m));
+
+        // Assert
+        act.Should().NotThrow();
+        _publishedEvents.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void Constructor_WithoutNotifier_KeepsPublishingUnchanged()
+    {
+        // Default construction (no notifier) behaves exactly as before the seam.
+        _collector.OnQuote(CreateQuote("SPY", 450m, 451m));
+
+        _publishedEvents.Should().HaveCount(1);
+    }
+
+    private sealed class RecordingQuoteUpdateNotifier : IQuoteUpdateNotifier
+    {
+        public List<string> Symbols { get; } = new();
+
+        public void NotifyQuoteChanged(string symbol) => Symbols.Add(symbol);
+    }
+
+    private sealed class ThrowingQuoteUpdateNotifier : IQuoteUpdateNotifier
+    {
+        public void NotifyQuoteChanged(string symbol)
+            => throw new InvalidOperationException("notifier boom");
+    }
+
     private static MarketQuoteUpdate CreateQuote(string symbol, decimal bidPrice, decimal askPrice)
     {
         return new MarketQuoteUpdate(

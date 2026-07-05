@@ -3486,6 +3486,7 @@ Meridian-main
 │   ├── Meridian.Domain
 │   │   ├── Collectors
 │   │   │   ├── IQuoteStateStore.cs
+│   │   │   ├── IQuoteUpdateNotifier.cs
 │   │   │   ├── L3OrderBookCollector.cs
 │   │   │   ├── MarketDepthCollector.cs
 │   │   │   ├── OptionDataCollector.cs

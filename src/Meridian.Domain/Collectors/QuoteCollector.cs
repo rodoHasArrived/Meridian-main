@@ -14,13 +14,15 @@ namespace Meridian.Domain.Collectors;
 public sealed class QuoteCollector : IQuoteStateStore
 {
     private readonly IMarketEventPublisher _publisher;
+    private readonly IQuoteUpdateNotifier _updates;
 
     private readonly ConcurrentDictionary<SymbolId, BboQuotePayload> _latest = new();
     private readonly ConcurrentDictionary<SymbolId, long> _seq = new();
 
-    public QuoteCollector(IMarketEventPublisher publisher)
+    public QuoteCollector(IMarketEventPublisher publisher, IQuoteUpdateNotifier? updates = null)
     {
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
+        _updates = updates ?? NullQuoteUpdateNotifier.Instance;
     }
 
     /// <summary>
@@ -55,6 +57,11 @@ public sealed class QuoteCollector : IQuoteStateStore
 
         var payload = BboQuotePayload.FromUpdate(update, nextSeq);
         _latest[symbolId] = payload;
+
+        // Fan-out signal for out-of-band consumers (UI quote stream). Guarded at the
+        // call site so a faulty notifier can never surface on the ingestion path.
+        try { _updates.NotifyQuoteChanged(payload.Symbol); }
+        catch { /* best effort — ingestion must never fail on a UI-streaming concern */ }
 
         return payload;
     }
