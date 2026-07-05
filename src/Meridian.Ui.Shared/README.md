@@ -1442,6 +1442,13 @@ close-ready, and report-ready posture server-owned for browser and WPF clients.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
+The trust snapshot additionally carries `corporateActionDescriptors`: a canonical-taxonomy
+projection of each effective corporate action (catalog display name, ISO 15022 CAEV alignment,
+lifecycle state resolved at the snapshot's as-of time via the contract-owned effective-state
+projector, cancellation flag, and the supersede-chain timeline with amendment markers), keyed by
+`corpActId` back to the raw `corporateActions` rows. Clients should render event-type chips and
+lifecycle timelines from those descriptors instead of re-deriving taxonomy or amendment chains
+from raw event rows.
 The shared Security Master endpoints also expose the ReferenceData-owned approved starter custom
 asset profile catalog at `/api/security-master/asset-profiles` and allow `/api/security-master/search`
 requests to filter profile-backed securities by custom profile id, pinned profile version, profile
