@@ -225,17 +225,22 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         var description = string.IsNullOrWhiteSpace(split.Description)
             ? $"Twelve Data split ratio {split.Ratio?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}."
             : split.Description.Trim();
+        var splitRatio = fromFactor is > 0m && toFactor is > 0m
+            ? toFactor / fromFactor
+            : split.Ratio;
+        var resolvedFromFactor = fromFactor ?? (splitRatio is > 0m ? 1m : null);
+        var resolvedToFactor = toFactor ?? splitRatio;
 
         return new CorporateActionCommand(
             SecurityId: securityId,
-            ActionType: "Split",
+            ActionType: splitRatio is > 0m and < 1m ? "ReverseStockSplit" : "StockSplit",
             ExDate: exDate,
             RecordDate: null,
             PayableDate: null,
             Amount: null,
             Currency: null,
-            SplitFromFactor: fromFactor,
-            SplitToFactor: toFactor,
+            SplitFromFactor: resolvedFromFactor,
+            SplitToFactor: resolvedToFactor,
             Description: description,
             SourceProvider: ProviderId);
     }

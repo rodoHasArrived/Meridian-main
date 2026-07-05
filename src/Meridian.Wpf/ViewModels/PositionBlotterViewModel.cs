@@ -30,6 +30,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     private readonly ApiClientService _apiClient;
     private readonly NavigationService _navigationService;
+    private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
@@ -300,10 +301,12 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     public PositionBlotterViewModel(
         ApiClientService apiClient,
-        NavigationService navigationService)
+        NavigationService navigationService,
+        WorkstationOperatingContextService? operatingContextService = null)
     {
         _apiClient = apiClient;
         _navigationService = navigationService;
+        _operatingContextService = operatingContextService;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         UpsizeCommand = new AsyncRelayCommand(ExecuteUpsizeAsync, HasUpsizeableEntries);
@@ -891,12 +894,14 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         var failures = new List<string>();
         var successes = 0;
+        var fundAccountId = WorkstationOperatingContextScopeResolver.ResolveFundAccountId(
+            _operatingContextService?.CurrentContext);
 
         foreach (var entry in selectedEntries)
         {
             var response = await _apiClient.PostWithResponseAsync<TradingActionResultDto>(
                 endpoint,
-                new ExecutionPositionActionRequest(entry.PositionKey),
+                new ExecutionPositionActionRequest(entry.PositionKey, FundAccountId: fundAccountId),
                 _cts.Token);
 
             if (response.Success)

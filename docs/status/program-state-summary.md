@@ -2,7 +2,7 @@
 
 This file is generated from `docs/roadmap/data/program-state.yml` and `docs/roadmap/data/roadmap-items.yml`.
 
-Snapshot date: 2026-06-24
+Snapshot date: 2026-07-05
 
 | ID | Wave | Title | Workspaces | Status | Health | Priority | Owner Lane | Evidence Posture | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -18,7 +18,7 @@ Snapshot date: 2026-06-24
 | W5X-FINOPS-001 | W5X | Financial operations control center | Accounting; Reporting; Portfolio; Data | done | green | high | Accounting and Ledger | complete | 2026-06-24 |
 | W5X-FREX-001 | W5X | Shared financial record explorers | Accounting; Portfolio; Data; Reporting | done | green | high | Workstation Shell and UX | complete | 2026-06-22 |
 | W6-BTSTUDIO-001 | W6 | Backtesting studio evidence loop | Strategy | planned | green | medium | Strategy Analytics | planned_evidence | 2026-06-04 |
-| W7-LIVE-001 | W7 | Live-readiness governance | Trading; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-06-04 |
+| W7-LIVE-001 | W7 | Live-readiness governance | Trading; Settings | done | green | medium | Accounting and Ledger | complete | 2026-07-05 |
 
 ## Source Contract
 

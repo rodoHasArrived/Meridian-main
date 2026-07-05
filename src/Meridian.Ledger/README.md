@@ -39,6 +39,10 @@ base-currency ledger posting lines while preserving local amount, currency, and 
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
 marks, preserves price-source/evidence references, and prepares balanced fair-value adjustment
 lines against unrealized gain/loss accounts.
+`DailyPortfolioPricingDraftBuilder` converts that projection into a governed
+`AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
+fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
+Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
 `LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger
@@ -55,6 +59,11 @@ ledger journal entry.
 `LockedAccountingPeriodBook` records book-scoped accounting period locks and rejects late journal
 postings that fall inside a locked range, preserving published NAV and close evidence while still
 allowing separate books such as shadow-NAV ledgers to continue independently.
+`PeriodCloseProjector` turns a point-in-time trial balance into balanced closing entries: every
+revenue and expense account is zeroed and the net income is rolled into retained earnings, scoped
+per financial account. `PeriodCloseDraftBuilder` wraps that projection in a governed
+`AutomatedJournalDraft` (kind `PeriodCloseClosingEntries`) so closes post through
+`AutomatedJournalApproval` instead of remaining status-only.
 `ShadowNavValidator` compares actual and shadow ledger books at a point in time, reports
 account-level and NAV variances against configured tolerances, and prepares a governed override
 draft when independent fund-admin validation requires review.

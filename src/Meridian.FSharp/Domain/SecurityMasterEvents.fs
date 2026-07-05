@@ -80,7 +80,9 @@ type CorpActEvent =
         payDate: DateOnly option *
         dividendPerShare: decimal *
         currency: string
-    /// Forward stock split (`SplitRatio` > 1) or reverse split (`SplitRatio` < 1).
+    /// Forward stock split (`SplitRatio` strictly greater than 1). Reverse splits are the
+    /// distinct `ReverseStockSplit` case; legacy events encoded with a sub-1 ratio map to
+    /// `ReverseStockSplit` at the read boundary.
     | StockSplit of
         securityId: SecurityId *
         corpActId: CorpActId *
@@ -168,6 +170,36 @@ type CorpActEvent =
         payDate: DateOnly option *
         amountPerShare: decimal *
         currency: string
+    /// Reverse stock split (`SplitRatio` strictly between 0 and 1).
+    | ReverseStockSplit of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        splitRatio: decimal
+    /// Pro-rata principal repayment via pool-factor reduction on factor-based debt.
+    | PrincipalPaydown of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        exDate: DateOnly *
+        distributionRatio: decimal
+    /// Futures contract reaches expiry.
+    | FuturesExpiry of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        expiryDate: DateOnly
+    /// OCC-style option contract-terms adjustment; the ratio rides the envelope's
+    /// ExchangeRatio carrier.
+    | OptionContractAdjustment of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        effectiveDate: DateOnly *
+        adjustmentRatio: decimal option
+    /// Chain fork that may produce a new digital asset.
+    | CryptoFork of
+        securityId: SecurityId *
+        corpActId: CorpActId *
+        forkDate: DateOnly *
+        newSecurityId: SecurityId option
 
 [<RequireQualifiedAccess>]
 module CorpActEvent =
@@ -186,6 +218,11 @@ module CorpActEvent =
         | CorpActEvent.BondCall (secId, _, _, _, _) -> secId
         | CorpActEvent.BondMaturityRedemption (secId, _, _, _, _) -> secId
         | CorpActEvent.ReturnOfCapital (secId, _, _, _, _, _) -> secId
+        | CorpActEvent.ReverseStockSplit (secId, _, _, _) -> secId
+        | CorpActEvent.PrincipalPaydown (secId, _, _, _) -> secId
+        | CorpActEvent.FuturesExpiry (secId, _, _) -> secId
+        | CorpActEvent.OptionContractAdjustment (secId, _, _, _) -> secId
+        | CorpActEvent.CryptoFork (secId, _, _, _) -> secId
 
     let corpActId event =
         match event with
@@ -202,6 +239,11 @@ module CorpActEvent =
         | CorpActEvent.BondCall (_, id, _, _, _) -> id
         | CorpActEvent.BondMaturityRedemption (_, id, _, _, _) -> id
         | CorpActEvent.ReturnOfCapital (_, id, _, _, _, _) -> id
+        | CorpActEvent.ReverseStockSplit (_, id, _, _) -> id
+        | CorpActEvent.PrincipalPaydown (_, id, _, _) -> id
+        | CorpActEvent.FuturesExpiry (_, id, _) -> id
+        | CorpActEvent.OptionContractAdjustment (_, id, _, _) -> id
+        | CorpActEvent.CryptoFork (_, id, _, _) -> id
 
     let exDate event =
         match event with
@@ -218,6 +260,11 @@ module CorpActEvent =
         | CorpActEvent.BondCall (_, _, date, _, _) -> date
         | CorpActEvent.BondMaturityRedemption (_, _, date, _, _) -> date
         | CorpActEvent.ReturnOfCapital (_, _, date, _, _, _) -> date
+        | CorpActEvent.ReverseStockSplit (_, _, date, _) -> date
+        | CorpActEvent.PrincipalPaydown (_, _, date, _) -> date
+        | CorpActEvent.FuturesExpiry (_, _, date) -> date
+        | CorpActEvent.OptionContractAdjustment (_, _, date, _) -> date
+        | CorpActEvent.CryptoFork (_, _, date, _) -> date
 
     let eventType event =
         match event with
@@ -234,3 +281,8 @@ module CorpActEvent =
         | CorpActEvent.BondCall _ -> "BondCall"
         | CorpActEvent.BondMaturityRedemption _ -> "BondMaturityRedemption"
         | CorpActEvent.ReturnOfCapital _ -> "ReturnOfCapital"
+        | CorpActEvent.ReverseStockSplit _ -> "ReverseStockSplit"
+        | CorpActEvent.PrincipalPaydown _ -> "PrincipalPaydown"
+        | CorpActEvent.FuturesExpiry _ -> "FuturesExpiry"
+        | CorpActEvent.OptionContractAdjustment _ -> "OptionContractAdjustment"
+        | CorpActEvent.CryptoFork _ -> "CryptoFork"

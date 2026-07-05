@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2643 / 7333** items documented (**36.0%**) &mdash; Grade: **F**
+**2645 / 7345** items documented (**36.0%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 36.0%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2522 | 6837 | 36.9% | F |
+| Public Classes / Interfaces | 2524 | 6849 | 36.9% | F |
 | API Endpoints | 107 | 349 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,16 +23,17 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4315 undocumented)
+### Public Classes / Interfaces (4325 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
 | `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:46` |
 | `BackfillRemediationSlaDecision` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:52` |
-| `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:59` |
-| `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:68` |
-| `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:85` |
-| `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:93` |
+| `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:64` |
+| `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:72` |
+| `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:81` |
+| `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:98` |
+| `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:106` |
 | `BackfillPartitionEstimate` | `src/Meridian.Application/Backfill/BackfillPartitionPlanner.cs:147` |
 | `CrossSourceBackfillReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:473` |
 | `CrossSourceBackfillBatchReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:482` |
@@ -42,9 +43,9 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| `BackfillExecutionHistory` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:250` |
-| `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:407` |
-| `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:427` |
+| `BackfillExecutionHistory` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:258` |
+| `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:415` |
+| `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:435` |
 | `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
 | `BackfillSchedulePresets` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:213` |
 | `ScheduleStatusSummary` | `src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:413` |
@@ -76,8 +77,7 @@
 | `SecurityMasterIngestStatusSnapshot` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:6` |
 | `SecurityMasterActiveImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13` |
 | `SecurityMasterCompletedImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:26` |
-| `ISecurityMasterIngestStatusService` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:41` |
-| ... and 4265 more | |
+| ... and 4275 more | |
 
 ### API Endpoints (242 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4315 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4325 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 242 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

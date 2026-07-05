@@ -110,7 +110,8 @@ public sealed class AutoGapRemediationServiceTests
 
         var execution = history.GetRecentExecutions(10).Should().ContainSingle().Subject;
         execution.AutoRemediationIdempotencyKey.Should().Be("AAPL|polygon|2026-06-29|2026-06-29");
-        execution.Warnings.Should().Contain("provider=polygon");
+        execution.AutoRemediationSla.Should().NotBeNull();
+        execution.AutoRemediationSla!.Provider.Should().Be("polygon");
     }
 
     [Fact]
@@ -225,11 +226,13 @@ public sealed class AutoGapRemediationServiceTests
         execution.AutoRemediationIdempotencyKey.Should().Be("AAPL,MSFT|polygon|2026-06-29|2026-06-29");
         execution.AutoRemediationTriggerReason.Should().Contain("scan:Daily:1");
         execution.AutoRemediationTriggerReason.Should().Contain("scan:Daily:2");
-        execution.Warnings.Should().Contain("source=GapAnalyzerScan");
-        execution.Warnings.Should().Contain("provider=polygon");
-        execution.Warnings.Should().Contain("sla-tier=Standard");
-        execution.Warnings.Should().Contain("sla-requires-owner=false");
-        execution.Warnings.Should().Contain("downstream-workflow=unassigned");
+        execution.AutoRemediationSla.Should().NotBeNull();
+        execution.AutoRemediationSla!.TriggerSource.Should().Be(AutoRemediationTriggerSource.GapAnalyzerScan);
+        execution.AutoRemediationSla.Provider.Should().Be("polygon");
+        execution.AutoRemediationSla.Tier.Should().Be(BackfillRemediationSlaTier.Standard);
+        execution.AutoRemediationSla.RequiresOwnerAssignment.Should().BeFalse();
+        execution.AutoRemediationSla.DownstreamWorkflow.Should().Be("unassigned");
+        execution.Warnings.Should().BeEmpty("SLA metadata must be typed, not smuggled through warnings");
     }
 
     [Fact]
@@ -266,13 +269,14 @@ public sealed class AutoGapRemediationServiceTests
         execution.Symbols.Should().Equal("SPY");
         execution.Status.Should().Be(ExecutionStatus.Completed);
         execution.AutoRemediationTriggerReason.Should().Be("alert:dq-001:missing-close-bar");
-        execution.Warnings.Should().Contain("source=QualityAlert");
-        execution.Warnings.Should().Contain("provider=polygon");
-        execution.Warnings.Should().Contain("sla-tier=SameBusinessDay");
-        execution.Warnings.Should().Contain("sla-requires-owner=true");
-        execution.Warnings.Should().Contain("downstream-workflow=accounting");
-        execution.Warnings.Should().Contain("sla-reason=CriticalWorkflow");
-        execution.Warnings.Should().Contain(warning => warning.StartsWith("sla-due-utc=", StringComparison.Ordinal));
+        execution.AutoRemediationSla.Should().NotBeNull();
+        execution.AutoRemediationSla!.TriggerSource.Should().Be(AutoRemediationTriggerSource.QualityAlert);
+        execution.AutoRemediationSla.Provider.Should().Be("polygon");
+        execution.AutoRemediationSla.Tier.Should().Be(BackfillRemediationSlaTier.SameBusinessDay);
+        execution.AutoRemediationSla.RequiresOwnerAssignment.Should().BeTrue();
+        execution.AutoRemediationSla.DownstreamWorkflow.Should().Be("accounting");
+        execution.AutoRemediationSla.ReasonCode.Should().Be("CriticalWorkflow");
+        execution.AutoRemediationSla.DueAtUtc.Should().BeAfter(DateTimeOffset.UtcNow);
     }
 
     [Fact]
@@ -370,6 +374,44 @@ public sealed class AutoGapRemediationServiceTests
         item.ExecutionStatus.Should().Be(ExecutionStatus.Completed);
         item.RequiresOwnerAssignment.Should().BeTrue();
         item.TimeRemaining.Should().BeLessThan(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void EvaluateRemediationSla_LegacyWarningMetadata_StillProducesSlaItem()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        var service = new AutoGapRemediationService(gateway, history);
+
+        var dueAt = DateTimeOffset.UtcNow.AddHours(-1);
+        history.AddExecution(new BackfillExecutionLog
+        {
+            ScheduleId = "auto-gap-remediation",
+            Trigger = ExecutionTrigger.AutoRemediation,
+            Status = ExecutionStatus.Running,
+            FromDate = new DateOnly(2026, 06, 29),
+            ToDate = new DateOnly(2026, 06, 29),
+            Symbols = { "SPY" },
+            Warnings =
+            {
+                "provider=polygon",
+                "sla-tier=SameBusinessDay",
+                $"sla-due-utc={dueAt:O}",
+                "sla-requires-owner=true",
+                "downstream-workflow=accounting",
+                "sla-reason=CriticalWorkflow"
+            }
+        });
+
+        var snapshot = service.EvaluateRemediationSla();
+
+        var item = snapshot.Items.Should().ContainSingle(
+            "pre-upgrade executions with warning-based SLA metadata must still surface").Subject;
+        item.Tier.Should().Be(BackfillRemediationSlaTier.SameBusinessDay);
+        item.Status.Should().Be(BackfillRemediationSlaStatus.Overdue);
+        item.Provider.Should().Be("polygon");
+        item.RequiresOwnerAssignment.Should().BeTrue();
+        item.ReasonCode.Should().Be("CriticalWorkflow");
     }
 
     private sealed class FakeGateway : IBackfillExecutionGateway

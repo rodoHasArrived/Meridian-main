@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v2",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-06-24",
+  "snapshotDate": "2026-07-05",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -16,7 +16,8 @@
       "Governed report packs",
       "Shared browser and WPF operational record workflow",
       "Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence",
-      "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records"
+      "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records",
+      "Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention"
     ],
     "activeUiLane": "browser_and_wpf_workstations",
     "retainedSupportLane": "none",
@@ -171,13 +172,13 @@
       "Wave": "W6",
       "Title": "Backtesting studio evidence loop",
       "Workspaces": "Strategy",
-      "Status": "planned",
+      "Status": "done",
       "Health": "green",
       "Priority": "medium",
       "Owner Lane": "Strategy Analytics",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-06-04"
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs; src/Meridian.Strategies/Services/PromotionService.cs; src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; tests/Meridian.Tests/Strategies/PromotionServiceTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs",
+      "Last Reviewed": "2026-07-05"
     },
     {
       "ID": "W7-LIVE-001",

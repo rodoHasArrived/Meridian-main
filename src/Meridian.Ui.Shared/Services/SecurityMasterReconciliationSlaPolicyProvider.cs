@@ -14,6 +14,7 @@ public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliat
 {
     internal const string SecurityMasterTeam = "Security Master";
     internal const string ConflictPolicyId = "security-master-conflict-sla";
+    internal const string QualityPolicyId = "security-master-quality-sla";
     private const int BusinessHoursPerDay = 8;
 
     private readonly SecurityMasterExceptionSlaConfig _config;
@@ -38,9 +39,12 @@ public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliat
         }
 
         var dueHours = Math.Max(1, days.Value * BusinessHoursPerDay);
+        var policyId = string.Equals(item.RunId, SecurityMasterExceptionCaseworkService.QualityRunId, StringComparison.Ordinal)
+            ? QualityPolicyId
+            : ConflictPolicyId;
 
         return new ReconciliationSlaPolicy(
-            PolicyId: ConflictPolicyId,
+            PolicyId: policyId,
             FundId: item.FundAccountId,
             AccountId: item.ExternalAccountId,
             BreakType: item.Category.ToString(),
@@ -61,6 +65,12 @@ public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliat
         "security-master-conflicts" => _config.IdentifierConflictDays,
         "security-master-incomplete" => _config.IncompleteRecordDays,
         "security-master-new" => _config.NewSecurityUnresolvedDays,
+        SecurityMasterExceptionCaseworkService.QualityRunId => item.Severity switch
+        {
+            ReconciliationBreakSeverity.Critical => _config.QualityHardBlockDays,
+            ReconciliationBreakSeverity.High => _config.QualityErrorDays,
+            _ => _config.QualityWarningDays
+        },
         _ => null
     };
 }

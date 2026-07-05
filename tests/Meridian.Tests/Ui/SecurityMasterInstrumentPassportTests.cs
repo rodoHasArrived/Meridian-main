@@ -530,6 +530,9 @@ public sealed class SecurityMasterInstrumentPassportTests
             return Task.FromResult(requestedSecurityId == securityId ? CreateDetail() : null);
         }
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid requestedSecurityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(requestedSecurityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(
             SecurityIdentifierKind identifierKind,
             string identifierValue,

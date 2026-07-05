@@ -255,6 +255,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
             services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<ICorporateActionCommandService, CorporateActionCommandService>();
+            // Period-aware supersede routing: singleton over IServiceScopeFactory because the
+            // workstation restatement stack it consumes is scoped; hosts without that stack
+            // degrade to no proposal at call time.
+            services.AddSingleton<ICorporateActionRestatementTrigger, CorporateActionSupersedeRestatementTrigger>();
             services.AddSingleton<IBondReferenceService, BondProjectionService>();
             services.AddSingleton<IOptionReferenceService, OptionProjectionService>();
             services.AddSingleton<IOptionChainImportService>(sp => (OptionProjectionService)sp.GetRequiredService<IOptionReferenceService>());
@@ -289,6 +293,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
+
+            // Coverage sweep: symbols active in platform surfaces but missing from the master
+            // feed RC001 RefreshControl violations, which the exception-casework loop cases.
+            services.AddSingleton<ISecurityCoverageSymbolSource, ConfiguredSymbolCoverageSource>();
+
+            // Symbology lineage: ticker changes recorded as first-class amend events.
+            services.AddSingleton<SecurityMasterTickerChangeService>();
+
+            // Corporate-action ingest: fan-out, consensus scoring, staged apply.
+            services.AddSingleton<CorporateActionIngestOrchestrator>();
         }
 
         if (AssetOperationsStartup.IsConfigured())
@@ -323,6 +337,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
+        services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
         services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();

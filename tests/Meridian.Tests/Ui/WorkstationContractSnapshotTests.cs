@@ -13,6 +13,7 @@ public sealed class WorkstationContractSnapshotTests
     private static readonly Type[] DashboardCriticalContractTypes =
     [
         typeof(TradingOperatorReadinessDto),
+        typeof(TradingLiveOperationRequirementDto),
         typeof(TradingAcceptanceGateDto),
         typeof(OperatorWorkItemDto),
         typeof(OperatorInboxDto),
@@ -24,7 +25,7 @@ public sealed class WorkstationContractSnapshotTests
     {
         var descriptor = BuildDescriptor();
         var actualHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(descriptor)));
-        var approvedHash = "72ECA2A888AF268DE15C2FD9AFFB012775EF72D3D44ED19CE9E573F91AAFDE5E";
+        var approvedHash = "E6E6285EB5CF18520C1C033BBFDD9824B314870D057E5318FDF0309AE18590B7";
         Assert.Equal(approvedHash, actualHash);
     }
 

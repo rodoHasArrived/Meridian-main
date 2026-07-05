@@ -51,6 +51,36 @@ public sealed class SecurityMasterAggregateRebuilder
         return rebuilt;
     }
 
+    /// <summary>
+    /// Rebuilds the security's state as it was recorded at <paramref name="asOfUtc"/>
+    /// (transaction time). Every event payload carries the full definition, so the as-of
+    /// state is the payload of the last event recorded at or before the timestamp. Returns
+    /// <c>null</c> when the stream has history but none of it existed at that time;
+    /// securities with no event history fall back to the supplied current projection.
+    /// </summary>
+    public async Task<SecurityProjectionRecord?> RebuildAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        SecurityProjectionRecord? projectionWithAliases,
+        CancellationToken ct = default)
+    {
+        var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
+        if (events.Count == 0)
+        {
+            return projectionWithAliases;
+        }
+
+        SecurityEconomicDefinitionRecord? rebuilt = null;
+        foreach (var @event in events.Where(e => e.EventTimestamp <= asOfUtc))
+        {
+            rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+        }
+
+        return rebuilt is null
+            ? null
+            : SecurityEconomicDefinitionAdapter.ToProjection(rebuilt, projectionWithAliases?.Aliases);
+    }
+
     public async Task<SecurityProjectionRecord?> RebuildAsync(
         Guid securityId,
         SecurityProjectionRecord? projectionWithAliases,

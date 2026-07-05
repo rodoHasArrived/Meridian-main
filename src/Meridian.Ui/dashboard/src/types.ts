@@ -978,7 +978,8 @@ export type OperatorWorkItemKind =
   | "ReportPackApproval"
   | "ProviderTrustGate"
   | "ExecutionControl"
-  | "LedgerPeriodClose";
+  | "LedgerPeriodClose"
+  | "BrokerExecutionReconciliation";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
 export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unknown";
@@ -2634,6 +2635,45 @@ export interface TradingAcceptanceGate {
   sessionId: string | null;
   runId: string | null;
   auditReference: string | null;
+  reason?: string | null;
+  lastEvidenceAt?: string | null;
+  requiredNextAction?: string | null;
+}
+
+export interface TradingExecutionReconciliationBreak {
+  kind: string;
+  description: string;
+  localOrderId: string | null;
+  brokerOrderId: string | null;
+  clientOrderId: string | null;
+  symbol: string | null;
+  localValue: string | null;
+  brokerValue: string | null;
+}
+
+export interface TradingExecutionReconciliationReadiness {
+  status: TradingAcceptanceGateStatus;
+  gatewayId: string;
+  brokerDisplayName: string;
+  brokerHealthy: boolean;
+  brokerConnected: boolean;
+  matchedOpenOrderCount: number;
+  breakCount: number;
+  reconciledAt: string;
+  detail: string;
+  breaks: TradingExecutionReconciliationBreak[];
+}
+
+export interface TradingLiveOperationRequirement {
+  requirementId: string;
+  label: string;
+  status: TradingAcceptanceGateStatus;
+  detail: string;
+  checklistItem: string;
+  evidenceReference: string | null;
+  checklistSatisfied: boolean;
+  evidenceSatisfied: boolean;
+  blockerCode?: string | null;
 }
 
 export interface TradingPaperSessionReadiness {
@@ -3726,6 +3766,9 @@ export interface TradingOperatorReadiness {
   asOf: string;
   overallStatus: TradingAcceptanceGateStatus;
   readyForPaperOperation: boolean;
+  readyForLiveOperation?: boolean;
+  liveOperationBlockers?: string[];
+  liveOperationRequirements?: TradingLiveOperationRequirement[];
   acceptanceGates: TradingAcceptanceGate[];
   activeSession: TradingPaperSessionReadiness | null;
   sessions: TradingPaperSessionReadiness[];
@@ -3734,6 +3777,7 @@ export interface TradingOperatorReadiness {
   promotion: TradingPromotionReadiness | null;
   trustGate: TradingTrustGateReadiness;
   brokerageSync: WorkstationBrokerageSyncStatus | null;
+  executionReconciliation?: TradingExecutionReconciliationReadiness | null;
   workItems: OperatorWorkItem[];
   warnings: string[];
 }
@@ -3775,6 +3819,7 @@ export interface OrderSubmitRequest {
   type: "Market" | "Limit" | "Stop";
   quantity: number;
   limitPrice?: number | null;
+  fundAccountId?: string | null;
 }
 
 export interface OrderResult {

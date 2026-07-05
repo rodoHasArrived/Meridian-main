@@ -668,6 +668,12 @@ export function workstationProviderIntegrationQuarantineReviewEndpoint(
   return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineReview, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
 }
 
+export function workstationTradingEndpoint(fundAccountId?: string): string {
+  return fundAccountId
+    ? `${WORKSTATION_API_ENDPOINTS.trading}${queryString({ fundAccountId })}`
+    : WORKSTATION_API_ENDPOINTS.trading;
+}
+
 export function workstationTradingReadinessEndpoint(fundAccountId?: string): string {
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.tradingReadiness}${queryString({ fundAccountId })}`

@@ -1,8 +1,25 @@
 using System.Reflection;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Infrastructure.DataSources;
+
+/// <summary>
+/// A discovery or registration failure captured during data source and module scanning.
+/// </summary>
+/// <param name="Stage">Where the failure occurred: "type-load", "activate", or "register".</param>
+/// <param name="Subject">The type or assembly the failure relates to.</param>
+/// <param name="ModuleId">Module ID when known (register stage), otherwise null.</param>
+/// <param name="ErrorType">Exception type name.</param>
+/// <param name="ErrorMessage">Exception message.</param>
+public sealed record DataSourceDiscoveryFailure(
+    string Stage,
+    string Subject,
+    string? ModuleId,
+    string ErrorType,
+    string ErrorMessage);
 
 /// <summary>
 /// Registry for discovering and registering data source providers.
@@ -10,13 +27,27 @@ namespace Meridian.Infrastructure.DataSources;
 public sealed class DataSourceRegistry
 {
     private readonly List<DataSourceMetadata> _sources = new();
+    private readonly List<DataSourceDiscoveryFailure> _failures = new();
     private readonly Dictionary<string, ProviderModuleContext> _moduleContexts
         = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ILogger _log;
+
+    public DataSourceRegistry(ILogger? log = null)
+    {
+        _log = log ?? NullLogger.Instance;
+    }
 
     /// <summary>
     /// Gets the discovered data source metadata entries.
     /// </summary>
     public IReadOnlyList<DataSourceMetadata> Sources => _sources;
+
+    /// <summary>
+    /// Failures captured while scanning, activating, or registering modules.
+    /// Empty when everything registered cleanly. Scanning continues past
+    /// individual failures so one broken module cannot block the rest.
+    /// </summary>
+    public IReadOnlyList<DataSourceDiscoveryFailure> Failures => _failures;
 
     /// <summary>
     /// Discover data sources from the provided assemblies.
@@ -64,7 +95,31 @@ public sealed class DataSourceRegistry
                     sp => (IDataSource)sp.GetRequiredService(source.ImplementationType),
                     lifetime));
             }
+
+            RegisterProviderInterface(
+                services,
+                source.ImplementationType,
+                "Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider",
+                lifetime);
         }
+    }
+
+    private static void RegisterProviderInterface(
+        IServiceCollection services,
+        Type implementationType,
+        string serviceTypeFullName,
+        ServiceLifetime lifetime)
+    {
+        var serviceType = implementationType
+            .GetInterfaces()
+            .FirstOrDefault(type => string.Equals(type.FullName, serviceTypeFullName, StringComparison.Ordinal));
+        if (serviceType is null)
+            return;
+
+        services.Add(new ServiceDescriptor(
+            serviceType,
+            sp => sp.GetRequiredService(implementationType),
+            lifetime));
     }
 
     /// <summary>
@@ -125,8 +180,9 @@ public sealed class DataSourceRegistry
                         continue;
                     module = m;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    RecordFailure("activate", type.FullName ?? type.Name, moduleId: null, ex);
                     continue;
                 }
 
@@ -148,15 +204,16 @@ public sealed class DataSourceRegistry
                 {
                     module.Register(services, this);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    RecordFailure("register", type.FullName ?? type.Name, moduleId, ex);
                     continue;
                 }
             }
         }
     }
 
-    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    private IEnumerable<Type> GetLoadableTypes(Assembly assembly)
     {
         try
         {
@@ -164,7 +221,24 @@ public sealed class DataSourceRegistry
         }
         catch (ReflectionTypeLoadException ex)
         {
+            var assemblyName = assembly.GetName().Name ?? assembly.FullName ?? "unknown";
+            foreach (var loaderError in ex.LoaderExceptions)
+            {
+                if (loaderError is not null)
+                    RecordFailure("type-load", assemblyName, moduleId: null, loaderError);
+            }
+
             return ex.Types.Where(t => t is not null)!;
         }
+    }
+
+    private void RecordFailure(string stage, string subject, string? moduleId, Exception error)
+    {
+        _failures.Add(new DataSourceDiscoveryFailure(
+            stage, subject, moduleId, error.GetType().Name, error.Message));
+        _log.LogWarning(
+            error,
+            "Data source {Stage} failure for {Subject} (module {ModuleId})",
+            stage, subject, moduleId ?? "n/a");
     }
 }

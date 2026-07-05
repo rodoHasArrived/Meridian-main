@@ -5,23 +5,38 @@ namespace Meridian.Execution.Sdk;
 /// </summary>
 public static class BrokerageOrderPlacementGate
 {
-    public static BrokerageOrderPlacementGateDecision Evaluate(BrokerageConfiguration? configuration)
+    public static BrokerageOrderPlacementGateDecision Evaluate(
+        BrokerageConfiguration? configuration,
+        string? selectedGatewayId = null)
     {
+        var hasSelectedGateway = !string.IsNullOrWhiteSpace(selectedGatewayId);
+        var selectedGateway = NormalizeGatewayId(selectedGatewayId);
+
         if (configuration is null)
         {
-            return BrokerageOrderPlacementGateDecision.Allowed();
+            return IsPaperGateway(selectedGateway)
+                ? BrokerageOrderPlacementGateDecision.Allowed()
+                : BrokerageOrderPlacementGateDecision.Rejected(
+                    $"Brokerage configuration is required before broker '{selectedGateway}' can route orders.");
         }
 
-        var gatewayId = string.IsNullOrWhiteSpace(configuration.Gateway)
-            ? "paper"
-            : configuration.Gateway.Trim().ToLowerInvariant();
+        var configuredGateway = NormalizeGatewayId(configuration.Gateway);
+        var gatewayId = string.IsNullOrWhiteSpace(configuration.Gateway) && hasSelectedGateway
+            ? selectedGateway
+            : configuredGateway;
+
+        if (hasSelectedGateway && !string.Equals(gatewayId, selectedGateway, StringComparison.Ordinal))
+        {
+            return BrokerageOrderPlacementGateDecision.Rejected(
+                $"Brokerage configuration gateway '{gatewayId}' does not match active broker '{selectedGateway}'.");
+        }
 
         if (!configuration.BrokerFlows.TryGetValue(gatewayId, out var flow))
         {
             flow = new BrokerFlowFlags();
         }
 
-        if (string.Equals(gatewayId, "paper", StringComparison.Ordinal))
+        if (IsPaperGateway(gatewayId))
         {
             return flow.PaperOrderFlowEnabled
                 ? BrokerageOrderPlacementGateDecision.Allowed()
@@ -34,7 +49,7 @@ public static class BrokerageOrderPlacementGate
                 $"Production order routing is disabled for broker '{gatewayId}'.");
         }
 
-        if (!IsLiveProductionRouting(configuration))
+        if (!IsLiveProductionRouting(configuration, gatewayId))
         {
             return BrokerageOrderPlacementGateDecision.Rejected(
                 $"Live execution must be explicitly enabled before broker '{gatewayId}' can route orders.");
@@ -94,10 +109,17 @@ public static class BrokerageOrderPlacementGate
         return BrokerageOrderPlacementGateDecision.Allowed();
     }
 
-    private static bool IsLiveProductionRouting(BrokerageConfiguration configuration) =>
+    private static string NormalizeGatewayId(string? gatewayId) =>
+        string.IsNullOrWhiteSpace(gatewayId)
+            ? "paper"
+            : gatewayId.Trim().ToLowerInvariant();
+
+    private static bool IsPaperGateway(string gatewayId) =>
+        string.Equals(gatewayId, "paper", StringComparison.Ordinal);
+
+    private static bool IsLiveProductionRouting(BrokerageConfiguration configuration, string gatewayId) =>
         configuration.LiveExecutionEnabled &&
-        !string.IsNullOrWhiteSpace(configuration.Gateway) &&
-        !string.Equals(configuration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
+        !IsPaperGateway(gatewayId);
 }
 
 public sealed record BrokerageOrderPlacementGateDecision(bool IsAllowed, string? RejectReason)

@@ -19,6 +19,7 @@ using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Composition.Features;
@@ -35,7 +36,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
         // DataSourceRegistry - discovers providers decorated with [DataSource] (ADR-005).
         services.AddSingleton<DataSourceRegistry>(sp =>
         {
-            var registry = new DataSourceRegistry();
+            var registry = new DataSourceRegistry(sp.GetService<ILogger<DataSourceRegistry>>());
             registry.DiscoverFromAssemblies(typeof(NoOpMarketDataClient).Assembly);
             return registry;
         });
@@ -89,6 +90,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
         // OptionsChainService can walk the provider chain before using synthetic fallback data.
         RegisterOptionsChainProviders(services);
         RegisterOptionsChainProviders(services, options);
+        RegisterCorporateActionProviders(services);
         // Keep ProviderFactory for backward compatibility
         services.AddSingleton<ProviderFactory>(sp =>
         {
@@ -106,5 +108,19 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
     {
         var configService = sp.GetRequiredService<ConfigurationService>();
         return configService.LoadAndPrepareConfig(configStore.ConfigPath);
+    }
+
+    private static void RegisterCorporateActionProviders(IServiceCollection services)
+    {
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+        {
+            if (descriptor.CorporateActions is null)
+                continue;
+
+            services.TryAddSingleton(descriptor.CorporateActions);
+            services.AddSingleton(
+                typeof(ICorporateActionProvider),
+                sp => sp.GetRequiredService(descriptor.CorporateActions));
+        }
     }
 }

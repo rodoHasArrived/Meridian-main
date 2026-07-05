@@ -18,6 +18,8 @@ namespace Meridian.Tests.Execution;
 /// </summary>
 public sealed class OrderManagementSystemTests : IDisposable
 {
+    private static readonly Guid LiveFundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
     private readonly ExecutionGateway _gateway;
     private readonly OrderManagementSystem _oms;
 
@@ -423,14 +425,21 @@ public sealed class OrderManagementSystemTests : IDisposable
         using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
-            auditTrail: auditTrail);
+            auditTrail: auditTrail,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("robinhood"),
+            liveOrderReadinessGate: new RecordingLiveOrderReadinessGate(
+                LiveOrderReadinessDecision.Approved("audit://live/run-disconnected")));
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
             Side = OrderSide.Buy,
             Type = OrderType.Market,
-            Quantity = 1m
+            Quantity = 1m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = "run-disconnected"
+            }
         });
 
         result.Success.Should().BeFalse();
@@ -478,11 +487,161 @@ public sealed class OrderManagementSystemTests : IDisposable
     }
 
     [Fact]
+    public async Task PlaceOrderAsync_WithNonPaperGatewayAndMissingBrokerageConfiguration_RejectsWithoutSubmitting()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Brokerage configuration is required");
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WithLiveBrokerAndNoRunId_RejectsBeforeReadinessGate()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Approved("audit://live/run-live-001"));
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("requires runId metadata");
+        liveReadinessGate.Request.Should().BeNull("the OMS should fail closed before calling the readiness gate without a run id");
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WithLiveBrokerAndNoReadinessGate_RejectsWithoutSubmitting()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"));
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = "run-live-001"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("requires a live order readiness gate");
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenLiveReadinessGateRejects_DoesNotSubmitToGateway()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Rejected("W7 live-readiness evidence is incomplete."));
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            StrategyId = "strategy-live",
+            FundAccountId = LiveFundAccountId,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = "run-live-001"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("W7 live-readiness evidence is incomplete");
+        liveReadinessGate.Request.Should().NotBeNull();
+        liveReadinessGate.Request!.RunId.Should().Be("run-live-001");
+        liveReadinessGate.Request.StrategyId.Should().Be("strategy-live");
+        liveReadinessGate.Request.FundAccountId.Should().Be(LiveFundAccountId);
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenLiveReadinessGateApprovesWithoutEvidence_RejectsWithoutSubmitting()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(new LiveOrderReadinessDecision(true));
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            FundAccountId = LiveFundAccountId,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["runId"] = "run-live-001"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("without a retained evidence reference");
+        liveReadinessGate.Request.Should().NotBeNull();
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_WithClientBrokerAccountMetadata_StripsRoutingKeysBeforeGatewaySubmit()
     {
         OrderRequest? submittedRequest = null;
         var gateway = Substitute.For<IExecutionGateway>();
         gateway.GatewayId.Returns("alpaca");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Approved("audit://live/run-live-001"));
         gateway.SubmitOrderAsync(Arg.Do<OrderRequest>(request => submittedRequest = request), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -502,7 +661,9 @@ public sealed class OrderManagementSystemTests : IDisposable
 
         using var oms = new OrderManagementSystem(
             gateway,
-            NullLogger<OrderManagementSystem>.Instance);
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            liveOrderReadinessGate: liveReadinessGate);
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -510,22 +671,67 @@ public sealed class OrderManagementSystemTests : IDisposable
             Side = OrderSide.Buy,
             Type = OrderType.Market,
             Quantity = 1000m,
+            FundAccountId = LiveFundAccountId,
             Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["asset_class"] = "treasury",
                 ["broker_account_id"] = "attacker-broker-account",
                 ["account_id"] = "attacker-ledger-account",
-                ["manualOverrideId"] = "forged-override"
+                ["manualOverrideId"] = "forged-override",
+                ["liveReadinessEvidenceReference"] = "forged-evidence-ref",
+                ["runId"] = "run-live-001"
             }
         });
 
         result.Success.Should().BeTrue();
+        liveReadinessGate.Request.Should().NotBeNull();
+        liveReadinessGate.Request!.RunId.Should().Be("run-live-001");
+        liveReadinessGate.Request.FundAccountId.Should().Be(LiveFundAccountId);
         submittedRequest.Should().NotBeNull();
         submittedRequest!.Metadata.Should().NotBeNull();
         submittedRequest.Metadata!.Should().NotContainKey("broker_account_id");
         submittedRequest.Metadata.Should().NotContainKey("account_id");
         submittedRequest.Metadata.Should().NotContainKey("manualOverrideId");
+        submittedRequest.Metadata.Should().NotContainKey("liveReadinessEvidenceReference");
         submittedRequest.Metadata["asset_class"].Should().Be("treasury");
+    }
+
+    private static BrokerageConfiguration CreateEnabledBrokerageConfiguration(string gatewayId) =>
+        new()
+        {
+            Gateway = gatewayId,
+            LiveExecutionEnabled = true,
+            ReadOnlyVerificationPassed = true,
+            PaperLifecycleTestsPassed = true,
+            ReplayEvidencePassed = true,
+            ProductionRoutingPhaseEnabled = true,
+            ValidationGates = new BrokerValidationGateOptions
+            {
+                RequireValidationArtifactsForOrderPlacement = false
+            },
+            BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+            {
+                [gatewayId] = new()
+                {
+                    ReadOnlyDataEnabled = true,
+                    PaperOrderFlowEnabled = true,
+                    ProductionOrderRoutingEnabled = true
+                }
+            }
+        };
+
+    private sealed class RecordingLiveOrderReadinessGate(LiveOrderReadinessDecision decision)
+        : ILiveOrderReadinessGate
+    {
+        public LiveOrderReadinessRequest? Request { get; private set; }
+
+        public Task<LiveOrderReadinessDecision> EvaluateAsync(
+            LiveOrderReadinessRequest request,
+            CancellationToken ct = default)
+        {
+            Request = request;
+            return Task.FromResult(decision);
+        }
     }
 }
 

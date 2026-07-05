@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Execution.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,29 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<ReportTemplateGovernanceStoreOptions>().SnapshotPath
             .Should()
             .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-templates.json"));
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_RegistersSharedLiveOrderReadinessGate()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ILiveOrderReadinessGate>()
+            .Should()
+            .BeOfType<TradingOperatorLiveOrderReadinessGate>();
+        provider.GetRequiredService<ITradingOperatorReadinessProvider>()
+            .Should()
+            .BeSameAs(provider.GetRequiredService<TradingOperatorReadinessService>());
     }
 
     [Fact]

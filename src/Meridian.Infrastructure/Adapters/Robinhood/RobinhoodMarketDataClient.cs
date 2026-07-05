@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class RobinhoodMarketDataClient : IMarketDataClient
+public sealed class RobinhoodMarketDataClient : IMarketDataClient, IProviderConnectionDiagnosticsSource
 {
     private const string QuotesEndpoint = "https://api.robinhood.com/marketdata/quotes/";
     private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
@@ -104,6 +104,39 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
         "Quote data is provided via polling (2-second interval), not true streaming.",
         "Trade tick data and market depth are not available."
     ];
+
+    // ── IProviderConnectionDiagnosticsSource ─────────────────────────────
+
+    /// <inheritdoc />
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Robinhood polls REST rather than holding a WebSocket, so <see cref="WebSocketState"/>
+    /// is reported as <see cref="WebSocketState.None"/>; poll activity maps onto the
+    /// heartbeat/message fields and consecutive poll failures onto reconnect attempts.
+    /// </remarks>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new WebSocketConnectionDiagnostics(
+            ProviderName: "Robinhood Live Quotes",
+            LifecycleState: _lifecycleState,
+            WebSocketState: System.Net.WebSockets.WebSocketState.None,
+            IsConnected: _connected,
+            IsReconnecting: _connected && _consecutivePollFailures > 0,
+            ReconnectAttempts: _consecutivePollFailures,
+            LastConnectedAt: _connectedAt,
+            LastDisconnectedAt: _disconnectedAt,
+            LastHeartbeatReceivedAt: _lastSuccessfulApiCallAt,
+            LastMessageReceivedAt: _lastMessageReceivedAt,
+            LastReconnectAttemptAt: _lastPollAttemptAt,
+            LastError: _lastError,
+            LastFailureKind: null,
+            ConnectionAge: _connected && _connectedAt is { } connectedAt ? now - connectedAt : null,
+            IdleDuration: _lastMessageReceivedAt is { } lastMessageAt ? now - lastMessageAt : null,
+            ActiveSubscriptions: _subscriptions.Count);
+    }
 
     // ── IMarketDataClient ─────────────────────────────────────────────────
 
@@ -451,6 +484,15 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient
 
         _lifecycleState = state;
         _logger.LogInformation("Robinhood market data lifecycle state changed to {LifecycleState}", state);
+
+        try
+        {
+            ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Robinhood connection diagnostics subscriber threw");
+        }
     }
 
     // ── JSON DTOs (ADR-014: source generators) ────────────────────────────

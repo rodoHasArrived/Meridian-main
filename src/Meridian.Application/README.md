@@ -276,6 +276,19 @@ and UI presentation concerns in their owning layers.
   schedules from retained Security Master economic terms when provider-backed schedules are not
   selected, so downstream Asset Operations views can present expected coupon/principal dates with
   source-governed scenario posture instead of an empty calculated schedule.
+  Corporate-action append validation is driven by
+  the contract-owned `CorporateActionTypeDescriptorCatalog`: unknown event types are rejected
+  with the accepted vocabulary, per-type required fields are enforced, and — when the security
+  projection is available — asset-class validity is checked (fail-open on lookup faults, so a
+  projection-store outage never blocks an otherwise valid append). Amendments and cancellations
+  are superseding events validated by `CorporateActionValidation.ValidateSupersede` (chain-tip
+  only, same event type, no lifecycle regression); an accepted supersede flows through
+  `ICorporateActionRestatementTrigger` into the existing period-aware restatement resolver so a
+  provider correction landing in a closed ledger period yields a governed restatement proposal
+  on the append result rather than a silent mutation. Stored legacy event-type aliases stay
+  readable through the projector's normalization; the one-time
+  `--security-master-normalize-corporate-actions` CLI sweep (dry-run by default, `--apply` to
+  rewrite) cleans the stored strings themselves.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured credit, private fund interests, private

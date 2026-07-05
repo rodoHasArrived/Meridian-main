@@ -147,7 +147,11 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         var actionType = announcement.CaType?.ToUpperInvariant() switch
         {
             "DIVIDEND" => "Dividend",
-            "SPLIT" => "Split",
+            "SPLIT" => announcement.OldRate is > 0m &&
+                announcement.NewRate is > 0m &&
+                announcement.NewRate.Value < announcement.OldRate.Value
+                    ? "ReverseStockSplit"
+                    : "StockSplit",
             "MERGER" => "Merger",
             "SPINOFF" => "SpinOff",
             _ => announcement.CaType ?? "Unknown",
