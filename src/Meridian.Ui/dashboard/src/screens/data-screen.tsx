@@ -53,6 +53,10 @@ import {
   type CorporateActionInboxViewModel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import {
+  useCoverageGapsPanel,
+  type CoverageGapsViewModel
+} from "@/screens/data-screen.coverage-gaps.view-model";
+import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID,
@@ -280,6 +284,7 @@ export function DataScreen({
   const qualityPanel = useDataQualityPanel();
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
+  const coverageGapsPanel = useCoverageGapsPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
 
   if (!data) {
@@ -338,6 +343,8 @@ export function DataScreen({
       <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
 
       <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
+
+      <CoverageGapsRegion panel={coverageGapsPanel} />
 
       <section className="data-management-frame">
         <nav className="workspace-directory-rail" aria-label="Data folders">
@@ -2386,6 +2393,19 @@ function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxView
                       ? ` · disputed by ${row.dissentingSources.join(", ")}`
                       : ""}
                   </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void panel.apply(row)}
+                    disabled={panel.applyingKey !== null}
+                    aria-label={`Apply ${row.actionType} for ${row.ticker}`}
+                  >
+                    {panel.applyingKey === row.key ? "Applying…" : "Apply"}
+                  </Button>
+                  {panel.applyErrors[row.key] ? (
+                    <span className="text-sm text-destructive" role="alert">{panel.applyErrors[row.key]}</span>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -2399,6 +2419,98 @@ function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxView
                 ))}
               </ul>
             </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) {
+  return (
+    <section aria-labelledby="coverage-gaps-title" className="workspace-region coverage-gaps-region">
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle id="coverage-gaps-title">Security master coverage</CardTitle>
+            <CardDescription>
+              Active symbols without a validated security-master record (rule RC001).
+              {panel.model ? ` ${panel.model.summary} Last quality run: ${panel.model.runAtLabel}.` : null}
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void panel.refresh()}
+            disabled={panel.loading}
+            aria-label="Refresh security master coverage"
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {panel.error ? (
+            <StatusBanner tone="danger" title="Coverage report unavailable" detail={panel.error} />
+          ) : !panel.model ? (
+            <p className="text-sm text-muted-foreground" role="status">Loading coverage report…</p>
+          ) : panel.model.rows.length === 0 ? (
+            <p className="text-sm text-muted-foreground" role="status">{panel.model.summary}</p>
+          ) : (
+            <ul className="grid gap-2" aria-label="Unmastered active symbols">
+              {panel.model.rows.map((row) => {
+                const draft = panel.drafts[row.symbol];
+                return (
+                  <li key={row.symbol} className="grid gap-1.5 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono font-semibold">{row.symbol}</span>
+                      <span className="text-muted-foreground">active in {row.sourcesLabel}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void panel.requestDraft(row.symbol)}
+                        disabled={panel.draftingSymbol !== null}
+                        aria-label={`Build a security-master draft for ${row.symbol}`}
+                      >
+                        {panel.draftingSymbol === row.symbol ? "Drafting…" : "Master this"}
+                      </Button>
+                      {panel.draftErrors[row.symbol] ? (
+                        <span className="text-sm text-destructive" role="alert">{panel.draftErrors[row.symbol]}</span>
+                      ) : null}
+                    </div>
+                    {draft ? (
+                      <div className="rounded-md border p-2 text-sm">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={draft.resolved ? "success" : "warning"}>
+                            {draft.resolved ? "Resolved" : "Manual completion required"}
+                          </Badge>
+                          <span className="font-semibold">{draft.displayName ?? draft.symbol}</span>
+                          <span className="text-muted-foreground">
+                            {draft.assetClass}
+                            {draft.exchange ? ` · ${draft.exchange}` : ""}
+                            {draft.currency ? ` · ${draft.currency}` : ""}
+                            {" · "}{draft.provenance}
+                          </span>
+                        </div>
+                        <ul className="mt-1.5 grid gap-0.5" aria-label={`Draft identifiers for ${row.symbol}`}>
+                          {draft.identifiers.map((identifier) => (
+                            <li key={`${identifier.kind}:${identifier.value}`} className="font-mono text-xs text-muted-foreground">
+                              {identifier.kind}: {identifier.value}
+                              {identifier.isPrimary ? " (primary)" : ""}
+                            </li>
+                          ))}
+                        </ul>
+                        {draft.notes ? (
+                          <p className="mt-1.5 text-xs text-muted-foreground">{draft.notes}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </CardContent>
       </Card>

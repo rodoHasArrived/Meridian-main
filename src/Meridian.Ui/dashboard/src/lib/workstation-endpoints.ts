@@ -210,7 +210,9 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
   assetProfileRollback: UI_API_ROUTES.SecurityMasterAssetProfileRollback,
   workstationSecurities: UI_API_ROUTES.WorkstationSecurityMasterSearch,
   workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts,
-  corporateActionInbox: UI_API_ROUTES.SecurityMasterCorporateActionsInbox
+  corporateActionInbox: UI_API_ROUTES.SecurityMasterCorporateActionsInbox,
+  corporateActionInboxApply: UI_API_ROUTES.SecurityMasterCorporateActionsInboxApply,
+  qualityReportLatest: UI_API_ROUTES.SecurityMasterQualityReportLatest
 } as const;
 
 /** Coverage draft route carries a `{symbol}` path segment substituted client-side. */

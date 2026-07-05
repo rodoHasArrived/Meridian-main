@@ -3738,6 +3738,14 @@ export function getSecurityMasterCoverageDraft(symbol: string) {
   return getJson<import("@/types").SecurityMasterDraftProposal>(securityMasterCoverageDraftEndpoint(symbol));
 }
 
+export function getSecurityMasterQualityReport() {
+  return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
+}
+
+export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
+  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
+}
+
 export function getQualityAnomalies() {
   return getJson<import("@/types").QualityAnomalyEntry[]>(QUALITY_API_ENDPOINTS.anomalies);
 }

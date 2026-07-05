@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { getCorporateActionInbox } from "@/lib/api";
+import { applyCorporateActionInboxProposal, getCorporateActionInbox } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import type { CorporateActionInboxResponse } from "@/types";
 
 export type CorporateActionInboxFetcher = typeof getCorporateActionInbox;
+export type CorporateActionInboxApplier = typeof applyCorporateActionInboxProposal;
 
 export type InboxRowTone = "warning" | "neutral";
 
 export interface CorporateActionInboxRowModel {
   key: string;
+  securityId: string;
   ticker: string;
   actionType: string;
   exDateLabel: string;
@@ -64,6 +66,7 @@ export function buildCorporateActionInboxModel(
     const totalSources = proposal.agreeingSources.length + proposal.dissentingSources.length;
     return {
       key: `${proposal.securityId}:${proposal.actionType}:${proposal.exDate}`,
+      securityId: proposal.securityId,
       ticker: proposal.ticker,
       actionType: proposal.actionType,
       exDateLabel: proposal.exDate,
@@ -102,6 +105,10 @@ export interface CorporateActionInboxViewModel {
   error: string | null;
   model: CorporateActionInboxModel | null;
   refresh: () => Promise<void>;
+  /** Key of the row currently being applied, if any. */
+  applyingKey: string | null;
+  applyErrors: Record<string, string>;
+  apply: (row: CorporateActionInboxRowModel) => Promise<void>;
 }
 
 /**
@@ -109,11 +116,14 @@ export interface CorporateActionInboxViewModel {
  * `/api/security-master/corporate-actions/inbox`. Fetches on mount; refresh on demand.
  */
 export function useCorporateActionInboxPanel(
-  fetchInbox: CorporateActionInboxFetcher = getCorporateActionInbox
+  fetchInbox: CorporateActionInboxFetcher = getCorporateActionInbox,
+  applyProposal: CorporateActionInboxApplier = applyCorporateActionInboxProposal
 ): CorporateActionInboxViewModel {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<CorporateActionInboxModel | null>(null);
+  const [applyingKey, setApplyingKey] = useState<string | null>(null);
+  const [applyErrors, setApplyErrors] = useState<Record<string, string>>({});
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -129,9 +139,32 @@ export function useCorporateActionInboxPanel(
     }
   }, [fetchInbox]);
 
+  const apply = useCallback(
+    async (row: CorporateActionInboxRowModel) => {
+      setApplyingKey(row.key);
+      setApplyErrors((current) => ({ ...current, [row.key]: "" }));
+      try {
+        await applyProposal({
+          securityId: row.securityId,
+          actionType: row.actionType,
+          exDate: row.exDateLabel
+        });
+        await refresh();
+      } catch (applyError) {
+        setApplyErrors((current) => ({
+          ...current,
+          [row.key]: describeApiError(applyError, "The proposal could not be applied.").summary
+        }));
+      } finally {
+        setApplyingKey(null);
+      }
+    },
+    [applyProposal, refresh]
+  );
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  return { loading, error, model, refresh };
+  return { loading, error, model, refresh, applyingKey, applyErrors, apply };
 }

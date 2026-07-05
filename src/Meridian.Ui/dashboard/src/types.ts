@@ -10203,6 +10203,32 @@ export interface CorporateActionInboxResponse {
   errors: string[];
 }
 
+// --- Security master quality report (RC001 coverage gaps) ---
+
+export interface SecurityMasterQualityViolation {
+  ruleId: string;
+  ruleName: string;
+  category: string;
+  securityId: string;
+  fieldPath: string | null;
+  message: string;
+  severity: string;
+  detectedAt: string;
+}
+
+export interface SecurityMasterQualityReport {
+  runAt: string;
+  securitiesScanned: number;
+  violationCount: number;
+  violations: SecurityMasterQualityViolation[];
+}
+
+export interface CorporateActionInboxApplyRequest {
+  securityId: string;
+  actionType: string;
+  exDate: string;
+}
+
 // --- Security master coverage drafts ---
 
 export interface SecurityMasterDraftIdentifier {

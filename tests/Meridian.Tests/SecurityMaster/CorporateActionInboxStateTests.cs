@@ -60,6 +60,60 @@ public sealed class CorporateActionInboxStateTests
         state.GetInbox().StagedCount.Should().Be(0);
     }
 
+    [Fact]
+    public void TryTakeStaged_RemovesTheProposalExactlyOnce()
+    {
+        var state = new CorporateActionInboxState();
+        var staged = MakeProposal("GME", new DateOnly(2026, 8, 20), autoApplied: false);
+        state.Record(MakeResult(staged));
+
+        var taken = state.TryTakeStaged(staged.SecurityId, "dividend", staged.ExDate, out var proposal);
+        var takenAgain = state.TryTakeStaged(staged.SecurityId, "Dividend", staged.ExDate, out _);
+
+        taken.Should().BeTrue("action-type matching is case-insensitive");
+        proposal.Ticker.Should().Be("GME");
+        takenAgain.Should().BeFalse("an apply consumes the proposal exactly once");
+        state.GetInbox().StagedCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void TryTakeStaged_NeverTakesAutoAppliedProposals()
+    {
+        var state = new CorporateActionInboxState();
+        var applied = MakeProposal("AAPL", new DateOnly(2026, 8, 1), autoApplied: true);
+        state.Record(MakeResult(applied));
+
+        state.TryTakeStaged(applied.SecurityId, applied.ActionType, applied.ExDate, out _)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public void ProposalMapper_MapsDividendAndSplitFieldsOntoTheEventContract()
+    {
+        var dividend = MakeProposal("GME", new DateOnly(2026, 8, 20), autoApplied: false);
+        var split = dividend with
+        {
+            ActionType = "StockSplit",
+            Amount = null,
+            Currency = null,
+            SplitFromFactor = 1m,
+            SplitToFactor = 4m
+        };
+
+        var dividendDto = CorporateActionProposalMapper.ToCorporateAction(dividend);
+        var splitDto = CorporateActionProposalMapper.ToCorporateAction(split);
+
+        dividendDto.SecurityId.Should().Be(dividend.SecurityId);
+        dividendDto.EventType.Should().Be("Dividend");
+        dividendDto.DividendPerShare.Should().Be(0.24m);
+        dividendDto.PayDate.Should().Be(dividend.PayableDate);
+        dividendDto.SplitRatio.Should().BeNull();
+        dividendDto.CorpActId.Should().NotBe(Guid.Empty);
+
+        splitDto.SplitRatio.Should().Be(4m);
+        splitDto.DividendPerShare.Should().BeNull();
+    }
+
     private static CorporateActionIngestResult MakeResult(params CorporateActionProposal[] proposals)
         => new(
             SecuritiesScanned: proposals.Length,
