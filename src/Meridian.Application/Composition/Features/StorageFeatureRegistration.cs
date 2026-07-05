@@ -297,13 +297,24 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
             // Coverage sweep: symbols active in platform surfaces but missing from the master
             // feed RC001 RefreshControl violations, which the exception-casework loop cases.
+            // Draft proposals let the operator master a flagged gap from a pre-filled record.
             services.AddSingleton<ISecurityCoverageSymbolSource, ConfiguredSymbolCoverageSource>();
+            services.AddSingleton<ISecurityCoverageSymbolSource>(sp =>
+                new CanonicalRegistryCoverageSource(sp.GetService<Meridian.Contracts.Catalog.ICanonicalSymbolRegistry>()));
+            services.AddSingleton<SecurityMasterDraftProposalService>(sp =>
+                new SecurityMasterDraftProposalService(
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<SecurityMasterDraftProposalService>>(),
+                    sp.GetService<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>()));
 
-            // Symbology lineage: ticker changes recorded as first-class amend events.
+            // Symbology lineage: ticker changes recorded as first-class amend events, and
+            // era-correct per-chunk symbol resolution for rename-spanning backfills.
             services.AddSingleton<SecurityMasterTickerChangeService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver, SecurityMasterHistoricalSymbolTimelineResolver>();
 
-            // Corporate-action ingest: fan-out, consensus scoring, staged apply.
+            // Corporate-action ingest: fan-out, consensus scoring, staged apply, and the
+            // inbox snapshot the workbench polls for staged proposals.
             services.AddSingleton<CorporateActionIngestOrchestrator>();
+            services.AddSingleton<CorporateActionInboxState>();
         }
 
         if (AssetOperationsStartup.IsConfigured())
