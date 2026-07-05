@@ -91,7 +91,9 @@ public sealed class PaperTradingGateway : IOrderGateway
     {
         _logger = logger;
         _securityMaster = securityMaster;
-        _scaffoldMarketFillPrice = (options ?? new PaperTradingGatewayOptions()).ScaffoldMarketFillPrice;
+        var scaffoldPrice = (options ?? new PaperTradingGatewayOptions()).ScaffoldMarketFillPrice;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(scaffoldPrice, nameof(options));
+        _scaffoldMarketFillPrice = scaffoldPrice;
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // CompletionQueue (Wait mode, 500 capacity) ensures no terminal order updates are dropped.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(

@@ -17,13 +17,13 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:349",
+      "source": "src/Meridian/UiServer.cs:355",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:371",
+      "source": "src/Meridian/UiServer.cs:377",
       "documented": true
     },
     {
@@ -3155,49 +3155,49 @@
     {
       "method": "GET",
       "path": "/api/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:37",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:38",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:96",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:97",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/errors",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:107",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:108",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backpressure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:119",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/latency",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:129",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:130",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:145",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/health/detailed",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:182",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:183",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:206",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:209",
       "documented": true
     },
     {

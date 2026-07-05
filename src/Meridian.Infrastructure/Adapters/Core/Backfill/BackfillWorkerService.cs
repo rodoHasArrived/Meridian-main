@@ -94,6 +94,14 @@ public sealed class BackfillWorkerService : IDisposable
                 $"MaxConcurrentRequests must be between {MinConcurrentRequests} and {MaxConcurrentRequests}");
         }
 
+        if (config.WorkerErrorRetryDelayMs < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(config),
+                config.WorkerErrorRetryDelayMs,
+                "WorkerErrorRetryDelayMs must be non-negative");
+        }
+
         _jobManager = jobManager;
         _requestQueue = requestQueue;
         _provider = provider;

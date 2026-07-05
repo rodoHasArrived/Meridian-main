@@ -28,6 +28,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
 
     public BatchExportSchedulerService(int maxConcurrentJobs = 4, string? jobStorePath = null, int queuePollIntervalMs = 1000)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(queuePollIntervalMs);
         _workerSemaphore = new SemaphoreSlim(maxConcurrentJobs, maxConcurrentJobs);
         _jobStorePath = jobStorePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
