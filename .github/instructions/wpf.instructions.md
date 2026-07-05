@@ -3,7 +3,11 @@ applyTo: "src/Meridian.Wpf/**"
 ---
 # WPF / MVVM Instructions
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-07-05
+
+WPF product/UI work is deferred until explicitly reactivated. Use these rules only for approved
+maintenance, compatibility, validation, or governance follow-up that directly touches
+`src/Meridian.Wpf/**`.
 
 When editing WPF views (`*.xaml`) or code-behind files (`*.xaml.cs`) in this repository:
 

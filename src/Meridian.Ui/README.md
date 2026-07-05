@@ -86,7 +86,7 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## Change rules
 
-Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by both active operator surfaces.
+Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.
 
 ## Related docs
 

@@ -15,9 +15,19 @@ decisions:
       - W7-LIVE-001
   - id: DEC-UI-LANE-001
     title: Browser and desktop workstations are active UI lanes
-    status: accepted
+    status: superseded
     decided_on: 2026-05-21
     owner_lane: Workstation Shell and UX
-    summary: Browser and WPF workstation work both remain active; shared contracts, API endpoints, and read models should carry business behavior before either client composes it.
+    summary: Superseded by DEC-UI-LANE-002 on 2026-07-05. Browser and WPF workstation work were both active; shared contracts, API endpoints, and read models carried business behavior before either client composed it.
     related_roadmap_items:
       - W2-TRD-001
+  - id: DEC-UI-LANE-002
+    title: Browser workstation active and WPF product work deferred
+    status: accepted
+    decided_on: 2026-07-05
+    owner_lane: Workstation Shell and UX
+    summary: Browser workstation work remains the active operator UI lane. WPF product/UI work is deferred until explicitly reactivated; existing WPF shell code, compatibility, tests, and release workflows remain retained support surfaces, and shared contracts/API/read models must stay client-neutral where existing WPF consumers depend on them.
+    related_roadmap_items:
+      - W5X-FINOPS-001
+      - W5X-FREX-001
+      - W7-LIVE-001

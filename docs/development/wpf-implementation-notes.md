@@ -1,12 +1,12 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-05-09 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-07-05 | **Status**: Deferred product lane / retained support guidance
 
 ## Overview
 
-Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active native Windows desktop operator surface for the platform alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
+Meridian's WPF desktop application (`src/Meridian.Wpf/`) is deferred for new product/UI work and retained for existing compatibility, validation, and maintenance. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
-For the Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) before accepting a WPF slice as progress. Desktop changes must map to a real operator scenario in Lane A trading cockpit reliability, Lane B run -> portfolio -> ledger continuity, or Lane C reconciliation/governance close flow, and must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
+For historical Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) only when explicitly approved WPF maintenance must preserve existing behavior. New product/UI progress should route to the browser workstation unless WPF is explicitly reactivated. Any approved desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
 
 ## Architecture
 
@@ -576,4 +576,3 @@ make desktop-test
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
 - [`docs/roadmap/README.md`](../roadmap/README.md) — Desktop items in the project roadmap
 - [`docs/development/policies/desktop-support-policy.md`](./policies/desktop-support-policy.md) — Contribution requirements
-

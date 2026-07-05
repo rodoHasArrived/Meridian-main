@@ -55,9 +55,10 @@ ACTIVE_OPERATOR_SURFACE_EXTRA_FILES = (
     ".codex/environments/README.md",
 )
 STALE_OPERATOR_SURFACE_LANGUAGE = (
-    re.compile(r"\bretained\s+WPF\b", re.IGNORECASE),
-    re.compile(r"\bretained\s+desktop\s+(?:support|tests?)\b", re.IGNORECASE),
-    re.compile(r"`src/Meridian\.Wpf/`\s+as\s+retained\s+support", re.IGNORECASE),
+    re.compile(r"\bactive\s+(?:browser(?:-based)?\s+(?:operator\s+)?(?:workstation|UI)\s+(?:and|,)\s+)?WPF\b", re.IGNORECASE),
+    re.compile(r"\bWPF\b[^.\n]{0,80}\bactive\s+(?:desktop|operator|UI|surface)", re.IGNORECASE),
+    re.compile(r"\bbrowser\s+and\s+WPF\s+(?:are\s+)?active\b", re.IGNORECASE),
+    re.compile(r"`src/Meridian\.Wpf/`\s+as\s+an?\s+active\b", re.IGNORECASE),
 )
 CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
 LEGACY_CANONICAL_LINK_PREFIXES = (
@@ -747,7 +748,7 @@ def check_stale_operator_surface_language(root: Path, inventory: Sequence[Invent
                 expected_doc=AI_CONTRACT,
                 message=(
                     f"{rel_path} still uses stale operator-surface wording ({matched_phrase}); "
-                    "describe both browser workstation and WPF desktop as active surfaces backed by shared contracts."
+                    "describe browser workstation as the active UI lane and WPF product/UI work as deferred retained compatibility."
                 ),
             )
         )

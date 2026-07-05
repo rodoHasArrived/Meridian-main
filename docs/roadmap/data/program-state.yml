@@ -10,7 +10,7 @@ program:
   snapshot_date: 2026-07-05
   status: active
   active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, Financial Operations control-center, and bounded W7 live-readiness governance milestones
-  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
+  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, WPF product/UI work, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
   near_term_release_baseline:
     - W1-DATA-001
     - W2-TRD-001
@@ -30,13 +30,14 @@ program:
     - Accounting records
     - Approvals
     - Governed report packs
-    - Shared browser and WPF operational record workflow
+    - Browser-first operational record workflow backed by shared services, contracts, and retained WPF compatibility
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
   deferred_lanes:
     - Backtesting Studio
     - Live execution productization and live portfolio operations beyond bounded W7 governance
+    - WPF product/UI work beyond existing support, compatibility, and validation
     - Full treasury payment execution
     - Full alternative asset operations
     - Forecasting and scenario engines
@@ -44,6 +45,6 @@ program:
     - Client portal
     - No-code workflow designer
     - Mobile applications
-  active_ui_lane: browser_and_wpf_workstations
-  retained_support_lane: none
+  active_ui_lane: browser_workstation
+  retained_support_lane: wpf_existing_shell_compatibility
   mobile_lane: closed
