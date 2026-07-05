@@ -10,6 +10,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Policies;
@@ -58,6 +59,12 @@ public sealed class BackfillWorkerService : IDisposable
     /// </summary>
     public event Action<bool>? OnRunningStateChanged;
 
+    /// <summary>
+    /// Provider-level progress relayed from the composite provider:
+    /// per-provider attempts, failover, rate limiting, and outcomes.
+    /// </summary>
+    public event Action<ProviderBackfillProgress>? OnProviderProgress;
+
     public bool IsRunning => _isRunning;
 
     /// <summary>
@@ -103,6 +110,16 @@ public sealed class BackfillWorkerService : IDisposable
         {
             _connectivityProbe.ConnectivityChanged += OnConnectivityChanged;
         }
+
+        _provider.OnProgressUpdate += HandleProviderProgress;
+    }
+
+    private void HandleProviderProgress(ProviderBackfillProgress progress)
+    {
+        _log.Debug(
+            "Provider progress for {Symbol} via {Provider}: {Status} ({BarsDownloaded} bars) {Error}",
+            progress.Symbol, progress.Provider, progress.CurrentStatus, progress.BarsDownloaded, progress.Error);
+        OnProviderProgress?.Invoke(progress);
     }
 
     /// <summary>
@@ -715,6 +732,8 @@ public sealed class BackfillWorkerService : IDisposable
             _connectivityProbe.ConnectivityChanged -= OnConnectivityChanged;
         }
 
+        _provider.OnProgressUpdate -= HandleProviderProgress;
+
         _cts.Cancel();
         _cts.Dispose();
         _concurrencySemaphore.Dispose();
@@ -755,9 +774,17 @@ public sealed class BackfillServiceFactory
             rateLimitTracker.RegisterProvider(provider);
         }
 
-        // Create composite provider
+        // Create composite provider with symbol resolution wired the same way as the
+        // coordinator and provider-factory paths (BackfillConfig.EnableSymbolResolution).
+        OpenFigiSymbolResolver? symbolResolver = null;
+        if (config.EnableSymbolResolution)
+        {
+            symbolResolver = new OpenFigiSymbolResolver(config.Providers?.OpenFigi?.ApiKey, log: _log);
+        }
+
         var composite = new CompositeHistoricalDataProvider(
             providers,
+            symbolResolver,
             enableRateLimitRotation: config.EnableRateLimitRotation,
             rateLimitRotationThreshold: config.RateLimitRotationThreshold,
             log: _log);
@@ -793,7 +820,8 @@ public sealed class BackfillServiceFactory
             gapAnalyzer,
             rateLimitTracker,
             composite,
-            worker);
+            worker,
+            symbolResolver);
     }
 }
 
@@ -809,13 +837,16 @@ public sealed class BackfillServices : IDisposable
     public CompositeHistoricalDataProvider Provider { get; }
     public BackfillWorkerService Worker { get; }
 
+    private readonly IDisposable? _ownedSymbolResolver;
+
     public BackfillServices(
         BackfillJobManager jobManager,
         BackfillRequestQueue requestQueue,
         DataGapAnalyzer gapAnalyzer,
         ProviderRateLimitTracker rateLimitTracker,
         CompositeHistoricalDataProvider provider,
-        BackfillWorkerService worker)
+        BackfillWorkerService worker,
+        IDisposable? ownedSymbolResolver = null)
     {
         JobManager = jobManager;
         RequestQueue = requestQueue;
@@ -823,6 +854,7 @@ public sealed class BackfillServices : IDisposable
         RateLimitTracker = rateLimitTracker;
         Provider = provider;
         Worker = worker;
+        _ownedSymbolResolver = ownedSymbolResolver;
     }
 
     /// <summary>
@@ -856,5 +888,6 @@ public sealed class BackfillServices : IDisposable
         JobManager.Dispose();
         RateLimitTracker.Dispose();
         Provider.Dispose();
+        _ownedSymbolResolver?.Dispose();
     }
 }

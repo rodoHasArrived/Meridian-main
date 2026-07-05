@@ -372,6 +372,102 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
             Times.Once);
     }
 
+    [Fact]
+    public async Task GetDailyBarsAsync_CrossValidation_ResolvesSymbolForValidationProvider()
+    {
+        var bars = CreateBars("SPY", 3);
+
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        var p2 = CreateMockProvider("p2", priority: 2);
+        p2.Setup(p => p.GetDailyBarsAsync("spy.us", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        var resolver = new Mock<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("SPY");
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p2", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("spy.us");
+
+        using var composite = new CompositeHistoricalDataProvider(
+            new[] { p1.Object, p2.Object },
+            resolver.Object,
+            enableCrossValidation: true,
+            enableRateLimitRotation: false);
+
+        var result = await composite.GetDailyBarsAsync("SPY", null, null);
+
+        result.Should().HaveCount(3);
+        p2.Verify(p => p.GetDailyBarsAsync("spy.us", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()),
+            Times.Once, "cross-validation must query the validation provider with its resolved symbol");
+        p2.Verify(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()),
+            Times.Never, "the unresolved symbol would compare against the wrong data");
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_RaisesProgressEvents_AcrossFailover()
+    {
+        var bars = CreateBars("SPY", 3);
+
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("p1 failed"));
+
+        var p2 = CreateMockProvider("p2", priority: 2);
+        p2.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        using var composite = CreateComposite(p1, p2);
+        var events = new List<ProviderBackfillProgress>();
+        composite.OnProgressUpdate += events.Add;
+
+        await composite.GetDailyBarsAsync("SPY", null, null);
+
+        events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "trying");
+        events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "failed" && e.Error == "p1 failed");
+        events.Should().Contain(e => e.Provider == "p2" && e.CurrentStatus == "trying");
+        events.Should().Contain(e => e.Provider == "p2" && e.CurrentStatus == "completed" && e.BarsDownloaded == 3);
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_RaisesExhaustedProgressEvent_WhenAllProvidersFail()
+    {
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("p1 failed"));
+
+        using var composite = CreateComposite(p1);
+        var events = new List<ProviderBackfillProgress>();
+        composite.OnProgressUpdate += events.Add;
+
+        var act = () => composite.GetDailyBarsAsync("SPY", null, null);
+        await act.Should().ThrowAsync<AggregateException>();
+
+        events.Should().Contain(e =>
+            e.Provider == "composite" &&
+            e.CurrentStatus == "all-providers-failed" &&
+            e.Error != null && e.Error.Contains("p1 failed"));
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_SubscriberException_DoesNotBreakDataPath()
+    {
+        var bars = CreateBars("SPY", 4);
+
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        using var composite = CreateComposite(p1);
+        composite.OnProgressUpdate += _ => throw new InvalidOperationException("subscriber bug");
+
+        var result = await composite.GetDailyBarsAsync("SPY", null, null);
+
+        result.Should().HaveCount(4, "a faulty progress subscriber must never interrupt the data path");
+    }
+
     #region Helpers
 
     private Mock<IHistoricalDataProvider> CreateMockProvider(string name, int priority)
