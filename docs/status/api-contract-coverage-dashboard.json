@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.6,
-  "endpoint_coverage_percent": 99.3,
+  "score_percent": 100.0,
+  "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 592,
-    "documented_endpoint_count": 588,
-    "undocumented_endpoint_count": 4,
+    "documented_endpoint_count": 592,
+    "undocumented_endpoint_count": 0,
     "workstation_contract_count": 812,
     "documented_workstation_contract_count": 812,
     "undocumented_workstation_contract_count": 0
@@ -2136,13 +2136,13 @@
       "method": "POST",
       "path": "/api/ledger/journal-automation/dividend-intake",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2018",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/fee-accrual-intake",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2060",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
@@ -2736,7 +2736,7 @@
       "method": "GET",
       "path": "/api/providers/capability-matrix",
       "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:177",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
@@ -3024,7 +3024,7 @@
       "method": "POST",
       "path": "/api/security-master/corporate-actions/ingest",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:653",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
