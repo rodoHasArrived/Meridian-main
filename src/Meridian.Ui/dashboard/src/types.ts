@@ -9026,6 +9026,7 @@ export interface SecurityMasterTrustSnapshot {
   lotModel?: SecurityMasterLotModel | null;
   scheduleBook?: SecurityMasterScheduleBook | null;
   openLotReadModel?: SecurityMasterOpenLotReadModel | null;
+  corporateActionDescriptors?: CorporateActionDescriptor[] | null;
 }
 
 export interface OperatorOverridesDto {
@@ -10312,6 +10313,37 @@ export interface CorporateAction {
   exchangeRatio: number | null;
   subscriptionPricePerShare: number | null;
   rightsPerShare: number | null;
+}
+
+/** Canonical corporate-action lifecycle vocabulary; Ex/Paid are derived from ExDate/PayDate at read time. */
+export type CorporateActionLifecycleState = "Announced" | "Confirmed" | "Ex" | "Paid" | "Cancelled";
+
+/**
+ * One event in an effective corporate action's supersede chain (original announcement first,
+ * chain tip last). Mirrors CorporateActionTimelineEntryDto.
+ */
+export interface CorporateActionTimelineEntry {
+  corpActId: string;
+  lifecycleState: string;
+  exDate: string;
+  payDate: string | null;
+  isAmendment: boolean;
+}
+
+/**
+ * Canonical-taxonomy projection of one effective corporate action: catalog display identity
+ * (displayName + ISO 15022 caevCode), lifecycle state resolved at the snapshot's as-of time,
+ * and the amendment timeline. Mirrors CorporateActionDescriptorDto; corpActId joins back to
+ * the raw CorporateAction row.
+ */
+export interface CorporateActionDescriptor {
+  corpActId: string;
+  canonicalName: string;
+  caevCode: string | null;
+  displayName: string;
+  lifecycleState: string;
+  isCancelled: boolean;
+  timeline: CorporateActionTimelineEntry[];
 }
 
 export interface TradingParameters {
