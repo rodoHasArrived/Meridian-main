@@ -133,6 +133,13 @@ public sealed record TradingParametersDto(
 
 /// <summary>
 /// A single corporate action event envelope returned by the corporate actions query.
+/// <para><see cref="LifecycleState"/> holds a writeable
+/// <see cref="CorporateActionLifecycleStates"/> value; null reads as Confirmed for events
+/// written before lifecycle support. <see cref="SupersedesCorpActId"/> marks this event as
+/// an amendment (or, with a Cancelled state, a cancellation) of a prior event — the store
+/// stays append-only and readers fold chains via the effective-state projector.
+/// <see cref="RedemptionPricePercentOfPar"/> carries BondCall/BondMaturityRedemption
+/// pricing as a percent of par.</para>
 /// </summary>
 public sealed record CorporateActionDto(
     Guid CorpActId,
@@ -149,7 +156,10 @@ public sealed record CorporateActionDto(
     decimal? ExchangeRatio,
     decimal? SubscriptionPricePerShare,
     decimal? RightsPerShare,
-    DateOnly? RecordDate = null);
+    DateOnly? RecordDate = null,
+    string? LifecycleState = null,
+    Guid? SupersedesCorpActId = null,
+    decimal? RedemptionPricePercentOfPar = null);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.

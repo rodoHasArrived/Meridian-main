@@ -1,7 +1,9 @@
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
-/// Canonical Security Master corporate-action event vocabulary.
+/// Canonical Security Master corporate-action event vocabulary. The constants are the
+/// stored wire values; per-type metadata, provider aliases, and ISO 15022 alignment live
+/// in <see cref="CorporateActionTypeDescriptorCatalog"/>, which this class delegates to.
 /// </summary>
 public static class CorporateActionEventTypes
 {
@@ -16,42 +18,29 @@ public static class CorporateActionEventTypes
     public const string FuturesExpiry = "FuturesExpiry";
     public const string OptionContractAdjustment = "OptionContractAdjustment";
     public const string CryptoFork = "CryptoFork";
+    public const string TenderOffer = "TenderOffer";
+    public const string SpecialDividend = "SpecialDividend";
+    public const string SymbolChange = "SymbolChange";
+    public const string NameChange = "NameChange";
+    public const string Delisting = "Delisting";
+    public const string BondMaturityRedemption = "BondMaturityRedemption";
+    public const string ReturnOfCapital = "ReturnOfCapital";
 
+    /// <summary>
+    /// Resolves canonical names, provider aliases, and CAEV codes to the canonical name.
+    /// Unknown values are returned trimmed so callers can surface them verbatim in
+    /// rejection reasons.
+    /// </summary>
     public static string Normalize(string eventType)
     {
         if (string.IsNullOrWhiteSpace(eventType))
             return string.Empty;
 
-        return CompactToken(eventType) switch
-        {
-            "DIVIDEND" or "CASHDIVIDEND" or "DIVIDENDPAYMENT" => Dividend,
-            "SPLIT" or "STOCKSPLIT" => StockSplit,
-            "REVERSESPLIT" or "REVERSESTOCKSPLIT" => ReverseStockSplit,
-            "SPINOFF" => SpinOff,
-            "MERGER" or "MERGERABSORPTION" => MergerAbsorption,
-            "RIGHTS" or "RIGHTSISSUE" => RightsIssue,
-            "PRINCIPALPAYDOWN" or "FACTORPAYDOWN" or "FACTORREDUCTION" => PrincipalPaydown,
-            "BONDCALL" or "CALL" => BondCall,
-            "FUTURESEXPIRY" or "FUTUREEXPIRY" or "FUTURESEXPIRATION" or "FUTUREEXPIRATION" => FuturesExpiry,
-            "OPTIONCONTRACTADJUSTMENT" or "OPTIONADJUSTMENT" => OptionContractAdjustment,
-            "CRYPTOFORK" or "FORK" => CryptoFork,
-            _ => eventType.Trim()
-        };
+        return CorporateActionTypeDescriptorCatalog.TryNormalize(eventType, out var descriptor)
+            ? descriptor.CanonicalName
+            : eventType.Trim();
     }
 
     public static bool IsKnown(string eventType)
-        => Normalize(eventType) is Dividend
-            or StockSplit
-            or ReverseStockSplit
-            or SpinOff
-            or MergerAbsorption
-            or RightsIssue
-            or PrincipalPaydown
-            or BondCall
-            or FuturesExpiry
-            or OptionContractAdjustment
-            or CryptoFork;
-
-    private static string CompactToken(string value)
-        => new(value.Where(char.IsLetterOrDigit).Select(char.ToUpperInvariant).ToArray());
+        => CorporateActionTypeDescriptorCatalog.TryNormalize(eventType, out _);
 }
