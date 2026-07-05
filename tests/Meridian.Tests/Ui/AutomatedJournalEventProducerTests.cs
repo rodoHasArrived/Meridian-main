@@ -42,7 +42,7 @@ public sealed class AutomatedJournalEventProducerTests
 
         var management = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.ManagementFeeAccrued);
         management.Amount.Should().Be(20_000m, "management fee is the period rate applied to beginning NAV");
-        management.Symbol.Should().Be("FUND-ALPHA");
+        management.Symbol.Should().Be("fund-alpha", "the draft projector normalizes symbols downstream");
         management.IdempotencyKey.Should().Be("mgmt-fee|fund-alpha|2026-Q2");
 
         var performance = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.PerformanceFeeAccrued);
