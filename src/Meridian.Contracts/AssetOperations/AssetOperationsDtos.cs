@@ -143,7 +143,30 @@ public sealed record AssetTermsObligationTimelineEventDto(
     string? EvidenceLink,
     string? LedgerReferenceId,
     string Summary,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public string? FormulaTrace { get; init; }
+
+    public string? LedgerReference { get; init; }
+
+    public string? NextAction { get; init; }
+}
+
+public sealed record AssetTimelineVarianceDto(
+    Guid VarianceId,
+    Guid SecurityId,
+    string EventKind,
+    DateOnly ExpectedDate,
+    DateOnly? ActualDate,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? VarianceAmount,
+    string Currency,
+    string Status,
+    string SourceDomain,
+    string? SourceEntityId,
+    string Summary,
+    string? EvidenceLink = null);
 
 public sealed record AssetTermsObligationsTimelineDto(
     Guid SecurityId,
@@ -155,7 +178,12 @@ public sealed record AssetTermsObligationsTimelineDto(
     DateTimeOffset GeneratedAt,
     string SourceDomain,
     string? SourceEntityId,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public string? AssetClass { get; init; }
+
+    public IReadOnlyList<AssetTimelineVarianceDto> Variances { get; init; } = [];
+}
 
 public sealed record AssetOperationsReadinessDto(
     Guid SecurityId,
