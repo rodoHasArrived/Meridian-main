@@ -5660,7 +5660,10 @@ Meridian-main
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Streaming
+│   │   │   ├── IQuoteStreamBroadcaster.cs
+│   │   │   ├── QuoteStreamBroadcaster.cs
 │   │   │   ├── QuoteStreamOptions.cs
+│   │   │   ├── QuoteStreamSubscription.cs
 │   │   │   ├── StreamConnectionRegistry.cs
 │   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
@@ -7278,6 +7281,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── Streaming
+│   │   │   │   ├── QuoteStreamBroadcasterTests.cs
 │   │   │   │   ├── StreamConnectionRegistryTests.cs
 │   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
