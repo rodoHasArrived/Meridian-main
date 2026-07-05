@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildQuotesStreamUrl, isQuotesStreamSupported, subscribeQuotesStream } from "@/lib/quotes-stream";
+import {
+  buildQuotesStreamUrl,
+  isQuotesStreamSupported,
+  resetQuotesStreamForTests,
+  setQuotesStreamChannelForTests,
+  setQuotesStreamRoleForTests,
+  subscribeQuotesStream
+} from "@/lib/quotes-stream";
+import type { BroadcastChannelLike } from "@/lib/companion-pane/chrome-bridge";
 import type { QuotesSnapshotResponse } from "@/types";
 
 class FakeEventSource {
@@ -30,6 +38,31 @@ class FakeEventSource {
   }
 }
 
+// Same-origin channel double: postMessage records (a real BroadcastChannel never
+// echoes to its own instance); emit() simulates an inbound message from the other
+// window and is delivered to subscribers.
+class FakeChannel implements BroadcastChannelLike {
+  posted: unknown[] = [];
+  closed = false;
+  private listeners = new Set<(event: MessageEvent) => void>();
+
+  postMessage(message: unknown) {
+    this.posted.push(message);
+  }
+  addEventListener(_type: "message", listener: (event: MessageEvent) => void) {
+    this.listeners.add(listener);
+  }
+  removeEventListener(_type: "message", listener: (event: MessageEvent) => void) {
+    this.listeners.delete(listener);
+  }
+  close() {
+    this.closed = true;
+  }
+  emit(data: unknown) {
+    this.listeners.forEach((listener) => listener({ data } as MessageEvent));
+  }
+}
+
 const snapshot: QuotesSnapshotResponse = {
   timestamp: "2026-07-03T00:00:00Z",
   count: 1,
@@ -54,16 +87,24 @@ const snapshot: QuotesSnapshotResponse = {
   ]
 };
 
+let fakeChannel: FakeChannel;
+
 describe("quotes stream client", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     FakeEventSource.instances = [];
     vi.stubGlobal("EventSource", FakeEventSource);
+    fakeChannel = new FakeChannel();
+    setQuotesStreamChannelForTests(() => fakeChannel);
+    setQuotesStreamRoleForTests("owner");
   });
 
   afterEach(() => {
-    // Drain any pending close-linger timers so connections never leak into the next test.
+    // Drain any pending timers so connections never leak into the next test.
     vi.runAllTimers();
+    resetQuotesStreamForTests();
+    setQuotesStreamRoleForTests(null);
+    setQuotesStreamChannelForTests(null);
     vi.useRealTimers();
     vi.unstubAllGlobals();
   });
@@ -136,6 +177,21 @@ describe("quotes stream client", () => {
     late();
   });
 
+  it("owner re-broadcasts each snapshot and answers follower warm-up requests", () => {
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+    FakeEventSource.instances[0]!.emit("quotes", JSON.stringify(snapshot));
+
+    // The snapshot is pushed to any companion panes following this symbol set.
+    expect(fakeChannel.posted).toContainEqual({ type: "quotes", symbolsKey: "SPY", snapshot });
+
+    // A follower requests the current snapshot; the owner replies with the last one.
+    fakeChannel.posted = [];
+    fakeChannel.emit({ type: "quotes-request", symbolsKey: "SPY" });
+    expect(fakeChannel.posted).toContainEqual({ type: "quotes", symbolsKey: "SPY", snapshot });
+
+    unsubscribe();
+  });
+
   it("reports unsupported environments as unhealthy without subscribing", () => {
     vi.unstubAllGlobals();
     expect(isQuotesStreamSupported()).toBe(false);
@@ -144,5 +200,46 @@ describe("quotes stream client", () => {
     const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn(), onHealthChange });
     expect(onHealthChange).toHaveBeenCalledWith(false);
     unsubscribe();
+  });
+
+  describe("follower role", () => {
+    beforeEach(() => {
+      setQuotesStreamRoleForTests("follower");
+    });
+
+    it("follows the opener's feed without opening its own EventSource", () => {
+      const onSnapshot = vi.fn();
+      const onHealthChange = vi.fn();
+      const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot, onHealthChange });
+
+      // A pane opens no EventSource and asks the opener to warm it up.
+      expect(FakeEventSource.instances).toHaveLength(0);
+      expect(fakeChannel.posted).toContainEqual({ type: "quotes-request", symbolsKey: "SPY" });
+      expect(onHealthChange).toHaveBeenLastCalledWith(false);
+
+      // An inbound snapshot from the opener drives the follower healthy.
+      fakeChannel.emit({ type: "quotes", symbolsKey: "SPY", snapshot });
+      expect(onSnapshot).toHaveBeenCalledWith(snapshot);
+      expect(onHealthChange).toHaveBeenLastCalledWith(true);
+
+      // Opener gone (session-expired) → unhealthy → polling resumes.
+      fakeChannel.emit({ type: "session-expired" });
+      expect(onHealthChange).toHaveBeenLastCalledWith(false);
+
+      unsubscribe();
+    });
+
+    it("degrades to unhealthy after the stale watchdog when snapshots stop", () => {
+      const onHealthChange = vi.fn();
+      const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn(), onHealthChange });
+
+      fakeChannel.emit({ type: "quotes", symbolsKey: "SPY", snapshot });
+      expect(onHealthChange).toHaveBeenLastCalledWith(true);
+
+      vi.advanceTimersByTime(6000);
+      expect(onHealthChange).toHaveBeenLastCalledWith(false);
+
+      unsubscribe();
+    });
   });
 });

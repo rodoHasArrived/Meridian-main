@@ -326,14 +326,15 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## 9. Phasing (each a separate PR, hot-path review gated)
 
-1. **PR A — Notifier seam + broadcaster (server), behind a flag.** `IQuoteUpdateNotifier`,
-   `QuoteStreamBroadcaster`, `StreamTopic`, options, DI, `QuoteCollector` optional param. Endpoint
-   still polls; broadcaster runs in shadow with unit tests. No behavior change. **Requires hot-path
-   review** of the notifier call site.
-2. **PR B — Endpoint switch + registry/caps.** Rewrite the SSE loop to subscribe; add
-   `StreamConnectionRegistry`, 429, session-expiry close. Flip the flag. Endpoint tests updated.
-3. **PR C — Client companion fan-out.** Bridge `quotes` messages, owner/follower roles, follower
-   degradation. Adopt on the watchlist + live-quotes panes.
+1. **PR A — Notifier seam + broadcaster (server).** ✅ Shipped. `IQuoteUpdateNotifier`,
+   `QuoteStreamBroadcaster`, `StreamTopic`, options, DI, `QuoteCollector` optional param. Broadcaster
+   ran in shadow with unit tests; the notifier call site was hot-path reviewed.
+2. **PR B — Endpoint switch + registry/caps.** ✅ Shipped. SSE loop subscribes to a topic instead of
+   polling; `StreamConnectionRegistry`, 429 + `Retry-After`, per-session cap. Endpoint tests updated.
+3. **PR C — Client companion fan-out.** ✅ Shipped. Bridge `quotes`/`quotes-request` messages,
+   owner/follower roles in `quotes-stream.ts`, follower degradation on `session-expired` / stale
+   watchdog. Role is decided by route (`isCompanionPaneRoute`), so the watchlist + live-quotes panes
+   follow automatically with no screen change.
 4. **PR D (optional, future) — Additional topics** (`workspace:<key>`, `inbox`, `report-run:<id>`)
    reusing `StreamTopic`; wire the `use-workstation-data` workspace poller suspension deferred in
    Phase 4 step 1.
