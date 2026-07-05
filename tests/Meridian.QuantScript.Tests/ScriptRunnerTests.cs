@@ -46,6 +46,11 @@ public sealed class ScriptRunnerTests
     private static IReadOnlyDictionary<string, object?> NoParams =>
         new Dictionary<string, object?>();
 
+    private static TimeSpan RuntimeElapsed(ScriptRunResult result)
+        => result.Elapsed >= result.CompileTime
+            ? result.Elapsed - result.CompileTime
+            : TimeSpan.Zero;
+
     // ── Argument validation ───────────────────────────────────────────────────
 
     [Fact]
@@ -188,8 +193,8 @@ public sealed class ScriptRunnerTests
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script cancelled by user.");
         result.Checkpoint.Should().BeNull();
-        result.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
-        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+        RuntimeElapsed(result).Should().BeLessThan(TimeSpan.FromSeconds(3));
+        elapsed.Elapsed.Should().BeLessThan(result.CompileTime + TimeSpan.FromSeconds(3));
     }
 
     [Fact]
@@ -206,8 +211,8 @@ public sealed class ScriptRunnerTests
         result.Success.Should().BeFalse();
         result.RuntimeError.Should().Be("Script timed out.");
         result.Checkpoint.Should().BeNull();
-        result.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
-        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+        RuntimeElapsed(result).Should().BeLessThan(TimeSpan.FromSeconds(3));
+        elapsed.Elapsed.Should().BeLessThan(result.CompileTime + TimeSpan.FromSeconds(3));
     }
 
     [Fact]

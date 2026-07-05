@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-01
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Application
@@ -272,6 +272,10 @@ and UI presentation concerns in their owning layers.
   appends are routed through `SecurityMasterCorporateActionCommandService` so HTTP endpoints,
   imports, provider backfills, and future UI commands share the same validation, append, and
   structured audit path before the event store is touched.
+  `SecurityMasterCashFlowService` now generates deterministic calculated bullet and sinker
+  schedules from retained Security Master economic terms when provider-backed schedules are not
+  selected, so downstream Asset Operations views can present expected coupon/principal dates with
+  source-governed scenario posture instead of an empty calculated schedule.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured credit, private fund interests, private

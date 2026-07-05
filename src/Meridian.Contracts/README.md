@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Contracts
@@ -878,6 +878,12 @@ targets. `CustomAsset` rows remain available for profile-lineage, servicer/trust
 and obligation close-readiness compatibility coverage. Browser, WPF, and shared endpoint clients
 should render those rows as supplied instead of recalculating asset-class readiness, ledger
 coverage, reconciliation status, or close blockers locally.
+
+Asset Operations terms/obligations timeline contracts carry the shared projection view for
+expected cash flows, projected obligations, retained evidence posture, variances, ledger support,
+formula trace, and next action. Browser and WPF clients should render `AssetTermsObligationsTimelineDto`
+and its event/variance rows as supplied instead of rebuilding projection math or source-support
+rules in UI-specific DTOs.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
