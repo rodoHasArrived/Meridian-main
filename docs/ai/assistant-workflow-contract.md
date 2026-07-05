@@ -29,7 +29,7 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `.codex/memory/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, selective repo-local memory, and Codex PowerShell scanners/generators |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `.codex/memory/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, deferred desktop maintenance prompts, validation checklists, selective repo-local memory, and Codex PowerShell scanners/generators |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
@@ -337,7 +337,7 @@ Every assistant and automation should use the same high-level flow:
 9. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
-   WPF names as legacy workspace aliases rather than new root workspaces.
+   WPF names as deferred legacy workspace aliases rather than new root workspaces.
    Keep new product work grounded in current source evidence, the roadmap registry, and the design
    charter. Treat prior baselines and named productization targets as roadmap/status evidence, not
    development ceilings; expansion lanes can proceed when current source, roadmap, or user direction
@@ -426,8 +426,8 @@ When editing `src/**`, assistants must:
 - Do not introduce new AI providers, tools, agents, models, or dependencies without repository
   evidence that they are needed.
 - Do not pursue mobile app development unless a future roadmap change explicitly creates and
-  documents a mobile product lane; keep operator UI work on the active browser workstation and WPF
-  desktop surfaces.
+  documents a mobile product lane; keep new operator UI work on the active browser workstation
+  while WPF remains deferred unless explicitly reactivated or requested for maintenance.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
 - Do not embed full repository trees in host-specific guidance. Link to
@@ -503,9 +503,10 @@ Use this checklist when changing any AI-related asset:
       not read or write user/global memory tiers without explicit future opt-in.
 - [ ] Update [`tooling/README.md`](tooling/README.md) when AI script discovery, validation lanes,
       or safe-usage guidance changes.
-- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
-      WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
-      `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+- [ ] Keep all assistant surfaces aligned to the current operator taxonomy: the browser dashboard is
+      the active UI lane, WPF desktop work is deferred unless explicitly reactivated, shared
+      contracts retain compatibility context, and visible root workspaces remain limited to
+      `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - [ ] Keep product guidance aligned to current source evidence, the roadmap registry, and the
       design charter without treating prior baselines or named productization targets as
       development ceilings.

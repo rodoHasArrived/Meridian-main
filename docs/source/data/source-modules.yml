@@ -955,9 +955,9 @@ modules:
     path: src/Meridian.Wpf
     name: WPF workstation
     layer: UI Surface
-    status: active
+    status: deferred
     owner_lane: Workstation Shell and UX
-    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation, including accounting configuration, private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views.
+    purpose: Deferred Windows desktop operator workstation retained for compatibility and historical evidence, sharing contracts and read models with the browser workstation where existing accounting configuration, private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views still apply. New WPF implementation, parity proof, screenshots, test repair, and validation are deferred unless explicitly reactivated or requested for WPF-specific maintenance.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
       - W4-RECON-001

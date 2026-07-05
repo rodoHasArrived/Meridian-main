@@ -47,12 +47,13 @@ current source instead.
 
 ## Current Product Framing
 
-Meridian is a .NET 10 operational-finance and trading platform where fund management is a first-class specialization. Active operator UI work spans
-[`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
-[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
-[`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
-Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
-read models before either client composes it.
+Meridian is a .NET 10 operational-finance and trading platform where fund management is a
+first-class specialization. Active operator UI work is browser-first in
+[`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/), with built browser
+assets in [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
+WPF work under [`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/) is deferred unless
+explicitly reactivated or requested for maintenance. Shared product behavior should land behind
+shared contracts, local/web API endpoints, or shared read models before client composition.
 
 Keep product work grounded in current source evidence, the roadmap registry, and the design charter.
 Treat prior baselines and named productization targets as roadmap/status evidence, not development
@@ -75,7 +76,7 @@ Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Acco
 | Code review | [`../../../.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md) |
 | Tests | [`../../../.github/instructions/dotnet-tests.instructions.md`](../../../.github/instructions/dotnet-tests.instructions.md) and [`../../../.github/agents/test-writer-agent.md`](../../../.github/agents/test-writer-agent.md) |
 | Documentation | [`../../../.github/instructions/docs.instructions.md`](../../../.github/instructions/docs.instructions.md) and [`../../../.github/agents/documentation-agent.md`](../../../.github/agents/documentation-agent.md) |
-| WPF/MVVM | [`../../../.github/instructions/wpf.instructions.md`](../../../.github/instructions/wpf.instructions.md) |
+| Deferred WPF/MVVM, explicit only | [`../../../.github/instructions/wpf.instructions.md`](../../../.github/instructions/wpf.instructions.md) |
 | Provider work | [`../../../.github/agents/provider-builder-agent.md`](../../../.github/agents/provider-builder-agent.md) |
 | Prompt templates | [`../../../.github/prompts/README.md`](../../../.github/prompts/README.md) |
 

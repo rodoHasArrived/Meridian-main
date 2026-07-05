@@ -87,6 +87,11 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 
 ## Desktop Implementation Routing
 
+WPF work is deferred for the time being. Do not start new WPF implementation, WPF test repair,
+desktop screenshots, or desktop validation lanes unless the user explicitly reactivates or requests
+WPF-specific maintenance. Route new workstation behavior through shared services and the browser
+workstation while this deferral is active.
+
 Use these Codex-local skills before making desktop or workstation implementation changes from a
 `.codex/**` prompt or checklist:
 

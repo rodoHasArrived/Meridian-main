@@ -2,10 +2,10 @@
 
 ## Overview
 
-Meridian uses active browser and WPF desktop operator workstations with local API surfaces:
+Meridian uses an active browser workstation and a deferred WPF desktop workstation with local API surfaces:
 
 1. **Browser workstation (`src/Meridian.Ui/dashboard`)** for browser operator workflow delivery, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`.
-2. **WPF Desktop (`Meridian.Wpf`)** as the active Windows desktop shell for operator workflows.
+2. **WPF Desktop (`Meridian.Wpf`)** as the deferred Windows desktop shell retained for compatibility and historical evidence.
 3. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
 
 These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, WPF desktop shell, the local host, and reusable UI functionality.

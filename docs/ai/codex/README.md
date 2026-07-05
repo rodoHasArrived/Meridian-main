@@ -35,8 +35,8 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
 | [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for workflow disclosure, concurrency, validation, docs sync, and response shape |
 | [`.codex/skills/*/agents/openai.yaml`](../../../.codex/skills) | Codex UI metadata for repo-local skills |
-| [`.codex/AGENTS.md`](../../../.codex/AGENTS.md) | Codex-specific desktop workstation implementation rules |
-| [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
+| [`.codex/AGENTS.md`](../../../.codex/AGENTS.md) | Codex-specific deferred desktop workstation maintenance rules |
+| [`.codex/prompts/`](../../../.codex/prompts) | Reusable deferred desktop maintenance, refactor, provider, diagnostics, resource, and test prompts |
 | [`.codex/checklists/`](../../../.codex/checklists) | Modularity, MVVM, resource, definition-of-done, and safe-refactor checklists |
 | [`tools/codex/`](../../../tools/codex) | Codex-focused PowerShell quality scans, desktop workspace generators, resource reviews, and refactor-plan helpers |
 
@@ -57,7 +57,7 @@ notifications, telemetry, and personal model preferences in user-level config.
 | Profile | Purpose |
 | ------ | --------- |
 | `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
-| `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
+| `desktop-test-generation.toml` | Deferred WPF lane; generate focused desktop workflow tests only when explicitly reactivated or requested |
 | `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
 | `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
@@ -83,13 +83,13 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
 | `meridian-test-writer.toml` | Write scenario-first Meridian tests |
-| `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
+| `modular-desktop-mvvm.toml` | Deferred WPF lane; implement modular MVVM workstation changes only when explicitly reactivated or requested |
 | `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |
 | `research-data-acquisition.toml` | Build research acquisition, preview, validation, lineage, and cleanup workflows |
-| `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
-| `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
-| `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
+| `safe-refactoring.toml` | Deferred WPF lane when desktop-scoped; refactor shared code normally and desktop code only when explicitly requested |
+| `shared-component-extraction.toml` | Deferred WPF lane; extract repeated desktop patterns only when explicitly reactivated or requested |
+| `workstation-screen-composition.toml` | Deferred WPF lane; compose desktop screens only when explicitly reactivated or requested |
 
 ### Brainstorm Companion Profiles
 
@@ -164,16 +164,16 @@ matrix facts plus domain experience, familiar programs, preferences, and testing
 | `meridian-roadmap-strategist` | Refresh roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Write scenario-first Meridian tests |
-| `modular-desktop-mvvm` | Implement modular WPF MVVM workstation changes |
-| `workstation-screen-composition` | Compose desktop screens from shared workstation primitives |
-| `shared-component-extraction` | Extract repeated desktop patterns into reusable components |
+| `modular-desktop-mvvm` | Deferred WPF lane; implement modular MVVM workstation changes only when explicitly reactivated or requested |
+| `workstation-screen-composition` | Deferred WPF lane; compose desktop screens only when explicitly reactivated or requested |
+| `shared-component-extraction` | Deferred WPF lane; extract repeated desktop patterns only when explicitly reactivated or requested |
 | `provider-management-workflow` | Build secure provider setup, health, credential, and recovery workflows |
 | `research-data-acquisition` | Build research acquisition, preview, validation, and lineage workflows |
 | `dense-data-grid-inspector-panel` | Build scalable dense grids and inspector panels |
 | `diagnostics-audit-timeline` | Build diagnostics panels, audit timelines, and evidence trails |
 | `performance-resource-review` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
-| `safe-refactoring` | Refactor desktop code incrementally without behavior drift |
-| `desktop-test-generation` | Generate focused WPF view-model, command, service, and binding tests |
+| `safe-refactoring` | Deferred WPF lane when desktop-scoped; refactor shared code normally and desktop code only when explicitly requested |
+| `desktop-test-generation` | Deferred WPF lane; generate focused view-model, command, service, and binding tests only when explicitly reactivated or requested |
 
 ## Routing Model
 
@@ -200,16 +200,16 @@ route by task phase:
 | Roadmap | `meridian-roadmap-strategist` | Reconcile status, waves, opportunities, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code or duplication. |
 | Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and explicit evidence. |
-| Desktop implementation | `modular-desktop-mvvm` | Implement WPF changes with MVVM, shared seams, tests, and resource guardrails. |
-| Desktop composition | `workstation-screen-composition` | Shape new workspaces, tabs, panels, and command surfaces from shared primitives. |
-| Component extraction | `shared-component-extraction` | Consolidate repeated controls, templates, commands, view models, and services. |
+| Deferred desktop implementation | `modular-desktop-mvvm` | Use only when WPF is explicitly reactivated or requested for maintenance; implement WPF changes with MVVM, shared seams, tests, and resource guardrails. |
+| Deferred desktop composition | `workstation-screen-composition` | Use only when WPF is explicitly reactivated or requested; shape new workspaces, tabs, panels, and command surfaces from shared primitives. |
+| Deferred component extraction | `shared-component-extraction` | Use only when WPF is explicitly reactivated or requested; consolidate repeated controls, templates, commands, view models, and services. |
 | Provider workflow | `provider-management-workflow` | Implement secure provider setup, health, credential, validation, and recovery flows. |
 | Research acquisition | `research-data-acquisition` | Implement bounded research ingestion, preview, validation, lineage, and handoff flows. |
 | Dense data UI | `dense-data-grid-inspector-panel` | Implement virtualized grids, row models, selection, detail tabs, and inspectors. |
 | Diagnostics and audit | `diagnostics-audit-timeline` | Implement diagnostics panels, evidence trails, and audit timelines. |
 | Resource review | `performance-resource-review` | Review and reduce memory, CPU, I/O, rendering, concurrency, and lifecycle risk. |
-| Safe refactor | `safe-refactoring` | Preserve behavior while extracting, consolidating, and simplifying desktop code. |
-| Desktop tests | `desktop-test-generation` | Add focused WPF tests for view models, commands, services, bindings, and shell routes. |
+| Deferred desktop safe refactor | `safe-refactoring` | Use only when WPF is explicitly reactivated or requested; preserve behavior while extracting, consolidating, and simplifying desktop code. |
+| Deferred desktop tests | `desktop-test-generation` | Use only when WPF is explicitly reactivated or requested; add focused WPF tests for view models, commands, services, bindings, and shell routes. |
 
 For speed, start with [`quickstart.md`](quickstart.md) when the task shape is unclear, then use
 [`route-cards.md`](route-cards.md) after generated navigation identifies the subsystem. Keep broad
@@ -300,8 +300,8 @@ Maintenance/reporting:
 Local helper surfaces:
 
 - `scripts/ai/` backs the make-based AI setup, cleanup, routing, and maintenance lanes.
-- `tools/codex/` holds Codex-focused PowerShell scanners and generators used for desktop quality
-  reports and reviewable implementation planning.
+- `tools/codex/` holds Codex-focused PowerShell scanners and generators used for deferred desktop
+  maintenance reports and reviewable implementation planning.
 
 ## Lifecycle Hooks
 

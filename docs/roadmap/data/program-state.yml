@@ -30,7 +30,7 @@ program:
     - Accounting records
     - Approvals
     - Governed report packs
-    - Shared browser and WPF operational record workflow
+    - Shared browser operational record workflow with retained WPF compatibility context
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
@@ -44,6 +44,7 @@ program:
     - Client portal
     - No-code workflow designer
     - Mobile applications
-  active_ui_lane: browser_and_wpf_workstations
-  retained_support_lane: none
+    - WPF workstation implementation, parity proof, screenshots, and validation unless explicitly reactivated
+  active_ui_lane: browser_workstation
+  retained_support_lane: wpf_compatibility_and_historical_evidence
   mobile_lane: closed

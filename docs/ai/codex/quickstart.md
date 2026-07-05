@@ -15,8 +15,8 @@ still lives in `../assistant-workflow-contract.md`.
    unless the user explicitly asks for local `main` work or the checkout is intentionally operating
    there. Do not bypass GitHub branch protections; open or update a PR targeting `main` for
    PR-ready publishing.
-2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
-   cleanup, or test work.
+2. Classify the request as orient, review, docs, browser, deferred WPF, provider, storage,
+   execution, roadmap, cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
    Use the canonical AI User Notification template in `../assistant-workflow-contract.md`, adding
    Codex-specific skill or workflow metadata only when it helps route the task.
@@ -109,8 +109,8 @@ do not paste raw file contents or broad command output unless the user asks for 
 | Codex memory change | `memory-system.md`, `.codex/memory/index.yml`, matching indexed entries, relevant `tasks/*.yml` descriptor, relevant `goals/*.yml` inventory | User/global memory tiers unless explicitly opted in by a future design |
 | Codex hook config | `advanced-configuration.md`, `.codex/config.toml` | Executable hook scripts before trust and validation ownership are defined |
 | Parallel or concurrent implementation | `../working-memory.md`, `../parallel-task-manifest-template.md`, `../agent-handoff-checklist.md` | Broad logs, overlapping writes, and stale validation reuse |
-| WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
-| Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless shared contracts changed; signed-in browser flows or secret entry |
+| Deferred WPF task, explicit only | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Any WPF work unless the user explicitly reactivates or requests WPF-specific maintenance; broad WPF suites before focused filters |
+| Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless WPF is explicitly reactivated or requested; signed-in browser flows or secret entry |
 
 AI-doc proof lane defaults: `python build/scripts/docs/check-codex-memory.py --summary`,
 `python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary`,
@@ -123,10 +123,11 @@ AI-doc proof lane defaults: `python build/scripts/docs/check-codex-memory.py --s
 
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
 with `mode=dotnet-filtered`, a `tests/` `dotnet_project`, and `dotnet_filter` for .NET slices, or a
-curated non-.NET mode such as `browser-workstation`, `docs-source`, `wpf-dev-loop`, or `wpf-route`.
+curated non-.NET mode such as `browser-workstation` or `docs-source`. WPF hosted modes such as
+`wpf-dev-loop` or `wpf-route` are deferred unless WPF is explicitly reactivated or requested.
 
 Local .NET proof lane default: use `python build/python/cli/buildctl.py test` instead of raw
-`dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
+`dotnet test` when another agent, shell, validation lane, or deferred desktop launch may be active. The
 runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
 and uses `MeridianBuildIsolationKey` output roots by default.
 For post-timeout cleanup, inspect `validation-status`, run `dotnet build-server shutdown`, and stop
@@ -208,8 +209,8 @@ only repo-owned abandoned build/test/compiler PIDs before retrying or dispatchin
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |
 | Browser workstation | `src/Meridian.Ui/dashboard/README.md` when present, related screen docs | `npm --prefix src/Meridian.Ui/dashboard run test`; targeted Vitest file when the change is narrow; `npm --prefix src/Meridian.Ui/dashboard run build` for build-facing changes |
-| Shared workstation endpoint or DTO | Nearest `src/**/README.md`, `docs/architecture/module-map.md` | Focused `tests/Meridian.Tests` endpoint filter plus UI consumer tests when DTOs are consumed by WPF or browser |
-| WPF view model, shell route, or desktop workflow | `.codex/AGENTS.md`, relevant WPF skill/checklist, desktop testing docs | Focused `tests/Meridian.Wpf.Tests` filter for the touched view model, shell route, or workflow script |
+| Shared workstation endpoint or DTO | Nearest `src/**/README.md`, `docs/architecture/module-map.md` | Focused `tests/Meridian.Tests` endpoint filter plus browser consumer tests; WPF consumers are deferred unless explicitly reactivated or requested |
+| Deferred WPF view model, shell route, or desktop workflow | `.codex/AGENTS.md`, relevant WPF skill/checklist, desktop testing docs | Only when WPF is explicitly reactivated or requested; focused `tests/Meridian.Wpf.Tests` filter for the touched view model, shell route, or workflow script |
 | Provider adapter or provider workflow | Provider docs, `src/Meridian.ProviderSdk`, nearest adapter README | Focused provider tests or provider-validation script that covers the adapter and credential path |
 | Storage, WAL, or archival behavior | Storage docs and nearest `src/Meridian.Storage` README | Focused storage/WAL tests; avoid direct file writes outside WAL or `AtomicFileWriter` patterns |
 | Docs-only change | Nearest docs index | `git diff --check -- <paths>` plus inventory checks when AI catalogs are affected |
@@ -221,7 +222,7 @@ only repo-owned abandoned build/test/compiler PIDs before retrying or dispatchin
 | `meridian-repo-navigation` | `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |
 | `meridian-docs` | `git diff --check -- <paths>` and `python build/scripts/docs/check-ai-inventory.py --summary` for AI docs |
 | `meridian-browser-workstation` | `npm --prefix src/Meridian.Ui/dashboard run test` or targeted Vitest files |
-| `modular-desktop-mvvm` | Focused `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~<TouchedViewModelOrRoute>" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true` |
+| `modular-desktop-mvvm` | Deferred unless WPF is explicitly reactivated or requested; then use focused `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~<TouchedViewModelOrRoute>" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true` |
 | `meridian-implementation-assurance` | Touched-project build/test plus docs sync; AI/tooling changes also run the AI inventory and skill checks |
 
 ## Preview-First Repo Edits

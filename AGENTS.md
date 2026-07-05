@@ -120,9 +120,12 @@ Actions remains the merge authority.
 - Position roadmap and docs work from current source evidence, the roadmap registry, and the current [Meridian Design Document](docs/product/meridian-design-document.md).
 - Treat prior baselines and named productization targets as roadmap/status evidence, not development ceilings. Expansion lanes can proceed when current source, roadmap, or user direction supports them.
 - Use the current [Meridian Design Document](docs/product/meridian-design-document.md) as the canonical product scope reference.
-- `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/` are both active operator UI surfaces.
+- `src/Meridian.Ui/dashboard/` is the active operator UI surface for new workstation work.
+- `src/Meridian.Wpf/` work is deferred for the time being: do not plan, implement, repair, or
+  require WPF parity, WPF screenshots, or WPF validation unless the user explicitly reactivates or
+  requests WPF-specific maintenance. Existing WPF evidence remains historical support context.
 - `src/Meridian.Ui/wwwroot/workstation/` remains the built browser workstation asset lane served by the local host.
-- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for both the desktop shell and browser workstation.
+- Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the browser workstation and retained WPF compatibility without adding new WPF scope.
 - No mobile development lane: do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or mobile-first workflows. Responsive browser validation is allowed only for the browser workstation.
 - Keep visible root operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 

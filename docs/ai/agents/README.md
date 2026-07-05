@@ -9,9 +9,9 @@ All agent surfaces should follow the shared provider-agnostic workflow in
 
 All three surfaces should stay aligned around the same current product framing: Meridian is a
 .NET 10 operational-finance and trading platform with an active browser-based operator workstation,
-active WPF operator work, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
-`Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
-ledger, and MCP foundations.
+deferred WPF operator work retained for compatibility and historical evidence, and visible
+navigation limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+`Settings` on top of strong provider, storage, execution, ledger, and MCP foundations.
 
 When an agent lane needs validator, route, handoff-packet, or maintenance-script selection, load
 [`../tooling/README.md`](../tooling/README.md) instead of rediscovering command lanes from scratch.
@@ -61,7 +61,7 @@ in user-level Codex config.
 | Profile | Purpose |
 | ------ | --------- |
 | `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
-| `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
+| `desktop-test-generation.toml` | Deferred WPF lane; generate focused desktop workflow tests only when explicitly reactivated or requested |
 | `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
 | `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
@@ -87,13 +87,13 @@ in user-level Codex config.
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
 | `meridian-test-writer.toml` | Write scenario-first Meridian tests |
-| `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
+| `modular-desktop-mvvm.toml` | Deferred WPF lane; implement modular MVVM workstation changes only when explicitly reactivated or requested |
 | `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |
 | `research-data-acquisition.toml` | Build research acquisition, preview, validation, lineage, and cleanup workflows |
-| `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
-| `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
-| `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
+| `safe-refactoring.toml` | Deferred WPF lane when desktop-scoped; refactor shared code normally and desktop code only when explicitly requested |
+| `shared-component-extraction.toml` | Deferred WPF lane; extract repeated desktop patterns only when explicitly reactivated or requested |
+| `workstation-screen-composition.toml` | Deferred WPF lane; compose desktop screens only when explicitly reactivated or requested |
 
 ### Brainstorm companion profiles
 

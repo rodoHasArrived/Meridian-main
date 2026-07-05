@@ -14,10 +14,14 @@ Meridian is a .NET 10 fund-management and trading-platform codebase focused on e
 
 The active user-facing surfaces are:
 
-- Windows desktop workstation: `src/Meridian.Wpf/`
 - Browser workstation dashboard: `src/Meridian.Ui/dashboard/`
 - Built browser assets served by the host: `src/Meridian.Ui/wwwroot/workstation/`
 - Shared workstation API/read-model support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`
+- Deferred Windows desktop workstation: `src/Meridian.Wpf/`
+
+WPF work is deferred for the time being. Do not start desktop implementation, desktop screenshots,
+WPF test repair, or WPF validation unless the user explicitly reactivates or requests WPF-specific
+maintenance. Existing WPF evidence remains historical support context.
 
 For the current product framing and capability thesis, use the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) before planning changes.
 
@@ -77,10 +81,10 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Serves the host and, after assets are built, `http://localhost:8080/workstation/`. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
 | Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |
-| WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/in-memory governance profile. |
-| WPF deterministic fixture shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture` | Use for offline UI inspection with fixture data. |
-| WPF production build | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` | Builds Release host and desktop artifacts without starting the host. |
-| WPF production shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production` | Requires persistence-backed governance connection strings before host startup. |
+| Deferred WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | WPF lane is deferred; use only when explicitly asked to maintain or reactivate WPF. |
+| Deferred WPF deterministic fixture shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture` | WPF lane is deferred; use only for explicitly requested offline WPF inspection. |
+| Deferred WPF production build | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` | WPF lane is deferred; use only for explicitly requested WPF maintenance proof. |
+| Deferred WPF production shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production` | WPF lane is deferred and still requires persistence-backed governance connection strings before host startup. |
 | Headless collector | `dotnet run --project src/Meridian/Meridian.csproj -- --mode headless` | Use for non-UI collection scenarios. |
 
 The WPF desktop startup screen prompts for the environment-backed Meridian operator profile. Configure
@@ -139,7 +143,9 @@ python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contrac
 python build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict
 ``` 
 
-Broaden to full solution, WPF, UI-service, MCP, integration, or performance lanes only when the changed layer requires it.
+Broaden to full solution, UI-service, MCP, integration, or performance lanes only when the changed
+layer requires it. Broaden to WPF only when the user explicitly reactivates or requests WPF-specific
+maintenance.
 
 ## Choose Your Next Path
 

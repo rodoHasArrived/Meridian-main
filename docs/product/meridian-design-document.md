@@ -3,7 +3,7 @@
 **Status:** canonical  
 **Owner:** core-team  
 **Reviewed:** 2026-07-05
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI. Version 0.22 reconciles the design document with current roadmap and implementation-tracker evidence: W1-W5, `W5X-FREX-001`, and `W5X-FINOPS-001` are completed evidence-backed baselines, while `W6-BTSTUDIO-001` and `W7-LIVE-001` remain planned or gated productization work. Version 0.23 promotes the bounded `W7-LIVE-001` governance gate to complete while keeping broader live execution productization and live portfolio operations outside the completed baseline.
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI. Version 0.22 reconciles the design document with current roadmap and implementation-tracker evidence: W1-W5, `W5X-FREX-001`, and `W5X-FINOPS-001` are completed evidence-backed baselines, while `W6-BTSTUDIO-001` and `W7-LIVE-001` remain planned or gated productization work. Version 0.23 promotes the bounded `W7-LIVE-001` governance gate to complete while keeping broader live execution productization and live portfolio operations outside the completed baseline. Version 0.24 defers WPF work for the time being: existing WPF evidence remains historical support context, while new product implementation, parity proof, screenshots, and validation are browser/shared-service first unless WPF is explicitly reactivated.
 
 ## 1. Product Vision
 
@@ -366,11 +366,11 @@ The next roadmap baseline remains planned or gated, not complete:
 
 ### Active Product Surfaces
 
-Meridian has two active operator UI surfaces:
+Meridian has one active operator UI surface for new workstation work while WPF is deferred:
 
 * `src/Meridian.Ui/dashboard/` is the browser workstation source, with built host-served assets under `src/Meridian.Ui/wwwroot/workstation/`.
-* `src/Meridian.Wpf/` is the active Windows desktop operator workstation.
-* `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Contracts/` provide shared endpoint, read-model, and DTO support so browser and desktop do not invent separate product state.
+* `src/Meridian.Wpf/` is deferred for the time being. Existing WPF baselines remain historical evidence and compatibility context, but new WPF implementation, parity proof, screenshots, and validation should not be planned unless WPF is explicitly reactivated.
+* `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Contracts/` provide shared endpoint, read-model, and DTO support so browser workflows and retained WPF compatibility do not invent separate product state.
 * `src/Meridian.Ledger/` and `src/Meridian.Reporting/` provide the current accounting and reporting implementation backbone: posted private-capital fund-event reconstruction, capital-account subledger impact, governed report-pack generation/delivery, report-writer grids, saved filters, formulas, and lineage.
 * Direct private-capital review routes under `/api/ledger/private-capital/...` are current operational-review surfaces for fund-event, capital-account, ledger-impact, approval, and report-output evidence. They are not a broad LP portal, payment execution, or mobile product lane.
 
@@ -563,15 +563,15 @@ account/book/period/fund/report context preserved:
 * **Report-Line Provenance Explorer** for report-line inputs, source records, reconciliations,
   journals, approvals, template version, delivery package, and restatement lineage.
 
-Browser and WPF experiences should share the same cockpit read-model state while optimizing for
-different work styles. The browser workstation should emphasize role-based triage, lightweight
-queue review, cross-workspace drill-through, comments, assignments, and governed release decisions
-from `src/Meridian.Ui/dashboard/`. The WPF desktop surface should emphasize dense workpaper
-execution: virtualized grids, frozen columns, keyboard-first filtering, account-level tie-out,
-bulk assignment, evidence matching, journal review, and side-by-side reconciliation workpapers in
-`src/Meridian.Wpf/`. Neither surface should own a divergent close state; both should consume shared
-Accounting/Reporting read models from `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` so
-operator actions, approval blockers, and release readiness remain consistent.
+Browser experiences should consume the shared cockpit read-model state while WPF work is deferred.
+The browser workstation should emphasize role-based triage, lightweight queue review,
+cross-workspace drill-through, comments, assignments, and governed release decisions from
+`src/Meridian.Ui/dashboard/`. The WPF desktop surface remains retained compatibility and historical
+evidence context for dense workpaper execution, but new WPF implementation, parity proof,
+screenshots, and validation are deferred until WPF is explicitly reactivated. No surface should own
+a divergent close state; shared Accounting/Reporting read models from `src/Meridian.Ui.Services/`
+and `src/Meridian.Ui.Shared/` should keep operator actions, approval blockers, and release
+readiness consistent.
 
 ---
 

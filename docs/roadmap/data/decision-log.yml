@@ -14,10 +14,10 @@ decisions:
       - W2-TRD-001
       - W7-LIVE-001
   - id: DEC-UI-LANE-001
-    title: Browser and desktop workstations are active UI lanes
+    title: Browser workstation active, WPF workstation deferred
     status: accepted
-    decided_on: 2026-05-21
+    decided_on: 2026-07-05
     owner_lane: Workstation Shell and UX
-    summary: Browser and WPF workstation work both remain active; shared contracts, API endpoints, and read models should carry business behavior before either client composes it.
+    summary: Browser workstation work remains active for new operator UI delivery. WPF implementation, parity proof, screenshots, test repair, and validation are deferred unless explicitly reactivated or requested for WPF-specific maintenance; existing WPF evidence remains historical support context.
     related_roadmap_items:
       - W2-TRD-001

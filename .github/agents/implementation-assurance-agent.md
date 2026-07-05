@@ -63,6 +63,9 @@ Use this lane whenever the task creates or updates an agent or skill package.
    checkout, then push the branch and use GitHub Actions `Targeted Test` with a whitelisted `mode`.
    Use `mode=dotnet-filtered` with the same repo-relative .NET test project under `tests/` plus
    filter before retrying broad local scripts for .NET slices.
+   WPF work is deferred for the time being: do not require WPF parity, WPF screenshots, WPF test
+   repair, or WPF validation unless the user explicitly reactivates or requests WPF-specific
+   maintenance. Record skipped WPF proof as deferred, not as completed evidence.
    For performance-sensitive paths, explicitly address allocation and async blocking risks.
 4. **Report & route:** summarize traceability, list validation commands and outcomes, update AI catalogs, and run `score_eval.py` to produce the rubric report.
 

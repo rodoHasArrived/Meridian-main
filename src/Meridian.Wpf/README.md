@@ -4,7 +4,7 @@ doc_schema: meridian.source-readme
 doc_schema_version: "1.0.0"
 module_id: SRC-WPF
 path: src/Meridian.Wpf
-status: active
+status: deferred
 owner_lane: Workstation Shell and UX
 last_reviewed: 2026-06-16
 ---
@@ -13,8 +13,11 @@ last_reviewed: 2026-06-16
 
 ## Purpose
 
-WPF workstation is the active Windows desktop operator workstation sharing contracts and read models
-with the browser workstation.
+WPF workstation is deferred for the time being. It remains compatibility and historical evidence
+context for the Windows desktop operator workstation, sharing contracts and read models with the
+browser workstation where existing baselines still apply. New WPF implementation, parity proof,
+screenshots, test repair, and validation are deferred unless explicitly reactivated or requested
+for WPF-specific maintenance.
 
 ## Layer responsibility
 

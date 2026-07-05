@@ -29,7 +29,7 @@ messages:
       - Overall status is derived server-side only.
       - State transitions are command-driven.
       - Every transition writes an append-only audit event.
-      - Shared workstation endpoints must be usable by browser dashboard and active WPF desktop workstation surfaces.
+      - Shared workstation endpoints must be usable by the browser dashboard and retain WPF compatibility without adding new WPF scope while WPF is deferred.
       - v1 DTO/route changes should be additive by default.
 
       ## Hard Invariants

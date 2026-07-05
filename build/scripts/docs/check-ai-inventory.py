@@ -55,9 +55,12 @@ ACTIVE_OPERATOR_SURFACE_EXTRA_FILES = (
     ".codex/environments/README.md",
 )
 STALE_OPERATOR_SURFACE_LANGUAGE = (
-    re.compile(r"\bretained\s+WPF\b", re.IGNORECASE),
-    re.compile(r"\bretained\s+desktop\s+(?:support|tests?)\b", re.IGNORECASE),
-    re.compile(r"`src/Meridian\.Wpf/`\s+as\s+retained\s+support", re.IGNORECASE),
+    re.compile(r"\bactive\s+WPF\b", re.IGNORECASE),
+    re.compile(r"\bactive\s+browser\s+workstation\s+and\s+WPF\s+desktop\s+operator\s+surfaces\b", re.IGNORECASE),
+    re.compile(r"\bWPF\b[^.\n]{0,80}\bactive\s+operator\s+surface\b", re.IGNORECASE),
+    re.compile(r"\bActive\s+operator\s+UI\s+work\s+spans\b[^.\n]{0,120}\bMeridian\.Wpf\b", re.IGNORECASE),
+    re.compile(r"\bboth\s+active\s+operator\s+UI\s+surfaces\b", re.IGNORECASE),
+    re.compile(r"\bBrowser\s+and\s+WPF\s+workstation\s+work\s+both\s+remain\s+active\b", re.IGNORECASE),
 )
 CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
 LEGACY_CANONICAL_LINK_PREFIXES = (
@@ -747,7 +750,7 @@ def check_stale_operator_surface_language(root: Path, inventory: Sequence[Invent
                 expected_doc=AI_CONTRACT,
                 message=(
                     f"{rel_path} still uses stale operator-surface wording ({matched_phrase}); "
-                    "describe both browser workstation and WPF desktop as active surfaces backed by shared contracts."
+                    "describe browser workstation as the active UI lane and WPF as deferred unless explicitly reactivated."
                 ),
             )
         )

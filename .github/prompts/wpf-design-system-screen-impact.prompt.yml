@@ -12,8 +12,8 @@ messages:
 
       ## Repository Context
       - Meridian is a .NET 10 fund-management and trading-platform codebase.
-      - Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`, with built browser assets in `src/Meridian.Ui/wwwroot/workstation/`.
-      - Use this prompt for WPF desktop work; keep shared product behavior behind shared contracts, API endpoints, or shared read models before composing it into either UI client.
+      - Active operator UI work is browser-first in `src/Meridian.Ui/dashboard/`, with built browser assets in `src/Meridian.Ui/wwwroot/workstation/`; WPF under `src/Meridian.Wpf/` is deferred.
+      - Use this prompt only when WPF is explicitly reactivated or requested for maintenance; keep shared product behavior behind shared contracts, API endpoints, or shared read models before composing it into either UI client.
       - Keep visible operator navigation limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
       - Treat WPF `Research`, `Data Operations`, and `Governance` catalogs as compatibility aliases, not the current product taxonomy.
       - Prefer existing WPF MVVM patterns, XAML resources, shell navigation catalogs, and service layers.

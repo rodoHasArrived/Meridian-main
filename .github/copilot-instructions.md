@@ -32,6 +32,10 @@ Keep product work grounded in current source evidence, the roadmap registry, and
 Treat prior baselines and named productization targets as roadmap/status evidence, not development
 ceilings; expansion lanes can proceed when current source, roadmap, or user direction supports them.
 
+WPF work under `src/Meridian.Wpf/` is deferred for the time being. Do not start WPF implementation,
+WPF test repair, desktop screenshots, or WPF validation lanes unless the user explicitly reactivates
+or requests WPF-specific maintenance. Existing WPF evidence remains historical support context.
+
 If the task request is ambiguous, document assumptions in the PR body.
 
 ## 1) Prefer well-scoped tasks

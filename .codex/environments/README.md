@@ -46,6 +46,6 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-The WPF desktop shell is an active operator surface alongside the browser workstation. Keep shared
-product behavior behind shared contracts, local/web API endpoints, or shared read models before
-composing it into either UI client.
+WPF desktop shell work is deferred unless explicitly reactivated or requested for maintenance. Keep
+shared product behavior behind shared contracts, local/web API endpoints, or shared read models
+before client composition.

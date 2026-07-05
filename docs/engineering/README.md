@@ -31,7 +31,10 @@ Use the source-module registry and source README workflow before changing code:
 Canonical ownership rule:
 
 - Keep business logic in application/domain/shared-service layers.
-- Keep UI behavior thin in `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
+- Keep UI behavior thin in `src/Meridian.Ui/dashboard/`.
+- WPF work under `src/Meridian.Wpf/` is deferred for the time being: do not start WPF
+  implementation, WPF test repair, desktop screenshots, or WPF validation unless the user
+  explicitly reactivates or requests WPF-specific maintenance.
 - Keep shared UI read-model/service contracts in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 - Never create duplicate business behavior per surface unless a surface-specific constraint exists.
 
@@ -101,7 +104,10 @@ npm --prefix src/Meridian.Ui/dashboard run build
 dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
 ```
 
-### Desktop slices
+### Deferred desktop slices
+
+WPF is deferred. Use these commands only when the user explicitly reactivates or requests
+WPF-specific maintenance proof.
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
@@ -129,21 +135,27 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-d
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
 npm --prefix src/Meridian.Ui/dashboard run dev
-pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 ```
 
-Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
-host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
-without `-BuildOnly` only when the production governance persistence variables are configured:
-`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
-Development launch mode sets `DOTNET_ENVIRONMENT=Development`,
-`ASPNETCORE_ENVIRONMENT=Development`, and `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` for the
-launched processes, then restores the caller's environment.
+Deferred WPF-only local run commands remain available for explicitly requested maintenance:
+
+```powershell
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
+```
+
+Use `-LaunchMode Production` without `-BuildOnly` only when the production governance persistence
+variables are configured: `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
+`MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`. Development launch mode sets
+`DOTNET_ENVIRONMENT=Development`, `ASPNETCORE_ENVIRONMENT=Development`, and
+`MERIDIAN_USE_INMEMORY_GOVERNANCE=true` for the launched processes, then restores the caller's
+environment.
 
 ## Workstation Architecture Rules
 
 ### WPF Workstation
 
+- Deferred for new work until the user reactivates WPF.
 - Keep views focused on rendering.
 - Route commands, state, and labels through view models, services, and shared read models.
 - Preserve shared session/workflow semantics with browser.
@@ -170,7 +182,8 @@ contracts/read models/endpoints, then surfaced by each UI.
 
 ### Required Engineered Canonicality
 
-- This page is the canonical engineering start for WPF/browser/operator-facing implementation work.
+- This page is the canonical engineering start for browser/shared operator-facing implementation
+  work and explicitly requested WPF maintenance.
 - Architecture and build/test claims must be validated through:
   - owning module README
   - `docs/source/data/source-modules.yml`

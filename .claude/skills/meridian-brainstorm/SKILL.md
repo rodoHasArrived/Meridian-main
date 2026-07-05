@@ -88,13 +88,13 @@ A provider-agnostic .NET 10 platform for evidence-backed investment operations: 
 - Strategy lifecycle: register, run, pause, promote paper→live
 - Pre-trade risk validation via `CompositeRiskValidator` / `IRiskRule`
 - Browser workstation: operator workflows, live status, data browser, and API-backed work queues
-- Active WPF desktop operator surface: shared contracts, regressions, and desktop workflows
+- Deferred WPF desktop operator surface: retained shared-contract compatibility, regressions, and desktop workflows
 - MCP server layer (`Meridian.Mcp` / `Meridian.McpServer`) exposing tools + prompts for AI agents
 - Deployment: Docker Compose, systemd, Kubernetes
 - Observability: OpenTelemetry tracing, Prometheus metrics, Grafana dashboards
 - CI/CD: 33 GitHub Actions workflows for build, test, and automated documentation
 
-**What's coming:** StockSharp 90+ provider activation, Python-accessible layer, Arrow Flight / DuckDB integration, assembly-level SIMD hot-path optimizations, full WPF UX parity (6 pages still showing placeholder data), live broker adapters beyond paper trading.
+**What's coming:** StockSharp 90+ provider activation, Python-accessible layer, Arrow Flight / DuckDB integration, assembly-level SIMD hot-path optimizations, deferred WPF UX parity only if reactivated, live broker adapters beyond paper trading.
 
 **Current count (authoritative: `../_shared/project-context.md`):** 868 source files (856 C# + 12 F#), 261 test files, 22 main projects, 33 CI/CD workflows.
 
