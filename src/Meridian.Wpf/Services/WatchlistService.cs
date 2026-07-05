@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Contracts;
 
 namespace Meridian.Wpf.Services;
@@ -21,8 +22,10 @@ public interface IWatchlistReader
 /// <summary>
 /// Service for managing symbol watchlists in the WPF application.
 /// Provides local persistence and optional synchronization with the backend API.
+/// Implements the shared <see cref="IWatchlistService"/> seam so shared UI services can
+/// read this host's watchlists instead of the in-memory default.
 /// </summary>
-public sealed class WatchlistService : IWatchlistReader
+public sealed class WatchlistService : IWatchlistReader, IWatchlistService
 {
     private static readonly Lazy<WatchlistService> _instance =
         new(() => new WatchlistService(WpfRemoteWorkstationClient.Instance));
@@ -585,6 +588,24 @@ public sealed class WatchlistService : IWatchlistReader
     private void OnWatchlistsChanged(WatchlistChangeType changeType, Watchlist? watchlist)
     {
         WatchlistsChanged?.Invoke(this, new WatchlistsChangedEventArgs(changeType, watchlist));
+    }
+
+    // IWatchlistService adapter: shapes this host's watchlists into the shared read model —
+    // one group per watchlist plus the distinct flat symbol set.
+    async Task<WatchlistData> IWatchlistService.LoadWatchlistAsync()
+    {
+        var watchlists = await GetAllWatchlistsAsync().ConfigureAwait(false);
+        return new WatchlistData
+        {
+            Symbols = watchlists
+                .SelectMany(w => w.Symbols)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(symbol => new WatchlistItem { Symbol = symbol })
+                .ToList(),
+            Groups = watchlists
+                .Select(w => new WatchlistGroup { Name = w.Name, Symbols = w.Symbols.ToList() })
+                .ToList()
+        };
     }
 }
 

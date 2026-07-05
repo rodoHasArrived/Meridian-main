@@ -1,5 +1,5 @@
 using System.Threading;
-using Meridian.Application.Backfill;
+using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
@@ -18,16 +18,17 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
 using Meridian.Storage.Services;
 using Serilog;
-using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Backfill;
 using Meridian.Storage.Backfill;
 
-namespace Meridian.Application.UI;
+namespace Meridian.Application.Backfill;
 
 /// <summary>
 /// Coordinates backfill operations using providers from <see cref="ProviderRegistry"/>.
 /// All providers are resolved through the registry, which is populated during DI setup.
+/// Owns execution, provider discovery, and preview estimation; the
+/// <c>Meridian.Ui.Shared.Services.BackfillCoordinator</c> is a thin read-model façade over this type.
 /// </summary>
 [ImplementsAdr("ADR-001", "Uses ProviderRegistry for unified provider discovery")]
 public sealed class BackfillCoordinator : IDisposable
@@ -239,6 +240,22 @@ public sealed class BackfillCoordinator : IDisposable
         {
             _gate.Release();
         }
+    }
+
+    /// <summary>
+    /// Previews a backfill operation without fetching data: which provider would serve it,
+    /// estimated bar counts and duration, and existing on-disk coverage per symbol.
+    /// </summary>
+    public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
+    {
+        ValidateRequest(request);
+
+        var provider = CreateProviders()
+            .FirstOrDefault(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
+        var cfg = _store.Load();
+        var dataRoot = _store.GetDataRoot(cfg);
+
+        return Task.FromResult(BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot));
     }
 
     /// <summary>
