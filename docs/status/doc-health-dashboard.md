@@ -19,13 +19,13 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1762 |
-| Total lines | 264,758 |
-| Average file size (lines) | 150.3 |
-| Orphaned files | 706 |
-| Files without headings | 97 |
+| Total documentation files | 539 |
+| Total lines | 89,385 |
+| Average file size (lines) | 165.8 |
+| Orphaned files | 206 |
+| Files without headings | 38 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 681 |
+| TODO/FIXME markers | 204 |
 | **Health score** | **83/100** |
 
 ### Score Breakdown
@@ -44,22 +44,22 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 These files lack a Markdown heading, making them harder to navigate:
 
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/SKILL.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/CandleChart.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/ChartCard.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/EquityCurve.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Badge.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Button.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Eyebrow.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Input.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/PanelSurface.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/StatusBanner.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/DenseDataTable.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/EntitySummary.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/KeyValueGrid.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/data/MetricCard.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/shell/NavRail.prompt.md`
-- ... and 82 more
+- `Meridian Design System/SKILL.md`
+- `Meridian Design System/components/charts/CandleChart.prompt.md`
+- `Meridian Design System/components/charts/ChartCard.prompt.md`
+- `Meridian Design System/components/charts/EquityCurve.prompt.md`
+- `Meridian Design System/components/core/Badge.prompt.md`
+- `Meridian Design System/components/core/Button.prompt.md`
+- `Meridian Design System/components/core/Eyebrow.prompt.md`
+- `Meridian Design System/components/core/Input.prompt.md`
+- `Meridian Design System/components/core/PanelSurface.prompt.md`
+- `Meridian Design System/components/core/StatusBanner.prompt.md`
+- `Meridian Design System/components/data/DenseDataTable.prompt.md`
+- `Meridian Design System/components/data/EntitySummary.prompt.md`
+- `Meridian Design System/components/data/KeyValueGrid.prompt.md`
+- `Meridian Design System/components/data/MetricCard.prompt.md`
+- `Meridian Design System/components/shell/NavRail.prompt.md`
+- ... and 23 more
 
 ### Orphaned Documentation
 
@@ -77,15 +77,15 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-roadmap-strategist/SKILL.md`
 - `.agents/skills/meridian-simulated-user-panel/SKILL.md`
 - `.agents/skills/meridian-test-writer/SKILL.md`
-- `.tmp/gh-run-28153181504/wpf-dev-validation-469/20260625-070953/wpf-dev-test-validation.md`
-- `.tmp/gh-run-28268782582/windows-desktop-validation-1499/20260626-222901/wpf-dev-test-validation.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/SKILL.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/CandleChart.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/ChartCard.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/charts/EquityCurve.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Badge.prompt.md`
-- `.tmp/meridian-design-system-attachment-bb32f6f3f418450f8fae4f8c63223d4b/components/core/Button.prompt.md`
-- ... and 686 more
+- `AGENTS.md`
+- `Meridian Design System/CONTENT_FUNDAMENTALS.md`
+- `Meridian Design System/ICONOGRAPHY.md`
+- `Meridian Design System/INSPIRATION_BRIEF.md`
+- `Meridian Design System/SKILL.md`
+- `Meridian Design System/VISUAL_FOUNDATIONS.md`
+- `Meridian Design System/components/charts/CandleChart.prompt.md`
+- `Meridian Design System/components/charts/ChartCard.prompt.md`
+- ... and 186 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 83 | 1762 | 706 | 0 |
+| 1970-01-01 | 83 | 539 | 206 | 0 |
 
 ---
 

@@ -17,6 +17,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization of the next highest-value implementable features, sequenced against the W6/W7
     roadmap lanes
+  - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
+    code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
+    aggregating per-security projection runs into scenario-aware, per-currency cash ladders
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing
