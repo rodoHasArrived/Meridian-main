@@ -884,7 +884,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -4029,6 +4028,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
+│   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   └── AssetOperationsReadService.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
@@ -6680,7 +6680,8 @@ Meridian-main
 │   │   │   ├── OperationsContinuityPostgresRoundTripTests.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
-│   │   │   └── ReconciliationRunServiceTests.cs
+│   │   │   ├── ReconciliationRunServiceTests.cs
+│   │   │   └── SecurityMasterCashFlowServiceTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   └── LayerBoundaryTests.cs
