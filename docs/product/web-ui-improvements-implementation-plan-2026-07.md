@@ -191,7 +191,10 @@ No feature work; confirm and document the rules each later phase must follow.
       matrix, price alerts); the `use-workstation-data` workspace poller is deferred to step 2 —
       workspace topics need the event-driven fan-out seam, not a 30s poll-bridge.
 - [ ] Step-2 fan-out seam (separate PR, hot-path review required) + workspace topics + per-session
-      stream caps.
+      stream caps. **Design:** see
+      [`web-ui-stream-fan-out-blueprint-2026-07.md`](web-ui-stream-fan-out-blueprint-2026-07.md) —
+      code-ready blueprint (notifier seam + `QuoteStreamBroadcaster` + connection registry;
+      companion-pane stream sharing over the `BroadcastChannel`), phased for hot-path review.
 
 ---
 
@@ -267,6 +270,19 @@ No feature work; confirm and document the rules each later phase must follow.
   `DenseRowDetailPanel` (contract already prescribes this; avoids variable-height rows).
   First adopters: trial balance, journal entries, reconciliation breaks, financial record explorer.
 
+  **Landed:** an opt-in `virtualization={{ rowHeight, viewportRowCount?, overscan? }}` prop on
+  `DenseDataTable`. Windowing is expressed with top/bottom spacer rows so the element stays a
+  semantic `<table>`; `aria-rowcount`/`aria-rowindex` report positions across the full set. The
+  offset/reveal/type-ahead math is a pure module (`lib/dense-virtualization.ts`, unit-tested).
+  Keyboard traversal (Arrow/Home/End/type-ahead) addresses the full data set: targeting a
+  windowed-out row scrolls it into view and defers focus until it mounts (focus survives unmount).
+  Escape-back-to-row is coordinated through a reveal-handler registry in
+  `dense-row-detail-accessibility.tsx` so the panel can return focus to a selected row that
+  windowing unmounted, instead of grabbing an unrelated in-window row. The prop is absent for the
+  17 existing consumers (behaviour byte-identical); adopted first in **trial balance**, gated above
+  a row-count threshold so small sets render normally. Journal entries, reconciliation breaks, and
+  the financial record explorer are follow-up adopters that reuse the same prop.
+
 ### 6c. Linked chart crosshair + evidence drill (#8)
 - Charts (`components/charts/`) are stateless SVG: `crosshairIndex` prop flows IN, no events flow
   OUT. Add optional `onCrosshairChange(index)` / `onPointActivate(index)` props to `CandleChart`
@@ -274,6 +290,20 @@ No feature work; confirm and document the rules each later phase must follow.
   range, timestamp-normalized across differing x-domains). Point activation feeds the screen's
   existing `*.linked-context.ts` / `*.evidence-timeline.ts` modules. Scope the context per screen
   — never global.
+
+  **Landed:** `CandleChart` and `EquityCurve` gained optional `onCrosshairChange`/`onPointActivate`
+  props. When either is set they render a transparent, focusable `ChartInteractionOverlay`
+  (`components/charts/chart-interaction.tsx`, pure index-from-pointer + keyboard-step helpers,
+  unit-tested) with slider semantics over the plot area — pointer move/leave, click, and
+  Arrow/Home/End/Enter/Space drive crosshair + activation. `ChartSyncContext`
+  (`components/charts/chart-sync.tsx`) holds hovered/selected state normalized on the **timestamp**,
+  so linked charts with different x-domains stay aligned; `useChartCrosshairSync(timestamps)` maps a
+  chart's indices to/from the shared timestamp (via the pure, tested `nearestTimestampIndex`) and
+  fires `onActivate` for the drill. Scoped per screen via `ChartSyncProvider`. Exemplar wiring: the
+  Portfolio run drill-in equity curve now emits crosshair/activation and renders a per-point
+  evidence readout (date, equity, drawdown) driven by the shared selected timestamp — ready for a
+  second linked chart in the same provider. The props are absent for every other chart usage, so
+  existing charts are unchanged (overlay only renders when a callback is supplied).
 
 ### 6d. Pop-out companion panes (#9)
 - Every route currently renders inside masthead + shell chrome in `app.tsx` — add an early
@@ -285,15 +315,30 @@ No feature work; confirm and document the rules each later phase must follow.
   visible fallback link (`target="_blank" rel="noopener noreferrer"`). Pane components must be
   shell-independent; session expiry propagates over the channel.
 
+  **Landed:** `app.tsx` now branches at the top (`AppRoot`) — `/panes/*` renders `CompanionPaneWindow`
+  instead of `AppShell`, so a pane carries no masthead, navigation, or workstation data loading.
+  `lib/companion-pane/pane-window.ts` holds the pure pane registry/route helpers and
+  `openCompanionPane` (opens with `noopener,noreferrer` and never inspects the return value).
+  `lib/companion-pane/chrome-bridge.ts` is the same-origin `BroadcastChannel` bridge with a validated
+  message contract (`appearance` | `scope` | `session-expired`) and an injectable channel for tests;
+  `opener-broadcast.ts` is the main-window side (lazy shared channel, no-op when unavailable). The
+  main window broadcasts appearance changes (from the theme toggle) and a `session-expired` signal on
+  `pagehide`; `CompanionPaneWindow` applies the persisted appearance on load, retheme's live, and
+  shows a "main window no longer available" alert on session end. `PopOutPaneButton` renders a
+  `window.open` button **plus** an always-visible fallback link. Exemplar adopter: the watchlist
+  workspace header (pop-out hidden when already inside a pane). `scope` is carried in the bridge
+  contract (validated + tested) and reserved for scope-aware panes; fanned-out stream data over the
+  channel remains the documented Phase 4 follow-up (the exemplar panes still open their own feeds).
+
 **Validation for all of Phase 6:** `npm --prefix src/Meridian.Ui/dashboard run test`; grid work
 additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 `dense-row-detail-accessibility.test.tsx`).
 
 **Checklist**
 - [x] 6a scope picker + persistence + Portfolio migration.
-- [ ] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
-- [ ] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
-- [ ] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
+- [x] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
+- [x] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
+- [x] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
 
 ---
 

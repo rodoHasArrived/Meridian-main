@@ -29,6 +29,9 @@ import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
+import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
+import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
+import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -100,10 +103,23 @@ export function App() {
   return (
     <PriceAlertsProvider>
       <ToastProvider>
-        <AppShell />
+        <AppRoot />
       </ToastProvider>
     </PriceAlertsProvider>
   );
+}
+
+/**
+ * Chrome-less companion panes (`/panes/*`) render before — and instead of — the
+ * full workstation shell, so a pop-out window carries no masthead, navigation, or
+ * workstation data loading. Everything else renders the shell.
+ */
+function AppRoot() {
+  const { pathname } = useLocation();
+  if (isCompanionPaneRoute(pathname)) {
+    return <CompanionPaneWindow />;
+  }
+  return <AppShell />;
 }
 
 function AppShell() {
@@ -280,6 +296,14 @@ function AppShell() {
     window.addEventListener("keydown", handleCommandShortcut);
     return () => window.removeEventListener("keydown", handleCommandShortcut);
   }, [commandOpen, setCommandOpen]);
+
+  // Tell any open companion panes when the main workstation window goes away, so
+  // they can surface that their source is gone rather than silently going stale.
+  useEffect(() => {
+    const handlePageHide = () => broadcastCompanionState({ type: "session-expired" });
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, []);
 
   const shell = useMemo(() => buildAppShellViewState({
     pathname,

@@ -1,6 +1,7 @@
 // Meridian equity curve — line (with area fill) + benchmark overlay, value-axis labels,
 // gridlines, legend, crosshair readout, and an optional drawdown subpane. Mirrors the
 // performance charts in analytics / backtest reporting. Flex-fills its container.
+import { ChartInteractionOverlay } from "./chart-interaction";
 import { niceTicks } from "./ticks";
 
 export interface EquitySeries {
@@ -25,6 +26,13 @@ export interface EquityCurveProps {
   valueFmt?: (v: number) => string;
   /** Point index to mark with the crosshair. */
   crosshairIndex?: number | null;
+  /**
+   * Emit the hovered/keyboard-focused point index (null on leave). Providing this
+   * (or `onPointActivate`) enables an interactive overlay over the plot area.
+   */
+  onCrosshairChange?: (index: number | null) => void;
+  /** Emit the activated point index (click, Enter, or Space). */
+  onPointActivate?: (index: number) => void;
   /** Approx. number of value gridlines. @default 6 */
   valueTicks?: number;
   /** Approx. number of time labels. @default 7 */
@@ -48,6 +56,8 @@ export function EquityCurve({
   drawdown = null,
   valueFmt = (v) => v.toFixed(0),
   crosshairIndex = null,
+  onCrosshairChange,
+  onPointActivate,
   valueTicks = 6,
   timeTicks = 7,
   showLegend = true,
@@ -215,6 +225,19 @@ export function EquityCurve({
             </text>
           </g>
         )}
+
+        {/* interaction overlay (crosshair + activation) */}
+        <ChartInteractionOverlay
+          x={plotL}
+          y={eqT}
+          width={plotR - plotL}
+          height={ddB - eqT}
+          count={n}
+          crosshairIndex={crosshairIndex}
+          onCrosshairChange={onCrosshairChange}
+          onPointActivate={onPointActivate}
+          ariaLabel="Move crosshair across equity points; activate to drill into the selected point"
+        />
       </svg>
     </div>
   );

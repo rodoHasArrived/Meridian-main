@@ -72,6 +72,30 @@ export function buildDenseRowDetailAnnouncement(label: string): string {
   return `${label} selected. Detail panel updated.`;
 }
 
+/**
+ * Returns true when it has taken over focus handling (scrolled the controlling
+ * row back into view and focused it). Registered by virtualized dense tables so
+ * Escape can return focus to a selected row that has been unmounted by windowing.
+ */
+export type DenseRowRevealHandler = () => boolean;
+
+const denseRowRevealHandlers = new Map<string, DenseRowRevealHandler>();
+
+/**
+ * Register a reveal handler for a detail panel id. A virtualized dense table
+ * uses this so that pressing Escape from the detail panel can bring a
+ * scrolled-out selected row back into the window before focusing it. Returns an
+ * unregister function; safe to call when the same panel id is re-registered.
+ */
+export function registerDenseRowRevealHandler(panelId: string, handler: DenseRowRevealHandler): () => void {
+  denseRowRevealHandlers.set(panelId, handler);
+  return () => {
+    if (denseRowRevealHandlers.get(panelId) === handler) {
+      denseRowRevealHandlers.delete(panelId);
+    }
+  };
+}
+
 export function focusDenseRowDetailPanel(panelId: string | undefined): void {
   if (!panelId || typeof document === "undefined") return;
   window.requestAnimationFrame(() => {
@@ -85,18 +109,35 @@ function handleDenseRowDetailPanelKeyDown(event: KeyboardEvent<HTMLElement>) {
   const panelId = event.currentTarget.id;
   if (!panelId) return;
 
+  // The selected controlling row, if it is currently mounted.
   const selectedController = document.querySelector<HTMLElement>(
     `[aria-controls="${escapeAttributeSelectorValue(panelId)}"][aria-selected="true"]`
   );
+  if (selectedController) {
+    event.preventDefault();
+    selectedController.focus();
+    return;
+  }
+
+  // The selected row is not mounted — a virtualized table has scrolled it out of
+  // the window. A registered reveal handler owns the panel's reveal semantics
+  // (it knows the selected row's index); prefer it over the generic fallback,
+  // which would otherwise grab an unrelated windowed row that controls the same
+  // panel.
+  const revealer = denseRowRevealHandlers.get(panelId);
+  if (revealer?.()) {
+    event.preventDefault();
+    return;
+  }
+
+  // Non-virtualized fallback: focus the first controlling row.
   const fallbackController = document.querySelector<HTMLElement>(
     `[aria-controls="${escapeAttributeSelectorValue(panelId)}"][data-selectable="true"]`
   );
-  const controller = selectedController ?? fallbackController;
-
-  if (!controller) return;
-
-  event.preventDefault();
-  controller.focus();
+  if (fallbackController) {
+    event.preventDefault();
+    fallbackController.focus();
+  }
 }
 
 function escapeAttributeSelectorValue(value: string): string {

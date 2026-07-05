@@ -1772,7 +1772,8 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── README.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
-│   │   └── web-ui-improvements-implementation-plan-2026-07.md
+│   │   ├── web-ui-improvements-implementation-plan-2026-07.md
+│   │   └── web-ui-stream-fan-out-blueprint-2026-07.md
 │   ├── prompts
 │   │   ├── automation-prompts.md
 │   │   ├── README.md
@@ -3485,6 +3486,7 @@ Meridian-main
 │   ├── Meridian.Domain
 │   │   ├── Collectors
 │   │   │   ├── IQuoteStateStore.cs
+│   │   │   ├── IQuoteUpdateNotifier.cs
 │   │   │   ├── L3OrderBookCollector.cs
 │   │   │   ├── MarketDepthCollector.cs
 │   │   │   ├── OptionDataCollector.cs
@@ -4776,6 +4778,10 @@ Meridian-main
 │   │   │   │   │   │   └── TrialBalanceRowDetail.tsx
 │   │   │   │   │   ├── charts
 │   │   │   │   │   │   ├── CandleChart.tsx
+│   │   │   │   │   │   ├── chart-interaction.test.ts
+│   │   │   │   │   │   ├── chart-interaction.tsx
+│   │   │   │   │   │   ├── chart-sync.test.tsx
+│   │   │   │   │   │   ├── chart-sync.tsx
 │   │   │   │   │   │   ├── ChartCard.tsx
 │   │   │   │   │   │   ├── charts.test.tsx
 │   │   │   │   │   │   ├── CorrelationHeatmap.tsx
@@ -4818,6 +4824,8 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── companion-pane-window.test.tsx
+│   │   │   │   │   │   ├── companion-pane-window.tsx
 │   │   │   │   │   │   ├── copy-link-button.test.tsx
 │   │   │   │   │   │   ├── copy-link-button.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.test.tsx
@@ -4842,6 +4850,8 @@ Meridian-main
 │   │   │   │   │   │   ├── notification-center.tsx
 │   │   │   │   │   │   ├── number-passport.test.ts
 │   │   │   │   │   │   ├── number-passport.tsx
+│   │   │   │   │   │   ├── pop-out-pane-button.test.tsx
+│   │   │   │   │   │   ├── pop-out-pane-button.tsx
 │   │   │   │   │   │   ├── quant-notebook.test.tsx
 │   │   │   │   │   │   ├── quant-notebook.tsx
 │   │   │   │   │   │   ├── quant-notebook.view-model.test.ts
@@ -4871,6 +4881,7 @@ Meridian-main
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
+│   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
@@ -4996,6 +5007,12 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   └── security-master-workbench.api.ts
+│   │   │   │   │   ├── companion-pane
+│   │   │   │   │   │   ├── chrome-bridge.test.ts
+│   │   │   │   │   │   ├── chrome-bridge.ts
+│   │   │   │   │   │   ├── opener-broadcast.ts
+│   │   │   │   │   │   ├── pane-window.test.ts
+│   │   │   │   │   │   └── pane-window.ts
 │   │   │   │   │   ├── covered-call
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
@@ -5032,6 +5049,8 @@ Meridian-main
 │   │   │   │   │   ├── csv.ts
 │   │   │   │   │   ├── daily-control-tower.test.ts
 │   │   │   │   │   ├── daily-control-tower.ts
+│   │   │   │   │   ├── dense-virtualization.test.ts
+│   │   │   │   │   ├── dense-virtualization.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── plaid-link.ts
@@ -5228,6 +5247,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── command-palette.css
+│   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
 │   │   │   │   │   ├── ui-kit-primitives.css
@@ -5636,6 +5656,10 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
+│   │   ├── Streaming
+│   │   │   ├── QuoteStreamOptions.cs
+│   │   │   ├── StreamConnectionRegistry.cs
+│   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
 │   │   │   ├── FileWorkflowPresetStore.cs
@@ -7249,6 +7273,9 @@ Meridian-main
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
+│   │   │   ├── Streaming
+│   │   │   │   ├── StreamConnectionRegistryTests.cs
+│   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
