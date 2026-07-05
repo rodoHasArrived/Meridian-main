@@ -2847,8 +2847,10 @@ Meridian-main
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── AssetClassValidatorRegistry.cs
+│   │   │   ├── CanonicalRegistryCoverageSource.cs
 │   │   │   ├── ConfiguredSymbolCoverageSource.cs
 │   │   │   ├── CorporateActionCommandService.cs
+│   │   │   ├── CorporateActionInboxState.cs
 │   │   │   ├── CorporateActionIngestOrchestrator.cs
 │   │   │   ├── CorporateActionRestatementTrigger.cs
 │   │   │   ├── CorporateActionValidation.cs
@@ -2884,6 +2886,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterCorporateActionCommandService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterDataQualityService.cs
+│   │   │   ├── SecurityMasterDraftProposalService.cs
+│   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolver.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestStatusService.cs
 │   │   │   ├── SecurityMasterLedgerBridge.cs
@@ -3251,6 +3255,7 @@ Meridian-main
 │   │   │   ├── DataVendorEntitlement.cs
 │   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── IDataVendorEntitlementService.cs
+│   │   │   ├── IHistoricalSymbolTimelineResolver.cs
 │   │   │   ├── InstrumentTypeDescriptorCatalog.cs
 │   │   │   ├── ISecurityCoverageSymbolSource.cs
 │   │   │   ├── ISecurityMasterAmender.cs
@@ -5155,6 +5160,12 @@ Meridian-main
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
+│   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
+│   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
+│   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.test.ts
+│   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.ts
+│   │   │   │   │   ├── data-screen.coverage-gaps.view-model.test.ts
+│   │   │   │   │   ├── data-screen.coverage-gaps.view-model.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.test.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.ts
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
@@ -6587,6 +6598,7 @@ Meridian-main
 │   │   │   │   ├── CompositeHistoricalDataProviderTests.cs
 │   │   │   │   ├── CrossSourceBackfillReconciliationServiceTests.cs
 │   │   │   │   ├── GapBackfillServiceTests.cs
+│   │   │   │   ├── HistoricalBackfillEraSymbolTests.cs
 │   │   │   │   ├── HistoricalProviderContractTests.cs
 │   │   │   │   ├── ParallelBackfillServiceTests.cs
 │   │   │   │   ├── PriorityBackfillQueueTests.cs
@@ -7175,8 +7187,10 @@ Meridian-main
 │   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── CorporateActionEffectiveStateProjectorTests.cs
+│   │   │   ├── CorporateActionInboxStateTests.cs
 │   │   │   ├── CorporateActionIngestOrchestratorTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
@@ -7192,6 +7206,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterDataQualityServiceCoverageTests.cs
 │   │   │   ├── SecurityMasterDataQualityServiceTests.cs
+│   │   │   ├── SecurityMasterDraftProposalServiceTests.cs
+│   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolverTests.cs
 │   │   │   ├── SecurityMasterImportServiceTests.cs
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
