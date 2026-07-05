@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { companionPaneHref, openCompanionPane, type PaneOpener } from "@/lib/companion-pane/pane-window";
+import { COMPANION_PANES, companionPaneHref, openCompanionPane, type PaneOpener } from "@/lib/companion-pane/pane-window";
 
 export interface PopOutPaneButtonProps {
   paneId: string;
@@ -16,6 +16,7 @@ export interface PopOutPaneButtonProps {
  * detect a blocked popup — the fallback link is the reliable path in.
  */
 export function PopOutPaneButton({ paneId, label = "Pop out", opener = window }: PopOutPaneButtonProps) {
+  const paneTitle = COMPANION_PANES[paneId]?.title ?? paneId;
   return (
     <span className="pop-out-pane">
       <Button
@@ -33,6 +34,7 @@ export function PopOutPaneButton({ paneId, label = "Pop out", opener = window }:
         href={companionPaneHref(paneId)}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`Open ${paneTitle} in a new tab`}
       >
         Open in new tab
       </a>

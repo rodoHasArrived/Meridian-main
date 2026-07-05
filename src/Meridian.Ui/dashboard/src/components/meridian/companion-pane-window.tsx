@@ -66,7 +66,10 @@ export function CompanionPaneWindow({ openChannel = openCompanionChannel }: Comp
     };
   }, [openChannel]);
 
-  if (!pane) {
+  // Unknown route, or a pane registered without a mapped component — fail gracefully
+  // rather than rendering an undefined component (which would crash React).
+  const PaneComponent = pane ? PANE_COMPONENTS[pane.id] : undefined;
+  if (!pane || !PaneComponent) {
     return (
       <div className="companion-pane" role="main" aria-label="Unknown companion pane">
         <div className="companion-pane-empty">
@@ -75,8 +78,6 @@ export function CompanionPaneWindow({ openChannel = openCompanionChannel }: Comp
       </div>
     );
   }
-
-  const PaneComponent = PANE_COMPONENTS[pane.id];
 
   return (
     <div className="companion-pane" role="main" aria-label={pane.description}>

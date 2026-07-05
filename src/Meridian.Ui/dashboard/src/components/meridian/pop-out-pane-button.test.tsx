@@ -15,7 +15,7 @@ describe("PopOutPaneButton", () => {
 
   it("always renders a persistent fallback link that opens a new tab safely", () => {
     render(<PopOutPaneButton paneId="live-quotes" />);
-    const link = screen.getByRole("link", { name: "Open in new tab" });
+    const link = screen.getByRole("link", { name: "Open Live quotes in a new tab" });
     expect(link).toHaveAttribute("href", "/panes/live-quotes");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
