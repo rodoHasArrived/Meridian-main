@@ -105,6 +105,7 @@ public sealed class CorporateActionDividendEventProducer
 
                 foreach (var dividend in effectiveDividends)
                 {
+                    var currencySuffix = dividend.Currency is null ? "" : " " + dividend.Currency;
                     var amount = decimal.Round(
                         position.Quantity * dividend.DividendPerShare!.Value, 2, MidpointRounding.AwayFromZero);
                     if (amount <= 0m)
@@ -123,8 +124,7 @@ public sealed class CorporateActionDividendEventProducer
                         new DateTimeOffset(dividend.ExDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
                         FinancialAccountId: position.FinancialAccountId,
                         Description: FormattableString.Invariant(
-                            $"Dividend declared for {symbol}: {position.Quantity} × {dividend.DividendPerShare.Value}" +
-                            $"{(dividend.Currency is null ? "" : " " + dividend.Currency)} (ex {dividend.ExDate:yyyy-MM-dd})"),
+                            $"Dividend declared for {symbol}: {position.Quantity} × {dividend.DividendPerShare.Value}{currencySuffix} (ex {dividend.ExDate:yyyy-MM-dd})"),
                         SecurityId: securityId,
                         SourceEventId: dividend.CorpActId.ToString("N"),
                         EffectiveDate: dividend.ExDate,
