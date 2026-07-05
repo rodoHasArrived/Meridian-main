@@ -753,7 +753,7 @@ public static class AssetOperationsProjectionBuilder
         {
             formula,
             engineVersion = FixedIncomeCashFlowEngineVersion,
-            bond.AccrualConvention?.DayCountConvention,
+            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
             paymentFrequencyPerYear = paymentFrequency,
             principalBasis,
             outstandingPrincipal,
