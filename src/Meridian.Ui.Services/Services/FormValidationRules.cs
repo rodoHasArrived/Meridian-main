@@ -140,7 +140,7 @@ public static class FormValidationRules
         if (string.IsNullOrWhiteSpace(value))
             return ValidationResult.Error($"{fieldName} is required.");
         if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
-            return ValidationResult.Error($"Invalid {fieldName} format. Example: http://localhost:8080");
+            return ValidationResult.Error($"Invalid {fieldName} format. Example: {ApiEndpointDefaults.LocalApiBaseUrl}");
         if (uri.Scheme != "http" && uri.Scheme != "https")
             return ValidationResult.Error($"{fieldName} must start with http:// or https://");
         return ValidationResult.Success();

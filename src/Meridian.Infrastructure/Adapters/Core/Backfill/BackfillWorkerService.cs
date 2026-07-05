@@ -217,7 +217,7 @@ public sealed class BackfillWorkerService : IDisposable
             catch (Exception ex)
             {
                 _log.Error(ex, "Error in worker loop");
-                await Task.Delay(1000, ct).ConfigureAwait(false);
+                await Task.Delay(_config.WorkerErrorRetryDelayMs, ct).ConfigureAwait(false);
             }
         }
     }

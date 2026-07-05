@@ -160,9 +160,15 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
+        builder.Services.AddSingleton(
+            builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
+                .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
+            ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
         builder.Services.AddSingleton<IOrderGateway>(sp =>
             new Meridian.Execution.Adapters.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>()));
+                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
+                securityMaster: null,
+                options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
         builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
         builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
         builder.Services.AddSingleton<IOrderManager>(sp =>

@@ -54,7 +54,7 @@ public static class BrokerageServiceRegistration
             {
                 var paperLogger = sp.GetRequiredService<ILogger<Adapters.PaperTradingGateway>>();
                 var secMaster = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
-                return new Adapters.PaperTradingGateway(paperLogger, secMaster);
+                return new Adapters.PaperTradingGateway(paperLogger, secMaster, sp.GetService<Adapters.PaperTradingGatewayOptions>());
             }
 
             // Resolve the named brokerage gateway via keyed registration

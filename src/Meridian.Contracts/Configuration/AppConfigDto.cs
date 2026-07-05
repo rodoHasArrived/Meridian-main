@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Contracts.Configuration;
 
@@ -504,7 +505,7 @@ public sealed class IBClientPortalOptionsDto
     public bool Enabled { get; set; }
 
     [JsonPropertyName("baseUrl")]
-    public string BaseUrl { get; set; } = "https://localhost:5000";
+    public string BaseUrl { get; set; } = ApiEndpointDefaults.IbClientPortalBaseUrl;
 
     [JsonPropertyName("allowSelfSignedCertificates")]
     public bool AllowSelfSignedCertificates { get; set; } = true;
