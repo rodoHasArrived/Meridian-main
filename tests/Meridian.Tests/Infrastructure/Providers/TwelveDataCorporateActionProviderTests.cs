@@ -92,7 +92,9 @@ public sealed class TwelveDataCorporateActionProviderTests
         var results = await provider.FetchAsync("aapl", securityId, CancellationToken.None);
 
         results.Should().HaveCount(2);
-        results.Select(result => result.ActionType).Should().Equal("Dividend", "StockSplit");
+        // The ratio-0.25 / 4→1 factor payload is economically a reverse split; the provider
+        // maps it to the canonical ReverseStockSplit event type.
+        results.Select(result => result.ActionType).Should().Equal("Dividend", "ReverseStockSplit");
         results.Select(result => result.SecurityId).Should().OnlyContain(id => id == securityId);
         results.Select(result => result.SourceProvider).Should().OnlyContain(source => source == "twelvedata");
 

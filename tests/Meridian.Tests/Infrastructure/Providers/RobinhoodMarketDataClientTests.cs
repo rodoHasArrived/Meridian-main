@@ -71,6 +71,54 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
         sut.IsEnabled.Should().BeFalse();
     }
 
+    // ── Connection diagnostics ───────────────────────────────────────────
+
+    [Fact]
+    public async Task Diagnostics_ReflectHonestLifecycleAcrossConnectAndDisconnect()
+    {
+        var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")), out _);
+        var observed = new List<WebSocketConnectionDiagnostics>();
+        sut.ConnectionDiagnosticsChanged += observed.Add;
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var initial = sut.GetConnectionDiagnosticsSnapshot();
+        initial.IsConnected.Should().BeFalse();
+        initial.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Configured);
+        initial.WebSocketState.Should().Be(System.Net.WebSockets.WebSocketState.None,
+            "Robinhood polls REST and must not pretend to hold a WebSocket");
+
+        await sut.ConnectAsync(cts.Token);
+        var connected = sut.GetConnectionDiagnosticsSnapshot();
+        connected.IsConnected.Should().BeTrue();
+        connected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
+        connected.LastConnectedAt.Should().NotBeNull();
+
+        await sut.DisconnectAsync(cts.Token);
+        var disconnected = sut.GetConnectionDiagnosticsSnapshot();
+        disconnected.IsConnected.Should().BeFalse();
+        disconnected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        disconnected.LastDisconnectedAt.Should().NotBeNull();
+
+        observed.Should().Contain(d => d.LifecycleState == ProviderConnectionLifecycleState.Connected);
+        observed.Should().Contain(d => d.LifecycleState == ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    [Fact]
+    public async Task Diagnostics_MissingToken_ReportNotConfiguredWithError()
+    {
+        var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")),
+            out _, accessToken: null);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var act = () => sut.ConnectAsync(cts.Token);
+        await act.Should().ThrowAsync<ConnectionException>();
+
+        var snapshot = sut.GetConnectionDiagnosticsSnapshot();
+        snapshot.LifecycleState.Should().Be(ProviderConnectionLifecycleState.NotConfigured);
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.LastError.Should().Contain("token");
+    }
+
     // ── ConnectAsync ──────────────────────────────────────────────────────
 
     [Fact]

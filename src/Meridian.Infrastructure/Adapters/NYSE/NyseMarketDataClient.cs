@@ -9,6 +9,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.NYSE;
@@ -19,7 +20,7 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 /// </summary>
 [DataSource("nyse-streaming", "NYSE Streaming", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Exchange,
     Priority = 5, Description = "Unified NYSE streaming client backed by NYSEDataSource")]
-public sealed class NyseMarketDataClient : IMarketDataClient
+public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectionDiagnosticsSource
 {
     private readonly NYSEDataSource _source;
     private readonly TradeDataCollector _tradeCollector;
@@ -83,6 +84,17 @@ public sealed class NyseMarketDataClient : IMarketDataClient
     {
         "Requires NYSE credentials and feed entitlements."
     };
+
+    /// <inheritdoc/>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
+    {
+        add => _source.ConnectionDiagnosticsChanged += value;
+        remove => _source.ConnectionDiagnosticsChanged -= value;
+    }
+
+    /// <inheritdoc/>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+        => _source.GetConnectionDiagnosticsSnapshot();
 
     public Task ConnectAsync(CancellationToken ct = default)
         => _source.ConnectAsync(ct);

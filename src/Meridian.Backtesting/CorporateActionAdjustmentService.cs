@@ -127,8 +127,11 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         IReadOnlyDictionary<DateOnly, decimal> dividendFactorsByExDate)
     {
         var barDate = bar.SessionDate;
-        var priceFactor = 1m;
-        var volumeFactor = 1m;
+        // Accumulate the split divisor and divide once at the end: dividing the running
+        // factor per split (1/2, then /3, ...) leaves a repeating-decimal residue that
+        // makes exact chains like 600 / 6 come out as 100.000...02.
+        var splitDivisor = 1m;
+        var dividendFactor = 1m;
 
         foreach (var action in sortedActions)
         {
@@ -141,24 +144,23 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             if (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.PriceScaling &&
                 action.SplitRatio is > 0m)
             {
-                priceFactor /= action.SplitRatio.Value;
-                volumeFactor *= action.SplitRatio.Value;
+                splitDivisor *= action.SplitRatio.Value;
             }
             else if (descriptor.AdjustmentBehavior == CorporateActionAdjustmentBehavior.CashDistribution &&
-                     dividendFactorsByExDate.TryGetValue(action.ExDate, out var dividendFactor))
+                     dividendFactorsByExDate.TryGetValue(action.ExDate, out var exDateFactor))
             {
-                priceFactor *= dividendFactor;
+                dividendFactor *= exDateFactor;
             }
         }
 
         return new HistoricalBar(
             Symbol: bar.Symbol,
             SessionDate: bar.SessionDate,
-            Open: bar.Open * priceFactor,
-            High: bar.High * priceFactor,
-            Low: bar.Low * priceFactor,
-            Close: bar.Close * priceFactor,
-            Volume: (long)Math.Round(bar.Volume * volumeFactor, MidpointRounding.AwayFromZero),
+            Open: bar.Open * dividendFactor / splitDivisor,
+            High: bar.High * dividendFactor / splitDivisor,
+            Low: bar.Low * dividendFactor / splitDivisor,
+            Close: bar.Close * dividendFactor / splitDivisor,
+            Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
             SequenceNumber: bar.SequenceNumber);
     }

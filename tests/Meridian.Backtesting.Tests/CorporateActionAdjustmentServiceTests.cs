@@ -292,6 +292,119 @@ public sealed class CorporateActionAdjustmentServiceTests
 
         produced.Should().BeLessThan(500);
     }
+    [Fact]
+    public async Task AdjustAsync_LegacySplitAlias_AdjustsPricesLikeStockSplit()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        // Splits ingested before canonical normalization were stored as the raw provider
+        // string "Split"; the alias-tolerant read path must still apply them.
+        var legacySplit = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "Split",
+            ExDate: new DateOnly(2024, 2, 1),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+
+        _mockQueryService.SetCorporateActions([legacySplit]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
+
+        var result = await _service.AdjustAsync([bar], "SPY");
+
+        result.Should().HaveCount(1);
+        result[0].Close.Should().Be(52.5m);
+        result[0].Volume.Should().Be(2000);
+    }
+
+    [Fact]
+    public async Task AdjustAsync_CancelledSplit_IsNotApplied()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        var split = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "StockSplit",
+            ExDate: new DateOnly(2024, 2, 1),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+        var cancellation = split with
+        {
+            CorpActId = Guid.NewGuid(),
+            SupersedesCorpActId = split.CorpActId,
+            LifecycleState = CorporateActionLifecycleStates.Cancelled
+        };
+
+        _mockQueryService.SetCorporateActions([split, cancellation]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
+
+        var result = await _service.AdjustAsync([bar], "SPY");
+
+        result.Should().HaveCount(1);
+        result[0].Close.Should().Be(105m, "a cancelled split must not adjust prices");
+        result[0].Volume.Should().Be(1000);
+    }
+
+    [Fact]
+    public async Task AdjustAsync_AmendedSplit_UsesLatestRatioOnly()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        var original = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "StockSplit",
+            ExDate: new DateOnly(2024, 2, 1),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+        var amendment = original with
+        {
+            CorpActId = Guid.NewGuid(),
+            SupersedesCorpActId = original.CorpActId,
+            SplitRatio = 4m
+        };
+
+        _mockQueryService.SetCorporateActions([original, amendment]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
+
+        var result = await _service.AdjustAsync([bar], "SPY");
+
+        result.Should().HaveCount(1);
+        result[0].Close.Should().Be(26.25m, "only the amended 4:1 ratio applies, never both versions");
+        result[0].Volume.Should().Be(4000);
+    }
+
     private static HistoricalBar CreateBar(
         string symbol,
         DateOnly date,

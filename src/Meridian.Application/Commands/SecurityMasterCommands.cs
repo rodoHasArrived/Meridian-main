@@ -2,6 +2,7 @@ using Meridian.Platform.Results;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 
@@ -16,6 +17,7 @@ namespace Meridian.Application.Commands;
 ///   --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]
 ///   --security-master-ingest --provider edgar [--scope all-filers] [--include-xbrl] [--include-filing-documents] [--cik CIK] [--max-filers N] [--dry-run]
 ///   --security-master-ingest --provider corporate-actions [--symbols AAPL,MSFT] [--minimum-sources N] [--dry-run]
+///   --security-master-normalize-corporate-actions [--apply]
 /// Requires MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to be configured.
 /// </summary>
 internal sealed class SecurityMasterCommands : ICliCommand
@@ -26,6 +28,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
     private readonly ISecurityMasterService? _securityMasterService;
     private readonly IEdgarIngestOrchestrator? _edgarIngestOrchestrator;
     private readonly CorporateActionIngestOrchestrator? _corporateActionIngestOrchestrator;
+    private readonly ISecurityMasterEventStore? _securityMasterEventStore;
     private readonly Serilog.ILogger _log;
 
     private const int ProgressReportInterval = 10;
@@ -35,20 +38,27 @@ internal sealed class SecurityMasterCommands : ICliCommand
         Serilog.ILogger log,
         ISecurityMasterService? securityMasterService = null,
         IEdgarIngestOrchestrator? edgarIngestOrchestrator = null,
-        CorporateActionIngestOrchestrator? corporateActionIngestOrchestrator = null)
+        CorporateActionIngestOrchestrator? corporateActionIngestOrchestrator = null,
+        ISecurityMasterEventStore? securityMasterEventStore = null)
     {
         _importService = importService;
         _log = log;
         _securityMasterService = securityMasterService;
         _edgarIngestOrchestrator = edgarIngestOrchestrator;
         _corporateActionIngestOrchestrator = corporateActionIngestOrchestrator;
+        _securityMasterEventStore = securityMasterEventStore;
     }
 
     public bool CanHandle(string[] args)
-        => args.Any(a => a.Equals("--security-master-ingest", StringComparison.OrdinalIgnoreCase));
+        => args.Any(a =>
+            a.Equals("--security-master-ingest", StringComparison.OrdinalIgnoreCase) ||
+            a.Equals("--security-master-normalize-corporate-actions", StringComparison.OrdinalIgnoreCase));
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
+        if (args.Any(a => a.Equals("--security-master-normalize-corporate-actions", StringComparison.OrdinalIgnoreCase)))
+            return await ExecuteCorporateActionNormalizationAsync(args, ct).ConfigureAwait(false);
+
         var provider = CliArguments.GetValue(args, "--provider");
         if (string.Equals(provider, "polygon", StringComparison.OrdinalIgnoreCase))
             return await ExecutePolygonIngestAsync(args, ct).ConfigureAwait(false);
@@ -62,6 +72,52 @@ internal sealed class SecurityMasterCommands : ICliCommand
 
         // --- File-based ingest path ---
         return await ExecuteFileIngestAsync(args, ct).ConfigureAwait(false);
+    }
+
+    private async Task<CliResult> ExecuteCorporateActionNormalizationAsync(string[] args, CancellationToken ct)
+    {
+        if (_securityMasterEventStore is null)
+        {
+            Console.Error.WriteLine("Security Master event store is not available.");
+            Console.Error.WriteLine("Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to use this command.");
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
+        }
+
+        var apply = args.Any(a => a.Equals("--apply", StringComparison.OrdinalIgnoreCase));
+        Console.WriteLine(apply
+            ? "Normalizing stored corporate-action event types (applying rewrites)..."
+            : "Normalizing stored corporate-action event types (dry run; pass --apply to rewrite)...");
+
+        var result = await _securityMasterEventStore
+            .NormalizeCorporateActionEventTypesAsync(apply, ct)
+            .ConfigureAwait(false);
+
+        Console.WriteLine();
+        if (result.Renames.Count == 0)
+        {
+            Console.WriteLine("All stored corporate-action event types are already canonical.");
+        }
+        else
+        {
+            Console.WriteLine(result.Applied ? "Rewrites applied:" : "Planned rewrites:");
+            foreach (var rename in result.Renames)
+                Console.WriteLine($"  '{rename.StoredValue}' -> '{rename.CanonicalName}' ({rename.RowCount} row(s))");
+        }
+
+        if (result.UnmappedValues.Count > 0)
+        {
+            Console.WriteLine("Values left untouched (no canonical mapping — extend the descriptor catalog aliases first):");
+            foreach (var unmapped in result.UnmappedValues)
+                Console.WriteLine($"  '{unmapped.StoredValue}' ({unmapped.RowCount} row(s))");
+        }
+
+        _log.Information(
+            "Corporate-action event-type normalization: {RenameCount} rename(s), {UnmappedCount} unmapped value(s), applied={Applied}",
+            result.Renames.Count,
+            result.UnmappedValues.Count,
+            result.Applied);
+
+        return CliResult.Ok();
     }
 
     private async Task<CliResult> ExecuteCorporateActionIngestAsync(string[] args, CancellationToken ct)

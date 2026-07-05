@@ -32,7 +32,14 @@ or provider implementations.
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
   contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
   validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
-  changing enum wire values.
+  changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
+  for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO
+  15022 CAEV alignment, provider aliases (alias-tolerant `TryNormalize`), required fields,
+  asset-class validity, and adjustment/ledger-posting behavior. Lifecycle support rides
+  `CorporateActionLifecycleStates` (write-side Announced/Confirmed/Cancelled; Ex/Paid derived
+  from dates) plus `CorporateActionEffectiveStateProjector`, which folds append-only
+  supersede chains (`CorporateActionDto.SupersedesCorpActId`) into effective actions with
+  amendment timelines.
   Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
   operator metadata scope so the shared Instrument Passport operating model can identify the
   most-specific applicable vendor/data-type control without browser-only or WPF-only rules.

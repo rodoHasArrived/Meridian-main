@@ -38,7 +38,8 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly IEventMetrics _metrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly OpenFigiSymbolResolver? _symbolResolver;
+    private readonly ISymbolResolver? _symbolResolver;
+    private readonly OpenFigiSymbolResolver? _ownedSymbolResolver;
     private BackfillResult? _lastRun;
     private bool _disposed;
 
@@ -49,7 +50,16 @@ public sealed class BackfillCoordinator : IDisposable
     /// <param name="registry">Provider registry for unified provider discovery.</param>
     /// <param name="factory">Provider factory as fallback for creating providers if registry is empty.</param>
     /// <param name="metrics">Event metrics for tracking backfill operations.</param>
-    public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IEventMetrics? metrics = null)
+    /// <param name="symbolResolver">
+    ///     Shared symbol resolution spine (typically the canonical-registry resolver from DI).
+    ///     When null, a coordinator-owned OpenFIGI resolver is created from configuration.
+    /// </param>
+    public BackfillCoordinator(
+        ConfigStore store,
+        ProviderRegistry? registry = null,
+        ProviderFactory? factory = null,
+        IEventMetrics? metrics = null,
+        ISymbolResolver? symbolResolver = null)
     {
         _store = store;
         _registry = registry;
@@ -57,12 +67,19 @@ public sealed class BackfillCoordinator : IDisposable
         _metrics = metrics ?? new DefaultEventMetrics();
         _lastRun = store.TryLoadBackfillStatus();
 
-        // Initialize symbol resolver
+        if (symbolResolver is not null)
+        {
+            _symbolResolver = symbolResolver;
+            return;
+        }
+
+        // No shared spine supplied — fall back to a coordinator-owned OpenFIGI resolver.
         var cfg = store.Load();
         var openFigiConfig = cfg.Backfill?.Providers?.OpenFigi;
         if (openFigiConfig?.Enabled ?? true)
         {
-            _symbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log);
+            _ownedSymbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log);
+            _symbolResolver = _ownedSymbolResolver;
         }
     }
 
@@ -423,7 +440,7 @@ public sealed class BackfillCoordinator : IDisposable
             return;
         _disposed = true;
 
-        _symbolResolver?.Dispose();
+        _ownedSymbolResolver?.Dispose();
         _gate.Dispose();
     }
 }

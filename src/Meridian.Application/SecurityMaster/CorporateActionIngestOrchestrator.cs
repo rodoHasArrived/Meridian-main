@@ -203,13 +203,16 @@ public sealed class CorporateActionIngestOrchestrator
         IReadOnlyList<CorporateActionCommand> candidates,
         int minimumSourcesToApply)
     {
+        // Consensus block with the most distinct sources wins; source-count ties break
+        // deterministically toward the ordinally-greatest value key (disputed proposals are
+        // staged either way — the winner only selects which values the operator sees first).
         var blocks = candidates
             .GroupBy(static command => ValueKey(command))
             .OrderByDescending(static block => block
                 .Select(static command => command.SourceProvider)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Count())
-            .ThenBy(static block => block.Key, StringComparer.Ordinal)
+            .ThenByDescending(static block => block.Key, StringComparer.Ordinal)
             .ToArray();
 
         var winner = blocks[0];
