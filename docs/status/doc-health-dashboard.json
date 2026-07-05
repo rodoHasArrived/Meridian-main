@@ -1,10 +1,10 @@
 {
   "total_files": 538,
-  "total_lines": 88605,
+  "total_lines": 88610,
   "orphaned_count": 205,
   "no_heading_count": 38,
   "stale_count": 0,
-  "todo_count": 199,
+  "todo_count": 200,
   "average_lines": 164.7,
   "health_score": 83,
   "orphaned_files": [
@@ -2796,7 +2796,7 @@
       "path": "docs/plans/security-master-passport-workbench.md",
       "line_count": 722,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3074,7 +3074,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 188,
+      "line_count": 193,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
