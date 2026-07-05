@@ -47,8 +47,12 @@ export function computeRowWindow(input: RowWindowInput): RowWindow {
   const firstVisible = Math.floor(safeScroll / rowHeight);
   const visibleCount = Math.max(1, Math.ceil(Math.max(0, viewportHeight) / rowHeight));
 
-  const startIndex = Math.max(0, firstVisible - safeOverscan);
+  // Compute endIndex first, then clamp startIndex to it. Overscrolling past the
+  // bottom (elastic scroll, resize) can push firstVisible beyond rowCount; without
+  // the clamp startIndex would exceed endIndex, yielding an empty slice with an
+  // oversized topPad and an unstable scrollbar.
   const endIndex = Math.min(rowCount, firstVisible + visibleCount + safeOverscan);
+  const startIndex = Math.max(0, Math.min(endIndex, firstVisible - safeOverscan));
 
   return {
     startIndex,

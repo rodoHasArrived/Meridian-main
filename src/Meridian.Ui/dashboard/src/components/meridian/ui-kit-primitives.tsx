@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -175,7 +176,12 @@ function DenseDataTableComponent<T>({
   const focusableRowId = resolveFocusableDenseRowId(renderRows, getRowId, selectedRowId);
 
   const getAnnouncementLabel = (row: T) => getRowSelectAriaLabel?.(row) ?? getRowAriaLabel?.(row);
-  const getTypeaheadLabel = (row: T) => getRowTypeaheadText?.(row) ?? getRowAriaLabel?.(row) ?? "";
+  // Precompute type-ahead labels once per row-set change rather than on every
+  // keystroke (the map is O(N) and allocates a fresh array each call).
+  const typeaheadLabels = useMemo(
+    () => navRows.map((row) => getRowTypeaheadText?.(row) ?? getRowAriaLabel?.(row) ?? ""),
+    [navRows, getRowTypeaheadText, getRowAriaLabel]
+  );
 
   // `scrollTop` state is the source of truth for the window math (it is what the
   // current render used); we also push it onto the DOM node so the real browser
@@ -268,7 +274,7 @@ function DenseDataTableComponent<T>({
       store.buffer = buffer;
       store.at = now;
       const matchIndex = resolveTypeaheadIndex({
-        labels: navRows.map(getTypeaheadLabel),
+        labels: typeaheadLabels,
         buffer,
         fromIndex: currentIndex,
         inclusive: continued
@@ -315,7 +321,12 @@ function DenseDataTableComponent<T>({
 
   // Let Escape from the detail panel return focus to a selected row that windowing
   // has scrolled out of view.
-  const selectedRow = selectedRowId != null ? rows.find((row) => getRowId(row) === selectedRowId) : undefined;
+  // Memoized so scroll-driven re-renders don't repeat the O(N) lookup; the deps
+  // are stable across scroll (only scrollTop state changes then).
+  const selectedRow = useMemo(
+    () => (selectedRowId != null ? rows.find((row) => getRowId(row) === selectedRowId) : undefined),
+    [rows, selectedRowId, getRowId]
+  );
   const selectedPanelId = selectedRow ? getRowAriaControls?.(selectedRow) : undefined;
   const revealSelectedRef = useRef<() => boolean>(() => false);
   revealSelectedRef.current = () => {

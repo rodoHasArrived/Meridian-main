@@ -38,6 +38,11 @@ describe("computeRowWindow", () => {
     const bottom = computeRowWindow({ scrollTop: 100000, rowHeight: 32, rowCount: 40, viewportHeight: 320, overscan: 4 });
     expect(bottom.endIndex).toBe(40);
     expect(bottom.bottomPad).toBe(0);
+    // Overscroll past the bottom clamps startIndex to endIndex (never beyond it),
+    // so the slice stays valid and topPad never exceeds the full virtual height.
+    expect(bottom.startIndex).toBeLessThanOrEqual(bottom.endIndex);
+    expect(bottom.startIndex).toBe(40);
+    expect(bottom.topPad).toBe(40 * 32);
   });
 });
 
