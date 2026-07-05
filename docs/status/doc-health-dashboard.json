@@ -1,7 +1,7 @@
 {
   "total_files": 540,
-  "total_lines": 89467,
-  "orphaned_count": 206,
+  "total_lines": 89470,
+  "orphaned_count": 205,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 200,
@@ -171,7 +171,6 @@
     "docs/plans/ufl-warrant-target-state-v2.md",
     "docs/plans/wave-implementation-checklists.md",
     "docs/plans/web-ui-development-pivot.md",
-    "docs/product/data-provider-accounting-brainstorm-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -3099,7 +3098,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 207,
+      "line_count": 210,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

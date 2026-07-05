@@ -17,6 +17,9 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization of the next highest-value implementable features, sequenced against the W6/W7
     roadmap lanes
+  - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
+    code-grounded improvement lanes for the provider and accounting subsystems: structural
+    unification, mark-to-market wiring, close-cockpit automation, and correctness fixes
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing
