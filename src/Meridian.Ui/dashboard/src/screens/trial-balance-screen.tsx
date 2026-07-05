@@ -27,6 +27,9 @@ interface TrialBalanceScreenProps {
 
 type TrialBalanceViewMode = "table" | "hierarchy";
 
+/** Above this row count the trial-balance grid windows rows instead of rendering all of them. */
+const TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD = 40;
+
 export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
@@ -285,10 +288,16 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
                   getRowSelectAriaLabel={(line) => line.selectAriaLabel}
                   getRowAriaControls={(line) => line.detailPanelId}
                   getRowAriaExpanded={(line) => line.isExpanded}
+                  getRowTypeaheadText={(line) => line.accountLabel}
                   selectedRowId={reconciliation.trialBalanceView.selectedRowId}
                   onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
                   emptyText={reconciliation.trialBalanceView.emptyDetail}
                   ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                  virtualization={
+                    reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD
+                      ? { rowHeight: 36, viewportRowCount: 15 }
+                      : null
+                  }
                 />
                 {reconciliation.trialBalanceView.selectedDetail ? (
                   <AccountingTrialBalanceSelectedDetailPanel

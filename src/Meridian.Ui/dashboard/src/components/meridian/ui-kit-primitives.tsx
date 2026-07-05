@@ -1,11 +1,31 @@
-import { memo, useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode
+} from "react";
 import {
   DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS,
   buildDenseRowDetailAnnouncement,
-  focusDenseRowDetailPanel
+  focusDenseRowDetailPanel,
+  registerDenseRowRevealHandler
 } from "@/components/meridian/dense-row-detail-accessibility";
+import {
+  computeRevealScrollTop,
+  computeRowWindow,
+  resolveTypeaheadIndex
+} from "@/lib/dense-virtualization";
 import { cn } from "@/lib/utils";
 import "@/styles/ui-kit-primitives.css";
+
+const DEFAULT_VIRTUALIZATION_OVERSCAN = 6;
+const DEFAULT_VIRTUALIZATION_VIEWPORT_ROWS = 12;
+const TYPEAHEAD_RESET_MS = 500;
 
 export interface ToolbarStripItem {
   id: string;
@@ -58,6 +78,15 @@ export interface DenseDataTableSortState {
   direction: "asc" | "desc";
 }
 
+export interface DenseDataTableVirtualization {
+  /** Fixed pixel height of every row. Stable heights keep the offset math exact. */
+  rowHeight: number;
+  /** Number of rows the scroll viewport shows at once. Default 12. */
+  viewportRowCount?: number;
+  /** Rows rendered beyond the viewport on each side to smooth fast scrolls. Default 6. */
+  overscan?: number;
+}
+
 export interface DenseDataTableProps<T> {
   columns: DenseDataTableColumn<T>[];
   rows: T[];
@@ -76,6 +105,14 @@ export interface DenseDataTableProps<T> {
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
   maxVisibleRows?: number | null;
+  /**
+   * Enable row windowing for large data sets. When set, only a window of rows is
+   * mounted and the table exposes `aria-rowcount`/`aria-rowindex` so assistive
+   * tech reports positions across the full set. Requires stable row heights.
+   */
+  virtualization?: DenseDataTableVirtualization | null;
+  /** Per-row text used for keyboard type-ahead; defaults to `getRowAriaLabel`. */
+  getRowTypeaheadText?: (row: T) => string | undefined;
 }
 
 function DenseDataTableComponent<T>({
@@ -95,21 +132,323 @@ function DenseDataTableComponent<T>({
   caption,
   sort = null,
   onToggleSort,
-  maxVisibleRows = null
+  maxVisibleRows = null,
+  virtualization = null,
+  getRowTypeaheadText
 }: DenseDataTableProps<T>) {
   const generatedKeyboardInstructionsId = useId();
   const [showAllRows, setShowAllRows] = useState(false);
+  const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
+  const [scrollTop, setScrollTop] = useState(0);
+  const [pendingFocusRowId, setPendingFocusRowId] = useState<string | null>(null);
+
+  // The wrap is itself the scroll viewport (max-height + overflow), so windowing
+  // reads and drives its scrollTop directly rather than nesting a second scroller.
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const scrollRafRef = useRef<number | null>(null);
+  const typeaheadRef = useRef<{ buffer: string; at: number }>({ buffer: "", at: 0 });
+
+  const rowHeight = virtualization?.rowHeight ?? 0;
+  const isVirtual = virtualization != null && rowHeight > 0 && rows.length > 0;
+  const overscan = virtualization?.overscan ?? DEFAULT_VIRTUALIZATION_OVERSCAN;
+  const viewportRowCount = virtualization?.viewportRowCount ?? DEFAULT_VIRTUALIZATION_VIEWPORT_ROWS;
+  const viewportHeight = rowHeight * viewportRowCount;
+
   const visibleRowLimit = typeof maxVisibleRows === "number" && maxVisibleRows > 0 ? maxVisibleRows : null;
-  const cappedRows = visibleRowLimit && !showAllRows ? rows.slice(0, visibleRowLimit) : rows;
+  // Windowing supersedes the "show all" soft cap: a virtualized table renders the
+  // full set through spacer rows, so the cap only applies when not virtualizing.
+  const cappedRows = !isVirtual && visibleRowLimit && !showAllRows ? rows.slice(0, visibleRowLimit) : rows;
   const hiddenRowCount = Math.max(0, rows.length - cappedRows.length);
+  // navRows is the addressable set for keyboard traversal — the full data set when
+  // virtualizing, the rendered slice otherwise (cappedRows === rows when virtual).
+  const navRows = cappedRows;
+
+  const rowWindow = isVirtual
+    ? computeRowWindow({ scrollTop, rowHeight, rowCount: rows.length, viewportHeight, overscan })
+    : null;
+  const renderRows = rowWindow ? rows.slice(rowWindow.startIndex, rowWindow.endIndex) : cappedRows;
+  const renderBaseIndex = rowWindow ? rowWindow.startIndex : 0;
+
   const selectableRows = onRowSelect !== undefined && cappedRows.length > 0;
   const exposesExpandedRows = getRowAriaExpanded !== undefined;
   const keyboardInstructionsId = `${tableId ?? generatedKeyboardInstructionsId}-keyboard-instructions`;
-  const focusableRowId = resolveFocusableDenseRowId(cappedRows, getRowId, selectedRowId);
-  const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
+  const focusableRowId = resolveFocusableDenseRowId(renderRows, getRowId, selectedRowId);
+
+  const getAnnouncementLabel = (row: T) => getRowSelectAriaLabel?.(row) ?? getRowAriaLabel?.(row);
+  const getTypeaheadLabel = (row: T) => getRowTypeaheadText?.(row) ?? getRowAriaLabel?.(row) ?? "";
+
+  // `scrollTop` state is the source of truth for the window math (it is what the
+  // current render used); we also push it onto the DOM node so the real browser
+  // actually scrolls. Reading el.scrollTop here would be wrong under jsdom, which
+  // has no layout.
+  const revealRowIndex = (index: number) => {
+    if (rowHeight <= 0) return;
+    const next = computeRevealScrollTop({ index, rowHeight, scrollTop, viewportHeight });
+    if (next !== scrollTop) {
+      if (wrapRef.current) {
+        wrapRef.current.scrollTop = next;
+      }
+      setScrollTop(next);
+    }
+  };
+
+  const focusRowById = useCallback((rowId: string) => {
+    const el = wrapRef.current?.querySelector<HTMLTableRowElement>(
+      `tr[data-dense-row-id="${escapeAttributeSelectorValue(rowId)}"]`
+    );
+    if (el) {
+      el.focus();
+      return true;
+    }
+    return false;
+  }, []);
+
+  const moveToRow = (targetIndex: number) => {
+    if (!onRowSelect) return;
+    const targetRow = navRows[targetIndex];
+    if (!targetRow) return;
+    const targetId = getRowId(targetRow);
+    if (isVirtual) {
+      // Bring the target into the window; if it is not mounted yet, defer focus
+      // until the reveal-driven re-render mounts it.
+      if (focusRowById(targetId)) {
+        revealRowIndex(targetIndex);
+      } else {
+        revealRowIndex(targetIndex);
+        setPendingFocusRowId(targetId);
+      }
+    } else {
+      focusRowById(targetId);
+    }
+    selectDenseRow(
+      targetRow,
+      getAnnouncementLabel(targetRow),
+      getRowAriaControls?.(targetRow),
+      false,
+      onRowSelect,
+      setSelectionAnnouncement
+    );
+  };
+
+  const handleRowKeyDown = (event: KeyboardEvent<HTMLTableRowElement>, currentIndex: number) => {
+    if (!onRowSelect) return;
+    if (event.target !== event.currentTarget && isInteractiveTableTarget(event.target)) return;
+
+    const currentRow = navRows[currentIndex];
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (currentRow) {
+        selectDenseRow(
+          currentRow,
+          getAnnouncementLabel(currentRow),
+          getRowAriaControls?.(currentRow),
+          true,
+          onRowSelect,
+          setSelectionAnnouncement
+        );
+      }
+      return;
+    }
+
+    const targetIndex = resolveKeyboardTargetRowIndex(event.key, currentIndex, navRows.length);
+    if (targetIndex !== null) {
+      event.preventDefault();
+      moveToRow(targetIndex);
+      return;
+    }
+
+    // Type-ahead: a printable character jumps to the next matching row across the
+    // full addressable set (so windowed rows remain reachable without scrolling).
+    if (event.key.length === 1 && event.key !== " " && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      const now = Date.now();
+      const store = typeaheadRef.current;
+      const continued = now - store.at < TYPEAHEAD_RESET_MS && store.buffer.length > 0;
+      const buffer = continued ? store.buffer + event.key : event.key;
+      store.buffer = buffer;
+      store.at = now;
+      const matchIndex = resolveTypeaheadIndex({
+        labels: navRows.map(getTypeaheadLabel),
+        buffer,
+        fromIndex: currentIndex,
+        inclusive: continued
+      });
+      if (matchIndex !== null) {
+        event.preventDefault();
+        moveToRow(matchIndex);
+      }
+    }
+  };
+
+  const handleScroll = useCallback(() => {
+    if (scrollRafRef.current != null) return;
+    scrollRafRef.current = window.requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      const current = wrapRef.current;
+      if (current) {
+        setScrollTop(current.scrollTop);
+      }
+    });
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (scrollRafRef.current != null) {
+        cancelAnimationFrame(scrollRafRef.current);
+      }
+    },
+    []
+  );
+
+  // Focus a row that was not mounted when navigation targeted it, once the
+  // reveal-driven scroll has mounted it into the window.
+  useEffect(() => {
+    if (!pendingFocusRowId) return;
+    const el = wrapRef.current?.querySelector<HTMLTableRowElement>(
+      `tr[data-dense-row-id="${escapeAttributeSelectorValue(pendingFocusRowId)}"]`
+    );
+    if (el) {
+      el.focus();
+      setPendingFocusRowId(null);
+    }
+  }, [pendingFocusRowId, scrollTop]);
+
+  // Let Escape from the detail panel return focus to a selected row that windowing
+  // has scrolled out of view.
+  const selectedRow = selectedRowId != null ? rows.find((row) => getRowId(row) === selectedRowId) : undefined;
+  const selectedPanelId = selectedRow ? getRowAriaControls?.(selectedRow) : undefined;
+  const revealSelectedRef = useRef<() => boolean>(() => false);
+  revealSelectedRef.current = () => {
+    if (!isVirtual || selectedRowId == null) return false;
+    const index = rows.findIndex((row) => getRowId(row) === selectedRowId);
+    if (index < 0) return false;
+    revealRowIndex(index);
+    setPendingFocusRowId(selectedRowId);
+    return true;
+  };
+  useEffect(() => {
+    if (!isVirtual || !selectedPanelId) return;
+    return registerDenseRowRevealHandler(selectedPanelId, () => revealSelectedRef.current());
+  }, [isVirtual, selectedPanelId]);
+
+  const tableElement = (
+    <table
+      id={tableId}
+      role={exposesExpandedRows ? "treegrid" : undefined}
+      className="dense-data-table"
+      aria-label={ariaLabel}
+      aria-describedby={selectableRows ? keyboardInstructionsId : undefined}
+      aria-rowcount={isVirtual ? rows.length + 1 : undefined}
+    >
+      {caption ? <caption className="sr-only">{caption}</caption> : null}
+      <thead>
+        <tr aria-rowindex={isVirtual ? 1 : undefined}>
+          {columns.map((column) => {
+            const sortable = Boolean(column.sortable && onToggleSort);
+            const sorted = sortable && sort?.columnId === column.id;
+            return (
+              <th
+                key={column.id}
+                scope="col"
+                aria-sort={sortable ? sorted ? sort.direction === "asc" ? "ascending" : "descending" : "none" : undefined}
+                className={cn(
+                  column.align === "right" ? "text-right" : "text-left",
+                  sortable ? "dense-data-table-sortable" : undefined,
+                  sorted ? "dense-data-table-sorted" : undefined,
+                  column.className
+                )}
+              >
+                {sortable ? (
+                  <button
+                    type="button"
+                    className="dense-data-table-sort-button"
+                    onClick={() => onToggleSort?.(column.id)}
+                    aria-label={buildSortButtonAriaLabel(column, sorted ? sort : null)}
+                  >
+                    <span>{column.label}</span>
+                    <span className="dense-data-table-sort-indicator" aria-hidden="true">
+                      {sorted ? sort.direction === "asc" ? "↑" : "↓" : "↕"}
+                    </span>
+                  </button>
+                ) : column.label || (column.srLabel ? <span className="sr-only">{column.srLabel}</span> : null)}
+              </th>
+            );
+          })}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={columns.length} className="dense-data-table-empty">
+              {emptyText}
+            </td>
+          </tr>
+        ) : (
+          <>
+            {rowWindow && rowWindow.topPad > 0 ? (
+              <tr aria-hidden="true" className="dense-data-table-spacer">
+                <td colSpan={columns.length} style={{ height: rowWindow.topPad, padding: 0 }} />
+              </tr>
+            ) : null}
+            {renderRows.map((row, index) => {
+              const absoluteIndex = renderBaseIndex + index;
+              const rowId = getRowId(row);
+              const selected = selectedRowId === rowId;
+              const selectable = onRowSelect !== undefined;
+              const rowAriaLabel = selectable
+                ? getRowSelectAriaLabel?.(row) ?? getRowAriaLabel?.(row)
+                : getRowAriaLabel?.(row);
+              const rowAriaExpanded = selectable ? getRowAriaExpanded?.(row) : undefined;
+              const rowStyle: CSSProperties | undefined = isVirtual ? { height: rowHeight } : undefined;
+              return (
+                <tr
+                  key={rowId}
+                  aria-label={rowAriaLabel}
+                  aria-controls={selectable ? getRowAriaControls?.(row) : undefined}
+                  aria-expanded={rowAriaExpanded}
+                  aria-selected={selected || undefined}
+                  aria-rowindex={isVirtual ? absoluteIndex + 2 : undefined}
+                  tabIndex={selectable ? rowId === focusableRowId ? 0 : -1 : undefined}
+                  data-selectable={selectable ? "true" : undefined}
+                  data-dense-row-id={selectable ? rowId : undefined}
+                  style={rowStyle}
+                  className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined, getRowClassName?.(row))}
+                  onClick={selectable ? (event) => {
+                    if (isInteractiveTableTarget(event.target)) return;
+                    selectDenseRow(row, rowAriaLabel, getRowAriaControls?.(row), false, onRowSelect, setSelectionAnnouncement);
+                  } : undefined}
+                  onKeyDown={selectable ? (event) => handleRowKeyDown(event, absoluteIndex) : undefined}
+                >
+                  {columns.map((column) => (
+                    <td
+                      key={column.id}
+                      className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
+                    >
+                      {column.render(row)}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+            {rowWindow && rowWindow.bottomPad > 0 ? (
+              <tr aria-hidden="true" className="dense-data-table-spacer">
+                <td colSpan={columns.length} style={{ height: rowWindow.bottomPad, padding: 0 }} />
+              </tr>
+            ) : null}
+          </>
+        )}
+      </tbody>
+    </table>
+  );
 
   return (
-    <div className="dense-data-table-wrap" data-empty={rows.length === 0 ? "true" : undefined}>
+    <div
+      className={cn("dense-data-table-wrap", isVirtual ? "dense-data-table-wrap-virtual" : undefined)}
+      data-empty={rows.length === 0 ? "true" : undefined}
+      ref={wrapRef}
+      style={isVirtual ? { maxHeight: viewportHeight } : undefined}
+      onScroll={isVirtual ? handleScroll : undefined}
+    >
       {selectableRows ? (
         <p id={keyboardInstructionsId} className="sr-only">
           {DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS}
@@ -120,105 +459,7 @@ function DenseDataTableComponent<T>({
           {selectionAnnouncement}
         </div>
       ) : null}
-      <table
-        id={tableId}
-        role={exposesExpandedRows ? "treegrid" : undefined}
-        className="dense-data-table"
-        aria-label={ariaLabel}
-        aria-describedby={selectableRows ? keyboardInstructionsId : undefined}
-      >
-        {caption ? <caption className="sr-only">{caption}</caption> : null}
-        <thead>
-          <tr>
-            {columns.map((column) => {
-              const sortable = Boolean(column.sortable && onToggleSort);
-              const sorted = sortable && sort?.columnId === column.id;
-              return (
-                <th
-                  key={column.id}
-                  scope="col"
-                  aria-sort={sortable ? sorted ? sort.direction === "asc" ? "ascending" : "descending" : "none" : undefined}
-                  className={cn(
-                    column.align === "right" ? "text-right" : "text-left",
-                    sortable ? "dense-data-table-sortable" : undefined,
-                    sorted ? "dense-data-table-sorted" : undefined,
-                    column.className
-                  )}
-                >
-                  {sortable ? (
-                    <button
-                      type="button"
-                      className="dense-data-table-sort-button"
-                      onClick={() => onToggleSort?.(column.id)}
-                      aria-label={buildSortButtonAriaLabel(column, sorted ? sort : null)}
-                    >
-                      <span>{column.label}</span>
-                      <span className="dense-data-table-sort-indicator" aria-hidden="true">
-                        {sorted ? sort.direction === "asc" ? "↑" : "↓" : "↕"}
-                      </span>
-                    </button>
-                  ) : column.label || (column.srLabel ? <span className="sr-only">{column.srLabel}</span> : null)}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length > 0 ? cappedRows.map((row, rowIndex) => {
-            const rowId = getRowId(row);
-            const selected = selectedRowId === rowId;
-            const selectable = onRowSelect !== undefined;
-            const rowAriaLabel = selectable
-              ? getRowSelectAriaLabel?.(row) ?? getRowAriaLabel?.(row)
-              : getRowAriaLabel?.(row);
-            const rowAriaExpanded = selectable ? getRowAriaExpanded?.(row) : undefined;
-            return (
-              <tr
-                key={rowId}
-                aria-label={rowAriaLabel}
-                aria-controls={selectable ? getRowAriaControls?.(row) : undefined}
-                aria-expanded={rowAriaExpanded}
-                aria-selected={selected || undefined}
-                tabIndex={selectable ? rowId === focusableRowId ? 0 : -1 : undefined}
-                data-selectable={selectable ? "true" : undefined}
-                data-dense-row-id={selectable ? rowId : undefined}
-                className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined, getRowClassName?.(row))}
-                onClick={selectable ? (event) => {
-                  if (isInteractiveTableTarget(event.target)) return;
-                  selectDenseRow(row, rowAriaLabel, getRowAriaControls?.(row), false, onRowSelect, setSelectionAnnouncement);
-                } : undefined}
-                onKeyDown={selectable ? (event) => {
-                  handleSelectableRowKeyDown(event, {
-                    row,
-                    rowIndex,
-                    rows: cappedRows,
-                    getRowId,
-                    getRowAriaControls,
-                    getRowAnnouncementLabel: (item) => getRowSelectAriaLabel?.(item) ?? getRowAriaLabel?.(item),
-                    onRowSelect,
-                    setSelectionAnnouncement
-                  });
-                } : undefined}
-              >
-                {columns.map((column) => (
-                  <td
-                    key={column.id}
-                    className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
-                  >
-                    {column.render(row)}
-                  </td>
-                ))}
-              </tr>
-            );
-          }) : (
-            <tr>
-              <td colSpan={columns.length} className="dense-data-table-empty">
-                {emptyText}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      {tableElement}
       {hiddenRowCount > 0 ? (
         <div className="dense-data-table-row-cap">
           <button type="button" onClick={() => setShowAllRows(true)}>
@@ -257,60 +498,6 @@ function buildSortButtonAriaLabel<T>(
   }
 
   return `${column.label} sorted ${sort.direction === "asc" ? "ascending" : "descending"}. Activate to change sort.`;
-}
-
-function handleSelectableRowKeyDown<T>(
-  event: KeyboardEvent<HTMLTableRowElement>,
-  options: {
-    row: T;
-    rowIndex: number;
-    rows: T[];
-    getRowId: (row: T) => string;
-    getRowAriaControls?: (row: T) => string | undefined;
-    getRowAnnouncementLabel?: (row: T) => string | undefined;
-    onRowSelect: (row: T) => void;
-    setSelectionAnnouncement: (announcement: string) => void;
-  }
-) {
-  if (event.target !== event.currentTarget && isInteractiveTableTarget(event.target)) return;
-
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    selectDenseRow(
-      options.row,
-      options.getRowAnnouncementLabel?.(options.row),
-      options.getRowAriaControls?.(options.row),
-      true,
-      options.onRowSelect,
-      options.setSelectionAnnouncement
-    );
-    return;
-  }
-
-  const targetIndex = resolveKeyboardTargetRowIndex(event.key, options.rowIndex, options.rows.length);
-  if (targetIndex === null) {
-    return;
-  }
-
-  event.preventDefault();
-  const targetRow = options.rows[targetIndex];
-  if (!targetRow) {
-    return;
-  }
-
-  const targetRowId = options.getRowId(targetRow);
-  const targetElement = event.currentTarget
-    .closest("tbody")
-    ?.querySelector<HTMLTableRowElement>(`tr[data-dense-row-id="${escapeAttributeSelectorValue(targetRowId)}"]`);
-  targetElement?.focus();
-  selectDenseRow(
-    targetRow,
-    options.getRowAnnouncementLabel?.(targetRow),
-    options.getRowAriaControls?.(targetRow),
-    false,
-    options.onRowSelect,
-    options.setSelectionAnnouncement
-  );
 }
 
 function selectDenseRow<T>(

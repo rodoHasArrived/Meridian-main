@@ -267,6 +267,19 @@ No feature work; confirm and document the rules each later phase must follow.
   `DenseRowDetailPanel` (contract already prescribes this; avoids variable-height rows).
   First adopters: trial balance, journal entries, reconciliation breaks, financial record explorer.
 
+  **Landed:** an opt-in `virtualization={{ rowHeight, viewportRowCount?, overscan? }}` prop on
+  `DenseDataTable`. Windowing is expressed with top/bottom spacer rows so the element stays a
+  semantic `<table>`; `aria-rowcount`/`aria-rowindex` report positions across the full set. The
+  offset/reveal/type-ahead math is a pure module (`lib/dense-virtualization.ts`, unit-tested).
+  Keyboard traversal (Arrow/Home/End/type-ahead) addresses the full data set: targeting a
+  windowed-out row scrolls it into view and defers focus until it mounts (focus survives unmount).
+  Escape-back-to-row is coordinated through a reveal-handler registry in
+  `dense-row-detail-accessibility.tsx` so the panel can return focus to a selected row that
+  windowing unmounted, instead of grabbing an unrelated in-window row. The prop is absent for the
+  17 existing consumers (behaviour byte-identical); adopted first in **trial balance**, gated above
+  a row-count threshold so small sets render normally. Journal entries, reconciliation breaks, and
+  the financial record explorer are follow-up adopters that reuse the same prop.
+
 ### 6c. Linked chart crosshair + evidence drill (#8)
 - Charts (`components/charts/`) are stateless SVG: `crosshairIndex` prop flows IN, no events flow
   OUT. Add optional `onCrosshairChange(index)` / `onPointActivate(index)` props to `CandleChart`
@@ -291,7 +304,7 @@ additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 
 **Checklist**
 - [x] 6a scope picker + persistence + Portfolio migration.
-- [ ] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
+- [x] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
 - [ ] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
 - [ ] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
 
