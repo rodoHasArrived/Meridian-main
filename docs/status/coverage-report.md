@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**2679 / 7411** items documented (**36.1%**) &mdash; Grade: **F**
+**2685 / 7422** items documented (**36.2%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 36.1%
+[=======-------------] 36.2%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2558 | 6915 | 37.0% | F |
-| API Endpoints | 107 | 349 | 30.7% | F |
+| Public Classes / Interfaces | 2563 | 6926 | 37.0% | F |
+| API Endpoints | 108 | 349 | 30.9% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4357 undocumented)
+### Public Classes / Interfaces (4363 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -59,6 +59,9 @@
 | `ISecurityAssetClassValidator` | `src/Meridian.Application/SecurityMaster/AssetClassValidatorRegistry.cs:11` |
 | `ICorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:6` |
 | `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:17` |
+| `CorporateActionInboxApplyRequest` | `src/Meridian.Application/SecurityMaster/CorporateActionInboxState.cs:6` |
+| `CorporateActionProposalMapper` | `src/Meridian.Application/SecurityMaster/CorporateActionInboxState.cs:15` |
+| `CorporateActionInboxDto` | `src/Meridian.Application/SecurityMaster/CorporateActionInboxState.cs:45` |
 | `CorporateActionIngestRequest` | `src/Meridian.Application/SecurityMaster/CorporateActionIngestOrchestrator.cs:15` |
 | `CorporateActionProposal` | `src/Meridian.Application/SecurityMaster/CorporateActionIngestOrchestrator.cs:25` |
 | `CorporateActionIngestResult` | `src/Meridian.Application/SecurityMaster/CorporateActionIngestOrchestrator.cs:40` |
@@ -74,12 +77,9 @@
 | `NullSecurityMasterPricingService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:10` |
 | `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
 | `NullDataVendorEntitlementService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:53` |
-| `NullSecurityMasterDataQualityService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:75` |
-| `NullSecurityMasterQueryService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:21` |
-| `NullCorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:123` |
-| ... and 4307 more | |
+| ... and 4313 more | |
 
-### API Endpoints (242 undocumented)
+### API Endpoints (241 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -107,7 +107,6 @@
 | `/{loanId:guid}/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:124` |
 | `/{loanId:guid}/projections/terms-versions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:138` |
 | `/{loanId:guid}/terms` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:152` |
-| `/{loanId:guid}/activate` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:183` |
 | `/{loanId:guid}/servicing-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:206` |
 | `/{loanId:guid}/projections/servicing` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:221` |
 | `/{loanId:guid}/projections/drawdown-lots` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:236` |
@@ -133,7 +132,8 @@
 | `/{loanId:guid}/status-transitions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:685` |
 | `/{loanId:guid}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:715` |
 | `/{loanId:guid}/restructures` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:745` |
-| ... and 192 more | |
+| `/{loanId:guid}/amortization/discount-premium` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:775` |
+| ... and 191 more | |
 
 ### Configuration Options (133 undocumented)
 
@@ -193,8 +193,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4357 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 242 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 4363 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 241 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
