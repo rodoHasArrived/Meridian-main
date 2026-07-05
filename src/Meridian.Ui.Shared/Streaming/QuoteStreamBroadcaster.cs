@@ -27,6 +27,7 @@ public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisp
         new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropWrite, SingleReader = true, SingleWriter = false });
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _loop;
+    private int _disposed;
 
     public QuoteStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options)
         : this(services, registry, options, LiveDataEndpoints.TryBuildQuotesSnapshotResponse)
@@ -135,7 +136,14 @@ public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisp
                     }
                 }
 
-                PublishPending();
+                try
+                {
+                    PublishPending();
+                }
+                catch
+                {
+                    // A single publish failure must never terminate the fan-out loop.
+                }
             }
         }
         catch (OperationCanceledException)
@@ -157,16 +165,22 @@ public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisp
         }
     }
 
-    private static bool QuoteRowsEqual(IReadOnlyList<QuotesSnapshotItem>? previous, IReadOnlyList<QuotesSnapshotItem> current)
+    private static bool QuoteRowsEqual(IReadOnlyList<QuotesSnapshotItem>? previous, IReadOnlyList<QuotesSnapshotItem>? current)
     {
-        if (previous is null || previous.Count != current.Count)
+        if (previous is null || current is null)
+        {
+            return previous is null && current is null;
+        }
+
+        if (previous.Count != current.Count)
         {
             return false;
         }
 
         for (var i = 0; i < current.Count; i++)
         {
-            if (!current[i].Equals(previous[i]))
+            // Null-safe element comparison (records are reference types).
+            if (!EqualityComparer<QuotesSnapshotItem>.Default.Equals(current[i], previous[i]))
             {
                 return false;
             }
@@ -177,6 +191,11 @@ public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisp
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         _cts.Cancel();
         try
         {

@@ -8,6 +8,8 @@ using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Domain.Collectors;
+using Meridian.Ui.Shared.Streaming;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
@@ -502,6 +504,20 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
         services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Integrations.IOmsIntegrationApiHandler, OmsIntegrationService>();
         services.AddCoveredCallBacktestServices();
+
+        // Quote-stream fan-out. The broadcaster is registered as the IQuoteUpdateNotifier so the
+        // QuoteCollector wakes it on quote changes; SSE connections subscribe via
+        // IQuoteStreamBroadcaster. The endpoint still polls until the endpoint-switch increment, so
+        // wiring this in changes no observable behaviour (no subscribers = no fan-out output).
+        services.TryAddSingleton(new QuoteStreamOptions());
+        services.TryAddSingleton(sp => new StreamConnectionRegistry(
+            sp.GetRequiredService<QuoteStreamOptions>().MaxConcurrentStreamsPerSession));
+        services.TryAddSingleton(sp => new QuoteStreamBroadcaster(
+            sp,
+            sp.GetRequiredService<StreamConnectionRegistry>(),
+            sp.GetRequiredService<QuoteStreamOptions>()));
+        services.TryAddSingleton<IQuoteStreamBroadcaster>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
+        services.TryAddSingleton<IQuoteUpdateNotifier>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
 
         return services;
     }

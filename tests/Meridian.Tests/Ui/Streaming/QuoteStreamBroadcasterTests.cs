@@ -126,6 +126,16 @@ public sealed class QuoteStreamBroadcasterTests
         broadcaster.TrySubscribe(StreamTopic.AllQuotes, "s1").Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task DisposeAsync_IsIdempotent()
+    {
+        var broadcaster = new QuoteStreamBroadcaster(
+            Services, new StreamConnectionRegistry(4), Options(), Factory(() => Snapshot()));
+
+        await broadcaster.DisposeAsync();
+        await broadcaster.DisposeAsync(); // must not throw ObjectDisposedException
+    }
+
     private sealed class EmptyServiceProvider : IServiceProvider
     {
         public object? GetService(Type serviceType) => null;
