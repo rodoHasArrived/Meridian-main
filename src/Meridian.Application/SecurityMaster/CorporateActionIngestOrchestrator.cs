@@ -8,14 +8,16 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// Request for a corporate-action ingest sweep. When <see cref="Symbols"/> is null or empty
 /// the sweep covers every active security with a ticker identifier. Announcements whose
-/// distinct agreeing sources reach <see cref="MinimumSourcesToApply"/> are appended to the
-/// event store (skipped when <see cref="DryRun"/>); everything else is returned as a staged
-/// proposal for operator review.
+/// distinct agreeing sources reach <see cref="MinimumSourcesToApply"/> are appended through
+/// the Security Master corporate-action command service (skipped when <see cref="DryRun"/>);
+/// everything else is returned as a staged proposal for operator review.
 /// </summary>
 public sealed record CorporateActionIngestRequest(
     IReadOnlyList<string>? Symbols = null,
     bool DryRun = false,
-    int MinimumSourcesToApply = 2);
+    int MinimumSourcesToApply = 2,
+    string? Actor = null,
+    string? CorrelationId = null);
 
 /// <summary>
 /// One normalized corporate-action announcement with its cross-provider consensus evidence.
@@ -25,11 +27,13 @@ public sealed record CorporateActionProposal(
     string Ticker,
     string ActionType,
     DateOnly ExDate,
+    DateOnly? RecordDate,
     DateOnly? PayableDate,
     decimal? Amount,
     string? Currency,
     decimal? SplitFromFactor,
     decimal? SplitToFactor,
+    string WinningSource,
     IReadOnlyList<string> AgreeingSources,
     IReadOnlyList<string> DissentingSources,
     bool AutoApplied);
@@ -45,9 +49,9 @@ public sealed record CorporateActionIngestResult(
 
 /// <summary>
 /// Fans out to every registered <see cref="ICorporateActionProvider"/> for mastered symbols,
-/// normalizes announcements, computes cross-provider consensus per (action type, ex-date),
-/// deduplicates against corporate actions already recorded in the event store, and appends
-/// announcements that reach the consensus threshold. Mirrors the
+/// normalizes announcements, computes cross-provider consensus per (security id, action type,
+/// ex-date), deduplicates against corporate actions already recorded in the event store, and
+/// appends announcements that reach the trusted-source threshold without dissent. Mirrors the
 /// <see cref="EdgarIngestOrchestrator"/> orchestration pattern.
 /// </summary>
 public sealed class CorporateActionIngestOrchestrator
@@ -55,17 +59,20 @@ public sealed class CorporateActionIngestOrchestrator
     private readonly IReadOnlyList<ICorporateActionProvider> _providers;
     private readonly ISecurityMasterStore _store;
     private readonly ISecurityMasterEventStore _eventStore;
+    private readonly ISecurityMasterCorporateActionCommandService _commandService;
     private readonly ILogger<CorporateActionIngestOrchestrator> _logger;
 
     public CorporateActionIngestOrchestrator(
         IEnumerable<ICorporateActionProvider> providers,
         ISecurityMasterStore store,
         ISecurityMasterEventStore eventStore,
+        ISecurityMasterCorporateActionCommandService commandService,
         ILogger<CorporateActionIngestOrchestrator> logger)
     {
         _providers = (providers ?? throw new ArgumentNullException(nameof(providers))).ToArray();
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
+        _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -97,7 +104,7 @@ public sealed class CorporateActionIngestOrchestrator
 
             var existing = await _eventStore.LoadCorporateActionsAsync(record.SecurityId, ct).ConfigureAwait(false);
             var existingKeys = existing
-                .Select(static action => (action.EventType.ToUpperInvariant(), action.ExDate))
+                .Select(static action => (CorporateActionEventTypes.Normalize(action.EventType).ToUpperInvariant(), action.ExDate))
                 .ToHashSet();
 
             var commands = new List<CorporateActionCommand>();
@@ -119,8 +126,11 @@ public sealed class CorporateActionIngestOrchestrator
                 }
             }
 
-            foreach (var group in commands.GroupBy(static command =>
-                         (ActionType: command.ActionType.ToUpperInvariant(), command.ExDate)))
+            foreach (var group in commands
+                         .Select(command => Normalize(command, record.Currency))
+                         .Where(static command => !string.IsNullOrWhiteSpace(command.ActionType))
+                         .GroupBy(static command =>
+                             (ActionType: command.ActionType.ToUpperInvariant(), command.ExDate)))
             {
                 if (existingKeys.Contains(group.Key))
                 {
@@ -130,12 +140,37 @@ public sealed class CorporateActionIngestOrchestrator
 
                 var proposal = BuildProposal(record.SecurityId, ticker!, group.ToArray(), request.MinimumSourcesToApply);
 
+                var appendSucceeded = true;
                 if (proposal.AutoApplied && !request.DryRun)
                 {
-                    await _eventStore.AppendCorporateActionAsync(ToDto(proposal), ct).ConfigureAwait(false);
+                    try
+                    {
+                        await _commandService.AppendAsync(
+                            new SecurityMasterCorporateActionAppendRequestDto(
+                                SecurityId: proposal.SecurityId,
+                                CorporateAction: ToDto(proposal),
+                                SourceSystem: proposal.WinningSource,
+                                Actor: string.IsNullOrWhiteSpace(request.Actor)
+                                    ? "corporate-action-ingest-orchestrator"
+                                    : request.Actor,
+                                SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
+                                Reason: "Corporate-action provider consensus ingest.",
+                                CorrelationId: request.CorrelationId),
+                            ct).ConfigureAwait(false);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        appendSucceeded = false;
+                        proposal = proposal with { AutoApplied = false };
+                        errors.Add($"{proposal.WinningSource}/{proposal.Ticker}: {ex.Message}");
+                        _logger.LogWarning(ex,
+                            "Corporate action append failed for {Ticker} from {ProviderId}",
+                            proposal.Ticker,
+                            proposal.WinningSource);
+                    }
                 }
 
-                if (proposal.AutoApplied)
+                if (proposal.AutoApplied && appendSucceeded)
                 {
                     applied++;
                 }
@@ -168,25 +203,28 @@ public sealed class CorporateActionIngestOrchestrator
         IReadOnlyList<CorporateActionCommand> candidates,
         int minimumSourcesToApply)
     {
-        // Vote on the economic value: sources agreeing on the same normalized value form the
-        // consensus block; the largest block wins (ties broken deterministically by value key).
         var blocks = candidates
             .GroupBy(static command => ValueKey(command))
-            .OrderByDescending(static block => block.Select(static c => c.SourceProvider).Distinct(StringComparer.OrdinalIgnoreCase).Count())
+            .OrderByDescending(static block => block
+                .Select(static command => command.SourceProvider)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count())
             .ThenBy(static block => block.Key, StringComparer.Ordinal)
             .ToArray();
 
         var winner = blocks[0];
-        var representative = winner.First();
-        var agreeing = winner
+        var representative = winner.Last();
+        var winningValue = ValueKey(representative);
+        var agreeing = candidates
+            .Where(command => string.Equals(ValueKey(command), winningValue, StringComparison.Ordinal))
             .Select(static command => command.SourceProvider)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static source => source, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var dissenting = candidates
+            .Where(command => !string.Equals(ValueKey(command), winningValue, StringComparison.Ordinal))
             .Select(static command => command.SourceProvider)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Except(agreeing, StringComparer.OrdinalIgnoreCase)
             .OrderBy(static source => source, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
@@ -195,14 +233,16 @@ public sealed class CorporateActionIngestOrchestrator
             Ticker: ticker,
             ActionType: representative.ActionType,
             ExDate: representative.ExDate,
+            RecordDate: representative.RecordDate,
             PayableDate: representative.PayableDate,
             Amount: representative.Amount,
             Currency: representative.Currency,
             SplitFromFactor: representative.SplitFromFactor,
             SplitToFactor: representative.SplitToFactor,
+            WinningSource: representative.SourceProvider,
             AgreeingSources: agreeing,
             DissentingSources: dissenting,
-            AutoApplied: dissenting.Length == 0 && agreeing.Length >= minimumSourcesToApply);
+            AutoApplied: dissenting.Length == 0 && agreeing.Length >= Math.Max(1, minimumSourcesToApply));
     }
 
     private static string ValueKey(CorporateActionCommand command)
@@ -212,6 +252,17 @@ public sealed class CorporateActionIngestOrchestrator
             command.Currency?.ToUpperInvariant() ?? "-",
             command.SplitFromFactor?.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture) ?? "-",
             command.SplitToFactor?.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture) ?? "-");
+
+    private static CorporateActionCommand Normalize(CorporateActionCommand command, string defaultCurrency)
+        => command with
+        {
+            ActionType = CorporateActionEventTypes.Normalize(command.ActionType),
+            Currency = NormalizeCurrency(command.Currency) ??
+                (command.Amount.HasValue ? NormalizeCurrency(defaultCurrency) : null)
+        };
+
+    private static string? NormalizeCurrency(string? currency)
+        => string.IsNullOrWhiteSpace(currency) ? null : currency.Trim().ToUpperInvariant();
 
     private static string? ResolveTicker(SecurityProjectionRecord record)
     {
@@ -230,21 +281,29 @@ public sealed class CorporateActionIngestOrchestrator
     }
 
     private static CorporateActionDto ToDto(CorporateActionProposal proposal)
-        => new(
+    {
+        var splitRatio = proposal.SplitFromFactor is > 0 && proposal.SplitToFactor is not null
+            ? proposal.SplitToFactor / proposal.SplitFromFactor
+            : null;
+        var eventType = CorporateActionEventTypes.Normalize(proposal.ActionType);
+        if (eventType == CorporateActionEventTypes.StockSplit && splitRatio is > 0m and < 1m)
+            eventType = CorporateActionEventTypes.ReverseStockSplit;
+
+        return new CorporateActionDto(
             CorpActId: Guid.NewGuid(),
             SecurityId: proposal.SecurityId,
-            EventType: proposal.ActionType,
+            EventType: eventType,
             ExDate: proposal.ExDate,
             PayDate: proposal.PayableDate,
             DividendPerShare: proposal.Amount,
             Currency: proposal.Currency,
-            SplitRatio: proposal.SplitFromFactor is > 0 && proposal.SplitToFactor is not null
-                ? proposal.SplitToFactor / proposal.SplitFromFactor
-                : null,
+            SplitRatio: splitRatio,
             NewSecurityId: null,
             DistributionRatio: null,
             AcquirerSecurityId: null,
             ExchangeRatio: null,
             SubscriptionPricePerShare: null,
-            RightsPerShare: null);
+            RightsPerShare: null,
+            RecordDate: proposal.RecordDate);
+    }
 }

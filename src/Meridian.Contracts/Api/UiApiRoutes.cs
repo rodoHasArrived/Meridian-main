@@ -349,6 +349,7 @@ public static class UiApiRoutes
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";

@@ -12,8 +12,8 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// Verifies the corporate-action ingest loop: fan-out across providers, cross-provider
-/// consensus voting, dedupe against already-recorded actions, and staged (not applied)
-/// handling for disputed or single-source announcements.
+/// consensus voting, dedupe against already-recorded actions, and staged handling for
+/// announcements below the configured source threshold.
 /// </summary>
 public sealed class CorporateActionIngestOrchestratorTests
 {
@@ -27,6 +27,7 @@ public sealed class CorporateActionIngestOrchestratorTests
         var orchestrator = CreateOrchestrator(
             securityId,
             eventStore,
+            out var commandService,
             new StubProvider("finnhub", Dividend(securityId, "finnhub", 0.24m)),
             new StubProvider("tiingo", Dividend(securityId, "tiingo", 0.24m)));
 
@@ -36,14 +37,16 @@ public sealed class CorporateActionIngestOrchestratorTests
         result.Staged.Should().Be(0);
         var proposal = result.Proposals.Should().ContainSingle().Subject;
         proposal.AutoApplied.Should().BeTrue();
+        proposal.WinningSource.Should().Be("tiingo");
         proposal.AgreeingSources.Should().BeEquivalentTo("finnhub", "tiingo");
         proposal.DissentingSources.Should().BeEmpty();
-        await eventStore.Received(1).AppendCorporateActionAsync(
-            Arg.Is<CorporateActionDto>(dto =>
-                dto.SecurityId == securityId
-                && dto.EventType == "Dividend"
-                && dto.DividendPerShare == 0.24m),
-            Arg.Any<CancellationToken>());
+        commandService.Requests.Should().ContainSingle(request =>
+            request.SecurityId == securityId &&
+            request.SourceSystem == "tiingo" &&
+            request.CorporateAction.EventType == "Dividend" &&
+            request.CorporateAction.DividendPerShare == 0.24m);
+        await eventStore.DidNotReceive().AppendCorporateActionAsync(
+            Arg.Any<CorporateActionDto>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -54,6 +57,7 @@ public sealed class CorporateActionIngestOrchestratorTests
         var orchestrator = CreateOrchestrator(
             securityId,
             eventStore,
+            out var commandService,
             new StubProvider("finnhub", Dividend(securityId, "finnhub", 0.24m)),
             new StubProvider("alphavantage", Dividend(securityId, "alphavantage", 0.26m)));
 
@@ -63,7 +67,10 @@ public sealed class CorporateActionIngestOrchestratorTests
         result.Staged.Should().Be(1);
         var proposal = result.Proposals.Should().ContainSingle().Subject;
         proposal.AutoApplied.Should().BeFalse();
-        proposal.DissentingSources.Should().NotBeEmpty();
+        proposal.WinningSource.Should().Be("alphavantage");
+        proposal.AgreeingSources.Should().BeEquivalentTo("alphavantage");
+        proposal.DissentingSources.Should().BeEquivalentTo("finnhub");
+        commandService.Requests.Should().BeEmpty();
         await eventStore.DidNotReceive().AppendCorporateActionAsync(
             Arg.Any<CorporateActionDto>(), Arg.Any<CancellationToken>());
     }
@@ -78,6 +85,7 @@ public sealed class CorporateActionIngestOrchestratorTests
         var orchestrator = CreateOrchestrator(
             securityId,
             eventStore,
+            out var commandService,
             new StubProvider("finnhub", Dividend(securityId, "finnhub", 0.24m)),
             new StubProvider("tiingo", Dividend(securityId, "tiingo", 0.24m)));
 
@@ -86,6 +94,7 @@ public sealed class CorporateActionIngestOrchestratorTests
         result.DuplicatesSkipped.Should().Be(1);
         result.Applied.Should().Be(0);
         result.Proposals.Should().BeEmpty();
+        commandService.Requests.Should().BeEmpty();
         await eventStore.DidNotReceive().AppendCorporateActionAsync(
             Arg.Any<CorporateActionDto>(), Arg.Any<CancellationToken>());
     }
@@ -98,14 +107,17 @@ public sealed class CorporateActionIngestOrchestratorTests
         var orchestrator = CreateOrchestrator(
             securityId,
             eventStore,
+            out var commandService,
             new ThrowingProvider("nasdaq"),
             new StubProvider("finnhub", Dividend(securityId, "finnhub", 0.24m)));
 
         var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
 
         result.Errors.Should().ContainSingle(static error => error.StartsWith("nasdaq/"));
-        result.Staged.Should().Be(1, "a single-source announcement stays staged for review");
+        result.Applied.Should().Be(0);
+        result.Staged.Should().Be(1, "single-source announcements stay staged for operator review");
         result.Proposals.Should().ContainSingle();
+        commandService.Requests.Should().BeEmpty();
     }
 
     [Fact]
@@ -116,12 +128,14 @@ public sealed class CorporateActionIngestOrchestratorTests
         var orchestrator = CreateOrchestrator(
             securityId,
             eventStore,
+            out var commandService,
             new StubProvider("finnhub", Dividend(securityId, "finnhub", 0.24m)),
             new StubProvider("tiingo", Dividend(securityId, "tiingo", 0.24m)));
 
         var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest(DryRun: true));
 
         result.Applied.Should().Be(1, "dry run reports what would be applied");
+        commandService.Requests.Should().BeEmpty();
         await eventStore.DidNotReceive().AppendCorporateActionAsync(
             Arg.Any<CorporateActionDto>(), Arg.Any<CancellationToken>());
     }
@@ -129,13 +143,19 @@ public sealed class CorporateActionIngestOrchestratorTests
     private static CorporateActionIngestOrchestrator CreateOrchestrator(
         Guid securityId,
         ISecurityMasterEventStore eventStore,
+        out RecordingCorporateActionCommandService commandService,
         params ICorporateActionProvider[] providers)
     {
         var store = Substitute.For<ISecurityMasterStore>();
         store.LoadActiveAsync(Arg.Any<CancellationToken>())
             .Returns(new[] { MakeProjection(securityId) });
+        commandService = new RecordingCorporateActionCommandService();
         return new CorporateActionIngestOrchestrator(
-            providers, store, eventStore, NullLogger<CorporateActionIngestOrchestrator>.Instance);
+            providers,
+            store,
+            eventStore,
+            commandService,
+            NullLogger<CorporateActionIngestOrchestrator>.Instance);
     }
 
     private static ISecurityMasterEventStore EmptyEventStore(Guid securityId)
@@ -215,5 +235,30 @@ public sealed class CorporateActionIngestOrchestratorTests
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
             => throw new HttpRequestException("upstream unavailable");
+    }
+
+    private sealed class RecordingCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
+    {
+        public List<SecurityMasterCorporateActionAppendRequestDto> Requests { get; } = [];
+
+        public Task<SecurityMasterCorporateActionAppendResultDto> AppendAsync(
+            SecurityMasterCorporateActionAppendRequestDto request,
+            CancellationToken ct = default)
+        {
+            Requests.Add(request);
+            return Task.FromResult(new SecurityMasterCorporateActionAppendResultDto(
+                request.CorporateAction,
+                new SecurityMasterCorporateActionAuditDto(
+                    $"audit:{request.CorporateAction.CorpActId:D}",
+                    request.SecurityId,
+                    request.CorporateAction.CorpActId,
+                    request.CorporateAction.EventType,
+                    request.SourceSystem,
+                    request.Actor,
+                    DateTimeOffset.UtcNow,
+                    request.SourceRecordId,
+                    request.Reason,
+                    request.CorrelationId)));
+        }
     }
 }

@@ -122,11 +122,12 @@ public sealed class CorporateActionAdjustmentServiceTests
 
         var result = await _service.AdjustAsync([bar], "SPY");
 
+        var factor = 1m - 1m / 105m;
         result.Should().HaveCount(1);
-        result[0].Open.Should().Be(99m);      // 100 - 1
-        result[0].High.Should().Be(109m);     // 110 - 1
-        result[0].Low.Should().Be(89m);       // 90 - 1
-        result[0].Close.Should().Be(104m);    // 105 - 1
+        result[0].Open.Should().Be(100m * factor);
+        result[0].High.Should().Be(110m * factor);
+        result[0].Low.Should().Be(90m * factor);
+        result[0].Close.Should().Be(105m * factor);
         result[0].Volume.Should().Be(bar.Volume);
     }
 
@@ -187,7 +188,7 @@ public sealed class CorporateActionAdjustmentServiceTests
 
 
     [Fact]
-    public async Task AdjustAsync_MultipleWindows_ResolvesCorporateActionsOncePerTicker()
+    public async Task AdjustAsync_MultipleWindows_RefreshesCorporateActionsPerCall()
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
@@ -201,12 +202,12 @@ public sealed class CorporateActionAdjustmentServiceTests
         _ = await _service.AdjustAsync(bars, "SPY");
         _ = await _service.AdjustAsync(bars, "SPY");
 
-        _mockResolver.ResolveCallCount.Should().Be(1);
-        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+        _mockResolver.ResolveCallCount.Should().Be(3);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(3);
     }
 
     [Fact]
-    public async Task AdjustBarAsync_ReusesCachedCorporateActionsPerTicker()
+    public async Task AdjustBarAsync_RefreshesCorporateActionsPerCall()
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
@@ -218,8 +219,27 @@ public sealed class CorporateActionAdjustmentServiceTests
         _ = await _service.AdjustBarAsync(bar, "SPY");
         _ = await _service.AdjustBarAsync(bar, "SPY");
 
-        _mockResolver.ResolveCallCount.Should().Be(1);
-        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+        _mockResolver.ResolveCallCount.Should().Be(3);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task AdjustAsync_ActionAppendedAfterFirstTouch_IsVisibleWithoutRestart()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m);
+        _mockQueryService.SetCorporateActions([]);
+        var first = await _service.AdjustAsync([bar], "SPY");
+
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null, null, null, 2m, null, null, null, null, null, null)
+        ]);
+        var second = await _service.AdjustAsync([bar], "SPY");
+
+        first[0].Close.Should().Be(105m);
+        second[0].Close.Should().Be(52.5m);
     }
 
     [Fact]

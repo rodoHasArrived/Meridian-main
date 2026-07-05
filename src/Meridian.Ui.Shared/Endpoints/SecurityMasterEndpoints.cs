@@ -647,6 +647,33 @@ public static class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
+        /// <summary>
+        /// Runs provider-backed corporate-action ingest across mastered ticker symbols.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
+            AppSecurityMaster.CorporateActionIngestRequest? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.CorporateActionIngestOrchestrator orchestrator,
+            CancellationToken ct) =>
+        {
+            var actor = ResolveActor(context);
+            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActionIngestRequest()) with
+            {
+                Actor = actor,
+                CorrelationId = context.TraceIdentifier
+            };
+
+            var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("IngestSecurityMasterCorporateActions")
+        .Accepts<AppSecurityMaster.CorporateActionIngestRequest>("application/json")
+        .Produces<AppSecurityMaster.CorporateActionIngestResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
             HttpContext context,

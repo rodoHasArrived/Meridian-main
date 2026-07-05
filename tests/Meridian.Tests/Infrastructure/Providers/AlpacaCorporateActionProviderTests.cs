@@ -51,7 +51,7 @@ public sealed class AlpacaCorporateActionProviderTests
         var results = await provider.FetchAsync("AAPL", securityId, CancellationToken.None);
 
         results.Should().HaveCount(2);
-        results.Select(result => result.ActionType).Should().Equal("Dividend", "Split");
+        results.Select(result => result.ActionType).Should().Equal("Dividend", "StockSplit");
         results.Select(result => result.SourceProvider).Should().OnlyContain(providerId => providerId == "alpaca");
         results[0].Amount.Should().Be(0.25m);
         results[1].SplitFromFactor.Should().Be(1m);

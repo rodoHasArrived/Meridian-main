@@ -41,18 +41,19 @@ public sealed class CorporateActionCommandService : ICorporateActionCommandServi
             return CorporateActionAppendResult.Invalid("Corporate action SecurityId must match route parameter.");
         }
 
-        var validationError = Validate(action);
+        var normalizedAction = CorporateActionValidation.Normalize(action);
+        var validationError = Validate(normalizedAction);
         if (validationError is not null)
         {
             return CorporateActionAppendResult.Invalid(validationError);
         }
 
-        await _eventStore.AppendCorporateActionAsync(action, ct).ConfigureAwait(false);
+        await _eventStore.AppendCorporateActionAsync(normalizedAction, ct).ConfigureAwait(false);
         _logger.LogInformation(
             "Security Master corporate action appended for {SecurityId} with event type {EventType}, corp action {CorporateActionId}, source {Source}, actor {Actor}.",
             securityId,
-            action.EventType,
-            action.CorpActId,
+            normalizedAction.EventType,
+            normalizedAction.CorpActId,
             string.IsNullOrWhiteSpace(source) ? "unspecified" : source,
             string.IsNullOrWhiteSpace(actor) ? "system" : actor);
 
@@ -60,32 +61,5 @@ public sealed class CorporateActionCommandService : ICorporateActionCommandServi
     }
 
     public static string? Validate(CorporateActionDto action)
-    {
-        if (string.IsNullOrWhiteSpace(action.EventType))
-        {
-            return "Corporate actions must include EventType.";
-        }
-
-        if (string.Equals(action.EventType, "StockSplit", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!action.SplitRatio.HasValue)
-            {
-                return "StockSplit corporate actions must include SplitRatio.";
-            }
-
-            if (action.SplitRatio.Value <= 0m || action.SplitRatio.Value > 1_000m)
-            {
-                return "StockSplit SplitRatio must be greater than 0 and less than or equal to 1000.";
-            }
-        }
-
-        if (string.Equals(action.EventType, "Dividend", StringComparison.OrdinalIgnoreCase) &&
-            action.DividendPerShare.HasValue &&
-            action.DividendPerShare.Value < 0m)
-        {
-            return "DividendPerShare must be greater than or equal to 0.";
-        }
-
-        return null;
-    }
+        => CorporateActionValidation.Validate(action);
 }

@@ -147,7 +147,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
         {
             yield return new CorporateActionCommand(
                 SecurityId: securityId,
-                ActionType: "Split",
+                ActionType: splitRatio < 1m ? "ReverseStockSplit" : "StockSplit",
                 ExDate: sessionDate,
                 RecordDate: null,
                 PayableDate: null,

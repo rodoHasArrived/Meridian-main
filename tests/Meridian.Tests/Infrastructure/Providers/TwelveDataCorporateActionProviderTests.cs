@@ -92,7 +92,7 @@ public sealed class TwelveDataCorporateActionProviderTests
         var results = await provider.FetchAsync("aapl", securityId, CancellationToken.None);
 
         results.Should().HaveCount(2);
-        results.Select(result => result.ActionType).Should().Equal("Dividend", "Split");
+        results.Select(result => result.ActionType).Should().Equal("Dividend", "StockSplit");
         results.Select(result => result.SecurityId).Should().OnlyContain(id => id == securityId);
         results.Select(result => result.SourceProvider).Should().OnlyContain(source => source == "twelvedata");
 

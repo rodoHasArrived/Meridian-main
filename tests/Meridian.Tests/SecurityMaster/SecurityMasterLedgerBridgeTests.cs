@@ -36,7 +36,8 @@ public sealed class SecurityMasterLedgerBridgeTests
             AcquirerSecurityId: null,
             ExchangeRatio: null,
             SubscriptionPricePerShare: null,
-            RightsPerShare: null);
+            RightsPerShare: null,
+            RecordDate: exDate.AddDays(1));
 
     private static CorporateActionDto MakeStockSplit(decimal splitRatio, DateOnly exDate)
         => new(
@@ -90,7 +91,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             RightsPerShare: null);
 
     [Fact]
-    public async Task PostCorporateActionsAsync_Dividend_PostsBalancedDrDividendReceivableCrDividendIncome()
+    public async Task PostCorporateActionsAsync_Dividend_PostsScaledReceivableAndPayDateRelief()
     {
         var dividend = MakeDividend(0.25m, new DateOnly(2025, 3, 15));
         var queryService = Substitute.For<ISecurityMasterQueryService>();
@@ -100,9 +101,13 @@ public sealed class SecurityMasterLedgerBridgeTests
         var bridge = BuildBridge(queryService);
         var ledger = new Meridian.Ledger.Ledger();
 
-        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 100m));
 
-        ledger.Journal.Should().HaveCount(1);
+        ledger.Journal.Should().HaveCount(2);
         var entry = ledger.Journal[0];
         entry.JournalEntryId.Should().Be(dividend.CorpActId);
         entry.IsBalanced.Should().BeTrue();
@@ -114,8 +119,37 @@ public sealed class SecurityMasterLedgerBridgeTests
         var receivable = LedgerAccounts.DividendReceivable(Ticker);
         var income = LedgerAccounts.DividendIncome;
 
-        ledger.GetBalance(receivable).Should().Be(0.25m);
-        ledger.GetBalance(income).Should().Be(0.25m);
+        ledger.GetBalance(receivable).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(25m);
+        ledger.GetBalance(income).Should().Be(25m);
+        ledger.Journal[1].Metadata.ActivityType.Should().Be(AutomatedJournalEventKind.DividendReceived.ToString());
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_DividendWithWithholding_PostsTaxAccrualAndNetReceipt()
+    {
+        var dividend = MakeDividend(0.25m, new DateOnly(2025, 3, 15));
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { dividend });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 100m, WithholdingTaxRate: 0.2m));
+
+        ledger.Journal.Should().HaveCount(3);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(20m);
+        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(25m);
+        ledger.GetBalance(LedgerAccounts.WithholdingTaxExpenseFor(Ticker)).Should().Be(5m);
+        ledger.GetBalance(LedgerAccounts.WithholdingTaxPayableFor(Ticker)).Should().Be(0m);
+        ledger.Journal.Should().Contain(entry =>
+            entry.Metadata.ActivityType == AutomatedJournalEventKind.WithholdingTaxAccrued.ToString());
     }
 
     [Fact]
@@ -129,11 +163,19 @@ public sealed class SecurityMasterLedgerBridgeTests
         var bridge = BuildBridge(queryService);
         var ledger = new Meridian.Ledger.Ledger();
 
-        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
-        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 10m));
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 10m));
 
-        // Second call must skip the already-posted entry.
-        ledger.Journal.Should().HaveCount(1);
+        // Second call must skip the already-posted declaration and pay-date receipt.
+        ledger.Journal.Should().HaveCount(2);
     }
 
     [Fact]
@@ -158,7 +200,7 @@ public sealed class SecurityMasterLedgerBridgeTests
     }
 
     [Fact]
-    public async Task PostCorporateActionsAsync_SpinOff_PostsBalancedDrCashCrCorpActionDistribution()
+    public async Task PostCorporateActionsAsync_SpinOff_PostsNonCashMemoEntry()
     {
         var newSecurity = Guid.NewGuid();
         var spinOff = MakeSpinOff(newSecurity, 0.5m, new DateOnly(2025, 11, 20));
@@ -176,9 +218,9 @@ public sealed class SecurityMasterLedgerBridgeTests
         entry.IsBalanced.Should().BeTrue();
         entry.Metadata.ActivityType.Should().Be("SpinOff");
 
-        var distribution = LedgerAccounts.CorpActionDistribution(Ticker);
-        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0.5m);
-        ledger.GetBalance(distribution).Should().Be(0.5m);
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.CorpActionDistribution(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
     }
 
     [Fact]
@@ -222,12 +264,28 @@ public sealed class SecurityMasterLedgerBridgeTests
     }
 
     [Fact]
-    public async Task PostCorporateActionsAsync_TickerNormalized_UpperCaseInMetadata()
+    public async Task PostCorporateActionsAsync_DividendWithoutPositionQuantity_DoesNotPostEconomics()
     {
         var dividend = MakeDividend(0.10m, new DateOnly(2025, 1, 10));
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
             .Returns(new[] { dividend });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, "aapl", ledger);
+
+        ledger.Journal.Should().BeEmpty("dividend economics require a record-date position quantity");
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_TickerNormalized_UpperCaseInMetadata()
+    {
+        var split = MakeStockSplit(2m, new DateOnly(2025, 1, 10));
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { split });
 
         var bridge = BuildBridge(queryService);
         var ledger = new Meridian.Ledger.Ledger();

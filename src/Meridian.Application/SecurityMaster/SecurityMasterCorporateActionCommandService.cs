@@ -21,9 +21,8 @@ public sealed class SecurityMasterCorporateActionCommandService : ISecurityMaste
         SecurityMasterCorporateActionAppendRequestDto request,
         CancellationToken ct = default)
     {
-        ValidateRequest(request);
+        var action = ValidateRequest(request);
 
-        var action = request.CorporateAction;
         await _eventStore.AppendCorporateActionAsync(action, ct).ConfigureAwait(false);
 
         var audit = new SecurityMasterCorporateActionAuditDto(
@@ -48,29 +47,26 @@ public sealed class SecurityMasterCorporateActionCommandService : ISecurityMaste
         return new SecurityMasterCorporateActionAppendResultDto(action, audit);
     }
 
-    private static void ValidateRequest(SecurityMasterCorporateActionAppendRequestDto request)
+    private static CorporateActionDto ValidateRequest(SecurityMasterCorporateActionAppendRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.CorporateAction);
+
+        var action = CorporateActionValidation.Normalize(request.CorporateAction);
 
         if (request.SecurityId == Guid.Empty)
         {
             throw new ArgumentException("Corporate action SecurityId is required.", nameof(request));
         }
 
-        if (request.CorporateAction.SecurityId != request.SecurityId)
+        if (action.SecurityId != request.SecurityId)
         {
             throw new ArgumentException("Corporate action SecurityId must match route parameter", nameof(request));
         }
 
-        if (request.CorporateAction.CorpActId == Guid.Empty)
+        if (action.CorpActId == Guid.Empty)
         {
             throw new ArgumentException("Corporate action CorpActId is required.", nameof(request));
-        }
-
-        if (string.IsNullOrWhiteSpace(request.CorporateAction.EventType))
-        {
-            throw new ArgumentException("Corporate action EventType is required.", nameof(request));
         }
 
         if (string.IsNullOrWhiteSpace(request.SourceSystem))
@@ -83,29 +79,12 @@ public sealed class SecurityMasterCorporateActionCommandService : ISecurityMaste
             throw new ArgumentException("Corporate action Actor is required.", nameof(request));
         }
 
-        ValidateCorporateAction(request.CorporateAction);
-    }
-
-    private static void ValidateCorporateAction(CorporateActionDto dto)
-    {
-        if (string.Equals(dto.EventType, "StockSplit", StringComparison.OrdinalIgnoreCase))
+        var validationError = CorporateActionValidation.Validate(action);
+        if (validationError is not null)
         {
-            if (!dto.SplitRatio.HasValue)
-            {
-                throw new ArgumentException("StockSplit corporate actions must include SplitRatio.");
-            }
-
-            if (dto.SplitRatio.Value <= 0m || dto.SplitRatio.Value > 1_000m)
-            {
-                throw new ArgumentException("StockSplit SplitRatio must be greater than 0 and less than or equal to 1000.");
-            }
+            throw new ArgumentException(validationError, nameof(request));
         }
 
-        if (string.Equals(dto.EventType, "Dividend", StringComparison.OrdinalIgnoreCase) &&
-            dto.DividendPerShare.HasValue &&
-            dto.DividendPerShare.Value < 0m)
-        {
-            throw new ArgumentException("DividendPerShare must be greater than or equal to 0.");
-        }
+        return action;
     }
 }

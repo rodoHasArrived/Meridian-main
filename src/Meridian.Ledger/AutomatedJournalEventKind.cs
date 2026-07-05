@@ -34,4 +34,7 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Daily fair-value mark-to-market adjustment for portfolio positions.</summary>
     FairValueMarkAdjustment,
+
+    /// <summary>Period-close closing entries rolling net income into retained earnings.</summary>
+    PeriodCloseClosingEntries,
 }

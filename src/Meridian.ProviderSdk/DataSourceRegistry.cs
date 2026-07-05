@@ -95,7 +95,31 @@ public sealed class DataSourceRegistry
                     sp => (IDataSource)sp.GetRequiredService(source.ImplementationType),
                     lifetime));
             }
+
+            RegisterProviderInterface(
+                services,
+                source.ImplementationType,
+                "Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider",
+                lifetime);
         }
+    }
+
+    private static void RegisterProviderInterface(
+        IServiceCollection services,
+        Type implementationType,
+        string serviceTypeFullName,
+        ServiceLifetime lifetime)
+    {
+        var serviceType = implementationType
+            .GetInterfaces()
+            .FirstOrDefault(type => string.Equals(type.FullName, serviceTypeFullName, StringComparison.Ordinal));
+        if (serviceType is null)
+            return;
+
+        services.Add(new ServiceDescriptor(
+            serviceType,
+            sp => sp.GetRequiredService(implementationType),
+            lifetime));
     }
 
     /// <summary>

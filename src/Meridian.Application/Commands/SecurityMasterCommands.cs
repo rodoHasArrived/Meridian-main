@@ -15,6 +15,7 @@ namespace Meridian.Application.Commands;
 ///   --security-master-ingest ./securities.json
 ///   --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]
 ///   --security-master-ingest --provider edgar [--scope all-filers] [--include-xbrl] [--include-filing-documents] [--cik CIK] [--max-filers N] [--dry-run]
+///   --security-master-ingest --provider corporate-actions [--symbols AAPL,MSFT] [--minimum-sources N] [--dry-run]
 /// Requires MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to be configured.
 /// </summary>
 internal sealed class SecurityMasterCommands : ICliCommand
@@ -24,6 +25,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
     private readonly ISecurityMasterImportService? _importService;
     private readonly ISecurityMasterService? _securityMasterService;
     private readonly IEdgarIngestOrchestrator? _edgarIngestOrchestrator;
+    private readonly CorporateActionIngestOrchestrator? _corporateActionIngestOrchestrator;
     private readonly Serilog.ILogger _log;
 
     private const int ProgressReportInterval = 10;
@@ -32,12 +34,14 @@ internal sealed class SecurityMasterCommands : ICliCommand
         ISecurityMasterImportService? importService,
         Serilog.ILogger log,
         ISecurityMasterService? securityMasterService = null,
-        IEdgarIngestOrchestrator? edgarIngestOrchestrator = null)
+        IEdgarIngestOrchestrator? edgarIngestOrchestrator = null,
+        CorporateActionIngestOrchestrator? corporateActionIngestOrchestrator = null)
     {
         _importService = importService;
         _log = log;
         _securityMasterService = securityMasterService;
         _edgarIngestOrchestrator = edgarIngestOrchestrator;
+        _corporateActionIngestOrchestrator = corporateActionIngestOrchestrator;
     }
 
     public bool CanHandle(string[] args)
@@ -50,9 +54,66 @@ internal sealed class SecurityMasterCommands : ICliCommand
             return await ExecutePolygonIngestAsync(args, ct).ConfigureAwait(false);
         if (string.Equals(provider, "edgar", StringComparison.OrdinalIgnoreCase))
             return await ExecuteEdgarIngestAsync(args, ct).ConfigureAwait(false);
+        if (string.Equals(provider, "corporate-actions", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(provider, "corporate-action", StringComparison.OrdinalIgnoreCase))
+        {
+            return await ExecuteCorporateActionIngestAsync(args, ct).ConfigureAwait(false);
+        }
 
         // --- File-based ingest path ---
         return await ExecuteFileIngestAsync(args, ct).ConfigureAwait(false);
+    }
+
+    private async Task<CliResult> ExecuteCorporateActionIngestAsync(string[] args, CancellationToken ct)
+    {
+        if (_corporateActionIngestOrchestrator is null)
+        {
+            Console.Error.WriteLine("Corporate action ingest service is not available.");
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
+        }
+
+        var minimumSourcesValue = CliArguments.GetValue(args, "--minimum-sources")
+            ?? CliArguments.GetValue(args, "--min-sources");
+        var minimumSources = int.TryParse(minimumSourcesValue, out var parsedMinimumSources) && parsedMinimumSources > 0
+            ? parsedMinimumSources
+            : 1;
+        var symbols = ParseSymbols(args);
+        var request = new CorporateActionIngestRequest(
+            Symbols: symbols.Count == 0 ? null : symbols,
+            DryRun: args.Any(a => a.Equals("--dry-run", StringComparison.OrdinalIgnoreCase)),
+            MinimumSourcesToApply: minimumSources,
+            Actor: "meridian-cli");
+
+        Console.WriteLine(
+            $"Running corporate-action ingest (symbols={(symbols.Count == 0 ? "all mastered tickers" : string.Join(",", symbols))}, minimumSources={minimumSources}, dryRun={request.DryRun})...");
+
+        var result = await _corporateActionIngestOrchestrator.IngestAsync(request, ct).ConfigureAwait(false);
+
+        Console.WriteLine();
+        Console.WriteLine("Corporate-action ingest complete:");
+        Console.WriteLine($"  Securities scanned  : {result.SecuritiesScanned}");
+        Console.WriteLine($"  Providers queried   : {result.ProvidersQueried}");
+        Console.WriteLine($"  Applied             : {result.Applied}");
+        Console.WriteLine($"  Staged              : {result.Staged}");
+        Console.WriteLine($"  Duplicates skipped  : {result.DuplicatesSkipped}");
+
+        if (result.Errors.Count > 0)
+        {
+            Console.WriteLine($"  Errors ({result.Errors.Count}):");
+            foreach (var error in result.Errors.Take(20))
+                Console.WriteLine($"    - {error}");
+            if (result.Errors.Count > 20)
+                Console.WriteLine($"    ... and {result.Errors.Count - 20} more");
+        }
+
+        _log.Information(
+            "Corporate-action ingest completed: {Applied} applied, {Staged} staged, {Duplicates} duplicates, {Errors} errors",
+            result.Applied,
+            result.Staged,
+            result.DuplicatesSkipped,
+            result.Errors.Count);
+
+        return result.Errors.Count == 0 ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
     }
 
     private async Task<CliResult> ExecuteEdgarIngestAsync(string[] args, CancellationToken ct)
@@ -194,6 +255,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
             Console.Error.WriteLine("Usage: --security-master-ingest <file.csv|file.json>");
             Console.Error.WriteLine("       --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]");
             Console.Error.WriteLine("       --security-master-ingest --provider edgar [--scope all-filers] [--include-xbrl] [--include-filing-documents] [--cik CIK] [--max-filers N] [--dry-run]");
+            Console.Error.WriteLine("       --security-master-ingest --provider corporate-actions [--symbols AAPL,MSFT] [--minimum-sources N] [--dry-run]");
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
         }
 
@@ -268,5 +330,26 @@ internal sealed class SecurityMasterCommands : ICliCommand
             if (errors.Count > 20)
                 Console.WriteLine($"    ... and {errors.Count - 20} more");
         }
+    }
+
+    private static IReadOnlyList<string> ParseSymbols(string[] args)
+    {
+        var values = new List<string>();
+        var symbolsValue = CliArguments.GetValue(args, "--symbols");
+        if (!string.IsNullOrWhiteSpace(symbolsValue))
+        {
+            values.AddRange(symbolsValue
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        }
+
+        var symbolValue = CliArguments.GetValue(args, "--symbol");
+        if (!string.IsNullOrWhiteSpace(symbolValue))
+            values.Add(symbolValue.Trim());
+
+        return values
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 }

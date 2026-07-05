@@ -148,7 +148,8 @@ public sealed record CorporateActionDto(
     Guid? AcquirerSecurityId,
     decimal? ExchangeRatio,
     decimal? SubscriptionPricePerShare,
-    decimal? RightsPerShare);
+    decimal? RightsPerShare,
+    DateOnly? RecordDate = null);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.
