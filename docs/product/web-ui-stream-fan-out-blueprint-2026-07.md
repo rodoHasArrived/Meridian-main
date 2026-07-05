@@ -129,12 +129,16 @@ unaffected):
 public QuoteCollector(IMarketEventPublisher publisher, IQuoteUpdateNotifier? updates = null)
 
 // inside Upsert(...), after sequence assignment and _publisher.TryPublish(...):
-_updates?.NotifyQuoteChanged(symbol);   // cheap; try/catch swallow inside the notifier impl
+// The try/catch lives at the CALL SITE (not only inside the impl) so that even a
+// buggy/throwing notifier implementation can never surface on the ingestion path.
+try { _updates?.NotifyQuoteChanged(symbol); }
+catch { /* swallow — ingestion must never fail on a UI-streaming concern */ }
 ```
 
 Rationale: the notifier lives in Domain next to the collector, but its only production implementation
 lives in the UI layer (the broadcaster). Domain stays free of streaming concerns; the default is a
-shared `NullQuoteUpdateNotifier`.
+shared `NullQuoteUpdateNotifier`. The call-site guard is what the §8 "throwing notifier" test pins —
+belt-and-suspenders with the impl's own internal guard.
 
 ### 5.2 `QuoteStreamBroadcaster` (UI.Shared singleton) — topic fan-out
 
@@ -178,8 +182,11 @@ the broadcaster keys everything by `topic.Key` string.
 
 `src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs` (new, singleton):
 
-- `bool TryReserve(string sessionId)` / `void Release(string sessionId)` — increments/decrements a
-  per-session counter guarded by the `QuoteStreamOptions.MaxConcurrentStreamsPerSession` (default 4).
+- `bool TryReserve(string sessionId)` / `void Release(string sessionId)` — **thread-safely**
+  increments/decrements a per-session counter (the registry is a singleton hit concurrently by many
+  request threads: use `ConcurrentDictionary<string, int>` with atomic `AddOrUpdate`, or a per-session
+  lock), guarded by `QuoteStreamOptions.MaxConcurrentStreamsPerSession` (default 4). Reserve-and-check
+  must be a single atomic step so two racing connections cannot both slip past the cap.
 - `void CloseSession(string sessionId)` — signals all reservations for a session to cancel (wired to
   session-expiry / logout so streams close promptly).
 - Keyed by the workstation session identity already available via `RequireWorkstationTenantScope`
@@ -199,7 +206,11 @@ existing content-type/heartbeat/cancellation scaffolding and the 503/400 guards:
 2. topic = StreamTopic from NormalizeStreamSymbols(symbols)  (unchanged 50-symbol/400 guard).
 3. sub = broadcaster.TrySubscribe(topic, sessionId, ct);  if null → 429 + Retry-After.
 4. await foreach (snapshot in sub.Reader.ReadAllAsync(ct)) → write `event: quotes\ndata: …\n\n` + flush.
-   - heartbeat: a linked timer writes `: heartbeat\n\n` every StreamHeartbeatIntervalMs when idle.
+   - heartbeat: `HttpResponse.Body`/`BodyWriter` is **not** safe for concurrent writes, so the
+     heartbeat must NOT be a second writer racing the snapshot loop. Emit it from the **single write
+     path** — either merge a heartbeat sentinel into the subscriber channel (preferred: one writer,
+     no lock), or guard every write with a `SemaphoreSlim`. A naive background timer writing straight
+     to `Response.Body` would throw / corrupt the stream.
    - initial frame: broadcaster seeds the subscriber's channel with the current snapshot on subscribe
      so a new client gets data immediately (parity with today's first-tick behavior).
 5. finally: await sub.DisposeAsync()  (releases the registry reservation).
@@ -256,9 +267,13 @@ is unchanged — the role switch lives entirely inside the stream client.
 
 ### 6.3 Degradation (opener gone)
 
-Followers already learn the opener closed via the existing 6d `session-expired` message. On that
-signal — or when no snapshot arrives within `FOLLOWER_STALE_MS` — the follower flips `healthy=false`,
-so consumers resume their polling fallback (the same first-class fallback used everywhere). **No
+The owner broadcasts an explicit disconnect on `pagehide` (this is exactly the reliable unload event
+6d already uses for `session-expired`; prefer it over `beforeunload`/`unload`, which are unreliable
+and bfcache-hostile) — either a dedicated `stream-owner-gone` message or the existing
+`session-expired`. So closing the main tab flips followers **immediately**, not after a timeout.
+Followers also flip on the `FOLLOWER_STALE_MS` watchdog as a backstop for the case where the opener
+dies without firing `pagehide` (crash, kill). On either signal the follower sets `healthy=false`, so
+consumers resume their polling fallback (the same first-class fallback used everywhere). **No
 owner-election in v1**: a stranded pane polls, exactly like a degraded main window. Promotion
 (follower opens its own `EventSource`) is noted as a future refinement, not built.
 
