@@ -382,6 +382,40 @@
   padding: 2rem 0.75rem;
 }
 
+/* ── Virtualized dense tables ────────────────────────────────────────────────
+   When DenseDataTable windows rows it mounts only a slice plus top/bottom spacer
+   rows. Keep row heights exact, neutralize the spacers, and disable zebra
+   striping (nth-child parity is meaningless once the mounted slice shifts).
+──────────────────────────────────────────────────────────────────────────*/
+.dense-data-table-wrap-virtual {
+  overflow-y: auto;
+}
+
+.dense-data-table-spacer,
+.dense-data-table-spacer:hover {
+  background: transparent;
+}
+
+.dense-data-table-spacer td {
+  padding: 0;
+  border: 0;
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr:nth-child(even) {
+  background: var(--ws-surface);
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr.selectable td,
+.dense-data-table-wrap-virtual .dense-data-table tbody tr td {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr.selected {
+  background: var(--ws-row-selected);
+}
+
 /* ── Concrete radius normalization ──────────────────────────────────────────
    Concrete unifies control/card/panel corners to a single tight 2px radius;
    structure is carried by hairline borders, not rounding. Override the legacy
