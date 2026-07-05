@@ -664,6 +664,7 @@ public static class SecurityMasterEndpoints
             };
 
             var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
+            context.RequestServices.GetService<AppSecurityMaster.CorporateActionInboxState>()?.Record(result);
             return Results.Json(result, jsonOptions);
         })
         .WithName("IngestSecurityMasterCorporateActions")
@@ -673,6 +674,35 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Returns staged corporate-action proposals from the most recent ingest sweep for
+        /// the workbench inbox badge and review list.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
+            [FromServices] AppSecurityMaster.CorporateActionInboxState inboxState) =>
+            Results.Json(inboxState.GetInbox(), jsonOptions))
+        .WithName("GetSecurityMasterCorporateActionInbox")
+        .Produces<AppSecurityMaster.CorporateActionInboxDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Pre-builds a machine-proposed security-master draft for an unmastered symbol so the
+        /// operator can review and submit it instead of typing the record from scratch.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCoverageDraft, async (
+            string symbol,
+            [FromServices] AppSecurityMaster.SecurityMasterDraftProposalService draftService,
+            CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                return Results.BadRequest("A symbol is required.");
+
+            var draft = await draftService.BuildDraftAsync(symbol, ct).ConfigureAwait(false);
+            return Results.Json(draft, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCoverageDraft")
+        .Produces<AppSecurityMaster.SecurityMasterDraftProposalDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (

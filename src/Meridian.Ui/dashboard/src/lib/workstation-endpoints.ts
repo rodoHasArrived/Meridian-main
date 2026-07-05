@@ -209,8 +209,14 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
   assetProfileApprove: UI_API_ROUTES.SecurityMasterAssetProfileApprove,
   assetProfileRollback: UI_API_ROUTES.SecurityMasterAssetProfileRollback,
   workstationSecurities: UI_API_ROUTES.WorkstationSecurityMasterSearch,
-  workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts
+  workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts,
+  corporateActionInbox: UI_API_ROUTES.SecurityMasterCorporateActionsInbox
 } as const;
+
+/** Coverage draft route carries a `{symbol}` path segment substituted client-side. */
+export function securityMasterCoverageDraftEndpoint(symbol: string): string {
+  return UI_API_ROUTES.SecurityMasterCoverageDraft.replace("{symbol}", encodeURIComponent(symbol));
+}
 
 /**
  * Passport Workbench governed-write routes. Each carries a `{securityId:guid}` path segment that is
@@ -370,7 +376,8 @@ export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
   status: UI_API_ROUTES.ProviderStatus,
   connections: UI_API_ROUTES.ProviderConnections,
-  readiness: UI_API_ROUTES.ProviderReadiness
+  readiness: UI_API_ROUTES.ProviderReadiness,
+  capabilityMatrix: UI_API_ROUTES.ProviderCapabilityMatrix
 } as const;
 
 export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {

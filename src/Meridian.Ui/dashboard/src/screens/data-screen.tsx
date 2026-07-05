@@ -44,6 +44,15 @@ import {
   type DataQualityPanelViewModel
 } from "@/screens/data-screen.data-quality.view-model";
 import {
+  CAPABILITY_LEGEND,
+  useCapabilityMatrixPanel,
+  type CapabilityMatrixViewModel
+} from "@/screens/data-screen.capability-matrix.view-model";
+import {
+  useCorporateActionInboxPanel,
+  type CorporateActionInboxViewModel
+} from "@/screens/data-screen.corporate-action-inbox.view-model";
+import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID,
@@ -269,6 +278,8 @@ export function DataScreen({
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel();
+  const capabilityMatrixPanel = useCapabilityMatrixPanel();
+  const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
 
   if (!data) {
@@ -323,6 +334,10 @@ export function DataScreen({
       </section>
 
       <DataQualityRegion panel={qualityPanel} />
+
+      <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
+
+      <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
 
       <section className="data-management-frame">
         <nav className="workspace-directory-rail" aria-label="Data folders">
@@ -2232,6 +2247,164 @@ const qualityToneBadgeVariant = {
   warning: "warning",
   danger: "danger"
 } as const;
+
+function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel }) {
+  return (
+    <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle id="capability-matrix-title">Provider capability matrix</CardTitle>
+            <CardDescription>
+              Declared provider coverage per instrument type.
+              {panel.model ? ` ${panel.model.summary}` : null}
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void panel.refresh()}
+            disabled={panel.loading}
+            aria-label="Refresh provider capability matrix"
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {panel.error ? (
+            <StatusBanner tone="danger" title="Capability matrix unavailable" detail={panel.error} />
+          ) : !panel.model ? (
+            <p className="text-sm text-muted-foreground" role="status">Loading capability matrix…</p>
+          ) : (
+            <div className="grid gap-4">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm" aria-label="Provider capability by instrument type">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="border-b p-2 text-left font-semibold">Provider</th>
+                      {panel.model.columns.map((column) => (
+                        <th key={column} scope="col" className="border-b p-2 text-left font-semibold">
+                          {column}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {panel.model.rows.map((row) => (
+                      <tr key={row.providerId}>
+                        <th scope="row" className="border-b p-2 text-left font-mono font-semibold">
+                          {row.providerId}
+                        </th>
+                        {row.cells.map((cell) => (
+                          <td
+                            key={cell.instrumentType}
+                            title={cell.description}
+                            className={cn(
+                              "border-b p-2 font-mono",
+                              cell.supported ? "text-foreground" : "text-muted-foreground/50"
+                            )}
+                          >
+                            <span aria-label={cell.description}>{cell.marks}</span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}
+              </p>
+              {panel.model.failures.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold">Discovery failures</h3>
+                  <ul className="mt-2 grid gap-1.5">
+                    {panel.model.failures.map((failure, index) => (
+                      <li key={`${failure.stage}-${failure.subject}-${index}`} className="text-sm text-muted-foreground">
+                        <Badge variant="danger">{failure.stage}</Badge>{" "}
+                        <span className="font-mono">{failure.subject}</span> — {failure.errorType}: {failure.errorMessage}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxViewModel }) {
+  return (
+    <section aria-labelledby="corporate-action-inbox-title" className="workspace-region corporate-action-inbox-region">
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle id="corporate-action-inbox-title">
+              Corporate action inbox
+              {panel.model && panel.model.stagedCount > 0 ? ` (${panel.model.stagedCount})` : null}
+            </CardTitle>
+            <CardDescription>
+              Staged provider announcements awaiting operator review.
+              {panel.model ? ` ${panel.model.summary} Last ingest: ${panel.model.lastIngestLabel}.` : null}
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void panel.refresh()}
+            disabled={panel.loading}
+            aria-label="Refresh corporate action inbox"
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {panel.error ? (
+            <StatusBanner tone="danger" title="Corporate action inbox unavailable" detail={panel.error} />
+          ) : !panel.model ? (
+            <p className="text-sm text-muted-foreground" role="status">Loading corporate action inbox…</p>
+          ) : panel.model.rows.length === 0 ? (
+            <p className="text-sm text-muted-foreground" role="status">{panel.model.summary}</p>
+          ) : (
+            <ul className="grid gap-1.5" aria-label="Staged corporate action proposals">
+              {panel.model.rows.map((row) => (
+                <li key={row.key} className="flex flex-wrap items-center gap-2 text-sm">
+                  <Badge variant={row.tone === "warning" ? "warning" : "outline"}>
+                    {row.actionType}
+                  </Badge>
+                  <span className="font-mono font-semibold">{row.ticker}</span>
+                  <span className="text-muted-foreground">
+                    {row.valueLabel} · ex {row.exDateLabel} ({row.countdownLabel}) · {row.consensusLabel}
+                    {row.dissentingSources.length > 0
+                      ? ` · disputed by ${row.dissentingSources.join(", ")}`
+                      : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {panel.model && panel.model.errors.length > 0 && (
+            <div className="mt-3">
+              <h3 className="text-sm font-semibold">Provider errors last run</h3>
+              <ul className="mt-2 grid gap-1">
+                {panel.model.errors.map((message) => (
+                  <li key={message} className="text-sm text-muted-foreground font-mono">{message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
 
 function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
   return (

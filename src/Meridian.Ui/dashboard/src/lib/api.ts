@@ -361,6 +361,7 @@ import {
   STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   buildReferenceDataWorkbenchEndpoints,
+  securityMasterCoverageDraftEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -3721,6 +3722,20 @@ export function getQualityDashboard() {
 
 export function getQualityGaps() {
   return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
+}
+
+// --- Provider capability matrix and security-master supply surfaces ---
+
+export function getProviderCapabilityMatrix() {
+  return getJson<import("@/types").ProviderCapabilityMatrixResponse>(PROVIDER_API_ENDPOINTS.capabilityMatrix);
+}
+
+export function getCorporateActionInbox() {
+  return getJson<import("@/types").CorporateActionInboxResponse>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInbox);
+}
+
+export function getSecurityMasterCoverageDraft(symbol: string) {
+  return getJson<import("@/types").SecurityMasterDraftProposal>(securityMasterCoverageDraftEndpoint(symbol));
 }
 
 export function getQualityAnomalies() {

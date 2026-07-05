@@ -40,6 +40,7 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly ISymbolResolver? _symbolResolver;
     private readonly OpenFigiSymbolResolver? _ownedSymbolResolver;
+    private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
     private BackfillResult? _lastRun;
     private bool _disposed;
 
@@ -54,17 +55,23 @@ public sealed class BackfillCoordinator : IDisposable
     ///     Shared symbol resolution spine (typically the canonical-registry resolver from DI).
     ///     When null, a coordinator-owned OpenFIGI resolver is created from configuration.
     /// </param>
+    /// <param name="symbolTimelineResolver">
+    ///     Optional security-master timeline resolver; when present, daily backfill chunks
+    ///     spanning a ticker rename query the provider with the era-correct symbol.
+    /// </param>
     public BackfillCoordinator(
         ConfigStore store,
         ProviderRegistry? registry = null,
         ProviderFactory? factory = null,
         IEventMetrics? metrics = null,
-        ISymbolResolver? symbolResolver = null)
+        ISymbolResolver? symbolResolver = null,
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
     {
         _store = store;
         _registry = registry;
         _factory = factory;
         _metrics = metrics ?? new DefaultEventMetrics();
+        _symbolTimelineResolver = symbolTimelineResolver;
         _lastRun = store.TryLoadBackfillStatus();
 
         if (symbolResolver is not null)
@@ -363,7 +370,11 @@ public sealed class BackfillCoordinator : IDisposable
             providers = combined;
         }
 
-        return new HistoricalBackfillService(providers, _log, checkpointStore: checkpointStore);
+        return new HistoricalBackfillService(
+            providers,
+            _log,
+            checkpointStore: checkpointStore,
+            symbolTimelineResolver: _symbolTimelineResolver);
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)

@@ -10132,6 +10132,102 @@ export interface QualityDashboardResponse {
   recentAnomalies: QualityAnomalyEntry[];
 }
 
+// --- Provider × instrument-type capability matrix ---
+
+export interface ProviderCapabilitySurface {
+  streaming: boolean;
+  historical: boolean;
+  symbolSearch: boolean;
+  corporateActions: boolean;
+  optionsChain: boolean;
+  brokerage: boolean;
+}
+
+export interface ProviderInstrumentCapabilityCell {
+  instrumentType: string;
+  supported: boolean;
+  stream: boolean;
+  backfill: boolean;
+  corporateActions: boolean;
+  symbolSearch: boolean;
+  optionsChain: boolean;
+}
+
+export interface ProviderInstrumentCapabilityRow {
+  providerId: string;
+  declaredInstrumentTypes: string[];
+  surfaces: ProviderCapabilitySurface;
+  cells: ProviderInstrumentCapabilityCell[];
+}
+
+export interface ProviderDiscoveryFailure {
+  stage: string;
+  subject: string;
+  moduleId: string | null;
+  errorType: string;
+  errorMessage: string;
+}
+
+export interface ProviderCapabilityMatrixResponse {
+  generatedAt: string;
+  instrumentTypes: string[];
+  providers: ProviderInstrumentCapabilityRow[];
+  discoveryFailures: ProviderDiscoveryFailure[];
+}
+
+// --- Corporate action inbox ---
+
+export interface CorporateActionProposalEntry {
+  securityId: string;
+  ticker: string;
+  actionType: string;
+  exDate: string;
+  recordDate: string | null;
+  payableDate: string | null;
+  amount: number | null;
+  currency: string | null;
+  splitFromFactor: number | null;
+  splitToFactor: number | null;
+  winningSource: string;
+  agreeingSources: string[];
+  dissentingSources: string[];
+  autoApplied: boolean;
+}
+
+export interface CorporateActionInboxResponse {
+  lastIngestAt: string | null;
+  stagedCount: number;
+  appliedLastRun: number;
+  duplicatesSkippedLastRun: number;
+  staged: CorporateActionProposalEntry[];
+  errors: string[];
+}
+
+// --- Security master coverage drafts ---
+
+export interface SecurityMasterDraftIdentifier {
+  kind: string;
+  value: string;
+  isPrimary: boolean;
+  validFrom: string;
+  validTo: string | null;
+  provider: string | null;
+}
+
+export interface SecurityMasterDraftProposal {
+  symbol: string;
+  resolved: boolean;
+  proposedSecurityId: string;
+  assetClass: string;
+  displayName: string | null;
+  exchange: string | null;
+  currency: string | null;
+  identifiers: SecurityMasterDraftIdentifier[];
+  sourceSystem: string;
+  provenance: string;
+  notes: string | null;
+}
+
 export interface ReconciliationCalibrationProfile {
   toleranceProfileId: string;
   exceptionRoute: string;
