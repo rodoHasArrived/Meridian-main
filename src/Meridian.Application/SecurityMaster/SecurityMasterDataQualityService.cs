@@ -17,6 +17,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     private readonly ISecurityMasterStore _securityStore;
     private readonly ISecurityMasterQualityReportStore _reportStore;
     private readonly ILogger<SecurityMasterDataQualityService> _logger;
+    private readonly IReadOnlyList<ISecurityCoverageSymbolSource> _coverageSources;
+    private readonly ISecurityResolver? _securityResolver;
 
     private static readonly int MaxTermsAgeDays = 180;
 
@@ -66,11 +68,15 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     public SecurityMasterDataQualityService(
         ISecurityMasterStore securityStore,
         ISecurityMasterQualityReportStore reportStore,
-        ILogger<SecurityMasterDataQualityService> logger)
+        ILogger<SecurityMasterDataQualityService> logger,
+        IEnumerable<ISecurityCoverageSymbolSource>? coverageSources = null,
+        ISecurityResolver? securityResolver = null)
     {
         _securityStore = securityStore;
         _reportStore = reportStore;
         _logger = logger;
+        _coverageSources = coverageSources?.ToArray() ?? [];
+        _securityResolver = securityResolver;
     }
 
     public async Task<SecurityMasterQualityReportDto> RunQualityChecksAsync(CancellationToken ct = default)
@@ -93,6 +99,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             violations.AddRange(RunConsistencyRules(security, now));
             violations.AddRange(RunStalenessRules(security, now));
         }
+
+        violations.AddRange(await RunCoverageRulesAsync(now, ct).ConfigureAwait(false));
 
         var report = new SecurityMasterQualityReportDto(now, scanned, violations.Count, violations);
         await _reportStore.SaveAsync(report, ct).ConfigureAwait(false);
@@ -273,6 +281,76 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
                 $"Security terms have not been amended for {ageDays} days (threshold: {MaxTermsAgeDays}).",
                 DataQualityRuleSeverity.Warning, now);
         }
+    }
+
+    // ── RefreshControl rules (coverage sweep) ───────────────────────────────
+
+    /// <summary>
+    /// Sweeps registered coverage sources for symbols that are active somewhere in the
+    /// platform but have no resolvable security-master record (rule RC001). Violations use
+    /// a deterministic pseudo security id derived from the symbol so downstream casework
+    /// can key on (rule, security, field) across runs.
+    /// </summary>
+    private async Task<IReadOnlyList<DataQualityRuleViolationDto>> RunCoverageRulesAsync(
+        DateTimeOffset now, CancellationToken ct)
+    {
+        if (_coverageSources.Count == 0 || _securityResolver is null)
+        {
+            return [];
+        }
+
+        var sourcesBySymbol = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        foreach (var source in _coverageSources)
+        {
+            foreach (var symbol in await source.GetActiveSymbolsAsync(ct).ConfigureAwait(false))
+            {
+                if (string.IsNullOrWhiteSpace(symbol))
+                {
+                    continue;
+                }
+
+                var normalized = symbol.Trim().ToUpperInvariant();
+                if (!sourcesBySymbol.TryGetValue(normalized, out var sources))
+                {
+                    sourcesBySymbol[normalized] = sources = [];
+                }
+
+                if (!sources.Contains(source.SourceName, StringComparer.Ordinal))
+                {
+                    sources.Add(source.SourceName);
+                }
+            }
+        }
+
+        var violations = new List<DataQualityRuleViolationDto>();
+        foreach (var (symbol, sources) in sourcesBySymbol.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var resolved = await _securityResolver.ResolveAsync(
+                    new ResolveSecurityRequest(SecurityIdentifierKind.Ticker, symbol, null, now),
+                    ct)
+                .ConfigureAwait(false);
+            if (resolved is not null)
+            {
+                continue;
+            }
+
+            violations.Add(Violation(
+                "RC001", "Unmastered Active Symbol", DataQualityRuleCategory.RefreshControl,
+                DeterministicSymbolId(symbol), $"symbol.{symbol}",
+                $"Symbol '{symbol}' is active in {string.Join(", ", sources)} but has no resolvable security-master record.",
+                DataQualityRuleSeverity.Error, now));
+        }
+
+        return violations;
+    }
+
+    private static Guid DeterministicSymbolId(string normalizedSymbol)
+    {
+        var hash = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes("security-master:coverage:" + normalizedSymbol));
+        return new Guid(hash.AsSpan(0, 16));
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

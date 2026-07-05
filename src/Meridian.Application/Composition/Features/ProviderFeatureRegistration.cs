@@ -35,7 +35,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
         // DataSourceRegistry - discovers providers decorated with [DataSource] (ADR-005).
         services.AddSingleton<DataSourceRegistry>(sp =>
         {
-            var registry = new DataSourceRegistry();
+            var registry = new DataSourceRegistry(sp.GetService<ILogger<DataSourceRegistry>>());
             registry.DiscoverFromAssemblies(typeof(NoOpMarketDataClient).Assembly);
             return registry;
         });

@@ -608,7 +608,17 @@ fund-event rows, ordered capital-account subledger entries, ledger-impact rows, 
 aggregates, published report-output state, signed net activity, and incomplete-context warnings
 Financial Operations-owned for both browser and WPF consumers. Posted
 capital-account subledger rows and ledger-impact account scopes are reconstructed from the
-shared ledger journal evidence. Close-management endpoints under `/api/ledger/close-management/*`
+shared ledger journal evidence.
+`AutomatedJournalDraftIntakeService` admits automated economic events (dividends declared or
+received, cash interest, corporate-action cash, management/performance fee, commission, and
+withholding-tax accruals) into the same workbench queue: each event is projected through the
+ledger-owned `AutomatedJournalDraftProjector`, ledger accounts are resolved onto the fund's chart
+of accounts (name+symbol+account identity first, then account name, else the raw name so chart
+validation flags it NeedsFix), and the balanced result is saved through
+`IManualJournalEntryWorkbenchService.SaveDraftAsync` so it inherits validation, audit, and the
+human submit/approve lifecycle. Intake is idempotent per event id — draft ids derive from the
+event idempotency key and existing drafts are skipped, never overwritten — and skips are always
+reported back to the caller. Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
   lock posture, and validation issues from Operations Continuity, the period-plan configuration route

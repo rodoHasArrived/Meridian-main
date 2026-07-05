@@ -39,6 +39,10 @@ base-currency ledger posting lines while preserving local amount, currency, and 
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
 marks, preserves price-source/evidence references, and prepares balanced fair-value adjustment
 lines against unrealized gain/loss accounts.
+`DailyPortfolioPricingDraftBuilder` converts that projection into a governed
+`AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
+fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
+Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
 `LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger

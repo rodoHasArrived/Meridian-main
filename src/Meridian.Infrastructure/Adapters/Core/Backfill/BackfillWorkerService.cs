@@ -332,8 +332,10 @@ public sealed class BackfillWorkerService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    var retryAfter = TryExtractRetryAfter(ex);
-                    var isRateLimited = retryAfter.HasValue ||
+                    var rateLimit = FindRateLimitException(ex);
+                    var retryAfter = rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex);
+                    var isRateLimited = rateLimit is not null ||
+                                        retryAfter.HasValue ||
                                         IsHttp429(ex) ||
                                         ex.Message.Contains("429") ||
                                         ex.Message.Contains("rate limit", StringComparison.OrdinalIgnoreCase);
@@ -396,6 +398,29 @@ public sealed class BackfillWorkerService : IDisposable
     /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
     /// as defined in RFC 7231 Section 7.1.3.
     /// </summary>
+    /// <summary>
+    /// Find a typed <see cref="RateLimitException"/> anywhere in the exception chain,
+    /// including inside <see cref="AggregateException"/> trees thrown by the composite provider.
+    /// </summary>
+    internal static RateLimitException? FindRateLimitException(Exception ex)
+    {
+        if (ex is RateLimitException rateLimit)
+            return rateLimit;
+
+        if (ex is AggregateException aggregate)
+        {
+            foreach (var inner in aggregate.InnerExceptions)
+            {
+                if (FindRateLimitException(inner) is { } found)
+                    return found;
+            }
+
+            return null;
+        }
+
+        return ex.InnerException is { } innerException ? FindRateLimitException(innerException) : null;
+    }
+
     internal static TimeSpan? TryExtractRetryAfter(Exception ex)
     {
         // Walk the exception chain looking for HttpRequestException with Retry-After info

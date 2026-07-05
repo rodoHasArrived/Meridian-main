@@ -1,3 +1,4 @@
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Edgar;
@@ -24,26 +25,45 @@ public static class ProviderCapabilityDescriptorCatalog
 {
     public static IReadOnlyList<ProviderCapabilityDescriptor> Descriptors { get; } =
     [
-        new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProviderRefactored), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway)),
-        new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider)),
-        new("ib", Historical: typeof(IBHistoricalDataProvider)),
-        new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider)),
-        new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider)),
+        new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProviderRefactored), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
+        new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
+            InstrumentTypes: [InstrumentType.Equity]),
+        new("ib", Historical: typeof(IBHistoricalDataProvider),
+            InstrumentTypes:
+            [
+                InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
+                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
+                InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
+            ]),
+        new("yahoo", Historical: typeof(YahooFinanceHistoricalDataProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index, InstrumentType.Forex, InstrumentType.Crypto]),
+        new("polygon", Historical: typeof(PolygonHistoricalDataProvider), Search: typeof(PolygonSymbolSearchProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index]),
         new(
             "robinhood",
             typeof(RobinhoodMarketDataClient),
             typeof(RobinhoodHistoricalDataProvider),
             typeof(RobinhoodSymbolSearchProvider),
             Options: typeof(RobinhoodOptionsChainProvider),
-            Brokerage: typeof(RobinhoodBrokerageGateway)),
-        new("edgar", Search: typeof(EdgarSymbolSearchProvider)),
-        new("tiingo", Historical: typeof(TiingoHistoricalDataProvider), Search: typeof(TiingoSymbolSearchProvider), CorporateActions: typeof(TiingoCorporateActionProvider)),
-        new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider), Search: typeof(TwelveDataSymbolSearchProvider), CorporateActions: typeof(TwelveDataCorporateActionProvider)),
-        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored), CorporateActions: typeof(FinnhubCorporateActionProvider)),
-        new("stooq", Historical: typeof(StooqHistoricalDataProvider)),
-        new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider), Search: typeof(AlphaVantageSymbolSearchProvider), CorporateActions: typeof(AlphaVantageCorporateActionProvider)),
-        new("fred", Historical: typeof(FredHistoricalDataProvider), Search: typeof(FredSymbolSearchProvider)),
-        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), Search: typeof(NasdaqDataLinkSymbolSearchProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider))
+            Brokerage: typeof(RobinhoodBrokerageGateway),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
+        new("edgar", Search: typeof(EdgarSymbolSearchProvider),
+            InstrumentTypes: [InstrumentType.Equity]),
+        new("tiingo", Historical: typeof(TiingoHistoricalDataProvider), Search: typeof(TiingoSymbolSearchProvider), CorporateActions: typeof(TiingoCorporateActionProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Crypto]),
+        new("twelvedata", Historical: typeof(TwelveDataHistoricalDataProvider), Search: typeof(TwelveDataSymbolSearchProvider), CorporateActions: typeof(TwelveDataCorporateActionProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index]),
+        new("finnhub", Historical: typeof(FinnhubHistoricalDataProvider), Search: typeof(FinnhubSymbolSearchProviderRefactored), CorporateActions: typeof(FinnhubCorporateActionProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto]),
+        new("stooq", Historical: typeof(StooqHistoricalDataProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Index]),
+        new("alphavantage", Historical: typeof(AlphaVantageHistoricalDataProvider), Search: typeof(AlphaVantageSymbolSearchProvider), CorporateActions: typeof(AlphaVantageCorporateActionProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto]),
+        new("fred", Historical: typeof(FredHistoricalDataProvider), Search: typeof(FredSymbolSearchProvider),
+            InstrumentTypes: [InstrumentType.Index]),
+        new("nasdaq", Historical: typeof(NasdaqDataLinkHistoricalDataProvider), Search: typeof(NasdaqDataLinkSymbolSearchProvider), CorporateActions: typeof(NasdaqDataLinkCorporateActionProvider),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.Commodity, InstrumentType.Index])
     ];
 }
 
@@ -54,8 +74,16 @@ public sealed record ProviderCapabilityDescriptor(
     Type? Search = null,
     Type? CorporateActions = null,
     Type? Options = null,
-    Type? Brokerage = null)
+    Type? Brokerage = null,
+    IReadOnlyList<InstrumentType>? InstrumentTypes = null)
 {
+    /// <summary>
+    /// Instrument types this provider is declared to cover. Declared here, next to the adapter
+    /// type wiring, so capability assertions stay close to the code that implements them.
+    /// Defaults to equities when a provider has not declared broader coverage.
+    /// </summary>
+    public IReadOnlyList<InstrumentType> SupportedInstrumentTypes { get; } = InstrumentTypes ?? [InstrumentType.Equity];
+
     public bool HasStreaming => Streaming is not null;
     public bool HasHistorical => Historical is not null;
     public bool HasSearch => Search is not null;

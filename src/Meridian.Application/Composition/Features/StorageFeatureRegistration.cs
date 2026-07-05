@@ -289,6 +289,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
+
+            // Coverage sweep: symbols active in platform surfaces but missing from the master
+            // feed RC001 RefreshControl violations, which the exception-casework loop cases.
+            services.AddSingleton<ISecurityCoverageSymbolSource, ConfiguredSymbolCoverageSource>();
+
+            // Symbology lineage: ticker changes recorded as first-class amend events.
+            services.AddSingleton<SecurityMasterTickerChangeService>();
+
+            // Corporate-action ingest: fan-out, consensus scoring, staged apply.
+            services.AddSingleton<CorporateActionIngestOrchestrator>();
         }
 
         if (AssetOperationsStartup.IsConfigured())

@@ -87,6 +87,7 @@ public static class UiApiRoutes
     public const string ProviderRateLimits = "/api/providers/rate-limits";
     public const string ProviderRateLimitHistory = "/api/providers/{providerName}/rate-limit-history";
     public const string ProviderCapabilities = "/api/providers/capabilities";
+    public const string ProviderCapabilityMatrix = "/api/providers/capability-matrix";
     public const string ProviderSwitch = "/api/providers/switch";
     public const string ProviderTest = "/api/providers/{providerName}/test";
     public const string ProviderFailoverThresholds = "/api/providers/failover-thresholds";

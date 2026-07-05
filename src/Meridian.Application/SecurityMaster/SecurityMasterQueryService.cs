@@ -22,13 +22,34 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetDetailAsync(securityId, ct);
 
+    public async Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+    {
+        var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        var asOfProjection = await _rebuilder.RebuildAsOfAsync(securityId, asOfUtc, current, ct).ConfigureAwait(false);
+        return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
+    }
+
     public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
     {
         var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
         var projection = await TryGetProjectionByIdentifierAsync(identifierKind, identifierValue, provider, asOf, ct)
             .ConfigureAwait(false);
+        if (projection is null)
+        {
+            return null;
+        }
 
-        return projection is null ? null : SecurityMasterMapping.ToDetail(projection);
+        if (asOfUtc is null)
+        {
+            return SecurityMasterMapping.ToDetail(projection);
+        }
+
+        // An explicit historical lookup must return the terms as recorded at that time —
+        // resolving the identifier as-of and then returning the current projection would
+        // silently hand back today's terms under yesterday's identity.
+        var asOfProjection = await _rebuilder.RebuildAsOfAsync(projection.SecurityId, asOf, projection, ct)
+            .ConfigureAwait(false);
+        return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
     }
 
     public async Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)

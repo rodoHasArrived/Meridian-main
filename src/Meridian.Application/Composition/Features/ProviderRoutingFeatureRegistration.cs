@@ -30,6 +30,9 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
         services.TryAddSingleton<IBestOfBreedProviderSelector, BestOfBreedProviderSelector>();
         services.TryAddSingleton<ICapabilityRouter>(sp => sp.GetRequiredService<ProviderRoutingService>());
         services.TryAddSingleton<ProviderRouteExplainabilityService>();
+        services.TryAddSingleton<Contracts.Api.IProviderInstrumentCapabilityMatrixService>(sp =>
+            new ProviderInstrumentCapabilityMatrixService(
+                sp.GetService<Meridian.Infrastructure.DataSources.DataSourceRegistry>()));
         services.TryAddSingleton<ProviderCertificationService>();
         services.TryAddSingleton<ProviderTrustScoringService>();
         services.TryAddSingleton<ProviderPresetService>();

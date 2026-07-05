@@ -41,10 +41,13 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterById, async (
             Guid securityId,
+            DateTimeOffset? asOf,
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
-            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            var detail = asOf.HasValue
+                ? await queryService.GetByIdAsOfAsync(securityId, asOf.Value, ct).ConfigureAwait(false)
+                : await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -1220,12 +1223,15 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterQualityReportRun, async (
             HttpContext context,
             [FromServices] ISecurityMasterDataQualityService qualityService,
+            [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
             CancellationToken ct) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
                 return EndpointHelpers.Forbidden();
 
             var report = await qualityService.RunQualityChecksAsync(ct).ConfigureAwait(false);
+            var actor = EndpointAuthorization.TryResolveActor(context, out var username) ? username : null;
+            await caseworkService.SyncQualityViolationCasesAsync(report, actor, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
         .WithName("RunSecurityMasterQualityReport")
