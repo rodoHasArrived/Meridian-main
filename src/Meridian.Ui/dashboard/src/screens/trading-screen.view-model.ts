@@ -5323,7 +5323,7 @@ function containsPromotionEvidenceReferenceToken(referenceValue: string, token: 
   }
 
   return referenceValue
-    .split(/[\/\\#?&=,;\s]+/u)
+    .split(/[/\\#?&=,;\s]+/u)
     .filter((segment) => segment.length > 0)
     .some((segment) => segment.toLowerCase() === token.toLowerCase());
 }
