@@ -1,11 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
+import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
 import {
   addSymbol as addSymbolApi,
   bulkAddSymbols,
@@ -35,19 +37,25 @@ export function WatchlistScreen() {
     removeSymbol: removeSymbolApi
   });
   const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
+  const inCompanionPane = isCompanionPaneRoute(useLocation().pathname);
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="eyebrow-label">Data Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            Symbol watchlist
-          </CardTitle>
-          <CardDescription>
-            Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Data Lane</div>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                Symbol watchlist
+              </CardTitle>
+              <CardDescription>
+                Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
+              </CardDescription>
+            </div>
+            {inCompanionPane ? null : <PopOutPaneButton paneId="watchlist" />}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

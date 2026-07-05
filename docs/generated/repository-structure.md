@@ -4822,6 +4822,8 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── companion-pane-window.test.tsx
+│   │   │   │   │   │   ├── companion-pane-window.tsx
 │   │   │   │   │   │   ├── copy-link-button.test.tsx
 │   │   │   │   │   │   ├── copy-link-button.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.test.tsx
@@ -4846,6 +4848,8 @@ Meridian-main
 │   │   │   │   │   │   ├── notification-center.tsx
 │   │   │   │   │   │   ├── number-passport.test.ts
 │   │   │   │   │   │   ├── number-passport.tsx
+│   │   │   │   │   │   ├── pop-out-pane-button.test.tsx
+│   │   │   │   │   │   ├── pop-out-pane-button.tsx
 │   │   │   │   │   │   ├── quant-notebook.test.tsx
 │   │   │   │   │   │   ├── quant-notebook.tsx
 │   │   │   │   │   │   ├── quant-notebook.view-model.test.ts
@@ -5001,6 +5005,12 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   └── security-master-workbench.api.ts
+│   │   │   │   │   ├── companion-pane
+│   │   │   │   │   │   ├── chrome-bridge.test.ts
+│   │   │   │   │   │   ├── chrome-bridge.ts
+│   │   │   │   │   │   ├── opener-broadcast.ts
+│   │   │   │   │   │   ├── pane-window.test.ts
+│   │   │   │   │   │   └── pane-window.ts
 │   │   │   │   │   ├── covered-call
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
@@ -5235,6 +5245,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── command-palette.css
+│   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
 │   │   │   │   │   ├── ui-kit-primitives.css
