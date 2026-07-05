@@ -191,7 +191,10 @@ No feature work; confirm and document the rules each later phase must follow.
       matrix, price alerts); the `use-workstation-data` workspace poller is deferred to step 2 —
       workspace topics need the event-driven fan-out seam, not a 30s poll-bridge.
 - [ ] Step-2 fan-out seam (separate PR, hot-path review required) + workspace topics + per-session
-      stream caps.
+      stream caps. **Design:** see
+      [`web-ui-stream-fan-out-blueprint-2026-07.md`](web-ui-stream-fan-out-blueprint-2026-07.md) —
+      code-ready blueprint (notifier seam + `QuoteStreamBroadcaster` + connection registry;
+      companion-pane stream sharing over the `BroadcastChannel`), phased for hot-path review.
 
 ---
 

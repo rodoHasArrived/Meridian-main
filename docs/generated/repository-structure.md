@@ -1772,7 +1772,8 @@ Meridian-main
 │   │   ├── meridian-design-document.md
 │   │   ├── README.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
-│   │   └── web-ui-improvements-implementation-plan-2026-07.md
+│   │   ├── web-ui-improvements-implementation-plan-2026-07.md
+│   │   └── web-ui-stream-fan-out-blueprint-2026-07.md
 │   ├── prompts
 │   │   ├── automation-prompts.md
 │   │   ├── README.md
@@ -3485,6 +3486,7 @@ Meridian-main
 │   ├── Meridian.Domain
 │   │   ├── Collectors
 │   │   │   ├── IQuoteStateStore.cs
+│   │   │   ├── IQuoteUpdateNotifier.cs
 │   │   │   ├── L3OrderBookCollector.cs
 │   │   │   ├── MarketDepthCollector.cs
 │   │   │   ├── OptionDataCollector.cs

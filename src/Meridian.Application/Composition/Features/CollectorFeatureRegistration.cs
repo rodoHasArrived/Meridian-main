@@ -13,11 +13,14 @@ internal sealed class CollectorFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
-        // QuoteCollector - BBO state tracking
+        // QuoteCollector - BBO state tracking. An IQuoteUpdateNotifier is injected when a
+        // fan-out consumer (e.g. the UI quote-stream broadcaster) is registered; otherwise
+        // the collector falls back to the no-op notifier.
         services.AddSingleton<QuoteCollector>(sp =>
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
-            return new QuoteCollector(publisher);
+            var updates = sp.GetService<IQuoteUpdateNotifier>();
+            return new QuoteCollector(publisher, updates);
         });
 
         // SessionStatsCollector - per-symbol intraday open/high/low/last/volume/VWAP
