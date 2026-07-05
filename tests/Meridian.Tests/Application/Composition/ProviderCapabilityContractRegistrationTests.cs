@@ -11,6 +11,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
@@ -30,6 +31,7 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddHttpClient();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
 
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };

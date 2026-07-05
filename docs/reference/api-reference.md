@@ -269,6 +269,8 @@ This table is intentionally **path-first** to support API documentation validati
 
 | Path | Method | Surface | Operational/Security Notes |
 |---|---|---|---|
+| `/api/ledger/journal-automation/dividend-intake` | POST | Ledger Automation | Runs dividend intake into governed manual journal drafts; requires fund-scoped write tenant permission and mutation rate limiting. |
+| `/api/ledger/journal-automation/fee-accrual-intake` | POST | Ledger Automation | Runs fee-accrual intake into governed manual journal drafts; requires fund-scoped write tenant permission and mutation rate limiting. |
 | `/api/projections/{projectionRunId:guid}/flows` | GET | Direct Lending | Returns projection cash-flow detail for a projection run. |
 | `/api/journals/{journalEntryId:guid}/post` | POST | Direct Lending | Posts pending journal entries to direct-lending ledger surfaces. |
 | `/api/reconciliation/{runId:guid}/results` | GET | Direct Lending | Returns reconciliation run results for operator review. |
@@ -281,6 +283,7 @@ This table is intentionally **path-first** to support API documentation validati
 | `/api/loans/rebuild-all` | POST | Direct Lending | Triggers portfolio-wide loan snapshot rebuild. |
 | `/api/loans/rebuild-checkpoints` | GET | Direct Lending | Reads rebuild checkpoint posture before triggering rebuild mutation. |
 | `/api/loans/portfolio` | GET | Direct Lending | Reads aggregated direct-lending portfolio posture. |
+| `/api/security-master/corporate-actions/ingest` | POST | Security Master | Runs provider-backed corporate-action ingest across mastered tickers; requires Security Master mutation permission and returns retained ingest evidence. |
 
 ### Symbols (`/api/symbols/*`)
 
@@ -394,6 +397,7 @@ Checkpoint endpoints expose the persisted job state that enables backfill operat
 | GET | `/api/providers/metrics` | Provider metrics |
 | GET | `/api/providers/metrics/{providerId}` | Single provider metrics |
 | GET | `/api/providers/comparison` | Feature comparison |
+| GET | `/api/providers/capability-matrix` | Provider by instrument-type capability matrix, including discovery failures |
 | GET | `/api/providers/catalog` | Provider catalog with metadata |
 | GET | `/api/providers/catalog/{providerId}` | Single provider catalog entry |
 | GET | `/api/providers/latency` | Latency statistics |

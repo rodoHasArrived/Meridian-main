@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**2645 / 7345** items documented (**36.0%**) &mdash; Grade: **F**
+**2679 / 7411** items documented (**36.1%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 36.0%
+[=======-------------] 36.1%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2524 | 6849 | 36.9% | F |
+| Public Classes / Interfaces | 2558 | 6915 | 37.0% | F |
 | API Endpoints | 107 | 349 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,10 +23,15 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4325 undocumented)
+### Public Classes / Interfaces (4357 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
+| `MarkToMarketPosition` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:11` |
+| `MarkPriceQuote` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:21` |
+| `IMarkPriceSource` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:31` |
+| `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:39` |
+| `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:53` |
 | `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:46` |
 | `BackfillRemediationSlaDecision` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:52` |
 | `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:64` |
@@ -53,7 +58,13 @@
 | `SecurityValidationContext` | `src/Meridian.Application/SecurityMaster/AssetClassValidatorRegistry.cs:7` |
 | `ISecurityAssetClassValidator` | `src/Meridian.Application/SecurityMaster/AssetClassValidatorRegistry.cs:11` |
 | `ICorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:6` |
-| `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:11` |
+| `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActionCommandService.cs:17` |
+| `CorporateActionIngestRequest` | `src/Meridian.Application/SecurityMaster/CorporateActionIngestOrchestrator.cs:15` |
+| `CorporateActionProposal` | `src/Meridian.Application/SecurityMaster/CorporateActionIngestOrchestrator.cs:25` |
+| `CorporateActionIngestResult` | `src/Meridian.Application/SecurityMaster/CorporateActionIngestOrchestrator.cs:40` |
+| `ICorporateActionRestatementTrigger` | `src/Meridian.Application/SecurityMaster/CorporateActionRestatementTrigger.cs:14` |
+| `NullCorporateActionRestatementTrigger` | `src/Meridian.Application/SecurityMaster/CorporateActionRestatementTrigger.cs:29` |
+| `CorporateActionSupersedeRestatementTrigger` | `src/Meridian.Application/SecurityMaster/CorporateActionRestatementTrigger.cs:54` |
 | `ISecurityValidationSnapshotStore` | `src/Meridian.Application/SecurityMaster/FileSecurityValidationSnapshotStore.cs:10` |
 | `NullSecurityValidationSnapshotStore` | `src/Meridian.Application/SecurityMaster/FileSecurityValidationSnapshotStore.cs:69` |
 | `PositionCorporateActionAdjustment` | `src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:6` |
@@ -65,19 +76,8 @@
 | `NullDataVendorEntitlementService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:53` |
 | `NullSecurityMasterDataQualityService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:75` |
 | `NullSecurityMasterQueryService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:21` |
-| `NullCorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:120` |
-| `NullSecurityMasterCorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:133` |
-| `NullSecurityMasterImportService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:169` |
-| `NullTradingParametersBackfillService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:191` |
-| `ISecurityAssetProfileGovernanceService` | `src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:9` |
-| `ISecurityMasterConflictService` | `src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs:11` |
-| `SecurityMasterImportResult` | `src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12` |
-| `SecurityMasterImportProgress` | `src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:22` |
-| `ISecurityMasterImportService` | `src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:32` |
-| `SecurityMasterIngestStatusSnapshot` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:6` |
-| `SecurityMasterActiveImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13` |
-| `SecurityMasterCompletedImportStatus` | `src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:26` |
-| ... and 4275 more | |
+| `NullCorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:123` |
+| ... and 4307 more | |
 
 ### API Endpoints (242 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4325 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4357 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 242 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
