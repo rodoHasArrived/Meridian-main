@@ -60,8 +60,14 @@ public sealed class QuoteCollector : IQuoteStateStore
 
         // Fan-out signal for out-of-band consumers (UI quote stream). Guarded at the
         // call site so a faulty notifier can never surface on the ingestion path.
-        try { _updates.NotifyQuoteChanged(payload.Symbol); }
-        catch { /* best effort — ingestion must never fail on a UI-streaming concern */ }
+        try
+        {
+            _updates.NotifyQuoteChanged(payload.Symbol);
+        }
+        catch
+        {
+            // Best effort — ingestion must never fail on a UI-streaming concern.
+        }
 
         return payload;
     }
