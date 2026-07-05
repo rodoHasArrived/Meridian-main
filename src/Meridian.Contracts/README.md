@@ -861,10 +861,11 @@ the retained source path, imported batch, target bank account, statement date, a
 the shared endpoint applies evidence through the fund-account service.
 Custodian/broker statement connector commit results live in `Workstation/StatementConnectorDtos.cs`
 and stay additive: successful imports return retained break ids, reconciliation case ids, legacy
-case-route arrays, and structured reconciliation case links with break id, route, status, priority,
-reason, and suggested next action alongside Evidence Vault identity, Evidence Workbench route,
-reconciliation route, and operator next actions so browser and WPF clients can deep-link into the
-exact casework opened by the statement run without relying on parallel arrays.
+case-route arrays, and `StatementImportReconciliationCaseLinkDto` structured reconciliation case
+links with break id, route, status, priority, reason, and suggested next action alongside Evidence
+Vault identity, Evidence Workbench route, reconciliation route, and operator next actions so browser
+and WPF clients can deep-link into the exact casework opened by the statement run without relying on
+parallel arrays.
 Direct Lending servicer statement intake contracts live under
 `DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
 result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained

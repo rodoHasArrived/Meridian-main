@@ -9,8 +9,8 @@
     "endpoint_count": 588,
     "documented_endpoint_count": 588,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 809,
-    "documented_workstation_contract_count": 809,
+    "workstation_contract_count": 810,
+    "documented_workstation_contract_count": 810,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -6420,13 +6420,18 @@
       "documented": true
     },
     {
+      "name": "StatementImportReconciliationCaseLinkDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:143",
+      "documented": true
+    },
+    {
       "name": "StatementFetchScheduleDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:154",
       "documented": true
     },
     {
       "name": "StatementFetchScheduleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:152",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:167",
       "documented": true
     },
     {
