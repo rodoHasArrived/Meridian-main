@@ -8292,6 +8292,9 @@ public sealed partial class WorkstationEndpointsTests
             return Task.FromResult<SecurityDetailDto?>(detail);
         }
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             var detail = _details.Values.FirstOrDefault(item =>
