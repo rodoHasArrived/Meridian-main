@@ -65,17 +65,16 @@ public static partial class WorkstationEndpoints
                 {
                     while (!ct.IsCancellationRequested)
                     {
-                        // Single writer: race the next snapshot against the heartbeat interval so a
-                        // heartbeat never writes to Response.Body concurrently with a snapshot.
+                        // Single writer: wait for the next snapshot with a heartbeat-interval timeout.
+                        // When the timeout cancels the token, WaitToReadAsync throws and we write a
+                        // heartbeat instead — Response.Body is never written from two paths at once, and
+                        // there is no per-iteration Task.WhenAny/Task.Delay/.AsTask() allocation churn.
                         using var iteration = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                        var readTask = subscription.Reader.WaitToReadAsync(iteration.Token).AsTask();
-                        var delayTask = Task.Delay(StreamHeartbeatIntervalMs, iteration.Token);
-                        var completed = await Task.WhenAny(readTask, delayTask).ConfigureAwait(false);
-                        iteration.Cancel();
+                        iteration.CancelAfter(StreamHeartbeatIntervalMs);
 
-                        if (completed == readTask)
+                        try
                         {
-                            if (!await readTask.ConfigureAwait(false))
+                            if (!await subscription.Reader.WaitToReadAsync(iteration.Token).ConfigureAwait(false))
                             {
                                 break; // broadcaster completed the channel — the stream is done.
                             }
@@ -94,8 +93,9 @@ public static partial class WorkstationEndpoints
                                 await context.Response.Body.FlushAsync(ct).ConfigureAwait(false);
                             }
                         }
-                        else
+                        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
                         {
+                            // Heartbeat interval elapsed with no snapshot — keep the connection warm.
                             await context.Response.WriteAsync(": heartbeat\n\n", ct).ConfigureAwait(false);
                             await context.Response.Body.FlushAsync(ct).ConfigureAwait(false);
                         }

@@ -78,10 +78,13 @@ public sealed class WorkstationStreamEndpointTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
         // Hold the first stream open (its subscription keeps the session's single slot reserved).
+        // Read past the first frame WITHOUT disposing the stream — disposing it would abort the
+        // server request and release the slot, letting the second request succeed spuriously.
         using var first = await client.GetAsync(
             "/api/workstation/stream?symbols=SPY", HttpCompletionOption.ResponseHeadersRead, cts.Token);
         first.StatusCode.Should().Be(HttpStatusCode.OK);
-        await ReadFirstEventFrameAsync(first, cts.Token);
+        await using var firstStream = await first.Content.ReadAsStreamAsync(cts.Token);
+        await ReadPastFirstFrameAsync(firstStream, cts.Token);
 
         using var second = await client.GetAsync(
             "/api/workstation/stream?symbols=MSFT", HttpCompletionOption.ResponseHeadersRead, cts.Token);
@@ -113,6 +116,26 @@ public sealed class WorkstationStreamEndpointTests
         }
 
         throw new TimeoutException("No SSE frame arrived before the read deadline.");
+    }
+
+    // Reads until the first `\n\n` frame boundary but leaves the stream open so the caller keeps the
+    // server request (and its reserved session slot) alive.
+    private static async Task ReadPastFirstFrameAsync(Stream stream, CancellationToken ct)
+    {
+        var buffer = new byte[1024];
+        while (!ct.IsCancellationRequested)
+        {
+            var read = await stream.ReadAsync(buffer, ct);
+            if (read <= 0)
+            {
+                break;
+            }
+
+            if (Encoding.UTF8.GetString(buffer, 0, read).Contains("\n\n", StringComparison.Ordinal))
+            {
+                return;
+            }
+        }
     }
 
     private static async Task<WebApplication> CreateStreamAppAsync(
