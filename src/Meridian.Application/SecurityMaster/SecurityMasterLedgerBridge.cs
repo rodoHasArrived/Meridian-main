@@ -83,23 +83,59 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         var normalizedTicker = ticker.Trim().ToUpperInvariant();
         int posted = 0;
 
-        foreach (var action in actions)
+        foreach (var state in CorporateActionEffectiveStateProjector.Project(actions, DateTimeOffset.UtcNow))
         {
+            var action = state.Effective;
+
+            // Superseded chains: an amendment or cancellation whose original was already
+            // posted needs a correcting entry through the governed restatement path, not a
+            // silent repost — the bridge never double-books a corporate action.
+            var priorPosted = state.Timeline.Count > 1 || state.IsCancelled
+                ? state.Timeline.Any(prior => prior.CorpActId != action.CorpActId && existingIds.Contains(prior.CorpActId))
+                : false;
+            if (state.IsCancelled)
+            {
+                if (priorPosted)
+                {
+                    _logger.LogWarning(
+                        "SecurityMasterLedgerBridge: corporate action {CorporateActionId} for {Ticker} was cancelled after a prior posting; reversal requires the governed restatement path.",
+                        action.CorpActId, normalizedTicker);
+                }
+
+                continue;
+            }
+
             if (existingIds.Contains(action.CorpActId))
                 continue;
 
+            if (priorPosted)
+            {
+                _logger.LogWarning(
+                    "SecurityMasterLedgerBridge: corporate action {CorporateActionId} for {Ticker} was amended after a prior posting; correction requires the governed restatement path.",
+                    action.CorpActId, normalizedTicker);
+                continue;
+            }
+
+            if (!CorporateActionTypeDescriptorCatalog.TryNormalize(action.EventType, out var descriptor))
+            {
+                _logger.LogDebug(
+                    "SecurityMasterLedgerBridge: skipping unhandled event type {EventType} for {Ticker}",
+                    action.EventType, normalizedTicker);
+                continue;
+            }
+
             var ts = new DateTimeOffset(action.ExDate.Year, action.ExDate.Month, action.ExDate.Day,
                                         0, 0, 0, TimeSpan.Zero);
-            var eventType = CorporateActionEventTypes.Normalize(action.EventType);
+            var eventType = descriptor.CanonicalName;
             var meta = new JournalEntryMetadata(
                 ActivityType: eventType,
                 Symbol: normalizedTicker,
                 SecurityId: securityId,
                 LedgerView: LedgerViewKind.SecurityMaster);
 
-            switch (eventType)
+            switch (descriptor.LedgerPostingKind)
             {
-                case CorporateActionEventTypes.Dividend when action.DividendPerShare.HasValue:
+                case CorporateActionLedgerPostingKind.DividendDeclaration when action.DividendPerShare.HasValue:
                     if (postingContext.PositionQuantity <= 0m)
                     {
                         _logger.LogWarning(
@@ -111,7 +147,12 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
                     var grossDividend = action.DividendPerShare.Value * postingContext.PositionQuantity;
                     var withholding = grossDividend * postingContext.WithholdingTaxRate;
-                    PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, postingContext.PositionQuantity);
+                    // Return of capital reduces the security's carrying value instead of
+                    // recognizing dividend income; the receivable/receipt legs are shared.
+                    var creditAccount = eventType == CorporateActionEventTypes.ReturnOfCapital
+                        ? LedgerAccounts.Securities(normalizedTicker)
+                        : LedgerAccounts.DividendIncome;
+                    PostDividendDeclaration(ledger, action, normalizedTicker, ts, meta, grossDividend, postingContext.PositionQuantity, creditAccount);
                     if (withholding > 0m)
                     {
                         PostWithholdingAccrual(ledger, action, normalizedTicker, postingContext, withholding);
@@ -125,25 +166,35 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     posted++;
                     break;
 
-                case CorporateActionEventTypes.StockSplit or CorporateActionEventTypes.ReverseStockSplit when action.SplitRatio.HasValue:
+                case CorporateActionLedgerPostingKind.SplitMemo when action.SplitRatio.HasValue:
                     PostSplitMemo(ledger, action, normalizedTicker, ts, meta);
                     posted++;
                     break;
 
-                case CorporateActionEventTypes.SpinOff or CorporateActionEventTypes.MergerAbsorption or CorporateActionEventTypes.RightsIssue:
+                case CorporateActionLedgerPostingKind.Distribution:
                     PostNonCashLifecycleMemo(ledger, action, normalizedTicker, ts, meta);
                     posted++;
                     break;
 
-                case CorporateActionEventTypes.PrincipalPaydown when action.DistributionRatio.HasValue:
+                case CorporateActionLedgerPostingKind.FactorPaydown when action.DistributionRatio.HasValue:
                     PostFactorPaydown(ledger, action, normalizedTicker, ts, meta);
+                    posted++;
+                    break;
+
+                case CorporateActionLedgerPostingKind.RedemptionMemo when action.RedemptionPricePercentOfPar.HasValue:
+                    PostRedemptionMemo(ledger, action, normalizedTicker, ts, meta, eventType);
+                    posted++;
+                    break;
+
+                case CorporateActionLedgerPostingKind.DelistingMemo:
+                    PostDelistingMemo(ledger, action, normalizedTicker, ts, meta);
                     posted++;
                     break;
 
                 default:
                     _logger.LogDebug(
                         "SecurityMasterLedgerBridge: skipping unhandled event type {EventType} for {Ticker}",
-                        action.EventType, normalizedTicker);
+                        eventType, normalizedTicker);
                     break;
             }
         }
@@ -163,7 +214,8 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         DateTimeOffset ts,
         JournalEntryMetadata meta,
         decimal grossAmount,
-        decimal positionQuantity)
+        decimal positionQuantity,
+        LedgerAccount creditAccount)
     {
         var amountPerShare = action.DividendPerShare!.Value;
         var recordDate = action.RecordDate?.ToString("yyyy-MM-dd") ?? "n/a";
@@ -177,7 +229,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
                     LedgerAccounts.DividendReceivable(ticker), grossAmount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.DividendIncome, 0m, grossAmount, description),
+                    creditAccount, 0m, grossAmount, description),
             ],
             meta);
 
@@ -322,6 +374,60 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     LedgerAccounts.Cash, amount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
                     LedgerAccounts.Securities(ticker), 0m, amount, description),
+            ],
+            meta);
+
+        ledger.Post(entry);
+    }
+
+    private static void PostRedemptionMemo(
+        DomainLedger ledger,
+        CorporateActionDto action,
+        string ticker,
+        DateTimeOffset ts,
+        JournalEntryMetadata meta,
+        string eventType)
+    {
+        // Contractual-flow view: the redemption price is expressed as percent of par (a
+        // per-100-par proxy amount); converting to actual cash against face-value lots is
+        // the durable ledger's job, the same as per-share dividend declarations.
+        var amount = action.RedemptionPricePercentOfPar!.Value;
+        var description = $"{eventType} {ticker} at {amount:N4}% of par, ex {action.ExDate:yyyy-MM-dd}";
+
+        var entry = new JournalEntry(
+            action.CorpActId,
+            ts,
+            description,
+            [
+                new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
+                    LedgerAccounts.Cash, amount, 0m, description),
+                new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
+                    LedgerAccounts.Securities(ticker), 0m, amount, description),
+            ],
+            meta);
+
+        ledger.Post(entry);
+    }
+
+    private static void PostDelistingMemo(
+        DomainLedger ledger,
+        CorporateActionDto action,
+        string ticker,
+        DateTimeOffset ts,
+        JournalEntryMetadata meta)
+    {
+        const decimal memoAmount = 1m;
+        var description = $"Delisting {ticker} effective {action.ExDate:yyyy-MM-dd}";
+
+        var entry = new JournalEntry(
+            action.CorpActId,
+            ts,
+            description,
+            [
+                new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
+                    LedgerAccounts.Securities(ticker), memoAmount, 0m, description),
+                new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
+                    LedgerAccounts.Securities(ticker), 0m, memoAmount, description),
             ],
             meta);
 

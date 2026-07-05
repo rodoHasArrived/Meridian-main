@@ -2597,7 +2597,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var openConflictCount = assessments.Count;
         var blockingValidationCount = validationReport.CriticalIssueCount + validationReport.ErrorIssueCount;
         var advisoryValidationCount = Math.Max(0, validationReport.Issues.Count - blockingValidationCount);
-        var upcomingCorporateActions = corporateActions
+        // Effective view only: amendments fold to their latest terms and cancelled actions
+        // stop counting against trust, so the posture reflects what will actually happen.
+        var upcomingCorporateActions = CorporateActionEffectiveStateProjector
+            .ProjectEffectiveActions(corporateActions, DateTimeOffset.UtcNow)
             .Where(action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow))
             .OrderBy(static action => action.ExDate)
             .Take(5)
@@ -2655,7 +2658,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var corporateActionReadiness = upcomingCorporateActions.Length == 0
             ? "No upcoming corporate actions are scheduled in the current review window."
             : upcomingCorporateActions.Length == 1
-                ? $"Upcoming {upcomingCorporateActions[0].EventType} on {upcomingCorporateActions[0].ExDate:yyyy-MM-dd} should be reviewed before downstream close."
+                ? $"Upcoming {CorporateActionTypeDescriptorCatalog.Find(upcomingCorporateActions[0].EventType)?.DisplayName ?? upcomingCorporateActions[0].EventType} on {upcomingCorporateActions[0].ExDate:yyyy-MM-dd} should be reviewed before downstream close."
                 : $"{upcomingCorporateActions.Length} upcoming corporate actions should be reviewed before downstream close.";
 
         return new SecurityMasterTrustPostureDto(

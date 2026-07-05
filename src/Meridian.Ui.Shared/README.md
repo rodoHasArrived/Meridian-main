@@ -618,7 +618,16 @@ validation flags it NeedsFix), and the balanced result is saved through
 `IManualJournalEntryWorkbenchService.SaveDraftAsync` so it inherits validation, audit, and the
 human submit/approve lifecycle. Intake is idempotent per event id — draft ids derive from the
 event idempotency key and existing drafts are skipped, never overwritten — and skips are always
-reported back to the caller. Close-management endpoints under `/api/ledger/close-management/*`
+reported back to the caller. Two producers feed it: `CorporateActionDividendEventProducer` turns
+effective (non-cancelled, amendment-collapsed) Security Master dividend actions with an in-window
+ex-date into dividend-declared events priced by held quantity, and
+`FeeScheduleAccrualEventProducer` accrues management/performance fees using the same conventions
+as `PartnershipInvestorAccountingProjector`. `AutomatedJournalIntakeRunner` chains producer →
+intake and is exposed at `/api/ledger/journal-automation/dividend-intake` and
+`/api/ledger/journal-automation/fee-accrual-intake` (ledger-mutation permission, fund-scoped
+write tenant, mutation rate limit); the dividend lane returns a conflict when the Security Master
+query service is not configured rather than silently producing nothing.
+Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
   lock posture, and validation issues from Operations Continuity, the period-plan configuration route
