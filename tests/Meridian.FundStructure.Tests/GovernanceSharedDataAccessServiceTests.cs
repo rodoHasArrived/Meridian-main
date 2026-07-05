@@ -133,6 +133,9 @@ public sealed class GovernanceSharedDataAccessServiceTests
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(null);
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => Task.FromResult<SecurityDetailDto?>(null);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
             => Task.FromResult<SecurityDetailDto?>(null);
 

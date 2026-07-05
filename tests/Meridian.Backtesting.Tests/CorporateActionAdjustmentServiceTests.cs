@@ -342,6 +342,7 @@ public sealed class CorporateActionAdjustmentServiceTests
             => Task.FromResult<ConvertibleEquityTermsDto?>(null);
 
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default) => throw new NotImplementedException();
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default) => throw new NotImplementedException();
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null) => throw new NotImplementedException();
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) => throw new NotImplementedException();

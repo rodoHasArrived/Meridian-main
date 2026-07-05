@@ -3926,6 +3926,9 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 null));
         }
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default) =>
+            GetByIdAsync(securityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null) =>
             Task.FromResult<SecurityDetailDto?>(null);
 
