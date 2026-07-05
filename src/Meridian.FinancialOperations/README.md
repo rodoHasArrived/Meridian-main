@@ -472,6 +472,8 @@ evidence deletion.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5X-FINOPS-001` | Financial operations control center |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

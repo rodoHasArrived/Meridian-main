@@ -40,7 +40,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   sweep-profile, fund-family, and rebuild projection services.
 - `AssetOperations/AssetOperationsReadService.cs` - Security Master-keyed asset operations query,
   command, and projection builder for shared terms, lifecycle, cash-flow, activity,
-  reconciliation, ledger, evidence, workflow-audit, and readiness views.
+  reconciliation, ledger, evidence, workflow-audit, terms/obligations timeline, and readiness
+  views.
 - `Indicators/TechnicalIndicatorService.cs` - live and historical technical indicator calculations
   over market trades, quotes, and OHLCV bars using Skender.Stock.Indicators.
 
@@ -52,9 +53,12 @@ Asset-specific instrument reference services live here because they expose finan
 terms, lifecycle, contract, expiry, maturity, accrual, sweep, liquidity, fund-family, and
 chain-linkage details. Asset Operations projections also live here because they adapt instrument
 terms, obligation schedules, projected cash flows, ledger projections, and readiness evidence into
-the shared Security Master-keyed operational view. Application composition wires these services to
-Security Master, Asset Operations, and money-market projection stores, while UI Shared adapts them
-to shared browser/WPF routes without owning the instrument logic.
+the shared Security Master-keyed operational view. The terms/obligations timeline is derived here
+from projected cash-flow runs, actual activity, reconciliation results, lifecycle events, and ledger
+references so browser and WPF clients render a shared event rail without owning projection logic.
+Application composition wires these services to Security Master, Asset Operations, and money-market
+projection stores, while UI Shared adapts them to shared browser/WPF routes without owning the
+instrument logic.
 Technical indicator calculation lives here because moving-average, oscillator, volatility, VWAP,
 and volume-derived analytics are instrument-market analytics rather than application orchestration.
 The service keeps per-symbol streaming state bounded by `IndicatorConfiguration.MaxQuotesHistory`
