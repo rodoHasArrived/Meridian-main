@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Domain.Collectors;
+using Meridian.Ui.Shared.Streaming;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -9,22 +9,21 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
-/// Workstation Server-Sent Events stream. Step 1 of the live data spine: a
-/// poll-bridge that pushes the same read-model payloads the REST endpoints serve,
-/// coalescing unchanged snapshots so idle streams cost heartbeats only. True
-/// event-driven fan-out from the pipeline is a separate, hot-path-reviewed step.
+/// Workstation Server-Sent Events stream. Event-driven fan-out: connections subscribe to a topic on
+/// the <see cref="IQuoteStreamBroadcaster"/>, which rebuilds and coalesces each topic's snapshot once
+/// per change and pushes it to every subscriber. One snapshot build is shared across all subscribers
+/// of a topic, and the market-data ingestion hot path is untouched.
 /// </summary>
 public static partial class WorkstationEndpoints
 {
-    private const int StreamPollIntervalMs = 2_000;
     private const int StreamHeartbeatIntervalMs = 15_000;
     private const int StreamMaxSymbols = 50;
 
     private static void MapStreamEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
-        // GET /api/workstation/stream?symbols=AAPL,MSFT — SSE channel emitting
-        // `event: quotes` frames with the quotes-snapshot payload for the requested
-        // symbols whenever it changes, plus `: heartbeat` comments while idle.
+        // GET /api/workstation/stream?symbols=AAPL,MSFT — SSE channel emitting `event: quotes`
+        // frames with the quotes-snapshot payload for the requested symbols whenever it changes, plus
+        // `: heartbeat` comments while idle.
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStream), async (HttpContext context, string? symbols, CancellationToken ct) =>
         {
             var normalizedSymbols = NormalizeStreamSymbols(symbols);
@@ -36,56 +35,71 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            if (context.RequestServices.GetService<QuoteCollector>() is null)
+            var broadcaster = context.RequestServices.GetService<IQuoteStreamBroadcaster>();
+            if (broadcaster is null)
             {
                 return Results.Json(
-                    new { error = "Quote collector not available" },
+                    new { error = "Quote stream not available" },
                     jsonOptions,
                     statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var topic = StreamTopic.Quotes(normalizedSymbols);
+            var subscription = broadcaster.TrySubscribe(topic, ResolveStreamSessionId(context));
+            if (subscription is null)
+            {
+                context.Response.Headers["Retry-After"] = "5";
+                return Results.Json(
+                    new { error = "Too many concurrent streams for this session." },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status429TooManyRequests);
             }
 
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers.CacheControl = "no-cache";
             context.Response.Headers.Connection = "keep-alive";
 
-            IReadOnlyList<QuotesSnapshotItem>? lastQuotes = null;
-            var lastWriteUtc = DateTimeOffset.MinValue;
-
             try
             {
-                while (!ct.IsCancellationRequested)
+                await using (subscription)
                 {
-                    var snapshot = LiveDataEndpoints.TryBuildQuotesSnapshotResponse(context.RequestServices, normalizedSymbols);
-                    var wrote = false;
-                    if (snapshot is not null)
+                    while (!ct.IsCancellationRequested)
                     {
-                        // Coalesce on the quote rows only: the envelope timestamp moves every
-                        // tick even when no quote changed. QuotesSnapshotItem is a sealed record
-                        // of scalars, so value equality covers every serialized field without
-                        // allocating a serialization per idle tick.
-                        if (!QuoteRowsEqual(lastQuotes, snapshot.Quotes))
+                        // Single writer: wait for the next snapshot with a heartbeat-interval timeout.
+                        // When the timeout cancels the token, WaitToReadAsync throws and we write a
+                        // heartbeat instead — Response.Body is never written from two paths at once, and
+                        // there is no per-iteration Task.WhenAny/Task.Delay/.AsTask() allocation churn.
+                        using var iteration = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                        iteration.CancelAfter(StreamHeartbeatIntervalMs);
+
+                        try
                         {
-                            lastQuotes = snapshot.Quotes;
-                            var payload = JsonSerializer.Serialize(snapshot, jsonOptions);
-                            await context.Response.WriteAsync($"event: quotes\ndata: {payload}\n\n", ct).ConfigureAwait(false);
-                            wrote = true;
+                            if (!await subscription.Reader.WaitToReadAsync(iteration.Token).ConfigureAwait(false))
+                            {
+                                break; // broadcaster completed the channel — the stream is done.
+                            }
+
+                            // Coalesce anything queued to the newest snapshot before writing.
+                            QuotesSnapshotResponse? latest = null;
+                            while (subscription.Reader.TryRead(out var snapshot))
+                            {
+                                latest = snapshot;
+                            }
+
+                            if (latest is not null)
+                            {
+                                var payload = JsonSerializer.Serialize(latest, jsonOptions);
+                                await context.Response.WriteAsync($"event: quotes\ndata: {payload}\n\n", ct).ConfigureAwait(false);
+                                await context.Response.Body.FlushAsync(ct).ConfigureAwait(false);
+                            }
+                        }
+                        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                        {
+                            // Heartbeat interval elapsed with no snapshot — keep the connection warm.
+                            await context.Response.WriteAsync(": heartbeat\n\n", ct).ConfigureAwait(false);
+                            await context.Response.Body.FlushAsync(ct).ConfigureAwait(false);
                         }
                     }
-
-                    var nowUtc = DateTimeOffset.UtcNow;
-                    if (!wrote && (nowUtc - lastWriteUtc).TotalMilliseconds >= StreamHeartbeatIntervalMs)
-                    {
-                        await context.Response.WriteAsync(": heartbeat\n\n", ct).ConfigureAwait(false);
-                        wrote = true;
-                    }
-
-                    if (wrote)
-                    {
-                        lastWriteUtc = nowUtc;
-                        await context.Response.Body.FlushAsync(ct).ConfigureAwait(false);
-                    }
-
-                    await Task.Delay(StreamPollIntervalMs, ct).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -98,30 +112,26 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationStream")
         .Produces(200)
         .Produces(400)
+        .Produces(429)
         .Produces(503);
     }
 
-    private static bool QuoteRowsEqual(IReadOnlyList<QuotesSnapshotItem>? previous, IReadOnlyList<QuotesSnapshotItem> current)
+    /// <summary>
+    /// Resolve the per-session identity used for the concurrent-stream cap. Falls back to an empty id
+    /// (treated as unscoped / uncapped) when no logged-in operator is on the request.
+    /// </summary>
+    private static string ResolveStreamSessionId(HttpContext context)
     {
-        if (previous is null || previous.Count != current.Count)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < current.Count; i++)
-        {
-            if (!current[i].Equals(previous[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var user)
+            && user is string userId
+            && !string.IsNullOrWhiteSpace(userId)
+                ? userId
+                : string.Empty;
     }
 
     /// <summary>
-    /// Trims and caps the symbol filter; returns null when the cap is exceeded and
-    /// an empty string when no filter was requested (stream all tracked symbols).
+    /// Trims and caps the symbol filter; returns null when the cap is exceeded and an empty string
+    /// when no filter was requested (stream all tracked symbols).
     /// </summary>
     private static string? NormalizeStreamSymbols(string? symbols)
     {

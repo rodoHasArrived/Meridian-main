@@ -7,6 +7,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Streaming;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,9 +26,9 @@ public sealed class WorkstationStreamEndpointTests
     };
 
     [Fact]
-    public async Task GetWorkstationStream_WithoutQuoteCollector_Returns503()
+    public async Task GetWorkstationStream_WithoutBroadcaster_Returns503()
     {
-        await using var app = await CreateStreamAppAsync(registerCollector: false);
+        await using var app = await CreateStreamAppAsync(registerStream: false);
         var client = app.GetTestClient();
 
         var response = await client.GetAsync("/api/workstation/stream");
@@ -38,7 +39,7 @@ public sealed class WorkstationStreamEndpointTests
     [Fact]
     public async Task GetWorkstationStream_WithTooManySymbols_Returns400()
     {
-        await using var app = await CreateStreamAppAsync(registerCollector: true);
+        await using var app = await CreateStreamAppAsync(registerStream: true);
         var client = app.GetTestClient();
 
         var symbols = string.Join(',', Enumerable.Range(0, 51).Select(index => $"SYM{index}"));
@@ -50,7 +51,7 @@ public sealed class WorkstationStreamEndpointTests
     [Fact]
     public async Task GetWorkstationStream_EmitsQuotesEventForFilteredSymbols()
     {
-        await using var app = await CreateStreamAppAsync(registerCollector: true, seedSymbols: ["SPY", "MSFT"]);
+        await using var app = await CreateStreamAppAsync(registerStream: true, seedSymbols: ["SPY", "MSFT"]);
         var client = app.GetTestClient();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -66,6 +67,30 @@ public sealed class WorkstationStreamEndpointTests
         frame.Should().StartWith("event: quotes");
         frame.Should().Contain("\"symbol\":\"SPY\"");
         frame.Should().NotContain("\"symbol\":\"MSFT\"");
+    }
+
+    [Fact]
+    public async Task GetWorkstationStream_BeyondSessionCap_Returns429()
+    {
+        await using var app = await CreateStreamAppAsync(
+            registerStream: true, seedSymbols: ["SPY"], maxConcurrentStreams: 1);
+        var client = app.GetTestClient();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        // Hold the first stream open (its subscription keeps the session's single slot reserved).
+        // Read past the first frame WITHOUT disposing the stream — disposing it would abort the
+        // server request and release the slot, letting the second request succeed spuriously.
+        using var first = await client.GetAsync(
+            "/api/workstation/stream?symbols=SPY", HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        await using var firstStream = await first.Content.ReadAsStreamAsync(cts.Token);
+        await ReadPastFirstFrameAsync(firstStream, cts.Token);
+
+        using var second = await client.GetAsync(
+            "/api/workstation/stream?symbols=MSFT", HttpCompletionOption.ResponseHeadersRead, cts.Token);
+
+        second.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        second.Headers.RetryAfter.Should().NotBeNull();
     }
 
     private static async Task<string> ReadFirstEventFrameAsync(HttpResponseMessage response, CancellationToken ct)
@@ -93,9 +118,30 @@ public sealed class WorkstationStreamEndpointTests
         throw new TimeoutException("No SSE frame arrived before the read deadline.");
     }
 
+    // Reads until the first `\n\n` frame boundary but leaves the stream open so the caller keeps the
+    // server request (and its reserved session slot) alive.
+    private static async Task ReadPastFirstFrameAsync(Stream stream, CancellationToken ct)
+    {
+        var buffer = new byte[1024];
+        while (!ct.IsCancellationRequested)
+        {
+            var read = await stream.ReadAsync(buffer, ct);
+            if (read <= 0)
+            {
+                break;
+            }
+
+            if (Encoding.UTF8.GetString(buffer, 0, read).Contains("\n\n", StringComparison.Ordinal))
+            {
+                return;
+            }
+        }
+    }
+
     private static async Task<WebApplication> CreateStreamAppAsync(
-        bool registerCollector,
-        IReadOnlyList<string>? seedSymbols = null)
+        bool registerStream,
+        IReadOnlyList<string>? seedSymbols = null,
+        int maxConcurrentStreams = 8)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -103,7 +149,7 @@ public sealed class WorkstationStreamEndpointTests
         });
         builder.WebHost.UseTestServer();
 
-        if (registerCollector)
+        if (registerStream)
         {
             var collector = new QuoteCollector(new TestMarketEventPublisher());
             foreach (var symbol in seedSymbols ?? [])
@@ -120,6 +166,19 @@ public sealed class WorkstationStreamEndpointTests
             }
 
             builder.Services.AddSingleton(collector);
+            builder.Services.AddSingleton(new QuoteStreamOptions
+            {
+                CoalesceIntervalMs = 0,
+                MaxConcurrentStreamsPerSession = maxConcurrentStreams,
+                SubscriberChannelCapacity = 1
+            });
+            builder.Services.AddSingleton(sp => new StreamConnectionRegistry(
+                sp.GetRequiredService<QuoteStreamOptions>().MaxConcurrentStreamsPerSession));
+            builder.Services.AddSingleton(sp => new QuoteStreamBroadcaster(
+                sp,
+                sp.GetRequiredService<StreamConnectionRegistry>(),
+                sp.GetRequiredService<QuoteStreamOptions>()));
+            builder.Services.AddSingleton<IQuoteStreamBroadcaster>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
         }
 
         var app = builder.Build();
