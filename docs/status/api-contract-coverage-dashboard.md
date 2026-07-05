@@ -1433,7 +1433,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- No API contract coverage gaps detected.
+No API contract coverage gaps detected.
 
 ---
 
