@@ -4,6 +4,7 @@ using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
 using Xunit;
+using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.Tests.Application.Backfill;
 
