@@ -31,7 +31,18 @@ public sealed class StreamConnectionRegistry
 
         while (true)
         {
-            var current = _counts.GetOrAdd(sessionId, 0);
+            if (!_counts.TryGetValue(sessionId, out var current))
+            {
+                // First reservation for this session — add directly (never inserts a 0).
+                if (_counts.TryAdd(sessionId, 1))
+                {
+                    return true;
+                }
+
+                // Another thread added it first — re-read and retry.
+                continue;
+            }
+
             if (current >= _maxPerSession)
             {
                 return false;

@@ -14,20 +14,26 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
     /// <summary>Topic key for "all tracked symbols".</summary>
     public const string AllQuotesKey = "quotes:*";
 
+    private readonly string? _key;
+    private readonly string? _symbolFilter;
+
     private StreamTopic(string key, string symbolFilter)
     {
-        Key = key;
-        SymbolFilter = symbolFilter;
+        _key = key;
+        _symbolFilter = symbolFilter;
     }
 
-    /// <summary>Canonical, stable identifier for this topic.</summary>
-    public string Key { get; }
+    /// <summary>
+    /// Canonical, stable identifier for this topic. <c>default(StreamTopic)</c> resolves to
+    /// <see cref="AllQuotesKey"/> so the default value behaves as <see cref="AllQuotes"/>.
+    /// </summary>
+    public string Key => _key ?? AllQuotesKey;
 
     /// <summary>
     /// The comma-joined symbol filter to pass to the snapshot builder, or empty string
     /// for "all tracked symbols".
     /// </summary>
-    public string SymbolFilter { get; }
+    public string SymbolFilter => _symbolFilter ?? string.Empty;
 
     /// <summary>Topic covering every tracked symbol.</summary>
     public static StreamTopic AllQuotes { get; } = new(AllQuotesKey, string.Empty);
@@ -65,7 +71,11 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
 
     public override bool Equals(object? obj) => obj is StreamTopic other && Equals(other);
 
-    public override int GetHashCode() => Key is null ? 0 : StringComparer.Ordinal.GetHashCode(Key);
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Key);
 
-    public override string ToString() => Key ?? AllQuotesKey;
+    public override string ToString() => Key;
+
+    public static bool operator ==(StreamTopic left, StreamTopic right) => left.Equals(right);
+
+    public static bool operator !=(StreamTopic left, StreamTopic right) => !left.Equals(right);
 }

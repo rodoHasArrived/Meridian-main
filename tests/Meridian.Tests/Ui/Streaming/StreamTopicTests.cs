@@ -43,5 +43,15 @@ public sealed class StreamTopicTests
     {
         StreamTopic.Quotes("AAPL").Should().NotBe(StreamTopic.Quotes("MSFT"));
         StreamTopic.Quotes("AAPL").Should().NotBe(StreamTopic.AllQuotes);
+        (StreamTopic.Quotes("AAPL") != StreamTopic.Quotes("MSFT")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Default_BehavesAsAllQuotes()
+    {
+        default(StreamTopic).Should().Be(StreamTopic.AllQuotes);
+        (default(StreamTopic) == StreamTopic.AllQuotes).Should().BeTrue();
+        default(StreamTopic).Key.Should().Be(StreamTopic.AllQuotesKey);
+        default(StreamTopic).SymbolFilter.Should().BeEmpty();
     }
 }
