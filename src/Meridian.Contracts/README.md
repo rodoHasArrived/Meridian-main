@@ -1331,6 +1331,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 `ExecutionPositionActionRequest` carries an optional `FundAccountId` so browser and WPF close/upsize
 position actions can keep account-scoped live-readiness evidence aligned with the selected
 operating fund account before the execution layer routes a broker order.
+`TradingExecutionReconciliationReadinessDto`, `TradingExecutionReconciliationBreakDto`, and
+`TradingLiveOperationRequirementDto` extend the trading operator readiness contract with broker
+open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
+W7 live-readiness gate.
 
 ## Validation
 
