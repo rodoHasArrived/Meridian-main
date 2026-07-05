@@ -89,7 +89,9 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
 
     public async Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
     {
-        if (!succeeded || source.PostProcessingAction == EtlSourcePostProcessingAction.LeaveInPlace)
+        if (source.PostProcessingAction == EtlSourcePostProcessingAction.LeaveInPlace ||
+            (succeeded && source.PostProcessingAction == EtlSourcePostProcessingAction.MoveToError) ||
+            (!succeeded && source.PostProcessingAction != EtlSourcePostProcessingAction.MoveToError))
         {
             return;
         }
@@ -132,10 +134,25 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
             throw new InvalidOperationException("Remote post-processing move requires an archive or error location.");
 
         var normalizedDirectory = SftpRemoteLocation.NormalizePath(remoteDirectory.TrimEnd('/'));
-        if (!client.Exists(normalizedDirectory))
-            client.CreateDirectory(normalizedDirectory);
+        EnsureRemoteDirectory(client, normalizedDirectory);
 
         client.RenameFile(file.Path, SftpRemoteLocation.Combine(normalizedDirectory, file.Name), canOverwrite: true);
+    }
+
+    private static void EnsureRemoteDirectory(ISftpClient client, string normalizedDirectory)
+    {
+        var segments = normalizedDirectory.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var current = normalizedDirectory.StartsWith('/', StringComparison.Ordinal) ? "/" : string.Empty;
+        foreach (var segment in segments)
+        {
+            current = current == "/"
+                ? "/" + segment
+                : string.IsNullOrEmpty(current)
+                    ? segment
+                    : current + "/" + segment;
+            if (!client.Exists(current))
+                client.CreateDirectory(current);
+        }
     }
 
     private ISftpClient CreateClient(EtlSourceDefinition source, SftpRemoteLocation location, SftpCredentialMaterial credential)
