@@ -69,7 +69,36 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }
     public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }
     public InstrumentPassportDto? InstrumentPassport { get; init; }
+    public IReadOnlyList<CorporateActionDescriptorDto>? CorporateActionDescriptors { get; init; }
 }
+
+/// <summary>
+/// Canonical-taxonomy projection of one effective corporate action for workbench surfaces:
+/// the chain tip's catalog identity (canonical name, ISO 15022 CAEV alignment, display name),
+/// its lifecycle state resolved at the snapshot's as-of time, and the amendment timeline
+/// (original announcement first, tip last). <see cref="CorpActId"/> joins the descriptor back
+/// to the raw row in <see cref="SecurityMasterTrustSnapshotDto.CorporateActions"/>.
+/// </summary>
+public sealed record CorporateActionDescriptorDto(
+    Guid CorpActId,
+    string CanonicalName,
+    string? CaevCode,
+    string DisplayName,
+    string LifecycleState,
+    bool IsCancelled,
+    IReadOnlyList<CorporateActionTimelineEntryDto> Timeline);
+
+/// <summary>
+/// One event in an effective corporate action's supersede chain. <see cref="LifecycleState"/>
+/// is the stored write-side state (null stored states read as Confirmed);
+/// <see cref="IsAmendment"/> marks entries that superseded a prior event.
+/// </summary>
+public sealed record CorporateActionTimelineEntryDto(
+    Guid CorpActId,
+    string LifecycleState,
+    DateOnly ExDate,
+    DateOnly? PayDate,
+    bool IsAmendment);
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
     Guid SecurityId,

@@ -144,6 +144,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var lotModel = BuildLotModel(detail, economic, trading);
         var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary);
         var openLotReadModel = await BuildOpenLotReadModelAsync(detail, economic, trading, fundProfileId, nowUtc, ct).ConfigureAwait(false);
+        var corporateActionDescriptors = BuildCorporateActionDescriptors(corporateActions, nowUtc);
 
         var snapshot = new SecurityMasterTrustSnapshotDto(
             SecurityId: detail.SecurityId,
@@ -179,7 +180,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             ScheduleSummary = scheduleSummary,
             LotModel = lotModel,
             ScheduleBook = scheduleBook,
-            OpenLotReadModel = openLotReadModel
+            OpenLotReadModel = openLotReadModel,
+            CorporateActionDescriptors = corporateActionDescriptors
         };
 
         return snapshot with
@@ -204,6 +206,40 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     {
         var passport = await GetInstrumentPassportAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
         return passport?.OperatingModel;
+    }
+
+    /// <summary>
+    /// Projects the raw corporate-action rows into canonical-taxonomy descriptors: supersede
+    /// chains collapse to their tips via <see cref="CorporateActionEffectiveStateProjector"/>,
+    /// catalog metadata supplies the display identity, and lifecycle states resolve at the
+    /// snapshot's as-of time. Event types outside the catalog fail open to their raw string
+    /// with no CAEV alignment so unknown provider vocab never drops rows from the workbench.
+    /// </summary>
+    private static IReadOnlyList<CorporateActionDescriptorDto> BuildCorporateActionDescriptors(
+        IReadOnlyList<CorporateActionDto> corporateActions,
+        DateTimeOffset asOf)
+    {
+        return CorporateActionEffectiveStateProjector.Project(corporateActions, asOf)
+            .Select(static state =>
+            {
+                var descriptor = CorporateActionTypeDescriptorCatalog.Find(state.Effective.EventType);
+                return new CorporateActionDescriptorDto(
+                    CorpActId: state.Effective.CorpActId,
+                    CanonicalName: state.Effective.EventType,
+                    CaevCode: descriptor?.CaevCode,
+                    DisplayName: descriptor?.DisplayName ?? state.Effective.EventType,
+                    LifecycleState: state.LifecycleState,
+                    IsCancelled: state.IsCancelled,
+                    Timeline: state.Timeline
+                        .Select(static entry => new CorporateActionTimelineEntryDto(
+                            CorpActId: entry.CorpActId,
+                            LifecycleState: entry.LifecycleState ?? CorporateActionLifecycleStates.Confirmed,
+                            ExDate: entry.ExDate,
+                            PayDate: entry.PayDate,
+                            IsAmendment: entry.SupersedesCorpActId.HasValue))
+                        .ToArray());
+            })
+            .ToArray();
     }
 
     private async Task<InstrumentPassportDto> BuildInstrumentPassportAsync(

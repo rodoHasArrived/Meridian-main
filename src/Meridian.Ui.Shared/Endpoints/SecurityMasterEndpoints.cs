@@ -664,6 +664,7 @@ public static class SecurityMasterEndpoints
             };
 
             var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
+            context.RequestServices.GetService<AppSecurityMaster.CorporateActionInboxState>()?.Record(result);
             return Results.Json(result, jsonOptions);
         })
         .WithName("IngestSecurityMasterCorporateActions")
@@ -673,6 +674,84 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Returns staged corporate-action proposals from the most recent ingest sweep for
+        /// the workbench inbox badge and review list.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
+            [FromServices] AppSecurityMaster.CorporateActionInboxState inboxState) =>
+            Results.Json(inboxState.GetInbox(), jsonOptions))
+        .WithName("GetSecurityMasterCorporateActionInbox")
+        .Produces<AppSecurityMaster.CorporateActionInboxDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Applies one staged inbox proposal: consumes it from the snapshot and appends the
+        /// corporate action through the governed command service under the operator's identity.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
+            AppSecurityMaster.CorporateActionInboxApplyRequest? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.CorporateActionInboxState inboxState,
+            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
+            CancellationToken ct) =>
+        {
+            if (request is null)
+                return Results.BadRequest("An apply request is required.");
+
+            var actor = ResolveActor(context);
+            if (!inboxState.TryTakeStaged(request.SecurityId, request.ActionType, request.ExDate, out var proposal))
+                return Results.NotFound("No staged proposal matches the requested security, action type, and ex-date.");
+
+            try
+            {
+                var result = await commandService.AppendAsync(
+                    new SecurityMasterCorporateActionAppendRequestDto(
+                        SecurityId: proposal.SecurityId,
+                        CorporateAction: AppSecurityMaster.CorporateActionProposalMapper.ToCorporateAction(proposal),
+                        SourceSystem: proposal.WinningSource,
+                        Actor: actor,
+                        SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
+                        Reason: proposal.DissentingSources.Count == 0
+                            ? "Operator applied staged corporate-action proposal from the inbox."
+                            : $"Operator applied staged proposal over dissent from {string.Join(", ", proposal.DissentingSources)}.",
+                        CorrelationId: context.TraceIdentifier),
+                    ct).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+        })
+        .WithName("ApplySecurityMasterCorporateActionInboxProposal")
+        .Accepts<AppSecurityMaster.CorporateActionInboxApplyRequest>("application/json")
+        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
+        /// Pre-builds a machine-proposed security-master draft for an unmastered symbol so the
+        /// operator can review and submit it instead of typing the record from scratch.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterCoverageDraft, async (
+            string symbol,
+            [FromServices] AppSecurityMaster.SecurityMasterDraftProposalService draftService,
+            CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                return Results.BadRequest("A symbol is required.");
+
+            var draft = await draftService.BuildDraftAsync(symbol, ct).ConfigureAwait(false);
+            return Results.Json(draft, jsonOptions);
+        })
+        .WithName("GetSecurityMasterCoverageDraft")
+        .Produces<AppSecurityMaster.SecurityMasterDraftProposalDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
