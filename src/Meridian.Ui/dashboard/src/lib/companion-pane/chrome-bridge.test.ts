@@ -41,12 +41,37 @@ describe("normalizeCompanionBridgeMessage", () => {
     expect(normalizeCompanionBridgeMessage({ type: "session-expired" })).toEqual({ type: "session-expired" });
   });
 
+  it("accepts well-formed quotes and quotes-request messages", () => {
+    const snapshot = { timestamp: "2026-07-05T00:00:00Z", count: 0, quotes: [] };
+    expect(
+      normalizeCompanionBridgeMessage({ type: "quotes", symbolsKey: "AAPL,MSFT", snapshot })
+    ).toEqual({ type: "quotes", symbolsKey: "AAPL,MSFT", snapshot });
+    expect(normalizeCompanionBridgeMessage({ type: "quotes-request", symbolsKey: "SPY" })).toEqual({
+      type: "quotes-request",
+      symbolsKey: "SPY"
+    });
+  });
+
   it("rejects malformed or unknown payloads", () => {
     expect(normalizeCompanionBridgeMessage(null)).toBeNull();
     expect(normalizeCompanionBridgeMessage("nope")).toBeNull();
     expect(normalizeCompanionBridgeMessage({ type: "appearance", appearance: "neon" })).toBeNull();
     expect(normalizeCompanionBridgeMessage({ type: "scope", scope: "x" })).toBeNull();
     expect(normalizeCompanionBridgeMessage({ type: "other" })).toBeNull();
+    // quotes with a missing/invalid snapshot or empty key is rejected.
+    expect(normalizeCompanionBridgeMessage({ type: "quotes", symbolsKey: "SPY" })).toBeNull();
+    expect(
+      normalizeCompanionBridgeMessage({ type: "quotes", symbolsKey: "SPY", snapshot: { count: 1 } })
+    ).toBeNull();
+    expect(
+      normalizeCompanionBridgeMessage({
+        type: "quotes",
+        symbolsKey: "",
+        snapshot: { timestamp: "t", count: 0, quotes: [] }
+      })
+    ).toBeNull();
+    expect(normalizeCompanionBridgeMessage({ type: "quotes-request" })).toBeNull();
+    expect(normalizeCompanionBridgeMessage({ type: "quotes-request", symbolsKey: "" })).toBeNull();
   });
 });
 
