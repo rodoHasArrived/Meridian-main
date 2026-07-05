@@ -5657,6 +5657,13 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
+│   │   ├── Streaming
+│   │   │   ├── IQuoteStreamBroadcaster.cs
+│   │   │   ├── QuoteStreamBroadcaster.cs
+│   │   │   ├── QuoteStreamOptions.cs
+│   │   │   ├── QuoteStreamSubscription.cs
+│   │   │   ├── StreamConnectionRegistry.cs
+│   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
 │   │   │   ├── FileWorkflowPresetStore.cs
@@ -7270,6 +7277,10 @@ Meridian-main
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
+│   │   │   ├── Streaming
+│   │   │   │   ├── QuoteStreamBroadcasterTests.cs
+│   │   │   │   ├── StreamConnectionRegistryTests.cs
+│   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
