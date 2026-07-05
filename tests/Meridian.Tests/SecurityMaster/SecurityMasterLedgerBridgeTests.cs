@@ -294,4 +294,148 @@ public sealed class SecurityMasterLedgerBridgeTests
 
         ledger.Journal[0].Metadata.Symbol.Should().Be("AAPL");
     }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_LegacySplitAlias_PostsSplitMemoUnderCanonicalName()
+    {
+        var legacySplit = MakeStockSplit(4m, new DateOnly(2025, 8, 31)) with { EventType = "Split" };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { legacySplit });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+
+        ledger.Journal.Should().ContainSingle()
+            .Which.Metadata.ActivityType.Should().Be("StockSplit");
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_BondCall_PostsRedemptionMemo()
+    {
+        var bondCall = MakeStockSplit(1m, new DateOnly(2026, 4, 15)) with
+        {
+            EventType = "BondCall",
+            SplitRatio = null,
+            RedemptionPricePercentOfPar = 101.25m
+        };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { bondCall });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+
+        var entry = ledger.Journal.Should().ContainSingle().Subject;
+        entry.IsBalanced.Should().BeTrue();
+        entry.Metadata.ActivityType.Should().Be("BondCall");
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(101.25m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-101.25m);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_Delisting_PostsZeroNetMemoEntry()
+    {
+        var delisting = MakeStockSplit(1m, new DateOnly(2026, 2, 2)) with
+        {
+            EventType = "Delisting",
+            SplitRatio = null
+        };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { delisting });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+
+        var entry = ledger.Journal.Should().ContainSingle().Subject;
+        entry.IsBalanced.Should().BeTrue();
+        entry.Metadata.ActivityType.Should().Be("Delisting");
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(0m);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_CancelledAction_DoesNotPost()
+    {
+        var original = MakeDividend(0.25m, new DateOnly(2025, 3, 15));
+        var cancellation = MakeDividend(0.25m, new DateOnly(2025, 3, 15)) with
+        {
+            SupersedesCorpActId = original.CorpActId,
+            LifecycleState = CorporateActionLifecycleStates.Cancelled
+        };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { original, cancellation });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 100m));
+
+        ledger.Journal.Should().BeEmpty("a cancelled corporate action must not post economics");
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_AmendmentFoldsToLatestTerms_BeforeAnyPosting()
+    {
+        var original = MakeDividend(0.24m, new DateOnly(2025, 3, 15));
+        var amendment = MakeDividend(0.26m, new DateOnly(2025, 3, 15)) with
+        {
+            SupersedesCorpActId = original.CorpActId
+        };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { original, amendment });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 100m));
+
+        // Only the amended terms post (declaration + pay-date receipt), never both versions.
+        ledger.Journal.Should().HaveCount(2);
+        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(26m);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_AmendmentAfterPriorPosting_SkipsRepost()
+    {
+        var original = MakeDividend(0.24m, new DateOnly(2025, 3, 15));
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { original });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m);
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+        var entriesAfterOriginal = ledger.Journal.Count;
+
+        var amendment = MakeDividend(0.26m, new DateOnly(2025, 3, 15)) with
+        {
+            SupersedesCorpActId = original.CorpActId
+        };
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { original, amendment });
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+
+        // The correction belongs to the governed restatement path; the bridge never double-books.
+        ledger.Journal.Should().HaveCount(entriesAfterOriginal);
+    }
 }
