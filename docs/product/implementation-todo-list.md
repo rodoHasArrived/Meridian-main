@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001 and W5X-FINOPS-001 are verified as `done` with `evidence_posture: complete`; W6 and W7 remain `planned` with `evidence_posture: planned_evidence`.
+- W5X-FREX-001, W5X-FINOPS-001, and bounded W7-LIVE-001 governance are verified as `done` with `evidence_posture: complete`; W6 remains `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -52,6 +52,8 @@ Result:
   Evidence: `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx`, `tests/fixtures/security-instrument-explorer-parity.json`; roadmap status `done`; evidence posture `complete`.
 - [x] `W5X-FINOPS-001`: Financial operations control center.
   Evidence: `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts`, `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`, `tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx`, `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`, `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`, and `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`; roadmap status `done`; evidence posture `complete`.
+- [x] `W7-LIVE-001`: Live-readiness governance.
+  Evidence: `src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs`, `src/Meridian.Strategies/Services/PromotionService.cs`, `src/Meridian.Execution/Services/ExecutionOperatorControlService.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs`, and `docs/roadmap/generated/ROADMAP_SUMMARY.md`; roadmap status `done`; evidence posture `complete`. This is a bounded governance gate, not broader live execution productization or live portfolio operations.
 
 ## Evidence-Backed Foundations Not Marked Complete
 
@@ -147,10 +149,14 @@ Acceptance evidence produced for this FINOPS slice:
 
 ## W7 TODOs: Live-Readiness Governance
 
-- [ ] Define explicit live-readiness gates for trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and governance sign-off.
-- [ ] Keep live action surfaces paper-first until all readiness gates are green.
-- [ ] Add evidence for sign-off, exception handling, rollback/kill-switch posture, and audit retention before claiming live-readiness completion.
-- [ ] Avoid live execution productization until W7 acceptance evidence exists.
+- [x] Define explicit live-readiness gates for trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and governance sign-off.
+  Evidence: `PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)` requires the paper baseline plus `PAPER_VALIDATION_REVIEWED`, `RECONCILIATION_EVIDENCE_REVIEWED`, `ACCOUNTING_RECORDS_REVIEWED`, `GOVERNED_REPORTING_REVIEWED`, and `GOVERNANCE_SIGNOFF_REVIEWED`; `PromotionService.GetMissingLiveEvidenceRequirements` rejects missing evidence references before creating a live run.
+- [x] Keep live action surfaces paper-first until all readiness gates are green.
+  Evidence: `PromotionService.EvaluateAsync` targets live mode only from a completed paper run, blocks live promotion when brokerage configuration is not live-enabled or still paper, and requires operator controls plus an `AllowLivePromotion` manual override; `ExecutionOperatorControlService.EvaluateLivePromotion` blocks promotion while the circuit breaker is open or the override is missing or inactive.
+- [x] Add evidence for sign-off, exception handling, rollback/kill-switch posture, and audit retention before claiming live-readiness completion.
+  Evidence: `PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)` includes `GOVERNANCE_SIGNOFF_REVIEWED`, `EXCEPTION_HANDLING_REVIEWED`, `ROLLBACK_KILL_SWITCH_REVIEWED`, and `AUDIT_RETENTION_REVIEWED`; `PromotionServiceLiveGovernanceTests` proves missing evidence fails closed, approved live promotions write promotion audit metadata, and durable promotion history survives restart.
+- [x] Avoid live execution productization until W7 acceptance evidence exists.
+  Evidence: `W7-LIVE-001` closes only the bounded governance row; the roadmap summary and design document keep broader live execution productization and live portfolio operations outside this completion claim.
 
 
 ## Codex Memory Inventory Pass: 2026-06-22

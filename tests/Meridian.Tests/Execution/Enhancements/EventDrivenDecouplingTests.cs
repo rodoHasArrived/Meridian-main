@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -203,6 +204,97 @@ public sealed class EventDrivenDecouplingTests
         await consumer.DisposeAsync();
 
         ledger.Journal.Should().BeEmpty("ledger posting requires a resolved Security Master identity");
+    }
+
+    // -------------------------------------------------------------------------
+    // LedgerPostingConsumer — fill durability under backpressure
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task LedgerPostingConsumer_WhenChannelIsFull_BlocksPublisherInsteadOfDroppingFills()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var gate = new BlockableSecurityValidationGate();
+        var consumer = new LedgerPostingConsumer(
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            channelCapacity: 1,
+            securityValidationGate: gate);
+
+        consumer.Publish(MakeBuyEvent("AAPL"));
+        await gate.FirstValidationStarted; // consumer is now stalled inside the gate
+        consumer.Publish(MakeBuyEvent("MSFT")); // fills the single-slot channel
+
+        var blockedPublish = Task.Run(() => consumer.Publish(MakeBuyEvent("GOOG")));
+        var winner = await Task.WhenAny(blockedPublish, Task.Delay(TimeSpan.FromMilliseconds(250)));
+        winner.Should().NotBe(
+            blockedPublish,
+            "a publish against a full channel must block for capacity rather than drop the fill");
+
+        gate.Release();
+        await blockedPublish;
+        await consumer.DisposeAsync();
+
+        ledger.Journal.Should().HaveCount(3, "every published fill must reach the ledger");
+    }
+
+    [Fact]
+    public async Task LedgerPostingConsumer_PublishAfterDispose_ThrowsInsteadOfSilentlyDropping()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var consumer = new LedgerPostingConsumer(
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            securityValidationGate: new PassingSecurityValidationGate());
+
+        await consumer.DisposeAsync();
+
+        var publish = () => consumer.Publish(MakeBuyEvent("AAPL"));
+        publish.Should().Throw<ChannelClosedException>(
+            "a disposed consumer must reject fills loudly, never drop them");
+    }
+
+    private static TradeExecutedEvent MakeBuyEvent(string symbol) => new(
+        Guid.NewGuid(), "ord-bp", symbol, OrderSide.Buy,
+        FilledQuantity: 10, FillPrice: 100m, Commission: 0m,
+        RealizedPnl: 0m, NewCash: 0m, DateTimeOffset.UtcNow);
+
+    /// <summary>
+    /// Passing gate whose first validation stalls until <see cref="Release"/> is called,
+    /// letting tests hold the consumer mid-event while the channel backs up.
+    /// </summary>
+    private sealed class BlockableSecurityValidationGate : ISecurityValidationGateService
+    {
+        private readonly PassingSecurityValidationGate _inner = new();
+        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _firstValidationStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task FirstValidationStarted => _firstValidationStarted.Task;
+
+        public void Release() => _released.TrySetResult();
+
+        public async Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+        {
+            _firstValidationStarted.TrySetResult();
+            await _released.Task.WaitAsync(ct);
+            return await _inner.ValidateSymbolAsync(symbol, workflow, workflowReference, actor, persistSnapshot, ct);
+        }
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => _inner.ValidateSecurityAsync(securityId, workflow, workflowReference, actor, persistSnapshot, symbol, ct);
     }
 
     private sealed class PassingSecurityValidationGate : ISecurityValidationGateService

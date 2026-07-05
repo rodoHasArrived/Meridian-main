@@ -6,6 +6,7 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -20,10 +21,14 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 [ImplementsAdr("ADR-001", "Interactive Brokers streaming data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBMarketDataClient : IMarketDataClient
+public sealed class IBMarketDataClient : IMarketDataClient, IProviderConnectionDiagnosticsSource
 {
     private readonly IMarketDataClient _inner;
     private readonly bool _isSimulation;
+    private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
+    private DateTimeOffset? _connectedAt;
+    private DateTimeOffset? _disconnectedAt;
+    private string? _lastError;
 
     public IBMarketDataClient(
         IMarketEventPublisher publisher,
@@ -99,8 +104,73 @@ public sealed class IBMarketDataClient : IMarketDataClient
     };
 
 
-    public Task ConnectAsync(CancellationToken ct = default) => _inner.ConnectAsync(ct);
-    public Task DisconnectAsync(CancellationToken ct = default) => _inner.DisconnectAsync(ct);
+    /// <inheritdoc/>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// TWS/Gateway connectivity is a raw TCP socket, not a WebSocket, so
+    /// <see cref="System.Net.WebSockets.WebSocketState.None"/> is reported. When the inner
+    /// client exposes richer diagnostics (real IBAPI builds), those win over the facade view.
+    /// </remarks>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    {
+        if (_inner is IProviderConnectionDiagnosticsSource innerSource)
+            return innerSource.GetConnectionDiagnosticsSnapshot();
+
+        var now = DateTimeOffset.UtcNow;
+        var connected = _lifecycleState == ProviderConnectionLifecycleState.Connected;
+        return new WebSocketConnectionDiagnostics(
+            ProviderName: _isSimulation ? "Interactive Brokers (simulation)" : "Interactive Brokers",
+            LifecycleState: _lifecycleState,
+            WebSocketState: System.Net.WebSockets.WebSocketState.None,
+            IsConnected: connected,
+            IsReconnecting: false,
+            ReconnectAttempts: 0,
+            LastConnectedAt: _connectedAt,
+            LastDisconnectedAt: _disconnectedAt,
+            LastHeartbeatReceivedAt: null,
+            LastMessageReceivedAt: null,
+            LastReconnectAttemptAt: null,
+            LastError: _lastError,
+            LastFailureKind: null,
+            ConnectionAge: connected && _connectedAt is { } connectedAt ? now - connectedAt : null,
+            IdleDuration: null);
+    }
+
+    public async Task ConnectAsync(CancellationToken ct = default)
+    {
+        SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
+        try
+        {
+            await _inner.ConnectAsync(ct).ConfigureAwait(false);
+            _connectedAt = DateTimeOffset.UtcNow;
+            _lastError = null;
+            SetLifecycleState(ProviderConnectionLifecycleState.Connected);
+        }
+        catch (Exception ex)
+        {
+            _lastError = ex.Message;
+            SetLifecycleState(ProviderConnectionLifecycleState.Failed);
+            throw;
+        }
+    }
+
+    public async Task DisconnectAsync(CancellationToken ct = default)
+    {
+        await _inner.DisconnectAsync(ct).ConfigureAwait(false);
+        _disconnectedAt = DateTimeOffset.UtcNow;
+        SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    private void SetLifecycleState(ProviderConnectionLifecycleState state)
+    {
+        if (_lifecycleState == state)
+            return;
+
+        _lifecycleState = state;
+        ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+    }
 
     public int SubscribeMarketDepth(SymbolConfig cfg) => _inner.SubscribeMarketDepth(cfg);
     public void UnsubscribeMarketDepth(int subscriptionId) => _inner.UnsubscribeMarketDepth(subscriptionId);

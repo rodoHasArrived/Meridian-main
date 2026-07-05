@@ -34,8 +34,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     /// <param name="ledger">The double-entry ledger that journal entries will be posted to.</param>
     /// <param name="logger">Logger for diagnostic output.</param>
     /// <param name="channelCapacity">
-    ///     Maximum number of un-processed events to buffer before additional publishes are
-    ///     rejected.
+    ///     Maximum number of un-processed events to buffer before additional publishes block
+    ///     until the consumer drains capacity (backpressure).
     ///     Defaults to 10 000.
     /// </param>
     public LedgerPostingConsumer(
@@ -67,17 +67,34 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
     /// <summary>
     /// Enqueues a <see cref="TradeExecutedEvent"/> for asynchronous ledger posting.
-    /// This method returns immediately and never blocks the caller.
+    /// Returns immediately while the channel has capacity; when the channel is full the call
+    /// blocks until the background consumer frees space, so fills are never dropped.
     /// </summary>
+    /// <exception cref="ChannelClosedException">
+    ///     The consumer has been disposed and the event could not be enqueued.
+    /// </exception>
     public void Publish(TradeExecutedEvent tradeEvent)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
 
-        if (!_channel.Writer.TryWrite(tradeEvent))
+        // Fast path: capacity available.
+        if (_channel.Writer.TryWrite(tradeEvent))
+            return;
+
+        // Slow path: channel full. Block the publisher until the consumer drains capacity
+        // rather than dropping the fill — a dropped fill silently corrupts the books.
+        _logger.LogWarning(
+            "LedgerPostingConsumer channel is full; applying backpressure for fill {FillId} on {Symbol}",
+            tradeEvent.FillId, tradeEvent.Symbol);
+
+        while (!_channel.Writer.TryWrite(tradeEvent))
         {
-            _logger.LogWarning(
-                "LedgerPostingConsumer channel is full; failed to enqueue event for fill {FillId} on {Symbol}",
-                tradeEvent.FillId, tradeEvent.Symbol);
+            var channelOpen = _channel.Writer.WaitToWriteAsync().AsTask().GetAwaiter().GetResult();
+            if (!channelOpen)
+            {
+                throw new ChannelClosedException(
+                    $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not enqueued.");
+            }
         }
     }
 

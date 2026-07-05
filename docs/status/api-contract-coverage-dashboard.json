@@ -9,8 +9,8 @@
     "endpoint_count": 588,
     "documented_endpoint_count": 588,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 809,
-    "documented_workstation_contract_count": 809,
+    "workstation_contract_count": 812,
+    "documented_workstation_contract_count": 812,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -6976,117 +6976,132 @@
     },
     {
       "name": "OperatorWorkItemToneDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:20",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:21",
       "documented": true
     },
     {
       "name": "TradingAcceptanceGateStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:29",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:30",
       "documented": true
     },
     {
       "name": "PortfolioLedgerWorkflowStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:39",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:40",
       "documented": true
     },
     {
       "name": "PortfolioLedgerDriftDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:47",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:48",
       "documented": true
     },
     {
       "name": "PortfolioLedgerWorkflowStatusSnapshotDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:52",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:53",
       "documented": true
     },
     {
       "name": "OperatorWorkItemDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:58",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:59",
       "documented": true
     },
     {
       "name": "OperatorInboxDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:93",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:94",
       "documented": true
     },
     {
       "name": "TradingAcceptanceGateDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:105",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:106",
+      "documented": true
+    },
+    {
+      "name": "TradingExecutionReconciliationBreakDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:118",
+      "documented": true
+    },
+    {
+      "name": "TradingExecutionReconciliationReadinessDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:128",
+      "documented": true
+    },
+    {
+      "name": "TradingLiveOperationRequirementDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:140",
       "documented": true
     },
     {
       "name": "EvidenceCompletenessSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:117",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:151",
       "documented": true
     },
     {
       "name": "TradingPaperSessionReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:134",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:168",
       "documented": true
     },
     {
       "name": "TradingReplayReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:156",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:190",
       "documented": true
     },
     {
       "name": "TradingControlEvidenceDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:171",
-      "documented": true
-    },
-    {
-      "name": "TradingControlReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:187",
-      "documented": true
-    },
-    {
-      "name": "TradingPromotionReadinessDto",
       "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:205",
       "documented": true
     },
     {
-      "name": "TradingOperatorSignoffReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:219",
+      "name": "TradingControlReadinessDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:221",
       "documented": true
     },
     {
-      "name": "TradingTrustGateSampleReviewDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:228",
-      "documented": true
-    },
-    {
-      "name": "TradingTrustGateEvidenceDocumentDto",
+      "name": "TradingPromotionReadinessDto",
       "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:239",
       "documented": true
     },
     {
+      "name": "TradingOperatorSignoffReadinessDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:253",
+      "documented": true
+    },
+    {
+      "name": "TradingTrustGateSampleReviewDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:262",
+      "documented": true
+    },
+    {
+      "name": "TradingTrustGateEvidenceDocumentDto",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:273",
+      "documented": true
+    },
+    {
       "name": "TradingTrustGateContractReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:247",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:281",
       "documented": true
     },
     {
       "name": "TradingTrustGateReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:257",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:291",
       "documented": true
     },
     {
       "name": "TradingReportPackReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:289",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:323",
       "documented": true
     },
     {
       "name": "ProviderPromotionChecklistDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:300",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:334",
       "documented": true
     },
     {
       "name": "TradingOperatorReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:312",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:346",
       "documented": true
     },
     {
       "name": "StrategyRunReviewPacketDto",
-      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:343",
+      "source": "src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:385",
       "documented": true
     },
     {

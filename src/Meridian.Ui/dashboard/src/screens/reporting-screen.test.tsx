@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
-import { getCommandPaletteActionsSnapshot } from "@/components/meridian/command-palette.actions";
+import {
+  getCommandPaletteActionsSnapshot,
+  useCommandPaletteActions
+} from "@/components/meridian/command-palette.actions";
 import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import { renderWithRouter } from "@/test/render";
 import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
@@ -1287,6 +1290,11 @@ function formatExpectedScheduleTimestamp(value: string): string {
   });
 }
 
+function CommandPaletteActionsSubscriber() {
+  useCommandPaletteActions();
+  return null;
+}
+
 describe("ReportingScreen", () => {
   const fetchMock = vi.fn();
 
@@ -1731,6 +1739,26 @@ describe("ReportingScreen", () => {
     expect(
       getCommandPaletteActionsSnapshot().some((item) => item.id === "reporting-run-exports")
     ).toBe(false);
+  });
+
+  it("does not loop while registering exports-run actions with a palette subscriber mounted", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      const { unmount } = renderWithRouter(
+        <>
+          <CommandPaletteActionsSubscriber />
+          <ReportingScreen data={accounting} />
+        </>,
+        { initialEntries: ["/reporting/report-builder"] }
+      );
+
+      expect(getCommandPaletteActionsSnapshot().some((item) => item.id === "reporting-run-exports")).toBe(true);
+      expect(consoleError).not.toHaveBeenCalledWith(expect.stringContaining("Maximum update depth exceeded"));
+
+      unmount();
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 
   it("renders structured exports from the shared reporting payload", () => {

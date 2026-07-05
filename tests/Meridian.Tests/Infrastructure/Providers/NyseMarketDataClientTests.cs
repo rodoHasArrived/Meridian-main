@@ -42,6 +42,19 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
     }
 
     [Fact]
+    public void ConnectionDiagnostics_AreExposedFromSharedConnectionManager()
+    {
+        _client.Should().BeAssignableTo<Meridian.Infrastructure.Adapters.Core.IProviderConnectionDiagnosticsSource>(
+            "NYSE must surface honest connection status to the provider diagnostics projection");
+
+        var snapshot = _client.GetConnectionDiagnosticsSnapshot();
+
+        snapshot.IsConnected.Should().BeFalse("no socket has been opened");
+        snapshot.ProviderName.Should().NotBeNullOrWhiteSpace();
+        snapshot.LastConnectedAt.Should().BeNull();
+    }
+
+    [Fact]
     public void SubscribeTrades_AddsTradeAndCompanionQuoteSubscriptions()
     {
         var tradeSubscriptionId = _client.SubscribeTrades(new SymbolConfig("AAPL"));

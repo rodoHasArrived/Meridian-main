@@ -23,6 +23,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly IRiskValidator? _riskValidator;
     private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ExecutionOperatorControlService? _operatorControls;
+    private readonly ILiveOrderReadinessGate? _liveOrderReadinessGate;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly PaperSessionPersistenceService? _sessionPersistence;
@@ -41,13 +42,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ExecutionAuditTrailService? auditTrail = null,
         Meridian.Execution.Models.IPortfolioState? portfolioState = null,
         PaperSessionPersistenceService? sessionPersistence = null,
-        BrokerageConfiguration? brokerageConfiguration = null)
+        BrokerageConfiguration? brokerageConfiguration = null,
+        ILiveOrderReadinessGate? liveOrderReadinessGate = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
         _securityMasterGate = securityMasterGate;
         _operatorControls = operatorControls;
+        _liveOrderReadinessGate = liveOrderReadinessGate;
         _auditTrail = auditTrail;
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
@@ -89,7 +92,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 request.Symbol);
         }
 
-        var placementGate = BrokerageOrderPlacementGate.Evaluate(_brokerageConfiguration);
+        var placementGate = BrokerageOrderPlacementGate.Evaluate(_brokerageConfiguration, _gateway.GatewayId);
         if (!placementGate.IsAllowed)
         {
             var rejectedState = CreateRejectedState(orderId, safeRequest, placementGate.RejectReason);
@@ -113,6 +116,46 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 ErrorMessage = placementGate.RejectReason,
                 OrderState = rejectedState
             };
+        }
+
+        LiveOrderReadinessDecision? liveOrderReadinessDecision = null;
+        if (RequiresLiveOrderReadinessGate(brokerName))
+        {
+            liveOrderReadinessDecision = await EvaluateLiveOrderReadinessAsync(
+                safeRequest,
+                brokerName,
+                runId,
+                actor,
+                correlationId,
+                ct).ConfigureAwait(false);
+
+            if (!liveOrderReadinessDecision.IsApproved)
+            {
+                var rejectReason = liveOrderReadinessDecision.Reason ?? "Live order readiness gate rejected the order.";
+                var rejectedState = CreateRejectedState(orderId, safeRequest, rejectReason);
+                _orders[orderId] = rejectedState;
+                TrimRetainedOrdersIfNeeded();
+                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+                await RecordOrderRejectionAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    rejectReason,
+                    ct,
+                    reasonCode: "LIVE_ORDER_READINESS_REJECTED",
+                    metadata: BuildLiveOrderReadinessRejectedAuditMetadata(liveOrderReadinessDecision)).ConfigureAwait(false);
+
+                return new OrderResult
+                {
+                    Success = false,
+                    OrderId = orderId,
+                    ErrorMessage = rejectReason,
+                    OrderState = rejectedState
+                };
+            }
         }
 
         // Operator controls gate — rejects orders when circuit breaker is open (unless bypassed)
@@ -296,7 +339,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         ? null
                         : "ManualOverrideApplied",
                     Scope: BuildOrderAuditScope(safeRequest, runId),
-                    Metadata: BuildOrderSubmittedAuditMetadata(operatorControlDecision)), ct).ConfigureAwait(false);
+                    Metadata: BuildOrderSubmittedAuditMetadata(
+                        operatorControlDecision,
+                        liveOrderReadinessDecision)), ct).ConfigureAwait(false);
             }
 
             // Publish fills to the execution channel so portfolio trackers and other
@@ -585,19 +630,79 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         return $"{run}/{strategy}/{symbol}";
     }
 
-    private static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
-        ExecutionControlDecision? operatorControlDecision)
+    private async Task<LiveOrderReadinessDecision> EvaluateLiveOrderReadinessAsync(
+        OrderRequest request,
+        string brokerName,
+        string? runId,
+        string? actor,
+        string? correlationId,
+        CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(operatorControlDecision?.AppliedManualOverrideId))
+        if (string.IsNullOrWhiteSpace(runId))
         {
-            return null;
+            return LiveOrderReadinessDecision.Rejected(
+                "Live order placement requires runId metadata for a W7-approved live run.");
         }
 
-        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        if (_liveOrderReadinessGate is null)
         {
-            ["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId,
-            ["controlDecision"] = "approved-by-manual-override"
-        };
+            return LiveOrderReadinessDecision.Rejected(
+                "Live order placement requires a live order readiness gate before broker routing.");
+        }
+
+        var decision = await _liveOrderReadinessGate.EvaluateAsync(
+            new LiveOrderReadinessRequest(
+                RunId: runId.Trim(),
+                BrokerName: brokerName,
+                Symbol: request.Symbol,
+                Side: request.Side,
+                OrderType: request.Type,
+                Quantity: request.Quantity,
+                StrategyId: request.StrategyId,
+                Actor: actor,
+                CorrelationId: correlationId,
+                FundAccountId: request.FundAccountId),
+            ct).ConfigureAwait(false);
+
+        if (!decision.IsApproved)
+        {
+            return string.IsNullOrWhiteSpace(decision.Reason)
+                ? decision with { Reason = "Live order readiness gate rejected the order." }
+                : decision;
+        }
+
+        return string.IsNullOrWhiteSpace(decision.EvidenceReference)
+            ? LiveOrderReadinessDecision.Rejected(
+                "Live order readiness gate approved the order without a retained evidence reference.")
+            : decision with { EvidenceReference = decision.EvidenceReference.Trim() };
+    }
+
+    private static bool RequiresLiveOrderReadinessGate(string? brokerName) =>
+        !string.Equals(NormalizeGatewayId(brokerName), "paper", StringComparison.Ordinal);
+
+    private static string NormalizeGatewayId(string? gatewayId) =>
+        string.IsNullOrWhiteSpace(gatewayId)
+            ? "paper"
+            : gatewayId.Trim().ToLowerInvariant();
+
+    private static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
+        ExecutionControlDecision? operatorControlDecision,
+        LiveOrderReadinessDecision? liveOrderReadinessDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(operatorControlDecision?.AppliedManualOverrideId))
+        {
+            metadata["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId;
+            metadata["controlDecision"] = "approved-by-manual-override";
+        }
+
+        if (!string.IsNullOrWhiteSpace(liveOrderReadinessDecision?.EvidenceReference))
+        {
+            metadata["liveReadinessDecision"] = "approved";
+            metadata["liveReadinessEvidenceReference"] = liveOrderReadinessDecision.EvidenceReference;
+        }
+
+        return metadata.Count == 0 ? null : metadata;
     }
 
     private static IReadOnlyDictionary<string, string> BuildOrderRejectedByControlAuditMetadata(
@@ -611,6 +716,23 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         if (!string.IsNullOrWhiteSpace(operatorControlDecision.RejectCode))
         {
             metadata["rejectCode"] = operatorControlDecision.RejectCode;
+        }
+
+        return metadata;
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildLiveOrderReadinessRejectedAuditMetadata(
+        LiveOrderReadinessDecision liveOrderReadinessDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["liveReadinessDecision"] = "rejected",
+            ["rejectCode"] = "LIVE_ORDER_READINESS_REJECTED"
+        };
+
+        if (!string.IsNullOrWhiteSpace(liveOrderReadinessDecision.EvidenceReference))
+        {
+            metadata["liveReadinessEvidenceReference"] = liveOrderReadinessDecision.EvidenceReference;
         }
 
         return metadata;
@@ -707,10 +829,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         string? runId,
         string? correlationId,
         string? message,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? reasonCode = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
     {
         _logger.LogWarning(
-            "Order {OrderId} for {Symbol} rejected by brokerage placement gate: {Reason}",
+            "Order {OrderId} for {Symbol} rejected by execution placement gate: {Reason}",
             orderId,
             request.Symbol,
             message);
@@ -732,7 +856,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             RunId: runId,
             Symbol: request.Symbol,
             CorrelationId: correlationId,
-            Message: message), ct).ConfigureAwait(false);
+            Message: message,
+            Reason: reasonCode,
+            Scope: BuildOrderAuditScope(request, runId),
+            Metadata: metadata), ct).ConfigureAwait(false);
     }
 
     private void TrimRetainedOrdersIfNeeded()

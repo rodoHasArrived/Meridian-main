@@ -106,6 +106,7 @@ do_not_edit: true
 | `SRC-STRATEGIES` | Meridian strategies | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-STRATEGIES` | Meridian strategies | `W3-CONT-001` | Research to paper continuity |
 | `SRC-STRATEGIES` | Meridian strategies | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `SRC-STRATEGIES` | Meridian strategies | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-UI` | Meridian UI asset host | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI` | Meridian UI asset host | `W3-CONT-001` | Research to paper continuity |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W2-TRD-001` | Paper trading cockpit reliability |

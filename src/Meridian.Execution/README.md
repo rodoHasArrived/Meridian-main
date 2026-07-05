@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-05-28
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Execution
@@ -29,6 +29,17 @@ This layer implements execution behavior and broker-facing runtime services whil
 ## Important workflows
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
+Broker-backed order placement fails closed unless `BrokerageConfiguration` names the active
+gateway and all live-routing, phase, validation, and sign-off gates are explicitly green; missing
+brokerage configuration remains allowed only for the default paper gateway.
+After the brokerage gate allows a non-paper broker, the OMS also requires `runId` metadata,
+`OrderRequest.FundAccountId`, and a registered `ILiveOrderReadinessGate` approval with a retained
+evidence reference before submitting to the gateway; missing run/account context, missing readiness
+registration, rejected readiness, or an approval without retained evidence produces an audited
+rejection instead of a broker submit.
+Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
+compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
+as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
 Ledger posting from trade-fill events is Security Master gated: postings require a configured
 validation gate, resolved Security Master identity, non-blocked validation, and journal metadata
 that preserves the Security Master ID, fill ID, symbol, and gate evidence for provenance.

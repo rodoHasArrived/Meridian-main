@@ -282,9 +282,12 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     scheduleDeliveryPlanListLabel: vm.scheduleDeliveryPlanListLabel,
     scheduleDeliveryPlanEmptyText: vm.scheduleDeliveryPlanEmptyText
   };
-  const selectedExportsTemplate = resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft);
   const exportsRunRows = vm.runStatusRows.filter(isExportsOnDemandRun);
   const templateRowsKey = vm.templateRows.map((template) => template.id).join("|");
+  const selectedExportsTemplate = useMemo(
+    () => resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft),
+    [exportsRunDraft.templateRowId, templateRowsKey, vm.templateRows]
+  );
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -479,34 +482,45 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const handleExportsReportRunRef = useRef(handleExportsReportRun);
   handleExportsReportRunRef.current = handleExportsReportRun;
 
+  const selectedExportsTemplateId = selectedExportsTemplate?.id ?? null;
+  const selectedExportsTemplateName = selectedExportsTemplate?.name ?? null;
+  const selectedExportsTemplateCanRun = selectedExportsTemplate?.canRunOnDemand ?? false;
+  const selectedExportsTemplateRunDisabledReason = selectedExportsTemplate?.runDisabledReason ?? null;
+
   useEffect(() => {
-    if (!selectedExportsTemplate) {
+    if (!selectedExportsTemplateId || !selectedExportsTemplateName) {
       return;
     }
 
-    const disabled = !selectedExportsTemplate.canRunOnDemand || Boolean(runningTemplateRunId);
+    const disabled = !selectedExportsTemplateCanRun || Boolean(runningTemplateRunId);
     return registerCommandPaletteActions("reporting-screen", [
       {
         id: "reporting-run-exports",
-        verbLabel: `Run exports report: ${selectedExportsTemplate.name}`,
+        verbLabel: `Run exports report: ${selectedExportsTemplateName}`,
         description: "Start the selected on-demand exports report run with the drafted as-of date.",
         keywords: ["report", "export", "run"],
         confirm: true,
         disabled,
         disabledReason: runningTemplateRunId
           ? "A template run is already in progress."
-          : selectedExportsTemplate.runDisabledReason,
+          : selectedExportsTemplateRunDisabledReason,
         run: async () => {
           await handleExportsReportRunRef.current();
           return {
-            title: `${selectedExportsTemplate.name} run requested.`,
+            title: `${selectedExportsTemplateName} run requested.`,
             detail: "Track progress under Reporting exports run status.",
             tone: "success" as const
           };
         }
       }
     ]);
-  }, [runningTemplateRunId, selectedExportsTemplate]);
+  }, [
+    runningTemplateRunId,
+    selectedExportsTemplateCanRun,
+    selectedExportsTemplateId,
+    selectedExportsTemplateName,
+    selectedExportsTemplateRunDisabledReason
+  ]);
 
   async function executeTemplateRun(
     template: ReportingTemplateRow,

@@ -225,7 +225,7 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
 
         return new CorporateActionCommand(
             SecurityId: securityId,
-            ActionType: "Split",
+            ActionType: split.ToFactor.Value < split.FromFactor.Value ? "ReverseStockSplit" : "StockSplit",
             ExDate: exDate,
             RecordDate: null,
             PayableDate: null,

@@ -38,11 +38,11 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private bool _disposed;
 
     /// <summary>
-    /// Event raised when progress is updated during backfill.
+    /// Event raised as a request progresses through the provider chain: when a provider
+    /// attempt starts, succeeds, fails, is rate limited, or all providers are exhausted.
+    /// Subscriber exceptions are logged and never interrupt the data path.
     /// </summary>
-#pragma warning disable CS0067 // Event is never used - Reserved for future extensibility
     public event Action<ProviderBackfillProgress>? OnProgressUpdate;
-#pragma warning restore CS0067
 
     public string Name => "composite";
     public string DisplayName => "Multi-Source (Auto-Failover)";
@@ -157,6 +157,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             throw new ArgumentException("Symbol is required", nameof(symbol));
 
         const int maxRateLimitRetries = 3;
+        var requestStartedAt = DateTimeOffset.UtcNow;
         List<(string Provider, Exception Error)> errors = [];
 
         // Get providers ordered by rate limit availability if rotation is enabled
@@ -186,6 +187,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
                 _log.Information("Trying {Provider} for {Symbol} (resolved: {Resolved})",
                     provider.Name, symbol, resolvedSymbol);
+                RaiseProgress(symbol, provider.Name, requestStartedAt, status: "trying");
 
                 var startTime = DateTimeOffset.UtcNow;
 
@@ -204,6 +206,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
                     _log.Information("Successfully retrieved {Count} bars from {Provider} for {Symbol}",
                         bars.Count, provider.Name, symbol);
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, bars.Count, status: "completed");
 
                     // Optionally validate against other providers
                     if (_enableCrossValidation && bars.Count > 0)
@@ -229,11 +232,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
                     _log.Warning("Provider {Provider} hit rate limit for {Symbol}, rotating to next provider",
                         provider.Name, symbol);
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "rate-limited", error: ex.Message);
                 }
                 else
                 {
                     _log.Warning(ex, "Provider {Provider} failed for {Symbol}", provider.Name, symbol);
                     RecordFailure(provider.Name, ex.Message);
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "failed", error: ex.Message);
                 }
                 errors.Add((provider.Name, ex));
             }
@@ -258,11 +263,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         if (errors.Count > 0)
         {
             var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
+            RaiseProgress(symbol, Name, requestStartedAt, status: "all-providers-failed", error: errorSummary);
             throw new AggregateException($"All providers failed for {symbol}: {errorSummary}",
                 errors.Select(e => e.Error));
         }
 
         _log.Warning("No data found from any provider for {Symbol}", symbol);
+        RaiseProgress(symbol, Name, requestStartedAt, status: "no-data");
         return Array.Empty<HistoricalBar>();
     }
 
@@ -283,6 +290,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             throw new InvalidOperationException($"Composite provider does not support {granularity.ToDisplayName()} backfill.");
 
         const int maxRateLimitRetries = 3;
+        var requestStartedAt = DateTimeOffset.UtcNow;
         List<(string Provider, Exception Error)> errors = [];
 
         var orderedProviders = GetOrderedProviders()
@@ -309,6 +317,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
                 _log.Information("Trying {Provider} for {Symbol} {Granularity} aggregates (resolved: {Resolved})",
                     provider.Name, symbol, granularity.ToDisplayName(), resolvedSymbol);
+                RaiseProgress(symbol, provider.Name, requestStartedAt, status: "trying");
 
                 var startTime = DateTimeOffset.UtcNow;
                 _rateLimitTracker.RecordRequest(provider.Name);
@@ -325,6 +334,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
                     _log.Information("Successfully retrieved {Count} {Granularity} bars from {Provider} for {Symbol}",
                         bars.Count, granularity.ToDisplayName(), provider.Name, symbol);
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, bars.Count, status: "completed");
                     return bars;
                 }
 
@@ -342,12 +352,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
                     _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Granularity}, rotating to next provider",
                         provider.Name, symbol, granularity.ToDisplayName());
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "rate-limited", error: ex.Message);
                 }
                 else
                 {
                     _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Granularity} aggregates",
                         provider.Name, symbol, granularity.ToDisplayName());
                     RecordFailure(provider.Name, ex.Message);
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "failed", error: ex.Message);
                 }
 
                 errors.Add((provider.Name, ex));
@@ -370,13 +382,49 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         if (errors.Count > 0)
         {
             var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
+            RaiseProgress(symbol, Name, requestStartedAt, status: "all-providers-failed", error: errorSummary);
             throw new AggregateException(
                 $"All aggregate-capable providers failed for {symbol} ({granularity.ToDisplayName()}): {errorSummary}",
                 errors.Select(e => e.Error));
         }
 
         _log.Warning("No aggregate-capable provider found for {Symbol} at {Granularity}", symbol, granularity.ToDisplayName());
+        RaiseProgress(symbol, Name, requestStartedAt, status: "no-data");
         return Array.Empty<AggregateBar>();
+    }
+
+    /// <summary>
+    /// Raise <see cref="OnProgressUpdate"/> without letting subscriber failures
+    /// interrupt the data path.
+    /// </summary>
+    private void RaiseProgress(
+        string symbol,
+        string provider,
+        DateTimeOffset startedAt,
+        int barsDownloaded = 0,
+        string? status = null,
+        string? error = null)
+    {
+        var handlers = OnProgressUpdate;
+        if (handlers is null)
+            return;
+
+        try
+        {
+            handlers(new ProviderBackfillProgress(
+                symbol,
+                provider,
+                barsDownloaded,
+                TotalSymbols: 1,
+                CurrentSymbolIndex: 0,
+                startedAt,
+                status,
+                error));
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "OnProgressUpdate subscriber threw for {Symbol} via {Provider}", symbol, provider);
+        }
     }
 
     /// <summary>
@@ -576,7 +624,11 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
         try
         {
-            var validationBars = await validationProvider.GetDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
+            // Resolve the symbol for the validation provider too — providers can use
+            // different symbol formats (e.g. "AAPL" vs "aapl.us"), and validating with
+            // the unresolved symbol silently compares against the wrong (or no) data.
+            var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, validationProvider.Name, ct).ConfigureAwait(false);
+            var validationBars = await validationProvider.GetDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
 
             if (validationBars.Count > 0)
             {

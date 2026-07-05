@@ -87,6 +87,7 @@ public static class UiApiRoutes
     public const string ProviderRateLimits = "/api/providers/rate-limits";
     public const string ProviderRateLimitHistory = "/api/providers/{providerName}/rate-limit-history";
     public const string ProviderCapabilities = "/api/providers/capabilities";
+    public const string ProviderCapabilityMatrix = "/api/providers/capability-matrix";
     public const string ProviderSwitch = "/api/providers/switch";
     public const string ProviderTest = "/api/providers/{providerName}/test";
     public const string ProviderFailoverThresholds = "/api/providers/failover-thresholds";
@@ -348,6 +349,7 @@ public static class UiApiRoutes
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
@@ -777,6 +779,8 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
     public const string LedgerManualJournalEntryEvidence = "/api/ledger/journal-entry-workbench/evidence";
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
+    public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
+    public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";

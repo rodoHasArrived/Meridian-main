@@ -40,6 +40,10 @@ import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
 import {
+  useDataQualityPanel,
+  type DataQualityPanelViewModel
+} from "@/screens/data-screen.data-quality.view-model";
+import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID,
@@ -264,6 +268,7 @@ export function DataScreen({
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   const queryPanel = useDataQueryPanel();
+  const qualityPanel = useDataQualityPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
 
   if (!data) {
@@ -316,6 +321,8 @@ export function DataScreen({
       <section className="workspace-metric-strip">
         {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
       </section>
+
+      <DataQualityRegion panel={qualityPanel} />
 
       <section className="data-management-frame">
         <nav className="workspace-directory-rail" aria-label="Data folders">
@@ -2217,5 +2224,100 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
       </div>
       {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
+  );
+}
+
+const qualityToneBadgeVariant = {
+  success: "success",
+  warning: "warning",
+  danger: "danger"
+} as const;
+
+function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
+  return (
+    <section aria-labelledby="data-quality-title" className="workspace-region data-quality-region">
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle id="data-quality-title">Data quality</CardTitle>
+            <CardDescription>
+              Unified completeness, freshness, gap, and anomaly posture across tracked symbols.
+              {panel.model ? ` ${panel.model.summary}` : null}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            {panel.model && (
+              <Badge variant={qualityToneBadgeVariant[panel.model.overallTone]} dot={panel.model.overallTone === "success"}>
+                {panel.model.overallLabel}
+              </Badge>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void panel.refresh()}
+              disabled={panel.loading}
+              aria-label="Refresh data quality dashboard"
+            >
+              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {panel.error ? (
+            <StatusBanner tone="danger" title="Data quality unavailable" detail={panel.error} />
+          ) : !panel.model ? (
+            <p className="text-sm text-muted-foreground" role="status">Loading data quality…</p>
+          ) : (
+            <div className="grid gap-4">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" role="list" aria-label="Data quality scores">
+                {panel.model.scoreCards.map((card) => (
+                  <div
+                    key={card.id}
+                    role="listitem"
+                    className={cn("rounded-md border p-3 text-sm", resultToneClass[card.tone])}
+                  >
+                    <div className="text-xs uppercase tracking-wide">{card.label}</div>
+                    <div className="mt-1 font-mono text-lg font-semibold">{card.value}</div>
+                  </div>
+                ))}
+              </div>
+              {panel.model.attentionSymbols.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold">Symbols needing attention</h3>
+                  <ul className="mt-2 grid gap-1.5">
+                    {panel.model.attentionSymbols.map((row) => (
+                      <li key={row.symbol} className="flex flex-wrap items-center gap-2 text-sm">
+                        <Badge variant={qualityToneBadgeVariant[row.tone]}>{row.health}</Badge>
+                        <span className="font-mono font-semibold">{row.symbol}</span>
+                        <span className="text-muted-foreground">
+                          completeness {row.completenessLabel} · freshness {row.freshnessLabel} ·{" "}
+                          {row.gapCount} gap{row.gapCount === 1 ? "" : "s"} · {row.anomalyCount} anomal
+                          {row.anomalyCount === 1 ? "y" : "ies"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {panel.model.unacknowledgedAnomalies.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold">Unacknowledged anomalies</h3>
+                  <ul className="mt-2 grid gap-1.5">
+                    {panel.model.unacknowledgedAnomalies.map((anomaly) => (
+                      <li key={anomaly.anomalyId} className="text-sm text-muted-foreground">
+                        <span className="font-mono font-semibold text-foreground">{anomaly.symbol}</span>{" "}
+                        {anomaly.anomalyType}: {anomaly.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }

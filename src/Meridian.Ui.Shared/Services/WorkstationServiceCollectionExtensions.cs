@@ -23,6 +23,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -239,6 +240,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
+            sp.GetRequiredService<TradingOperatorReadinessService>());
+        services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
@@ -443,6 +447,19 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton(sp =>
+            new AutomatedJournalDraftIntakeService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                sp.GetRequiredService<IAccountingConfigurationService>()));
+        services.TryAddSingleton(sp =>
+        {
+            var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
+            return new AutomatedJournalIntakeRunner(
+                sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
+                new FeeScheduleAccrualEventProducer(),
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster));
+        });
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),

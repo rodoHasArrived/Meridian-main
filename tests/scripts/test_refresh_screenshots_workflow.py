@@ -209,6 +209,16 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("selectedCaptureCount", self.web_screenshot_capture_script)
         self.assertIn("totalCaptureCount", self.web_screenshot_capture_script)
 
+    def test_web_screenshot_capture_script_fails_fast_on_browser_render_errors(self) -> None:
+        self.assertIn("createPageErrorTracker(page)", self.web_screenshot_capture_script)
+        self.assertIn("waitForCaptureStep", self.web_screenshot_capture_script)
+        self.assertIn("Maximum update depth exceeded", self.web_screenshot_capture_script)
+        self.assertIn("Meridian workstation route failed to render", self.web_screenshot_capture_script)
+        self.assertIn("hit a browser render error", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_disables_vite_hmr(self) -> None:
+        self.assertIn('MERIDIAN_SCREENSHOT_CAPTURE: "true"', self.web_screenshot_capture_script)
+
     @staticmethod
     def screenshot_coverage_path(route_path: str) -> str:
         parsed = urlsplit(route_path)

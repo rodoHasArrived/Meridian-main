@@ -301,10 +301,12 @@ modules:
       - W2-PROMO-001
       - W3-CONT-001
       - W6-BTSTUDIO-001
+      - W7-LIVE-001
     stage_gates:
       - PromotionReview
       - ResearchContinuity
       - BacktestingEvidence
+      - LiveReadiness
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:

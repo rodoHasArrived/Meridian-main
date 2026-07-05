@@ -341,9 +341,9 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTrading), async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTrading), async (Guid? fundAccountId, HttpContext context) =>
         {
-            return await BuildTradingPayloadAsync(context).ConfigureAwait(false);
+            return await BuildTradingPayloadAsync(context, fundAccountId).ConfigureAwait(false);
         })
         .WithName("GetWorkstationTrading");
 
@@ -3374,7 +3374,7 @@ public static partial class WorkstationEndpoints
     }
 
     // PR-03: returns typed DTO instead of anonymous object
-    private static async Task<WorkstationTradingPayload> BuildTradingPayloadAsync(HttpContext context)
+    private static async Task<WorkstationTradingPayload> BuildTradingPayloadAsync(HttpContext context, Guid? fundAccountId = null)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
@@ -3539,7 +3539,7 @@ public static partial class WorkstationEndpoints
             fills = Array.Empty<WorkstationTradingFillRow>();
         }
 
-        var readiness = await GetTradingOperatorReadinessAsync(null, context).ConfigureAwait(false);
+        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
 
         // PR-03: return typed DTO
         return new WorkstationTradingPayload(
