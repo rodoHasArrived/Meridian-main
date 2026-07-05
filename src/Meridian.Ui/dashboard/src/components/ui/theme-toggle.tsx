@@ -1,6 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { applyAppearance, APPEARANCE_STORAGE_KEY, readStoredAppearance, writeStoredAppearance, type Appearance } from "@/lib/theme";
+import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
 import { cn } from "@/lib/utils";
 
 export interface ThemeToggleProps {
@@ -66,6 +67,8 @@ export function ThemeToggle({
     }
     if (persist === APPEARANCE_STORAGE_KEY) {
       writeStoredAppearance(next);
+      // Push the appearance change to any open companion panes so they retheme live.
+      broadcastCompanionState({ type: "appearance", appearance: next });
     } else if (persist && typeof localStorage !== "undefined") {
       localStorage.setItem(persist, next);
     }

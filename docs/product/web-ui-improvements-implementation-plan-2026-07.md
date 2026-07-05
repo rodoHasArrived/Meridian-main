@@ -312,6 +312,21 @@ No feature work; confirm and document the rules each later phase must follow.
   visible fallback link (`target="_blank" rel="noopener noreferrer"`). Pane components must be
   shell-independent; session expiry propagates over the channel.
 
+  **Landed:** `app.tsx` now branches at the top (`AppRoot`) — `/panes/*` renders `CompanionPaneWindow`
+  instead of `AppShell`, so a pane carries no masthead, navigation, or workstation data loading.
+  `lib/companion-pane/pane-window.ts` holds the pure pane registry/route helpers and
+  `openCompanionPane` (opens with `noopener,noreferrer` and never inspects the return value).
+  `lib/companion-pane/chrome-bridge.ts` is the same-origin `BroadcastChannel` bridge with a validated
+  message contract (`appearance` | `scope` | `session-expired`) and an injectable channel for tests;
+  `opener-broadcast.ts` is the main-window side (lazy shared channel, no-op when unavailable). The
+  main window broadcasts appearance changes (from the theme toggle) and a `session-expired` signal on
+  `pagehide`; `CompanionPaneWindow` applies the persisted appearance on load, retheme's live, and
+  shows a "main window no longer available" alert on session end. `PopOutPaneButton` renders a
+  `window.open` button **plus** an always-visible fallback link. Exemplar adopter: the watchlist
+  workspace header (pop-out hidden when already inside a pane). `scope` is carried in the bridge
+  contract (validated + tested) and reserved for scope-aware panes; fanned-out stream data over the
+  channel remains the documented Phase 4 follow-up (the exemplar panes still open their own feeds).
+
 **Validation for all of Phase 6:** `npm --prefix src/Meridian.Ui/dashboard run test`; grid work
 additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 `dense-row-detail-accessibility.test.tsx`).
@@ -320,7 +335,7 @@ additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 - [x] 6a scope picker + persistence + Portfolio migration.
 - [x] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
 - [x] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
-- [ ] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
+- [x] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
 
 ---
 
