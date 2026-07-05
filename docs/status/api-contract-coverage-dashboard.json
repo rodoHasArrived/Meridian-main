@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.6,
-  "endpoint_coverage_percent": 99.5,
-  "contract_coverage_percent": 99.8,
+  "score_percent": 100.0,
+  "endpoint_coverage_percent": 100.0,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 595,
-    "documented_endpoint_count": 592,
-    "undocumented_endpoint_count": 3,
+    "documented_endpoint_count": 595,
+    "undocumented_endpoint_count": 0,
     "workstation_contract_count": 814,
-    "documented_workstation_contract_count": 812,
-    "undocumented_workstation_contract_count": 2
+    "documented_workstation_contract_count": 814,
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
@@ -3030,19 +3030,19 @@
       "method": "GET",
       "path": "/api/security-master/corporate-actions/inbox",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:682",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/inbox/apply",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:692",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
       "path": "/api/security-master/coverage/draft/{symbol}",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:741",
-      "documented": false
+      "documented": true
     },
     {
       "method": "GET",
@@ -6124,12 +6124,12 @@
     {
       "name": "CorporateActionDescriptorDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:82",
-      "documented": false
+      "documented": true
     },
     {
       "name": "CorporateActionTimelineEntryDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:96",
-      "documented": false
+      "documented": true
     },
     {
       "name": "SecurityMasterEconomicDefinitionDrillInDto",
