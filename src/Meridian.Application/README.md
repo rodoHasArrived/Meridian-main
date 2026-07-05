@@ -407,6 +407,9 @@ and UI presentation concerns in their owning layers.
   `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
   persistence-backed services. Local/dev launcher flows may set
   `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
+  `ProviderFeatureRegistration` supplies a non-secret empty `IConfiguration` fallback before
+  registering provider adapters, preserving host-provided configuration when present while keeping
+  credential-gated data providers resolvable in composition slices.
 
 ## Important workflows
 

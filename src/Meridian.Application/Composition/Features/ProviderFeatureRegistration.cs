@@ -34,6 +34,8 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.TryAddSingleton<IConfiguration>(static _ => new ConfigurationBuilder().Build());
+
         // DataSourceRegistry - discovers providers decorated with [DataSource] (ADR-005).
         services.AddSingleton<DataSourceRegistry>(sp =>
         {
