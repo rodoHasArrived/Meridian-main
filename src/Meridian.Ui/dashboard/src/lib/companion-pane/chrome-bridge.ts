@@ -6,13 +6,33 @@
 // without waiting on a storage round-trip.
 import { isAppearance, type Appearance } from "@/lib/theme";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
+import type { QuotesSnapshotResponse } from "@/types";
 
 export const COMPANION_CHANNEL_NAME = "meridian.workstation.companion.v1";
 
 export type CompanionBridgeMessage =
   | { type: "appearance"; appearance: Appearance }
   | { type: "scope"; scope: AppShellOperatingScopeInput }
-  | { type: "session-expired" };
+  | { type: "session-expired" }
+  // Owner window re-broadcasts a quote snapshot for a symbol set so follower panes
+  // consume the opener's feed instead of opening their own EventSource.
+  | { type: "quotes"; symbolsKey: string; snapshot: QuotesSnapshotResponse }
+  // Follower pane asks the owner to re-send the latest snapshot for a symbol set
+  // (fast warm-up when a pane opens after the owner is already streaming).
+  | { type: "quotes-request"; symbolsKey: string };
+
+/** Structural check for a cross-window snapshot payload (untrusted data). */
+function isQuotesSnapshot(value: unknown): value is QuotesSnapshotResponse {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const record = value as { timestamp?: unknown; count?: unknown; quotes?: unknown };
+  return (
+    typeof record.timestamp === "string" &&
+    typeof record.count === "number" &&
+    Array.isArray(record.quotes)
+  );
+}
 
 /** Minimal BroadcastChannel surface, injectable for tests. */
 export interface BroadcastChannelLike {
@@ -40,6 +60,19 @@ export function normalizeCompanionBridgeMessage(data: unknown): CompanionBridgeM
   }
   if (type === "session-expired") {
     return { type: "session-expired" };
+  }
+  if (type === "quotes") {
+    const record = data as { symbolsKey?: unknown; snapshot?: unknown };
+    const snapshot = record.snapshot;
+    return typeof record.symbolsKey === "string" && record.symbolsKey.length > 0 && isQuotesSnapshot(snapshot)
+      ? { type: "quotes", symbolsKey: record.symbolsKey, snapshot }
+      : null;
+  }
+  if (type === "quotes-request") {
+    const symbolsKey = (data as { symbolsKey?: unknown }).symbolsKey;
+    return typeof symbolsKey === "string" && symbolsKey.length > 0
+      ? { type: "quotes-request", symbolsKey }
+      : null;
   }
   return null;
 }

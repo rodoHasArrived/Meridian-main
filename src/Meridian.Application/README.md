@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-01
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Application
@@ -284,6 +284,10 @@ and UI presentation concerns in their owning layers.
   readable through the projector's normalization; the one-time
   `--security-master-normalize-corporate-actions` CLI sweep (dry-run by default, `--apply` to
   rewrite) cleans the stored strings themselves.
+  `SecurityMasterCashFlowService` now generates deterministic calculated bullet and sinker
+  schedules from retained Security Master economic terms when provider-backed schedules are not
+  selected, so downstream Asset Operations views can present expected coupon/principal dates with
+  source-governed scenario posture instead of an empty calculated schedule.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured credit, private fund interests, private

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Instruments
@@ -42,6 +42,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   command, and projection builder for shared terms, lifecycle, cash-flow, activity,
   reconciliation, ledger, evidence, workflow-audit, terms/obligations timeline, and readiness
   views.
+- `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
+  Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
+  traces, ledger-support references, and timeline variances without writing ledger facts.
 - `Indicators/TechnicalIndicatorService.cs` - live and historical technical indicator calculations
   over market trades, quotes, and OHLCV bars using Skender.Stock.Indicators.
 
@@ -54,8 +57,9 @@ terms, lifecycle, contract, expiry, maturity, accrual, sweep, liquidity, fund-fa
 chain-linkage details. Asset Operations projections also live here because they adapt instrument
 terms, obligation schedules, projected cash flows, ledger projections, and readiness evidence into
 the shared Security Master-keyed operational view. The terms/obligations timeline is derived here
-from projected cash-flow runs, actual activity, reconciliation results, lifecycle events, and ledger
-references so browser and WPF clients render a shared event rail without owning projection logic.
+from retained Security Master terms, projected cash-flow runs, generated non-cash obligations,
+actual activity, reconciliation results, lifecycle events, variances, and ledger references so
+browser and WPF clients render a shared event rail without owning projection logic.
 Application composition wires these services to Security Master, Asset Operations, and money-market
 projection stores, while UI Shared adapts them to shared browser/WPF routes without owning the
 instrument logic.
