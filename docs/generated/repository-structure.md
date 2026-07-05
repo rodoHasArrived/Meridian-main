@@ -1766,6 +1766,7 @@ Meridian-main
 │   │   ├── waves-2-4-operator-readiness-addendum.md
 │   │   └── web-ui-development-pivot.md
 │   ├── product
+│   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md

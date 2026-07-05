@@ -1,11 +1,11 @@
 {
-  "total_files": 539,
-  "total_lines": 89063,
-  "orphaned_count": 205,
+  "total_files": 540,
+  "total_lines": 89456,
+  "orphaned_count": 206,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 200,
-  "average_lines": 165.2,
+  "average_lines": 165.7,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -171,6 +171,7 @@
     "docs/plans/ufl-warrant-target-state-v2.md",
     "docs/plans/wave-implementation-checklists.md",
     "docs/plans/web-ui-development-pivot.md",
+    "docs/product/data-provider-accounting-brainstorm-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -2138,7 +2139,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7807,
+      "line_count": 7808,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3051,6 +3052,14 @@
     {
       "path": "docs/plans/web-ui-development-pivot.md",
       "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
+      "line_count": 392,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
