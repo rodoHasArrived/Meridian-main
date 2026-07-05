@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "d14cfef405dc124db93c564581292707af9b668e1ae79b7973244aa1da395e29",
-      "source_hash": "d68b4f6c98062abb9392139bcba57f395af9aa6a958c73d3b05b282d18ca7749"
+      "source_hash": "46e76275d1ae0e96b7b7f2f9be461f4871f8b3e534ba4812b49fd7b551e7bc80"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -192,7 +192,7 @@
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
       "readme_hash": "b87cfcd30dcb9950809dea4e790152447b19a8f1dd523b13041029b034bbb46c",
-      "source_hash": "2fea594e5be665934a29970bd61b83aca08faabd3e9d8a746560c1385fd314af"
+      "source_hash": "4035ac0f5fbc820fb2a42392c930edb0d7e093e0ff67deb42b43e1e574b3a387"
     },
     {
       "id": "SRC-LEDGER",
