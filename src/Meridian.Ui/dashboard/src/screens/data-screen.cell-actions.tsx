@@ -270,11 +270,15 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
 
   const resolveConfirm = useCallback(
     (accept: boolean) => {
-      const pending = confirm;
-      setConfirm(null);
-      if (accept && pending) {
-        void pending.run();
+      if (!confirm) {
+        return;
       }
+      if (!accept) {
+        setConfirm(null);
+        return;
+      }
+      // Keep the dialog mounted (showing its in-flight state) until the action settles.
+      void confirm.run().finally(() => setConfirm(null));
     },
     [confirm]
   );
@@ -315,11 +319,6 @@ export function CellActionTrigger({
       aria-label={label}
       aria-haspopup="menu"
       onClick={onOpen}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          onOpen(event);
-        }
-      }}
       className={cn(
         "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[2px] text-muted-foreground transition-opacity",
         "opacity-0 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -343,7 +342,15 @@ export function CellActionConfirmDialog({
   onResolve: (accept: boolean) => void;
 }) {
   return (
-    <Dialog open={confirm !== null} onOpenChange={(open) => (open ? undefined : onResolve(false))}>
+    <Dialog
+      open={confirm !== null}
+      onOpenChange={(open) => {
+        // Ignore backdrop/Escape dismissal while the action is still running.
+        if (!open && !running) {
+          onResolve(false);
+        }
+      }}
+    >
       {confirm ? (
         <DialogContent className="max-w-md">
           <DialogHeader>

@@ -171,6 +171,31 @@ describe("useCellActions", () => {
     expect(archiveSymbol).not.toHaveBeenCalled();
   });
 
+  it("keeps the confirm dialog open and undismissable while the action is in flight", async () => {
+    const user = userEvent.setup();
+    let resolveArchive: (() => void) | undefined;
+    const archiveSymbol = vi.fn(
+      () =>
+        new Promise<{ success: boolean; symbol: string }>((resolve) => {
+          resolveArchive = () => resolve({ success: true, symbol: "GME" });
+        })
+    );
+
+    render(<Harness context={coverageContext} toast={stubToast()} api={{ archiveSymbol }} />);
+
+    await user.click(screen.getByRole("button", { name: "Open actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: /Exclude symbol/ }));
+    await user.click(screen.getByRole("button", { name: "Exclude symbol" }));
+
+    // In flight: the confirm control is disabled and Escape must not dismiss the dialog.
+    await waitFor(() => expect(screen.getByRole("button", { name: "Working…" })).toBeDisabled());
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    resolveArchive?.();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
   it("acknowledges an anomaly through the endpoint layer", async () => {
     const user = userEvent.setup();
     const acknowledgeAnomaly = vi.fn().mockResolvedValue(undefined);
