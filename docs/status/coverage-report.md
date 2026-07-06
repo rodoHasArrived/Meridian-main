@@ -33,7 +33,6 @@
 | `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:39` |
 | `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:53` |
 | `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:46` |
-| `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:64` |
 | `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:72` |
 | `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:81` |
 | `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:98` |
