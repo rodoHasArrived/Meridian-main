@@ -58,6 +58,8 @@ import {
 import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
+import { ActivityCenter } from "@/components/meridian/activity-center";
+import { ActivityLogProvider } from "@/lib/activity-log/store";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
@@ -103,7 +105,9 @@ export function App() {
   return (
     <PriceAlertsProvider>
       <ToastProvider>
-        <AppRoot />
+        <ActivityLogProvider>
+          <AppRoot />
+        </ActivityLogProvider>
       </ToastProvider>
     </PriceAlertsProvider>
   );
@@ -449,6 +453,7 @@ function AppShell() {
         <WorkstationTrustStrip viewModel={shell.trustStrip} />
 
         <div className="workstation-actions">
+          <ActivityCenter />
           <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
           {session ? (
             <div

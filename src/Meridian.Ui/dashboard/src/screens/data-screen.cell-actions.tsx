@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { acknowledgeAnomaly, archiveSymbol, triggerBackfill } from "@/lib/api";
+import { useActivityLog } from "@/lib/activity-log/store";
+import type { ActivityEntryInput } from "@/lib/activity-log/types";
 import { describeApiError } from "@/lib/api-errors";
 import type { ToastApi } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
@@ -178,6 +180,7 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
   const { toast, onMasterSymbol, onOpenCapabilityMatrix, onAfterMutation } = options;
   const optionsApi = options.api;
   const api = useMemo<CellActionApi>(() => ({ ...defaultCellActionApi, ...optionsApi }), [optionsApi]);
+  const activityLog = useActivityLog();
   const menu = useContextMenu();
   const [context, setContext] = useState<CellActionContext | null>(null);
   const [running, setRunning] = useState(false);
@@ -202,11 +205,26 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
   );
 
   const runAction = useCallback(
-    async (successTitle: string, fallback: string, effect: () => Promise<unknown>) => {
+    async (
+      successTitle: string,
+      fallback: string,
+      effect: () => Promise<unknown>,
+      activity?: { kind: string; tone?: ActivityEntryInput["tone"]; route?: string; routeLabel?: string; detail?: string }
+    ) => {
       setRunning(true);
       try {
         await effect();
         toast.success(successTitle);
+        if (activity) {
+          activityLog.record({
+            kind: activity.kind,
+            title: successTitle,
+            detail: activity.detail,
+            tone: activity.tone ?? "success",
+            route: activity.route,
+            routeLabel: activity.routeLabel
+          });
+        }
         onAfterMutation?.();
       } catch (error) {
         toast.danger(fallback, describeApiError(error, fallback).summary);
@@ -214,7 +232,7 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
         setRunning(false);
       }
     },
-    [toast, onAfterMutation]
+    [toast, onAfterMutation, activityLog]
   );
 
   const dispatch = useCallback(
@@ -228,7 +246,8 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
           void runAction(
             `Backfill queued for ${symbol}`,
             `Could not queue a backfill for ${symbol}.`,
-            () => api.triggerBackfill({ provider: null, symbols: [symbol], from: null, to: null })
+            () => api.triggerBackfill({ provider: null, symbols: [symbol], from: null, to: null }),
+            { kind: "data.backfill", route: "/data", routeLabel: "Data", detail: "Historical backfill requested." }
           );
           return;
         case "master":
@@ -240,7 +259,8 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
             void runAction(
               `Acknowledged anomaly for ${symbol}`,
               `Could not acknowledge the anomaly for ${symbol}.`,
-              () => api.acknowledgeAnomaly(anomalyId)
+              () => api.acknowledgeAnomaly(anomalyId),
+              { kind: "quality.anomaly.acknowledge", route: "/data", routeLabel: "Data" }
             );
           }
           return;
@@ -257,7 +277,14 @@ export function useCellActions(options: UseCellActionsOptions): UseCellActionsRe
               runAction(
                 `${symbol} excluded from coverage`,
                 `Could not exclude ${symbol}.`,
-                () => api.archiveSymbol(symbol)
+                () => api.archiveSymbol(symbol),
+                {
+                  kind: "symbol.exclude",
+                  tone: "warning",
+                  route: "/data/watchlist",
+                  routeLabel: "Re-add in watchlist",
+                  detail: "Symbol archived and dropped from coverage tracking."
+                }
               )
           });
           return;
