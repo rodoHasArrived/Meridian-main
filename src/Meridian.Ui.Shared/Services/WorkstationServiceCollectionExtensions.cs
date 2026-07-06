@@ -134,7 +134,9 @@ public static class WorkstationServiceCollectionExtensions
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
-                return new FileScopedAccessAssignmentStore(persistencePath);
+                return new FileScopedAccessAssignmentStore(
+                    persistencePath,
+                    sp.GetService<ILogger<FileScopedAccessAssignmentStore>>());
             });
         }
         services.TryAddSingleton<ScopedAccessService>();

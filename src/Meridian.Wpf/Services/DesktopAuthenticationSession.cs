@@ -38,6 +38,19 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
     public UserPermission? CurrentPermissions => CurrentUser?.Permissions;
 
+    /// <summary>
+    /// Client-side defense-in-depth permission check for the desktop shell. When a resolved
+    /// operator profile is present, the check enforces that profile's granted
+    /// <see cref="UserProfile.Permissions"/>. Anonymous development sessions and unauthenticated
+    /// sessions have no resolved permission set, so gating defers to the authentication gates and
+    /// returns <see langword="true"/>. Server-side authorization remains authoritative in all cases.
+    /// </summary>
+    public bool HasPermission(UserPermission permission)
+    {
+        var current = CurrentPermissions;
+        return current is null || (current.Value & permission) == permission;
+    }
+
     public DesktopSignInResult SignIn(string username, string password)
     {
         if (!IsConfigured)
