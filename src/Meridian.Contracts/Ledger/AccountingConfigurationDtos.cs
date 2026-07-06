@@ -141,7 +141,10 @@ public enum ManualJournalEntryTypeDto
     Subscription = 11,
     Redemption = 12,
     LpTransfer = 13,
-    ManagementFee = 14
+    ManagementFee = 14,
+
+    /// <summary>Period-close closing entries rolling temporary balances into retained earnings.</summary>
+    ClosingEntry = 15
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalFundEventLedgerReadinessDto>))]

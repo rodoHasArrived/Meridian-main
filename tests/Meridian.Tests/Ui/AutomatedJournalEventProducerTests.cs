@@ -4,6 +4,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Ui.Shared.Services;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -148,6 +149,74 @@ public sealed class AutomatedJournalEventProducerTests
         production.Events.Should().ContainSingle("one unresolved ticker must not block the rest of the batch");
     }
 
+    [Fact]
+    public async Task DividendProducer_WithholdingRate_AccruesPairedWithholdingTax()
+    {
+        var dividend = DividendAction(AaplSecurityId, new DateOnly(2026, 07, 02), 0.26m);
+        var securityMaster = new FakeSecurityMasterQueryService(
+            tickerToSecurityId: new Dictionary<string, Guid> { ["AAPL"] = AaplSecurityId },
+            corporateActions: [dividend]);
+        var producer = new CorporateActionDividendEventProducer(securityMaster);
+
+        var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
+            [new DividendAccrualPosition("AAPL", Quantity: 400m)],
+            new DateOnly(2026, 07, 01),
+            new DateOnly(2026, 07, 31),
+            AsOf,
+            WithholdingTaxRate: 0.15m));
+
+        production.Skipped.Should().BeEmpty();
+        production.Events.Should().HaveCount(2);
+
+        var declared = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.DividendDeclared);
+        declared.Amount.Should().Be(104.00m);
+
+        var withholding = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.WithholdingTaxAccrued);
+        withholding.Amount.Should().Be(15.60m, "withholding is the rate applied to the declared dividend amount");
+        withholding.SourceEventId.Should().Be(dividend.CorpActId.ToString("N"));
+        withholding.EffectiveDate.Should().Be(declared.EffectiveDate);
+        withholding.IdempotencyKey.Should().Be(
+            FormattableString.Invariant($"corp-act-dividend-wht|{dividend.CorpActId:N}|-"),
+            "the withholding idempotency key must differ from the dividend key so both drafts intake");
+        withholding.EvidenceReferences.Should().NotBeEmpty("withholding inherits the corporate-action evidence");
+    }
+
+    [Fact]
+    public async Task DividendProducer_ZeroWithholdingRate_ProducesNoWithholdingEvents()
+    {
+        var dividend = DividendAction(AaplSecurityId, new DateOnly(2026, 07, 02), 0.26m);
+        var securityMaster = new FakeSecurityMasterQueryService(
+            tickerToSecurityId: new Dictionary<string, Guid> { ["AAPL"] = AaplSecurityId },
+            corporateActions: [dividend]);
+        var producer = new CorporateActionDividendEventProducer(securityMaster);
+
+        var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
+            [new DividendAccrualPosition("AAPL", 400m)],
+            new DateOnly(2026, 07, 01),
+            new DateOnly(2026, 07, 31),
+            AsOf));
+
+        production.Events.Should().OnlyContain(e => e.Kind == AutomatedJournalEventKind.DividendDeclared);
+    }
+
+    [Fact]
+    public async Task DividendProducer_InvalidWithholdingRate_Throws()
+    {
+        var securityMaster = new FakeSecurityMasterQueryService(
+            tickerToSecurityId: new Dictionary<string, Guid>(),
+            corporateActions: []);
+        var producer = new CorporateActionDividendEventProducer(securityMaster);
+
+        var act = () => producer.ProduceAsync(new CorporateActionDividendRequest(
+            [new DividendAccrualPosition("AAPL", 400m)],
+            new DateOnly(2026, 07, 01),
+            new DateOnly(2026, 07, 31),
+            AsOf,
+            WithholdingTaxRate: 1m));
+
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+    }
+
     // -------------------------------------------------------------------------
     // AutomatedJournalIntakeRunner — producers land drafts in the queue
     // -------------------------------------------------------------------------
@@ -252,7 +321,8 @@ public sealed class AutomatedJournalEventProducerTests
                 Node("Expenses:Management Fee Expense", "Management Fee Expense", "Expense"),
                 Node("Liabilities:Management Fee Payable", "Management Fee Payable", "Liability"),
                 Node("Expenses:Performance Fee Expense", "Performance Fee Expense", "Expense"),
-                Node("Liabilities:Performance Fee Payable", "Performance Fee Payable", "Liability")
+                Node("Liabilities:Performance Fee Payable", "Performance Fee Payable", "Liability"),
+                Node("Equity:Retained Earnings", "Retained Earnings", "Equity")
             ],
             JournalTemplates: [],
             PostingRules: [],
@@ -270,6 +340,232 @@ public sealed class AutomatedJournalEventProducerTests
         return new IntakeFixture(
             new AutomatedJournalDraftIntakeService(workbench, draftStore, configurationService),
             workbench);
+    }
+
+    // -------------------------------------------------------------------------
+    // AutomatedJournalIntakeRunner — period-close closing entries
+    // -------------------------------------------------------------------------
+
+    private static readonly Guid ClosedPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly DateOnly PeriodEndDate = new(2026, 6, 30);
+
+    private static ILedgerBookService LedgerBookServiceWithClosedPeriod(
+        params LedgerPeriodTrialBalanceLineDto[] trialBalance)
+        => LedgerBookServiceWithClosedPeriod(BookId, trialBalance);
+
+    private static ILedgerBookService LedgerBookServiceWithClosedPeriod(
+        Guid ledgerBookId,
+        params LedgerPeriodTrialBalanceLineDto[] trialBalance)
+    {
+        var summary = new LedgerPeriodSummaryDto(
+            PeriodId: ClosedPeriodId,
+            LedgerBookId: ledgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 6,
+            Label: "2026-06",
+            TrialBalance: trialBalance,
+            TotalDebits: trialBalance.Sum(line => line.DebitTotal),
+            TotalCredits: trialBalance.Sum(line => line.CreditTotal),
+            NetIncome: 0m,
+            PeriodOnPeriodVariance: null,
+            OpenBreakCount: 0,
+            SignoffStatus: LedgerPeriodSignoffStatusDto.Pending,
+            // A soft close reports the current time, not a persisted close date; the runner must
+            // ignore this and date closing entries to the period end date instead.
+            CompletedAt: DateTimeOffset.UtcNow);
+
+        var period = new LedgerPeriodDto(
+            PeriodId: ClosedPeriodId,
+            LedgerBookId: ledgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 6,
+            Label: "2026-06",
+            StartDate: new DateOnly(2026, 6, 1),
+            EndDate: PeriodEndDate,
+            Status: LedgerPeriodStatusDto.SoftClosed,
+            OpenedAt: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            ClosedAt: null,
+            Version: 1);
+
+        var service = Substitute.For<ILedgerBookService>();
+        service.GetPeriodSummaryAsync(ClosedPeriodId, Arg.Any<CancellationToken>()).Returns(summary);
+        service.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { period });
+        return service;
+    }
+
+    private static LedgerPeriodTrialBalanceLineDto TrialBalanceLine(
+        string accountName, string accountType, decimal debits, decimal credits, decimal balance,
+        LedgerDimensionSetDto? dimensions = null)
+        => new(accountName, accountType, Symbol: null, FinancialAccountId: null,
+            DebitTotal: debits, CreditTotal: credits, Balance: balance, EntryCount: 1,
+            Dimensions: dimensions);
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_PreservesDimensionSplitClosingLines()
+    {
+        var fixture = CreateIntakeFixture();
+        // The same revenue account under two entities must close to two dimension-scoped lines,
+        // not a single aggregate, so entity-level P&L and retained earnings stay correct.
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m,
+                new LedgerDimensionSetDto(EntityId: "entity-a")),
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 120m, 120m,
+                new LedgerDimensionSetDto(EntityId: "entity-b")));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId, BookId));
+
+        var draft = result.Intake.Created.Should().ContainSingle().Subject;
+        draft.Lines.Should().HaveCount(4,
+            "two dimension-scoped revenue closings plus two dimension-scoped retained-earnings rolls");
+        draft.Lines.Should().Contain(line =>
+            line.Dimensions != null && line.Dimensions.EntityId == "entity-a" && line.Amount == 300m);
+        draft.Lines.Should().Contain(line =>
+            line.Dimensions != null && line.Dimensions.EntityId == "entity-b" && line.Amount == 120m);
+        draft.Lines.Where(line => line.Dimensions != null && line.Dimensions.EntityId == "entity-a")
+            .Should().HaveCount(2, "the entity-a revenue close and its retained-earnings roll both carry the entity scope");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_LandsClosingEntryDraftInWorkbenchQueue()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Cash", "Asset", 500m, 0m, 500m),
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m),
+            TrialBalanceLine("Management Fee Expense", "Expense", 200m, 0m, 200m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            FundProfileId: "fund-alpha",
+            Currency: "USD",
+            Actor: "fund-controller",
+            PeriodId: ClosedPeriodId,
+            LedgerBookId: BookId));
+
+        result.ProducerSkips.Should().BeEmpty();
+        var draft = result.Intake.Created.Should().ContainSingle().Subject;
+        draft.Status.Should().Be(ManualJournalEntryStatusDto.Draft,
+            "revenue, expense, and retained-earnings accounts must all map onto the chart");
+        draft.Memo.Should().Contain("Period-close closing entries");
+        draft.Lines.Should().HaveCount(3,
+            "closing zeroes the revenue and expense accounts and rolls net income to retained earnings");
+        draft.Lines.Sum(line => line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m)
+            .Should().Be(draft.Lines.Sum(line => line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m));
+        draft.AccountingDate.Should().Be(PeriodEndDate,
+            "closing entries are dated to the period end date, not the soft-close/run time");
+        draft.EntryType.Should().Be(ManualJournalEntryTypeDto.ClosingEntry,
+            "the ClosingEntry type drives the ClosingEntry posting kind so the close can post into the closed period");
+
+        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        workbench.Drafts.Should().ContainSingle(
+            "the closing-entry draft must be visible in the close cockpit's queue");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_WithoutRequestBookId_BindsDraftToPeriodBook()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        // No LedgerBookId supplied on the request; the draft must still bind to the period's book.
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId));
+
+        result.Intake.Created.Should().ContainSingle();
+        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        workbench.Drafts.Should().ContainSingle(
+            "the closing-entry draft must land under the period's ledger book, not an unscoped queue");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_MismatchedBookId_FailsLoudly()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var act = () => runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId,
+            LedgerBookId: Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc")));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*belongs to book*");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_SecondRun_SkipsDuplicateInsteadOfDoublingTheClose()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+        var request = new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId, BookId);
+
+        var first = await runner.RunPeriodCloseIntakeAsync(request);
+        var second = await runner.RunPeriodCloseIntakeAsync(request);
+
+        first.Intake.Created.Should().ContainSingle();
+        second.Intake.Created.Should().BeEmpty();
+        second.Intake.Skipped.Should().ContainSingle()
+            .Which.Reason.Should().Contain("already exists");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_OpenOrMissingPeriod_FailsLoudly()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = Substitute.For<ILedgerBookService>();
+        bookService.GetPeriodSummaryAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((LedgerPeriodSummaryDto?)null);
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var act = () => runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*close the period before running closing entries*");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_WithoutLedgerBookService_FailsLoudly()
+    {
+        var fixture = CreateIntakeFixture();
+        var runner = new AutomatedJournalIntakeRunner(fixture.Intake, new FeeScheduleAccrualEventProducer());
+
+        var act = () => runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*ledger book service*");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_NoTemporaryBalances_ReturnsEmptyIntake()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Cash", "Asset", 500m, 0m, 500m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId, BookId));
+
+        result.Intake.Created.Should().BeEmpty("a period with no temporary-account balances has nothing to close");
+        result.Intake.Skipped.Should().BeEmpty();
     }
 
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)

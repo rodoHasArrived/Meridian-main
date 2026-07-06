@@ -30,8 +30,12 @@ import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
-import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
+import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
+import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pane-window";
+import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
+import { applyDensity, writeStoredDensity } from "@/lib/density";
+import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +72,7 @@ const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
+const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
@@ -269,6 +274,25 @@ function AppShell() {
     const baseRoute = `${pathname}${removeOperatingScopeFromSearch(search)}`;
     const scopeState = buildOperatingScopeFromSearch("", compacted);
     navigate(`${appendOperatingScopeToRoute(baseRoute, scopeState)}${hash}`, { replace: true });
+  };
+
+  // Replay a saved layout: apply density and operating scope, re-open the recorded
+  // companion panes, then navigate the captured route. Window placement across
+  // monitors is browser-permission-limited, so a restored pop-out may open where the
+  // browser chooses and be dragged once — the arrangement otherwise restores whole.
+  const handleRestoreLayout = (plan: LayoutRestorePlan) => {
+    writeStoredDensity(plan.density);
+    applyDensity(plan.density);
+
+    const compacted = compactOperatingScope(plan.operatingScope);
+    suppressScopePersistRef.current = false;
+    writeStoredOperatingScope(compacted);
+    setStoredOperatingScope(compacted);
+
+    setOpenCompanionPaneIds(plan.panes);
+    plan.panes.forEach((paneId) => openCompanionPane(paneId));
+
+    navigate(plan.route);
   };
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
@@ -484,6 +508,11 @@ function AppShell() {
           <WorkspaceHeader
             actions={(
               <>
+                <LayoutSwitcher
+                  route={`${pathname}${search}`}
+                  operatingScope={operatingScopeInput}
+                  onRestore={handleRestoreLayout}
+                />
                 <CopyLinkButton />
                 <SaveViewButton
                   workflowLibrary={workflowLibrary}
@@ -529,6 +558,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen

@@ -452,7 +452,9 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         portfolioExport.Rows.Should().Contain(row =>
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
-            row["shadowNav"] == "2000");
+            // Shadow NAV is the consolidated NAV (assets - liabilities) from the NAV
+            // attribution service, not the sum of every account's normal balance.
+            row["shadowNav"] == "1000");
         portfolioExport.RowLineage.Should().NotBeNull();
         portfolioExport.Export.RowLineageCount.Should().Be(portfolioExport.RowLineage!.Count);
         var warehouseExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(

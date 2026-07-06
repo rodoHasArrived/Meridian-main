@@ -33,9 +33,9 @@ analysis of 2026-07-05, with dated update notes where the premise has changed. C
 | 3 | Unified data quality + browser dashboard | Partially done | The Data workspace now renders `DataQualityRegion` over `/api/quality/dashboard`. Remaining: unifying the three scoring subsystems behind one composite health model, and contextual gap actions (one-click backfill). |
 | 4 | Backfill feedback loop | Done | `OnProgressUpdate` is raised with subscriber-failure guards; SLA metadata is typed (`BackfillRemediationSlaDecision`/`Metadata`/`Status`); the remediation provider is an options default rather than hard-coded. |
 | 5 | Failure & rate-limit hardening | Partially done | `DataSourceRegistry` now records activation/registration failures via `RecordFailure`. Remaining: typed rate-limit detection (string matching on `"429"`/`"rate limit"` still present in the composite), streaming-side rate-limit tracking, and confirming registration failures surface in the provider catalog UI. |
-| 6 | Mark-to-market wiring | Largely done | `DailyMarkToMarketService` runs `DailyPortfolioPricingProjector` into governed drafts, with tests. Remaining: `NavAttributionService` still computes `totalNav` as a sum of all component balances rather than assets − liabilities, and NAV consumption of the marked book needs end-to-end verification. |
-| 7 | Automated journal drafts | Partially done | Corporate-action/dividend event producers and draft intake shipped (`AutomatedJournalEventKind`, `DurableAutomatedJournalPoster`, `AutomatedJournalDraftIntakeService`). Remaining: management/performance-fee and withholding-tax accrual producers on a schedule. |
-| 8 | Closing entries + retained-earnings roll | Projector built, unwired | `PeriodCloseProjector`/`PeriodCloseDraftBuilder` now exist in `Meridian.Ledger` but have no callers outside the library — the hard-close sequence in close management does not yet invoke them. |
+| 6 | Mark-to-market wiring | Done (2026-07-06) | `DailyMarkToMarketService` runs `DailyPortfolioPricingProjector` into governed drafts, with tests. `NavAttributionService` now computes NAV as assets − liabilities (with `ByAssetClass` decomposing that total), covered by `NavAttributionServiceTests`. |
+| 7 | Automated journal drafts | Done (2026-07-06) | Corporate-action/dividend producers, management/performance-fee accrual (`FeeScheduleAccrualEventProducer` + `RunFeeAccrualIntakeAsync` + endpoint), and dividend withholding-tax accrual (`WithholdingTaxRate` on the dividend intake lane) all land governed drafts in the workbench queue. Operator/cockpit-triggered; recurring scheduling remains optional follow-on. |
+| 8 | Closing entries + retained-earnings roll | Done (2026-07-06) | `AutomatedJournalIntakeRunner.RunPeriodCloseIntakeAsync` projects closing entries from a closed period's trial balance and lands the governed draft in the workbench queue via `/api/ledger/journal-automation/period-close-intake`; open periods are rejected loudly. |
 | 9 | One ledger spine | Open | `DurableAutomatedJournalPoster` is the emerging draft-posting seam, but hydration of read surfaces from `ILedgerJournalStore`, as-of indexing, and the F#/C# enum-ordinal guard test have not started. |
 | 10 | Fill-to-ledger durability | Done | `LedgerPostingConsumer.Publish` now blocks on channel capacity (`WaitToWriteAsync` loop) instead of dropping fills, with a regression test covering the full-channel case. |
 
@@ -217,6 +217,12 @@ Tradeoffs: progress events on the hot fallback path must be cheap and never bloc
 through the existing event-pipeline policy channels, drop-oldest). The SLA metadata migration
 touches persisted execution logs — route through the WAL/`AtomicFileWriter` patterns and keep the
 parser as fallback for old records.
+
+> **Update (2026-07-06):** implemented — `CompositeHistoricalDataProvider` raises progress through
+> `RaiseProgress`, `AutoGapRemediationService` stores typed `BackfillRemediationSlaMetadata`
+> records, and the remediation provider comes from `AutoGapRemediationPolicy.DefaultProvider`
+> rather than a hard-coded call-site. This lane is done; the narrative above is the point-in-time
+> analysis, not a work list.
 
 ### 5. Provider Failure & Rate-Limit Hardening
 

@@ -799,6 +799,7 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
+    public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
@@ -894,6 +895,10 @@ public static class UiApiRoutes
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
+
+    // Portfolio-wide cash ladder and liquidity scenarios
+    public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
+    public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
 
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
