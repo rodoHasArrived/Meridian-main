@@ -42,6 +42,15 @@ import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, Close
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
+  ChartAccountPathBuilder,
+  ConfigureActivationRail,
+  ConfigureChangePreviewPanel,
+  ConfigureCommandBar,
+  ConfigureComboField,
+  ConfigureKeyValueField,
+  LedgerBookSetupWizard
+} from "@/screens/accounting-screen.configure-panel";
+import {
   buildAccountingSectionVisibility,
   buildAccountingTaskMode,
   resolveAccountingWorkstream
@@ -6307,6 +6316,10 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </div>
       </div>
 
+      <ConfigureCommandBar />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
       {view.errorText ? (
         <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
           <div className="font-semibold">{view.errorText}</div>
@@ -6318,7 +6331,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {view.metricRows.map((metric) => (
           <div key={metric.id} className="panel-surface px-4 py-3">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
@@ -6349,12 +6362,13 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         >
           {view.createLedgerBookButtonLabel}
         </Button>
+        <LedgerBookSetupWizard view={view} />
         {view.createLedgerBookStatusText ? (
           <p className="text-xs leading-5 text-muted-foreground">{view.createLedgerBookStatusText}</p>
         ) : null}
       </div>
 
-      <Card className="panel-surface" aria-labelledby="accounting-ledger-books-heading">
+      <Card id="configure-section-books" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-ledger-books-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -6410,7 +6424,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </CardContent>
       </Card>
 
-      <Card className="panel-surface" aria-labelledby="accounting-chart-account-editor-heading">
+      <Card id="configure-section-chart" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-chart-account-editor-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -6483,13 +6497,14 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               />
             </FormRow>
           </div>
+          <ChartAccountPathBuilder editor={view.chartAccountEditor} />
           {view.chartAccountEditor.statusText ? (
             <p className="text-sm text-muted-foreground">{view.chartAccountEditor.statusText}</p>
           ) : null}
         </CardContent>
       </Card>
 
-      <Card className="panel-surface" aria-labelledby="accounting-production-readiness-heading">
+      <Card id="configure-section-mappings" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-production-readiness-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -6703,22 +6718,22 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                     onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ displayName: event.currentTarget.value })}
                   />
                 </FormRow>
-                <FormRow label="Workflow kind" labelFor="accounting-approval-queue-workflow-kind">
-                  <Input
-                    id="accounting-approval-queue-workflow-kind"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.workflowKindValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ workflowKind: event.currentTarget.value })}
-                  />
-                </FormRow>
+                <ConfigureComboField
+                  id="accounting-approval-queue-workflow-kind"
+                  label="Workflow kind"
+                  value={view.tenantAdministrationProfile.approvalQueueSetup.workflowKindValue}
+                  onChange={(next) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ workflowKind: next })}
+                  options={["JournalApproval", "PostingApproval", "CloseApproval", "ReconciliationApproval"]}
+                />
               </div>
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_8rem_minmax(0,1.5fr)]">
-                <FormRow label="Approval role" labelFor="accounting-approval-queue-role">
-                  <Input
-                    id="accounting-approval-queue-role"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.requiredApprovalRoleValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ requiredApprovalRole: event.currentTarget.value })}
-                  />
-                </FormRow>
+                <ConfigureComboField
+                  id="accounting-approval-queue-role"
+                  label="Approval role"
+                  value={view.tenantAdministrationProfile.approvalQueueSetup.requiredApprovalRoleValue}
+                  onChange={(next) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ requiredApprovalRole: next })}
+                  options={["Controller", "FundAccountant", "Reviewer", "Approver", "Administrator"]}
+                />
                 <FormRow label="Count" labelFor="accounting-approval-queue-count">
                   <Input
                     id="accounting-approval-queue-count"
@@ -6736,13 +6751,13 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                   />
                 </FormRow>
               </div>
-              <FormRow label="Segregation policy" labelFor="accounting-approval-queue-segregation">
-                <Input
-                  id="accounting-approval-queue-segregation"
-                  value={view.tenantAdministrationProfile.approvalQueueSetup.segregationPolicyValue}
-                  onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ segregationPolicy: event.currentTarget.value })}
-                />
-              </FormRow>
+              <ConfigureComboField
+                id="accounting-approval-queue-segregation"
+                label="Segregation policy"
+                value={view.tenantAdministrationProfile.approvalQueueSetup.segregationPolicyValue}
+                onChange={(next) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ segregationPolicy: next })}
+                options={["MakerChecker", "DualControl", "SegregatedDuties", "None"]}
+              />
             </div>
             <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting dimension mapping setup editor">
               <div className="text-xs font-semibold uppercase text-muted-foreground">Dimension mapping setup</div>
@@ -6770,24 +6785,54 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                 </FormRow>
               </div>
               <div className="grid gap-3 lg:grid-cols-2">
-                <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
-                  <textarea
-                    id="accounting-dimension-mapping-meridian-dimensions"
+                <div className="space-y-2">
+                  <ConfigureKeyValueField
+                    id="accounting-dimension-mapping-meridian-dimensions-editor"
+                    label="Meridian dimensions"
                     value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
-                    className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                    placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
+                    onChange={(next) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: next })}
+                    keyPlaceholder="fundId"
+                    valuePlaceholder="fund-alpha"
+                    addLabel="Add dimension"
+                    description="Structured key=value dimension entries."
                   />
-                </FormRow>
-                <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
-                  <textarea
-                    id="accounting-dimension-mapping-provider-dimensions"
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
+                    <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
+                      <textarea
+                        id="accounting-dimension-mapping-meridian-dimensions"
+                        value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
+                        onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
+                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                        placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
+                      />
+                    </FormRow>
+                  </details>
+                </div>
+                <div className="space-y-2">
+                  <ConfigureKeyValueField
+                    id="accounting-dimension-mapping-provider-dimensions-editor"
+                    label="Provider dimensions"
                     value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
-                    className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                    placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
+                    onChange={(next) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: next })}
+                    keyPlaceholder="Class"
+                    valuePlaceholder="fund-alpha"
+                    addLabel="Add dimension"
+                    description="Structured key=value provider dimension entries."
                   />
-                </FormRow>
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
+                    <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
+                      <textarea
+                        id="accounting-dimension-mapping-provider-dimensions"
+                        value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
+                        onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
+                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                        placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
+                      />
+                    </FormRow>
+                  </details>
+                </div>
               </div>
               <FormRow label="Evidence requirement" labelFor="accounting-dimension-mapping-evidence">
                 <Input
@@ -6858,15 +6903,30 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               </FormRow>
             </div>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
-                <textarea
-                  id="accounting-external-gl-account-mappings"
+              <div className="space-y-2">
+                <ConfigureKeyValueField
+                  id="accounting-external-gl-account-mappings-editor"
+                  label="Account mappings"
                   value={view.externalGlMappingProfile.accountMappingsValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="Meridian:Account=external-account-id"
+                  onChange={(next) => view.externalGlMappingProfile.updateAccountMappings(next)}
+                  keyPlaceholder="Meridian:Account"
+                  valuePlaceholder="external-account-id"
+                  addLabel="Add mapping"
+                  description="Map each Meridian account to its external GL account id."
                 />
-              </FormRow>
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
+                  <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
+                    <textarea
+                      id="accounting-external-gl-account-mappings"
+                      value={view.externalGlMappingProfile.accountMappingsValue}
+                      onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
+                      className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                      placeholder="Meridian:Account=external-account-id"
+                    />
+                  </FormRow>
+                </details>
+              </div>
               <FormRow label="Retained mapping evidence" labelFor="accounting-external-gl-mapping-evidence">
                 <textarea
                   id="accounting-external-gl-mapping-evidence"
@@ -6878,24 +6938,54 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               </FormRow>
             </div>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
-                <textarea
-                  id="accounting-external-gl-meridian-dimensions"
+              <div className="space-y-2">
+                <ConfigureKeyValueField
+                  id="accounting-external-gl-meridian-dimensions-editor"
+                  label="Meridian dimensions"
                   value={view.externalGlMappingProfile.meridianDimensionsValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
-                  className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
+                  onChange={(next) => view.externalGlMappingProfile.updateMeridianDimensions(next)}
+                  keyPlaceholder="fundId"
+                  valuePlaceholder="fund-alpha"
+                  addLabel="Add dimension"
+                  description="Structured key=value dimension entries."
                 />
-              </FormRow>
-              <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
-                <textarea
-                  id="accounting-external-gl-provider-dimensions"
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
+                  <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
+                    <textarea
+                      id="accounting-external-gl-meridian-dimensions"
+                      value={view.externalGlMappingProfile.meridianDimensionsValue}
+                      onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
+                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                      placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
+                    />
+                  </FormRow>
+                </details>
+              </div>
+              <div className="space-y-2">
+                <ConfigureKeyValueField
+                  id="accounting-external-gl-provider-dimensions-editor"
+                  label="External dimensions"
                   value={view.externalGlMappingProfile.externalDimensionsValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
-                  className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
+                  onChange={(next) => view.externalGlMappingProfile.updateExternalDimensions(next)}
+                  keyPlaceholder="Class"
+                  valuePlaceholder="fund-alpha"
+                  addLabel="Add dimension"
+                  description="Structured key=value external dimension entries."
                 />
-              </FormRow>
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
+                  <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
+                    <textarea
+                      id="accounting-external-gl-provider-dimensions"
+                      value={view.externalGlMappingProfile.externalDimensionsValue}
+                      onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
+                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                      placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
+                    />
+                  </FormRow>
+                </details>
+              </div>
             </div>
             <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground">
               <input
@@ -7022,7 +7112,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </CardContent>
       </Card>
 
-      <Card className="panel-surface">
+      <Card id="configure-section-rules" className="panel-surface configure-anchor scroll-mt-20">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -7497,6 +7587,11 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           </CardContent>
         </Card>
+      </div>
+
+          <ConfigureChangePreviewPanel view={view} />
+        </div>
+        <ConfigureActivationRail view={view} />
       </div>
     </section>
   );
