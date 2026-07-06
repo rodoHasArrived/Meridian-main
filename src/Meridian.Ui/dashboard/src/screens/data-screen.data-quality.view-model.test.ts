@@ -167,3 +167,29 @@ describe("useDataQualityPanel", () => {
     expect(result.current.model?.overallLabel).toBe("88.0%");
   });
 });
+
+describe("useDataQualityPanel stale-failure handling", () => {
+  it("does not clobber a newer success when an older superseded request fails", async () => {
+    const resolvers: Array<(value: QualityDashboardResponse) => void> = [];
+    const rejecters: Array<(reason: unknown) => void> = [];
+    const fetchDashboard = () =>
+      new Promise<QualityDashboardResponse>((resolve, reject) => {
+        resolvers.push(resolve);
+        rejecters.push(reject);
+      });
+
+    const { result } = renderHook(() => useDataQualityPanel(fetchDashboard));
+    await act(async () => {
+      void result.current.refresh(); // second, superseding request
+    });
+
+    await act(async () => {
+      resolvers[1]?.(response({ overallScore: 77, completenessScore: 77, freshnessScore: 77 }));
+      rejecters[0]?.(new Error("stale failure")); // older request fails late
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBeNull();
+    expect(result.current.model?.overallLabel).toBe("77.0%");
+  });
+});

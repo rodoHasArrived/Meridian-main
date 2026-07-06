@@ -168,6 +168,11 @@ export function useDataQualityPanel(
       request.safeSetState(setModel, buildDataQualityPanelModel(response));
       succeed(request);
     } catch (fetchError) {
+      if (!request.isCurrent()) {
+        // A newer refresh superseded this one; discard the stale failure so it
+        // cannot clobber the newer request's state (symmetric with the success path).
+        return;
+      }
       request.safeSetState(setModel, null);
       fail(request, fetchError);
     } finally {
