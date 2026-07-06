@@ -1,10 +1,38 @@
-import { formatCompactCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import type {
   PortfolioCashLadder,
   PortfolioCashLadderBucket,
   PortfolioCashLadderContribution,
   PortfolioCashScenario
 } from "@/types/portfolio-cash-ladder.types";
+
+// The ladder can be denominated in any currency (its base currency, or a contribution's own
+// currency), so all money is rendered through the currency-aware Intl formatter rather than a
+// dollar-only prefix — otherwise a EUR ladder would misleadingly show "$" amounts.
+function formatLadderAmount(value: number, currency: string): string {
+  return formatCurrency(value, { currency, minimumFractionDigits: 0 });
+}
+
+function formatLadderSigned(value: number, currency: string): string {
+  if (!Number.isFinite(value)) {
+    return "—";
+  }
+  const prefix = value > 0 ? "+" : "";
+  return `${prefix}${formatCurrency(value, { currency, minimumFractionDigits: 0 })}`;
+}
+
+function formatLadderCompact(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumFractionDigits: 1
+    }).format(value);
+  } catch {
+    return formatCompactCurrency(value);
+  }
+}
 
 export const CASH_LADDER_CHART_WIDTH = 960;
 export const CASH_LADDER_CHART_HEIGHT = 320;
@@ -111,6 +139,7 @@ export function buildCashLadderChart(ladder: PortfolioCashLadder | null): CashLa
     return null;
   }
 
+  const currency = ladder.baseCurrency;
   const plotLeft = CASH_LADDER_CHART_PADDING.left;
   const plotTop = CASH_LADDER_CHART_PADDING.top;
   const plotWidth = CASH_LADDER_CHART_WIDTH - plotLeft - CASH_LADDER_CHART_PADDING.right;
@@ -149,10 +178,10 @@ export function buildCashLadderChart(ladder: PortfolioCashLadder | null): CashLa
       x,
       width: barWidth,
       segments,
-      netFlowLabel: formatSignedCurrency(bucket.netFlow),
-      cumulativeLabel: formatPrefixedCurrency(bucket.cumulativeCash),
+      netFlowLabel: formatLadderSigned(bucket.netFlow, currency),
+      cumulativeLabel: formatLadderAmount(bucket.cumulativeCash, currency),
       breachesMinimumBalance: bucket.breachesMinimumBalance,
-      ariaLabel: `${bucket.label}: net ${formatSignedCurrency(bucket.netFlow)}, cumulative ${formatPrefixedCurrency(bucket.cumulativeCash)}${bucket.breachesMinimumBalance ? ", below minimum balance" : ""}`
+      ariaLabel: `${bucket.label}: net ${formatLadderSigned(bucket.netFlow, currency)}, cumulative ${formatLadderAmount(bucket.cumulativeCash, currency)}${bucket.breachesMinimumBalance ? ", below minimum balance" : ""}`
     };
   });
 
@@ -173,7 +202,7 @@ export function buildCashLadderChart(ladder: PortfolioCashLadder | null): CashLa
   const step = niceStep((paddedMax - paddedMin) / 5);
   const yTicks: Array<{ y: number; label: string }> = [];
   for (let tick = Math.ceil(paddedMin / step) * step; tick <= paddedMax; tick += step) {
-    yTicks.push({ y: scaleY(tick), label: formatCompactCurrency(tick) });
+    yTicks.push({ y: scaleY(tick), label: formatLadderCompact(tick, currency) });
   }
 
   return { bars, cumulativePoints, cumulativeMarkers, zeroLineY, thresholdY, thresholdBand, yTicks };
@@ -256,7 +285,7 @@ function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
     flowType: row.flowType,
     sourceLane: row.sourceLane,
     dueDate: row.dueDate,
-    amountLabel: formatSignedCurrency(row.amount),
+    amountLabel: formatLadderSigned(row.amount, row.currency),
     amountTone: row.amount >= 0 ? "success" : "danger",
     currency: row.currency,
     projectionRunId: row.projectionRunId ? row.projectionRunId.slice(0, 8) : "—",
@@ -280,6 +309,7 @@ export function selectSummaryCards(ladder: PortfolioCashLadder | null): CashLadd
     return [];
   }
 
+  const currency = ladder.baseCurrency;
   const totalInflows = ladder.buckets.reduce((sum, bucket) => sum + bucket.inflows, 0);
   const totalOutflows = ladder.buckets.reduce((sum, bucket) => sum + bucket.outflows, 0);
   const breachCount = ladder.buckets.filter((bucket) => bucket.breachesMinimumBalance).length;
@@ -291,28 +321,28 @@ export function selectSummaryCards(ladder: PortfolioCashLadder | null): CashLadd
     {
       id: "opening-cash",
       label: "Opening cash",
-      value: formatPrefixedCurrency(ladder.openingCash),
+      value: formatLadderAmount(ladder.openingCash, currency),
       tone: "default",
       detail: `${ladder.baseCurrency} · as of ${ladder.asOfDate}`
     },
     {
       id: "projected-inflows",
       label: `Inflows (${ladder.horizonDays}d)`,
-      value: formatPrefixedCurrency(totalInflows),
+      value: formatLadderAmount(totalInflows, currency),
       tone: "success",
       detail: `${ladder.securitiesWithFlows} of ${ladder.securitiesEvaluated} positions contributing`
     },
     {
       id: "projected-outflows",
       label: `Outflows (${ladder.horizonDays}d)`,
-      value: formatPrefixedCurrency(Math.abs(totalOutflows)),
+      value: formatLadderAmount(Math.abs(totalOutflows), currency),
       tone: totalOutflows < 0 ? "warning" : "default",
       detail: "Capital activity, expenses, and scenario outflows"
     },
     {
       id: "ending-cash",
       label: "Projected ending cash",
-      value: formatPrefixedCurrency(endingCash),
+      value: formatLadderAmount(endingCash, currency),
       tone: breachCount > 0 ? "danger" : "success",
       detail: breachCount > 0
         ? `${breachCount} bucket${breachCount === 1 ? "" : "s"} below minimum balance`
