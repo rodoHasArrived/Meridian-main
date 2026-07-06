@@ -291,7 +291,9 @@ export function generateLayoutId(): string {
   if (cryptoRef?.randomUUID) {
     return `layout-${cryptoRef.randomUUID()}`;
   }
-  return `layout-${Math.abs(hashString(String(Date.now()) + JSON.stringify(Object.keys(COMPANION_PANES))))}`;
+  // Fold in Math.random() so rapid successive calls in the same millisecond do not
+  // collide (the crypto path above is preferred wherever available).
+  return `layout-${Math.abs(hashString(`${Date.now()}-${Math.random()}`))}`;
 }
 
 function hashString(text: string): number {

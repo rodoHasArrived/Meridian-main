@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **212**
+Total items: **213**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -103,6 +103,7 @@ Total items: **212**
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6070 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
+| `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 128 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 141 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 437 | `NOTE` | ❌ | note: "Matches issuer relations and SEC 8-K references. Amount amended from $2.75 at board confirmation.", |

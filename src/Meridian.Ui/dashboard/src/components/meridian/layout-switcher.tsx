@@ -53,8 +53,8 @@ export function LayoutSwitcher({
   operatingScope,
   onRestore,
   storage,
-  readDensity = readStoredDensity,
-  readPanes = () => readOpenCompanionPaneIds(),
+  readDensity = () => readStoredDensity(undefined, storage),
+  readPanes = () => readOpenCompanionPaneIds(storage),
   generateId = generateLayoutId
 }: LayoutSwitcherProps) {
   const toast = useToast();
