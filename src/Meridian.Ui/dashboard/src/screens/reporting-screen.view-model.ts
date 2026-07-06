@@ -15,7 +15,7 @@ import {
   isReportPackRoute,
   type ReportingTaskModeViewModel
 } from "@/screens/reporting-screen.task-mode-view-model";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -556,6 +556,43 @@ export interface ReportingLoadingState {
   routeLabel: string;
 }
 
+export interface ReportingStarterSeedScheduleViewModel {
+  id: string;
+  templateId: string;
+  cadence: string;
+  stateLabel: string;
+  description: string;
+  deliveryTargetSummary: string;
+}
+
+export interface ReportingStarterKitCardViewModel {
+  id: string;
+  title: string;
+  archetype: string;
+  description: string;
+  templateNames: string[];
+  templateSummary: string;
+  defaultPeriodLabel: string;
+  layoutLabel: string;
+  seedScheduleSummary: string;
+  seedSchedules: ReportingStarterSeedScheduleViewModel[];
+  actionLabel: string;
+  actionAriaLabel: string;
+  isSelected: boolean;
+}
+
+export interface ReportingStarterKitPanelViewModel {
+  showChooser: boolean;
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ReportingBadgeVariant;
+  hasCards: boolean;
+  cards: ReportingStarterKitCardViewModel[];
+  selectedSummary: string;
+  enabledTemplateSummary: string;
+}
+
 export {
   buildReportingTaskMode,
   isReportPackRoute
@@ -582,6 +619,7 @@ export interface ReportingScreenViewModel {
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
   accessAudit: ReportingAccessAuditViewModel;
+  starterKitPanel: ReportingStarterKitPanelViewModel;
   templateRows: ReportingTemplateRow[];
   runStatusRows: ReportingRunStatusRow[];
   hasRunStatusRows: boolean;
@@ -724,6 +762,7 @@ export function useReportingScreenViewModel(
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
       accessAudit: buildReportingAccessAudit(null),
+      starterKitPanel: buildReportingStarterKitPanel(null),
       templateRows: [],
       runStatusRows: [],
       hasRunStatusRows: false,
@@ -854,6 +893,7 @@ export function useReportingScreenViewModel(
   const scheduleRows = buildScheduleRows(reporting.schedules ?? [], reporting.reportWriterDatasetSources ?? []);
   const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
   const accessAudit = buildReportingAccessAudit(reporting);
+  const starterKitPanel = buildReportingStarterKitPanel(reporting);
 
   return {
     title: "Report packs",
@@ -873,6 +913,7 @@ export function useReportingScreenViewModel(
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
     accessAudit,
+    starterKitPanel,
     templateRows,
     runStatusRows,
     hasRunStatusRows: runStatusRows.length > 0,
@@ -1077,6 +1118,71 @@ function countRestatementEvidence(selected: ReportingWorkflowRecord | null, chan
   }
 
   return changedLines.reduce((total, line) => total + (line.evidenceLinks?.length ?? 0), 0);
+}
+
+function buildReportingStarterKitPanel(
+  reporting: GovernanceReportingSummary | null
+): ReportingStarterKitPanelViewModel {
+  const kits = reporting?.starterKits ?? [];
+  const state = reporting?.starterKitState ?? null;
+  const templateNames = new Map(
+    (reporting?.templates ?? []).map((template) => [template.templateId, template.name])
+  );
+  const cards = kits.map((kit) => buildReportingStarterKitCard(kit, templateNames, state?.selectedKitId ?? null));
+  const isProvisioned = state?.isProvisioned === true;
+  const selected = cards.find((card) => card.isSelected) ?? null;
+  const enabledCount = state?.enabledTemplateIds?.length ?? 0;
+
+  return {
+    showChooser: kits.length > 0 && !isProvisioned,
+    title: "Set up your reporting desk",
+    description: "Choose an editable starter kit to enable the first report templates, lay out the hub, and create draft schedules.",
+    statusLabel: isProvisioned ? `${state?.archetype ?? "Starter kit"} provisioned` : "Starter kit not selected",
+    statusVariant: isProvisioned ? "success" : "outline",
+    hasCards: cards.length > 0,
+    cards,
+    selectedSummary: selected
+      ? `${selected.title} uses ${selected.templateSummary.toLowerCase()} and ${selected.seedScheduleSummary.toLowerCase()}.`
+      : "No reporting starter kit has been provisioned.",
+    enabledTemplateSummary: enabledCount > 0
+      ? `${enabledCount} starter template${enabledCount === 1 ? "" : "s"} enabled.`
+      : "No starter templates enabled yet."
+  };
+}
+
+function buildReportingStarterKitCard(
+  kit: ReportingStarterKit,
+  templateNames: Map<string, string>,
+  selectedKitId: string | null
+): ReportingStarterKitCardViewModel {
+  const names = kit.templateIds.map((templateId) => templateNames.get(templateId) ?? formatStarterTemplateId(templateId));
+  const seedSchedules = kit.seedSchedules.map((schedule) => buildStarterSeedSchedule(schedule));
+  return {
+    id: kit.kitId,
+    title: kit.displayName,
+    archetype: kit.archetype,
+    description: kit.description,
+    templateNames: names,
+    templateSummary: `${names.length} template${names.length === 1 ? "" : "s"}`,
+    defaultPeriodLabel: formatStarterPeriod(kit.defaultPeriod),
+    layoutLabel: kit.defaultLayoutId,
+    seedScheduleSummary: `${seedSchedules.length} draft schedule${seedSchedules.length === 1 ? "" : "s"}`,
+    seedSchedules,
+    actionLabel: `Use ${kit.displayName}`,
+    actionAriaLabel: `Use ${kit.displayName} starter kit`,
+    isSelected: selectedKitId === kit.kitId
+  };
+}
+
+function buildStarterSeedSchedule(schedule: ReportingStarterSeedSchedule): ReportingStarterSeedScheduleViewModel {
+  return {
+    id: schedule.scheduleId,
+    templateId: schedule.templateId,
+    cadence: schedule.cadence,
+    stateLabel: schedule.state ?? "Draft",
+    description: schedule.description,
+    deliveryTargetSummary: formatStarterDeliveryTargets(schedule.deliveryTargets)
+  };
 }
 
 export function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
@@ -1958,6 +2064,43 @@ function formatScheduleDeliveryTarget(target: ReportingScheduleDeliveryTarget): 
     : "Pdf/Xlsx/Csv";
   const mode = target.deliveryMode ?? "Policy";
   return `${target.distributionId} via ${mode} (${formats})`;
+}
+
+function formatStarterDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
+  if (!targets || targets.length === 0) {
+    return "Delivery targets need review";
+  }
+
+  return targets.map(formatScheduleDeliveryTarget).join("; ");
+}
+
+function formatStarterPeriod(period: string | null | undefined): string {
+  if (!period) {
+    return "Default period";
+  }
+
+  const normalized = period.trim();
+  if (normalized === "CurrentMonth") {
+    return "Current month";
+  }
+
+  if (normalized === "CurrentQuarter") {
+    return "Current quarter";
+  }
+
+  if (normalized === "CurrentBusinessDay") {
+    return "Current business day";
+  }
+
+  return normalized.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function formatStarterTemplateId(templateId: string): string {
+  return templateId
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function formatTimestamp(value: string): string {

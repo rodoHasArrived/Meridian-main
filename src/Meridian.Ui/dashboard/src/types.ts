@@ -5666,6 +5666,46 @@ export interface ReportingDueScheduleRunResult {
   runs: ReportingScheduleRunResult[];
 }
 
+export interface ReportingStarterSeedSchedule {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  cadence: string;
+  description: string;
+  state?: ReportingScheduleRecord["state"] | string;
+  defaultPeriod?: string | null;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
+}
+
+export interface ReportingStarterKit {
+  kitId: string;
+  archetype: string;
+  displayName: string;
+  description: string;
+  templateIds: string[];
+  defaultLayoutId: string;
+  defaultPeriod: string;
+  seedSchedules: ReportingStarterSeedSchedule[];
+}
+
+export interface ReportingStarterKitState {
+  isProvisioned: boolean;
+  selectedKitId?: string | null;
+  archetype?: string | null;
+  enabledTemplateIds: string[];
+  defaultLayoutId?: string | null;
+  defaultPeriod?: string | null;
+  seedScheduleIds: string[];
+  provisionedAtUtc?: string | null;
+  provisionedBy?: string | null;
+}
+
+export interface ReportingStarterKitProvisionResult {
+  kit: ReportingStarterKit;
+  state: ReportingStarterKitState;
+  seededSchedules: ReportingScheduleRecord[];
+}
+
 export interface ReportingRunRequest {
   templateId: string;
   asOfDate?: string | null;
@@ -5839,6 +5879,8 @@ export interface AccountingReportingSummary {
   brandingThemes?: ReportBrandingTheme[];
   reportWriterDatasetSources?: ReportWriterDatasetSource[];
   dailyWork?: ReportingDailyWorkItem[];
+  starterKits?: ReportingStarterKit[] | null;
+  starterKitState?: ReportingStarterKitState | null;
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];

@@ -1027,6 +1027,13 @@ fund workspace view, also filter schedule rows, `scheduleDeliveryPlans`, and `De
 through the visible template/workflow set for the current `ReportAccessQueryContext`, so
 unauthorized users cannot infer locked schedule recipients, delivery modes, due dates, package
 links, or delivery status from the read model.
+`ReportingStarterKitService` resolves the Reporting module starter-kit catalog, persists the
+selected editable starter state, and provisions seed schedules through `ReportingScheduleService`
+with `Draft` state instead of bypassing schedule governance. The
+`/api/fund-structure/reporting/starter-kits` and
+`/api/fund-structure/reporting/starter-kits/{kitId}/provision` endpoints require the same reporting
+read/workflow permissions as the surrounding Reporting API, and `ReportPackRunReadService` carries
+both the starter kit catalog and selected kit state in `WorkstationReportingPayload`.
 Approved custom report-writer templates carry their saved grid definitions into the reporting
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain

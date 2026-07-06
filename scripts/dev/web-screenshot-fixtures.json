@@ -2013,6 +2013,132 @@
         }
       ]
     },
+    "/api/portfolio/cash-ladder": {
+      "engineVersion": "portfolio-cash-ladder-v1",
+      "asOfDate": "2026-07-05",
+      "horizonDays": 14,
+      "baseCurrency": "USD",
+      "scenarioId": "base",
+      "openingCash": 50000,
+      "minimumCashThreshold": 10000,
+      "buckets": [
+        {
+          "bucketStart": "2026-07-05",
+          "bucketEnd": "2026-07-11",
+          "label": "Jul 5 - Jul 11",
+          "inflows": 3500,
+          "outflows": -1000,
+          "netFlow": 2500,
+          "cumulativeCash": 52500,
+          "breachesMinimumBalance": false,
+          "sources": [
+            {
+              "source": "Coupons & interest",
+              "amount": 3500,
+              "flowCount": 2
+            },
+            {
+              "source": "Capital activity",
+              "amount": -1000,
+              "flowCount": 1
+            }
+          ]
+        },
+        {
+          "bucketStart": "2026-07-12",
+          "bucketEnd": "2026-07-18",
+          "label": "Jul 12 - Jul 18",
+          "inflows": 0,
+          "outflows": -48000,
+          "netFlow": -48000,
+          "cumulativeCash": 4500,
+          "breachesMinimumBalance": true,
+          "sources": [
+            {
+              "source": "Capital activity",
+              "amount": -48000,
+              "flowCount": 1
+            }
+          ]
+        }
+      ],
+      "contributions": [
+        {
+          "securityId": "sec-fixture-bond-1",
+          "displayName": "Meridian 5.875% 2031",
+          "assetClass": "Bond",
+          "projectionRunId": "11111111-2222-3333-4444-555555555555",
+          "projectionEngineVersion": "asset-obligation-projection-v1",
+          "termsVersionId": "66666666-7777-8888-9999-000000000000",
+          "termsHash": "security-master:3",
+          "sourceDomain": "SecurityMaster",
+          "sourceEntityId": "sec-fixture-bond-1",
+          "flowType": "Coupon",
+          "sourceLane": "Coupons & interest",
+          "dueDate": "2026-07-10",
+          "amount": 3500,
+          "currency": "USD",
+          "baseAmount": 3500,
+          "scenarioAdjustment": null
+        },
+        {
+          "securityId": "fixture-investor-redemption",
+          "displayName": "Investor redemption",
+          "assetClass": "CapitalActivity",
+          "projectionRunId": null,
+          "projectionEngineVersion": null,
+          "termsVersionId": null,
+          "termsHash": null,
+          "sourceDomain": "PartnershipLedger",
+          "sourceEntityId": "inv-1",
+          "flowType": "Redemption",
+          "sourceLane": "Capital activity",
+          "dueDate": "2026-07-14",
+          "amount": -48000,
+          "currency": "USD",
+          "baseAmount": -48000,
+          "scenarioAdjustment": "Adverse move applied."
+        }
+      ],
+      "availableScenarios": [
+        {
+          "scenarioId": "base",
+          "displayName": "Base projection",
+          "description": "No stress applied; contractual flows and retained capital activity remain unchanged.",
+          "modeledEffects": [
+            "Contractual coupons and maturities",
+            "Retained capital activity"
+          ],
+          "assumptions": [
+            "1:1 FX translation",
+            "No new purchases or withdrawals"
+          ]
+        },
+        {
+          "scenarioId": "early-call",
+          "displayName": "Early call",
+          "description": "Callable instruments are redeemed at the earliest eligible date.",
+          "modeledEffects": [
+            "Callable bond principal returns sooner",
+            "Later coupons are removed"
+          ],
+          "assumptions": [
+            "Par call treatment",
+            "No reinvestment"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Quantities use current portfolio holdings.",
+        "Projection terms are read-only screenshot fixtures."
+      ],
+      "warnings": [
+        "One bucket breaches the minimum balance threshold."
+      ],
+      "generatedAt": "2026-07-05T12:00:00Z",
+      "securitiesEvaluated": 3,
+      "securitiesWithFlows": 1
+    },
     "/api/workstation/workflows": {
       "generatedAt": "2026-04-28T18:15:00Z",
       "workflows": [

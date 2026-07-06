@@ -496,6 +496,11 @@ retained sources server-side when callers do not embed explicit `datasetRows`. G
 run payloads and manifests retain the resolved report-writer dataset source id, label, and row
 count so audit cards, delivery packages, and downstream evidence consumers can prove which governed
 dataset powered a no-code report-writer output.
+`ReportingStarterKitDto`, `ReportingStarterKitStateDto`, and
+`ReportingStarterKitProvisionResultDto` describe editable Reporting desk presets in the shared
+contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
+selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
+seeded for review but should not run until an operator activates them.
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
