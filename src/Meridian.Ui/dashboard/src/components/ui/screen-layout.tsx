@@ -214,12 +214,15 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
       aria-labelledby={titleId}
       {...props}
     >
-      {/* 1. Header zone — title, scope, primary actions (always top-right). */}
+      {/* 1. Header zone — title, scope, primary actions (always top-right).
+          The title is an <h2>: the app shell's WorkspaceHeader owns the page
+          <h1>, and screen content (Card titles, etc.) sits at <h3>, so <h2>
+          keeps the document heading order valid (h1 → h2 → h3). */}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+          <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
             {title}
-          </h1>
+          </h2>
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
           {description ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
         </div>

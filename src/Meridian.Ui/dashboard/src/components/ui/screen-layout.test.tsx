@@ -15,7 +15,8 @@ describe("ScreenLayout", () => {
       </ScreenLayout>
     );
 
-    const heading = screen.getByRole("heading", { level: 1, name: "Trial Balance" });
+    // The app shell owns the page <h1>; a screen title is an <h2> beneath it.
+    const heading = screen.getByRole("heading", { level: 2, name: "Trial Balance" });
     expect(heading).toBeInTheDocument();
     expect(screen.getByText("All entities · Primary GL")).toBeInTheDocument();
 
