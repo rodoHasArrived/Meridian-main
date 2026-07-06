@@ -87,6 +87,20 @@ describe("ScreenLayout", () => {
     expect(screen.queryByRole("region", { name: "Focus" })).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["false", false],
+    ["empty string", ""]
+  ])("does not render empty focus/context chrome when a zone resolves to %s", (_label, value) => {
+    // `focus`/`context` are ReactNode, so `cond && <X/>` can pass `false`.
+    render(
+      <ScreenLayout title="Screen" focus={value} context={value} contextOpen contextLabel="Detail">
+        <div>work</div>
+      </ScreenLayout>
+    );
+    expect(screen.queryByRole("region", { name: "Focus" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Detail" })).not.toBeInTheDocument();
+  });
+
   it("renders the work zone children", () => {
     render(
       <ScreenLayout title="Screen">

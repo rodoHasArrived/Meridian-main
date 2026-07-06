@@ -117,6 +117,15 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   onContextClose?: () => void;
 }
 
+/**
+ * True when a node would actually render something. `ReactNode` admits `false`,
+ * `null`, `undefined`, and `""` — all of which render nothing — so zones use this
+ * to avoid drawing their chrome (border, header, toggle) around empty content.
+ */
+function isRenderableNode(node: unknown): boolean {
+  return node != null && node !== false && node !== "";
+}
+
 function isFocusSignalArray(value: unknown): value is FocusSignal[] {
   return (
     Array.isArray(value) &&
@@ -172,14 +181,17 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
   const focusRegionId = `${reactId}-focus`;
   const [focusCollapsed, setFocusCollapsed] = useState(focusDefaultCollapsed);
 
-  const hasFocus = focus != null && (!Array.isArray(focus) || focus.length > 0);
+  // `focus`/`context` are `ReactNode`, so a caller writing `focus={cond && <X/>}`
+  // can pass `false` (or `""`). Those are `!= null`, so guard them explicitly or
+  // the zone chrome (border, header, toggle) renders around empty content.
+  const hasFocus = isRenderableNode(focus) && (!Array.isArray(focus) || focus.length > 0);
   const focusBody = hasFocus
     ? isFocusSignalArray(focus)
       ? <FocusSignalRow signals={focus} />
       : focus
     : null;
 
-  const showContext = contextOpen && context != null;
+  const showContext = contextOpen && isRenderableNode(context);
 
   return (
     <div
