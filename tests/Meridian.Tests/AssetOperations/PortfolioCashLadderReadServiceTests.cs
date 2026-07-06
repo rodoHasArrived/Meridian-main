@@ -89,6 +89,30 @@ public sealed class PortfolioCashLadderReadServiceTests
     }
 
     [Fact]
+    public async Task GetCashLadderAsync_FallbackWithMoreThanCapActiveSubjects_WarnsAboutCap()
+    {
+        const int cap = 500;
+        var summaries = Enumerable.Range(0, cap + 1)
+            .Select(i => new SecuritySummaryDto(Guid.NewGuid(), "Bond", SecurityStatusDto.Active, $"Bond {i}", $"CUSIP:{i}", "USD", 1))
+            .ToArray();
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.SearchAsync(Arg.Any<SecuritySearchRequest>(), Arg.Any<CancellationToken>())
+            .Returns(summaries);
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => BuildDetail(callInfo.ArgAt<Guid>(0), "Active Bond", couponAmount: 100m));
+
+        var service = new PortfolioCashLadderReadService(
+            securityMasterQueryService: securityMaster,
+            assetOperationsQueryService: assetOperations);
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
+
+        ladder.Warnings.Should().ContainMatch($"*More than {cap} active Security Master subjects exist*");
+        ladder.SecuritiesEvaluated.Should().Be(cap);
+    }
+
+    [Fact]
     public async Task GetCashLadderAsync_WhenHeldSecurityHasNoProjection_WarnsInsteadOfSilentlyDropping()
     {
         var projectableId = Guid.NewGuid();
