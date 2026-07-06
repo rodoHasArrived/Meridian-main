@@ -64,6 +64,30 @@ public sealed class PortfolioCashLadderReadServiceTests
         ladder.Warnings.Should().ContainMatch("*No holdings source is wired*");
     }
 
+    [Fact]
+    public async Task GetCashLadderAsync_WhenHoldingsExceedCap_WarnsAboutOmittedSecurities()
+    {
+        const int cap = 500;
+        var holdings = Enumerable.Range(0, cap + 25)
+            .Select(_ => new PortfolioHoldingDto(Guid.NewGuid(), 1m))
+            .ToArray();
+        var holdingsSource = Substitute.For<IPortfolioHoldingsSource>();
+        holdingsSource.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(holdings);
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((AssetOperationsDetailDto?)null);
+
+        var service = new PortfolioCashLadderReadService(
+            assetOperationsQueryService: assetOperations,
+            holdingsSource: holdingsSource);
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
+
+        ladder.Warnings.Should().ContainMatch($"*first {cap} of {cap + 25} held securities*")
+            .And.ContainMatch("*25 were omitted*");
+    }
+
     private static AssetOperationsDetailDto BuildDetail(Guid securityId, string displayName, decimal couponAmount)
     {
         var runId = Guid.NewGuid();

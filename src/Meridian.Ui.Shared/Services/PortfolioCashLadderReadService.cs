@@ -92,6 +92,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         // them by the real position quantity. Fall back to enumerating active Security
         // Master subjects at unit quantity only when no holdings source is wired, and
         // make that overstatement visible rather than silent.
+        var notices = new List<string>();
         if (_holdingsSource is not null)
         {
             var holdings = await _holdingsSource.GetHoldingsAsync(asOf, ct).ConfigureAwait(false);
@@ -99,37 +100,52 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
                 .Where(static holding => holding.Quantity != 0m)
                 .GroupBy(static holding => holding.SecurityId)
                 .ToDictionary(static group => group.Key, static group => group.Sum(static holding => holding.Quantity));
-            var positions = await ProjectAsync(heldQuantities.Keys, heldQuantities, ct).ConfigureAwait(false);
-            return (positions, []);
+            var positions = await ProjectAsync(heldQuantities.Keys.ToArray(), heldQuantities, notices, "held securities", ct)
+                .ConfigureAwait(false);
+            return (positions, notices);
         }
 
         if (_securityMasterQueryService is null)
         {
-            return ([], []);
+            return ([], notices);
         }
 
         var summaries = await _securityMasterQueryService
             .SearchAsync(new SecuritySearchRequest(string.Empty, Take: MaxSecurities, ActiveOnly: true), ct)
             .ConfigureAwait(false);
         var fallbackPositions = await ProjectAsync(
-            summaries.Select(static summary => summary.SecurityId),
+            summaries.Select(static summary => summary.SecurityId).ToArray(),
             heldQuantities: null,
+            notices,
+            "active Security Master subjects",
             ct).ConfigureAwait(false);
-        var notices = fallbackPositions.Count == 0
-            ? (IReadOnlyList<string>)[]
-            : [
+        if (fallbackPositions.Count > 0)
+        {
+            notices.Add(
                 "No holdings source is wired: the ladder forecasts every active Security Master subject at unit quantity, "
-                + "not the portfolio's actual holdings, so projected inflows and minimum-balance breaches may be overstated."
-            ];
+                + "not the portfolio's actual holdings, so projected inflows and minimum-balance breaches may be overstated.");
+        }
+
         return (fallbackPositions, notices);
     }
 
     private async Task<IReadOnlyList<PortfolioCashLadderPositionDto>> ProjectAsync(
-        IEnumerable<Guid> securityIds,
+        IReadOnlyCollection<Guid> securityIds,
         IReadOnlyDictionary<Guid, decimal>? heldQuantities,
+        List<string> notices,
+        string sourceLabel,
         CancellationToken ct)
     {
-        var ids = securityIds.Distinct().Take(MaxSecurities).ToArray();
+        var distinct = securityIds.Distinct().ToArray();
+        var ids = distinct.Take(MaxSecurities).ToArray();
+        var omitted = distinct.Length - ids.Length;
+        if (omitted > 0)
+        {
+            notices.Add(
+                $"Only the first {MaxSecurities} of {distinct.Length} {sourceLabel} were projected; "
+                + $"{omitted} were omitted, so later coupons/principal and any resulting liquidity breaches for them are not shown.");
+        }
+
         var positions = new List<PortfolioCashLadderPositionDto>(ids.Length);
         foreach (var batch in ids.Chunk(ProjectionBatchSize))
         {

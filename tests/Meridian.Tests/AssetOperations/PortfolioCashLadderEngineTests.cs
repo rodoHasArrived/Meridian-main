@@ -80,8 +80,11 @@ public sealed class PortfolioCashLadderEngineTests
 
         var ladder = PortfolioCashLadderEngine.Build(inputs);
 
-        ladder.Buckets.Take(5).Should().OnlyContain(static bucket => bucket.BreachesMinimumBalance);
-        ladder.Buckets.Skip(5).Should().OnlyContain(static bucket => !bucket.BreachesMinimumBalance);
+        // The maturity lands mid-bucket 5 (days 35-41), but that bucket opens at 5k — below the 10k
+        // minimum — until the inflow arrives, so its intra-bucket trough still breaches. Buckets
+        // 0-5 breach; only from bucket 6 (after the recovered 105k balance) is the minimum cleared.
+        ladder.Buckets.Take(6).Should().OnlyContain(static bucket => bucket.BreachesMinimumBalance);
+        ladder.Buckets.Skip(6).Should().OnlyContain(static bucket => !bucket.BreachesMinimumBalance);
     }
 
     [Fact]
@@ -104,6 +107,79 @@ public sealed class PortfolioCashLadderEngineTests
         ladder.Contributions.Single(static row => row.FlowType == "Contribution").Amount.Should().Be(15_000m);
         ladder.Contributions.Should().OnlyContain(static row => row.SourceLane == "Capital activity");
         ladder.Warnings.Should().ContainMatch("*Mystery*excluded*");
+    }
+
+    [Fact]
+    public void Build_FlagsBreachFromIntraBucketTroughEvenWhenBucketNetsPositive()
+    {
+        // Day-1 redemption drives cash to -50k before a day-6 coupon restores it; the bucket nets
+        // flat but the mid-bucket trough must still register a breach.
+        var position = BuildPosition("Coupon Bond", "Bond", [("Coupon", AsOf.AddDays(6), 150_000m)]);
+        var inputs = BuildInputs(
+            positions: [position],
+            cashBalances: [new PortfolioCashBalanceDto("op-cash", "Operating cash", 100_000m, "USD", "Ledger", null)],
+            capitalActivity:
+            [
+                new PortfolioCapitalActivityDto(
+                    Guid.NewGuid(), "Redemption", AsOf.AddDays(1), 150_000m, "USD", "PartnershipLedger", "inv-1", "Redemption")
+            ],
+            minimumCashThreshold: 0m);
+
+        var ladder = PortfolioCashLadderEngine.Build(inputs);
+
+        var firstBucket = ladder.Buckets[0];
+        firstBucket.NetFlow.Should().Be(0m);
+        firstBucket.CumulativeCash.Should().Be(100_000m);
+        firstBucket.BreachesMinimumBalance.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Build_EarlyCallScenario_ReadsCallDateFromPascalCaseNestedTerms()
+    {
+        var callDate = AsOf.AddDays(30);
+        var position = BuildPosition(
+            "Nested Terms Callable",
+            "Bond",
+            [("Maturity", AsOf.AddDays(60), 100_000m)],
+            termsPayload: new { AssetSpecificTerms = new { callDate = callDate.ToString("yyyy-MM-dd") } });
+
+        var ladder = PortfolioCashLadderEngine.Build(
+            BuildInputs(positions: [position]),
+            PortfolioCashLadderEngine.EarlyCallScenarioId);
+
+        // The call date lives under PascalCase "AssetSpecificTerms"; a case-sensitive read would miss
+        // it and leave the security unchanged.
+        var call = ladder.Contributions.Should().ContainSingle(static row => row.FlowType == "CallRedemption").Subject;
+        call.DueDate.Should().Be(callDate);
+        call.Amount.Should().Be(100_000m);
+    }
+
+    [Fact]
+    public void Build_EarlyCallScenario_AggregatesPrincipalAcrossDuplicatePositionLots()
+    {
+        var callDate = AsOf.AddDays(30);
+        var securityId = Guid.NewGuid();
+        var lotA = BuildPosition(
+            "Lot A",
+            "Bond",
+            [("Maturity", AsOf.AddDays(60), 100_000m)],
+            termsPayload: new { callDate = callDate.ToString("yyyy-MM-dd") },
+            securityIdOverride: securityId) with { Quantity = 1m };
+        var lotB = BuildPosition(
+            "Lot B",
+            "Bond",
+            [("Maturity", AsOf.AddDays(60), 100_000m)],
+            termsPayload: new { callDate = callDate.ToString("yyyy-MM-dd") },
+            securityIdOverride: securityId) with { Quantity = 3m };
+
+        var ladder = PortfolioCashLadderEngine.Build(
+            BuildInputs(positions: [lotA, lotB]),
+            PortfolioCashLadderEngine.EarlyCallScenarioId);
+
+        // Both lots of the same security must contribute: 100k*1 + 100k*3 = 400k returned at call.
+        var call = ladder.Contributions.Should().ContainSingle(static row => row.FlowType == "CallRedemption").Subject;
+        call.DueDate.Should().Be(callDate);
+        call.Amount.Should().Be(400_000m);
     }
 
     [Fact]
@@ -344,9 +420,10 @@ public sealed class PortfolioCashLadderEngineTests
         IReadOnlyList<(string FlowType, DateOnly DueDate, decimal Amount)> flows,
         object? termsPayload = null,
         string currency = "USD",
-        decimal? annualRate = null)
+        decimal? annualRate = null,
+        Guid? securityIdOverride = null)
     {
-        var securityId = Guid.NewGuid();
+        var securityId = securityIdOverride ?? Guid.NewGuid();
         var projectionRunId = Guid.NewGuid();
         var subject = new AssetOperationSubjectDto(
             securityId,

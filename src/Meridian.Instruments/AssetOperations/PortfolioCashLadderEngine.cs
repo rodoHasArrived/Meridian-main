@@ -409,17 +409,17 @@ public static class PortfolioCashLadderEngine
         DateOnly windowStart,
         DateOnly windowEnd)
     {
-        var calledPositions = new Dictionary<Guid, (PortfolioCashLadderPositionDto Position, DateOnly CallDate)>();
+        var callDateBySecurity = new Dictionary<Guid, DateOnly>();
         foreach (var position in inputs.Positions)
         {
             var callDate = ReadLatestTermsDate(position.Operations, "callDate", "mandatoryPutDate", "preRefundDate");
             if (callDate is { } date && date >= windowStart && date < windowEnd)
             {
-                calledPositions[position.Operations.Subject.SecurityId] = (position, date);
+                callDateBySecurity[position.Operations.Subject.SecurityId] = date;
             }
         }
 
-        if (calledPositions.Count == 0)
+        if (callDateBySecurity.Count == 0)
         {
             return contributions;
         }
@@ -427,23 +427,26 @@ public static class PortfolioCashLadderEngine
         // Drop the in-window coupon/principal rows dated after the call; those obligations
         // no longer occur once the security is redeemed on the call date.
         var result = contributions
-            .Where(row => !(calledPositions.TryGetValue(row.SecurityId, out var called) && row.DueDate > called.CallDate))
+            .Where(row => !(callDateBySecurity.TryGetValue(row.SecurityId, out var callDate) && row.DueDate > callDate))
             .ToList();
 
         // Principal returned on the call date is the outstanding principal — every principal-lane
         // flow due strictly after the call date, taken from the full projection rather than only the
         // in-window rows, so a security whose maturity is beyond the horizon still returns principal
-        // at the call date. Quantity keeps its sign so short positions net correctly.
-        foreach (var (securityId, (position, callDate)) in calledPositions.OrderBy(static pair => pair.Key))
+        // at the call date. Quantity keeps its sign so short positions net correctly. Multiple
+        // positions (e.g. account-level lots) for the same security are accumulated, not overwritten.
+        var pulledPrincipalBySecurity = new Dictionary<Guid, decimal>();
+        var currencyBySecurity = new Dictionary<Guid, string>();
+        var representativeOperations = new Dictionary<Guid, AssetOperationsDetailDto>();
+        foreach (var position in inputs.Positions)
         {
-            var quantity = position.Quantity;
-            if (quantity == 0m)
+            var securityId = position.Operations.Subject.SecurityId;
+            if (!callDateBySecurity.TryGetValue(securityId, out var callDate) || position.Quantity == 0m)
             {
                 continue;
             }
 
-            var currency = inputs.BaseCurrency;
-            var pulledPrincipal = 0m;
+            representativeOperations.TryAdd(securityId, position.Operations);
             foreach (var flow in LatestRunFlows(position.Operations))
             {
                 if (flow.DueDate <= callDate || ResolveInstrumentLane(flow.FlowType) != PrincipalLane)
@@ -451,17 +454,23 @@ public static class PortfolioCashLadderEngine
                     continue;
                 }
 
-                currency = flow.Currency;
-                pulledPrincipal += RoundCash(flow.Amount * quantity * ResolveInstrumentDirection(flow.FlowType));
+                currencyBySecurity[securityId] = flow.Currency;
+                pulledPrincipalBySecurity[securityId] =
+                    pulledPrincipalBySecurity.GetValueOrDefault(securityId)
+                    + RoundCash(flow.Amount * position.Quantity * ResolveInstrumentDirection(flow.FlowType));
             }
+        }
 
-            if (pulledPrincipal == 0m)
+        foreach (var (securityId, pulledPrincipal) in pulledPrincipalBySecurity.OrderBy(static pair => pair.Key))
+        {
+            if (pulledPrincipal == 0m || !representativeOperations.TryGetValue(securityId, out var operations))
             {
                 continue;
             }
 
             var amount = RoundCash(pulledPrincipal);
-            result.Add(BuildCallRedemptionRow(position.Operations, callDate, amount, currency));
+            var currency = currencyBySecurity.GetValueOrDefault(securityId, inputs.BaseCurrency);
+            result.Add(BuildCallRedemptionRow(operations, callDateBySecurity[securityId], amount, currency));
         }
 
         return result;
@@ -618,6 +627,21 @@ public static class PortfolioCashLadderEngine
             var inflows = RoundCash(rows.Where(static row => row.Amount > 0m).Sum(static row => row.Amount));
             var outflows = RoundCash(rows.Where(static row => row.Amount < 0m).Sum(static row => row.Amount));
             var net = RoundCash(inflows + outflows);
+
+            // Track the running balance by due date within the bucket so a large intra-bucket
+            // outflow that is later offset by an inflow still registers a breach; netting the whole
+            // bucket first would hide the trough (e.g. a day-1 redemption covered by a day-6 coupon).
+            var intraBucketMinimum = cumulative;
+            var runningBalance = cumulative;
+            foreach (var row in rows.OrderBy(static row => row.DueDate))
+            {
+                runningBalance = RoundCash(runningBalance + row.Amount);
+                if (runningBalance < intraBucketMinimum)
+                {
+                    intraBucketMinimum = runningBalance;
+                }
+            }
+
             cumulative = RoundCash(cumulative + net);
 
             var sources = rows
@@ -637,7 +661,7 @@ public static class PortfolioCashLadderEngine
                 outflows,
                 net,
                 cumulative,
-                cumulative < minimumCashThreshold,
+                intraBucketMinimum < minimumCashThreshold,
                 sources));
         }
 
@@ -835,17 +859,44 @@ public static class PortfolioCashLadderEngine
         }
 
         yield return payload;
-        if (payload.TryGetProperty("assetSpecificTerms", out var assetSpecificTerms) &&
+        // Nested term objects must be matched case-insensitively: retained Security Master terms
+        // from AssetObligationProjectionService use "AssetSpecificTerms"/"CommonTerms" casing, which a
+        // case-sensitive TryGetProperty would miss, hiding call dates and floating-rate indicators.
+        if (TryGetPropertyIgnoreCase(payload, "assetSpecificTerms", out var assetSpecificTerms) &&
             assetSpecificTerms.ValueKind == JsonValueKind.Object)
         {
             yield return assetSpecificTerms;
+
+            if (TryGetPropertyIgnoreCase(assetSpecificTerms, "profileFields", out var profileFields) &&
+                profileFields.ValueKind == JsonValueKind.Object)
+            {
+                yield return profileFields;
+            }
         }
 
-        if (payload.TryGetProperty("commonTerms", out var commonTerms) &&
+        if (TryGetPropertyIgnoreCase(payload, "commonTerms", out var commonTerms) &&
             commonTerms.ValueKind == JsonValueKind.Object)
         {
             yield return commonTerms;
         }
+    }
+
+    private static bool TryGetPropertyIgnoreCase(JsonElement element, string propertyName, out JsonElement value)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = property.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default;
+        return false;
     }
 
     private static decimal RoundCash(decimal amount)
