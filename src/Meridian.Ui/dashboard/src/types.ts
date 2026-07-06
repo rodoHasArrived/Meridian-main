@@ -7351,6 +7351,8 @@ export interface ManualJournalEntryLine {
   taxLotId?: string | null;
   description?: string | null;
   evidenceLink?: string | null;
+  ledgerAccountSymbol?: string | null;
+  ledgerAccountFinancialAccountId?: string | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {

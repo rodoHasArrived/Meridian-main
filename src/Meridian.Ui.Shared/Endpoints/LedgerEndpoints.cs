@@ -20,6 +20,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class LedgerEndpoints
 {
+    private const string ClosingEntryClientRejectionMessage =
+        "Closing entries are produced by the governed period-close workflow and cannot be submitted as manual journal drafts.";
+
     public static void MapLedgerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapGet(UiApiRoutes.LedgerBooks, async (
@@ -1893,6 +1896,14 @@ public static partial class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            // Closing entries are the sanctioned exception to the closed-period posting bar; only the
+            // in-process period-close automation may produce them. Reject client-submitted ClosingEntry
+            // drafts so this HTTP boundary cannot be used to post to a closed period.
+            if (request.Draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            {
+                return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
+            }
+
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -1942,6 +1953,11 @@ public static partial class LedgerEndpoints
             if (service is null)
             {
                 return ServiceUnavailable();
+            }
+
+            if (request.Draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            {
+                return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
             }
 
             try

@@ -396,10 +396,33 @@ public sealed class AutomatedJournalEventProducerTests
 
     private static LedgerPeriodTrialBalanceLineDto TrialBalanceLine(
         string accountName, string accountType, decimal debits, decimal credits, decimal balance,
-        LedgerDimensionSetDto? dimensions = null)
-        => new(accountName, accountType, Symbol: null, FinancialAccountId: null,
+        LedgerDimensionSetDto? dimensions = null, string? symbol = null, string? financialAccountId = null)
+        => new(accountName, accountType, Symbol: symbol, FinancialAccountId: financialAccountId,
             DebitTotal: debits, CreditTotal: credits, Balance: balance, EntryCount: 1,
             Dimensions: dimensions);
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_PreservesAccountSymbolAndFinancialAccountScope()
+    {
+        var fixture = CreateIntakeFixture();
+        // A financial-account-scoped revenue balance (broker-specific dividend income) must close to
+        // the scoped account so the scoped trial-balance row is zeroed, not an unscoped aggregate.
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 250m, 250m,
+                symbol: "AAPL", financialAccountId: "broker-1"));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId, BookId));
+
+        var draft = result.Intake.Created.Should().ContainSingle().Subject;
+        draft.Lines.Should().Contain(line =>
+            line.LedgerAccountFinancialAccountId == "broker-1" &&
+            line.LedgerAccountSymbol == "AAPL" &&
+            line.Amount == 250m,
+            "the scoped revenue account's identity must survive onto the closing draft line so posting zeroes the scoped balance");
+    }
 
     [Fact]
     public async Task Runner_PeriodCloseIntake_PreservesDimensionSplitClosingLines()
