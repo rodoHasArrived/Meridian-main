@@ -189,7 +189,8 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
                 sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
-                sp.GetService<ISecurityMasterQueryService>()));
+                sp.GetService<ISecurityMasterQueryService>(),
+                sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
 
         // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
         // engine compiles and executes arbitrary C# in-process; enable only on a trusted host.

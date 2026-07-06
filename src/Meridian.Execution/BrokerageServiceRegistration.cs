@@ -39,7 +39,7 @@ public static class BrokerageServiceRegistration
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
             {
                 var paperLogger = sp.GetRequiredService<ILogger<PaperTradingGateway>>();
-                return new PaperTradingGateway(paperLogger);
+                return new PaperTradingGateway(paperLogger, options: sp.GetService<Adapters.PaperTradingGatewayOptions>());
             }
             return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
         });

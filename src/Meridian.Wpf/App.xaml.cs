@@ -255,6 +255,13 @@ public partial class App : System.Windows.Application
         // ILogger<T> infrastructure — must be first so all services can resolve loggers
         services.AddLogging();
 
+        // Operator-tunable connectivity probe timing (bound from "Connectivity:Probes"),
+        // consumed by SetupWizardService TCP reachability checks.
+        services.AddSingleton(
+            Microsoft.Extensions.Configuration.ConfigurationBinder.Get<Meridian.Contracts.Configuration.ConnectivityProbeOptions>(
+                configuration.GetSection(Meridian.Contracts.Configuration.ConnectivityProbeOptions.SectionKey))
+            ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions());
+
         // Shared API infrastructure
         services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
         services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>(_ => WpfServices.WpfRemoteWorkstationClient.Instance);

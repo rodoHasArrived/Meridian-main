@@ -99,6 +99,76 @@ public sealed class ConfigJsonSchemaGenerator
                 }
             }
         };
+
+        properties["PaperTrading"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/PaperTradingHostOptions"
+        });
+
+        _definitions["PaperTradingHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["Gateway"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
+                    }
+                },
+                ["Sessions"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["BaseDirectory"] = AllowNull(CreateTypedSchema("string"))
+                    }
+                }
+            }
+        };
+
+        properties["Status"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/StatusHostOptions"
+        });
+
+        _definitions["StatusHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["SsePublishIntervalMs"] = CreateTypedSchema("integer")
+            }
+        };
+
+        properties["Connectivity"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/ConnectivityHostOptions"
+        });
+
+        _definitions["ConnectivityHostOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["Probes"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["TcpConnectTimeoutMs"] = CreateTypedSchema("integer")
+                    }
+                }
+            }
+        };
     }
 
     /// <summary>
