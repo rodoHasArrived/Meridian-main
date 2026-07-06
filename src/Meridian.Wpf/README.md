@@ -46,6 +46,8 @@ Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden
 an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
 together when a flow resets the input.
 
+Reusable value-adjacent confidence badges use `DataConfidenceIndicator` and `DataConfidenceIndicatorModel` so Portfolio, Accounting, Reporting, and Data screens can display the same Current, Stale, Partial, Reconciled, Unreconciled, Estimated, and Provider Degraded labels with source/provider metadata, freshness, reconciliation status, fallback notes, and click-through explanations sourced from shared evidence or provider read models where available.
+
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
 instead of a generic ledger page. The page opens on compact action chrome instead of a duplicate
