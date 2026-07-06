@@ -762,6 +762,8 @@ export const UI_API_ROUTES = {
   FundAccountBrokerageSyncReconciliationLatest: "/api/fund-accounts/{accountId}/brokerage-sync/reconciliation/latest",
   FundAccountCloseReadiness: "/api/fund-accounts/{accountId}/close-readiness",
   PortfolioCashFlows: "/api/portfolio/{runId}/cash-flows",
+  PortfolioCashLadder: "/api/portfolio/cash-ladder",
+  PortfolioCashLadderScenarios: "/api/portfolio/cash-ladder/scenarios",
   ResilienceCircuitBreakers: "/api/resilience/circuit-breakers",
   BackfillCostEstimate: "/api/backfill/cost-estimate",
   RetentionComplianceReport: "/api/admin/retention/compliance-report",
