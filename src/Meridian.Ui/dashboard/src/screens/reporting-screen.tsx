@@ -66,7 +66,8 @@ import {
 import {
   ExportsReportRunner,
   type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState
+  type ExportsReportRunDraftState,
+  type RestatementTargetSelection
 } from "@/screens/reporting-screen.exports-runner";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
@@ -583,12 +584,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     });
   }
 
-  function updateExportsReportRestatementAuthorized(value: boolean) {
+  function updateExportsReportRestatementTarget(target: RestatementTargetSelection | null) {
     setExportsRunDraft((current) => ({
       ...current,
-      restatementAuthorized: value,
-      // Clear any carried reason when the operator revokes restatement authorization.
-      retryReason: value ? current.retryReason : ""
+      restatementTargetRunId: target?.runId ?? "",
+      restatementTemplateId: target?.templateId ?? "",
+      restatementJobId: target?.jobId ?? "",
+      restatementAsOfDate: target?.asOfDate ?? "",
+      // Clear any carried reason when the operator cancels the restatement.
+      retryReason: target ? current.retryReason : ""
     }));
   }
 
@@ -1935,7 +1939,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester={defaultExportsReportRunRequester}
         onDraftChange={updateExportsReportRunDraft}
-        onRestatementAuthorizedChange={updateExportsReportRestatementAuthorized}
+        onRestatementTargetChange={updateExportsReportRestatementTarget}
         onRun={() => void handleExportsReportRun()}
       />
 
@@ -2992,7 +2996,10 @@ function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceRespons
     requestedBy: defaultExportsReportRunRequester,
     datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting),
     retryReason: "",
-    restatementAuthorized: false
+    restatementTargetRunId: "",
+    restatementTemplateId: "",
+    restatementJobId: "",
+    restatementAsOfDate: ""
   };
 }
 
@@ -3010,16 +3017,26 @@ export function buildExportsReportRunRequest(
   template: ReportingTemplateRow,
   draft: ExportsReportRunDraftState
 ): ReportingRunRequest {
-  const allowRestatement = draft.restatementAuthorized;
-  const retryReason = allowRestatement ? draft.retryReason.trim() || null : null;
+  // Authorized restatement targets a specific released run's series: reuse its job id and as-of
+  // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
+  if (draft.restatementTargetRunId) {
+    return {
+      templateId: draft.restatementTemplateId || template.templateName,
+      jobId: draft.restatementJobId,
+      asOfDate: draft.restatementAsOfDate,
+      maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
+      requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
+      retryReason: draft.retryReason.trim() || null,
+      allowRestatement: true
+    };
+  }
+
   return {
     templateId: template.templateName,
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
-    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
-    retryReason,
-    allowRestatement: allowRestatement || undefined
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
   };
 }
 

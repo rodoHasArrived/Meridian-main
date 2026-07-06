@@ -14,7 +14,8 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   ExportsReportRunner,
   type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState
+  type ExportsReportRunDraftState,
+  type RestatementTargetSelection
 } from "@/screens/reporting-screen.exports-runner";
 import { ReportingCommandStatusView, type ReportingCommandStatus } from "@/screens/reporting-screen.shared-components";
 import {
@@ -72,7 +73,10 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     requestedBy: "browser-user",
     datasetSourceId: "",
     retryReason: "",
-    restatementAuthorized: false
+    restatementTargetRunId: "",
+    restatementTemplateId: "",
+    restatementJobId: "",
+    restatementAsOfDate: ""
   }));
   const [status, setStatus] = useState<ReportingCommandStatus | null>(null);
   const [manualDrafts, setManualDrafts] = useState<ManualJournalEntryDraft[]>([]);
@@ -123,11 +127,14 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
-  const onRestatementAuthorizedChange = (value: boolean) => {
+  const onRestatementTargetChange = (target: RestatementTargetSelection | null) => {
     setDraft((current) => ({
       ...current,
-      restatementAuthorized: value,
-      retryReason: value ? current.retryReason : ""
+      restatementTargetRunId: target?.runId ?? "",
+      restatementTemplateId: target?.templateId ?? "",
+      restatementJobId: target?.jobId ?? "",
+      restatementAsOfDate: target?.asOfDate ?? "",
+      retryReason: target ? current.retryReason : ""
     }));
   };
 
@@ -542,7 +549,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester="browser-user"
         onDraftChange={onDraftChange}
-        onRestatementAuthorizedChange={onRestatementAuthorizedChange}
+        onRestatementTargetChange={onRestatementTargetChange}
         onRun={() => void onRun()}
       />
 

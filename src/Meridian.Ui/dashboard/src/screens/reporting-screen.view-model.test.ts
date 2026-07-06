@@ -5,6 +5,7 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   buildRestatementReviewPanel,
+  deriveRestatementSeriesJobId,
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel
 } from "@/screens/reporting-screen.view-model";
@@ -1567,5 +1568,22 @@ describe("useReportingScreenViewModel", () => {
   it("count label reflects profile count", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.countLabel).toBe("2 profiles");
+  });
+});
+
+describe("deriveRestatementSeriesJobId", () => {
+  it("strips the as-of suffix from the run series id to recover the job id", () => {
+    expect(
+      deriveRestatementSeriesJobId("adhoc-investor-20260504153000123-20260504", "run-id", "2026-05-04")
+    ).toBe("adhoc-investor-20260504153000123");
+  });
+
+  it("falls back to the run id when no series id is present", () => {
+    expect(deriveRestatementSeriesJobId(null, "job-alpha-20260504", "2026-05-04")).toBe("job-alpha");
+  });
+
+  it("returns the series unchanged when the as-of suffix does not match", () => {
+    expect(deriveRestatementSeriesJobId("series-without-date", "run-id", "2026-05-04")).toBe("series-without-date");
+    expect(deriveRestatementSeriesJobId("series-x", "run-id", null)).toBe("series-x");
   });
 });

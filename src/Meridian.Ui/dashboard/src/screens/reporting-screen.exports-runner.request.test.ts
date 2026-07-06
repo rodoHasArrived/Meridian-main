@@ -19,7 +19,10 @@ function draft(overrides: Partial<ExportsReportRunDraftState> = {}): ExportsRepo
     requestedBy: "ops",
     datasetSourceId: "",
     retryReason: "",
-    restatementAuthorized: false,
+    restatementTargetRunId: "",
+    restatementTemplateId: "",
+    restatementJobId: "",
+    restatementAsOfDate: "",
     ...overrides
   };
 }
@@ -29,26 +32,27 @@ describe("buildExportsReportRunRequest restatement authorization", () => {
     const request = buildExportsReportRunRequest(template(), draft());
 
     expect(request.allowRestatement).toBeUndefined();
-    expect(request.retryReason).toBeNull();
+    expect(request.jobId).toBeUndefined();
+    expect(request.retryReason).toBeUndefined();
   });
 
-  it("carries the authorization flag and trimmed reason when a restatement is authorized", () => {
+  it("targets the released run's series and carries the trimmed reason when restating", () => {
     const request = buildExportsReportRunRequest(
-      template(),
-      draft({ restatementAuthorized: true, retryReason: "  Q2 NAV correction  " })
+      template({ templateName: "current-selection" }),
+      draft({
+        restatementTargetRunId: "adhoc-investor-20260504153000123-20260504",
+        restatementTemplateId: "investor-monthly-statement",
+        restatementJobId: "adhoc-investor-20260504153000123",
+        restatementAsOfDate: "2026-05-04",
+        retryReason: "  Q2 NAV correction  "
+      })
     );
 
     expect(request.allowRestatement).toBe(true);
+    // Reuses the target run's series identity, not the currently selected template/as-of.
+    expect(request.jobId).toBe("adhoc-investor-20260504153000123");
+    expect(request.asOfDate).toBe("2026-05-04");
+    expect(request.templateId).toBe("investor-monthly-statement");
     expect(request.retryReason).toBe("Q2 NAV correction");
-  });
-
-  it("does not forward a stale reason when restatement is not authorized", () => {
-    const request = buildExportsReportRunRequest(
-      template(),
-      draft({ restatementAuthorized: false, retryReason: "leftover reason" })
-    );
-
-    expect(request.allowRestatement).toBeUndefined();
-    expect(request.retryReason).toBeNull();
   });
 });
