@@ -3225,7 +3225,9 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationContracts.cs
 │   │   │   └── ProviderIntegrationContractsJsonContext.cs
 │   │   ├── Ledger
+│   │   │   ├── AccountingConfigurationCloseReportingDtos.cs
 │   │   │   ├── AccountingConfigurationDtos.cs
+│   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
@@ -5351,7 +5353,15 @@ Meridian-main
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
-│   │   │   │   │   └── provider-setup.ts
+│   │   │   │   │   ├── provider-setup.ts
+│   │   │   │   │   ├── workstation-1.ts
+│   │   │   │   │   ├── workstation-2.ts
+│   │   │   │   │   ├── workstation-3.ts
+│   │   │   │   │   ├── workstation-4.ts
+│   │   │   │   │   ├── workstation-5.ts
+│   │   │   │   │   ├── workstation-6.ts
+│   │   │   │   │   ├── workstation-7.ts
+│   │   │   │   │   └── workstation-8.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.development-fixture-notice.ts
 │   │   │   │   ├── app-shell.evidence-timeline.ts
@@ -5675,7 +5685,10 @@ Meridian-main
 │   │   │   │   ├── CoveredCallRunProjection.cs
 │   │   │   │   ├── ICoveredCallBacktestService.cs
 │   │   │   │   └── ICoveredCallChainProviderFactory.cs
+│   │   │   ├── AccountingConfigurationService.ActivationValidation.cs
 │   │   │   ├── AccountingConfigurationService.cs
+│   │   │   ├── AccountingConfigurationService.RuleValidation.cs
+│   │   │   ├── AccountingConfigurationStores.cs
 │   │   │   ├── AccountingMigrationRunArtifactStore.cs
 │   │   │   ├── AccountingMigrationRunExecutionService.cs
 │   │   │   ├── AccountingMigrationRunWorkerPlanStore.cs
@@ -5714,6 +5727,9 @@ Meridian-main
 │   │   │   ├── IProviderModuleSetupService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── LedgerDimensionMapper.cs
+│   │   │   ├── ManualJournalEntryDraftStores.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.Lifecycle.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs

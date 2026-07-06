@@ -43,7 +43,6 @@
     "src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.ts": 3492,
     "src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx": 2605,
     "src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.ts": 5355,
-    "src/Meridian.Ui/dashboard/src/types.ts": 11142,
     "src/Meridian.Wpf/ViewModels/Accounting/AccountingCloseViewModel.cs": 2653,
     "src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs": 5545,
     "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs": 3468,
