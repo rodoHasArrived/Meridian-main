@@ -105,6 +105,13 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   // ── Work zone ───────────────────────────────────────────────────────────
   /** The main table / chart / form. Takes the majority of the space. */
   children: ReactNode;
+  /**
+   * Extra classes for the work-zone container. The zone stacks its children with
+   * the standard `space-y-4` rhythm by default (the common "column of cards" case);
+   * pass this to layer on a grid, custom gap, or full-height flex when a screen
+   * needs it.
+   */
+  workClassName?: string;
 
   // ── Context zone ────────────────────────────────────────────────────────
   /** Evidence / detail / provenance for the current selection. */
@@ -168,6 +175,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     focusCollapsible = true,
     focusDefaultCollapsed = false,
     children,
+    workClassName,
     context,
     contextOpen = false,
     contextLabel = "Context",
@@ -193,6 +201,12 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
 
   const showContext = contextOpen && isRenderableNode(context);
 
+  // The work zone stacks its children with `space-y-4` by default, but that
+  // sibling-margin utility misaligns rows when a caller opts into a `grid`/`flex`
+  // (or its own `space-y-*`) via `workClassName` — so skip the default then and
+  // let the override own spacing.
+  const workOverridesLayout = workClassName != null && /(?:^|\s)(grid|flex|columns-|space-y-)/.test(workClassName);
+
   return (
     <div
       ref={ref}
@@ -200,12 +214,15 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
       aria-labelledby={titleId}
       {...props}
     >
-      {/* 1. Header zone — title, scope, primary actions (always top-right). */}
+      {/* 1. Header zone — title, scope, primary actions (always top-right).
+          The title is an <h2>: the app shell's WorkspaceHeader owns the page
+          <h1>, and screen content (Card titles, etc.) sits at <h3>, so <h2>
+          keeps the document heading order valid (h1 → h2 → h3). */}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+          <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
             {title}
-          </h1>
+          </h2>
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
           {description ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
         </div>
@@ -249,8 +266,9 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
             </section>
           ) : null}
 
-          {/* 3. Work zone — the main table / chart / form. */}
-          <div className="min-h-0 flex-1">{children}</div>
+          {/* 3. Work zone — the main table / chart / form. Stacks cards with the
+              standard rhythm by default; a grid/flex `workClassName` opts out. */}
+          <div className={cn("min-h-0 flex-1", !workOverridesLayout && "space-y-4", workClassName)}>{children}</div>
         </div>
 
         {/* 4. Context zone — right rail that slides in on selection. */}
