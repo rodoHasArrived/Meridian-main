@@ -109,6 +109,14 @@ public sealed class CommandPaletteViewModel : BindableBase
             .OrderBy(page => GetPaletteRank(page, query, currentWorkspace))
             .ThenBy(page => page.Title, StringComparer.OrdinalIgnoreCase)
             .Select(page => ToCommandPaletteEntry(page, page.VisibilityTier != ShellNavigationVisibilityTier.Primary))
+            .Concat(GetGlobalCommandEntries()
+                .Where(command => string.IsNullOrWhiteSpace(query)
+                    ? !command.RequiresConfirmation
+                    : MatchesCommandQuery(command, query)))
+            .GroupBy(command => command.PageTag, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.Last())
+            .OrderBy(command => GetCommandRank(command, query, currentWorkspace))
+            .ThenBy(command => command.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
         ReplaceCollection(_pages, descriptors);
@@ -180,6 +188,46 @@ public sealed class CommandPaletteViewModel : BindableBase
                + descriptor.Order;
     }
 
+    private static bool MatchesCommandQuery(ShellCommandPaletteEntry command, string query)
+        => GetCommandSearchFields(command).Any(field => field.Contains(query, StringComparison.OrdinalIgnoreCase));
+
+    private static int GetCommandRank(ShellCommandPaletteEntry command, string query, string currentWorkspace)
+    {
+        var workspacePenalty = string.Equals(command.Workspace, currentWorkspace, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(command.WorkspaceTitle, currentWorkspace, StringComparison.OrdinalIgnoreCase) ? 0 : 100;
+        var riskPenalty = command.RequiresConfirmation ? 50 : 0;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return workspacePenalty + riskPenalty + (command.ExecutionKind == ShellCommandPaletteExecutionKind.SafeNavigation ? 0 : 40);
+        }
+
+        var matchRank = command.DisplayName.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 0
+            : command.PageTag.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 1
+            : command.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ? 2
+            : command.Keywords.Any(keyword => keyword.StartsWith(query, StringComparison.OrdinalIgnoreCase)) ? 3
+            : command.PageTag.Contains(query, StringComparison.OrdinalIgnoreCase) ? 4
+            : command.WorkspaceTitle.Contains(query, StringComparison.OrdinalIgnoreCase) ? 5
+            : command.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ? 6
+            : 8;
+
+        return (matchRank * 1000) + workspacePenalty + riskPenalty;
+    }
+
+    private static IEnumerable<string> GetCommandSearchFields(ShellCommandPaletteEntry command)
+    {
+        yield return command.PageTag;
+        yield return command.DisplayName;
+        yield return command.Description;
+        yield return command.Workspace;
+        yield return command.WorkspaceTitle;
+        yield return command.SectionLabel;
+        yield return command.ExecutionLabel;
+        foreach (var keyword in command.Keywords)
+        {
+            yield return keyword;
+        }
+    }
+
     private static IEnumerable<string> GetPaletteSearchFields(ShellPageDescriptor descriptor, string workspaceTitle)
     {
         yield return descriptor.PageTag;
@@ -205,7 +253,40 @@ public sealed class CommandPaletteViewModel : BindableBase
             WorkspaceTitle: workspaceTitle,
             SectionLabel: descriptor.SectionLabel,
             Glyph: descriptor.Glyph,
-            VisibilityLabel: includeVisibilityLabel ? GetVisibilityLabel(descriptor.VisibilityTier) : string.Empty);
+            VisibilityLabel: includeVisibilityLabel ? GetVisibilityLabel(descriptor.VisibilityTier) : string.Empty,
+            DisplayName: descriptor.Title,
+            Keywords: descriptor.SearchKeywords,
+            Workspace: descriptor.WorkspaceId,
+            Description: descriptor.Subtitle,
+            ExecutionKind: ShellCommandPaletteExecutionKind.SafeNavigation,
+            RequiresConfirmation: false);
+    }
+
+    private static IReadOnlyList<ShellCommandPaletteEntry> GetGlobalCommandEntries() =>
+    [
+        Command("SetupWizard", "Open setup", "Complete guided workstation setup and configuration.", "settings", "Setup", "\uE8B0", ["setup", "wizard", "onboarding", "configuration"]),
+        Command("ProviderHealth", "Open provider health", "Inspect provider reachability, degradation, and recovery guidance.", "data", "Operations Queue", "\uEB51", ["provider", "health", "degraded", "recovery"]),
+        Command("FundReconciliation", "Open reconciliation queues", "Review breaks, match candidates, retained evidence, and close blockers.", "accounting", "Reconciliation", "\uE895", ["reconciliation", "breaks", "exceptions", "queues"]),
+        Command("FundReportPack", "Open report drafts", "Review governed report-pack drafts, readiness, and retained evidence.", "reporting", "Drafts", "\uE8A5", ["report", "draft", "pack", "governed"]),
+        Command("DataSampling", "Open sample-data flows", "Inspect bounded sample data quality before export or publication.", "data", "Sample Data", "\uF1AD", ["sample", "data", "quality", "preview"]),
+        Command("FundStructureSetup", "Open fund setup", "Configure fund structure and account handoff readiness.", "accounting", "Setup", "\uE8B0", ["fund", "setup", "structure", "accounts"]),
+        Command("ActivityLog", "Clear activity log", "Clear retained local workstation activity entries after operator confirmation.", "settings", "Notifications", "\uE74D", ["clear", "activity", "log", "destructive"], ShellCommandPaletteExecutionKind.DestructiveAction, true, "Clear visible workstation activity log entries? This cannot be undone."),
+    ];
+
+    private static ShellCommandPaletteEntry Command(
+        string pageTag,
+        string displayName,
+        string description,
+        string workspaceId,
+        string sectionLabel,
+        string glyph,
+        IReadOnlyList<string> keywords,
+        ShellCommandPaletteExecutionKind executionKind = ShellCommandPaletteExecutionKind.NonDestructiveAction,
+        bool requiresConfirmation = false,
+        string? confirmationPrompt = null)
+    {
+        var workspaceTitle = ShellNavigationCatalog.GetWorkspace(workspaceId)?.Title ?? workspaceId;
+        return new ShellCommandPaletteEntry(pageTag, displayName, description, workspaceTitle, sectionLabel, glyph, string.Empty, displayName, keywords, workspaceId, description, executionKind, requiresConfirmation, confirmationPrompt);
     }
 
     private static string GetVisibilityLabel(ShellNavigationVisibilityTier visibilityTier)

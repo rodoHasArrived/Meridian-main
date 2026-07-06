@@ -172,9 +172,24 @@
                                     <TextBlock Text="{Binding Subtitle}"
                                                Style="{StaticResource ShellNavSubtitleStyle}"
                                                Margin="0,2,0,0" />
-                                    <TextBlock Text="{Binding MetaLine}"
-                                               Style="{StaticResource SidebarShellSectionLabelStyle}"
-                                               Margin="0,4,0,0" />
+                                    <DockPanel Margin="0,4,0,0" LastChildFill="True">
+                                        <Border DockPanel.Dock="Right"
+                                                Padding="6,1"
+                                                CornerRadius="2"
+                                                BorderThickness="1"
+                                                BorderBrush="#D97706"
+                                                Background="#3DD97706"
+                                                Visibility="{Binding IsRiskCommand, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                AutomationProperties.AutomationId="CommandPaletteRiskBadge"
+                                                AutomationProperties.Name="Command Palette Risk Badge">
+                                            <TextBlock Text="Confirm"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#FBBF24" />
+                                        </Border>
+                                        <TextBlock Text="{Binding MetaLine}"
+                                                   Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                    </DockPanel>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>

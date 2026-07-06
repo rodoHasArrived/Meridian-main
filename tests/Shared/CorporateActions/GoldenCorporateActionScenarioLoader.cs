@@ -40,18 +40,8 @@ public static class GoldenCorporateActionScenarioLoader
         return data;
     }
 
-    /// <summary>
-    /// Prefers the fixtures copied beside the test binaries (csproj None items with
-    /// CopyToOutputDirectory), which stays robust in CI and published-artifact runs; falls
-    /// back to a repo-root walk for ad hoc runs where the copy step did not execute.
-    /// </summary>
     public static string FixtureDirectory()
-    {
-        var copied = Path.Combine(AppContext.BaseDirectory, "fixtures", "corporate-actions", "golden");
-        return Directory.Exists(copied)
-            ? copied
-            : Path.Combine(FindRepoRoot(), "tests", "fixtures", "corporate-actions", "golden");
-    }
+        => Path.Combine(FindRepoRoot(), "tests", "fixtures", "corporate-actions", "golden");
 
     private static IReadOnlyList<GoldenCorporateActionScenario> LoadFromDisk()
     {
@@ -106,17 +96,8 @@ public static class GoldenCorporateActionScenarioLoader
         if (string.IsNullOrWhiteSpace(scenario.Ticker))
             throw new InvalidOperationException($"Golden fixture '{path}' has a blank ticker.");
 
-        if (scenario.Actions is null || scenario.Actions.Count == 0)
+        if (scenario.Actions.Count == 0)
             throw new InvalidOperationException($"Golden fixture '{path}' declares no corporate actions.");
-
-        if (scenario.Bars is null)
-            throw new InvalidOperationException($"Golden fixture '{path}' has a null bars collection.");
-
-        if (scenario.InvariantTags is null)
-            throw new InvalidOperationException($"Golden fixture '{path}' has a null invariantTags collection.");
-
-        if (scenario.KnownDefectIds is null)
-            throw new InvalidOperationException($"Golden fixture '{path}' has a null knownDefectIds collection.");
 
         var allowUnknownTypes = scenario.HasTag(GoldenInvariantTags.UnknownEventType);
         var actionIds = scenario.Actions.Select(static a => a.CorpActId).ToHashSet();

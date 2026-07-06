@@ -896,13 +896,32 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void OpenSelectedCommandPalettePage()
     {
-        if (SelectedCommandPalettePage is null)
+        var selectedCommand = SelectedCommandPalettePage;
+        if (selectedCommand is null)
         {
             return;
         }
 
-        NavigateToPage(SelectedCommandPalettePage.PageTag);
+        if (selectedCommand.RequiresConfirmation && !ConfirmCommandPaletteExecution(selectedCommand))
+        {
+            return;
+        }
+
+        NavigateToPage(selectedCommand.PageTag);
         HideCommandPalette();
+    }
+
+    private static bool ConfirmCommandPaletteExecution(ShellCommandPaletteEntry command)
+    {
+        var prompt = string.IsNullOrWhiteSpace(command.ConfirmationPrompt)
+            ? $"Run {command.DisplayName}?"
+            : command.ConfirmationPrompt;
+
+        return MessageBox.Show(
+            prompt,
+            "Confirm command",
+            MessageBoxButton.YesNo,
+            command.ExecutionKind == ShellCommandPaletteExecutionKind.DestructiveAction ? MessageBoxImage.Warning : MessageBoxImage.Question) == MessageBoxResult.Yes;
     }
 
     private void ToggleTickerStrip()
@@ -1946,7 +1965,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             WorkspaceTitle: workspaceTitle,
             SectionLabel: descriptor.SectionLabel,
             Glyph: descriptor.Glyph,
-            VisibilityLabel: includeVisibilityLabel ? GetVisibilityLabel(descriptor.VisibilityTier) : string.Empty);
+            VisibilityLabel: includeVisibilityLabel ? GetVisibilityLabel(descriptor.VisibilityTier) : string.Empty,
+            DisplayName: descriptor.Title,
+            Keywords: descriptor.SearchKeywords,
+            Workspace: descriptor.WorkspaceId,
+            Description: descriptor.Subtitle,
+            ExecutionKind: ShellCommandPaletteExecutionKind.SafeNavigation,
+            RequiresConfirmation: false);
     }
 
     private static string GetVisibilityLabel(ShellNavigationVisibilityTier visibilityTier)

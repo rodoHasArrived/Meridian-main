@@ -70,10 +70,10 @@ public sealed class CorporateActionGoldenAdjustmentTests
     public async Task AdjustPositionAsync_GoldenSplitScenario_ConservesTotalBasis(string scenarioId)
     {
         var (scenario, service) = CreateServiceFor(scenarioId);
-        var earliestSession = scenario.Bars.Count > 0
-            ? scenario.Bars.Min(static bar => bar.SessionDate)
-            : scenario.Actions.Min(static action => action.ExDate);
-        var openedAt = new DateTimeOffset(earliestSession.AddDays(-1), TimeOnly.MinValue, TimeSpan.Zero);
+        var openedAt = new DateTimeOffset(
+            scenario.Bars.Min(static bar => bar.SessionDate).AddDays(-1),
+            TimeOnly.MinValue,
+            TimeSpan.Zero);
 
         var adjustment = await service.AdjustPositionAsync(scenario.Ticker, quantity: 100m, costBasis: 50m, openedAt);
 

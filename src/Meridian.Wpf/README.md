@@ -480,6 +480,7 @@ title onto the reusable control itself so UI automation can address both the con
 parts consistently.
 Standalone command-palette chrome should use the same shell tokens and stable automation IDs instead
 of page-local colors or shadow effects.
+The global command palette opens from the shell with `Ctrl+K` and treats entries as command metadata rather than page labels only: each command carries a display name, keywords, workspace, description, execution kind, and confirmation policy. Safe navigation and non-destructive operator handoffs cover the seven root workspaces plus setup, provider health, reconciliation queues, governed report drafts, sample-data review, and fund setup. Destructive or state-changing entries are visually badged and must confirm before execution.
 High-value workbench pages should migrate through the shared workstation controls before broad
 page sweeps; Strategy Runs now opens on compact action chrome instead of a duplicate hero, uses
 `DenseDataGridControl` plus tabbed inspector panes for run, evidence, comparison, and artifact
