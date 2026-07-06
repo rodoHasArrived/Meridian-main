@@ -15,13 +15,21 @@ public sealed class PaperTradingGateway : IExecutionGateway
     private readonly ILogger<PaperTradingGateway> _logger;
     private readonly ISecurityMasterQueryService? _securityMaster;
     private readonly ConcurrentDictionary<string, TradingParametersDto?> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly decimal _scaffoldMarketFillPrice;
+    private int _scaffoldPriceWarningIssued;
     private bool _connected;
     private int _fillSequence;
 
-    public PaperTradingGateway(ILogger<PaperTradingGateway> logger, ISecurityMasterQueryService? securityMaster = null)
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityMasterQueryService? securityMaster = null,
+        Adapters.PaperTradingGatewayOptions? options = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _securityMaster = securityMaster;
+        var scaffoldPrice = (options ?? new Adapters.PaperTradingGatewayOptions()).ScaffoldMarketFillPrice;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(scaffoldPrice, nameof(options));
+        _scaffoldMarketFillPrice = scaffoldPrice;
     }
 
     /// <inheritdoc />
@@ -66,6 +74,13 @@ public sealed class PaperTradingGateway : IExecutionGateway
         // Market-style orders fill immediately at a simulated price
         if (request.Type is OrderType.Market)
         {
+            // Callers should set a simulated price via LimitPrice; otherwise the
+            // configured scaffold notional price applies (with a one-time warning).
+            if (request.LimitPrice is null)
+            {
+                WarnScaffoldPriceUsed();
+            }
+
             var report = new ExecutionReport
             {
                 OrderId = request.ClientOrderId ?? $"PAPER-{fillSeq}",
@@ -75,7 +90,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
                 OrderStatus = OrderStatus.Filled,
                 OrderQuantity = request.Quantity,
                 FilledQuantity = request.Quantity,
-                FillPrice = request.LimitPrice ?? 0m, // Caller should set simulated price
+                FillPrice = request.LimitPrice ?? _scaffoldMarketFillPrice,
                 Commission = 0m,
                 Timestamp = DateTimeOffset.UtcNow,
                 GatewayOrderId = $"PAPER-{fillSeq}"
@@ -139,6 +154,24 @@ public sealed class PaperTradingGateway : IExecutionGateway
         // Paper gateway doesn't have a persistent stream — reports are returned synchronously
         await Task.CompletedTask;
         yield break;
+    }
+
+    /// <summary>
+    /// Emits a one-time loud warning when a market fill is priced from the scaffold
+    /// notional price instead of a caller-provided simulated price.
+    /// </summary>
+    private void WarnScaffoldPriceUsed()
+    {
+        if (Interlocked.Exchange(ref _scaffoldPriceWarningIssued, 1) != 0)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "Paper execution gateway is filling market orders at the scaffold notional price {ScaffoldPrice}. " +
+            "No live feed price source is wired in, so paper P&L computed from these fills is not meaningful. " +
+            "Tune via configuration section '{SectionKey}' or wire a live feed price source.",
+            _scaffoldMarketFillPrice, Adapters.PaperTradingGatewayOptions.SectionKey);
     }
 
     private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)

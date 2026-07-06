@@ -1,3 +1,5 @@
+using Meridian.Contracts.Api;
+
 namespace Meridian.Application.Commands;
 
 /// <summary>
@@ -718,7 +720,7 @@ SUPPORT:
 ║  QUICKSTART:   Run: ./Meridian --quickstart                ║
 ║  QUICK CHECK:  Run: ./Meridian --quick-check              ║
 ║  START API:    Run: ./Meridian --mode desktop             ║
-║  Local API:    http://localhost:8080                                 ║
+║  Local API:    " + ApiEndpointDefaults.LocalApiBaseUrl + @"                                 ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ");
     }

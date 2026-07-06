@@ -1,6 +1,7 @@
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -282,9 +283,12 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     scheduleDeliveryPlanListLabel: vm.scheduleDeliveryPlanListLabel,
     scheduleDeliveryPlanEmptyText: vm.scheduleDeliveryPlanEmptyText
   };
-  const selectedExportsTemplate = resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft);
   const exportsRunRows = vm.runStatusRows.filter(isExportsOnDemandRun);
   const templateRowsKey = vm.templateRows.map((template) => template.id).join("|");
+  const selectedExportsTemplate = useMemo(
+    () => resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft),
+    [exportsRunDraft.templateRowId, templateRowsKey, vm.templateRows]
+  );
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -353,13 +357,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }, [search, templateRowsKey, vm.templateRows]);
 
   const reflectExportsViewTimer = useRef<number | null>(null);
-  useEffect(() => () => {
-    if (reflectExportsViewTimer.current !== null) {
-      window.clearTimeout(reflectExportsViewTimer.current);
-    }
-  }, []);
-
-  function reflectExportsViewState(nextDraft: ExportsReportRunDraftState) {
+  const shouldReflectExportsViewState = useRef(false);
+  const reflectExportsViewState = useCallback((nextDraft: ExportsReportRunDraftState) => {
     if (reflectExportsViewTimer.current !== null) {
       window.clearTimeout(reflectExportsViewTimer.current);
     }
@@ -385,7 +384,22 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       const nextSearch = params.toString();
       navigate(nextSearch ? `${pathname}?${nextSearch}` : pathname, { replace: true });
     }, exportsViewReflectDebounceMs);
-  }
+  }, [navigate, pathname, search, vm.templateRows]);
+
+  useEffect(() => () => {
+    if (reflectExportsViewTimer.current !== null) {
+      window.clearTimeout(reflectExportsViewTimer.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!shouldReflectExportsViewState.current) {
+      return;
+    }
+
+    shouldReflectExportsViewState.current = false;
+    reflectExportsViewState(exportsRunDraft);
+  }, [exportsRunDraft, reflectExportsViewState]);
 
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
@@ -457,10 +471,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
+    shouldReflectExportsViewState.current = true;
     setExportsRunDraft((current) => {
-      const next = { ...current, [field]: value };
-      reflectExportsViewState(next);
-      return next;
+      return { ...current, [field]: value };
     });
   }
 
@@ -479,34 +492,45 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const handleExportsReportRunRef = useRef(handleExportsReportRun);
   handleExportsReportRunRef.current = handleExportsReportRun;
 
+  const selectedExportsTemplateId = selectedExportsTemplate?.id ?? null;
+  const selectedExportsTemplateName = selectedExportsTemplate?.name ?? null;
+  const selectedExportsTemplateCanRun = selectedExportsTemplate?.canRunOnDemand ?? false;
+  const selectedExportsTemplateRunDisabledReason = selectedExportsTemplate?.runDisabledReason ?? null;
+
   useEffect(() => {
-    if (!selectedExportsTemplate) {
+    if (!selectedExportsTemplateId || !selectedExportsTemplateName) {
       return;
     }
 
-    const disabled = !selectedExportsTemplate.canRunOnDemand || Boolean(runningTemplateRunId);
+    const disabled = !selectedExportsTemplateCanRun || Boolean(runningTemplateRunId);
     return registerCommandPaletteActions("reporting-screen", [
       {
         id: "reporting-run-exports",
-        verbLabel: `Run exports report: ${selectedExportsTemplate.name}`,
+        verbLabel: `Run exports report: ${selectedExportsTemplateName}`,
         description: "Start the selected on-demand exports report run with the drafted as-of date.",
         keywords: ["report", "export", "run"],
         confirm: true,
         disabled,
         disabledReason: runningTemplateRunId
           ? "A template run is already in progress."
-          : selectedExportsTemplate.runDisabledReason,
+          : selectedExportsTemplateRunDisabledReason,
         run: async () => {
           await handleExportsReportRunRef.current();
           return {
-            title: `${selectedExportsTemplate.name} run requested.`,
+            title: `${selectedExportsTemplateName} run requested.`,
             detail: "Track progress under Reporting exports run status.",
             tone: "success" as const
           };
         }
       }
     ]);
-  }, [runningTemplateRunId, selectedExportsTemplate]);
+  }, [
+    runningTemplateRunId,
+    selectedExportsTemplateCanRun,
+    selectedExportsTemplateId,
+    selectedExportsTemplateName,
+    selectedExportsTemplateRunDisabledReason
+  ]);
 
   async function executeTemplateRun(
     template: ReportingTemplateRow,
@@ -3662,15 +3686,7 @@ function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
 }
 
 function formatReportingMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
-    }).format(value);
-  } catch {
-    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-  }
+  return formatCurrencyAmount(value, { currency, maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2 });
 }
 
 function formatReportingDateRange(startDate: string, endDate: string): string {
@@ -3678,7 +3694,7 @@ function formatReportingDateRange(startDate: string, endDate: string): string {
 }
 
 function formatReportingPercent(value: number): string {
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+  return formatPercentAmount(value);
 }
 
 function formatHeatMapWidth(value: number): string {

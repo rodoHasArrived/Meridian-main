@@ -24,6 +24,9 @@ namespace Meridian.Tests.Ui;
 
 public sealed class ExecutionGovernanceEndpointsTests
 {
+    private const string ApprovedLiveRunId = "run-live";
+    private static readonly Guid LiveFundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+
     [Fact]
     public async Task ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail()
     {
@@ -290,6 +293,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
             services.AddSingleton(sp => new AlpacaBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
                 new Meridian.Core.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
@@ -312,7 +316,12 @@ public sealed class ExecutionGovernanceEndpointsTests
                 type = 0,
                 timeInForce = 0,
                 quantity = 1,
-                strategyId = "strategy-live"
+                strategyId = "strategy-live",
+                fundAccountId = LiveFundAccountId,
+                metadata = new Dictionary<string, string>
+                {
+                    ["runId"] = ApprovedLiveRunId
+                }
             }));
 
         submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -360,6 +369,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
             services.AddSingleton(sp => new RobinhoodBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
                 NullLogger<RobinhoodBrokerageGateway>.Instance,
@@ -382,7 +392,12 @@ public sealed class ExecutionGovernanceEndpointsTests
                 type = 0,
                 timeInForce = 0,
                 quantity = 1,
-                strategyId = "strategy-live"
+                strategyId = "strategy-live",
+                fundAccountId = LiveFundAccountId,
+                metadata = new Dictionary<string, string>
+                {
+                    ["runId"] = ApprovedLiveRunId
+                }
             }));
 
         submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -674,5 +689,19 @@ public sealed class ExecutionGovernanceEndpointsTests
         public decimal RealisedPnl => 0m;
         public IReadOnlyDictionary<string, IPosition> Positions { get; } =
             new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private sealed class ApprovedLiveOrderReadinessGate(string approvedRunId) : ILiveOrderReadinessGate
+    {
+        public Task<LiveOrderReadinessDecision> EvaluateAsync(
+            LiveOrderReadinessRequest request,
+            CancellationToken ct = default)
+        {
+            var decision = string.Equals(request.RunId, approvedRunId, StringComparison.Ordinal)
+                ? LiveOrderReadinessDecision.Approved($"audit://live/{request.RunId}")
+                : LiveOrderReadinessDecision.Rejected($"Run {request.RunId} is not approved for live order routing.");
+
+            return Task.FromResult(decision);
+        }
     }
 }

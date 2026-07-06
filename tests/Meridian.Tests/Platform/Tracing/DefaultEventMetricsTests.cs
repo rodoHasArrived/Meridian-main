@@ -4,6 +4,10 @@ using Xunit;
 
 namespace Meridian.Tests.Platform.Tracing;
 
+// DefaultEventMetrics delegates to the process-wide static Metrics counters, so
+// concurrently running collections that publish pipeline events would skew the
+// exact-count assertions below.
+[Collection("Sequential")]
 public sealed class DefaultEventMetricsTests : IDisposable
 {
     private readonly DefaultEventMetrics _metrics = new();

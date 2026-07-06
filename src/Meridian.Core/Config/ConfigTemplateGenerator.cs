@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -44,7 +45,7 @@ public sealed class ConfigTemplateGenerator
             IBClientPortal = new
             {
                 Enabled = false,
-                BaseUrl = "https://localhost:5000",
+                BaseUrl = ApiEndpointDefaults.IbClientPortalBaseUrl,
                 AllowSelfSignedCertificates = true
             },
             Symbols = new[]
@@ -88,7 +89,7 @@ public sealed class ConfigTemplateGenerator
             ),
             IBClientPortal: new IBClientPortalOptions(
                 Enabled: false,
-                BaseUrl: "https://localhost:5000",
+                BaseUrl: ApiEndpointDefaults.IbClientPortalBaseUrl,
                 AllowSelfSignedCertificates: true
             ),
             Storage: new StorageConfig(
@@ -190,7 +191,7 @@ public sealed class ConfigTemplateGenerator
             IBClientPortal = new
             {
                 Enabled = false,
-                BaseUrl = "https://localhost:5000",
+                BaseUrl = ApiEndpointDefaults.IbClientPortalBaseUrl,
                 AllowSelfSignedCertificates = true
             },
             Backfill = new

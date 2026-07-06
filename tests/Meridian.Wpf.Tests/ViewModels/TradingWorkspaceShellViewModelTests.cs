@@ -233,7 +233,8 @@ public sealed class TradingWorkspaceShellViewModelTests
                 FillCount: 18,
                 CashTransactionCount: 2,
                 SecurityMissingCount: 0,
-                Warnings: []));
+                Warnings: []),
+            readyForLiveOperation: true);
 
         var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
             activeRun: CreateActiveRun("live-31", "Gamma Rotation", "Live"),
@@ -247,6 +248,64 @@ public sealed class TradingWorkspaceShellViewModelTests
         hero.PrimaryActionId.Should().Be("PositionBlotter");
         hero.SecondaryActionId.Should().Be("RunRisk");
         hero.Detail.Should().Contain("Brokerage sync healthy");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithLiveRunAndOnlyPaperReadiness_RequiresLiveReadiness()
+    {
+        var readiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true,
+            readyForLiveOperation: false);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("live-paper-only", "Gamma Rotation", "Live"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Gamma Live Desk");
+
+        hero.FocusLabel.Should().Be("Operator review");
+        hero.BadgeText.Should().Be("Attention");
+        hero.PrimaryActionId.Should().Be("NotificationCenter");
+    }
+
+    [Fact]
+    public void BuildDeskHeroState_WithLiveRunAndW7RequirementFailure_RoutesToRequirementOwner()
+    {
+        var readiness = CreateReadiness(
+            workItems: [],
+            overallStatus: TradingAcceptanceGateStatusDto.Ready,
+            readyForPaperOperation: true,
+            readyForLiveOperation: false,
+            liveOperationRequirements:
+            [
+                new TradingLiveOperationRequirementDto(
+                    RequirementId: "governance-signoff",
+                    Label: "Governance sign-off",
+                    Status: TradingAcceptanceGateStatusDto.Blocked,
+                    Detail: "Missing evidence reference GOVERNANCE_SIGNOFF_REVIEWED.",
+                    ChecklistItem: "GOVERNANCE_SIGNOFF_REVIEWED",
+                    EvidenceReference: null,
+                    ChecklistSatisfied: true,
+                    EvidenceSatisfied: false,
+                    BlockerCode: "promotion:evidenceReferences:GOVERNANCE_SIGNOFF_REVIEWED")
+            ]);
+
+        var hero = TradingWorkspaceShellPresentationService.BuildDeskHeroState(
+            activeRun: CreateActiveRun("live-w7-review", "Gamma Rotation", "Live"),
+            workflow: null,
+            readiness,
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Gamma Live Desk");
+
+        hero.FocusLabel.Should().Be("Operator review");
+        hero.Summary.Should().Be("Missing evidence reference GOVERNANCE_SIGNOFF_REVIEWED.");
+        hero.Detail.Should().Contain("Governance sign-off");
+        hero.HandoffTitle.Should().Be("Complete governance sign-off");
+        hero.PrimaryActionId.Should().Be("NotificationCenter");
+        hero.PrimaryActionLabel.Should().Be("Open Alerts");
     }
 
     [Fact]
@@ -560,7 +619,9 @@ public sealed class TradingWorkspaceShellViewModelTests
         IReadOnlyList<OperatorWorkItemDto>? workItems = null,
         IReadOnlyList<TradingAcceptanceGateDto>? acceptanceGates = null,
         TradingAcceptanceGateStatusDto overallStatus = TradingAcceptanceGateStatusDto.Ready,
-        bool readyForPaperOperation = true)
+        bool readyForPaperOperation = true,
+        bool readyForLiveOperation = false,
+        IReadOnlyList<TradingLiveOperationRequirementDto>? liveOperationRequirements = null)
         => new(
             AsOf: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
             ActiveSession: CreateSession(),
@@ -585,7 +646,9 @@ public sealed class TradingWorkspaceShellViewModelTests
         {
             AcceptanceGates = acceptanceGates ?? CreateReadyGates(),
             OverallStatus = overallStatus,
-            ReadyForPaperOperation = readyForPaperOperation
+            ReadyForPaperOperation = readyForPaperOperation,
+            ReadyForLiveOperation = readyForLiveOperation,
+            LiveOperationRequirements = liveOperationRequirements ?? []
         };
 
     private static ActiveRunContext CreateActiveRun(string runId, string strategyName, string modeLabel)

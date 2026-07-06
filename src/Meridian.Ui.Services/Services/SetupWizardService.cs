@@ -13,13 +13,17 @@ public sealed class SetupWizardService
     private readonly HttpClient _httpClient;
     private readonly ConfigService _configService;
     private readonly CredentialService _credentialService;
+    private readonly int _tcpConnectTimeoutMs;
 
-    public SetupWizardService()
+    public SetupWizardService(ConnectivityProbeOptions? probeOptions = null)
     {
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.SetupWizard);
         _configService = new ConfigService();
         _credentialService = new CredentialService();
+        var tcpConnectTimeoutMs = (probeOptions ?? new ConnectivityProbeOptions()).TcpConnectTimeoutMs;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tcpConnectTimeoutMs, nameof(probeOptions));
+        _tcpConnectTimeoutMs = tcpConnectTimeoutMs;
     }
 
     /// <summary>
@@ -208,7 +212,7 @@ public sealed class SetupWizardService
             using var client = new System.Net.Sockets.TcpClient();
             var connectTask = client.ConnectAsync(host, port);
 
-            if (await Task.WhenAny(connectTask, Task.Delay(5000, ct)) == connectTask)
+            if (await Task.WhenAny(connectTask, Task.Delay(_tcpConnectTimeoutMs, ct)) == connectTask)
             {
                 if (client.Connected)
                 {
@@ -257,7 +261,7 @@ public sealed class SetupWizardService
         };
     }
 
-    private static async Task<ProviderTestResult> TestTcpEndpointAsync(
+    private async Task<ProviderTestResult> TestTcpEndpointAsync(
         string provider,
         string host,
         string portStr,
@@ -277,7 +281,7 @@ public sealed class SetupWizardService
             using var client = new System.Net.Sockets.TcpClient();
             var connectTask = client.ConnectAsync(host, port);
 
-            if (await Task.WhenAny(connectTask, Task.Delay(5000, ct)) == connectTask)
+            if (await Task.WhenAny(connectTask, Task.Delay(_tcpConnectTimeoutMs, ct)) == connectTask)
             {
                 result.Success = client.Connected;
                 result.StatusMessage = result.Success
@@ -484,7 +488,7 @@ public sealed class SetupWizardService
 
         try
         {
-            var response = await _httpClient.GetAsync("http://localhost:8080/health", ct);
+            var response = await _httpClient.GetAsync($"{ApiEndpointDefaults.LocalApiBaseUrl}/health", ct);
             result.Success = response.IsSuccessStatusCode;
             result.Message = result.Success ? "Service is running" : "Service not responding";
         }

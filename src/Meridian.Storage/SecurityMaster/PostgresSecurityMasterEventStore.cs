@@ -220,7 +220,11 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 acquirer_security_id,
                 exchange_ratio,
                 subscription_price_per_share,
-                rights_per_share)
+                rights_per_share,
+                record_date,
+                lifecycle_state,
+                supersedes_corp_act_id,
+                redemption_price_percent_of_par)
             values (
                 @corp_act_id,
                 @security_id,
@@ -235,7 +239,11 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 @acquirer_security_id,
                 @exchange_ratio,
                 @subscription_price_per_share,
-                @rights_per_share)
+                @rights_per_share,
+                @record_date,
+                @lifecycle_state,
+                @supersedes_corp_act_id,
+                @redemption_price_percent_of_par)
             on conflict (corp_act_id) do nothing;
             """;
 
@@ -253,6 +261,10 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         command.Parameters.AddWithValue("exchange_ratio", (object?)action.ExchangeRatio ?? DBNull.Value);
         command.Parameters.AddWithValue("subscription_price_per_share", (object?)action.SubscriptionPricePerShare ?? DBNull.Value);
         command.Parameters.AddWithValue("rights_per_share", (object?)action.RightsPerShare ?? DBNull.Value);
+        command.Parameters.AddWithValue("record_date", (object?)action.RecordDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("lifecycle_state", (object?)action.LifecycleState ?? DBNull.Value);
+        command.Parameters.AddWithValue("supersedes_corp_act_id", (object?)action.SupersedesCorpActId ?? DBNull.Value);
+        command.Parameters.AddWithValue("redemption_price_percent_of_par", (object?)action.RedemptionPricePercentOfPar ?? DBNull.Value);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
@@ -276,7 +288,11 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    acquirer_security_id,
                    exchange_ratio,
                    subscription_price_per_share,
-                   rights_per_share
+                   rights_per_share,
+                   record_date,
+                   lifecycle_state,
+                   supersedes_corp_act_id,
+                   redemption_price_percent_of_par
             from {Qualified("corporate_actions")}
             where security_id = @security_id
             order by ex_date;
@@ -289,6 +305,7 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         {
             var exDateRaw = reader.GetDateTime(3);
             var payDateRaw = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4);
+            var recordDateRaw = reader.IsDBNull(14) ? (DateTime?)null : reader.GetDateTime(14);
             results.Add(new CorporateActionDto(
                 CorpActId: reader.GetGuid(0),
                 SecurityId: reader.GetGuid(1),
@@ -303,9 +320,75 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 AcquirerSecurityId: reader.IsDBNull(10) ? null : reader.GetGuid(10),
                 ExchangeRatio: reader.IsDBNull(11) ? null : reader.GetDecimal(11),
                 SubscriptionPricePerShare: reader.IsDBNull(12) ? null : reader.GetDecimal(12),
-                RightsPerShare: reader.IsDBNull(13) ? null : reader.GetDecimal(13)));
+                RightsPerShare: reader.IsDBNull(13) ? null : reader.GetDecimal(13),
+                RecordDate: recordDateRaw.HasValue ? DateOnly.FromDateTime(recordDateRaw.Value) : null,
+                LifecycleState: reader.IsDBNull(15) ? null : reader.GetString(15),
+                SupersedesCorpActId: reader.IsDBNull(16) ? null : reader.GetGuid(16),
+                RedemptionPricePercentOfPar: reader.IsDBNull(17) ? null : reader.GetDecimal(17)));
         }
 
         return results;
+    }
+
+    public async Task<CorporateActionEventTypeNormalizationResult> NormalizeCorporateActionEventTypesAsync(
+        bool apply, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+
+        var counts = new List<(string StoredValue, int RowCount)>();
+        await using (var countCommand = connection.CreateCommand())
+        {
+            countCommand.CommandText =
+                $"""
+                select event_type, count(*)
+                from {Qualified("corporate_actions")}
+                group by event_type
+                order by event_type;
+                """;
+            await using var reader = await countCommand.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                counts.Add((reader.GetString(0), (int)reader.GetInt64(1)));
+            }
+        }
+
+        var renames = new List<CorporateActionEventTypeRename>();
+        var unmapped = new List<CorporateActionEventTypeCount>();
+        foreach (var (storedValue, rowCount) in counts)
+        {
+            var canonical = CorporateActionEventTypes.Normalize(storedValue);
+            if (!CorporateActionEventTypes.IsKnown(storedValue))
+            {
+                unmapped.Add(new CorporateActionEventTypeCount(storedValue, rowCount));
+            }
+            else if (!string.Equals(canonical, storedValue, StringComparison.Ordinal))
+            {
+                renames.Add(new CorporateActionEventTypeRename(storedValue, canonical, rowCount));
+            }
+        }
+
+        if (!apply || renames.Count == 0)
+        {
+            return new CorporateActionEventTypeNormalizationResult(Applied: false, renames, unmapped);
+        }
+
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        foreach (var rename in renames)
+        {
+            await using var updateCommand = connection.CreateCommand();
+            updateCommand.Transaction = transaction;
+            updateCommand.CommandText =
+                $"""
+                update {Qualified("corporate_actions")}
+                set event_type = @canonical
+                where event_type = @stored;
+                """;
+            updateCommand.Parameters.AddWithValue("canonical", rename.CanonicalName);
+            updateCommand.Parameters.AddWithValue("stored", rename.StoredValue);
+            await updateCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return new CorporateActionEventTypeNormalizationResult(Applied: true, renames, unmapped);
     }
 }

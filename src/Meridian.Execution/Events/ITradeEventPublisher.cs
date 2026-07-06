@@ -9,7 +9,8 @@ public interface ITradeEventPublisher
 {
     /// <summary>
     /// Publishes a <see cref="TradeExecutedEvent"/> to all registered consumers.
-    /// Implementations must be thread-safe and non-blocking from the caller's perspective.
+    /// Implementations must be thread-safe and must never drop events; they may block the
+    /// caller to apply backpressure when internal buffers are full.
     /// </summary>
     /// <param name="tradeEvent">The trade event to publish.</param>
     void Publish(TradeExecutedEvent tradeEvent);

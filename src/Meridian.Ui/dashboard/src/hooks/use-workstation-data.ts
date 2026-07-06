@@ -32,6 +32,7 @@ import {
   setFeatureCapability
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -423,7 +424,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     const token = tradingRefreshLifecycle.start({ busyMode: "drop" });
     if (!token) return;
     try {
-      const result = await getTradingWorkspace({ signal: token.signal });
+      const result = await getTradingWorkspace({
+        signal: token.signal,
+        fundAccountId: normalizeFundAccountGuid(workflowSummaryFundAccountId)
+      });
       if (!token.isCurrent()) {
         tradingRefreshLifecycle.markStale(token.version);
         return;
@@ -467,7 +471,8 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     tradingRefreshLifecycle.finish,
     tradingRefreshLifecycle.markStale,
     tradingRefreshLifecycle.start,
-    tradingRefreshLifecycle.succeed
+    tradingRefreshLifecycle.succeed,
+    workflowSummaryFundAccountId
   ]);
 
   const updateFeatureCapability = useCallback(async (capabilityKey: string, isEnabled: boolean) => {
@@ -692,11 +697,17 @@ function createRefreshEntries(
     fundDisplayName?: string | null;
   } = {}
 ): RefreshEntry[] {
+  const tradingFundAccountId = normalizeFundAccountGuid(workflowSummaryScope.fundAccountId);
   return [
     { key: "session", category: "bootstrap", start: (requestOptions) => getSession(requestOptions) },
     { key: "overview", category: "bootstrap", start: (requestOptions) => getSystemStatus(requestOptions) },
     { key: "strategy", category: "workspace", workspaceKeys: ["strategy"], start: (requestOptions) => getStrategyWorkspace(requestOptions) },
-    { key: "trading", category: "workspace", workspaceKeys: ["trading"], start: (requestOptions) => getTradingWorkspace(requestOptions) },
+    {
+      key: "trading",
+      category: "workspace",
+      workspaceKeys: ["trading"],
+      start: (requestOptions) => getTradingWorkspace({ ...requestOptions, fundAccountId: tradingFundAccountId })
+    },
     { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getPortfolioWorkspace(requestOptions) },
     {
       key: "portfolioMultiAssetCoverage",

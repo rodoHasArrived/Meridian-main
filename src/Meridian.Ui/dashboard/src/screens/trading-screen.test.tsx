@@ -303,9 +303,10 @@ beforeEach(() => {
 
 async function renderTradingScreen(
   screenData: TradingWorkspaceResponse | null = data,
-  initialEntry = "/trading"
+  initialEntry = "/trading",
+  fundAccountId?: string | null
 ) {
-  const result = renderWithRouter(<TradingScreen data={screenData} />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<TradingScreen data={screenData} fundAccountId={fundAccountId} />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
 }
@@ -530,6 +531,20 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Portfolio snapshot failed.")).toBeInTheDocument();
   });
 
+  it("passes valid operating fund account scope when refreshing readiness", async () => {
+    const user = userEvent.setup();
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    vi.mocked(api.getTradingReadiness).mockResolvedValueOnce(serverReadinessData.readiness!);
+
+    await renderTradingScreen(serverReadinessData, "/trading", fundAccountId);
+    await user.click(screen.getByRole("button", { name: /refresh trading readiness/i }));
+
+    await waitFor(() => expect(api.getTradingReadiness).toHaveBeenCalledTimes(1));
+    expect(api.getTradingReadiness).toHaveBeenCalledWith(expect.objectContaining({
+      fundAccountId
+    }));
+  });
+
   it("handles promotion happy path", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();
@@ -582,6 +597,26 @@ describe("TradingScreen", () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
+  });
+
+  it("passes valid operating fund account scope when submitting an order", async () => {
+    const user = userEvent.setup();
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading", fundAccountId);
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+    await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
+    const quantityInput = screen.getAllByRole("spinbutton")[0];
+    await user.clear(quantityInput);
+    await user.type(quantityInput, "10");
+    await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
+    await user.click(screen.getByRole("button", { name: /submit order/i }));
+
+    await waitFor(() => expect(api.submitOrder).toHaveBeenCalledWith(expect.objectContaining({
+      symbol: "AAPL",
+      quantity: 10,
+      fundAccountId
+    })));
   });
 
   it("renders VM-owned disabled reasons for blocked trading commands", async () => {

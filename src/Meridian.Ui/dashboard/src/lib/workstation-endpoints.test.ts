@@ -170,6 +170,7 @@ import {
   workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
@@ -274,7 +275,11 @@ describe("workstation API endpoint catalog", () => {
     );
   });
 
-  it("builds account-scoped operator inbox endpoints without changing the base contract", () => {
+  it("builds account-scoped trading and operator inbox endpoints without changing the base contracts", () => {
+    expect(workstationTradingEndpoint()).toBe("/api/workstation/trading");
+    expect(workstationTradingEndpoint("fund account/1")).toBe(
+      "/api/workstation/trading?fundAccountId=fund+account%2F1"
+    );
     expect(workstationOperatorInboxEndpoint()).toBe("/api/workstation/operator/inbox");
     expect(workstationOperatorInboxEndpoint("fund account/1")).toBe(
       "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"

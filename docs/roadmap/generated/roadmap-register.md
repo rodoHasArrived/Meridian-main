@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-06-24
+Snapshot date: 2026-07-05
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -435,27 +435,29 @@ Backtesting Studio remains planned. Strategy work should link research or backte
 | Field | Value |
 | --- | --- |
 | Wave | W7 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-04 |
+| Evidence posture | complete |
+| Last reviewed | 2026-07-05 |
 
 ### Current Summary
 
-Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
+Closed 2026-07-05 as bounded live-readiness governance. Paper-to-live promotion now requires the paper baseline, trusted-data review, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback or kill-switch evidence, audit-retention evidence, an active AllowLivePromotion manual override, brokerage live-enablement checks, and clear execution controls before a live run can be created. This closes the governance gate only; broader live execution productization and live portfolio operations remain separate follow-on work.
 
 ### Exit Criteria
 
-- Live action surfaces remain paper-first until acceptance gates are green.
-- Credential and provider checks stay secret-safe and read-only by default.
-- Governance sign-off is linked before any live-readiness claim.
-- Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
+- Live action surfaces remain paper-first unless the live approval checklist, evidence references, manual override, and execution-control checks are all green.
+- Credential and provider checks stay secret-safe and read-only by default; live promotion is blocked when brokerage configuration is not live-enabled.
+- Governance sign-off, rollback or kill-switch posture, exception-handling evidence, and audit-retention evidence are linked before any live-readiness claim.
+- The completed slice strengthens operational evidence and approval posture without productizing broader live execution or live portfolio operations.
 
 ### Source Modules
 
 - `SRC-HOST`
 - `SRC-APP`
 - `SRC-CONTRACTS`
+- `SRC-EXECUTION`
+- `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`

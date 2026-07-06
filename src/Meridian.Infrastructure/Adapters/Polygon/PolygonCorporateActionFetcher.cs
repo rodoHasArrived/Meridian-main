@@ -344,6 +344,11 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
                       DateOnly.TryParse(payDateElement.GetString()!, out var pDate)
             ? pDate
             : (DateOnly?)null;
+        var recordDate = item.TryGetProperty("record_date", out var recordDateElement) &&
+                         recordDateElement.GetString() != null &&
+                         DateOnly.TryParse(recordDateElement.GetString()!, out var rDate)
+            ? rDate
+            : (DateOnly?)null;
 
         dto = new CorporateActionDto(
             CorpActId: Guid.NewGuid(),
@@ -359,7 +364,8 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
             AcquirerSecurityId: null,
             ExchangeRatio: null,
             SubscriptionPricePerShare: null,
-            RightsPerShare: null);
+            RightsPerShare: null,
+            RecordDate: recordDate);
 
         return true;
     }
@@ -390,7 +396,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         dto = new CorporateActionDto(
             CorpActId: Guid.NewGuid(),
             SecurityId: securityId,
-            EventType: "StockSplit",
+            EventType: splitRatio < 1m ? "ReverseStockSplit" : "StockSplit",
             ExDate: exDate,
             PayDate: null,
             DividendPerShare: null,

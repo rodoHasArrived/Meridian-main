@@ -279,21 +279,94 @@ public sealed class PromotionService
         var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);
         if (missingChecklistItems.Length > 0)
         {
+            var reason = $"Promotion approval checklist is incomplete: {string.Join(", ", missingChecklistItems)}.";
+            if (targetRunType == RunType.Live)
+            {
+                await RecordPromotionAuditAsync(
+                    action: "PromotionBlocked",
+                    outcome: "Blocked",
+                    actor: request.ApprovedBy,
+                    runId: run.RunId,
+                    promotionId: null,
+                    message: reason,
+                    reason: "PromotionChecklistIncomplete",
+                    scope: BuildPromotionAuditScope(run, targetRunType),
+                    metadata: BuildPromotionControlMetadata(
+                        run,
+                        targetRunType,
+                        request.ManualOverrideId,
+                        approvalChecklist,
+                        evidenceReferences,
+                        auditReference,
+                        reason),
+                    ct).ConfigureAwait(false);
+            }
+
             return new PromotionDecisionResult(
                 Success: false,
                 PromotionId: null,
                 NewRunId: null,
-                Reason: $"Promotion approval checklist is incomplete: {string.Join(", ", missingChecklistItems)}.");
+                Reason: reason);
         }
 
         var missingEvidenceRequirements = GetMissingLiveEvidenceRequirements(targetRunType, evidenceReferences);
         if (missingEvidenceRequirements.Length > 0)
         {
+            var reason = $"Paper -> Live promotion evidence is incomplete: {string.Join(", ", missingEvidenceRequirements)}.";
+            await RecordPromotionAuditAsync(
+                action: "PromotionBlocked",
+                outcome: "Blocked",
+                actor: request.ApprovedBy,
+                runId: run.RunId,
+                promotionId: null,
+                message: reason,
+                reason: "PromotionEvidenceIncomplete",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionControlMetadata(
+                    run,
+                    targetRunType,
+                    request.ManualOverrideId,
+                    approvalChecklist,
+                    evidenceReferences,
+                    auditReference,
+                    reason),
+                ct).ConfigureAwait(false);
+
             return new PromotionDecisionResult(
                 Success: false,
                 PromotionId: null,
                 NewRunId: null,
-                Reason: $"Paper -> Live promotion evidence is incomplete: {string.Join(", ", missingEvidenceRequirements)}.");
+                Reason: reason);
+        }
+
+        var invalidEvidenceReferences = GetInvalidLiveEvidenceReferences(targetRunType, evidenceReferences, request.ManualOverrideId);
+        if (invalidEvidenceReferences.Length > 0)
+        {
+            var reason = $"Paper -> Live promotion evidence references are invalid: {string.Join(", ", invalidEvidenceReferences)}.";
+            await RecordPromotionAuditAsync(
+                action: "PromotionBlocked",
+                outcome: "Blocked",
+                actor: request.ApprovedBy,
+                runId: run.RunId,
+                promotionId: null,
+                message: reason,
+                reason: "PromotionEvidenceInvalid",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionControlMetadata(
+                    run,
+                    targetRunType,
+                    request.ManualOverrideId,
+                    approvalChecklist,
+                    evidenceReferences,
+                    auditReference,
+                    reason),
+                ct).ConfigureAwait(false);
+
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: reason);
         }
 
         var newRunId = Guid.NewGuid().ToString("N");
@@ -514,11 +587,76 @@ public sealed class PromotionService
             .ToArray();
     }
 
+    private static string[] GetInvalidLiveEvidenceReferences(
+        RunType targetRunType,
+        string[] evidenceReferences,
+        string? manualOverrideId)
+    {
+        if (targetRunType != RunType.Live)
+        {
+            return [];
+        }
+
+        var invalid = new List<string>();
+        foreach (var requiredItem in PromotionApprovalChecklist.CreateRequiredFor(targetRunType))
+        {
+            var reference = evidenceReferences.FirstOrDefault(item =>
+                string.Equals(GetEvidenceRequirementKey(item), requiredItem, StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrWhiteSpace(reference))
+            {
+                continue;
+            }
+
+            var value = GetEvidenceReferenceValue(reference);
+            if (value.Length == 0)
+            {
+                invalid.Add($"{requiredItem} must include retained evidence after ':'");
+                continue;
+            }
+
+            if (string.Equals(requiredItem, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrWhiteSpace(manualOverrideId))
+            {
+                invalid.Add($"{requiredItem} requires an active manual override id");
+                continue;
+            }
+
+            if (string.Equals(requiredItem, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.OrdinalIgnoreCase) &&
+                !ContainsEvidenceReferenceToken(value, manualOverrideId!))
+            {
+                invalid.Add($"{requiredItem} must reference active manual override {manualOverrideId}");
+            }
+        }
+
+        return invalid.ToArray();
+    }
+
     private static string GetEvidenceRequirementKey(string evidenceReference)
     {
         var separatorIndex = evidenceReference.IndexOf(':', StringComparison.Ordinal);
         var key = separatorIndex >= 0 ? evidenceReference[..separatorIndex] : evidenceReference;
         return key.Trim().Replace(' ', '_').Replace('-', '_').ToUpperInvariant();
+    }
+
+    private static string GetEvidenceReferenceValue(string evidenceReference)
+    {
+        var separatorIndex = evidenceReference.IndexOf(':', StringComparison.Ordinal);
+        return separatorIndex < 0 || separatorIndex == evidenceReference.Length - 1
+            ? string.Empty
+            : evidenceReference[(separatorIndex + 1)..].Trim();
+    }
+
+    private static bool ContainsEvidenceReferenceToken(string evidenceReferenceValue, string token)
+    {
+        if (string.Equals(evidenceReferenceValue, token, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var segments = evidenceReferenceValue.Split(
+            ['/', '\\', '#', '?', '&', '=', ',', ';', ' ', '\t', '\r', '\n'],
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return segments.Any(segment => string.Equals(segment, token, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -693,6 +831,16 @@ public sealed class PromotionService
             if (missingEvidence.Length > 0)
             {
                 validationError = $"Approved live promotion records must include evidence references for: {string.Join(", ", missingEvidence)}.";
+                return false;
+            }
+
+            var invalidEvidence = GetInvalidLiveEvidenceReferences(
+                record.TargetRunType,
+                NormalizeEvidenceReferences(record.EvidenceReferences),
+                record.ManualOverrideId);
+            if (invalidEvidence.Length > 0)
+            {
+                validationError = $"Approved live promotion records must include valid retained evidence references: {string.Join(", ", invalidEvidence)}.";
                 return false;
             }
         }

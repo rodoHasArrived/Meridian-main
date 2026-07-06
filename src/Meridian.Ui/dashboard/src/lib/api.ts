@@ -361,6 +361,7 @@ import {
   STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   buildReferenceDataWorkbenchEndpoints,
+  securityMasterCoverageDraftEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -526,6 +527,7 @@ import {
   workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingEndpoint,
   workstationTradingReadinessEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
@@ -538,6 +540,7 @@ import {
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 const csrfCookieName = "mdc-csrf";
@@ -759,7 +762,17 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
   }
 
   const { resolveDevFixture } = await import("@/lib/dev-fixtures");
-  return resolveDevFixture<T>(path);
+  const fixture = resolveDevFixture<T>(path);
+  if (fixture !== undefined) {
+    // Keep this loud: without it a developer can work for hours against a broken endpoint
+    // while fixtures silently stand in for real backend failures.
+    console.warn(
+      `[dev-fixture] Backend request failed with ${status} for ${path}; serving development fixture data instead. ` +
+        "Responses on this screen do not reflect the live backend."
+    );
+  }
+
+  return fixture;
 }
 
 function markDevelopmentFixtureUsage() {
@@ -1088,8 +1101,9 @@ export function getStrategyBriefing(options: ApiRequestOptions = {}) {
   return getJson<StrategyBriefingResponse>(WORKSTATION_API_ENDPOINTS.strategyBriefing, options);
 }
 
-export function getTradingWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
+export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
+  const { fundAccountId, ...requestOptions } = options;
+  return getJson<TradingWorkspaceResponse>(workstationTradingEndpoint(fundAccountId), requestOptions);
 }
 
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
@@ -2710,8 +2724,15 @@ export function cancelAllOrders() {
   return postJson<TradingActionResult>(EXECUTION_API_ENDPOINTS.ordersCancelAll);
 }
 
-export function closePosition(positionKey: string) {
-  return postJson<TradingActionResult>(executionPositionCloseEndpoint(), { positionKey });
+export function closePosition(positionKey: string, fundAccountId?: string | null) {
+  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId);
+  return postJson<TradingActionResult>(
+    executionPositionCloseEndpoint(),
+    {
+      positionKey,
+      ...(normalizedFundAccountId ? { fundAccountId: normalizedFundAccountId } : {})
+    }
+  );
 }
 
 // --- Paper session management ---
@@ -3711,6 +3732,28 @@ export function getQualityDashboard() {
 
 export function getQualityGaps() {
   return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
+}
+
+// --- Provider capability matrix and security-master supply surfaces ---
+
+export function getProviderCapabilityMatrix() {
+  return getJson<import("@/types").ProviderCapabilityMatrixResponse>(PROVIDER_API_ENDPOINTS.capabilityMatrix);
+}
+
+export function getCorporateActionInbox() {
+  return getJson<import("@/types").CorporateActionInboxResponse>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInbox);
+}
+
+export function getSecurityMasterCoverageDraft(symbol: string) {
+  return getJson<import("@/types").SecurityMasterDraftProposal>(securityMasterCoverageDraftEndpoint(symbol));
+}
+
+export function getSecurityMasterQualityReport() {
+  return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
+}
+
+export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
+  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
 }
 
 export function getQualityAnomalies() {

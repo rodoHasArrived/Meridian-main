@@ -294,6 +294,45 @@ public sealed class DataSourceRegistryTests
     }
 
     #endregion
+
+    #region Failure surfacing
+
+    [Fact]
+    public void RegisterModules_ActivationFailure_IsRecordedAndScanContinues()
+    {
+        var registry = new DataSourceRegistry();
+        registry.ConfigureModule("ds-registry-requires-config",
+            new ProviderModuleContext { Enabled = true });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+
+        registry.Failures.Should().Contain(f =>
+            f.Stage == "activate" &&
+            f.Subject.Contains(nameof(ThrowingConstructorProviderModule)),
+            "constructor failures must be surfaced, not silently swallowed");
+        services.Should().Contain(d => d.ServiceType == typeof(DataSourceRegistryTestMarker),
+            "one broken module must not block the remaining modules");
+    }
+
+    [Fact]
+    public void RegisterModules_RegisterFailure_IsRecordedWithModuleId()
+    {
+        var registry = new DataSourceRegistry();
+        registry.ConfigureModule("ds-registry-register-throws",
+            new ProviderModuleContext { Enabled = true });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+
+        registry.Failures.Should().Contain(f =>
+            f.Stage == "register" &&
+            f.ModuleId == "ds-registry-register-throws" &&
+            f.ErrorType == nameof(InvalidOperationException),
+            "Register failures must be surfaced with the module identity");
+    }
+
+    #endregion
 }
 
 // -----------------------------------------------------------------------
@@ -315,4 +354,18 @@ internal sealed class DataSourceRegistryRequiresConfigModule : IProviderModule
 
     public void Register(IServiceCollection services, DataSourceRegistry registry)
         => services.AddSingleton<DataSourceRegistryTestMarker>();
+}
+
+/// <summary>
+/// Test module whose Register throws. Requires external config so it only runs
+/// when a test explicitly supplies a context.
+/// </summary>
+internal sealed class DataSourceRegistryRegisterThrowsModule : IProviderModule
+{
+    public string ModuleId => "ds-registry-register-throws";
+    public string ModuleDisplayName => "DataSourceRegistry Register-Throws Module";
+    public bool RequiresExternalConfig => true;
+
+    public void Register(IServiceCollection services, DataSourceRegistry registry)
+        => throw new InvalidOperationException("Simulated registration failure.");
 }

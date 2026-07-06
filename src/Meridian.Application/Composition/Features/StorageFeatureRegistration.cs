@@ -1,3 +1,4 @@
+using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.FinancialOperations.Banking;
@@ -255,6 +256,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
             services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<ICorporateActionCommandService, CorporateActionCommandService>();
+            // Period-aware supersede routing: singleton over IServiceScopeFactory because the
+            // workstation restatement stack it consumes is scoped; hosts without that stack
+            // degrade to no proposal at call time.
+            services.AddSingleton<ICorporateActionRestatementTrigger, CorporateActionSupersedeRestatementTrigger>();
             services.AddSingleton<IBondReferenceService, BondProjectionService>();
             services.AddSingleton<IOptionReferenceService, OptionProjectionService>();
             services.AddSingleton<IOptionChainImportService>(sp => (OptionProjectionService)sp.GetRequiredService<IOptionReferenceService>());
@@ -289,6 +294,27 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
+
+            // Coverage sweep: symbols active in platform surfaces but missing from the master
+            // feed RC001 RefreshControl violations, which the exception-casework loop cases.
+            // Draft proposals let the operator master a flagged gap from a pre-filled record.
+            services.AddSingleton<ISecurityCoverageSymbolSource, ConfiguredSymbolCoverageSource>();
+            services.AddSingleton<ISecurityCoverageSymbolSource>(sp =>
+                new CanonicalRegistryCoverageSource(sp.GetService<Meridian.Contracts.Catalog.ICanonicalSymbolRegistry>()));
+            services.AddSingleton<SecurityMasterDraftProposalService>(sp =>
+                new SecurityMasterDraftProposalService(
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<SecurityMasterDraftProposalService>>(),
+                    sp.GetService<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>()));
+
+            // Symbology lineage: ticker changes recorded as first-class amend events, and
+            // era-correct per-chunk symbol resolution for rename-spanning backfills.
+            services.AddSingleton<SecurityMasterTickerChangeService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver, SecurityMasterHistoricalSymbolTimelineResolver>();
+
+            // Corporate-action ingest: fan-out, consensus scoring, staged apply, and the
+            // inbox snapshot the workbench polls for staged proposals.
+            services.AddSingleton<CorporateActionIngestOrchestrator>();
+            services.AddSingleton<CorporateActionInboxState>();
         }
 
         if (AssetOperationsStartup.IsConfigured())
@@ -323,6 +349,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
+        services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
         services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();
@@ -333,6 +360,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
         services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
 

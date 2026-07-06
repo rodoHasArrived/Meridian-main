@@ -10,6 +10,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Policies;
@@ -58,6 +59,12 @@ public sealed class BackfillWorkerService : IDisposable
     /// </summary>
     public event Action<bool>? OnRunningStateChanged;
 
+    /// <summary>
+    /// Provider-level progress relayed from the composite provider:
+    /// per-provider attempts, failover, rate limiting, and outcomes.
+    /// </summary>
+    public event Action<ProviderBackfillProgress>? OnProviderProgress;
+
     public bool IsRunning => _isRunning;
 
     /// <summary>
@@ -87,6 +94,14 @@ public sealed class BackfillWorkerService : IDisposable
                 $"MaxConcurrentRequests must be between {MinConcurrentRequests} and {MaxConcurrentRequests}");
         }
 
+        if (config.WorkerErrorRetryDelayMs <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(config),
+                config.WorkerErrorRetryDelayMs,
+                "WorkerErrorRetryDelayMs must be positive so the worker loop backs off after errors");
+        }
+
         _jobManager = jobManager;
         _requestQueue = requestQueue;
         _provider = provider;
@@ -103,6 +118,16 @@ public sealed class BackfillWorkerService : IDisposable
         {
             _connectivityProbe.ConnectivityChanged += OnConnectivityChanged;
         }
+
+        _provider.OnProgressUpdate += HandleProviderProgress;
+    }
+
+    private void HandleProviderProgress(ProviderBackfillProgress progress)
+    {
+        _log.Debug(
+            "Provider progress for {Symbol} via {Provider}: {Status} ({BarsDownloaded} bars) {Error}",
+            progress.Symbol, progress.Provider, progress.CurrentStatus, progress.BarsDownloaded, progress.Error);
+        OnProviderProgress?.Invoke(progress);
     }
 
     /// <summary>
@@ -200,7 +225,7 @@ public sealed class BackfillWorkerService : IDisposable
             catch (Exception ex)
             {
                 _log.Error(ex, "Error in worker loop");
-                await Task.Delay(1000, ct).ConfigureAwait(false);
+                await Task.Delay(_config.WorkerErrorRetryDelayMs, ct).ConfigureAwait(false);
             }
         }
     }
@@ -315,8 +340,10 @@ public sealed class BackfillWorkerService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    var retryAfter = TryExtractRetryAfter(ex);
-                    var isRateLimited = retryAfter.HasValue ||
+                    var rateLimit = FindRateLimitException(ex);
+                    var retryAfter = rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex);
+                    var isRateLimited = rateLimit is not null ||
+                                        retryAfter.HasValue ||
                                         IsHttp429(ex) ||
                                         ex.Message.Contains("429") ||
                                         ex.Message.Contains("rate limit", StringComparison.OrdinalIgnoreCase);
@@ -379,6 +406,29 @@ public sealed class BackfillWorkerService : IDisposable
     /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
     /// as defined in RFC 7231 Section 7.1.3.
     /// </summary>
+    /// <summary>
+    /// Find a typed <see cref="RateLimitException"/> anywhere in the exception chain,
+    /// including inside <see cref="AggregateException"/> trees thrown by the composite provider.
+    /// </summary>
+    internal static RateLimitException? FindRateLimitException(Exception ex)
+    {
+        if (ex is RateLimitException rateLimit)
+            return rateLimit;
+
+        if (ex is AggregateException aggregate)
+        {
+            foreach (var inner in aggregate.InnerExceptions)
+            {
+                if (FindRateLimitException(inner) is { } found)
+                    return found;
+            }
+
+            return null;
+        }
+
+        return ex.InnerException is { } innerException ? FindRateLimitException(innerException) : null;
+    }
+
     internal static TimeSpan? TryExtractRetryAfter(Exception ex)
     {
         // Walk the exception chain looking for HttpRequestException with Retry-After info
@@ -715,6 +765,8 @@ public sealed class BackfillWorkerService : IDisposable
             _connectivityProbe.ConnectivityChanged -= OnConnectivityChanged;
         }
 
+        _provider.OnProgressUpdate -= HandleProviderProgress;
+
         _cts.Cancel();
         _cts.Dispose();
         _concurrencySemaphore.Dispose();
@@ -755,9 +807,17 @@ public sealed class BackfillServiceFactory
             rateLimitTracker.RegisterProvider(provider);
         }
 
-        // Create composite provider
+        // Create composite provider with symbol resolution wired the same way as the
+        // coordinator and provider-factory paths (BackfillConfig.EnableSymbolResolution).
+        OpenFigiSymbolResolver? symbolResolver = null;
+        if (config.EnableSymbolResolution)
+        {
+            symbolResolver = new OpenFigiSymbolResolver(config.Providers?.OpenFigi?.ApiKey, log: _log);
+        }
+
         var composite = new CompositeHistoricalDataProvider(
             providers,
+            symbolResolver,
             enableRateLimitRotation: config.EnableRateLimitRotation,
             rateLimitRotationThreshold: config.RateLimitRotationThreshold,
             log: _log);
@@ -793,7 +853,8 @@ public sealed class BackfillServiceFactory
             gapAnalyzer,
             rateLimitTracker,
             composite,
-            worker);
+            worker,
+            symbolResolver);
     }
 }
 
@@ -809,13 +870,16 @@ public sealed class BackfillServices : IDisposable
     public CompositeHistoricalDataProvider Provider { get; }
     public BackfillWorkerService Worker { get; }
 
+    private readonly IDisposable? _ownedSymbolResolver;
+
     public BackfillServices(
         BackfillJobManager jobManager,
         BackfillRequestQueue requestQueue,
         DataGapAnalyzer gapAnalyzer,
         ProviderRateLimitTracker rateLimitTracker,
         CompositeHistoricalDataProvider provider,
-        BackfillWorkerService worker)
+        BackfillWorkerService worker,
+        IDisposable? ownedSymbolResolver = null)
     {
         JobManager = jobManager;
         RequestQueue = requestQueue;
@@ -823,6 +887,7 @@ public sealed class BackfillServices : IDisposable
         RateLimitTracker = rateLimitTracker;
         Provider = provider;
         Worker = worker;
+        _ownedSymbolResolver = ownedSymbolResolver;
     }
 
     /// <summary>
@@ -856,5 +921,6 @@ public sealed class BackfillServices : IDisposable
         JobManager.Dispose();
         RateLimitTracker.Dispose();
         Provider.Dispose();
+        _ownedSymbolResolver?.Dispose();
     }
 }

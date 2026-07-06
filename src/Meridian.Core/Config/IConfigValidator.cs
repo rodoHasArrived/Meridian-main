@@ -1,4 +1,5 @@
 using FluentValidation.Results;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Core.Config;
 
@@ -121,7 +122,7 @@ public sealed class FieldValidationStage : IConfigValidationStage
             "IB.ClientId" => "Use a non-negative client id that does not conflict with another active IB API session",
             "IB.UsePaperTrading" => "Keep paper trading enabled unless you explicitly intend to route live orders",
             "IBClientPortal.Enabled" => "Enable this only when Client Portal Gateway is running and you want portfolio/account import",
-            "IBClientPortal.BaseUrl" => "Point this at the Client Portal HTTP endpoint, typically https://localhost:5000",
+            "IBClientPortal.BaseUrl" => $"Point this at the Client Portal HTTP endpoint, typically {ApiEndpointDefaults.IbClientPortalBaseUrl}",
             "IBClientPortal.AllowSelfSignedCertificates" => "Enable this when using the local Client Portal Gateway default self-signed HTTPS certificate",
             var p when p.Contains("Symbol") => "Symbol must be 1-20 uppercase characters",
             var p when p.Contains("DepthLevels") => "Depth levels should be between 1 and 50",

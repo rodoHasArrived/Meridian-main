@@ -147,7 +147,7 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
         {
             yield return new CorporateActionCommand(
                 SecurityId: securityId,
-                ActionType: "Split",
+                ActionType: price.SplitFactor.Value < 1m ? "ReverseStockSplit" : "StockSplit",
                 ExDate: sessionDate,
                 RecordDate: null,
                 PayableDate: null,

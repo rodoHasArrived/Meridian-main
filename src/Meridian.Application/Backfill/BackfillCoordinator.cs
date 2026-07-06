@@ -1,5 +1,5 @@
 using System.Threading;
-using Meridian.Application.Backfill;
+using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
@@ -18,16 +18,17 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
 using Meridian.Storage.Services;
 using Serilog;
-using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Backfill;
 using Meridian.Storage.Backfill;
 
-namespace Meridian.Application.UI;
+namespace Meridian.Application.Backfill;
 
 /// <summary>
 /// Coordinates backfill operations using providers from <see cref="ProviderRegistry"/>.
 /// All providers are resolved through the registry, which is populated during DI setup.
+/// Owns execution, provider discovery, and preview estimation; the
+/// <c>Meridian.Ui.Shared.Services.BackfillCoordinator</c> is a thin read-model façade over this type.
 /// </summary>
 [ImplementsAdr("ADR-001", "Uses ProviderRegistry for unified provider discovery")]
 public sealed class BackfillCoordinator : IDisposable
@@ -38,7 +39,9 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly IEventMetrics _metrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly OpenFigiSymbolResolver? _symbolResolver;
+    private readonly ISymbolResolver? _symbolResolver;
+    private readonly OpenFigiSymbolResolver? _ownedSymbolResolver;
+    private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
     private BackfillResult? _lastRun;
     private bool _disposed;
 
@@ -49,20 +52,42 @@ public sealed class BackfillCoordinator : IDisposable
     /// <param name="registry">Provider registry for unified provider discovery.</param>
     /// <param name="factory">Provider factory as fallback for creating providers if registry is empty.</param>
     /// <param name="metrics">Event metrics for tracking backfill operations.</param>
-    public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IEventMetrics? metrics = null)
+    /// <param name="symbolResolver">
+    ///     Shared symbol resolution spine (typically the canonical-registry resolver from DI).
+    ///     When null, a coordinator-owned OpenFIGI resolver is created from configuration.
+    /// </param>
+    /// <param name="symbolTimelineResolver">
+    ///     Optional security-master timeline resolver; when present, daily backfill chunks
+    ///     spanning a ticker rename query the provider with the era-correct symbol.
+    /// </param>
+    public BackfillCoordinator(
+        ConfigStore store,
+        ProviderRegistry? registry = null,
+        ProviderFactory? factory = null,
+        IEventMetrics? metrics = null,
+        ISymbolResolver? symbolResolver = null,
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
     {
         _store = store;
         _registry = registry;
         _factory = factory;
         _metrics = metrics ?? new DefaultEventMetrics();
+        _symbolTimelineResolver = symbolTimelineResolver;
         _lastRun = store.TryLoadBackfillStatus();
 
-        // Initialize symbol resolver
+        if (symbolResolver is not null)
+        {
+            _symbolResolver = symbolResolver;
+            return;
+        }
+
+        // No shared spine supplied — fall back to a coordinator-owned OpenFIGI resolver.
         var cfg = store.Load();
         var openFigiConfig = cfg.Backfill?.Providers?.OpenFigi;
         if (openFigiConfig?.Enabled ?? true)
         {
-            _symbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log);
+            _ownedSymbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log);
+            _symbolResolver = _ownedSymbolResolver;
         }
     }
 
@@ -225,6 +250,22 @@ public sealed class BackfillCoordinator : IDisposable
     }
 
     /// <summary>
+    /// Previews a backfill operation without fetching data: which provider would serve it,
+    /// estimated bar counts and duration, and existing on-disk coverage per symbol.
+    /// </summary>
+    public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
+    {
+        ValidateRequest(request);
+
+        var provider = CreateProviders()
+            .FirstOrDefault(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
+        var cfg = _store.Load();
+        var dataRoot = _store.GetDataRoot(cfg);
+
+        return Task.FromResult(BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot));
+    }
+
+    /// <summary>
     /// Creates backfill providers using a priority-based discovery approach:
     /// 1. ProviderRegistry.GetBackfillProviders() - unified registry
     /// 2. ProviderFactory.CreateBackfillProviders() - factory with credential resolution
@@ -346,7 +387,11 @@ public sealed class BackfillCoordinator : IDisposable
             providers = combined;
         }
 
-        return new HistoricalBackfillService(providers, _log, checkpointStore: checkpointStore);
+        return new HistoricalBackfillService(
+            providers,
+            _log,
+            checkpointStore: checkpointStore,
+            symbolTimelineResolver: _symbolTimelineResolver);
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)
@@ -423,7 +468,7 @@ public sealed class BackfillCoordinator : IDisposable
             return;
         _disposed = true;
 
-        _symbolResolver?.Dispose();
+        _ownedSymbolResolver?.Dispose();
         _gate.Dispose();
     }
 }

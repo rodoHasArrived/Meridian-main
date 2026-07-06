@@ -122,11 +122,12 @@ public sealed class CorporateActionAdjustmentServiceTests
 
         var result = await _service.AdjustAsync([bar], "SPY");
 
+        var factor = 1m - 1m / 105m;
         result.Should().HaveCount(1);
-        result[0].Open.Should().Be(99m);      // 100 - 1
-        result[0].High.Should().Be(109m);     // 110 - 1
-        result[0].Low.Should().Be(89m);       // 90 - 1
-        result[0].Close.Should().Be(104m);    // 105 - 1
+        result[0].Open.Should().Be(100m * factor);
+        result[0].High.Should().Be(110m * factor);
+        result[0].Low.Should().Be(90m * factor);
+        result[0].Close.Should().Be(105m * factor);
         result[0].Volume.Should().Be(bar.Volume);
     }
 
@@ -187,7 +188,7 @@ public sealed class CorporateActionAdjustmentServiceTests
 
 
     [Fact]
-    public async Task AdjustAsync_MultipleWindows_ResolvesCorporateActionsOncePerTicker()
+    public async Task AdjustAsync_MultipleWindows_RefreshesCorporateActionsPerCall()
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
@@ -201,12 +202,12 @@ public sealed class CorporateActionAdjustmentServiceTests
         _ = await _service.AdjustAsync(bars, "SPY");
         _ = await _service.AdjustAsync(bars, "SPY");
 
-        _mockResolver.ResolveCallCount.Should().Be(1);
-        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+        _mockResolver.ResolveCallCount.Should().Be(3);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(3);
     }
 
     [Fact]
-    public async Task AdjustBarAsync_ReusesCachedCorporateActionsPerTicker()
+    public async Task AdjustBarAsync_RefreshesCorporateActionsPerCall()
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
@@ -218,8 +219,27 @@ public sealed class CorporateActionAdjustmentServiceTests
         _ = await _service.AdjustBarAsync(bar, "SPY");
         _ = await _service.AdjustBarAsync(bar, "SPY");
 
-        _mockResolver.ResolveCallCount.Should().Be(1);
-        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+        _mockResolver.ResolveCallCount.Should().Be(3);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task AdjustAsync_ActionAppendedAfterFirstTouch_IsVisibleWithoutRestart()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m);
+        _mockQueryService.SetCorporateActions([]);
+        var first = await _service.AdjustAsync([bar], "SPY");
+
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "StockSplit", new DateOnly(2024, 2, 1), null, null, null, 2m, null, null, null, null, null, null)
+        ]);
+        var second = await _service.AdjustAsync([bar], "SPY");
+
+        first[0].Close.Should().Be(105m);
+        second[0].Close.Should().Be(52.5m);
     }
 
     [Fact]
@@ -272,6 +292,119 @@ public sealed class CorporateActionAdjustmentServiceTests
 
         produced.Should().BeLessThan(500);
     }
+    [Fact]
+    public async Task AdjustAsync_LegacySplitAlias_AdjustsPricesLikeStockSplit()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        // Splits ingested before canonical normalization were stored as the raw provider
+        // string "Split"; the alias-tolerant read path must still apply them.
+        var legacySplit = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "Split",
+            ExDate: new DateOnly(2024, 2, 1),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+
+        _mockQueryService.SetCorporateActions([legacySplit]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
+
+        var result = await _service.AdjustAsync([bar], "SPY");
+
+        result.Should().HaveCount(1);
+        result[0].Close.Should().Be(52.5m);
+        result[0].Volume.Should().Be(2000);
+    }
+
+    [Fact]
+    public async Task AdjustAsync_CancelledSplit_IsNotApplied()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        var split = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "StockSplit",
+            ExDate: new DateOnly(2024, 2, 1),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+        var cancellation = split with
+        {
+            CorpActId = Guid.NewGuid(),
+            SupersedesCorpActId = split.CorpActId,
+            LifecycleState = CorporateActionLifecycleStates.Cancelled
+        };
+
+        _mockQueryService.SetCorporateActions([split, cancellation]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
+
+        var result = await _service.AdjustAsync([bar], "SPY");
+
+        result.Should().HaveCount(1);
+        result[0].Close.Should().Be(105m, "a cancelled split must not adjust prices");
+        result[0].Volume.Should().Be(1000);
+    }
+
+    [Fact]
+    public async Task AdjustAsync_AmendedSplit_UsesLatestRatioOnly()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+
+        var original = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "StockSplit",
+            ExDate: new DateOnly(2024, 2, 1),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+        var amendment = original with
+        {
+            CorpActId = Guid.NewGuid(),
+            SupersedesCorpActId = original.CorpActId,
+            SplitRatio = 4m
+        };
+
+        _mockQueryService.SetCorporateActions([original, amendment]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m, 1000);
+
+        var result = await _service.AdjustAsync([bar], "SPY");
+
+        result.Should().HaveCount(1);
+        result[0].Close.Should().Be(26.25m, "only the amended 4:1 ratio applies, never both versions");
+        result[0].Volume.Should().Be(4000);
+    }
+
     private static HistoricalBar CreateBar(
         string symbol,
         DateOnly date,
@@ -342,6 +475,7 @@ public sealed class CorporateActionAdjustmentServiceTests
             => Task.FromResult<ConvertibleEquityTermsDto?>(null);
 
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default) => throw new NotImplementedException();
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default) => throw new NotImplementedException();
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null) => throw new NotImplementedException();
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) => throw new NotImplementedException();

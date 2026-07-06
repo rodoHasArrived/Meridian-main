@@ -23,6 +23,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -70,9 +71,18 @@ public static class WorkstationServiceCollectionExtensions
             return new ConfigStore(core.ConfigPath);
         });
 
-        // The UI coordinator wraps the core coordinator and adds preview support for workstation flows.
+        // The UI coordinator is a read-model façade over the core coordinator. Reuse the
+        // composition-root core singleton when it is registered so UI endpoints and non-UI
+        // callers (execution gateway, governance summaries) share one run gate; otherwise
+        // build a façade-owned core from the shared UI config store.
         services.AddSingleton<BackfillCoordinator>(sp =>
         {
+            var core = sp.GetService<Meridian.Application.Backfill.BackfillCoordinator>();
+            if (core is not null)
+            {
+                return new BackfillCoordinator(core);
+            }
+
             var configStore = sp.GetRequiredService<ConfigStore>();
             var registry = sp.GetService<ProviderRegistry>();
             var factory = sp.GetService<ProviderFactory>();
@@ -239,6 +249,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
+            sp.GetRequiredService<TradingOperatorReadinessService>());
+        services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
@@ -443,6 +456,19 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton(sp =>
+            new AutomatedJournalDraftIntakeService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                sp.GetRequiredService<IAccountingConfigurationService>()));
+        services.TryAddSingleton(sp =>
+        {
+            var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
+            return new AutomatedJournalIntakeRunner(
+                sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
+                new FeeScheduleAccrualEventProducer(),
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster));
+        });
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),

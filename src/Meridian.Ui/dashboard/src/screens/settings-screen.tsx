@@ -1,5 +1,6 @@
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
+import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -5482,9 +5483,7 @@ function formatScopedAccessApprovalLimit(assignment: UserAccessAssignment): stri
     return "Not specified";
   }
 
-  const amount = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2
-  }).format(assignment.approvalLimitAmount);
+  const amount = formatNumberAmount(assignment.approvalLimitAmount);
   const currency = assignment.approvalLimitCurrency?.trim();
   return currency ? `${currency} ${amount}` : amount;
 }

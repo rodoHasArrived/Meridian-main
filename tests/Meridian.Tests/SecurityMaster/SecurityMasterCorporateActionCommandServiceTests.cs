@@ -94,6 +94,88 @@ public sealed class SecurityMasterCorporateActionCommandServiceTests
         await eventStore.DidNotReceiveWithAnyArgs().AppendCorporateActionAsync(default!, default);
     }
 
+    [Fact]
+    public async Task AppendAsync_WithLegacySplitVocabulary_NormalizesBeforeWrite()
+    {
+        var securityId = Guid.NewGuid();
+        var action = new CorporateActionDto(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: securityId,
+            EventType: "Split",
+            ExDate: new DateOnly(2026, 6, 22),
+            PayDate: null,
+            DividendPerShare: null,
+            Currency: null,
+            SplitRatio: 2m,
+            NewSecurityId: null,
+            DistributionRatio: null,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var service = new SecurityMasterCorporateActionCommandService(
+            eventStore,
+            NullLogger<SecurityMasterCorporateActionCommandService>.Instance);
+
+        var result = await service.AppendAsync(new SecurityMasterCorporateActionAppendRequestDto(
+            securityId,
+            action,
+            SourceSystem: "Tiingo",
+            Actor: "corporate-action-ingest-orchestrator"));
+
+        result.CorporateAction.EventType.Should().Be("StockSplit");
+        await eventStore.Received(1).AppendCorporateActionAsync(
+            Arg.Is<CorporateActionDto>(dto => dto.EventType == "StockSplit"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AppendAsync_WithPayDateBeforeRecordDate_RejectsBeforeWrite()
+    {
+        var securityId = Guid.NewGuid();
+        var action = CreateDividend(securityId) with
+        {
+            RecordDate = new DateOnly(2026, 7, 10),
+            PayDate = new DateOnly(2026, 7, 1)
+        };
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var service = new SecurityMasterCorporateActionCommandService(
+            eventStore,
+            NullLogger<SecurityMasterCorporateActionCommandService>.Instance);
+
+        var append = async () => await service.AppendAsync(new SecurityMasterCorporateActionAppendRequestDto(
+            securityId,
+            action,
+            SourceSystem: "Polygon",
+            Actor: "polygon-corporate-action-fetcher"));
+
+        await append.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Corporate action PayDate must be on or after RecordDate.*");
+        await eventStore.DidNotReceiveWithAnyArgs().AppendCorporateActionAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task AppendAsync_WithCashDividendMissingCurrency_RejectsBeforeWrite()
+    {
+        var securityId = Guid.NewGuid();
+        var action = CreateDividend(securityId) with { Currency = null };
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var service = new SecurityMasterCorporateActionCommandService(
+            eventStore,
+            NullLogger<SecurityMasterCorporateActionCommandService>.Instance);
+
+        var append = async () => await service.AppendAsync(new SecurityMasterCorporateActionAppendRequestDto(
+            securityId,
+            action,
+            SourceSystem: "Polygon",
+            Actor: "polygon-corporate-action-fetcher"));
+
+        await append.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Corporate action cash amounts must include Currency.*");
+        await eventStore.DidNotReceiveWithAnyArgs().AppendCorporateActionAsync(default!, default);
+    }
+
     private static CorporateActionDto CreateDividend(Guid securityId)
         => new(
             CorpActId: Guid.NewGuid(),

@@ -220,6 +220,21 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
     public bool IsConnected => _wsManager.IsConnected;
 
+    /// <summary>
+    /// Raised when the underlying WebSocket connection diagnostics change.
+    /// </summary>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
+    {
+        add => _wsManager.DiagnosticsChanged += value;
+        remove => _wsManager.DiagnosticsChanged -= value;
+    }
+
+    /// <summary>
+    /// Returns the live connection diagnostics snapshot from the shared connection manager.
+    /// </summary>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+        => _wsManager.GetDiagnosticsSnapshot();
+
     public async Task ConnectAsync(CancellationToken ct = default)
     {
         if (IsConnected)

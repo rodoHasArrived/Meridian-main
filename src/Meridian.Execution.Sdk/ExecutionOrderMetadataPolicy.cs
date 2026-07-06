@@ -19,7 +19,11 @@ public static class ExecutionOrderMetadataPolicy
         "manualOverrideId",
         "manual_override_id",
         "executionControlOverrideId",
-        "execution_control_override_id"
+        "execution_control_override_id",
+        "liveReadinessEvidenceReference",
+        "live_readiness_evidence_reference",
+        "livePromotionAuditReference",
+        "live_promotion_audit_reference"
     ];
 
     private static readonly string[] BrokerAccountAndOverrideKeys =
@@ -32,7 +36,11 @@ public static class ExecutionOrderMetadataPolicy
         "manualOverrideId",
         "manual_override_id",
         "executionControlOverrideId",
-        "execution_control_override_id"
+        "execution_control_override_id",
+        "liveReadinessEvidenceReference",
+        "live_readiness_evidence_reference",
+        "livePromotionAuditReference",
+        "live_promotion_audit_reference"
     ];
 
     public static bool ContainsClientRejectedServerOwnedKey(IReadOnlyDictionary<string, string>? metadata) =>
