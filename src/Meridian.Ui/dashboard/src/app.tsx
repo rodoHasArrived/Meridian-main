@@ -558,7 +558,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
-                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId} />} />
+                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
