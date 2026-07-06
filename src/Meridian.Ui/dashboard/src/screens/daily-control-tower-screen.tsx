@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { KeyValueGrid, MetricCard, type MetricCardTone } from "@/components/data/concrete";
 import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
@@ -42,30 +43,19 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
     model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
 
   return (
-    <section
-      className="space-y-5"
-      aria-labelledby="daily-control-tower-heading"
-      aria-describedby="daily-control-tower-summary"
-    >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-4xl space-y-2">
-          <p className="eyebrow-label">Daily control tower</p>
-          <h2 id="daily-control-tower-heading" className="font-display text-2xl font-semibold text-foreground">
-            What needs an operator decision now
-          </h2>
-          <p id="daily-control-tower-summary" className="text-sm leading-6 text-muted-foreground">
-            Ranked from shell workflow continuity, trust posture, linked context, and timestamped evidence.
-          </p>
-        </div>
-
+    <ScreenLayout
+      title="What needs an operator decision now"
+      scope="Daily control tower"
+      description="Ranked from shell workflow continuity, trust posture, linked context, and timestamped evidence."
+      actions={
         <Button asChild variant="default" size="sm" className="self-start">
           <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
             <span>{model.nextActionLabel}</span>
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         </Button>
-      </div>
-
+      }
+    >
       <ReadinessPanel
         state={severityStatusForTone[model.statusTone]}
         statusLabel={model.statusLabel}
@@ -254,7 +244,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
           }))}
         />
       </div>
-    </section>
+    </ScreenLayout>
   );
 }
 
