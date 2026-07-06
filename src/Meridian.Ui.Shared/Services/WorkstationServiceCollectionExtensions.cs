@@ -468,7 +468,8 @@ public static class WorkstationServiceCollectionExtensions
             return new AutomatedJournalIntakeRunner(
                 sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
                 new FeeScheduleAccrualEventProducer(),
-                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster));
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>());
         });
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(

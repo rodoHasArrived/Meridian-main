@@ -26,13 +26,15 @@ public sealed record DividendAccrualPosition(
 
 /// <summary>
 /// Request to produce dividend-declared events from Security Master corporate actions
-/// whose ex-date falls inside the window.
+/// whose ex-date falls inside the window. A positive <paramref name="WithholdingTaxRate"/>
+/// additionally accrues withholding tax against each declared dividend.
 /// </summary>
 public sealed record CorporateActionDividendRequest(
     IReadOnlyList<DividendAccrualPosition> Positions,
     DateOnly WindowStart,
     DateOnly WindowEnd,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    decimal WithholdingTaxRate = 0m);
 
 /// <summary>
 /// Produces <see cref="AutomatedJournalEventKind.DividendDeclared"/> events from the
@@ -58,6 +60,8 @@ public sealed class CorporateActionDividendEventProducer
             throw new ArgumentException("At least one position is required.", nameof(request));
         if (request.WindowEnd < request.WindowStart)
             throw new ArgumentException("Dividend window end must not precede its start.", nameof(request));
+        if (request.WithholdingTaxRate is < 0m or >= 1m)
+            throw new ArgumentOutOfRangeException(nameof(request), "Withholding tax rate must be at least 0 and below 1.");
 
         var events = new List<AutomatedJournalEvent>();
         var skipped = new List<AutomatedJournalEventProductionSkip>();
@@ -117,6 +121,19 @@ public sealed class CorporateActionDividendEventProducer
                         continue;
                     }
 
+                    var evidenceReferences = new[]
+                    {
+                        new JournalEvidenceReference(
+                            EvidenceId: FormattableString.Invariant($"corp-act:{dividend.CorpActId:N}"),
+                            Uri: FormattableString.Invariant(
+                                $"/api/workstation/security-master/securities/{securityId.Value:D}/corporate-actions/{dividend.CorpActId:D}"),
+                            Kind: "corporate-action",
+                            SourceSystem: "security-master",
+                            RetainedAtUtc: request.AsOf,
+                            RetainedBy: "automated-journal",
+                            SubjectId: symbol)
+                    };
+
                     events.Add(new AutomatedJournalEvent(
                         AutomatedJournalEventKind.DividendDeclared,
                         symbol,
@@ -130,18 +147,36 @@ public sealed class CorporateActionDividendEventProducer
                         EffectiveDate: dividend.ExDate,
                         IdempotencyKey: FormattableString.Invariant(
                             $"corp-act-dividend|{dividend.CorpActId:N}|{position.FinancialAccountId ?? "-"}"),
-                        EvidenceReferences:
-                        [
-                            new JournalEvidenceReference(
-                                EvidenceId: FormattableString.Invariant($"corp-act:{dividend.CorpActId:N}"),
-                                Uri: FormattableString.Invariant(
-                                    $"/api/workstation/security-master/securities/{securityId.Value:D}/corporate-actions/{dividend.CorpActId:D}"),
-                                Kind: "corporate-action",
-                                SourceSystem: "security-master",
-                                RetainedAtUtc: request.AsOf,
-                                RetainedBy: "automated-journal",
-                                SubjectId: symbol)
-                        ]));
+                        EvidenceReferences: evidenceReferences));
+
+                    if (request.WithholdingTaxRate <= 0m)
+                        continue;
+
+                    var withholding = decimal.Round(
+                        amount * request.WithholdingTaxRate, 2, MidpointRounding.AwayFromZero);
+                    if (withholding <= 0m)
+                    {
+                        skipped.Add(new AutomatedJournalEventProductionSkip(
+                            symbol,
+                            FormattableString.Invariant(
+                                $"Withholding on corporate action {dividend.CorpActId:N} rounds to a non-positive amount.")));
+                        continue;
+                    }
+
+                    events.Add(new AutomatedJournalEvent(
+                        AutomatedJournalEventKind.WithholdingTaxAccrued,
+                        symbol,
+                        withholding,
+                        new DateTimeOffset(dividend.ExDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                        FinancialAccountId: position.FinancialAccountId,
+                        Description: FormattableString.Invariant(
+                            $"Withholding tax accrued for {symbol}: {request.WithholdingTaxRate:P2} of dividend {amount}{currencySuffix} (ex {dividend.ExDate:yyyy-MM-dd})"),
+                        SecurityId: securityId,
+                        SourceEventId: dividend.CorpActId.ToString("N"),
+                        EffectiveDate: dividend.ExDate,
+                        IdempotencyKey: FormattableString.Invariant(
+                            $"corp-act-dividend-wht|{dividend.CorpActId:N}|{position.FinancialAccountId ?? "-"}"),
+                        EvidenceReferences: evidenceReferences));
                 }
             }
             catch (OperationCanceledException)
