@@ -75,7 +75,9 @@ public static partial class WorkstationEndpoints
             EffectiveTo: record.EffectiveTo,
             SubType: record.SubType,
             AssetFamily: record.AssetFamily,
-            IssuerType: record.IssuerType);
+            IssuerType: record.IssuerType,
+            RiskCountry: record.RiskCountry,
+            TypeName: record.TypeName);
 
     /// <summary>
     /// Derives the most specific sub-type available from the asset-class string without requiring
