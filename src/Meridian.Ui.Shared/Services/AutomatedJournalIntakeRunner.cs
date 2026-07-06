@@ -197,10 +197,13 @@ public sealed class AutomatedJournalIntakeRunner
         return new AutomatedJournalIntakeRunResult([], intake);
     }
 
-    private static IReadOnlyDictionary<LedgerAccount, decimal> BuildTrialBalance(
+    private static IReadOnlyList<PeriodCloseAccountBalance> BuildTrialBalance(
         IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
     {
-        var balances = new Dictionary<LedgerAccount, decimal>();
+        // Preserve the dimensional scope of each trial-balance row: rows sharing an account but
+        // split across entities/sleeves must stay separate so the close zeroes each dimension's
+        // balance and rolls its retained earnings independently, rather than posting one aggregate.
+        var balances = new Dictionary<string, (LedgerAccount Account, LedgerLineDimensionSet? Dimensions, decimal Balance)>(StringComparer.Ordinal);
         foreach (var line in lines)
         {
             if (!Enum.TryParse<LedgerAccountType>(line.AccountType, ignoreCase: true, out var accountType))
@@ -210,10 +213,44 @@ public sealed class AutomatedJournalIntakeRunner
             }
 
             var account = new LedgerAccount(line.AccountName, accountType, line.Symbol, line.FinancialAccountId);
-            balances[account] = balances.GetValueOrDefault(account) + line.Balance;
+            var dimensions = LedgerDimensionMapper.ToDomain(line.Dimensions);
+            var key = FormattableString.Invariant(
+                $"{account.Name}|{account.AccountType}|{account.Symbol}|{account.FinancialAccountId}|{DimensionKey(dimensions)}");
+
+            if (balances.TryGetValue(key, out var existing))
+            {
+                balances[key] = existing with { Balance = existing.Balance + line.Balance };
+            }
+            else
+            {
+                balances[key] = (account, dimensions, line.Balance);
+            }
         }
 
-        return balances;
+        return balances.Values
+            .Select(static row => new PeriodCloseAccountBalance(row.Account, row.Balance, row.Dimensions))
+            .ToArray();
+    }
+
+    private static string DimensionKey(LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null)
+            return string.Empty;
+
+        var externalGl = string.Join(
+            ";",
+            dimensions.ExternalGlDimensions
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .Select(static pair => FormattableString.Invariant($"{pair.Key}={pair.Value}")));
+
+        return string.Join(
+            "|",
+            dimensions.FundId, dimensions.EntityId, dimensions.SleeveId, dimensions.StrategyId,
+            dimensions.InvestorId, dimensions.CapitalAccountId, dimensions.InstrumentId?.ToString("D"),
+            dimensions.TaxLotId, dimensions.CostCenterId, dimensions.CounterpartyId,
+            dimensions.OrganizationId, dimensions.PortfolioId, dimensions.BookId,
+            dimensions.AccountId, dimensions.CustomerId, dimensions.VendorId, dimensions.ProjectId,
+            externalGl);
     }
 
     public async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(

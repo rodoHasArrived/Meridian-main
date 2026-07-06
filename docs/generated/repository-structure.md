@@ -5678,6 +5678,7 @@ Meridian-main
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
+│   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs

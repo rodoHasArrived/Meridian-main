@@ -146,4 +146,44 @@ public sealed class PeriodCloseProjectorTests
         ledger.GetBalance(LedgerAccounts.RealizedGain).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.RetainedEarnings).Should().Be(1_000m);
     }
+
+    [Fact]
+    public void Project_DimensionSplitBalances_CloseEachScopeIndependently()
+    {
+        var revenue = new LedgerAccount("Dividend Income", LedgerAccountType.Revenue);
+        var entityA = new LedgerLineDimensionSet(EntityId: "entity-a");
+        var entityB = new LedgerLineDimensionSet(EntityId: "entity-b");
+
+        // The same revenue account carries balances under two entities. A dimension-flat close
+        // would post one aggregate roll; the close must instead zero and roll each entity's slice.
+        var input = new PeriodCloseInput(
+            "2026-Q2",
+            CloseAt,
+            new[]
+            {
+                new PeriodCloseAccountBalance(revenue, 300m, entityA),
+                new PeriodCloseAccountBalance(revenue, 120m, entityB),
+            },
+            "controller");
+
+        var projection = PeriodCloseProjector.Project(input);
+
+        projection.IsBalanced.Should().BeTrue();
+        projection.Lines.Should().HaveCount(2, "each dimensional slice of the account closes on its own");
+
+        // Two revenue-closing debits (one per entity) plus two dimension-scoped retained-earnings credits.
+        projection.JournalLines.Should().HaveCount(4);
+        projection.JournalLines.Should().ContainSingle(line =>
+            line.account.Name == "Dividend Income" && line.debit == 300m &&
+            line.dimensions!.EntityId == "entity-a");
+        projection.JournalLines.Should().ContainSingle(line =>
+            line.account.Name == "Dividend Income" && line.debit == 120m &&
+            line.dimensions!.EntityId == "entity-b");
+        projection.JournalLines.Should().ContainSingle(line =>
+            line.account.Name == "Retained Earnings" && line.credit == 300m &&
+            line.dimensions!.EntityId == "entity-a");
+        projection.JournalLines.Should().ContainSingle(line =>
+            line.account.Name == "Retained Earnings" && line.credit == 120m &&
+            line.dimensions!.EntityId == "entity-b");
+    }
 }

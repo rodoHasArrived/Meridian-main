@@ -221,7 +221,8 @@ public sealed class AutomatedJournalDraftIntakeService
                     SecurityId: line.account.Symbol is not null ? draft.Event.SecurityId : null,
                     SecurityDisplayName: line.account.Symbol,
                     Description: line.account.ToString(),
-                    EvidenceLink: firstEvidenceLink);
+                    EvidenceLink: firstEvidenceLink,
+                    Dimensions: LedgerDimensionMapper.ToDto(line.dimensions));
             })
             .ToArray();
 

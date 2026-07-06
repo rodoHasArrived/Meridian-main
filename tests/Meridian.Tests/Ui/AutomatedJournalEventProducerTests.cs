@@ -395,9 +395,39 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     private static LedgerPeriodTrialBalanceLineDto TrialBalanceLine(
-        string accountName, string accountType, decimal debits, decimal credits, decimal balance)
+        string accountName, string accountType, decimal debits, decimal credits, decimal balance,
+        LedgerDimensionSetDto? dimensions = null)
         => new(accountName, accountType, Symbol: null, FinancialAccountId: null,
-            DebitTotal: debits, CreditTotal: credits, Balance: balance, EntryCount: 1);
+            DebitTotal: debits, CreditTotal: credits, Balance: balance, EntryCount: 1,
+            Dimensions: dimensions);
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_PreservesDimensionSplitClosingLines()
+    {
+        var fixture = CreateIntakeFixture();
+        // The same revenue account under two entities must close to two dimension-scoped lines,
+        // not a single aggregate, so entity-level P&L and retained earnings stay correct.
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m,
+                new LedgerDimensionSetDto(EntityId: "entity-a")),
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 120m, 120m,
+                new LedgerDimensionSetDto(EntityId: "entity-b")));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId, BookId));
+
+        var draft = result.Intake.Created.Should().ContainSingle().Subject;
+        draft.Lines.Should().HaveCount(4,
+            "two dimension-scoped revenue closings plus two dimension-scoped retained-earnings rolls");
+        draft.Lines.Should().Contain(line =>
+            line.Dimensions != null && line.Dimensions.EntityId == "entity-a" && line.Amount == 300m);
+        draft.Lines.Should().Contain(line =>
+            line.Dimensions != null && line.Dimensions.EntityId == "entity-b" && line.Amount == 120m);
+        draft.Lines.Where(line => line.Dimensions != null && line.Dimensions.EntityId == "entity-a")
+            .Should().HaveCount(2, "the entity-a revenue close and its retained-earnings roll both carry the entity scope");
+    }
 
     [Fact]
     public async Task Runner_PeriodCloseIntake_LandsClosingEntryDraftInWorkbenchQueue()
