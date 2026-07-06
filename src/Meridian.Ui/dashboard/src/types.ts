@@ -1,4 +1,12 @@
 export * from "./types/market-data";
+export * from "./types/workstation-1";
+export * from "./types/workstation-2";
+export * from "./types/workstation-3";
+export * from "./types/workstation-4";
+export * from "./types/workstation-5";
+export * from "./types/workstation-6";
+export * from "./types/workstation-7";
+export * from "./types/workstation-8";
 
 export type WorkspaceKey =
   | "trading"
