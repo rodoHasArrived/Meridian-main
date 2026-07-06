@@ -25,7 +25,9 @@ public sealed class ConnectivityTestService : IAsyncDisposable
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.ConnectivityTest);
         _progress = new ProgressDisplayService();
-        _tcpConnectTimeoutMs = (probeOptions ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions()).TcpConnectTimeoutMs;
+        var tcpConnectTimeoutMs = (probeOptions ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions()).TcpConnectTimeoutMs;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tcpConnectTimeoutMs, nameof(probeOptions));
+        _tcpConnectTimeoutMs = tcpConnectTimeoutMs;
     }
 
     /// <summary>

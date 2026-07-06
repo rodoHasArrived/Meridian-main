@@ -21,7 +21,9 @@ public sealed class SetupWizardService
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.SetupWizard);
         _configService = new ConfigService();
         _credentialService = new CredentialService();
-        _tcpConnectTimeoutMs = (probeOptions ?? new ConnectivityProbeOptions()).TcpConnectTimeoutMs;
+        var tcpConnectTimeoutMs = (probeOptions ?? new ConnectivityProbeOptions()).TcpConnectTimeoutMs;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tcpConnectTimeoutMs, nameof(probeOptions));
+        _tcpConnectTimeoutMs = tcpConnectTimeoutMs;
     }
 
     /// <summary>
