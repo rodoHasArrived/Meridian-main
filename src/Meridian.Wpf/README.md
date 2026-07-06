@@ -473,6 +473,7 @@ board, investor, compliance, and fund-ops packets do not surface the legacy Gove
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
 properties from the active workspace layout descriptor so shell chrome can be reused without
 depending on ambient `MainPage` bindings.
+Workspace pages can also publish reusable context actions by implementing `IWorkspaceContextCommandProvider` and returning `ContextCommandDescriptor` items with label, glyph, command, disabled reason, importance, busy state, visibility, and automation ID metadata. `MainPageViewModel` mirrors the active page provider into `ActiveWorkspaceContextCommands`, and `ContextCommandToolbarControl` renders those commands in `WorkspaceCommandSurfaceControl` so command availability stays view-model-owned rather than XAML-trigger-owned.
 Modal surfaces should migrate through `WorkspaceDialogChromeControl`; provider API-key setup,
 watchlist saving, and scheduled-job editing now use that shared dialog chrome with stable title,
 subtitle, body, input, and action automation IDs. The control projects its chrome automation ID and
