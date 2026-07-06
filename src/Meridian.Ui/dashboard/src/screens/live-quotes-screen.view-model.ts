@@ -544,21 +544,37 @@ export function useLiveQuotesScreenViewModel(
   const [paused, setPaused] = useState(false);
   const streamSymbols = useMemo(() => (paused ? [] : symbolSet), [paused, symbolSet]);
   const quotesStream = useQuotesStream(streamSymbols);
+  const fetchMarketDataRef = useRef<(symbol: string, options?: { attempt?: number }) => Promise<void>>(async () => {});
+  const lastMarketSymbolRef = useRef<string | null>(null);
   const marketLifecycle = useRequestLifecycle({
     operation: "live quote market panels",
     runningMessage: "Refreshing live quote, trade, and order-book panels.",
     successMessage: "Live market panels refreshed.",
     failureMessage: "Live market refresh failed.",
     staleMessage: "Older live market response discarded.",
-    maxRetries: 2
+    maxRetries: 2,
+    onRetry: ({ attempt }) => {
+      const symbol = lastMarketSymbolRef.current;
+      if (symbol) {
+        void fetchMarketDataRef.current(symbol, { attempt });
+      }
+    }
   });
+  const fetchSnapshotDataRef = useRef<(symbols: readonly string[], options?: { attempt?: number }) => Promise<void>>(async () => {});
+  const lastSnapshotSymbolsRef = useRef<readonly string[] | null>(null);
   const snapshotLifecycle = useRequestLifecycle({
     operation: "live quote matrix",
     runningMessage: "Refreshing live quote matrix.",
     successMessage: "Live quote matrix refreshed.",
     failureMessage: "Live quote matrix refresh failed.",
     staleMessage: "Older live quote matrix response discarded.",
-    maxRetries: 2
+    maxRetries: 2,
+    onRetry: ({ attempt }) => {
+      const symbols = lastSnapshotSymbolsRef.current;
+      if (symbols && symbols.length > 0) {
+        void fetchSnapshotDataRef.current(symbols, { attempt });
+      }
+    }
   });
   const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder: api.submitOrder });
 
@@ -574,13 +590,17 @@ export function useLiveQuotesScreenViewModel(
     setSelectedDepthLevelId(null);
   }, [quickTrade]);
 
-  const fetchMarketData = useCallback(async (symbol: string) => {
+  const fetchMarketData = useCallback(async (symbol: string, options: { attempt?: number } = {}) => {
     const requestedSymbol = normalizeLiveQuoteSymbol(symbol);
     if (!requestedSymbol) {
       return;
     }
 
-    const token = marketLifecycle.start({ runningMessage: `Refreshing live market panels for ${requestedSymbol}.` });
+    lastMarketSymbolRef.current = requestedSymbol;
+    const token = marketLifecycle.start({
+      runningMessage: `Refreshing live market panels for ${requestedSymbol}.`,
+      attempt: options.attempt
+    });
     if (!token) {
       return;
     }
@@ -618,14 +638,18 @@ export function useLiveQuotesScreenViewModel(
     }
   }, [api.getLiveOrderbook, api.getLiveQuote, api.getLiveTrades, marketLifecycle.fail, marketLifecycle.finish, marketLifecycle.markStale, marketLifecycle.start, marketLifecycle.succeed]);
 
-  const fetchSnapshotData = useCallback(async (symbols: readonly string[]) => {
+  const fetchSnapshotData = useCallback(async (symbols: readonly string[], options: { attempt?: number } = {}) => {
     const normalizedSymbols = normalizeLiveQuoteSymbols(symbols.join(","));
     const snapshotKey = normalizedSymbols.join(",");
     if (normalizedSymbols.length === 0) {
       return;
     }
 
-    const token = snapshotLifecycle.start({ runningMessage: `Refreshing live quote matrix for ${snapshotKey}.` });
+    lastSnapshotSymbolsRef.current = normalizedSymbols;
+    const token = snapshotLifecycle.start({
+      runningMessage: `Refreshing live quote matrix for ${snapshotKey}.`,
+      attempt: options.attempt
+    });
     if (!token) {
       return;
     }
@@ -655,6 +679,14 @@ export function useLiveQuotesScreenViewModel(
       snapshotLifecycle.finish(token);
     }
   }, [api.getLiveQuotesSnapshot, snapshotLifecycle.fail, snapshotLifecycle.finish, snapshotLifecycle.markStale, snapshotLifecycle.start, snapshotLifecycle.succeed]);
+
+  useEffect(() => {
+    fetchMarketDataRef.current = fetchMarketData;
+  }, [fetchMarketData]);
+
+  useEffect(() => {
+    fetchSnapshotDataRef.current = fetchSnapshotData;
+  }, [fetchSnapshotData]);
 
   useEffect(() => {
     if (!activeSymbol || paused) {
