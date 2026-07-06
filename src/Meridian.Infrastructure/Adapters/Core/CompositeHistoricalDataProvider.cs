@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Threading;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
@@ -27,13 +26,10 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 {
     private readonly List<IHistoricalDataProvider> _providers;
     private readonly ISymbolResolver? _symbolResolver;
-    private readonly ProviderRateLimitTracker _rateLimitTracker;
-    private readonly ConcurrentDictionary<string, ProviderHealthStatus> _healthStatus = new();
-    private readonly ConcurrentDictionary<string, DateTimeOffset> _providerFailures = new();
-    private readonly TimeSpan _failureBackoffDuration;
+    private readonly ProviderRotationStrategy _rotation;
+    private readonly ProviderHealthTracker _health;
+    private readonly CrossProviderValidator _validator;
     private readonly bool _enableCrossValidation;
-    private readonly bool _enableRateLimitRotation;
-    private readonly double _rateLimitRotationThreshold;
     private readonly TimeSpan _maxRateLimitRetryBudget;
     private readonly ILogger _log;
     private bool _disposed;
@@ -41,14 +37,6 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     // Maximum number of times the whole provider chain is retried after every candidate has
     // been rate limited. Kept small so a persistent rate limit cannot wedge a single request.
     private const int MaxRateLimitRetries = 3;
-
-    // A single rate-limit reset longer than this is treated as "not worth waiting for"; the
-    // request fails fast rather than blocking on it.
-    private static readonly TimeSpan MaxSingleRateLimitWait = TimeSpan.FromMinutes(5);
-
-    // Upper bound on the random jitter added to each rate-limit wait so that many concurrent
-    // requests do not resume in lock-step and hammer the provider at the same instant.
-    private static readonly TimeSpan RateLimitRetryJitter = TimeSpan.FromSeconds(1);
 
     /// <summary>
     /// Event raised as a request progresses through the provider chain: when a provider
@@ -88,12 +76,12 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     /// <summary>
     /// Get current health status of all providers.
     /// </summary>
-    public IReadOnlyDictionary<string, ProviderHealthStatus> ProviderHealth => _healthStatus;
+    public IReadOnlyDictionary<string, ProviderHealthStatus> ProviderHealth => _health.Health;
 
     /// <summary>
     /// Get current rate limit status for all providers.
     /// </summary>
-    public IReadOnlyDictionary<string, RateLimitStatus> RateLimitStatus => _rateLimitTracker.GetAllStatus();
+    public IReadOnlyDictionary<string, RateLimitStatus> RateLimitStatus => _rotation.GetAllStatus();
 
     public IReadOnlyList<DataGranularity> SupportedGranularities =>
         _providers
@@ -121,27 +109,27 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             throw new ArgumentException("At least one provider is required", nameof(providers));
 
         _symbolResolver = symbolResolver;
-        _failureBackoffDuration = failureBackoffDuration ?? TimeSpan.FromMinutes(5);
         _enableCrossValidation = enableCrossValidation;
-        _enableRateLimitRotation = enableRateLimitRotation;
-        _rateLimitRotationThreshold = rateLimitRotationThreshold;
         // Overall wall-clock budget for waiting out rate limits across all retry attempts.
         // Bounds the worst case (previously ~15 min: 3 retries x 5 min) to a single knob.
         _maxRateLimitRetryBudget = maxRateLimitRetryBudget ?? TimeSpan.FromMinutes(5);
         _log = log ?? LoggingSetup.ForContext<CompositeHistoricalDataProvider>();
 
-        // Initialize rate limit tracker
-        _rateLimitTracker = new ProviderRateLimitTracker(_log);
+        // Rate-limit aware rotation policy, backed by a per-provider rate-limit state tracker.
+        var rateLimitTracker = new ProviderRateLimitTracker(_log);
         foreach (var provider in _providers)
         {
-            _rateLimitTracker.RegisterProvider(provider);
+            rateLimitTracker.RegisterProvider(provider);
         }
+        _rotation = new ProviderRotationStrategy(rateLimitTracker, enableRateLimitRotation, rateLimitRotationThreshold);
 
-        // Initialize health status
-        foreach (var provider in _providers)
-        {
-            _healthStatus[provider.Name] = new ProviderHealthStatus(provider.Name, true, "Not checked");
-        }
+        // Per-provider health status and failure backoff bookkeeping.
+        _health = new ProviderHealthTracker(
+            _providers.Select(p => p.Name),
+            failureBackoffDuration ?? TimeSpan.FromMinutes(5));
+
+        // Best-effort cross-provider validation (only invoked when enabled).
+        _validator = new CrossProviderValidator(_providers, ResolveSymbolForProviderAsync, _log);
     }
 
     public async Task<bool> IsAvailableAsync(CancellationToken ct = default)
@@ -168,7 +156,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             candidateSelector: GetOrderedProviders,
             fetchAsync: (provider, resolved, token) => provider.GetDailyBarsAsync(resolved, from, to, token),
             onSuccessAsync: _enableCrossValidation
-                ? (bars, provider, token) => ValidateBarsAsync(bars, symbol, from, to, provider.Name, token)
+                ? (bars, provider, token) => _validator.ValidateAsync(bars, symbol, from, to, provider.Name, token)
                 : null,
             allFailedMessageFactory: summary => $"All providers failed for {symbol}: {summary}",
             ct).ConfigureAwait(false);
@@ -230,16 +218,16 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             foreach (var provider in candidateSelector())
             {
                 // Skip providers in backoff period
-                if (IsInBackoffPeriod(provider.Name))
+                if (_health.IsInBackoffPeriod(provider.Name))
                 {
                     _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
                     continue;
                 }
 
                 // Skip rate-limited providers if rotation is enabled
-                if (_enableRateLimitRotation && _rateLimitTracker.IsRateLimited(provider.Name))
+                if (_rotation.Enabled && _rotation.IsRateLimited(provider.Name))
                 {
-                    var resetTime = _rateLimitTracker.GetTimeUntilReset(provider.Name);
+                    var resetTime = _rotation.GetTimeUntilReset(provider.Name);
                     _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
                     continue;
                 }
@@ -256,7 +244,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     var startTime = DateTimeOffset.UtcNow;
 
                     // Record the request attempt
-                    _rateLimitTracker.RecordRequest(provider.Name);
+                    _rotation.RecordRequest(provider.Name);
 
                     var results = await fetchAsync(provider, resolvedSymbol, ct).ConfigureAwait(false);
                     var elapsed = DateTimeOffset.UtcNow - startTime;
@@ -264,9 +252,9 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     if (results is { Count: > 0 })
                     {
                         // Update health status and clear any rate limit state
-                        UpdateHealthStatus(provider.Name, true, $"Retrieved {results.Count} {operationLabel}", elapsed);
-                        ClearFailure(provider.Name);
-                        _rateLimitTracker.ClearRateLimitState(provider.Name);
+                        _health.UpdateHealth(provider.Name, true, $"Retrieved {results.Count} {operationLabel}", elapsed);
+                        _health.ClearFailure(provider.Name);
+                        _rotation.ClearRateLimitState(provider.Name);
 
                         _log.Information("Successfully retrieved {Count} {Operation} from {Provider} for {Symbol}",
                             results.Count, operationLabel, provider.Name, symbol);
@@ -293,7 +281,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     if (IsRateLimitException(ex))
                     {
                         var retryAfter = ExtractRetryAfter(ex);
-                        _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
+                        _rotation.RecordRateLimitHit(provider.Name, retryAfter);
                         _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Operation}, rotating to next provider",
                             provider.Name, symbol, operationLabel);
                         RaiseProgress(symbol, provider.Name, requestStartedAt, status: "rate-limited", error: ex.Message);
@@ -301,7 +289,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     else
                     {
                         _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Operation}", provider.Name, symbol, operationLabel);
-                        RecordFailure(provider.Name, ex.Message);
+                        _health.RecordFailure(provider.Name, ex.Message);
                         RaiseProgress(symbol, provider.Name, requestStartedAt, status: "failed", error: ex.Message);
                     }
                     errors.Add((provider.Name, ex));
@@ -310,12 +298,12 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
             // All providers failed - if they were all just rate limited and we still have retry
             // attempts and time budget left, wait for the earliest reset (with jitter) and retry.
-            if (_enableRateLimitRotation
+            if (_rotation.Enabled
                 && errors.Count > 0
                 && errors.All(e => IsRateLimitException(e.Error))
                 && attempt < MaxRateLimitRetries)
             {
-                var wait = ComputeRateLimitWait(retryDeadline);
+                var wait = _rotation.ComputeRateLimitWait(_providers, retryDeadline);
                 if (wait.HasValue)
                 {
                     _log.Information(
@@ -338,30 +326,6 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             RaiseProgress(symbol, Name, requestStartedAt, status: "no-data");
             return Array.Empty<TResult>();
         }
-    }
-
-    /// <summary>
-    /// Determine how long to wait for the earliest provider rate-limit reset before the next
-    /// retry, honoring the overall <paramref name="retryDeadline"/> budget and adding jitter.
-    /// Returns <see langword="null"/> when waiting is not worthwhile (no reset known, the reset
-    /// is too far out, or the remaining budget is exhausted), signalling the caller to fail fast.
-    /// </summary>
-    private TimeSpan? ComputeRateLimitWait(DateTimeOffset retryDeadline)
-    {
-        var shortestWait = GetShortestRateLimitWait();
-        if (!shortestWait.HasValue || shortestWait.Value >= MaxSingleRateLimitWait)
-            return null;
-
-        var remaining = retryDeadline - DateTimeOffset.UtcNow;
-        if (remaining <= TimeSpan.Zero || shortestWait.Value > remaining)
-            return null;
-
-        // Add bounded random jitter so concurrent requests don't resume in lock-step.
-        var jitterMs = Random.Shared.Next(0, (int)RateLimitRetryJitter.TotalMilliseconds + 1);
-        var wait = shortestWait.Value + TimeSpan.FromMilliseconds(jitterMs);
-
-        // Never let jitter push the wait past the remaining budget.
-        return wait > remaining ? remaining : wait;
     }
 
     /// <summary>
@@ -402,30 +366,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     /// Get all providers ordered by rate limit capacity when rotation is enabled.
     /// </summary>
     private IEnumerable<IHistoricalDataProvider> GetOrderedProviders()
-        => OrderByRateLimitAvailability(_providers);
-
-    /// <summary>
-    /// Order an arbitrary provider set by rate-limit capacity when rotation is enabled:
-    /// providers with capacity first, then those approaching their limit, then rate-limited ones
-    /// last. When rotation is disabled the input order (priority order) is preserved.
-    /// </summary>
-    private IEnumerable<IHistoricalDataProvider> OrderByRateLimitAvailability(IEnumerable<IHistoricalDataProvider> providers)
-    {
-        if (!_enableRateLimitRotation)
-            return providers;
-
-        // Order by: not rate limited first, then by usage ratio (lowest first), then by priority
-        return providers.OrderBy(p =>
-        {
-            if (_rateLimitTracker.IsRateLimited(p.Name))
-                return 1000; // Put rate-limited providers last
-
-            if (_rateLimitTracker.IsApproachingLimit(p.Name, _rateLimitRotationThreshold))
-                return 100 + (int)(_rateLimitTracker.GetStatus(p.Name)?.UsagePercent ?? 0);
-
-            return p.Priority;
-        });
-    }
+        => _rotation.OrderByAvailability(_providers);
 
     /// <summary>
     /// Check if an exception indicates a rate limit error (HTTP 429).
@@ -469,30 +410,21 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return null;
     }
 
-    /// <summary>
-    /// Get the shortest wait time until any provider's rate limit resets.
-    /// </summary>
-    private TimeSpan? GetShortestRateLimitWait() =>
-        _providers
-            .Select(p => _rateLimitTracker.GetTimeUntilReset(p.Name))
-            .Where(w => w.HasValue)
-            .Min();
-
     public async Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         // Get providers that support adjusted prices, ordered by rate limit availability
-        var adjustedProviders = OrderByRateLimitAvailability(
+        var adjustedProviders = _rotation.OrderByAvailability(
             _providers.Where(p => p.Capabilities.AdjustedPrices));
 
         foreach (var provider in adjustedProviders)
         {
-            if (IsInBackoffPeriod(provider.Name))
+            if (_health.IsInBackoffPeriod(provider.Name))
                 continue;
 
             // Skip rate-limited providers if rotation is enabled
-            if (_enableRateLimitRotation && _rateLimitTracker.IsRateLimited(provider.Name))
+            if (_rotation.Enabled && _rotation.IsRateLimited(provider.Name))
             {
                 _log.Debug("Skipping {Provider} for adjusted bars - rate limited", provider.Name);
                 continue;
@@ -503,14 +435,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
 
                 // Record the request attempt
-                _rateLimitTracker.RecordRequest(provider.Name);
+                _rotation.RecordRequest(provider.Name);
 
                 var bars = await provider.GetAdjustedDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
 
                 if (bars is { Count: > 0 })
                 {
-                    ClearFailure(provider.Name);
-                    _rateLimitTracker.ClearRateLimitState(provider.Name);
+                    _health.ClearFailure(provider.Name);
+                    _rotation.ClearRateLimitState(provider.Name);
                     return bars;
                 }
             }
@@ -523,14 +455,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 if (IsRateLimitException(ex))
                 {
                     var retryAfter = ExtractRetryAfter(ex);
-                    _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
+                    _rotation.RecordRateLimitHit(provider.Name, retryAfter);
                     _log.Warning("Provider {Provider} hit rate limit for adjusted bars, rotating to next",
                         provider.Name);
                 }
                 else
                 {
                     _log.Warning(ex, "Provider {Provider} failed for adjusted bars", provider.Name);
-                    RecordFailure(provider.Name, ex.Message);
+                    _health.RecordFailure(provider.Name, ex.Message);
                 }
             }
         }
@@ -554,16 +486,16 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             {
                 var available = await p.IsAvailableAsync(ct).ConfigureAwait(false);
                 var elapsed = DateTimeOffset.UtcNow - startTime;
-                UpdateHealthStatus(p.Name, available, available ? "Healthy" : "Unavailable", elapsed);
+                _health.UpdateHealth(p.Name, available, available ? "Healthy" : "Unavailable", elapsed);
             }
             catch (Exception ex)
             {
-                UpdateHealthStatus(p.Name, false, ex.Message);
+                _health.UpdateHealth(p.Name, false, ex.Message);
             }
         });
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
-        return _healthStatus;
+        return _health.Health;
     }
 
     private async Task<string> ResolveSymbolForProviderAsync(string symbol, string providerName, CancellationToken ct)
@@ -583,90 +515,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         }
     }
 
-    private async Task ValidateBarsAsync(IReadOnlyList<HistoricalBar> bars, string symbol, DateOnly? from, DateOnly? to, string sourceProvider, CancellationToken ct)
-    {
-        // Try to validate with a different provider
-        var validationProvider = _providers.FirstOrDefault(p => p.Name != sourceProvider);
-        if (validationProvider is null)
-            return;
-
-        try
-        {
-            // Resolve the symbol for the validation provider too — providers can use
-            // different symbol formats (e.g. "AAPL" vs "aapl.us"), and validating with
-            // the unresolved symbol silently compares against the wrong (or no) data.
-            var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, validationProvider.Name, ct).ConfigureAwait(false);
-            var validationBars = await validationProvider.GetDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
-
-            if (validationBars.Count > 0)
-            {
-                var discrepancies = 0;
-                foreach (var bar in bars.Take(5)) // Check first 5 bars
-                {
-                    var matchingBar = validationBars.FirstOrDefault(b => b.SessionDate == bar.SessionDate);
-                    if (matchingBar is not null)
-                    {
-                        var closeDiff = Math.Abs(bar.Close - matchingBar.Close) / bar.Close;
-                        if (closeDiff > 0.01m) // More than 1% difference
-                        {
-                            discrepancies++;
-                            _log.Debug("Price discrepancy on {Date}: {Provider1}={Price1}, {Provider2}={Price2}",
-                                bar.SessionDate, sourceProvider, bar.Close, validationProvider.Name, matchingBar.Close);
-                        }
-                    }
-                }
-
-                if (discrepancies > 0)
-                {
-                    _log.Warning("Found {Count} price discrepancies between {Provider1} and {Provider2} for {Symbol}",
-                        discrepancies, sourceProvider, validationProvider.Name, symbol);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _log.Debug(ex, "Cross-validation failed for {Symbol}", symbol);
-        }
-    }
-
-    private bool IsInBackoffPeriod(string providerName)
-    {
-        if (_providerFailures.TryGetValue(providerName, out var failedAt))
-        {
-            return DateTimeOffset.UtcNow - failedAt < _failureBackoffDuration;
-        }
-        return false;
-    }
-
-    private void RecordFailure(string providerName, string message)
-    {
-        _providerFailures[providerName] = DateTimeOffset.UtcNow;
-        UpdateHealthStatus(providerName, false, message);
-    }
-
-    private void ClearFailure(string providerName)
-    {
-        _providerFailures.TryRemove(providerName, out _);
-    }
-
-    private void UpdateHealthStatus(string providerName, bool isAvailable, string? message = null, TimeSpan? responseTime = null)
-    {
-        _healthStatus[providerName] = new ProviderHealthStatus(
-            providerName,
-            isAvailable,
-            message,
-            DateTimeOffset.UtcNow,
-            responseTime
-        );
-    }
-
     public void Dispose()
     {
         if (_disposed)
             return;
         _disposed = true;
 
-        _rateLimitTracker.Dispose();
+        _rotation.Dispose();
 
         foreach (var provider in _providers.OfType<IDisposable>())
         {
