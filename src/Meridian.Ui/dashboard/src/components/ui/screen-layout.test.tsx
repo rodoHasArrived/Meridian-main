@@ -113,14 +113,27 @@ describe("ScreenLayout", () => {
     expect(table.parentElement).toHaveClass("space-y-4");
   });
 
-  it("layers workClassName onto the work zone", () => {
+  it("drops the default spacing when workClassName opts into a grid/flex layout", () => {
+    // `space-y-4` is a sibling-margin utility; keeping it under a grid/flex
+    // misaligns rows, so a layout override must own spacing instead.
     render(
       <ScreenLayout title="Screen" workClassName="grid grid-cols-2">
         <table aria-label="ledger" />
       </ScreenLayout>
     );
     const container = screen.getByRole("table", { name: "ledger" }).parentElement;
-    expect(container).toHaveClass("space-y-4", "grid", "grid-cols-2");
+    expect(container).toHaveClass("grid", "grid-cols-2");
+    expect(container).not.toHaveClass("space-y-4");
+  });
+
+  it("keeps the default spacing for a non-layout workClassName", () => {
+    render(
+      <ScreenLayout title="Screen" workClassName="pt-2">
+        <table aria-label="ledger" />
+      </ScreenLayout>
+    );
+    const container = screen.getByRole("table", { name: "ledger" }).parentElement;
+    expect(container).toHaveClass("space-y-4", "pt-2");
   });
 
   it("shows the context rail only when open, and closes on request", async () => {

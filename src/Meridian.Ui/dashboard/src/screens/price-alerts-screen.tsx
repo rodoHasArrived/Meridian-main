@@ -17,12 +17,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScreenLayout } from "@/components/ui/screen-layout";
+import { ScreenLayout, type FocusSignal, type FocusSignalTone } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
 import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts";
+import type { MetricSnapshot } from "@/types";
 import {
   usePriceAlertsScreenViewModel,
   type PriceAlertDetailAction,
@@ -34,6 +34,14 @@ import {
   type PriceAlertRowViewModel,
   type PriceAlertTriggerRowViewModel
 } from "@/screens/price-alerts-screen.view-model";
+
+/** Map a metric snapshot tone onto the ScreenLayout focus-signal accent. */
+const metricFocusTone: Record<MetricSnapshot["tone"], FocusSignalTone> = {
+  default: "neutral",
+  success: "positive",
+  warning: "caution",
+  danger: "critical"
+};
 
 export function PriceAlertsScreen() {
   const alerts = usePriceAlerts();
@@ -177,11 +185,13 @@ export function PriceAlertsScreen() {
       }
       scope="Data Lane"
       description={vm.heroDescription}
-      focus={
-        <div className="grid gap-3 sm:grid-cols-3">
-          {vm.summaryMetrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
-        </div>
-      }
+      focus={vm.summaryMetrics.map((metric): FocusSignal => ({
+        id: metric.id,
+        label: metric.label,
+        value: metric.value,
+        hint: metric.delta,
+        tone: metricFocusTone[metric.tone]
+      }))}
       focusLabel="At a glance"
     >
       {vm.pollErrorPanel ? (

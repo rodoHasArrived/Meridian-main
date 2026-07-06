@@ -201,6 +201,12 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
 
   const showContext = contextOpen && isRenderableNode(context);
 
+  // The work zone stacks its children with `space-y-4` by default, but that
+  // sibling-margin utility misaligns rows when a caller opts into a `grid`/`flex`
+  // (or its own `space-y-*`) via `workClassName` — so skip the default then and
+  // let the override own spacing.
+  const workOverridesLayout = workClassName != null && /(?:^|\s)(grid|flex|columns-|space-y-)/.test(workClassName);
+
   return (
     <div
       ref={ref}
@@ -258,8 +264,8 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           ) : null}
 
           {/* 3. Work zone — the main table / chart / form. Stacks cards with the
-              standard rhythm by default; override via `workClassName`. */}
-          <div className={cn("min-h-0 flex-1 space-y-4", workClassName)}>{children}</div>
+              standard rhythm by default; a grid/flex `workClassName` opts out. */}
+          <div className={cn("min-h-0 flex-1", !workOverridesLayout && "space-y-4", workClassName)}>{children}</div>
         </div>
 
         {/* 4. Context zone — right rail that slides in on selection. */}
