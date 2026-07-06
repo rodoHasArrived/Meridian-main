@@ -40,6 +40,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Meridian.Workflow.EnvironmentDesign;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -152,6 +153,15 @@ public partial class App : System.Windows.Application
 
         // Configure the host with dependency injection
         _host = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(config =>
+            {
+                // The operator's desktop settings file is the source for host-level
+                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
+                config.AddJsonFile(
+                    Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
+                    optional: true,
+                    reloadOnChange: false);
+            })
             .ConfigureServices((context, services) =>
             {
                 ConfigureServices(services, context.Configuration);
@@ -254,6 +264,13 @@ public partial class App : System.Windows.Application
 
         // ILogger<T> infrastructure — must be first so all services can resolve loggers
         services.AddLogging();
+
+        // Operator-tunable connectivity probe timing (bound from "Connectivity:Probes"),
+        // consumed by SetupWizardService TCP reachability checks.
+        services.AddSingleton(
+            Microsoft.Extensions.Configuration.ConfigurationBinder.Get<Meridian.Contracts.Configuration.ConnectivityProbeOptions>(
+                configuration.GetSection(Meridian.Contracts.Configuration.ConnectivityProbeOptions.SectionKey))
+            ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions());
 
         // Shared API infrastructure
         services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);

@@ -149,9 +149,15 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
         builder.Services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(resolvedDataRoot, "execution", "controls")));
         builder.Services.AddSingleton<ExecutionOperatorControlService>();
+        // Durable paper-session storage root is operator-tunable via
+        // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
+        var paperSessionBaseDirectory = builder.Configuration.GetValue<string?>(
+            $"{PaperSessionOptions.SectionKey}:{nameof(PaperSessionOptions.BaseDirectory)}");
         builder.Services.AddSingleton<IPaperSessionStore>(sp =>
             new JsonlFilePaperSessionStore(
-                Path.Combine(resolvedDataRoot, "execution", "sessions"),
+                string.IsNullOrWhiteSpace(paperSessionBaseDirectory)
+                    ? Path.Combine(resolvedDataRoot, "execution", "sessions")
+                    : paperSessionBaseDirectory,
                 sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
@@ -160,9 +166,15 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
+        builder.Services.AddSingleton(
+            builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
+                .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
+            ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
         builder.Services.AddSingleton<IOrderGateway>(sp =>
             new Meridian.Execution.Adapters.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>()));
+                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
+                securityMaster: null,
+                options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
         builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
         builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
         builder.Services.AddSingleton<IOrderManager>(sp =>
@@ -183,7 +195,8 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
                 sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
-                sp.GetService<ISecurityMasterQueryService>()));
+                sp.GetService<ISecurityMasterQueryService>(),
+                sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
 
         // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
         // engine compiles and executes arbitrary C# in-process; enable only on a trusted host.

@@ -97,7 +97,7 @@ describe("workspace nav view model", () => {
     });
   });
 
-  it("surfaces the family-office route under Portfolio", () => {
+  it("keeps the unwired family-office route out of Portfolio navigation while it stays deep-linkable", () => {
     const model = buildWorkspaceNavViewModel("/portfolio/family-office");
     const portfolio = model.items.find((item) => item.key === "portfolio");
 
@@ -105,15 +105,10 @@ describe("workspace nav view model", () => {
       "/portfolio",
       "/portfolio/attribution",
       "/portfolio/asset-detail",
-      "/portfolio/brokerage-sync",
-      "/portfolio/family-office"
+      "/portfolio/brokerage-sync"
     ]);
-    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toMatchObject({
-      label: "Family office",
-      active: true,
-      ariaCurrent: "page",
-      ariaLabel: "Family office, current page"
-    });
+    // The workspace itself still reads active for the deep-linked route.
+    expect(portfolio?.active).toBe(true);
   });
 
   it("surfaces portfolio-native asset detail under Portfolio", () => {
@@ -235,7 +230,6 @@ describe("workspace nav view model", () => {
     expect(strategy?.subItems.map((item) => item.route)).toEqual([
       "/strategy",
       "/strategy/designer",
-      "/strategy/formula-workbench",
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/lab",

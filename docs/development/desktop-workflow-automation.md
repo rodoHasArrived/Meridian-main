@@ -1,6 +1,6 @@
 # Desktop Workflow Automation
 
-This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable operator flows on the active WPF desktop surface, capture screenshots, and generate manual-ready markdown.
+This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable retained WPF compatibility flows, capture screenshots, and generate manual-ready markdown. WPF product/UI work is deferred unless explicitly reactivated.
 
 ## What the Automation Covers
 

@@ -1,6 +1,6 @@
 {
   "total_files": 540,
-  "total_lines": 90060,
+  "total_lines": 90064,
   "orphaned_count": 206,
   "no_heading_count": 38,
   "stale_count": 0,
@@ -172,6 +172,7 @@
     "docs/plans/ufl-warrant-target-state-v2.md",
     "docs/plans/wave-implementation-checklists.md",
     "docs/plans/web-ui-development-pivot.md",
+    "docs/product/data-provider-accounting-brainstorm-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -259,7 +260,7 @@
   "all_files": [
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 187,
+      "line_count": 189,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -643,7 +644,7 @@
     },
     {
       "path": "AGENTS.md",
-      "line_count": 173,
+      "line_count": 175,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -819,7 +820,7 @@
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 205,
+      "line_count": 206,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1475,7 +1476,7 @@
     },
     {
       "path": "docs/architecture/overview.md",
-      "line_count": 116,
+      "line_count": 115,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1875,7 +1876,7 @@
     },
     {
       "path": "docs/development/wpf-implementation-notes.md",
-      "line_count": 579,
+      "line_count": 578,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2139,7 +2140,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7892,
+      "line_count": 7891,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3058,6 +3059,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
+      "line_count": 450,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/deferred-expansion-boundaries.md",
       "line_count": 60,
       "has_heading": true,
@@ -3083,7 +3092,7 @@
     },
     {
       "path": "docs/product/meridian-design-document.md",
-      "line_count": 3149,
+      "line_count": 3151,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3099,7 +3108,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 210,
+      "line_count": 214,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3243,7 +3252,7 @@
     },
     {
       "path": "docs/reference/design-review-memo.md",
-      "line_count": 383,
+      "line_count": 382,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4379,7 +4388,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1241,
+      "line_count": 1243,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4411,7 +4420,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 668,
+      "line_count": 669,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

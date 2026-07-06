@@ -1,0 +1,35 @@
+{
+  "scenarioId": "dividend-no-position-context",
+  "description": "Dividend posted through the bridge with no posting context supplied. PositionQuantity defaults to zero, so the bridge skips the dividend entirely with only a log warning (CA-DEF-006). Target: the record-date holdings seam (Idea #3) supplies the position quantity so entitlements post without caller plumbing.",
+  "ticker": "NOPQ",
+  "securityId": "a5000000-aaaa-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "a5000000-aaaa-4000-8000-0000000000c1",
+      "securityId": "a5000000-aaaa-4000-8000-000000000001",
+      "eventType": "Dividend",
+      "exDate": "2026-03-10",
+      "payDate": "2026-03-24",
+      "dividendPerShare": 0.75,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-03-09",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2026-03-09", "open": 49.80, "high": 50.20, "low": 49.60, "close": 50.00, "volume": 1000000 },
+    { "sessionDate": "2026-03-10", "open": 49.30, "high": 49.60, "low": 49.10, "close": 49.25, "volume": 1400000 }
+  ],
+  "postingContext": null,
+  "invariantTags": [],
+  "knownDefectIds": [ "CA-DEF-006" ]
+}

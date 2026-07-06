@@ -20,9 +20,11 @@ namespace Meridian.Execution.Adapters;
 [ImplementsAdr("ADR-015", "Simulated IOrderGateway over live Meridian feed — no real orders")]
 public sealed class PaperTradingGateway : IOrderGateway
 {
-    // Notional fill price used for market orders in this scaffold.
-    // A production implementation would source the last-traded price from ILiveFeedAdapter.
-    private const decimal ScaffoldMarketFillPrice = 1m;
+    // Notional fill price used for market orders in this scaffold, configurable via
+    // PaperTradingGatewayOptions. A production implementation would source the
+    // last-traded price from ILiveFeedAdapter.
+    private readonly decimal _scaffoldMarketFillPrice;
+    private int _scaffoldPriceWarningIssued;
 
     private readonly ILogger<PaperTradingGateway> _logger;
     private readonly ISecurityMasterQueryService? _securityMaster;
@@ -78,10 +80,20 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// Optional Security Master query service. When provided, lot-size validation and
     /// tick-size price rounding are applied on a best-effort basis.
     /// </param>
-    public PaperTradingGateway(ILogger<PaperTradingGateway> logger, ISecurityMasterQueryService? securityMaster = null)
+    /// <param name="options">
+    /// Optional gateway options. When omitted, defaults apply (including the notional
+    /// scaffold market fill price).
+    /// </param>
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityMasterQueryService? securityMaster = null,
+        PaperTradingGatewayOptions? options = null)
     {
         _logger = logger;
         _securityMaster = securityMaster;
+        var scaffoldPrice = (options ?? new PaperTradingGatewayOptions()).ScaffoldMarketFillPrice;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(scaffoldPrice, nameof(options));
+        _scaffoldMarketFillPrice = scaffoldPrice;
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // CompletionQueue (Wait mode, 500 capacity) ensures no terminal order updates are dropped.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(
@@ -227,13 +239,19 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         // For limit orders use the limit price; for market orders use the scaffold notional price.
         // A real implementation would source the fill price from the live feed via ILiveFeedAdapter.
-        var fillPrice = ((OrderType)request.Type) switch
+        var referencePrice = ((OrderType)request.Type) switch
         {
-            OrderType.Limit or OrderType.StopLimit
-                => request.LimitPrice ?? ScaffoldMarketFillPrice,
-            OrderType.StopMarket => request.StopPrice ?? ScaffoldMarketFillPrice,
-            _ => ScaffoldMarketFillPrice
+            OrderType.Limit or OrderType.StopLimit => request.LimitPrice,
+            OrderType.StopMarket => request.StopPrice,
+            _ => null
         };
+
+        if (referencePrice is null)
+        {
+            WarnScaffoldPriceUsed();
+        }
+
+        var fillPrice = referencePrice ?? _scaffoldMarketFillPrice;
 
         // Best-effort tick-size rounding: snap fill price to the instrument's tick grid.
         var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
@@ -254,6 +272,24 @@ public sealed class PaperTradingGateway : IOrderGateway
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
             request.ClientOrderId, request.Quantity, request.Symbol, fillPrice);
+    }
+
+    /// <summary>
+    /// Emits a one-time loud warning when a fill is priced from the scaffold notional price
+    /// instead of a real market price, so paper P&amp;L consumers cannot miss it.
+    /// </summary>
+    private void WarnScaffoldPriceUsed()
+    {
+        if (Interlocked.Exchange(ref _scaffoldPriceWarningIssued, 1) != 0)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "Paper gateway is filling market-style orders at the scaffold notional price {ScaffoldPrice}. " +
+            "No live feed price source is wired in, so paper P&L computed from these fills is not meaningful. " +
+            "Tune via configuration section '{SectionKey}' or wire a live feed price source.",
+            _scaffoldMarketFillPrice, PaperTradingGatewayOptions.SectionKey);
     }
 
     /// <summary>

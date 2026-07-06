@@ -111,8 +111,9 @@ different work:
   `Workflow`, `Handoffs`, `Validation`, and `Output Standards`.
 - Every current Codex skill must include lightweight trigger and non-trigger examples so routing
   boundaries remain inspectable without running a full eval harness.
-- Treat `src/Meridian.Wpf/` as the active desktop app operator UI path. Keep
-  `src/Meridian.Ui/dashboard/` and `/workstation/` as active browser workstation surfaces.
+- Treat `src/Meridian.Ui/dashboard/` and `/workstation/` as the active browser workstation
+  surfaces. Treat `src/Meridian.Wpf/` product/UI work as deferred until explicitly reactivated,
+  while retaining WPF compatibility, validation, and maintenance guidance.
 - For browser workstation visual or interaction checks, keep package tests as the proof baseline
   and use the Codex Browser plugin only for scoped unauthenticated local routes or file-backed
   previews that need rendered-state evidence.

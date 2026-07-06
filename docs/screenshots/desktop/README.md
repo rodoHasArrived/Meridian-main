@@ -1,10 +1,10 @@
 # Desktop WPF Screenshot Index
 
-This index tracks screenshot evidence for active registered WPF screens. It is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
+This index tracks screenshot evidence for retained registered WPF screens. WPF product/UI work is deferred unless explicitly reactivated. The index is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
 
 ## Sources and refresh policy
 
-- Active screen inventory source: `ShellNavigationCatalog` plus feature-module page registrations under `src/Meridian.Wpf/Models/` and `src/Meridian.Wpf/Features/`.
+- Retained screen inventory source: `ShellNavigationCatalog` plus feature-module page registrations under `src/Meridian.Wpf/Models/` and `src/Meridian.Wpf/Features/`.
 - Canonical screenshot workflow source: `scripts/dev/desktop-workflows.json`, especially the `screenshot-catalog` workflow.
 - Existing committed PNGs were discovered under `docs/screenshots/desktop/`.
 - Last refreshed dates below use each PNG's latest Git commit date. TBI rows have no screenshot refresh date yet.

@@ -1,15 +1,15 @@
 # MVVM Guidelines
 
-Meridian keeps workflow state in view models and shared read models so browser
-and desktop workstation surfaces can render the same business posture without
-forking behavior.
+Meridian keeps workflow state in view models and shared read models so the browser
+workstation and retained WPF compatibility surfaces can render the same business
+posture without forking behavior.
 
 ## Current UI Direction
 
 - New operator UI work belongs in `src/Meridian.Ui/dashboard/`.
 - Shared workstation endpoint and read-model support belongs in
   `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
-- `src/Meridian.Wpf/` is the active desktop UI for operator workflows.
+- `src/Meridian.Wpf/` product/UI work is deferred until explicitly reactivated; use this guidance only for retained WPF compatibility, validation, and maintenance.
 
 ## View-Model Ownership
 
