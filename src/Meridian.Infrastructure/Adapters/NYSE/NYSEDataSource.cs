@@ -18,6 +18,7 @@ using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -477,11 +478,17 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 
             foreach (var bar in data.Bars)
             {
+                if (!ProviderDateParsing.TryParseProviderDate(bar.Date, out var sessionDate))
+                {
+                    Log.Warning("Skipping NYSE bar for {Symbol} with unparseable date {Date}", symbol, bar.Date);
+                    continue;
+                }
+
                 try
                 {
                     bars.Add(new AdjustedHistoricalBar(
                         Symbol: symbol.ToUpperInvariant(),
-                        SessionDate: DateOnly.Parse(bar.Date),
+                        SessionDate: sessionDate,
                         Open: bar.Open,
                         High: bar.High,
                         Low: bar.Low,
@@ -591,16 +598,28 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                 return Array.Empty<DividendInfo>();
             }
 
-            return data.Dividends.Select(div => new DividendInfo(
-                Symbol: symbol.ToUpperInvariant(),
-                ExDate: DateOnly.Parse(div.ExDate),
-                PaymentDate: !string.IsNullOrEmpty(div.PaymentDate) ? DateOnly.Parse(div.PaymentDate) : null,
-                RecordDate: !string.IsNullOrEmpty(div.RecordDate) ? DateOnly.Parse(div.RecordDate) : null,
-                Amount: div.Amount,
-                Currency: div.Currency ?? "USD",
-                Type: ParseDividendType(div.Type),
-                Source: Id
-            )).OrderBy(d => d.ExDate).ToArray();
+            var dividends = new List<DividendInfo>();
+            foreach (var div in data.Dividends)
+            {
+                if (!ProviderDateParsing.TryParseProviderDate(div.ExDate, out var exDate))
+                {
+                    Log.Warning("Skipping NYSE dividend for {Symbol} with unparseable ex-date {ExDate}", symbol, div.ExDate);
+                    continue;
+                }
+
+                dividends.Add(new DividendInfo(
+                    Symbol: symbol.ToUpperInvariant(),
+                    ExDate: exDate,
+                    PaymentDate: ProviderDateParsing.ParseProviderDateOrNull(div.PaymentDate),
+                    RecordDate: ProviderDateParsing.ParseProviderDateOrNull(div.RecordDate),
+                    Amount: div.Amount,
+                    Currency: div.Currency ?? "USD",
+                    Type: ParseDividendType(div.Type),
+                    Source: Id
+                ));
+            }
+
+            return dividends.OrderBy(d => d.ExDate).ToArray();
         }, "GetDividends", ct).ConfigureAwait(false);
     }
 
@@ -639,13 +658,25 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                 return Array.Empty<SplitInfo>();
             }
 
-            return data.Splits.Select(split => new SplitInfo(
-                Symbol: symbol.ToUpperInvariant(),
-                ExDate: DateOnly.Parse(split.ExDate),
-                SplitFrom: split.SplitFrom,
-                SplitTo: split.SplitTo,
-                Source: Id
-            )).OrderBy(s => s.ExDate).ToArray();
+            var splits = new List<SplitInfo>();
+            foreach (var split in data.Splits)
+            {
+                if (!ProviderDateParsing.TryParseProviderDate(split.ExDate, out var exDate))
+                {
+                    Log.Warning("Skipping NYSE split for {Symbol} with unparseable ex-date {ExDate}", symbol, split.ExDate);
+                    continue;
+                }
+
+                splits.Add(new SplitInfo(
+                    Symbol: symbol.ToUpperInvariant(),
+                    ExDate: exDate,
+                    SplitFrom: split.SplitFrom,
+                    SplitTo: split.SplitTo,
+                    Source: Id
+                ));
+            }
+
+            return splits.OrderBy(s => s.ExDate).ToArray();
         }, "GetSplits", ct).ConfigureAwait(false);
     }
 

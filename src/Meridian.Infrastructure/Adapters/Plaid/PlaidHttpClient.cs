@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Plaid;
+using Meridian.Infrastructure.Utilities;
 
 namespace Meridian.Infrastructure.Adapters.Plaid;
 
@@ -347,7 +348,7 @@ public sealed class PlaidHttpClient : IPlaidClient
         => product.ToString().ToLowerInvariant();
 
     private static DateOnly? ParseDate(string? value)
-        => DateOnly.TryParse(value, out var parsed) ? parsed : null;
+        => ProviderDateParsing.ParseProviderDateOrNull(value);
 
     private sealed record LinkTokenCreateResponse(
         [property: JsonPropertyName("link_token")] string LinkToken,

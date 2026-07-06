@@ -5,6 +5,15 @@ using Xunit;
 
 namespace Meridian.Tests.Storage;
 
+/// <summary>
+/// Baseline WAL behavior on well-formed logs: initialization, append sequencing/type/checksum/
+/// timestamp, commit markers, uncommitted-record retrieval, flush, truncation and archival, and an
+/// FsCheck property for ordered single-pass replay. Failure-injection coverage is split into
+/// sibling suites so the "happy path" and "what happens on damage" concerns stay separately
+/// readable: <see cref="WriteAheadLogCorruptionModeTests"/> exercises the configured corruption
+/// response modes, and <see cref="WriteAheadLogFuzzTests"/> exercises byte-level truncation and
+/// corruption recovery.
+/// </summary>
 public sealed class WriteAheadLogTests : IAsyncDisposable
 {
     private readonly string _walDir;

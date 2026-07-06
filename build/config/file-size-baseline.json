@@ -3,7 +3,6 @@
   "threshold_lines": 2000,
   "files": {
     "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs": 4492,
-    "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs": 2625,
     "src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs": 2226,
     "src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs": 2336,
     "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs": 2169,
@@ -15,7 +14,6 @@
     "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs": 6235,
     "src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs": 2954,
     "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 2565,
-    "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs": 5373,
     "src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs": 3518,
     "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs": 3576,
     "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs": 4618,

@@ -5,6 +5,7 @@ using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
@@ -254,15 +255,7 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
         => SymbolSearchUtility.CalculateMatchScore(query, symbol, name, position);
 
     private static DateOnly? ParseDate(string? dateStr)
-    {
-        if (string.IsNullOrEmpty(dateStr))
-            return null;
-
-        if (DateOnly.TryParse(dateStr, out var date))
-            return date;
-
-        return null;
-    }
+        => ProviderDateParsing.ParseProviderDateOrNull(dateStr);
 
     public void Dispose()
     {

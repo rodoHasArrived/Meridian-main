@@ -122,20 +122,23 @@ Keep Claude-specific files focused on host mechanics and discovery. Shared polic
 
 ## Orchestration and Multi-Agent Dispatch
 
-The Chief of Staff (CoS) runtime (`tools/chief-of-staff-runtime/runtime.py`) is the repo's
-out-of-process ADK orchestration layer for multi-domain, approval-gated, or evidence-synthesis
-tasks. Route work through it when any of the following apply:
+Route work by scope. Use a single specialist agent (blueprint, test-writer, code-review, etc.) for
+single-domain tasks. For work that crosses subsystems, needs an approval gate, or requires evidence
+synthesis, compose multiple specialist agents and hold to the provider-agnostic Human-in-the-loop
+Gates in `docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm
+before an action proceeds. Treat the following as signals that a task needs the gated, multi-agent
+path:
 
 - The request crosses multiple subsystems and needs evidence from more than one source.
 - The request requires an approval gate or operator sign-off before an action can proceed.
 - The request needs a structured briefing with trace/evidence retention (e.g. readiness reviews,
   reconciliation summaries, report-pack approvals).
 
-Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
-multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime. Ordinary
-assistant sessions still follow the provider-agnostic Human-in-the-loop Gates in
-`docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm, while CoS
-remains the heavy-duty path for structured approval, evidence synthesis, and retained sign-off.
+> Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty
+> path was archived in commit `7ee19e38f`. Its code and plan now live under
+> `archive/code/tools/chief-of-staff-runtime/` and `archive/docs/plans/chief-of-staff-runtime.md`
+> for historical reference only. Do not wire new work to it — use specialist agents plus the
+> workflow-contract gates instead.
 
 ### Agent Design Patterns
 
@@ -146,14 +149,14 @@ When composing multiple agents, choose the right topology for the work:
   simultaneously.
 - **Sequential** — each step's output feeds the next. Use for the default single-domain lane:
   Repo Navigation → Specialist → Implementation → Review → Assurance.
-- **Hierarchical** — a coordinator delegates to specialist agents, aggregates evidence, and
-  enforces approval gates before proceeding. Use the CoS runtime for this pattern whenever a
-  task is multi-domain, gated, or requires structured evidence synthesis.
+- **Hierarchical** — a coordinating session delegates to specialist agents, aggregates their
+  evidence, and enforces the workflow-contract approval gates before proceeding. Use this pattern
+  whenever a task is multi-domain, gated, or requires structured evidence synthesis.
 
 Key resources:
-- `tools/chief-of-staff-runtime/runtime.py` — ADK node pipeline and integration boundary.
-- `docs/development/chief-of-staff-runtime.md` — API routes, config reference, and integration details.
-- `.codex/skills/cos-runtime-development/SKILL.md` — Codex workflow for extending the CoS runtime.
+- `docs/ai/assistant-workflow-contract.md` — Human-in-the-loop Gates and shared assistant policy.
+- `docs/ai/work-modes.md` — select a work mode before implementation.
+- `docs/ai/agent-handoff-checklist.md` — required handoff format for multi-agent/lane workflows.
 
 ## Skills
 

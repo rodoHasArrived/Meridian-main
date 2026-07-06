@@ -364,7 +364,10 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient, IProviderConn
             var symbolList = string.Join(",", symbols);
             var url = $"{QuotesEndpoint}?symbols={Uri.EscapeDataString(symbolList)}";
 
-            using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            AddAuthHeader(request);
+
+            using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -454,11 +457,19 @@ public sealed class RobinhoodMarketDataClient : IMarketDataClient, IProviderConn
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private HttpClient CreateHttpClient()
+        => _httpClientFactory.CreateClient(HttpClientNames.RobinhoodMarketData);
+
+    /// <summary>
+    /// Applies the bearer token to the specific request rather than mutating the
+    /// factory-shared <see cref="HttpClient.DefaultRequestHeaders"/>, which is unsafe if the
+    /// client is ever pooled or cached. Mirrors <c>NYSEDataSource.AddAuthHeader</c>.
+    /// </summary>
+    private void AddAuthHeader(HttpRequestMessage request)
     {
-        var client = _httpClientFactory.CreateClient(HttpClientNames.RobinhoodMarketData);
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _accessToken);
-        return client;
+        if (!string.IsNullOrEmpty(_accessToken))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+        }
     }
 
     public async ValueTask DisposeAsync()

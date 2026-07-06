@@ -72,13 +72,16 @@ module ReconciliationCaseWorkflow =
                 | "Supersede", state when state <> "Superseded" -> Some("Superseded", "Dismissed")
                 | _ -> None
 
+            // Reopen is only legal from SignedOff, which is the sole ("Reopen", _) arm above,
+            // so any ("Reopen", state) that produced None is specifically an illegal reopen and
+            // gets the more precise ReopenNotAllowed code instead of the generic IllegalTransition.
             match transition with
+            | None when input.Action = "Reopen" ->
+                fail "Only signed-off cases can be reopened." "ReopenNotAllowed" input
             | None -> fail "Illegal transition." "IllegalTransition" input
             | Some _ when input.Action = "Approve"
                           && String.Equals(input.ReviewedBy, input.Actor, StringComparison.OrdinalIgnoreCase) ->
                 fail "Signer must differ from resolver." "DualReviewRequired" input
-            | Some _ when input.Action = "Reopen" && input.LifecycleState <> "SignedOff" ->
-                fail "Only signed-off cases can be reopened." "ReopenNotAllowed" input
             | Some(next, status) -> success next status
 
 module ProviderLedgerReconciliationRules =

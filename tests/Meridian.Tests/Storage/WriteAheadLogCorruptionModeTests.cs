@@ -6,7 +6,10 @@ namespace Meridian.Tests.Storage;
 
 /// <summary>
 /// Tests for WAL corruption response modes introduced in fix 4.3 of the
-/// March-2026 high-impact improvement brainstorm document.
+/// March-2026 high-impact improvement brainstorm document. Scope is limited to how the WAL
+/// <em>reacts</em> to detected corruption under each configured mode; well-formed-log behavior
+/// lives in <see cref="WriteAheadLogTests"/> and raw byte-level damage generation lives in
+/// <see cref="WriteAheadLogFuzzTests"/>.
 /// </summary>
 public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
 {

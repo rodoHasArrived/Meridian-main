@@ -34,8 +34,21 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private readonly bool _enableCrossValidation;
     private readonly bool _enableRateLimitRotation;
     private readonly double _rateLimitRotationThreshold;
+    private readonly TimeSpan _maxRateLimitRetryBudget;
     private readonly ILogger _log;
     private bool _disposed;
+
+    // Maximum number of times the whole provider chain is retried after every candidate has
+    // been rate limited. Kept small so a persistent rate limit cannot wedge a single request.
+    private const int MaxRateLimitRetries = 3;
+
+    // A single rate-limit reset longer than this is treated as "not worth waiting for"; the
+    // request fails fast rather than blocking on it.
+    private static readonly TimeSpan MaxSingleRateLimitWait = TimeSpan.FromMinutes(5);
+
+    // Upper bound on the random jitter added to each rate-limit wait so that many concurrent
+    // requests do not resume in lock-step and hammer the provider at the same instant.
+    private static readonly TimeSpan RateLimitRetryJitter = TimeSpan.FromSeconds(1);
 
     /// <summary>
     /// Event raised as a request progresses through the provider chain: when a provider
@@ -97,6 +110,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         bool enableCrossValidation = false,
         bool enableRateLimitRotation = true,
         double rateLimitRotationThreshold = 0.8,
+        TimeSpan? maxRateLimitRetryBudget = null,
         ILogger? log = null)
     {
         _providers = providers
@@ -111,6 +125,9 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         _enableCrossValidation = enableCrossValidation;
         _enableRateLimitRotation = enableRateLimitRotation;
         _rateLimitRotationThreshold = rateLimitRotationThreshold;
+        // Overall wall-clock budget for waiting out rate limits across all retry attempts.
+        // Bounds the worst case (previously ~15 min: 3 retries x 5 min) to a single knob.
+        _maxRateLimitRetryBudget = maxRateLimitRetryBudget ?? TimeSpan.FromMinutes(5);
         _log = log ?? LoggingSetup.ForContext<CompositeHistoricalDataProvider>();
 
         // Initialize rate limit tracker
@@ -138,147 +155,30 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return false;
     }
 
-    public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
-        => GetDailyBarsInternalAsync(symbol, from, to, rateLimitRetries: 0, ct);
-
-    public Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
-        string symbol,
-        DataGranularity granularity,
-        DateOnly? from,
-        DateOnly? to,
-        CancellationToken ct = default)
-        => GetAggregateBarsInternalAsync(symbol, granularity, from, to, rateLimitRetries: 0, ct);
-
-    private async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsInternalAsync(string symbol, DateOnly? from, DateOnly? to, int rateLimitRetries, CancellationToken ct = default)
+    public async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentException("Symbol is required", nameof(symbol));
 
-        const int maxRateLimitRetries = 3;
-        var requestStartedAt = DateTimeOffset.UtcNow;
-        List<(string Provider, Exception Error)> errors = [];
-
-        // Get providers ordered by rate limit availability if rotation is enabled
-        var orderedProviders = GetOrderedProviders();
-
-        foreach (var provider in orderedProviders)
-        {
-            // Skip providers in backoff period
-            if (IsInBackoffPeriod(provider.Name))
-            {
-                _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
-                continue;
-            }
-
-            // Skip rate-limited providers if rotation is enabled
-            if (_enableRateLimitRotation && _rateLimitTracker.IsRateLimited(provider.Name))
-            {
-                var resetTime = _rateLimitTracker.GetTimeUntilReset(provider.Name);
-                _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
-                continue;
-            }
-
-            try
-            {
-                // Resolve symbol for this provider if resolver is available
-                var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
-
-                _log.Information("Trying {Provider} for {Symbol} (resolved: {Resolved})",
-                    provider.Name, symbol, resolvedSymbol);
-                RaiseProgress(symbol, provider.Name, requestStartedAt, status: "trying");
-
-                var startTime = DateTimeOffset.UtcNow;
-
-                // Record the request attempt
-                _rateLimitTracker.RecordRequest(provider.Name);
-
-                var bars = await provider.GetDailyBarsAsync(resolvedSymbol, from, to, ct).ConfigureAwait(false);
-                var elapsed = DateTimeOffset.UtcNow - startTime;
-
-                if (bars is { Count: > 0 })
-                {
-                    // Update health status and clear any rate limit state
-                    UpdateHealthStatus(provider.Name, true, $"Retrieved {bars.Count} bars", elapsed);
-                    ClearFailure(provider.Name);
-                    _rateLimitTracker.ClearRateLimitState(provider.Name);
-
-                    _log.Information("Successfully retrieved {Count} bars from {Provider} for {Symbol}",
-                        bars.Count, provider.Name, symbol);
-                    RaiseProgress(symbol, provider.Name, requestStartedAt, bars.Count, status: "completed");
-
-                    // Optionally validate against other providers
-                    if (_enableCrossValidation && bars.Count > 0)
-                    {
-                        await ValidateBarsAsync(bars, symbol, from, to, provider.Name, ct).ConfigureAwait(false);
-                    }
-
-                    return bars;
-                }
-
-                _log.Debug("No bars returned from {Provider} for {Symbol}, trying next", provider.Name, symbol);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                // Check if this is a rate limit error
-                if (IsRateLimitException(ex))
-                {
-                    var retryAfter = ExtractRetryAfter(ex);
-                    _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
-                    _log.Warning("Provider {Provider} hit rate limit for {Symbol}, rotating to next provider",
-                        provider.Name, symbol);
-                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "rate-limited", error: ex.Message);
-                }
-                else
-                {
-                    _log.Warning(ex, "Provider {Provider} failed for {Symbol}", provider.Name, symbol);
-                    RecordFailure(provider.Name, ex.Message);
-                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "failed", error: ex.Message);
-                }
-                errors.Add((provider.Name, ex));
-            }
-        }
-
-        // All providers failed - check if any are just rate limited and we should wait
-        if (_enableRateLimitRotation && errors.All(e => IsRateLimitException(e.Error)) && rateLimitRetries < maxRateLimitRetries)
-        {
-            var shortestWait = GetShortestRateLimitWait();
-            if (shortestWait.HasValue && shortestWait.Value < TimeSpan.FromMinutes(5))
-            {
-                _log.Information("All providers rate limited (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime} for rate limit reset...",
-                    rateLimitRetries + 1, maxRateLimitRetries, shortestWait.Value);
-                await Task.Delay(shortestWait.Value, ct).ConfigureAwait(false);
-
-                // Retry after waiting with incremented counter
-                return await GetDailyBarsInternalAsync(symbol, from, to, rateLimitRetries + 1, ct).ConfigureAwait(false);
-            }
-        }
-
-        // All providers failed
-        if (errors.Count > 0)
-        {
-            var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
-            RaiseProgress(symbol, Name, requestStartedAt, status: "all-providers-failed", error: errorSummary);
-            throw new AggregateException($"All providers failed for {symbol}: {errorSummary}",
-                errors.Select(e => e.Error));
-        }
-
-        _log.Warning("No data found from any provider for {Symbol}", symbol);
-        RaiseProgress(symbol, Name, requestStartedAt, status: "no-data");
-        return Array.Empty<HistoricalBar>();
+        return await ExecuteWithFailoverAsync<HistoricalBar>(
+            symbol,
+            operationLabel: "bars",
+            candidateSelector: GetOrderedProviders,
+            fetchAsync: (provider, resolved, token) => provider.GetDailyBarsAsync(resolved, from, to, token),
+            onSuccessAsync: _enableCrossValidation
+                ? (bars, provider, token) => ValidateBarsAsync(bars, symbol, from, to, provider.Name, token)
+                : null,
+            allFailedMessageFactory: summary => $"All providers failed for {symbol}: {summary}",
+            ct).ConfigureAwait(false);
     }
 
-    private async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsInternalAsync(
+    public async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
         string symbol,
         DataGranularity granularity,
         DateOnly? from,
         DateOnly? to,
-        int rateLimitRetries,
         CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -289,108 +189,179 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         if (!SupportedGranularities.Contains(granularity))
             throw new InvalidOperationException($"Composite provider does not support {granularity.ToDisplayName()} backfill.");
 
-        const int maxRateLimitRetries = 3;
+        return await ExecuteWithFailoverAsync<AggregateBar>(
+            symbol,
+            operationLabel: $"{granularity.ToDisplayName()} aggregate bars",
+            candidateSelector: () => GetOrderedProviders().Where(p =>
+                p is IHistoricalAggregateBarProvider aggregateProvider &&
+                aggregateProvider.SupportedGranularities.Contains(granularity)),
+            fetchAsync: (provider, resolved, token) =>
+                ((IHistoricalAggregateBarProvider)provider).GetAggregateBarsAsync(resolved, granularity, from, to, token),
+            onSuccessAsync: null,
+            allFailedMessageFactory: summary =>
+                $"All aggregate-capable providers failed for {symbol} ({granularity.ToDisplayName()}): {summary}",
+            ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Shared failover skeleton for the daily-bar and aggregate-bar paths: iterate the ordered
+    /// candidate providers, skipping backed-off and rate-limited ones, and return the first
+    /// non-empty result. If every candidate is rate limited it waits (bounded by
+    /// <see cref="_maxRateLimitRetryBudget"/>, with jitter) for the earliest reset and retries.
+    /// When all providers fail it raises the exhausted progress event and throws an
+    /// <see cref="AggregateException"/>; when they simply return no data it returns an empty list.
+    /// </summary>
+    private async Task<IReadOnlyList<TResult>> ExecuteWithFailoverAsync<TResult>(
+        string symbol,
+        string operationLabel,
+        Func<IEnumerable<IHistoricalDataProvider>> candidateSelector,
+        Func<IHistoricalDataProvider, string, CancellationToken, Task<IReadOnlyList<TResult>>> fetchAsync,
+        Func<IReadOnlyList<TResult>, IHistoricalDataProvider, CancellationToken, Task>? onSuccessAsync,
+        Func<string, string> allFailedMessageFactory,
+        CancellationToken ct)
+    {
         var requestStartedAt = DateTimeOffset.UtcNow;
-        List<(string Provider, Exception Error)> errors = [];
+        var retryDeadline = requestStartedAt + _maxRateLimitRetryBudget;
 
-        var orderedProviders = GetOrderedProviders()
-            .Where(p => p is IHistoricalAggregateBarProvider aggregateProvider &&
-                        aggregateProvider.SupportedGranularities.Contains(granularity));
-
-        foreach (var provider in orderedProviders)
+        for (var attempt = 0; ; attempt++)
         {
-            if (IsInBackoffPeriod(provider.Name))
+            List<(string Provider, Exception Error)> errors = [];
+
+            foreach (var provider in candidateSelector())
             {
-                _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
-                continue;
-            }
-
-            if (_enableRateLimitRotation && _rateLimitTracker.IsRateLimited(provider.Name))
-            {
-                var resetTime = _rateLimitTracker.GetTimeUntilReset(provider.Name);
-                _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
-                continue;
-            }
-
-            try
-            {
-                var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
-                _log.Information("Trying {Provider} for {Symbol} {Granularity} aggregates (resolved: {Resolved})",
-                    provider.Name, symbol, granularity.ToDisplayName(), resolvedSymbol);
-                RaiseProgress(symbol, provider.Name, requestStartedAt, status: "trying");
-
-                var startTime = DateTimeOffset.UtcNow;
-                _rateLimitTracker.RecordRequest(provider.Name);
-
-                var aggregateProvider = (IHistoricalAggregateBarProvider)provider;
-                var bars = await aggregateProvider.GetAggregateBarsAsync(resolvedSymbol, granularity, from, to, ct).ConfigureAwait(false);
-                var elapsed = DateTimeOffset.UtcNow - startTime;
-
-                if (bars is { Count: > 0 })
+                // Skip providers in backoff period
+                if (IsInBackoffPeriod(provider.Name))
                 {
-                    UpdateHealthStatus(provider.Name, true, $"Retrieved {bars.Count} aggregate bars", elapsed);
-                    ClearFailure(provider.Name);
-                    _rateLimitTracker.ClearRateLimitState(provider.Name);
-
-                    _log.Information("Successfully retrieved {Count} {Granularity} bars from {Provider} for {Symbol}",
-                        bars.Count, granularity.ToDisplayName(), provider.Name, symbol);
-                    RaiseProgress(symbol, provider.Name, requestStartedAt, bars.Count, status: "completed");
-                    return bars;
+                    _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
+                    continue;
                 }
 
-                _log.Debug("No aggregate bars returned from {Provider} for {Symbol}, trying next", provider.Name, symbol);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                if (IsRateLimitException(ex))
+                // Skip rate-limited providers if rotation is enabled
+                if (_enableRateLimitRotation && _rateLimitTracker.IsRateLimited(provider.Name))
                 {
-                    var retryAfter = ExtractRetryAfter(ex);
-                    _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
-                    _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Granularity}, rotating to next provider",
-                        provider.Name, symbol, granularity.ToDisplayName());
-                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "rate-limited", error: ex.Message);
-                }
-                else
-                {
-                    _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Granularity} aggregates",
-                        provider.Name, symbol, granularity.ToDisplayName());
-                    RecordFailure(provider.Name, ex.Message);
-                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "failed", error: ex.Message);
+                    var resetTime = _rateLimitTracker.GetTimeUntilReset(provider.Name);
+                    _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
+                    continue;
                 }
 
-                errors.Add((provider.Name, ex));
-            }
-        }
+                try
+                {
+                    // Resolve symbol for this provider if resolver is available
+                    var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
 
-        if (_enableRateLimitRotation && errors.All(e => IsRateLimitException(e.Error)) && rateLimitRetries < maxRateLimitRetries)
-        {
-            var shortestWait = GetShortestRateLimitWait();
-            if (shortestWait.HasValue && shortestWait.Value < TimeSpan.FromMinutes(5))
+                    _log.Information("Trying {Provider} for {Symbol} {Operation} (resolved: {Resolved})",
+                        provider.Name, symbol, operationLabel, resolvedSymbol);
+                    RaiseProgress(symbol, provider.Name, requestStartedAt, status: "trying");
+
+                    var startTime = DateTimeOffset.UtcNow;
+
+                    // Record the request attempt
+                    _rateLimitTracker.RecordRequest(provider.Name);
+
+                    var results = await fetchAsync(provider, resolvedSymbol, ct).ConfigureAwait(false);
+                    var elapsed = DateTimeOffset.UtcNow - startTime;
+
+                    if (results is { Count: > 0 })
+                    {
+                        // Update health status and clear any rate limit state
+                        UpdateHealthStatus(provider.Name, true, $"Retrieved {results.Count} {operationLabel}", elapsed);
+                        ClearFailure(provider.Name);
+                        _rateLimitTracker.ClearRateLimitState(provider.Name);
+
+                        _log.Information("Successfully retrieved {Count} {Operation} from {Provider} for {Symbol}",
+                            results.Count, operationLabel, provider.Name, symbol);
+                        RaiseProgress(symbol, provider.Name, requestStartedAt, results.Count, status: "completed");
+
+                        // Optionally validate against other providers
+                        if (onSuccessAsync is not null)
+                        {
+                            await onSuccessAsync(results, provider, ct).ConfigureAwait(false);
+                        }
+
+                        return results;
+                    }
+
+                    _log.Debug("No {Operation} returned from {Provider} for {Symbol}, trying next", operationLabel, provider.Name, symbol);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Check if this is a rate limit error
+                    if (IsRateLimitException(ex))
+                    {
+                        var retryAfter = ExtractRetryAfter(ex);
+                        _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
+                        _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Operation}, rotating to next provider",
+                            provider.Name, symbol, operationLabel);
+                        RaiseProgress(symbol, provider.Name, requestStartedAt, status: "rate-limited", error: ex.Message);
+                    }
+                    else
+                    {
+                        _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Operation}", provider.Name, symbol, operationLabel);
+                        RecordFailure(provider.Name, ex.Message);
+                        RaiseProgress(symbol, provider.Name, requestStartedAt, status: "failed", error: ex.Message);
+                    }
+                    errors.Add((provider.Name, ex));
+                }
+            }
+
+            // All providers failed - if they were all just rate limited and we still have retry
+            // attempts and time budget left, wait for the earliest reset (with jitter) and retry.
+            if (_enableRateLimitRotation
+                && errors.Count > 0
+                && errors.All(e => IsRateLimitException(e.Error))
+                && attempt < MaxRateLimitRetries)
             {
-                _log.Information(
-                    "All aggregate providers rate limited for {Granularity} (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime}...",
-                    granularity.ToDisplayName(), rateLimitRetries + 1, maxRateLimitRetries, shortestWait.Value);
-                await Task.Delay(shortestWait.Value, ct).ConfigureAwait(false);
-                return await GetAggregateBarsInternalAsync(symbol, granularity, from, to, rateLimitRetries + 1, ct).ConfigureAwait(false);
+                var wait = ComputeRateLimitWait(retryDeadline);
+                if (wait.HasValue)
+                {
+                    _log.Information(
+                        "All providers rate limited for {Symbol} {Operation} (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime} for rate limit reset...",
+                        symbol, operationLabel, attempt + 1, MaxRateLimitRetries, wait.Value);
+                    await Task.Delay(wait.Value, ct).ConfigureAwait(false);
+                    continue;
+                }
             }
-        }
 
-        if (errors.Count > 0)
-        {
-            var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
-            RaiseProgress(symbol, Name, requestStartedAt, status: "all-providers-failed", error: errorSummary);
-            throw new AggregateException(
-                $"All aggregate-capable providers failed for {symbol} ({granularity.ToDisplayName()}): {errorSummary}",
-                errors.Select(e => e.Error));
-        }
+            // All providers failed
+            if (errors.Count > 0)
+            {
+                var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
+                RaiseProgress(symbol, Name, requestStartedAt, status: "all-providers-failed", error: errorSummary);
+                throw new AggregateException(allFailedMessageFactory(errorSummary), errors.Select(e => e.Error));
+            }
 
-        _log.Warning("No aggregate-capable provider found for {Symbol} at {Granularity}", symbol, granularity.ToDisplayName());
-        RaiseProgress(symbol, Name, requestStartedAt, status: "no-data");
-        return Array.Empty<AggregateBar>();
+            _log.Warning("No data found from any provider for {Symbol} {Operation}", symbol, operationLabel);
+            RaiseProgress(symbol, Name, requestStartedAt, status: "no-data");
+            return Array.Empty<TResult>();
+        }
+    }
+
+    /// <summary>
+    /// Determine how long to wait for the earliest provider rate-limit reset before the next
+    /// retry, honoring the overall <paramref name="retryDeadline"/> budget and adding jitter.
+    /// Returns <see langword="null"/> when waiting is not worthwhile (no reset known, the reset
+    /// is too far out, or the remaining budget is exhausted), signalling the caller to fail fast.
+    /// </summary>
+    private TimeSpan? ComputeRateLimitWait(DateTimeOffset retryDeadline)
+    {
+        var shortestWait = GetShortestRateLimitWait();
+        if (!shortestWait.HasValue || shortestWait.Value >= MaxSingleRateLimitWait)
+            return null;
+
+        var remaining = retryDeadline - DateTimeOffset.UtcNow;
+        if (remaining <= TimeSpan.Zero || shortestWait.Value > remaining)
+            return null;
+
+        // Add bounded random jitter so concurrent requests don't resume in lock-step.
+        var jitterMs = Random.Shared.Next(0, (int)RateLimitRetryJitter.TotalMilliseconds + 1);
+        var wait = shortestWait.Value + TimeSpan.FromMilliseconds(jitterMs);
+
+        // Never let jitter push the wait past the remaining budget.
+        return wait > remaining ? remaining : wait;
     }
 
     /// <summary>
@@ -428,15 +399,23 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     }
 
     /// <summary>
-    /// Get providers ordered by rate limit capacity when rotation is enabled.
+    /// Get all providers ordered by rate limit capacity when rotation is enabled.
     /// </summary>
     private IEnumerable<IHistoricalDataProvider> GetOrderedProviders()
+        => OrderByRateLimitAvailability(_providers);
+
+    /// <summary>
+    /// Order an arbitrary provider set by rate-limit capacity when rotation is enabled:
+    /// providers with capacity first, then those approaching their limit, then rate-limited ones
+    /// last. When rotation is disabled the input order (priority order) is preserved.
+    /// </summary>
+    private IEnumerable<IHistoricalDataProvider> OrderByRateLimitAvailability(IEnumerable<IHistoricalDataProvider> providers)
     {
         if (!_enableRateLimitRotation)
-            return _providers;
+            return providers;
 
         // Order by: not rate limited first, then by usage ratio (lowest first), then by priority
-        return _providers.OrderBy(p =>
+        return providers.OrderBy(p =>
         {
             if (_rateLimitTracker.IsRateLimited(p.Name))
                 return 1000; // Put rate-limited providers last
@@ -504,19 +483,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         // Get providers that support adjusted prices, ordered by rate limit availability
-        var adjustedProviders = _providers.Where(p => p.Capabilities.AdjustedPrices);
-
-        if (_enableRateLimitRotation)
-        {
-            adjustedProviders = adjustedProviders.OrderBy(p =>
-            {
-                if (_rateLimitTracker.IsRateLimited(p.Name))
-                    return 1000;
-                if (_rateLimitTracker.IsApproachingLimit(p.Name, _rateLimitRotationThreshold))
-                    return 100 + (int)(_rateLimitTracker.GetStatus(p.Name)?.UsagePercent ?? 0);
-                return p.Priority;
-            });
-        }
+        var adjustedProviders = OrderByRateLimitAvailability(
+            _providers.Where(p => p.Capabilities.AdjustedPrices));
 
         foreach (var provider in adjustedProviders)
         {
@@ -745,4 +713,11 @@ public sealed record CompositeProviderOptions
     /// Default: 0.8 (80% of rate limit used).
     /// </summary>
     public double RateLimitRotationThreshold { get; init; } = 0.8;
+
+    /// <summary>
+    /// Overall wall-clock budget for waiting out provider rate limits across all retry attempts
+    /// for a single request. Bounds the worst-case blocking time (jitter is applied to each wait).
+    /// Default: 5 minutes.
+    /// </summary>
+    public TimeSpan MaxRateLimitRetryBudget { get; init; } = TimeSpan.FromMinutes(5);
 }
