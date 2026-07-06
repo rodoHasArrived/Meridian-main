@@ -21,7 +21,7 @@ internal sealed class ConfigCommands : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--wizard", "--auto-config", "--detect-providers", "--generate-config", "--generate-config-schema", "--preset", "--list-presets" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--wizard", "--auto-config", "--detect-providers", "--generate-config", "--generate-config-schema", "--preset", "--list-presets"];
 
     public bool CanHandle(string[] args)
         => CliArguments.MatchesAnyFlag(args, Triggers) || IsQuickstartAlias(args);

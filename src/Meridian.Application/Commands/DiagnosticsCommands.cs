@@ -26,7 +26,7 @@ internal sealed class DiagnosticsCommands : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--diagnostics", "--quick-check", "--test-connectivity", "--error-codes", "--show-config", "--validate-credentials" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--diagnostics", "--quick-check", "--test-connectivity", "--error-codes", "--show-config", "--validate-credentials"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

@@ -17,7 +17,7 @@ internal sealed class EtlCommands : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--etl-import", "--etl-export", "--etl-roundtrip", "--etl-resume", "--etl-preview", "--etl-list-files", "--etl-test-connection" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--etl-import", "--etl-export", "--etl-roundtrip", "--etl-resume", "--etl-preview", "--etl-list-files", "--etl-test-connection"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

@@ -5,7 +5,7 @@ namespace Meridian.Application.Commands;
 
 internal sealed class SimulationCommands(IExecutionSimulationOrchestrator orchestrator) : ICliCommand
 {
-    public IReadOnlyList<string> Triggers { get; } = [ "--simulate-execution" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--simulate-execution"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

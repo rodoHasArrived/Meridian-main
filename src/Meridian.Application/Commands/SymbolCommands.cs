@@ -21,7 +21,7 @@ internal sealed class SymbolCommands : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--symbols", "--symbols-monitored", "--symbols-archived", "--symbols-add", "--symbols-remove", "--symbol-status", "--symbols-import", "--symbols-export" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--symbols", "--symbols-monitored", "--symbols-archived", "--symbols-add", "--symbols-remove", "--symbol-status", "--symbols-import", "--symbols-export"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

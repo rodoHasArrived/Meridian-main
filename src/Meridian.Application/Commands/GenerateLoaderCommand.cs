@@ -19,7 +19,7 @@ internal sealed class GenerateLoaderCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--generate-loader" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--generate-loader"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

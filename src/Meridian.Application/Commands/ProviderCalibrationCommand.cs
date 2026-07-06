@@ -16,7 +16,7 @@ internal sealed class ProviderCalibrationCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--calibrate-provider-degradation" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--calibrate-provider-degradation"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

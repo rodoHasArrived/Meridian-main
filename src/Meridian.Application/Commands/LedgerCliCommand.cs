@@ -19,7 +19,7 @@ internal sealed class LedgerCliCommand : ICliCommand
         "register",
     };
 
-    public IReadOnlyList<string> Triggers { get; } = [ "ledger" ];
+    public IReadOnlyList<string> Triggers { get; } = ["ledger"];
 
     public bool CanHandle(string[] args)
         => args.Length > 0 && Triggers.Any(trigger => args[0].Equals(trigger, StringComparison.OrdinalIgnoreCase));

@@ -30,7 +30,7 @@ internal sealed class ConfigPresetCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--preset", "--list-presets" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--preset", "--list-presets"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

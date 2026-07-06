@@ -9,7 +9,7 @@ internal sealed class StatementCommands(
     IReconciliationCaseIntakeService intakeService,
     IStatementReconciliationCheckpointStore checkpointStore) : ICliCommand
 {
-    public IReadOnlyList<string> Triggers { get; } = [ "--statement-import", "--statement-validate", "--statement-reconcile", "--statement-orchestrate" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--statement-import", "--statement-validate", "--statement-reconcile", "--statement-orchestrate"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

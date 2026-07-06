@@ -48,7 +48,7 @@ public sealed class CompositePublisher : IMarketEventPublisher
                 _logger.LogWarning(
                     ex,
                     "Publisher {PublisherType} failed to publish market event; continuing with remaining publishers.",
-                    publisher.GetType().Name);
+                    publisher?.GetType().Name ?? "Unknown");
             }
         }
 

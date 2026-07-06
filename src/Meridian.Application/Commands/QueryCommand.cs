@@ -19,7 +19,7 @@ internal sealed class QueryCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--query" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--query"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

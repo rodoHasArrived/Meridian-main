@@ -21,7 +21,7 @@ internal sealed class ValidateConfigCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--validate-config" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--validate-config"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

@@ -49,7 +49,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
         _securityMasterEventStore = securityMasterEventStore;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--security-master-ingest", "--security-master-normalize-corporate-actions" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--security-master-ingest", "--security-master-normalize-corporate-actions"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

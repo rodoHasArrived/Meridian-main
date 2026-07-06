@@ -23,7 +23,7 @@ internal sealed class HelpCommand : ICliCommand
         ["ledger"] = ShowLedgerHelp,
     };
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--help", "-h" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--help", "-h"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

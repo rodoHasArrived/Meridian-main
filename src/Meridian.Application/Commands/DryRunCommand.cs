@@ -22,7 +22,7 @@ internal sealed class DryRunCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--dry-run" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--dry-run"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

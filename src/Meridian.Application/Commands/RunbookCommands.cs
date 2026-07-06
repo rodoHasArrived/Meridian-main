@@ -5,7 +5,7 @@ namespace Meridian.Application.Commands;
 
 internal sealed class RunbookCommands(IRunbookStore store, IRunbookExecutor executor) : ICliCommand
 {
-    public IReadOnlyList<string> Triggers { get; } = [ "--runbook-list", "--runbook-create", "--runbook-run" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--runbook-list", "--runbook-create", "--runbook-run"];
 
     public bool CanHandle(string[] args)
         => CliArguments.HasFlag(args, "--runbook-list")

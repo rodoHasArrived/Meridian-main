@@ -25,7 +25,7 @@ internal sealed class CatalogCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--catalog" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--catalog"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

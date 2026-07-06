@@ -21,7 +21,7 @@ internal sealed class SchemaCheckCommand : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--check-schemas" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--check-schemas"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 

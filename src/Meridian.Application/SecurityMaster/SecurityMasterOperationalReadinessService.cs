@@ -533,7 +533,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         string ledgerRoute,
         string closeRoute)
     {
-        if (!DepthTargetsByAssetClass.TryGetValue(spec.AssetClass, out var descriptors))
+        if (spec.AssetClass is null || !DepthTargetsByAssetClass.TryGetValue(spec.AssetClass, out var descriptors))
         {
             return;
         }

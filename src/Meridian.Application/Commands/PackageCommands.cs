@@ -20,7 +20,7 @@ internal sealed class PackageCommands : ICliCommand
         _log = log;
     }
 
-    public IReadOnlyList<string> Triggers { get; } = [ "--package", "--import-package", "--list-package", "--validate-package" ];
+    public IReadOnlyList<string> Triggers { get; } = ["--package", "--import-package", "--list-package", "--validate-package"];
 
     public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
