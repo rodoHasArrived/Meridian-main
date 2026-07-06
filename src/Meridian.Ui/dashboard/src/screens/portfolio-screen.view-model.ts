@@ -1719,7 +1719,7 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
       { label: "Position ID", value: position.positionId ?? "Unavailable", tone: position.positionId ? "muted" : "warning" },
-      { label: "Currency", value: position.currency, tone: "muted" }
+      { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
     ]
   };
 }
