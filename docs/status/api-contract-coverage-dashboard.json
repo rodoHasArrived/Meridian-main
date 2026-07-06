@@ -6,8 +6,8 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 595,
-    "documented_endpoint_count": 595,
+    "endpoint_count": 596,
+    "documented_endpoint_count": 596,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 814,
     "documented_workstation_contract_count": 814,
@@ -2146,14 +2146,20 @@
     },
     {
       "method": "POST",
-      "path": "/api/ledger/journal-entry-workbench/evidence",
+      "path": "/api/ledger/journal-automation/period-close-intake",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2102",
       "documented": true
     },
     {
       "method": "POST",
+      "path": "/api/ledger/journal-entry-workbench/evidence",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2144",
+      "documented": true
+    },
+    {
+      "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2145",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2187",
       "documented": true
     },
     {

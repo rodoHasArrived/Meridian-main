@@ -1,3 +1,6 @@
+using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
+
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
@@ -15,7 +18,8 @@ public sealed record RunDividendDraftIntakeRequest(
     string? PeriodId = null,
     string? EntityId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    decimal WithholdingTaxRate = 0m);
 
 /// <summary>
 /// Request to accrue period fees from fund fee terms and land the drafts in the manual
@@ -31,6 +35,20 @@ public sealed record RunFeeAccrualDraftIntakeRequest(
     decimal HighWaterMark,
     decimal ManagementFeeRate,
     decimal PerformanceFeeRate,
+    Guid? LedgerBookId = null,
+    string? EntityId = null,
+    string? TenantId = null,
+    string? CompanyId = null);
+
+/// <summary>
+/// Request to project period-close closing entries from a closed ledger period's trial
+/// balance and land the governed draft in the manual journal workbench queue.
+/// </summary>
+public sealed record RunPeriodCloseDraftIntakeRequest(
+    string FundProfileId,
+    string Currency,
+    string Actor,
+    Guid PeriodId,
     Guid? LedgerBookId = null,
     string? EntityId = null,
     string? TenantId = null,
@@ -58,15 +76,18 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly AutomatedJournalDraftIntakeService _intake;
     private readonly FeeScheduleAccrualEventProducer _feeProducer;
     private readonly CorporateActionDividendEventProducer? _dividendProducer;
+    private readonly ILedgerBookService? _ledgerBookService;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
         FeeScheduleAccrualEventProducer feeProducer,
-        CorporateActionDividendEventProducer? dividendProducer = null)
+        CorporateActionDividendEventProducer? dividendProducer = null,
+        ILedgerBookService? ledgerBookService = null)
     {
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
         _dividendProducer = dividendProducer;
+        _ledgerBookService = ledgerBookService;
     }
 
     public async Task<AutomatedJournalIntakeRunResult> RunDividendIntakeAsync(
@@ -85,7 +106,8 @@ public sealed class AutomatedJournalIntakeRunner
                 request.Positions,
                 request.WindowStart,
                 request.WindowEnd,
-                DateTimeOffset.UtcNow),
+                DateTimeOffset.UtcNow,
+                request.WithholdingTaxRate),
             ct).ConfigureAwait(false);
 
         var intake = production.Events.Count == 0
@@ -104,6 +126,74 @@ public sealed class AutomatedJournalIntakeRunner
                 ct).ConfigureAwait(false);
 
         return new AutomatedJournalIntakeRunResult(production.Skipped, intake);
+    }
+
+    /// <summary>
+    /// Projects closing entries from a closed period's trial balance and admits the
+    /// resulting draft into the workbench queue. The period must already be soft- or
+    /// hard-closed: closing entries are the accounting consequence of a close decision,
+    /// not a way to make one. A period with no temporary-account balances returns an
+    /// empty intake — a correct outcome, not a gap.
+    /// </summary>
+    public async Task<AutomatedJournalIntakeRunResult> RunPeriodCloseIntakeAsync(
+        RunPeriodCloseDraftIntakeRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (_ledgerBookService is null)
+        {
+            throw new InvalidOperationException(
+                "Period-close intake requires the ledger book service, which is not configured.");
+        }
+
+        var summary = await _ledgerBookService.GetPeriodSummaryAsync(request.PeriodId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Ledger period '{request.PeriodId}' was not found or is still open; close the period before running closing entries.");
+
+        var trialBalance = BuildTrialBalance(summary.TrialBalance);
+
+        var projection = PeriodCloseProjector.Project(new PeriodCloseInput(
+            request.PeriodId.ToString("D"),
+            summary.CompletedAt,
+            trialBalance,
+            request.Actor));
+
+        var draft = PeriodCloseDraftBuilder.BuildDraft(projection);
+        var intake = draft is null
+            ? EmptyIntake
+            : await _intake.IntakeDraftsAsync(
+                new AutomatedJournalPreparedDraftIntakeRequest(
+                    request.FundProfileId,
+                    request.Currency,
+                    [draft],
+                    request.Actor,
+                    request.LedgerBookId,
+                    request.PeriodId.ToString("D"),
+                    request.EntityId,
+                    request.TenantId,
+                    request.CompanyId),
+                ct).ConfigureAwait(false);
+
+        return new AutomatedJournalIntakeRunResult([], intake);
+    }
+
+    private static IReadOnlyDictionary<LedgerAccount, decimal> BuildTrialBalance(
+        IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
+    {
+        var balances = new Dictionary<LedgerAccount, decimal>();
+        foreach (var line in lines)
+        {
+            if (!Enum.TryParse<LedgerAccountType>(line.AccountType, ignoreCase: true, out var accountType))
+            {
+                throw new InvalidOperationException(
+                    $"Trial balance account '{line.AccountName}' has unrecognized account type '{line.AccountType}'; closing entries cannot be projected safely.");
+            }
+
+            var account = new LedgerAccount(line.AccountName, accountType, line.Symbol, line.FinancialAccountId);
+            balances[account] = balances.GetValueOrDefault(account) + line.Balance;
+        }
+
+        return balances;
     }
 
     public async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(
