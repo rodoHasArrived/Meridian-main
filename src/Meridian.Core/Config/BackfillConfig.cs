@@ -52,6 +52,7 @@ public sealed record BackfillConfig(
 /// <param name="AutoResumeAfterRateLimit">Automatically resume after rate limit window expires.</param>
 /// <param name="MaxRateLimitWaitMinutes">Maximum minutes to wait for rate limit before pausing.</param>
 /// <param name="Scheduling">Scheduled backfill configuration.</param>
+/// <param name="WorkerErrorRetryDelayMs">Delay before the worker loop resumes polling after an unexpected error.</param>
 public sealed record BackfillJobsConfig(
     bool PersistJobs = true,
     string JobsDirectory = "_backfill_jobs",
@@ -63,7 +64,8 @@ public sealed record BackfillJobsConfig(
     bool AutoPauseOnRateLimit = true,
     bool AutoResumeAfterRateLimit = true,
     int MaxRateLimitWaitMinutes = 5,
-    ScheduledBackfillConfig? Scheduling = null
+    ScheduledBackfillConfig? Scheduling = null,
+    int WorkerErrorRetryDelayMs = 1000
 );
 
 /// <summary>

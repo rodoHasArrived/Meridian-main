@@ -164,7 +164,7 @@ public abstract class StatusServiceBase
 
     private string _currentStatus = "Ready";
     private readonly object _lock = new();
-    private string _baseUrl = "http://localhost:8080";
+    private string _baseUrl = ApiEndpointDefaults.LocalApiBaseUrl;
     private CancellationTokenSource? _monitoringCts;
     private DateTime? _lastSuccessfulUpdate;
     private bool _isBackendReachable = true;

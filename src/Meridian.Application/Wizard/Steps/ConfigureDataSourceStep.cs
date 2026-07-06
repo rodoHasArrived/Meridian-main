@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Application.Wizard.Core;
@@ -168,11 +169,11 @@ public sealed class ConfigureDataSourceStep : IWizardStep
         IBClientPortalOptions? clientPortal = null;
         if (enableClientPortal)
         {
-            var baseUrl = await PromptStringAsync("  Client Portal Base URL", defaultValue: "https://localhost:5000", ct: ct);
+            var baseUrl = await PromptStringAsync("  Client Portal Base URL", defaultValue: ApiEndpointDefaults.IbClientPortalBaseUrl, ct: ct);
             var allowSelfSigned = await PromptYesNoAsync("  Allow self-signed Client Portal certificate", defaultValue: true, ct: ct);
             clientPortal = new IBClientPortalOptions(
                 Enabled: true,
-                BaseUrl: baseUrl ?? "https://localhost:5000",
+                BaseUrl: baseUrl ?? ApiEndpointDefaults.IbClientPortalBaseUrl,
                 AllowSelfSignedCertificates: allowSelfSigned);
         }
 

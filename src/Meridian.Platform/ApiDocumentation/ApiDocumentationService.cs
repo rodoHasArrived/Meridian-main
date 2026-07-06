@@ -1,4 +1,5 @@
 using System.Text;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Platform.ApiDocumentation;
 
@@ -34,7 +35,7 @@ public sealed class ApiDocumentationService
             },
             Servers = new List<OpenApiServer>
             {
-                new OpenApiServer { Url = "http://localhost:8080", Description = "Local development server" }
+                new OpenApiServer { Url = ApiEndpointDefaults.LocalApiBaseUrl, Description = "Local development server" }
             },
             Tags = GenerateTags(),
             Paths = GeneratePaths(),

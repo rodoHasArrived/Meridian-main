@@ -3054,6 +3054,7 @@ Meridian-main
 │   │   ├── Api
 │   │   │   ├── Quality
 │   │   │   │   └── QualityApiModels.cs
+│   │   │   ├── ApiEndpointDefaults.cs
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
 │   │   │   ├── DataIngestionContracts.cs
@@ -3097,6 +3098,7 @@ Meridian-main
 │   │   │   └── CommodityDtos.cs
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
+│   │   │   ├── ConnectivityProbeOptions.cs
 │   │   │   ├── DerivativesConfigDto.cs
 │   │   │   ├── MeridianPathDefaults.cs
 │   │   │   ├── ProviderConnectionDtos.cs
@@ -3554,7 +3556,8 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── BaseBrokerageGateway.cs
 │   │   │   ├── BrokerageGatewayAdapter.cs
-│   │   │   └── PaperTradingGateway.cs
+│   │   │   ├── PaperTradingGateway.cs
+│   │   │   └── PaperTradingGatewayOptions.cs
 │   │   ├── Allocation
 │   │   │   ├── AllocationResult.cs
 │   │   │   ├── AllocationRule.cs
@@ -4899,6 +4902,7 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-period-switcher.tsx
+│   │   │   │   │   │   ├── save-view-dialog.test.tsx
 │   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
 │   │   │   │   │   │   ├── scope-picker.tsx
@@ -5052,6 +5056,9 @@ Meridian-main
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
 │   │   │   │   │   │   └── payoff.ts
+│   │   │   │   │   ├── dev-fixtures
+│   │   │   │   │   │   ├── fixture-resolver.ts
+│   │   │   │   │   │   └── market-data-fixtures.ts
 │   │   │   │   │   ├── notification-center
 │   │   │   │   │   │   ├── merge.test.ts
 │   │   │   │   │   │   ├── merge.ts
@@ -5088,6 +5095,8 @@ Meridian-main
 │   │   │   │   │   ├── dense-virtualization.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── format.test.ts
+│   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
@@ -5307,6 +5316,7 @@ Meridian-main
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
+│   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   └── provider-setup.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.development-fixture-notice.ts
@@ -6760,6 +6770,7 @@ Meridian-main
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
