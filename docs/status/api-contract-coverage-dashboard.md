@@ -11,11 +11,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 99.8% |
+| Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
-| Workstation contract coverage | 99.5% |
+| Workstation contract coverage | 100.0% |
 | Endpoints documented | 596 / 596 |
-| Workstation contracts documented | 814 / 818 |
+| Workstation contracts documented | 818 / 818 |
 
 ## Endpoint Coverage
 
@@ -1133,10 +1133,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReportingScheduleRunResultDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1135` |
 | `ReportingScheduleStateDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1055` |
 | `ReportingScheduleUpsertRequestDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1119` |
-| `ReportingStarterKitDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1072` |
-| `ReportingStarterKitProvisionResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1093` |
-| `ReportingStarterKitStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1082` |
-| `ReportingStarterSeedScheduleDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1062` |
+| `ReportingStarterKitDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1072` |
+| `ReportingStarterKitProvisionResultDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1093` |
+| `ReportingStarterKitStateDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1082` |
+| `ReportingStarterSeedScheduleDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1062` |
 | `ResearchBriefingAlert` | Documented | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:95` |
 | `ResearchBriefingDto` | Documented | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:132` |
 | `ResearchBriefingRun` | Documented | `src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:53` |
@@ -1443,7 +1443,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 4 workstation contract gap(s).
+No API contract coverage gaps detected.
 
 ---
 

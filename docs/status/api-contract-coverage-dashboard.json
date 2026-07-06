@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.8,
+  "score_percent": 100.0,
   "endpoint_coverage_percent": 100.0,
-  "contract_coverage_percent": 99.5,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 596,
     "documented_endpoint_count": 596,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 818,
-    "documented_workstation_contract_count": 814,
-    "undocumented_workstation_contract_count": 4
+    "documented_workstation_contract_count": 818,
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
@@ -4910,22 +4910,22 @@
     {
       "name": "ReportingStarterSeedScheduleDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1062",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportingStarterKitDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1072",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportingStarterKitStateDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1082",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportingStarterKitProvisionResultDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1093",
-      "documented": false
+      "documented": true
     },
     {
       "name": "ReportingScheduleRecordDto",
