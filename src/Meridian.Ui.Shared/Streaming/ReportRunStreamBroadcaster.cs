@@ -47,6 +47,9 @@ public sealed class ReportRunStreamBroadcaster : IReportingRunNotifier, IAsyncDi
     /// <inheritdoc />
     public void NotifyRunChanged(string runId) => _engine.Wake(StreamTopic.ReportRun(runId));
 
+    /// <summary>Test hook: live topic count — locks in that this stream evicts empty run-id topics.</summary>
+    internal int ActiveTopicCount => _engine.ActiveTopicCount;
+
     /// <summary>
     /// Subscribe to a report-run topic's coalesced status feed. Returns null when the session's
     /// concurrent-stream cap is exceeded. Dispose to unsubscribe and release the session's slot.

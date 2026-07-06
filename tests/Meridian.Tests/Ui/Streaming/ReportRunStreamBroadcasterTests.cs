@@ -76,6 +76,22 @@ public sealed class ReportRunStreamBroadcasterTests
     }
 
     [Fact]
+    public async Task EmptyReportRunTopic_IsEvictedOnLastUnsubscribe()
+    {
+        await using var broadcaster = new ReportRunStreamBroadcaster(
+            Services, new StreamConnectionRegistry(4), Options(), (_, _) => Run("r1", "Draft"));
+
+        var sub = broadcaster.TrySubscribe(StreamTopic.ReportRun("r1"), "s1");
+        sub.Should().NotBeNull();
+        broadcaster.ActiveTopicCount.Should().Be(1);
+
+        await sub!.DisposeAsync();
+
+        // Run-id topics are an unbounded universe, so an empty one must not linger (leak guard).
+        broadcaster.ActiveTopicCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task NotifyRunChanged_WithNoSubscribers_DoesNotThrow()
     {
         await using var broadcaster = new ReportRunStreamBroadcaster(
