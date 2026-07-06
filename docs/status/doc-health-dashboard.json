@@ -1,11 +1,11 @@
 {
-  "total_files": 540,
-  "total_lines": 90064,
-  "orphaned_count": 206,
+  "total_files": 543,
+  "total_lines": 90738,
+  "orphaned_count": 208,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 166.8,
+  "average_lines": 167.1,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -214,6 +214,7 @@
     "plugins/testing-automation/skills/java-junit/SKILL.md",
     "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
     "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
+    "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
     "tests/setup-script-tests.md"
   ],
   "no_heading_files": [
@@ -1451,6 +1452,14 @@
       "stale": false
     },
     {
+      "path": "docs/architecture/module-conventions.md",
+      "line_count": 99,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/architecture/module-map.md",
       "line_count": 110,
       "has_heading": true,
@@ -1508,7 +1517,7 @@
     },
     {
       "path": "docs/architecture/README.md",
-      "line_count": 81,
+      "line_count": 82,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2140,7 +2149,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7891,
+      "line_count": 7943,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4284,7 +4293,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 164,
+      "line_count": 170,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4356,7 +4365,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 322,
+      "line_count": 337,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4447,6 +4456,14 @@
       "line_count": 62,
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

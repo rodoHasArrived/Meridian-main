@@ -32,6 +32,8 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
 income-statement and balance-sheet rows with net-income and accounting-equation checks.
+`Ledger.CalculateNetBalance` exposes the ledger-owned normal-balance calculation over the shared
+F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
 `MultiCurrencyJournalProjector` converts local-currency debit/credit journal inputs into balanced
@@ -56,6 +58,10 @@ approval/posting.
 `AutomatedJournalApproval` governs those drafts through submit, approve, reject, and post
 transitions, requiring approval/posting evidence and preserving approval metadata on the posted
 ledger journal entry.
+`IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
+projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
+while durable implementations can append the same approved projection to the governed journal
+store without forking projector output.
 `LockedAccountingPeriodBook` records book-scoped accounting period locks and rejects late journal
 postings that fall inside a locked range, preserving published NAV and close evidence while still
 allowing separate books such as shadow-NAV ledgers to continue independently.
