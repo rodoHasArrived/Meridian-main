@@ -896,6 +896,10 @@ public static class UiApiRoutes
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
 
+    // Portfolio-wide cash ladder and liquidity scenarios
+    public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
+    public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
+
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
 

@@ -3083,7 +3083,8 @@ Meridian-main
 │   │   ├── Archive
 │   │   │   └── ArchiveHealthModels.cs
 │   │   ├── AssetOperations
-│   │   │   └── AssetOperationsDtos.cs
+│   │   │   ├── AssetOperationsDtos.cs
+│   │   │   └── PortfolioCashLadderDtos.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillProgress.cs
 │   │   │   ├── BackfillResult.cs
@@ -4062,7 +4063,8 @@ Meridian-main
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
 │   │   │   ├── AssetObligationProjectionService.cs
-│   │   │   └── AssetOperationsReadService.cs
+│   │   │   ├── AssetOperationsReadService.cs
+│   │   │   └── PortfolioCashLadderEngine.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
 │   │   │   └── ICertificateOfDepositReferenceService.cs
@@ -5059,6 +5061,7 @@ Meridian-main
 │   │   │   │   │   ├── api
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   └── security-master-workbench.api.ts
 │   │   │   │   │   ├── companion-pane
@@ -5182,6 +5185,9 @@ Meridian-main
 │   │   │   │   │   ├── asset-detail-screen.tsx
 │   │   │   │   │   ├── asset-detail-screen.view-model.test.ts
 │   │   │   │   │   ├── asset-detail-screen.view-model.ts
+│   │   │   │   │   ├── cash-ladder-screen.tsx
+│   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
+│   │   │   │   │   ├── cash-ladder-screen.view-model.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -5344,6 +5350,7 @@ Meridian-main
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── market-data.ts
+│   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   └── provider-setup.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.development-fixture-notice.ts
@@ -5589,6 +5596,7 @@ Meridian-main
 │   │   │   ├── PackagingEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PlaidEndpoints.cs
+│   │   │   ├── PortfolioCashLadderEndpoints.cs
 │   │   │   ├── PromotionEndpoints.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
@@ -5712,6 +5720,7 @@ Meridian-main
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
 │   │   │   ├── OperatorRiskRuleService.cs
 │   │   │   ├── PlaidWorkstationService.cs
+│   │   │   ├── PortfolioCashLadderReadService.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusService.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
@@ -6811,7 +6820,9 @@ Meridian-main
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
-│   │   │   └── AssetOperationsReadServiceTests.cs
+│   │   │   ├── AssetOperationsReadServiceTests.cs
+│   │   │   ├── PortfolioCashLadderEngineTests.cs
+│   │   │   └── PortfolioCashLadderReadServiceTests.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   └── CertificateOfDepositProjectionServiceTests.cs
 │   │   ├── Commodities
