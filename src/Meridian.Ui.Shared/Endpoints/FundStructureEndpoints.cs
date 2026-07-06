@@ -17,7 +17,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
-public static class FundStructureEndpoints
+public static partial class FundStructureEndpoints
 {
     public static void MapFundStructureEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -2289,27 +2289,6 @@ public static class FundStructureEndpoints
             manifest.ReportWriterDatasetSourceId,
             manifest.ReportWriterDatasetSourceLabel,
             manifest.ReportWriterDatasetRowCount);
-
-    /// <summary>
-    /// Build a report-run status/audit payload by run id alone, for the report-run stream fan-out
-    /// (<see cref="Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster"/>). Authorization is
-    /// enforced at subscribe time by the SSE endpoint, so this pure builder needs no access context —
-    /// a run's status is a property of the run, not the viewer. Returns null when the orchestration
-    /// service or the run is unavailable.
-    /// </summary>
-    internal static ReportingRunAuditTrailDto? TryBuildReportRunAuditTrail(IServiceProvider services, string runId)
-    {
-        var orchestration = services.GetService<IReportingOrchestrationService>();
-        if (orchestration is null)
-        {
-            return null;
-        }
-
-        var manifest = orchestration.GetManifest((runId ?? string.Empty).Trim());
-        return manifest is null
-            ? null
-            : ProjectReportingRunAuditTrail(manifest, orchestration.GetAudit(manifest.RunId));
-    }
 
     private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
     {
