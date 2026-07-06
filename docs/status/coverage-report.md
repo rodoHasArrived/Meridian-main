@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2696 / 7335** items documented (**36.8%**) &mdash; Grade: **F**
+**2698 / 7335** items documented (**36.8%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 36.8%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2576 | 6913 | 37.3% | F |
+| Public Classes / Interfaces | 2578 | 6913 | 37.3% | F |
 | API Endpoints | 106 | 275 | 38.5% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4337 undocumented)
+### Public Classes / Interfaces (4335 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -33,7 +33,6 @@
 | `DailyMarkToMarketRequest` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:39` |
 | `DailyMarkToMarketRun` | `src/Meridian.Application/Accounting/DailyMarkToMarketService.cs:53` |
 | `BackfillRemediationSlaTier` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:46` |
-| `BackfillRemediationSlaMetadata` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:64` |
 | `BackfillRemediationSlaStatus` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:72` |
 | `BackfillRemediationSlaStatusItem` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:81` |
 | `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:98` |
@@ -77,7 +76,8 @@
 | `RestatementCandidateResult` | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:44` |
 | `SecurityMasterRevisionRecord` | `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:52` |
 | `NullSecurityMasterPricingService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:10` |
-| ... and 4287 more | |
+| `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
+| ... and 4285 more | |
 
 ### API Endpoints (169 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4337 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4335 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 169 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

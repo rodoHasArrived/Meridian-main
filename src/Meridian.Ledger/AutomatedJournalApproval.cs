@@ -103,7 +103,8 @@ public sealed record AutomatedJournalApproval
                 line.account,
                 line.debit,
                 line.credit,
-                Draft.Description))
+                Draft.Description,
+                line.dimensions))
             .ToArray();
 
         return new JournalEntry(JournalEntryId, Draft.Event.Timestamp, Draft.Description, entries, metadata);

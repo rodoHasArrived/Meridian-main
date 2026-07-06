@@ -4504,6 +4504,7 @@ Meridian-main
 │   │   │   │   ├── V_ledger_005__journal_basis_lineage.sql
 │   │   │   │   ├── V_ledger_006__journal_posting_kind.sql
 │   │   │   │   ├── V_ledger_007__journal_adjustment_approval_metadata.sql
+│   │   │   │   ├── V_ledger_008__closing_entry_posting_kind.sql
 │   │   │   │   ├── V_ledger_008__operations_continuity.sql
 │   │   │   │   ├── V_ledger_009__tax_lot_persistence.sql
 │   │   │   │   ├── V_ledger_010__accounting_configuration.sql
@@ -5562,6 +5563,7 @@ Meridian-main
 │   │   │   ├── IngestionJobEndpoints.cs
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.cs
+│   │   │   ├── LedgerEndpoints.JournalAutomation.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
@@ -5691,6 +5693,7 @@ Meridian-main
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
+│   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
@@ -7216,6 +7219,7 @@ Meridian-main
 │   │   │   └── SecurityMaster
 │   │   │       └── SecurityKindMappingTests.cs
 │   │   ├── Reporting
+│   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs

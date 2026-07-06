@@ -6,7 +6,7 @@ namespace Meridian.Ledger;
 public sealed record AutomatedJournalDraft(
     AutomatedJournalEvent Event,
     string Description,
-    IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Lines,
+    IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)> Lines,
     JournalEntryMetadata Metadata)
 {
     /// <summary>Total debits in the projected journal draft.</summary>
