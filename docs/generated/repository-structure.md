@@ -3083,7 +3083,8 @@ Meridian-main
 │   │   ├── Archive
 │   │   │   └── ArchiveHealthModels.cs
 │   │   ├── AssetOperations
-│   │   │   └── AssetOperationsDtos.cs
+│   │   │   ├── AssetOperationsDtos.cs
+│   │   │   └── PortfolioCashLadderDtos.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillProgress.cs
 │   │   │   ├── BackfillResult.cs
@@ -4062,7 +4063,8 @@ Meridian-main
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
 │   │   │   ├── AssetObligationProjectionService.cs
-│   │   │   └── AssetOperationsReadService.cs
+│   │   │   ├── AssetOperationsReadService.cs
+│   │   │   └── PortfolioCashLadderEngine.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
 │   │   │   └── ICertificateOfDepositReferenceService.cs
@@ -4504,6 +4506,7 @@ Meridian-main
 │   │   │   │   ├── V_ledger_005__journal_basis_lineage.sql
 │   │   │   │   ├── V_ledger_006__journal_posting_kind.sql
 │   │   │   │   ├── V_ledger_007__journal_adjustment_approval_metadata.sql
+│   │   │   │   ├── V_ledger_008__closing_entry_posting_kind.sql
 │   │   │   │   ├── V_ledger_008__operations_continuity.sql
 │   │   │   │   ├── V_ledger_009__tax_lot_persistence.sql
 │   │   │   │   ├── V_ledger_010__accounting_configuration.sql
@@ -4884,6 +4887,8 @@ Meridian-main
 │   │   │   │   │   │   ├── historical-chart.tsx
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
 │   │   │   │   │   │   ├── historical-chart.view-model.ts
+│   │   │   │   │   │   ├── layout-switcher.test.tsx
+│   │   │   │   │   │   ├── layout-switcher.tsx
 │   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
@@ -4959,6 +4964,8 @@ Meridian-main
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── accordion.test.tsx
 │   │   │   │   │       ├── accordion.tsx
+│   │   │   │   │       ├── async-region.test.tsx
+│   │   │   │   │       ├── async-region.tsx
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── breadcrumb.tsx
 │   │   │   │   │       ├── button.test.tsx
@@ -4982,6 +4989,8 @@ Meridian-main
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── drawer.test.tsx
 │   │   │   │   │       ├── drawer.tsx
+│   │   │   │   │       ├── error-boundary.test.tsx
+│   │   │   │   │       ├── error-boundary.tsx
 │   │   │   │   │       ├── eyebrow.tsx
 │   │   │   │   │       ├── feedback-primitives.test.tsx
 │   │   │   │   │       ├── field-support.test.tsx
@@ -5015,11 +5024,15 @@ Meridian-main
 │   │   │   │   │       ├── risk-control-panel.tsx
 │   │   │   │   │       ├── risk-control-panel.view-model.test.ts
 │   │   │   │   │       ├── risk-control-panel.view-model.ts
+│   │   │   │   │       ├── screen-layout.test.tsx
+│   │   │   │   │       ├── screen-layout.tsx
 │   │   │   │   │       ├── segmented-control.test.tsx
 │   │   │   │   │       ├── segmented-control.tsx
 │   │   │   │   │       ├── select.tsx
 │   │   │   │   │       ├── sheet.test.tsx
 │   │   │   │   │       ├── sheet.tsx
+│   │   │   │   │       ├── skeleton.test.tsx
+│   │   │   │   │       ├── skeleton.tsx
 │   │   │   │   │       ├── spinner.tsx
 │   │   │   │   │       ├── status-banner.tsx
 │   │   │   │   │       ├── stepper.test.tsx
@@ -5048,11 +5061,14 @@ Meridian-main
 │   │   │   │   │   ├── api
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   └── security-master-workbench.api.ts
 │   │   │   │   │   ├── companion-pane
 │   │   │   │   │   │   ├── chrome-bridge.test.ts
 │   │   │   │   │   │   ├── chrome-bridge.ts
+│   │   │   │   │   │   ├── open-registry.test.ts
+│   │   │   │   │   │   ├── open-registry.ts
 │   │   │   │   │   │   ├── opener-broadcast.ts
 │   │   │   │   │   │   ├── pane-window.test.ts
 │   │   │   │   │   │   └── pane-window.ts
@@ -5097,6 +5113,7 @@ Meridian-main
 │   │   │   │   │   ├── daily-control-tower.ts
 │   │   │   │   │   ├── dense-virtualization.test.ts
 │   │   │   │   │   ├── dense-virtualization.ts
+│   │   │   │   │   ├── density.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── format.test.ts
@@ -5114,6 +5131,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
+│   │   │   │   │   ├── saved-layouts.test.ts
+│   │   │   │   │   ├── saved-layouts.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
 │   │   │   │   │   ├── theme.test.ts
@@ -5166,19 +5185,26 @@ Meridian-main
 │   │   │   │   │   ├── asset-detail-screen.tsx
 │   │   │   │   │   ├── asset-detail-screen.view-model.test.ts
 │   │   │   │   │   ├── asset-detail-screen.view-model.ts
+│   │   │   │   │   ├── cash-ladder-screen.tsx
+│   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
+│   │   │   │   │   ├── cash-ladder-screen.view-model.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
+│   │   │   │   │   ├── daily-control-tower-screen.test.tsx
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
+│   │   │   │   │   ├── data-screen.cell-actions.test.tsx
+│   │   │   │   │   ├── data-screen.cell-actions.tsx
 │   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.test.ts
 │   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.ts
 │   │   │   │   │   ├── data-screen.coverage-gaps.view-model.test.ts
 │   │   │   │   │   ├── data-screen.coverage-gaps.view-model.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.test.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.ts
+│   │   │   │   │   ├── data-screen.data-regions.tsx
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
 │   │   │   │   │   ├── data-screen.linked-context.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
@@ -5186,6 +5212,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.query-panel.view-model.ts
 │   │   │   │   │   ├── data-screen.security-master.ts
 │   │   │   │   │   ├── data-screen.test.tsx
+│   │   │   │   │   ├── data-screen.tone-styles.ts
 │   │   │   │   │   ├── data-screen.tsx
 │   │   │   │   │   ├── data-screen.view-model.test.ts
 │   │   │   │   │   ├── data-screen.view-model.ts
@@ -5323,6 +5350,7 @@ Meridian-main
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── market-data.ts
+│   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   └── provider-setup.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.development-fixture-notice.ts
@@ -5356,6 +5384,7 @@ Meridian-main
 │   │   │   ├── tailwind.config.ts
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
+│   │   │   ├── tsconfig.strict-null.json
 │   │   │   └── vite.config.ts
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
@@ -5553,6 +5582,7 @@ Meridian-main
 │   │   │   ├── IngestionJobEndpoints.cs
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.cs
+│   │   │   ├── LedgerEndpoints.JournalAutomation.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
@@ -5566,6 +5596,7 @@ Meridian-main
 │   │   │   ├── PackagingEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PlaidEndpoints.cs
+│   │   │   ├── PortfolioCashLadderEndpoints.cs
 │   │   │   ├── PromotionEndpoints.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
@@ -5602,7 +5633,9 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
+│   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.Stream.cs
+│   │   │   ├── WorkstationEndpoints.StructuredReportingExport.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -5680,12 +5713,14 @@ Meridian-main
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
+│   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
 │   │   │   ├── OperatorRiskRuleService.cs
 │   │   │   ├── PlaidWorkstationService.cs
+│   │   │   ├── PortfolioCashLadderReadService.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusService.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
@@ -6785,7 +6820,9 @@ Meridian-main
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
-│   │   │   └── AssetOperationsReadServiceTests.cs
+│   │   │   ├── AssetOperationsReadServiceTests.cs
+│   │   │   ├── PortfolioCashLadderEngineTests.cs
+│   │   │   └── PortfolioCashLadderReadServiceTests.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   └── CertificateOfDepositProjectionServiceTests.cs
 │   │   ├── Commodities
@@ -7205,6 +7242,7 @@ Meridian-main
 │   │   │   └── SecurityMaster
 │   │   │       └── SecurityKindMappingTests.cs
 │   │   ├── Reporting
+│   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs

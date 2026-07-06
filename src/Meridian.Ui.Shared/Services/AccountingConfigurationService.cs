@@ -3993,11 +3993,19 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             }
 
             var amount = Math.Abs(line.Amount);
+            // Preserve the structured ledger-account identity (symbol / financial account) supplied by
+            // automated drafts so scoped postings (for example period-close entries on broker-scoped
+            // revenue) land on the scoped account and zero the scoped trial-balance row rather than an
+            // unscoped aggregate. Client-entered lines leave these null, matching prior behavior.
             lines.Add(new LedgerEntry(
                 CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString()),
                 draft.JournalEntryId,
                 timestamp,
-                new LedgerAccount(account.AccountName, accountType),
+                new LedgerAccount(
+                    account.AccountName,
+                    accountType,
+                    NormalizeOptional(line.LedgerAccountSymbol),
+                    NormalizeOptional(line.LedgerAccountFinancialAccountId)),
                 line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
                 line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m,
                 description,
@@ -4143,9 +4151,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     }
 
     private static LedgerPostingKindDto BuildManualPostingKind(ManualJournalEntryDraftDto draft)
-        => draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
-            ? LedgerPostingKindDto.Adjustment
-            : LedgerPostingKindDto.Originating;
+        => draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry
+            ? LedgerPostingKindDto.ClosingEntry
+            : draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
+                ? LedgerPostingKindDto.Adjustment
+                : LedgerPostingKindDto.Originating;
 
     private static AccountingPostingEvidenceKindDto ClassifyManualPostingEvidence(string evidenceLink)
     {
@@ -5024,7 +5034,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "Select a period that belongs to the journal entry ledger book."));
         }
 
-        if (!string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+        // Closing entries are the governed exception: they must post into the (closed) period
+        // being finalized, so the closed-period bar does not apply to them. The posting guard and
+        // the ClosingEntry posting kind carry the governance for this path.
+        if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
+            !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
         {
             issues.Add(Issue(
                 "manual-je.period-closed",
