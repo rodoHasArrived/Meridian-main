@@ -105,6 +105,13 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   // ── Work zone ───────────────────────────────────────────────────────────
   /** The main table / chart / form. Takes the majority of the space. */
   children: ReactNode;
+  /**
+   * Extra classes for the work-zone container. The zone stacks its children with
+   * the standard `space-y-4` rhythm by default (the common "column of cards" case);
+   * pass this to layer on a grid, custom gap, or full-height flex when a screen
+   * needs it.
+   */
+  workClassName?: string;
 
   // ── Context zone ────────────────────────────────────────────────────────
   /** Evidence / detail / provenance for the current selection. */
@@ -168,6 +175,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     focusCollapsible = true,
     focusDefaultCollapsed = false,
     children,
+    workClassName,
     context,
     contextOpen = false,
     contextLabel = "Context",
@@ -249,8 +257,9 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
             </section>
           ) : null}
 
-          {/* 3. Work zone — the main table / chart / form. */}
-          <div className="min-h-0 flex-1">{children}</div>
+          {/* 3. Work zone — the main table / chart / form. Stacks cards with the
+              standard rhythm by default; override via `workClassName`. */}
+          <div className={cn("min-h-0 flex-1 space-y-4", workClassName)}>{children}</div>
         </div>
 
         {/* 4. Context zone — right rail that slides in on selection. */}

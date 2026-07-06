@@ -101,13 +101,26 @@ describe("ScreenLayout", () => {
     expect(screen.queryByRole("complementary", { name: "Detail" })).not.toBeInTheDocument();
   });
 
-  it("renders the work zone children", () => {
+  it("renders the work zone children and stacks them with the default rhythm", () => {
     render(
       <ScreenLayout title="Screen">
         <table aria-label="ledger" />
       </ScreenLayout>
     );
-    expect(screen.getByRole("table", { name: "ledger" })).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "ledger" });
+    expect(table).toBeInTheDocument();
+    // The work container owns inter-card spacing so screens don't re-wrap content.
+    expect(table.parentElement).toHaveClass("space-y-4");
+  });
+
+  it("layers workClassName onto the work zone", () => {
+    render(
+      <ScreenLayout title="Screen" workClassName="grid grid-cols-2">
+        <table aria-label="ledger" />
+      </ScreenLayout>
+    );
+    const container = screen.getByRole("table", { name: "ledger" }).parentElement;
+    expect(container).toHaveClass("space-y-4", "grid", "grid-cols-2");
   });
 
   it("shows the context rail only when open, and closes on request", async () => {

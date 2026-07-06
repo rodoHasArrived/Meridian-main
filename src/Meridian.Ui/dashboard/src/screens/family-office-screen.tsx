@@ -11,6 +11,7 @@ import {
   type MetricCardTone,
   KeyValueGrid
 } from "@/components/data/concrete";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import { cn } from "@/lib/utils";
 import {
@@ -129,22 +130,17 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
   };
 
   return (
-    <section className="space-y-6" aria-label={vm.route.ariaLabel}>
-      <header className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="eyebrow-label">{vm.route.workspaceLabel} / {vm.route.label}</div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{vm.route.title}</h1>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">{vm.route.description}</p>
-            {vm.route.disabledReason ? (
-              <p className="mt-2 text-sm text-warning">{vm.route.disabledReason}</p>
-            ) : null}
-          </div>
-          <div className="lg:justify-end">
-            <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value, state: "muted" }))} />
-          </div>
-        </div>
-      </header>
+    <ScreenLayout
+      title={vm.route.title}
+      scope={`${vm.route.workspaceLabel} / ${vm.route.label}`}
+      description={vm.route.description}
+      actions={
+        <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value, state: "muted" }))} />
+      }
+    >
+      {vm.route.disabledReason ? (
+        <p className="text-sm text-warning">{vm.route.disabledReason}</p>
+      ) : null}
 
       {vm.notConnected ? (
       <Card className="panel-surface border-border/80">
@@ -301,7 +297,7 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
         </CardContent>
       </Card>
       ) : null}
-    </section>
+    </ScreenLayout>
   );
 }
 
