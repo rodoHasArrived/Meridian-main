@@ -1,4 +1,10 @@
 import { useState } from "react";
+import {
+  formatNumber as formatNumberAmount,
+  formatPercent as formatPercentAmount,
+  formatPrefixedCurrency,
+  formatSignedCurrency as formatSignedCurrencyAmount
+} from "@/lib/format";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
@@ -2498,26 +2504,23 @@ function sumNumericStrings(values: string[]): number {
 }
 
 function formatCurrency(value: number): string {
-  const prefix = value >= 0 ? "$" : "-$";
-  return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
 }
 
 function formatSignedCurrency(value: number): string {
-  const prefix = value >= 0 ? "+" : "-";
-  return `${prefix}${formatCurrency(Math.abs(value))}`;
+  return formatSignedCurrencyAmount(value, { maximumFractionDigits: 0 });
 }
 
 function formatCurrencyPrecise(value: number): string {
-  const prefix = value >= 0 ? "$" : "-$";
-  return `${prefix}${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatPrefixedCurrency(value, { minimumFractionDigits: 2 });
 }
 
 function formatPercent(value: number): string {
-  return `${(value * 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+  return formatPercentAmount(value * 100);
 }
 
 function formatNumber(value: number): string {
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  return formatNumberAmount(value, { maximumFractionDigits: 4 });
 }
 
 function formatCountLabel(count: number, noun: string): string {

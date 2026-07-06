@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Contracts.Configuration;
 
@@ -49,6 +50,15 @@ public sealed class AppConfigDto
 
     [JsonPropertyName("derivatives")]
     public DerivativesConfigDto? Derivatives { get; set; }
+
+    /// <summary>
+    /// Preserves top-level configuration sections this DTO does not model (host-level
+    /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and
+    /// <c>Connectivity</c>) across load/save round-trips, so desktop settings saves
+    /// do not silently drop operator-tuned host configuration.
+    /// </summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalSections { get; set; }
 }
 
 /// <summary>
@@ -504,7 +514,7 @@ public sealed class IBClientPortalOptionsDto
     public bool Enabled { get; set; }
 
     [JsonPropertyName("baseUrl")]
-    public string BaseUrl { get; set; } = "https://localhost:5000";
+    public string BaseUrl { get; set; } = ApiEndpointDefaults.IbClientPortalBaseUrl;
 
     [JsonPropertyName("allowSelfSignedCertificates")]
     public bool AllowSelfSignedCertificates { get; set; } = true;

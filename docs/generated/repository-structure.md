@@ -1766,6 +1766,7 @@ Meridian-main
 │   │   ├── waves-2-4-operator-readiness-addendum.md
 │   │   └── web-ui-development-pivot.md
 │   ├── product
+│   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── high-value-code-brainstorm-2026-07.md
 │   │   ├── implementation-todo-list.md
@@ -2663,9 +2664,11 @@ Meridian-main
 │   │   │   └── HistoricalCloseMarkPriceSource.cs
 │   │   ├── Backfill
 │   │   │   ├── AutoGapRemediationService.cs
+│   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
 │   │   │   ├── BackfillPartitionPlanner.cs
+│   │   │   ├── BackfillPreview.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillSymbolNormalizer.cs
 │   │   │   ├── CrossSourceBackfillReconciliationService.cs
@@ -2788,7 +2791,6 @@ Meridian-main
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
-│   │   │   ├── BackfillCoordinator.cs
 │   │   │   └── ConfigStore.cs
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
@@ -3053,6 +3055,7 @@ Meridian-main
 │   │   ├── Api
 │   │   │   ├── Quality
 │   │   │   │   └── QualityApiModels.cs
+│   │   │   ├── ApiEndpointDefaults.cs
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
 │   │   │   ├── DataIngestionContracts.cs
@@ -3096,6 +3099,7 @@ Meridian-main
 │   │   │   └── CommodityDtos.cs
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
+│   │   │   ├── ConnectivityProbeOptions.cs
 │   │   │   ├── DerivativesConfigDto.cs
 │   │   │   ├── MeridianPathDefaults.cs
 │   │   │   ├── ProviderConnectionDtos.cs
@@ -3553,7 +3557,8 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── BaseBrokerageGateway.cs
 │   │   │   ├── BrokerageGatewayAdapter.cs
-│   │   │   └── PaperTradingGateway.cs
+│   │   │   ├── PaperTradingGateway.cs
+│   │   │   └── PaperTradingGatewayOptions.cs
 │   │   ├── Allocation
 │   │   │   ├── AllocationResult.cs
 │   │   │   ├── AllocationRule.cs
@@ -4898,6 +4903,7 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-hub.test.tsx
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-period-switcher.tsx
+│   │   │   │   │   │   ├── save-view-dialog.test.tsx
 │   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
 │   │   │   │   │   │   ├── scope-picker.tsx
@@ -5051,6 +5057,9 @@ Meridian-main
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
 │   │   │   │   │   │   └── payoff.ts
+│   │   │   │   │   ├── dev-fixtures
+│   │   │   │   │   │   ├── fixture-resolver.ts
+│   │   │   │   │   │   └── market-data-fixtures.ts
 │   │   │   │   │   ├── notification-center
 │   │   │   │   │   │   ├── merge.test.ts
 │   │   │   │   │   │   ├── merge.ts
@@ -5087,6 +5096,8 @@ Meridian-main
 │   │   │   │   │   ├── dense-virtualization.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── format.test.ts
+│   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
@@ -5306,6 +5317,7 @@ Meridian-main
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
+│   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   └── provider-setup.ts
 │   │   │   │   ├── app-shell.command-palette.ts
 │   │   │   │   ├── app-shell.development-fixture-notice.ts
@@ -6755,10 +6767,13 @@ Meridian-main
 │   │   ├── Commodities
 │   │   │   └── CommodityProjectionServiceTests.cs
 │   │   ├── Compliance
-│   │   │   └── CompliancePolicyEngineTests.cs
+│   │   │   ├── AccessReviewServiceTests.cs
+│   │   │   ├── CompliancePolicyEngineTests.cs
+│   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
@@ -6875,7 +6890,10 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── BrokerageOrderPlacementGateTests.cs
+│   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
+│   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs

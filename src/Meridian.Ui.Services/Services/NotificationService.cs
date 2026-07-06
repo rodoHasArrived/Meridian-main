@@ -16,8 +16,10 @@ public enum NotificationType : byte
 
 /// <summary>
 /// Default no-op notification service for the shared UI services layer.
-/// Platform-specific projects (WPF) override this with their own implementations
-/// by setting the Instance property during app startup.
+/// Hosts with a real notification surface implement
+/// <see cref="Contracts.INotificationService"/> via <c>NotificationServiceBase</c>
+/// (see <c>Meridian.Wpf.Services.NotificationService</c>); shared code holding only
+/// this default gets no-op behaviour.
 /// </summary>
 public sealed class NotificationService
 {

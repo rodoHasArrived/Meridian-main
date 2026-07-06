@@ -118,8 +118,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             };
         }
 
+        var requiresLiveOrderReadinessGate = RequiresLiveOrderReadinessGate(brokerName);
         LiveOrderReadinessDecision? liveOrderReadinessDecision = null;
-        if (RequiresLiveOrderReadinessGate(brokerName))
+        if (requiresLiveOrderReadinessGate)
         {
             liveOrderReadinessDecision = await EvaluateLiveOrderReadinessAsync(
                 safeRequest,
@@ -162,7 +163,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ExecutionControlDecision? operatorControlDecision = null;
         if (_operatorControls is not null)
         {
-            var controlDecision = _operatorControls.EvaluateOrder(request, _portfolioState, runId);
+            // Live orders must not let client-owned override metadata bypass operator controls.
+            var controlRequest = requiresLiveOrderReadinessGate ? safeRequest : request;
+            var controlDecision = _operatorControls.EvaluateOrder(controlRequest, _portfolioState, runId);
             operatorControlDecision = controlDecision;
             if (!controlDecision.IsApproved)
             {

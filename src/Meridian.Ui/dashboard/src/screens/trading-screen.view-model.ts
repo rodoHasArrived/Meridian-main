@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
+import { formatCurrency } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -627,13 +628,17 @@ export function useTradingReadinessViewModel({
   const [readiness, setReadiness] = useState<TradingOperatorReadiness | null>(initialReadiness);
   const [refreshing, setRefreshing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const refreshRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const readinessLifecycle = useRequestLifecycle({
     operation: "trading readiness handoff refresh",
     runningMessage: "Refreshing trading readiness handoff evidence.",
     successMessage: "Trading readiness refreshed.",
     failureMessage: "Trading readiness refresh failed.",
     staleMessage: "Older trading readiness response discarded.",
-    maxRetries: 2
+    maxRetries: 2,
+    onRetry: ({ attempt }) => {
+      void refreshRef.current({ attempt });
+    }
   });
 
   useEffect(() => {
@@ -643,8 +648,8 @@ export function useTradingReadinessViewModel({
     setRefreshing(false);
   }, [initialReadiness, readinessLifecycle.invalidate]);
 
-  const refresh = useCallback(async () => {
-    const token = readinessLifecycle.start();
+  const refresh = useCallback(async (options: { attempt?: number } = {}) => {
+    const token = readinessLifecycle.start({ attempt: options.attempt });
     if (!token) return;
     token.safeSetState(setRefreshing, true);
     token.safeSetState(setErrorText, null);
@@ -671,6 +676,10 @@ export function useTradingReadinessViewModel({
       readinessLifecycle.finish(token);
     }
   }, [fundAccountId, readinessLifecycle.fail, readinessLifecycle.finish, readinessLifecycle.markStale, readinessLifecycle.start, readinessLifecycle.succeed, services]);
+
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   const state = useMemo(
     () => buildTradingReadinessState({ readiness, refreshing, errorText, requestStatus: readinessLifecycle.status }),
@@ -1344,17 +1353,21 @@ export function useExecutionEvidenceViewModel({
   const [controlsSnapshot, setControlsSnapshot] = useState<ExecutionControlSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const refreshRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const executionLifecycle = useRequestLifecycle({
     operation: "execution evidence refresh",
     runningMessage: "Refreshing execution audit and control evidence.",
     successMessage: "Execution evidence refreshed.",
     failureMessage: "Execution evidence refresh failed.",
     staleMessage: "Older execution evidence response discarded.",
-    maxRetries: 2
+    maxRetries: 2,
+    onRetry: ({ attempt }) => {
+      void refreshRef.current({ attempt });
+    }
   });
 
-  const refresh = useCallback(async () => {
-    const token = executionLifecycle.start({ busyMode: "drop" });
+  const refresh = useCallback(async (options: { attempt?: number } = {}) => {
+    const token = executionLifecycle.start({ busyMode: "drop", attempt: options.attempt });
     if (!token) return;
     token.safeSetState(setLoading, true);
     token.safeSetState(setErrorText, null);
@@ -1396,6 +1409,10 @@ export function useExecutionEvidenceViewModel({
     }
     executionLifecycle.finish(token);
   }, [auditTake, executionLifecycle.fail, executionLifecycle.finish, executionLifecycle.markStale, executionLifecycle.start, executionLifecycle.succeed, services]);
+
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   useEffect(() => {
     void refresh();
@@ -2184,11 +2201,7 @@ function getPaperSessionStatus(session: PaperSessionSummary): string {
 }
 
 function formatUsdValue(value: number): string {
-  return value.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2
-  });
+  return formatCurrency(value);
 }
 
 export type SessionReplayCommandKind =

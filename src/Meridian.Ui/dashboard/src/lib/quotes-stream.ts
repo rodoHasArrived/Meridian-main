@@ -11,6 +11,13 @@
 // Any failure — opener gone (`session-expired`), no snapshot within the stale
 // window, or an unsupported environment — flips the consumer unhealthy so its
 // polling fallback resumes. Fallback stays first-class everywhere.
+//
+// Owner failure policy: a stream the browser fail-closes (HTTP 400/429/503 never
+// auto-reconnects), a flapping stream (repeated errors with no frame between
+// them), or a wedged stream (no `quotes`/`heartbeat` frame inside the stale
+// window) is closed and re-probed on an escalating cooldown, a bounded number of
+// times. Consumers poll while unhealthy, so giving up costs freshness, not data;
+// a later subscribe for the same symbol set starts a fresh probe budget.
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import type { QuotesSnapshotResponse } from "@/types";
 import {
@@ -29,12 +36,19 @@ export interface QuotesStreamHandlers {
 export type QuotesStreamRole = "owner" | "follower";
 
 interface OwnerConnection {
-  source: EventSource;
+  /** Null while the connection is waiting out a reopen cooldown (or gave up). */
+  source: EventSource | null;
+  url: string;
   symbolsKey: string;
   handlers: Set<QuotesStreamHandlers>;
   healthy: boolean;
   lastSnapshot: QuotesSnapshotResponse | null;
   closeTimer: ReturnType<typeof setTimeout> | null;
+  staleTimer: ReturnType<typeof setTimeout> | null;
+  reopenTimer: ReturnType<typeof setTimeout> | null;
+  reopenDelayMs: number;
+  reopenAttempts: number;
+  consecutiveErrors: number;
 }
 
 interface FollowerConnection {
@@ -56,6 +70,26 @@ const CLOSE_LINGER_MS = 1000;
 // opener dies without firing `pagehide` (crash/kill), this watchdog flips the
 // follower unhealthy so polling resumes.
 const FOLLOWER_STALE_MS = 6000;
+
+// The server writes an `event: heartbeat` frame every 15s while idle, so a healthy
+// but quiet stream still produces frames. Three missed heartbeats means the stream
+// is wedged (e.g. a buffering proxy) even though the browser reports it open.
+const OWNER_STALE_MS = 45_000;
+
+// Consecutive `error` events with no frame or open between them before the owner
+// stops the browser's tight auto-reconnect loop and moves to timed probes.
+const OWNER_MAX_CONSECUTIVE_ERRORS = 5;
+
+// Escalating cooldown between reopen probes after a terminal failure, and the cap
+// on probes before the owner gives up and leaves consumers on their polling
+// fallback. A fresh subscribe for the symbol set starts a new budget.
+const OWNER_REOPEN_BASE_DELAY_MS = 30_000;
+const OWNER_REOPEN_MAX_DELAY_MS = 300_000;
+const OWNER_MAX_REOPEN_ATTEMPTS = 5;
+
+// EventSource.readyState CLOSED. Referenced numerically because the constructor in
+// scope may be a test double without the static constants.
+const EVENT_SOURCE_CLOSED = 2;
 
 let roleOverride: QuotesStreamRole | null = null;
 let channelOpener: () => BroadcastChannelLike | null = openCompanionChannel;
@@ -131,11 +165,35 @@ function subscribeAsOwner(symbols: readonly string[], handlers: QuotesStreamHand
   const symbolsKey = normalizeQuotesSymbolKey(symbols);
   let connection = connections.get(url);
   if (!connection) {
-    connection = openConnection(url, symbolsKey);
+    connection = {
+      source: null,
+      url,
+      symbolsKey,
+      handlers: new Set(),
+      healthy: false,
+      lastSnapshot: null,
+      closeTimer: null,
+      staleTimer: null,
+      reopenTimer: null,
+      reopenDelayMs: OWNER_REOPEN_BASE_DELAY_MS,
+      reopenAttempts: 0,
+      consecutiveErrors: 0
+    };
     connections.set(url, connection);
-  } else if (connection.closeTimer !== null) {
-    clearTimeout(connection.closeTimer);
-    connection.closeTimer = null;
+    attachOwnerSource(connection);
+  } else {
+    if (connection.closeTimer !== null) {
+      clearTimeout(connection.closeTimer);
+      connection.closeTimer = null;
+    }
+    // A dormant connection (probe budget exhausted: no source, no pending
+    // probe) restarts on new interest with a fresh budget, so every existing
+    // subscriber shares the recovery instead of being stranded on polling.
+    if (connection.source === null && connection.reopenTimer === null) {
+      connection.reopenDelayMs = OWNER_REOPEN_BASE_DELAY_MS;
+      connection.reopenAttempts = 0;
+      attachOwnerSource(connection);
+    }
   }
 
   ensureOwnerRequestListener();
@@ -156,7 +214,7 @@ function subscribeAsOwner(symbols: readonly string[], handlers: QuotesStreamHand
     if (current.handlers.size === 0 && current.closeTimer === null) {
       current.closeTimer = setTimeout(() => {
         if (current.handlers.size === 0) {
-          current.source.close();
+          closeOwnerConnection(current);
           connections.delete(url);
         }
       }, CLOSE_LINGER_MS);
@@ -164,29 +222,56 @@ function subscribeAsOwner(symbols: readonly string[], handlers: QuotesStreamHand
   };
 }
 
-function openConnection(url: string, symbolsKey: string): OwnerConnection {
-  const source = new EventSource(url);
-  const connection: OwnerConnection = {
-    source,
-    symbolsKey,
-    handlers: new Set(),
-    healthy: false,
-    lastSnapshot: null,
-    closeTimer: null
-  };
+function setOwnerHealthy(connection: OwnerConnection, healthy: boolean): void {
+  if (connection.healthy === healthy) {
+    return;
+  }
 
-  const setHealthy = (healthy: boolean) => {
-    if (connection.healthy === healthy) {
+  connection.healthy = healthy;
+  for (const handler of connection.handlers) {
+    handler.onHealthChange?.(healthy);
+  }
+}
+
+/** Every frame (or successful open) proves liveness and restores the full failure budget. */
+function markOwnerSourceAlive(connection: OwnerConnection): void {
+  connection.consecutiveErrors = 0;
+  connection.reopenDelayMs = OWNER_REOPEN_BASE_DELAY_MS;
+  connection.reopenAttempts = 0;
+  armOwnerStaleTimer(connection);
+}
+
+function armOwnerStaleTimer(connection: OwnerConnection): void {
+  if (connection.staleTimer !== null) {
+    clearTimeout(connection.staleTimer);
+  }
+  connection.staleTimer = setTimeout(() => {
+    connection.staleTimer = null;
+    // No frame inside the stale window: the stream is wedged open. Hand
+    // consumers back to polling and probe again after the cooldown.
+    failOwnerSource(connection);
+  }, OWNER_STALE_MS);
+}
+
+function attachOwnerSource(connection: OwnerConnection): void {
+  const source = new EventSource(connection.url);
+  connection.source = source;
+  connection.consecutiveErrors = 0;
+  armOwnerStaleTimer(connection);
+
+  // Guard every listener on `connection.source === source`: a replaced or reaped
+  // source can still emit late events that must not disturb its successor.
+  source.addEventListener("open", () => {
+    if (connection.source !== source) {
       return;
     }
-
-    connection.healthy = healthy;
-    for (const handler of connection.handlers) {
-      handler.onHealthChange?.(healthy);
-    }
-  };
+    markOwnerSourceAlive(connection);
+  });
 
   source.addEventListener("quotes", (event) => {
+    if (connection.source !== source) {
+      return;
+    }
     let snapshot: QuotesSnapshotResponse;
     try {
       snapshot = JSON.parse((event as MessageEvent<string>).data) as QuotesSnapshotResponse;
@@ -194,19 +279,93 @@ function openConnection(url: string, symbolsKey: string): OwnerConnection {
       return;
     }
 
+    markOwnerSourceAlive(connection);
     connection.lastSnapshot = snapshot;
-    setHealthy(true);
+    setOwnerHealthy(connection, true);
     for (const handler of connection.handlers) {
       handler.onSnapshot(snapshot);
     }
     // Re-broadcast to any companion panes following this symbol set.
-    getStreamBridge()?.post({ type: "quotes", symbolsKey, snapshot });
+    getStreamBridge()?.post({ type: "quotes", symbolsKey: connection.symbolsKey, snapshot });
   });
 
-  // EventSource reconnects automatically; consumers resume polling while unhealthy.
-  source.addEventListener("error", () => setHealthy(false));
+  // Heartbeats prove the channel is alive through a quiet market. They re-arm the
+  // watchdog but do not flip healthy — health comes from data frames only.
+  source.addEventListener("heartbeat", () => {
+    if (connection.source !== source) {
+      return;
+    }
+    markOwnerSourceAlive(connection);
+  });
 
-  return connection;
+  source.addEventListener("error", () => {
+    if (connection.source !== source) {
+      return;
+    }
+    setOwnerHealthy(connection, false);
+    if (source.readyState === EVENT_SOURCE_CLOSED) {
+      // The browser fail-closed the stream (e.g. HTTP 400/429/503) and will never
+      // auto-reconnect on its own. Probe again after the cooldown.
+      failOwnerSource(connection);
+      return;
+    }
+    connection.consecutiveErrors += 1;
+    if (connection.consecutiveErrors >= OWNER_MAX_CONSECUTIVE_ERRORS) {
+      failOwnerSource(connection);
+    }
+  });
+}
+
+/** Stops the current source and schedules a bounded reopen probe. */
+function failOwnerSource(connection: OwnerConnection): void {
+  if (connection.staleTimer !== null) {
+    clearTimeout(connection.staleTimer);
+    connection.staleTimer = null;
+  }
+  connection.source?.close();
+  connection.source = null;
+  setOwnerHealthy(connection, false);
+  scheduleOwnerReopen(connection);
+}
+
+function scheduleOwnerReopen(connection: OwnerConnection): void {
+  if (connection.reopenTimer !== null) {
+    return;
+  }
+  if (connection.reopenAttempts >= OWNER_MAX_REOPEN_ATTEMPTS) {
+    // Probe budget exhausted — go dormant but stay registered so current
+    // subscribers keep their polling fallback and the next subscribe restarts
+    // the stream for all of them together with a fresh budget.
+    return;
+  }
+  connection.reopenAttempts += 1;
+  const delay = connection.reopenDelayMs;
+  connection.reopenDelayMs = Math.min(connection.reopenDelayMs * 2, OWNER_REOPEN_MAX_DELAY_MS);
+  connection.reopenTimer = setTimeout(() => {
+    connection.reopenTimer = null;
+    if (connection.handlers.size === 0) {
+      connections.delete(connection.url);
+      return;
+    }
+    attachOwnerSource(connection);
+  }, delay);
+}
+
+function closeOwnerConnection(connection: OwnerConnection): void {
+  if (connection.closeTimer !== null) {
+    clearTimeout(connection.closeTimer);
+    connection.closeTimer = null;
+  }
+  if (connection.staleTimer !== null) {
+    clearTimeout(connection.staleTimer);
+    connection.staleTimer = null;
+  }
+  if (connection.reopenTimer !== null) {
+    clearTimeout(connection.reopenTimer);
+    connection.reopenTimer = null;
+  }
+  connection.source?.close();
+  connection.source = null;
 }
 
 /** Owner answers a follower's warm-up request with the latest snapshot it holds. */
@@ -364,10 +523,7 @@ export function resetQuotesStreamForTests(): void {
   ownerRequestUnsub = null;
   detachFollowerListener();
   for (const connection of connections.values()) {
-    if (connection.closeTimer !== null) {
-      clearTimeout(connection.closeTimer);
-    }
-    connection.source.close();
+    closeOwnerConnection(connection);
   }
   connections.clear();
   for (const connection of followerConnections.values()) {

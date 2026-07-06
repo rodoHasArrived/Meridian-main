@@ -4,9 +4,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { APPEARANCE_STORAGE_KEY } from "@/lib/theme";
 
+const localStorageDescriptor = Object.getOwnPropertyDescriptor(window, "localStorage");
+
 afterEach(() => {
+  if (localStorageDescriptor) {
+    Object.defineProperty(window, "localStorage", localStorageDescriptor);
+  }
   document.documentElement.removeAttribute("data-theme");
   localStorage.clear();
+  vi.restoreAllMocks();
 });
 
 describe("ThemeToggle", () => {
@@ -29,5 +35,23 @@ describe("ThemeToggle", () => {
   it("marks the active appearance via aria-checked", () => {
     render(<ThemeToggle value="light" apply={false} />);
     expect(screen.getByRole("radio", { name: "Light" })).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("keeps custom persistence best-effort when browser storage is blocked", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      get() {
+        throw new DOMException("Storage is blocked.", "SecurityError");
+      }
+    });
+
+    render(<ThemeToggle persist="meridian.test.appearance" onChange={onChange} />);
+
+    await user.click(screen.getByRole("radio", { name: "Dark" }));
+
+    expect(onChange).toHaveBeenCalledWith("dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });

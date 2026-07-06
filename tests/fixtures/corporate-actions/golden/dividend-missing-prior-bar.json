@@ -1,0 +1,36 @@
+{
+  "scenarioId": "dividend-missing-prior-bar",
+  "description": "Dividend whose ex-date precedes the first available bar: no prior close exists, so BuildDividendFactors currently skips the factor silently and the series comes back unadjusted with no signal (CA-DEF-001). Target behavior: explicit degradation — a warning and a machine-readable adjustment report entry.",
+  "ticker": "GAPD",
+  "securityId": "a2000000-aaaa-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "a2000000-aaaa-4000-8000-0000000000c1",
+      "securityId": "a2000000-aaaa-4000-8000-000000000001",
+      "eventType": "Dividend",
+      "exDate": "2026-01-06",
+      "payDate": "2026-01-20",
+      "dividendPerShare": 1.00,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-01-05",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2026-01-06", "open": 29.80, "high": 30.20, "low": 29.60, "close": 30.00, "volume": 2000000 },
+    { "sessionDate": "2026-01-07", "open": 30.05, "high": 30.50, "low": 29.90, "close": 30.30, "volume": 1800000 },
+    { "sessionDate": "2026-01-08", "open": 30.25, "high": 30.40, "low": 30.00, "close": 30.15, "volume": 1700000 }
+  ],
+  "postingContext": { "positionQuantity": 100, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [ "journal-balanced", "receivable-settled" ],
+  "knownDefectIds": [ "CA-DEF-001" ]
+}

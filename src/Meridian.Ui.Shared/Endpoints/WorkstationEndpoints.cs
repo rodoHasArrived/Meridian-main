@@ -54,6 +54,7 @@ public static partial class WorkstationEndpoints
     private const int MaxOperatorInboxTokenLength = 256;
     private const string WorkstationStructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string WorkstationApiRoutePrefix = "/api/workstation";
+    private const string PortfolioApiRoutePrefix = "/api/portfolio";
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -110,7 +111,7 @@ public static partial class WorkstationEndpoints
         MapStatementConnectorEndpoints(group, jsonOptions);
         MapProviderIntegrationEndpoints(group, jsonOptions);
 
-        group.MapGet("/workflow-summary", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowSummary), async (
             bool? hasOperatingContext,
             string? operatingContext,
             string? fundProfileId,
@@ -143,7 +144,7 @@ public static partial class WorkstationEndpoints
         // fundProfileId query value (SEC-005 slice 3b).
         .RequireFundProfileTenantScope();
 
-        group.MapGet("/workflows", (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowLibraryService>();
             if (service is null)
@@ -157,7 +158,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationWorkflowLibrary")
         .Produces<WorkflowLibraryDto>(200);
 
-        group.MapPost("/collateral/ingest", (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationCollateralIngest), (
             IReadOnlyList<CollateralInputRow> rows,
             HttpContext context) =>
         {
@@ -198,7 +199,7 @@ public static partial class WorkstationEndpoints
         .Produces(429)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        group.MapGet("/workflows/presets", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowPresetService>();
             if (service is null)
@@ -213,7 +214,7 @@ public static partial class WorkstationEndpoints
         .Produces<WorkflowPresetLibraryDto>(200)
         .Produces(501);
 
-        group.MapPost("/workflows/presets", async (WorkflowPresetSaveRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (WorkflowPresetSaveRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowPresetService>();
             if (service is null)
@@ -240,7 +241,7 @@ public static partial class WorkstationEndpoints
         .Produces(400)
         .Produces(501);
 
-        group.MapPut("/workflows/presets/{presetId}", async (
+        group.MapPut(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresetById), async (
             string presetId,
             WorkflowPresetSaveRequest request,
             HttpContext context) =>
@@ -272,7 +273,7 @@ public static partial class WorkstationEndpoints
         .Produces(400)
         .Produces(501);
 
-        group.MapPost("/workflows/presets/{presetId}/pin", async (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresetPin), async (
             string presetId,
             WorkflowPresetPinRequest request,
             HttpContext context) =>
@@ -299,7 +300,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/workflows/presets/{presetId}/used", async (string presetId, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresetUsed), async (string presetId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowPresetService>();
             if (service is null)
@@ -323,7 +324,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapDelete("/workflows/presets/{presetId}", async (string presetId, HttpContext context) =>
+        group.MapDelete(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresetById), async (string presetId, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<WorkflowPresetService>();
             if (service is null)
@@ -355,7 +356,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationTradingReadiness")
         .Produces<TradingOperatorReadinessDto>(200);
 
-        group.MapGet("/collateral/exposure", (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationCollateralExposure), (HttpContext context) =>
         {
             if (!HasOperationsContinuityReadPermission(context))
             {
@@ -1758,7 +1759,7 @@ public static partial class WorkstationEndpoints
         .Produces(501);
 
 
-        group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, Guid? ledgerBookId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (string? status, string? fundAccountId, Guid? ledgerBookId, HttpContext context) =>
         {
             if (!CanViewReconciliationBreakQueue(context))
             {
@@ -1771,7 +1772,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
 
-        group.MapGet("/reconciliation/break-queue/{breakId}", async (string breakId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueueById), async (string breakId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
@@ -1786,7 +1787,7 @@ public static partial class WorkstationEndpoints
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCalibrationSummary), async (HttpContext context) =>
         {
             var asOf = DateTimeOffset.UtcNow;
             var ledgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
@@ -1797,7 +1798,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetReconciliationCalibrationSummary")
         .Produces<ReconciliationCalibrationSummaryDto>(200);
 
-        group.MapGet("/reconciliation/break-queue/{breakId}/audit", async (string breakId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAudit), async (string breakId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
@@ -1815,7 +1816,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReview), async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -1856,7 +1857,7 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(404);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/resolve", async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolve), async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -1902,7 +1903,7 @@ public static partial class WorkstationEndpoints
         .Produces(404);
 
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/assign", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAssign), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Assign }, context, jsonOptions).ConfigureAwait(false))
         .WithName("AssignReconciliationBreakCase")
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -1911,7 +1912,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(409);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/transition", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakTransition), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.TransitionStatus }, context, jsonOptions).ConfigureAwait(false))
         .WithName("TransitionReconciliationBreakCase")
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -1920,11 +1921,11 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(409);
 
-        group.MapGet("/reconciliation/break-queue/taxonomy", () => Results.Json(FileReconciliationBreakQueueRepository.Taxonomy, jsonOptions))
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCaseTaxonomy), () => Results.Json(FileReconciliationBreakQueueRepository.Taxonomy, jsonOptions))
         .WithName("GetReconciliationCaseTaxonomy")
         .Produces<ReconciliationTaxonomySnapshot>(200);
 
-        group.MapGet("/reconciliation/break-queue/{breakId}/comments", async (string breakId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
@@ -1940,7 +1941,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/reconciliation/break-queue/{breakId}/rebuilt-snapshot", async (string breakId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRebuiltSnapshot), async (string breakId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
@@ -1956,17 +1957,17 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/comments", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.AddComment }, context, jsonOptions).ConfigureAwait(false))
         .WithName("AddReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/comments/{commentId}", async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.EditComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
         .WithName("EditReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapDelete("/reconciliation/break-queue/{breakId}/comments/{commentId}", async (
+        group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (
             string breakId,
             string commentId,
             [FromQuery] long expectedVersion,
@@ -1992,37 +1993,37 @@ public static partial class WorkstationEndpoints
         .WithName("DeleteReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/root-cause", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRootCause), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetRootCause }, context, jsonOptions).ConfigureAwait(false))
         .WithName("SetReconciliationBreakRootCause")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/resolution", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolution), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetResolution }, context, jsonOptions).ConfigureAwait(false))
         .WithName("SetReconciliationBreakResolution")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/sign-off", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSignOff), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SignOff }, context, jsonOptions).ConfigureAwait(false))
         .WithName("SignOffReconciliationBreakCase")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/reopen", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReopen), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Reopen }, context, jsonOptions).ConfigureAwait(false))
         .WithName("ReopenReconciliationBreakCase")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapPost("/reconciliation/break-queue/bulk/dry-run", async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkDryRun), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
             await ApplyReconciliationBulkEndpointAsync(request with { DryRun = true }, context, jsonOptions).ConfigureAwait(false))
         .WithName("DryRunReconciliationBreakBulkAction")
         .Produces<ReconciliationBulkCaseworkResult>(200);
 
-        group.MapPost("/reconciliation/break-queue/bulk/execute", async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkExecute), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
             await ApplyReconciliationBulkEndpointAsync(request with { DryRun = false }, context, jsonOptions).ConfigureAwait(false))
         .WithName("ExecuteReconciliationBreakBulkAction")
         .Produces<ReconciliationBulkCaseworkResult>(200);
 
-        group.MapGet("/reconciliation/break-queue/bulk/{bulkActionId}", async (string bulkActionId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkStatus), async (string bulkActionId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             var result = repository is null
@@ -2041,7 +2042,7 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetReconciliationBreakBulkActionStatus");
 
-        group.MapGet("/reconciliation/break-queue/bulk/{bulkActionId}/result", async (string bulkActionId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkResult), async (string bulkActionId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
@@ -2057,7 +2058,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedger), async (string runId, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2074,7 +2075,7 @@ public static partial class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/continuity", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsContinuity), async (string runId, HttpContext context) =>
         {
             var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
             if (continuityService is null)
@@ -2097,7 +2098,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/review-packet", async (string runId, Guid? fundAccountId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReviewPacket), async (string runId, Guid? fundAccountId, HttpContext context) =>
         {
             var reviewPacketService = context.RequestServices.GetService<StrategyRunReviewPacketService>();
             if (reviewPacketService is null)
@@ -2115,7 +2116,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/equity-curve", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsEquityCurve), async (string runId, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2133,7 +2134,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/fills", async (string runId, string? symbol, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsFills), async (string runId, string? symbol, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2167,7 +2168,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/attribution", async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttribution), async (string runId, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2185,7 +2186,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/ledger/trial-balance", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerTrialBalance), async (
             string runId,
             string? accountType,
             string? fundId,
@@ -2254,7 +2255,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<LedgerTrialBalanceLine>>(200)
         .Produces(404);
 
-        group.MapGet("/runs/{runId}/ledger/journal", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerJournal), async (
             string runId,
             DateTimeOffset? from,
             DateTimeOffset? to,
@@ -2329,7 +2330,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<LedgerJournalLine>>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterSearch), async (
             string? query,
             int? take,
             bool? activeOnly,
@@ -2352,7 +2353,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<SecurityMasterWorkstationDto>>(200)
         .Produces(400);
 
-        group.MapGet("/security-master/securities/{securityId:guid}", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterById), async (
             Guid securityId,
             [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
@@ -2510,7 +2511,7 @@ public static partial class WorkstationEndpoints
 
         // --- Multi-run comparison and diff ---
 
-        group.MapPost("/runs/compare", async (RunComparisonRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.RunsCompare), async (RunComparisonRequest request, HttpContext context) =>
         {
             var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
             if (comparisonService is null)
@@ -2550,7 +2551,7 @@ public static partial class WorkstationEndpoints
         .Produces(400)
         .Produces(501);
 
-        group.MapPost("/runs/diff", async (RunDiffRequest request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.RunsDiff), async (RunDiffRequest request, HttpContext context) =>
         {
             var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
             if (comparisonService is null)
@@ -2575,7 +2576,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        app.MapGet("/api/strategies/{strategyId}/runs", async (string strategyId, string? type, HttpContext context) =>
+        app.MapGet(UiApiRoutes.StrategyRunsByStrategy, async (string strategyId, string? type, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2597,7 +2598,7 @@ public static partial class WorkstationEndpoints
         .WithTags("Strategies")
         .Produces<IReadOnlyList<StrategyRunSummary>>(200);
 
-        group.MapGet("/runs/history", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunHistory), async (
             string? mode,
             StrategyRunStatus? status,
             string? strategyId,
@@ -2625,7 +2626,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyRunSummary>>(200)
         .Produces(501);
 
-        group.MapGet("/runs/timeline", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsTimeline), async (
             string? mode,
             StrategyRunStatus? status,
             string? strategyId,
@@ -2652,7 +2653,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
         .Produces(501);
 
-        group.MapGet("/runs/lineage-timeline", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLineageTimeline), async (
             string? mode,
             StrategyRunStatus? status,
             string? strategyId,
@@ -2681,7 +2682,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
-        group.MapGet("/runs/sweeps", async (int? limit, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsSweeps), async (int? limit, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2696,7 +2697,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategySweepResultGroup>>(200)
         .Produces(501);
 
-        app.MapGet("/api/strategies/runs/compare", async (string? ids, HttpContext context) =>
+        app.MapGet(UiApiRoutes.StrategyRunsCompare, async (string? ids, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2737,7 +2738,7 @@ public static partial class WorkstationEndpoints
 
         var portfolioGroup = app.MapGroup("/api/portfolio").WithTags("Portfolio");
 
-        portfolioGroup.MapGet("/{runId}/cash-flows", async (
+        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioCashFlows), async (
             string runId,
             DateTimeOffset? asOf,
             string? currency,
@@ -2767,7 +2768,7 @@ public static partial class WorkstationEndpoints
 
         // --- Cross-strategy aggregate portfolio ---
 
-        portfolioGroup.MapGet("/aggregate", (HttpContext context) =>
+        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioAggregate), (HttpContext context) =>
         {
             var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
             if (aggregator is null)
@@ -2780,7 +2781,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<AggregatedPosition>>(200)
         .Produces(503);
 
-        portfolioGroup.MapGet("/exposure", (HttpContext context) =>
+        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioExposure), (HttpContext context) =>
         {
             var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
             if (aggregator is null)
@@ -2793,7 +2794,7 @@ public static partial class WorkstationEndpoints
         .Produces<CrossStrategyExposureReport>(200)
         .Produces(503);
 
-        portfolioGroup.MapGet("/symbols/{symbol}/exposure", (string symbol, HttpContext context) =>
+        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioSymbolExposure), (string symbol, HttpContext context) =>
         {
             var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
             if (aggregator is null)
@@ -2919,6 +2920,14 @@ public static partial class WorkstationEndpoints
         ArgumentException.ThrowIfNullOrWhiteSpace(route);
         return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
             ? route[WorkstationApiRoutePrefix.Length..]
+            : route;
+    }
+
+    private static string PortfolioSubroute(string route)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        return route.StartsWith(PortfolioApiRoutePrefix, StringComparison.Ordinal)
+            ? route[PortfolioApiRoutePrefix.Length..]
             : route;
     }
 
@@ -7401,7 +7410,7 @@ public static partial class WorkstationEndpoints
 
     private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
-        group.MapGet("/strategy/designer/templates", (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerTemplates), (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<StrategyDesignService>();
             return service is null
@@ -7412,7 +7421,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
         .Produces(501);
 
-        group.MapGet("/strategy/designer/field-catalog", (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerFieldCatalog), (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<StrategyDesignService>();
             return service is null
@@ -7423,7 +7432,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
         .Produces(501);
 
-        group.MapGet("/strategy/designer/drafts", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDrafts), async (HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
             if (repository is null)
@@ -7438,7 +7447,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
         .Produces(501);
 
-        group.MapGet("/strategy/designer/drafts/{documentId}", async (string documentId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDraftById), async (string documentId, HttpContext context) =>
         {
             var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
             if (repository is null)
@@ -7456,7 +7465,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/strategy/designer/drafts", async (StrategyDesignDraftSaveRequest? request, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDrafts), async (StrategyDesignDraftSaveRequest? request, HttpContext context) =>
         {
             if (!HasPermission(context, UserPermission.ManageStrategies))
             {
@@ -7491,7 +7500,7 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(501);
 
-        group.MapPost("/strategy/designer/validate", (StrategyDesignDocument? document, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerValidate), (StrategyDesignDocument? document, HttpContext context) =>
         {
             if (document is null)
             {
@@ -7512,7 +7521,7 @@ public static partial class WorkstationEndpoints
         .Produces(400)
         .Produces(501);
 
-        group.MapPost("/strategy/designer/preview", (StrategyDesignDocument? document, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerPreview), (StrategyDesignDocument? document, HttpContext context) =>
         {
             if (document is null)
             {
@@ -7536,7 +7545,7 @@ public static partial class WorkstationEndpoints
         .Produces(400)
         .Produces(501);
 
-        group.MapPost("/strategy/designer/run-backtest", async (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerRunBacktest), async (
             StrategyDesignRunBacktestRequest? request,
             HttpContext context,
             CancellationToken ct) =>
@@ -7744,7 +7753,7 @@ public static partial class WorkstationEndpoints
 
     private static void MapStrategyEngineEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
-        group.MapGet("/strategy/engine/definitions", (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyEngineDefinitions), (HttpContext context) =>
         {
             var registry = context.RequestServices.GetService<StrategyEngineRegistry>();
             return registry is null
@@ -7755,7 +7764,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
         .Produces(501);
 
-        group.MapPost("/strategy/engine/validate-run", (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyEngineValidateRun), (
             StrategyEngineValidateRunRequest? request,
             HttpContext context) =>
         {

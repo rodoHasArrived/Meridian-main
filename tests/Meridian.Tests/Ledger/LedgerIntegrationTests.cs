@@ -52,6 +52,26 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerAccountTypeOrdinals_MatchFSharpPostingKernelContract()
+    {
+        ((int)LedgerAccountType.Asset).Should().Be(0);
+        ((int)LedgerAccountType.Liability).Should().Be(1);
+        ((int)LedgerAccountType.Equity).Should().Be(2);
+        ((int)LedgerAccountType.Revenue).Should().Be(3);
+        ((int)LedgerAccountType.Expense).Should().Be(4);
+
+        Meridian.FSharp.Ledger.LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Asset, 10m, 3m)
+            .Should()
+            .Be(7m);
+        Meridian.FSharp.Ledger.LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Expense, 10m, 3m)
+            .Should()
+            .Be(7m);
+        Meridian.FSharp.Ledger.LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Revenue, 10m, 3m)
+            .Should()
+            .Be(-7m);
+    }
+
+    [Fact]
     public void ProjectLedgerBook_CanTrackParallelLedgersPerProject()
     {
         var projectLedgers = new ProjectLedgerBook("project-alpha");

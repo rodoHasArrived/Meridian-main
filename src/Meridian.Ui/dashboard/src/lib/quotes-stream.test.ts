@@ -15,6 +15,8 @@ class FakeEventSource {
   readonly url: string;
   readonly listeners = new Map<string, Set<(event: MessageEvent<string> | Event) => void>>();
   closed = false;
+  /** 0 CONNECTING / 1 OPEN / 2 CLOSED — defaults to OPEN as if the connect succeeded. */
+  readyState = 1;
 
   constructor(url: string) {
     this.url = url;
@@ -33,8 +35,15 @@ class FakeEventSource {
     }
   }
 
+  /** Simulates the browser fail-closing the stream (e.g. HTTP 400/429/503 response). */
+  failClose() {
+    this.readyState = 2;
+    this.emit("error");
+  }
+
   close() {
     this.closed = true;
+    this.readyState = 2;
   }
 }
 
@@ -134,7 +143,8 @@ describe("quotes stream client", () => {
     first();
 
     const second = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
-    vi.runAllTimers();
+    // Past the close linger, but short of the owner stale watchdog.
+    vi.advanceTimersByTime(1000);
 
     expect(FakeEventSource.instances).toHaveLength(1);
     expect(FakeEventSource.instances[0]!.closed).toBe(false);
@@ -162,6 +172,92 @@ describe("quotes stream client", () => {
     source.emit("quotes", "not json");
     expect(onSnapshot).toHaveBeenCalledTimes(1);
 
+    unsubscribe();
+  });
+
+  it("closes a fail-closed stream and probes again after the cooldown", () => {
+    const onHealthChange = vi.fn();
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn(), onHealthChange });
+
+    // Browser fail-closed the response (e.g. HTTP 429): EventSource never
+    // auto-reconnects from this state, so the client must own the recovery.
+    FakeEventSource.instances[0]!.failClose();
+    expect(onHealthChange).toHaveBeenLastCalledWith(false);
+    expect(FakeEventSource.instances[0]!.closed).toBe(true);
+
+    // One probe after the 30s cooldown — not a tight loop.
+    vi.advanceTimersByTime(29_999);
+    expect(FakeEventSource.instances).toHaveLength(1);
+    vi.advanceTimersByTime(1);
+    expect(FakeEventSource.instances).toHaveLength(2);
+
+    // The probe recovers and the stream is healthy again.
+    FakeEventSource.instances[1]!.emit("quotes", JSON.stringify(snapshot));
+    expect(onHealthChange).toHaveBeenLastCalledWith(true);
+
+    unsubscribe();
+  });
+
+  it("stops a flapping stream after repeated transient errors and moves to timed probes", () => {
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+    const source = FakeEventSource.instances[0]!;
+
+    for (let i = 0; i < 4; i += 1) {
+      source.emit("error");
+    }
+    expect(source.closed).toBe(false);
+
+    source.emit("error");
+    expect(source.closed).toBe(true);
+
+    vi.advanceTimersByTime(30_000);
+    expect(FakeEventSource.instances).toHaveLength(2);
+
+    unsubscribe();
+  });
+
+  it("reaps a wedged stream when heartbeats stop, and heartbeats keep it alive", () => {
+    const onHealthChange = vi.fn();
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn(), onHealthChange });
+    const source = FakeEventSource.instances[0]!;
+    source.emit("quotes", JSON.stringify(snapshot));
+    expect(onHealthChange).toHaveBeenLastCalledWith(true);
+
+    // Heartbeats re-arm the watchdog through a quiet market.
+    vi.advanceTimersByTime(30_000);
+    source.emit("heartbeat");
+    vi.advanceTimersByTime(30_000);
+    expect(source.closed).toBe(false);
+
+    // Silence past the stale window: the stream is wedged — close and degrade.
+    vi.advanceTimersByTime(15_000);
+    expect(source.closed).toBe(true);
+    expect(onHealthChange).toHaveBeenLastCalledWith(false);
+
+    unsubscribe();
+  });
+
+  it("goes dormant after the probe budget and restarts every subscriber on new interest", () => {
+    const onSnapshot = vi.fn();
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot });
+    expect(FakeEventSource.instances).toHaveLength(1);
+
+    // A stream that never produces a frame is reaped by the stale watchdog and
+    // re-probed on the escalating cooldown; after five probes the client goes
+    // dormant, so draining all timers terminates.
+    vi.runAllTimers();
+    expect(FakeEventSource.instances).toHaveLength(6);
+    expect(FakeEventSource.instances.every((source) => source.closed)).toBe(true);
+
+    // New interest restarts the dormant connection with a fresh budget, and
+    // the original subscriber shares the recovered stream instead of being
+    // stranded on its polling fallback.
+    const again = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+    expect(FakeEventSource.instances).toHaveLength(7);
+    FakeEventSource.instances[6]!.emit("quotes", JSON.stringify(snapshot));
+    expect(onSnapshot).toHaveBeenCalledWith(snapshot);
+
+    again();
     unsubscribe();
   });
 

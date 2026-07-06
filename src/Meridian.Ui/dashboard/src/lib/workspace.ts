@@ -87,6 +87,19 @@ export type WorkstationRouteKey = keyof typeof WORKSTATION_ROUTE_CATALOG;
 export type WorkstationRoutePath = (typeof WORKSTATION_ROUTE_CATALOG)[WorkstationRouteKey];
 export type WorkstationRouteQueryValue = string | number | boolean | null | undefined;
 
+/**
+ * Routes whose screens have no data source wired yet — they render a permanent
+ * "not connected" empty state (Family Office is mounted without an
+ * entityStructure; the Formula Workbench has no formula catalog endpoint).
+ * They stay routable for deep links and legacy bookmarks, but are kept out of
+ * primary navigation and the command palette so operators are not steered into
+ * dead ends. Remove a route from this set when its read model lands.
+ */
+export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set([
+  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
+  WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench
+]);
+
 const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   trading: WORKSTATION_ROUTE_CATALOG.trading,
   portfolio: WORKSTATION_ROUTE_CATALOG.portfolio,

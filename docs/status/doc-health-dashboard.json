@@ -172,6 +172,7 @@
     "docs/plans/ufl-warrant-target-state-v2.md",
     "docs/plans/wave-implementation-checklists.md",
     "docs/plans/web-ui-development-pivot.md",
+    "docs/product/data-provider-accounting-brainstorm-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
@@ -3058,6 +3059,14 @@
       "stale": false
     },
     {
+      "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
+      "line_count": 450,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/deferred-expansion-boundaries.md",
       "line_count": 60,
       "has_heading": true,
@@ -4107,7 +4116,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 490,
+      "line_count": 491,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4195,7 +4204,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 93,
+      "line_count": 96,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4379,7 +4388,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1241,
+      "line_count": 1243,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

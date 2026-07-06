@@ -1192,6 +1192,60 @@ describe("accounting-screen journal-entry view model", () => {
     ]));
   });
 
+  it("treats absent private-capital activity collections as empty rows", async () => {
+    const workbench: ManualJournalEntryWorkbench = {
+      ...manualJournalWorkbench,
+      privateCapitalActivity: {
+        ...manualJournalWorkbench.privateCapitalActivity!,
+        fundEvents: null,
+        capitalAccounts: null,
+        capitalAccountSubledgers: null,
+        capitalAccountSubledgerEntries: null,
+        ledgerImpacts: null,
+        reportOutputs: null,
+        fundEventRecords: null,
+        paymentIntents: null,
+        validationIssues: null
+      } as unknown as ManualJournalEntryWorkbench["privateCapitalActivity"]
+    };
+    const services: ManualJournalEntryWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench),
+      searchSecurities: vi.fn().mockResolvedValue([]),
+      saveDraft: vi.fn().mockResolvedValue(manualJournalDraft),
+      validateDraft: vi.fn().mockResolvedValue(manualJournalDraft),
+      submitApproval: vi.fn().mockResolvedValue(manualJournalDraft),
+      attachEvidence: vi.fn().mockResolvedValue(manualJournalDraft),
+      applyLifecycleAction: vi.fn().mockResolvedValue({
+        journalEntry: manualJournalDraft,
+        transition: {
+          transitionId: "transition-approve",
+          fromStatus: "Submitted",
+          toStatus: "Approved",
+          action: "Approve",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T02:00:00Z",
+          notes: null,
+          correlationId: "manual-je-approve",
+          evidenceLinks: []
+        },
+        generatedJournalEntries: []
+      })
+    };
+
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+
+    await waitFor(() => expect(result.current.privateCapitalActivity.statusLabel).toBe("1 fund events / 1 capital accounts"));
+    expect(result.current.privateCapitalActivity.fundEvents).toEqual([]);
+    expect(result.current.privateCapitalActivity.capitalAccounts).toEqual([]);
+    expect(result.current.privateCapitalActivity.capitalAccountSubledgers).toEqual([]);
+    expect(result.current.privateCapitalActivity.capitalAccountSubledgerEntries).toEqual([]);
+    expect(result.current.privateCapitalActivity.ledgerImpacts).toEqual([]);
+    expect(result.current.privateCapitalActivity.reportOutputs).toEqual([]);
+    expect(result.current.privateCapitalActivity.fundEventLedgerRecords).toEqual([]);
+    expect(result.current.privateCapitalActivity.paymentIntents).toEqual([]);
+    expect(result.current.privateCapitalActivity.validationIssues).toEqual([]);
+  });
+
   it("loads manual journal entries with route ledger-book scope and preserves scope on mutations", async () => {
     const scopedWorkbench: ManualJournalEntryWorkbench = {
       ...manualJournalWorkbench,
