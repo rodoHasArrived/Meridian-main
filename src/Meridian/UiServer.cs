@@ -149,9 +149,15 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
         builder.Services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(resolvedDataRoot, "execution", "controls")));
         builder.Services.AddSingleton<ExecutionOperatorControlService>();
+        // Durable paper-session storage root is operator-tunable via
+        // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
+        var paperSessionBaseDirectory = builder.Configuration.GetValue<string?>(
+            $"{PaperSessionOptions.SectionKey}:{nameof(PaperSessionOptions.BaseDirectory)}");
         builder.Services.AddSingleton<IPaperSessionStore>(sp =>
             new JsonlFilePaperSessionStore(
-                Path.Combine(resolvedDataRoot, "execution", "sessions"),
+                string.IsNullOrWhiteSpace(paperSessionBaseDirectory)
+                    ? Path.Combine(resolvedDataRoot, "execution", "sessions")
+                    : paperSessionBaseDirectory,
                 sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
