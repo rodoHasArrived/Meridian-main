@@ -145,7 +145,7 @@ This reduces flat navigation sprawl and makes keyboard-first scanning more predi
 
 ## Design System Baseline
 
-The workstation shell treats the shared WPF resource dictionaries as the active design-system contract for operator pages:
+The retained WPF workstation shell treats the shared WPF resource dictionaries as its compatibility design-system contract for operator pages:
 
 - `src/Meridian.Wpf/Styles/ThemeTokens.xaml` owns the shell palette plus dedicated chart tokens for chart cards, plot areas, grid lines, axis labels, borders, crosshairs, equity/positive states, drawdown/negative states, and amber midpoint/warning emphasis.
 - `src/Meridian.Wpf/Styles/ThemeSurfaces.xaml` provides `ChartCardStyle`, `ChartPlotAreaStyle`, `ChartCanvasPlotAreaStyle`, and `ChartLegendStripStyle` so chart-heavy pages do not duplicate panel chrome.

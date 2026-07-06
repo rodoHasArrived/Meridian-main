@@ -4,7 +4,7 @@ doc_schema: meridian.source-readme
 doc_schema_version: "1.0.0"
 module_id: SRC-WPF
 path: src/Meridian.Wpf
-status: active
+status: deferred
 owner_lane: Workstation Shell and UX
 last_reviewed: 2026-06-16
 ---
@@ -13,12 +13,13 @@ last_reviewed: 2026-06-16
 
 ## Purpose
 
-WPF workstation is the active Windows desktop operator workstation sharing contracts and read models
-with the browser workstation.
+WPF workstation is a deferred Windows desktop operator workstation retained for existing shell
+compatibility, validation, and maintenance. New product/UI work should target the browser
+workstation and shared services unless WPF is explicitly reactivated.
 
 ## Layer responsibility
 
-This module owns the desktop shell, WPF pages, route hosting, and desktop workstation view models.
+This module owns the retained desktop shell, WPF pages, route hosting, and desktop workstation view models.
 Keep shared contracts and read-model logic in shared UI services when browser and desktop both need
 the behavior. The seven operator workspaces now register through feature modules under
 `src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
