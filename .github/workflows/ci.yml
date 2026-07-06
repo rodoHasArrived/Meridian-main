@@ -60,6 +60,9 @@ jobs:
       - name: Validate warning suppression inventory
         run: python3 build/scripts/ci/check-warning-suppressions.py
 
+      - name: Enforce no-new-god-file ratchet
+        run: python3 build/scripts/ci/check-file-size.py
+
       - name: Build web workstation lane
         run: |
           mkdir -p artifacts/build-logs
