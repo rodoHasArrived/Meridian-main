@@ -27,10 +27,8 @@ repeating the same facts in every `SKILL.md`.
 - Expansion lanes such as Backtesting Studio, live-readiness, treasury payment execution,
   alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
   no-code workflow design can proceed when current source, roadmap, or user direction supports them.
-- Active operator UI work is browser-first in `src/Meridian.Ui/dashboard/`.
-- `src/Meridian.Wpf/` product/UI work is deferred until explicitly reactivated; retain the
-  existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation as
-  support surfaces.
+- Operator UI work runs across two active co-equal lanes: the browser workstation in `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
@@ -232,7 +230,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the deferred WPF shell
+  services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: BenchmarkDotNet performance suites
 
@@ -244,7 +242,7 @@ and choose the narrowest lane that matches the user's request:
 - CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
 - Host-served workstation route: `http://localhost:8080/workstation/`
-- Deferred WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
+- Active WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
 
 ## Desktop Persistence Baseline
 

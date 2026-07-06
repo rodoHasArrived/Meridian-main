@@ -1,6 +1,6 @@
 # Desktop WPF Screenshot Index
 
-This index tracks screenshot evidence for retained registered WPF screens. WPF product/UI work is deferred unless explicitly reactivated. The index is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
+This index tracks screenshot evidence for registered WPF screens. WPF is an active co-equal operator UI lane; its current focus is web-UI parity (`W8-WPF-PARITY-001`). The index is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
 
 ## Sources and refresh policy
 
