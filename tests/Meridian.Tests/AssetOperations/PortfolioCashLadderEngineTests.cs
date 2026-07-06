@@ -171,6 +171,22 @@ public sealed class PortfolioCashLadderEngineTests
     }
 
     [Fact]
+    public void Build_RedemptionWaveScenario_OmitsOutflowWhenHorizonShorterThanNoticePeriod()
+    {
+        var inputs = BuildInputs(
+            cashBalances: [new PortfolioCashBalanceDto("op-cash", "Operating cash", 100_000m, "USD", "Ledger", null)],
+            minimumCashThreshold: 50_000m,
+            horizonDays: 7);
+
+        var ladder = PortfolioCashLadderEngine.Build(inputs, PortfolioCashLadderEngine.RedemptionWaveScenarioId);
+
+        // Settlement is 30 days out; a 7-day view must not clamp it in or fabricate a breach.
+        ladder.Contributions.Should().BeEmpty();
+        ladder.Buckets.Should().OnlyContain(static bucket => !bucket.BreachesMinimumBalance);
+        ladder.Warnings.Should().ContainMatch("*settles after the 30-day notice period*");
+    }
+
+    [Fact]
     public void Build_RateShiftScenario_RepricesOnlyRetainedFloatingRateFlows()
     {
         var floater = BuildPosition(
@@ -189,6 +205,25 @@ public sealed class PortfolioCashLadderEngineTests
         repriced.Amount.Should().Be(6000m);
         repriced.ScenarioAdjustment.Should().Contain("Floating-rate flow repriced");
         ladder.Contributions.Single(static row => row.DisplayName == "Fixed Bond").Amount.Should().Be(2500m);
+    }
+
+    [Fact]
+    public void Build_RateShiftScenario_UsesLatestRunRateWhenAStaleRunCarriesADifferentRate()
+    {
+        // The latest run prices the coupon at 5%; a superseded run left a 10% rate for the same
+        // security/date/flow type. The rate index must read only latest-run flows, so rates-up
+        // reprices against 5% (6000), not the stale 10% (5500).
+        var floater = BuildFloaterWithStaleRun(
+            dueDate: AsOf.AddDays(10),
+            amount: 5000m,
+            latestRate: 0.05m,
+            staleRate: 0.10m);
+
+        var ladder = PortfolioCashLadderEngine.Build(
+            BuildInputs(positions: [floater]),
+            PortfolioCashLadderEngine.RatesUpScenarioId);
+
+        ladder.Contributions.Should().ContainSingle().Which.Amount.Should().Be(6000m);
     }
 
     [Fact]
@@ -276,10 +311,11 @@ public sealed class PortfolioCashLadderEngineTests
         IReadOnlyList<PortfolioCashLadderPositionDto>? positions = null,
         IReadOnlyList<PortfolioCashBalanceDto>? cashBalances = null,
         IReadOnlyList<PortfolioCapitalActivityDto>? capitalActivity = null,
-        decimal minimumCashThreshold = 0m)
+        decimal minimumCashThreshold = 0m,
+        int horizonDays = 90)
         => new(
             AsOf,
-            HorizonDays: 90,
+            horizonDays,
             BaseCurrency: "USD",
             positions ?? [],
             cashBalances ?? [],
@@ -359,6 +395,56 @@ public sealed class PortfolioCashLadderEngineTests
             [],
             readiness,
             []);
+        return new PortfolioCashLadderPositionDto(detail);
+    }
+
+    private static PortfolioCashLadderPositionDto BuildFloaterWithStaleRun(
+        DateOnly dueDate,
+        decimal amount,
+        decimal latestRate,
+        decimal staleRate)
+    {
+        var securityId = Guid.NewGuid();
+        var subject = new AssetOperationSubjectDto(
+            securityId,
+            "DirectLoan",
+            "Floating Rate Loan",
+            $"CUSIP:{securityId:N}",
+            ["Identity", "TermsHistory", "ProjectedCashFlows"]);
+        var terms = new AssetTermsVersionDto(
+            Guid.NewGuid(),
+            securityId,
+            1,
+            $"security-master:{securityId:N}",
+            AsOf.AddYears(-1),
+            DateTimeOffset.UtcNow,
+            "SecurityMaster",
+            securityId.ToString("D"),
+            "Floating Rate Loan retained terms",
+            JsonSerializer.SerializeToElement(new { rateTypeKind = "Floating" }));
+
+        var staleRunId = Guid.NewGuid();
+        var latestRunId = Guid.NewGuid();
+        var staleRun = new AssetCashFlowProjectionRunDto(
+            staleRunId, securityId, AsOf, "asset-obligation-projection-v1", "Completed",
+            DateTimeOffset.UtcNow.AddDays(-2), "SecurityMaster", securityId.ToString("D"));
+        var latestRun = new AssetCashFlowProjectionRunDto(
+            latestRunId, securityId, AsOf, "asset-obligation-projection-v1", "Completed",
+            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"));
+
+        AssetProjectedCashFlowDto Flow(Guid runId, decimal flowAmount, decimal rate) => new(
+            Guid.NewGuid(), runId, securityId, 1, "Interest", dueDate, flowAmount, "USD", "Projected",
+            AnnualRate: rate, SourceDomain: "SecurityMaster", SourceEntityId: securityId.ToString("D"));
+
+        // Order the stale flow after the latest flow so an unfiltered index would overwrite the
+        // latest rate — the fix must still pick the latest run regardless of ordering.
+        var flows = new[] { Flow(latestRunId, amount, latestRate), Flow(staleRunId, 9_999m, staleRate) };
+        var readiness = new AssetOperationsReadinessDto(
+            securityId, "Ready", subject.OperationalProfile, subject.OperationalProfile, [], [],
+            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"));
+
+        var detail = new AssetOperationsDetailDto(
+            subject, [terms], [], [staleRun, latestRun], flows, [], [], [], [], readiness, []);
         return new PortfolioCashLadderPositionDto(detail);
     }
 }

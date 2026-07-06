@@ -151,7 +151,7 @@ public static class PortfolioCashLadderEngine
 
         contributions.AddRange(BuildCapitalContributions(inputs.CapitalActivity, windowStart, windowEnd, warnings));
 
-        contributions = ApplyScenario(scenario.ScenarioId, contributions, inputs, openingCash, windowStart, windowEnd);
+        contributions = ApplyScenario(scenario.ScenarioId, contributions, inputs, openingCash, windowStart, windowEnd, warnings);
 
         var foreignCurrencies = contributions
             .Where(row => !string.Equals(row.Currency, inputs.BaseCurrency, StringComparison.OrdinalIgnoreCase))
@@ -350,13 +350,14 @@ public static class PortfolioCashLadderEngine
         PortfolioCashLadderInputs inputs,
         decimal openingCash,
         DateOnly windowStart,
-        DateOnly windowEnd)
+        DateOnly windowEnd,
+        List<string> warnings)
         => scenarioId switch
         {
             RatesUpScenarioId => ApplyRateShift(contributions, inputs, RateShiftPerHundredBps),
             RatesDownScenarioId => ApplyRateShift(contributions, inputs, -RateShiftPerHundredBps),
             EarlyCallScenarioId => ApplyEarlyCall(contributions, inputs, windowStart, windowEnd),
-            RedemptionWaveScenarioId => ApplyRedemptionWave(contributions, inputs, openingCash, windowStart, windowEnd),
+            RedemptionWaveScenarioId => ApplyRedemptionWave(contributions, inputs, openingCash, windowStart, windowEnd, warnings),
             FxAdverseScenarioId => ApplyFxAdverse(contributions, inputs),
             _ => contributions
         };
@@ -511,17 +512,23 @@ public static class PortfolioCashLadderEngine
         PortfolioCashLadderInputs inputs,
         decimal openingCash,
         DateOnly windowStart,
-        DateOnly windowEnd)
+        DateOnly windowEnd,
+        List<string> warnings)
     {
         if (openingCash <= 0m)
         {
             return contributions;
         }
 
+        // Settlement is after a 30-day notice period. If the requested horizon is shorter than the
+        // notice, the redemption settles beyond the ladder and must not be clamped into the last
+        // in-window day — doing so would fabricate a liquidity breach the scenario never implies.
         var settlementDate = windowStart.AddDays(RedemptionWaveNoticeDays);
         if (settlementDate >= windowEnd)
         {
-            settlementDate = windowEnd.AddDays(-1);
+            warnings.Add(
+                $"Redemption wave settles after the {RedemptionWaveNoticeDays}-day notice period, beyond the {(windowEnd.DayNumber - windowStart.DayNumber)}-day horizon; no outflow is shown in this view.");
+            return contributions;
         }
 
         var amount = RoundCash(-openingCash * RedemptionWaveFraction);
@@ -722,10 +729,13 @@ public static class PortfolioCashLadderEngine
     private static Dictionary<(Guid SecurityId, DateOnly DueDate, string FlowType), decimal> BuildFlowRateIndex(
         IReadOnlyList<PortfolioCashLadderPositionDto> positions)
     {
+        // Build the rate index from the same latest-run flows the contributions were derived from,
+        // so a stale projection run cannot overwrite the current run's annual rate and cause the
+        // rate scenarios to reprice a current cash flow against an old rate.
         var index = new Dictionary<(Guid, DateOnly, string), decimal>();
         foreach (var position in positions)
         {
-            foreach (var flow in position.Operations.ProjectedCashFlows)
+            foreach (var flow in LatestRunFlows(position.Operations))
             {
                 if (flow.AnnualRate is { } rate && rate > 0m)
                 {
