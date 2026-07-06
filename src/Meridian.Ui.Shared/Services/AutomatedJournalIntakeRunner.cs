@@ -150,11 +150,31 @@ public sealed class AutomatedJournalIntakeRunner
             ?? throw new InvalidOperationException(
                 $"Ledger period '{request.PeriodId}' was not found or is still open; close the period before running closing entries.");
 
+        // The closed period's ledger book is authoritative. The manual journal workbench filters
+        // drafts by ledger book, so binding the draft to a null or mismatched request book id would
+        // orphan the closing entries where the book's own close/reporting workflow cannot see them.
+        if (request.LedgerBookId is { } requestedBook && requestedBook != summary.LedgerBookId)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{request.PeriodId}' belongs to book '{summary.LedgerBookId}', not the requested book '{requestedBook}'.");
+        }
+
+        // Date closing entries to the period's end date, not the close or run time. Soft close does
+        // not persist a close timestamp (the summary reports the current time), so the run-independent
+        // period end date is the stable accounting date for both soft- and hard-closed periods.
+        var period = (await _ledgerBookService
+                .ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: summary.LedgerBookId), ct)
+                .ConfigureAwait(false))
+            .FirstOrDefault(p => p.PeriodId == request.PeriodId)
+            ?? throw new InvalidOperationException(
+                $"Ledger period '{request.PeriodId}' was not found in book '{summary.LedgerBookId}'.");
+        var closingDate = new DateTimeOffset(period.EndDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
         var trialBalance = BuildTrialBalance(summary.TrialBalance);
 
         var projection = PeriodCloseProjector.Project(new PeriodCloseInput(
             request.PeriodId.ToString("D"),
-            summary.CompletedAt,
+            closingDate,
             trialBalance,
             request.Actor));
 
@@ -167,7 +187,7 @@ public sealed class AutomatedJournalIntakeRunner
                     request.Currency,
                     [draft],
                     request.Actor,
-                    request.LedgerBookId,
+                    summary.LedgerBookId,
                     request.PeriodId.ToString("D"),
                     request.EntityId,
                     request.TenantId,

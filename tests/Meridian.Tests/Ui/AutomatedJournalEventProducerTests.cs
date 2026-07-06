@@ -347,13 +347,19 @@ public sealed class AutomatedJournalEventProducerTests
     // -------------------------------------------------------------------------
 
     private static readonly Guid ClosedPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly DateOnly PeriodEndDate = new(2026, 6, 30);
 
     private static ILedgerBookService LedgerBookServiceWithClosedPeriod(
+        params LedgerPeriodTrialBalanceLineDto[] trialBalance)
+        => LedgerBookServiceWithClosedPeriod(BookId, trialBalance);
+
+    private static ILedgerBookService LedgerBookServiceWithClosedPeriod(
+        Guid ledgerBookId,
         params LedgerPeriodTrialBalanceLineDto[] trialBalance)
     {
         var summary = new LedgerPeriodSummaryDto(
             PeriodId: ClosedPeriodId,
-            LedgerBookId: BookId,
+            LedgerBookId: ledgerBookId,
             FiscalYear: 2026,
             PeriodNo: 6,
             Label: "2026-06",
@@ -364,10 +370,27 @@ public sealed class AutomatedJournalEventProducerTests
             PeriodOnPeriodVariance: null,
             OpenBreakCount: 0,
             SignoffStatus: LedgerPeriodSignoffStatusDto.Pending,
-            CompletedAt: AsOf);
+            // A soft close reports the current time, not a persisted close date; the runner must
+            // ignore this and date closing entries to the period end date instead.
+            CompletedAt: DateTimeOffset.UtcNow);
+
+        var period = new LedgerPeriodDto(
+            PeriodId: ClosedPeriodId,
+            LedgerBookId: ledgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 6,
+            Label: "2026-06",
+            StartDate: new DateOnly(2026, 6, 1),
+            EndDate: PeriodEndDate,
+            Status: LedgerPeriodStatusDto.SoftClosed,
+            OpenedAt: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            ClosedAt: null,
+            Version: 1);
 
         var service = Substitute.For<ILedgerBookService>();
         service.GetPeriodSummaryAsync(ClosedPeriodId, Arg.Any<CancellationToken>()).Returns(summary);
+        service.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { period });
         return service;
     }
 
@@ -403,10 +426,48 @@ public sealed class AutomatedJournalEventProducerTests
             "closing zeroes the revenue and expense accounts and rolls net income to retained earnings");
         draft.Lines.Sum(line => line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m)
             .Should().Be(draft.Lines.Sum(line => line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m));
+        draft.AccountingDate.Should().Be(PeriodEndDate,
+            "closing entries are dated to the period end date, not the soft-close/run time");
 
         var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
         workbench.Drafts.Should().ContainSingle(
             "the closing-entry draft must be visible in the close cockpit's queue");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_WithoutRequestBookId_BindsDraftToPeriodBook()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        // No LedgerBookId supplied on the request; the draft must still bind to the period's book.
+        var result = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId));
+
+        result.Intake.Created.Should().ContainSingle();
+        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        workbench.Drafts.Should().ContainSingle(
+            "the closing-entry draft must land under the period's ledger book, not an unscoped queue");
+    }
+
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_MismatchedBookId_FailsLoudly()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+
+        var act = () => runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "fund-controller", ClosedPeriodId,
+            LedgerBookId: Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc")));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*belongs to book*");
     }
 
     [Fact]
