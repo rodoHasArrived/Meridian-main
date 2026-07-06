@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
 import type {
   MetricSnapshot,
@@ -692,12 +693,6 @@ const defaultStrategyServices: StrategyRunLibraryServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
   createPaperSession: (strategyId, strategyName, initialCash) => workstationApi.createPaperSession(strategyId, strategyName, initialCash)
 };
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0
-});
 
 export function useStrategyRunLibraryViewModel(
   data: StrategyWorkspaceResponse | null,
@@ -2921,7 +2916,7 @@ function formatMoney(value: number | null | undefined, signed = false): string {
     return "Unavailable";
   }
 
-  const amount = currencyFormatter.format(Math.abs(value));
+  const amount = formatCurrencyAmount(Math.abs(value), { maximumFractionDigits: 0 });
 
   if (!signed) {
     return value < 0 ? `-${amount}` : amount;

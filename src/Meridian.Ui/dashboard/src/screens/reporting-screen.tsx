@@ -1,6 +1,7 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -3676,15 +3677,7 @@ function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
 }
 
 function formatReportingMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
-    }).format(value);
-  } catch {
-    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-  }
+  return formatCurrencyAmount(value, { currency, maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2 });
 }
 
 function formatReportingDateRange(startDate: string, endDate: string): string {
@@ -3692,7 +3685,7 @@ function formatReportingDateRange(startDate: string, endDate: string): string {
 }
 
 function formatReportingPercent(value: number): string {
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+  return formatPercentAmount(value);
 }
 
 function formatHeatMapWidth(value: number): string {

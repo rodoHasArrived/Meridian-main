@@ -2,6 +2,7 @@ import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Pap
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
+import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -1085,11 +1086,7 @@ function buildExternalGlExportSafeguards(
 }
 
 function formatGlAmount(value: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD",
-    maximumFractionDigits: 2
-  }).format(value);
+  return formatCurrencyAmount(value, { currency });
 }
 
 function mergeExternalGlExportPackage(

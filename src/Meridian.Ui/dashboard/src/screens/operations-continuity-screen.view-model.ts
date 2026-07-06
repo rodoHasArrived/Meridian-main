@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import {
   getOperationsCloseCalendar,
   getPrivateCapitalCloseCockpit,
@@ -4043,11 +4044,7 @@ function formatCurrency(value: number | null | undefined, currency: string): str
     return `${formatDecimal(value)} ${currency}`;
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2
-  }).format(value);
+  return formatCurrencyAmount(value, { currency });
 }
 
 function formatPercent(value: number | null | undefined): string {
