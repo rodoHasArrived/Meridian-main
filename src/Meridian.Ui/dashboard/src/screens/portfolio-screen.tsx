@@ -35,7 +35,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { workstationRouteWithQuery } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
