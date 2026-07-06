@@ -106,18 +106,34 @@ public sealed class NullReportingRunNotifier : IReportingRunNotifier
 }
 ```
 
-`ReportingOrchestrationService` gains an **optional** notifier (default null-object, so existing construction and tests are unaffected — both public ctors chain through):
+`ReportingOrchestrationService` gains the notifier via a **new constructor overload**, keeping the
+existing 4-parameter ctor as a delegating overload. Adding an *optional* parameter to the existing
+ctor would be source-compatible but **not binary-compatible** — the 4-parameter signature would
+disappear from metadata, so any already-compiled caller would hit `MissingMethodException` at
+runtime. Constructor chaining preserves the original signature (and matches the ctor-chaining the
+type already uses for its 1-parameter convenience ctor); the notifier defaults to the null-object so
+existing construction and tests are unaffected:
 
 ```csharp
-// ctor gains a trailing optional param (backward compatible)
+// Existing 4-parameter ctor retained for binary compatibility — now delegates.
 public ReportingOrchestrationService(
     IReportingTemplateCatalog catalog,
     IReportingSectionRenderer renderer,
     Func<DateTimeOffset> utcNow,
-    IReportingRunStore? runStore = null,
-    IReportingRunNotifier? runNotifier = null)
+    IReportingRunStore? runStore = null)
+    : this(catalog, renderer, utcNow, runStore, runNotifier: null)
 {
-    // …
+}
+
+// New 5-parameter ctor carries the optional notifier (default null-object).
+public ReportingOrchestrationService(
+    IReportingTemplateCatalog catalog,
+    IReportingSectionRenderer renderer,
+    Func<DateTimeOffset> utcNow,
+    IReportingRunStore? runStore,
+    IReportingRunNotifier? runNotifier)
+{
+    // ... existing field assignments ...
     this.runNotifier = runNotifier ?? NullReportingRunNotifier.Instance;
 }
 

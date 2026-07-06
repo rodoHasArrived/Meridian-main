@@ -1,6 +1,6 @@
 {
   "total_files": 544,
-  "total_lines": 91101,
+  "total_lines": 91117,
   "orphaned_count": 209,
   "no_heading_count": 38,
   "stale_count": 0,
@@ -3142,7 +3142,7 @@
     },
     {
       "path": "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
-      "line_count": 360,
+      "line_count": 376,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
