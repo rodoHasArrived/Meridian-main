@@ -24,8 +24,11 @@ public sealed class SymbolsPageViewModelTests
         viewModel.Should().Contain("public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct)");
         viewModel.Should().Contain("public void Stop() => Deactivate()");
         viewModel.Should().Contain("CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct)");
-        viewModel.Should().Contain("CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null))");
-        viewModel.Should().Contain("CancelWithoutDisposing(Interlocked.Exchange(ref _activationCts, null))");
+        var activationCancellation = viewModel.IndexOf("CancelWithoutDisposing(Interlocked.Exchange(ref _activationCts, null))", StringComparison.Ordinal);
+        var loadCancellation = viewModel.IndexOf("CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null))", StringComparison.Ordinal);
+        activationCancellation.Should().BeGreaterThanOrEqualTo(0);
+        loadCancellation.Should().BeGreaterThanOrEqualTo(0);
+        activationCancellation.Should().BeLessThan(loadCancellation);
         viewModel.Should().Contain("_getConfiguredSymbolsAsync(loadCts.Token)");
         viewModel.Should().Contain("activationCts.Dispose();");
     }
