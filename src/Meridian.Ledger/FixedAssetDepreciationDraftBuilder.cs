@@ -29,7 +29,7 @@ public static class FixedAssetDepreciationDraftBuilder
         ArgumentNullException.ThrowIfNull(assets);
 
         var projected = assets
-            .Where(static asset => asset.DepreciationAmount > 0m)
+            .Where(static asset => asset is not null && asset.DepreciationAmount > 0m)
             .Select(FixedAssetDepreciationProjector.Project)
             .ToArray();
         if (projected.Length == 0)
@@ -42,21 +42,26 @@ public static class FixedAssetDepreciationDraftBuilder
 
         var totalDepreciation = projected.Sum(static projection => projection.TotalDebits);
         var scope = string.IsNullOrWhiteSpace(bookLabel) ? "fixed-assets" : bookLabel.Trim();
-        var idempotencyKey = FormattableString.Invariant($"depreciation|{scope}|{periodEnd:yyyy-MM-dd}");
+        var periodEndText = periodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var idempotencyKey = FormattableString.Invariant($"depreciation|{scope}|{periodEndText}");
         var resolvedDescription = string.IsNullOrWhiteSpace(description)
-            ? FormattableString.Invariant($"Fixed-asset depreciation for {scope} through {periodEnd:yyyy-MM-dd}")
+            ? FormattableString.Invariant($"Fixed-asset depreciation for {scope} through {periodEndText}")
             : description.Trim();
 
         var evidence = projected
-            .Select(projection => new JournalEvidenceReference(
-                EvidenceId: FormattableString.Invariant($"depreciation:{projection.AssetId:D}:{periodEnd:yyyy-MM-dd}"),
-                Uri: FormattableString.Invariant($"fixed-asset://{projection.AssetId:D}/depreciation/{periodEnd:yyyy-MM-dd}"),
-                Kind: "depreciation",
-                SourceSystem: "meridian.fixed-assets",
-                RetainedAtUtc: asOf,
-                RetainedBy: scope,
-                SubjectId: projection.AssetId.ToString("D"),
-                Description: projection.Description).Normalize())
+            .Select(projection =>
+            {
+                var assetId = projection.AssetId.ToString("D");
+                return new JournalEvidenceReference(
+                    EvidenceId: FormattableString.Invariant($"depreciation:{assetId}:{periodEndText}"),
+                    Uri: FormattableString.Invariant($"fixed-asset://{assetId}/depreciation/{periodEndText}"),
+                    Kind: "depreciation",
+                    SourceSystem: "meridian.fixed-assets",
+                    RetainedAtUtc: asOf,
+                    RetainedBy: scope,
+                    SubjectId: assetId,
+                    Description: projection.Description).Normalize();
+            })
             .ToArray();
 
         var journalEvent = new AutomatedJournalEvent(
@@ -72,7 +77,7 @@ public static class FixedAssetDepreciationDraftBuilder
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["depreciation.book"] = scope,
-            ["depreciation.periodEnd"] = periodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ["depreciation.periodEnd"] = periodEndText,
             ["depreciation.assetCount"] = projected.Length.ToString(CultureInfo.InvariantCulture),
             ["depreciation.totalAmount"] = totalDepreciation.ToString(CultureInfo.InvariantCulture),
         };
