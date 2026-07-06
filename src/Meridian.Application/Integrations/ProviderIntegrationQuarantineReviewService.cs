@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -8,10 +10,14 @@ public sealed class ProviderIntegrationQuarantineReviewService
     private const int MaxRecentRunLimit = 50;
 
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationQuarantineReviewService> logger;
 
-    public ProviderIntegrationQuarantineReviewService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationQuarantineReviewService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationQuarantineReviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationQuarantineReviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationQuarantineReviewDto> GetReviewAsync(
@@ -21,6 +27,35 @@ public sealed class ProviderIntegrationQuarantineReviewService
         => await GetReviewAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationQuarantineReviewDto> GetReviewAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetReviewAsync),
+            connectionId);
+        try
+        {
+            return await GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetReviewAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationQuarantineReviewDto> GetReviewCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
@@ -92,6 +127,34 @@ public sealed class ProviderIntegrationQuarantineReviewService
         => await ResolveAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationQuarantineResolutionResultDto> ResolveAsync(
+        string? tenantId,
+        ProviderIntegrationQuarantineResolutionRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(ResolveAsync),
+            request?.ConnectionId);
+        try
+        {
+            return await ResolveCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(ResolveAsync),
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationQuarantineResolutionResultDto> ResolveCoreAsync(
         string? tenantId,
         ProviderIntegrationQuarantineResolutionRequestDto request,
         CancellationToken ct = default)

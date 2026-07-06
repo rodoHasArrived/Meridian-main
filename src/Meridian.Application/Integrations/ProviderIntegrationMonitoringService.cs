@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -8,10 +10,14 @@ public sealed class ProviderIntegrationMonitoringService
     private const int MaxRecentRunLimit = 50;
 
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationMonitoringService> logger;
 
-    public ProviderIntegrationMonitoringService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationMonitoringService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationMonitoringService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationMonitoringService>.Instance;
     }
 
     public async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorAsync(
@@ -21,6 +27,35 @@ public sealed class ProviderIntegrationMonitoringService
         => await GetConnectionMonitorAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetConnectionMonitorAsync),
+            connectionId);
+        try
+        {
+            return await GetConnectionMonitorCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetConnectionMonitorAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
@@ -58,6 +93,35 @@ public sealed class ProviderIntegrationMonitoringService
         => await GetConnectionSyncRunsAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetConnectionSyncRunsAsync),
+            connectionId);
+        try
+        {
+            return await GetConnectionSyncRunsCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetConnectionSyncRunsAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,

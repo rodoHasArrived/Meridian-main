@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -29,10 +31,14 @@ public sealed class ProviderIntegrationOpenApiImportService
     ];
 
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
 
-    public ProviderIntegrationOpenApiImportService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationOpenApiImportService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationOpenApiImportService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationOpenApiImportService>.Instance;
     }
 
     public async Task<ProviderIntegrationOpenApiImportResultDto> ImportAsync(
@@ -41,6 +47,36 @@ public sealed class ProviderIntegrationOpenApiImportService
         => await ImportAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationOpenApiImportResultDto> ImportAsync(
+        string? tenantId,
+        ProviderIntegrationOpenApiImportRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, provider {ProviderId}.",
+            nameof(ImportAsync),
+            request?.ManifestId,
+            request?.ProviderId);
+        try
+        {
+            return await ImportCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, provider {ProviderId}.",
+                nameof(ImportAsync),
+                request?.ManifestId,
+                request?.ProviderId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationOpenApiImportResultDto> ImportCoreAsync(
         string? tenantId,
         ProviderIntegrationOpenApiImportRequestDto request,
         CancellationToken ct = default)
