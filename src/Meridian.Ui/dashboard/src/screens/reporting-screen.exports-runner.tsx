@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { latestReleasedRunsPerSeries } from "@/screens/reporting-screen.view-model";
 import type { ReportingRunStatusRow, ReportingTemplateRow } from "@/screens/reporting-screen.view-model";
 import {
   ReportingCommandStatusView,
@@ -72,7 +73,9 @@ export function ExportsReportRunner({
   onRun
 }: ExportsReportRunnerProps) {
   const selectedDataset = datasetSources.find((source) => source.sourceId === draft.datasetSourceId) ?? null;
-  const releasedRuns = recentRuns.filter((run) => run.status === "Released");
+  // Only the latest released run per series can be restated: the backend supersedes the series'
+  // released head, so offering an older released version would mismatch the run the operator picked.
+  const releasedRuns = latestReleasedRunsPerSeries(recentRuns);
   const restatementTarget = draft.restatementTargetRunId
     ? releasedRuns.find((run) => run.id === draft.restatementTargetRunId) ?? null
     : null;

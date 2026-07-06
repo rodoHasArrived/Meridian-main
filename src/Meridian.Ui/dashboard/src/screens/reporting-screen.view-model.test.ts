@@ -6,8 +6,10 @@ import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   buildRestatementReviewPanel,
   deriveRestatementSeriesJobId,
+  latestReleasedRunsPerSeries,
   resolveReportPackProfileKeyCommand,
-  useReportingScreenViewModel
+  useReportingScreenViewModel,
+  type ReportingRunStatusRow
 } from "@/screens/reporting-screen.view-model";
 import { reportingTaskModeLauncherLinks } from "@/screens/reporting-screen.task-mode-view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
@@ -1585,5 +1587,21 @@ describe("deriveRestatementSeriesJobId", () => {
   it("returns the series unchanged when the as-of suffix does not match", () => {
     expect(deriveRestatementSeriesJobId("series-without-date", "run-id", "2026-05-04")).toBe("series-without-date");
     expect(deriveRestatementSeriesJobId("series-x", "run-id", null)).toBe("series-x");
+  });
+});
+
+describe("latestReleasedRunsPerSeries", () => {
+  const row = (overrides: Partial<ReportingRunStatusRow>): ReportingRunStatusRow =>
+    ({ id: "run", status: "Released", runSeriesLabel: "series-a", runAttemptOrdinal: 1, ...overrides }) as ReportingRunStatusRow;
+
+  it("keeps only the highest-ordinal released run per series and drops non-released runs", () => {
+    const result = latestReleasedRunsPerSeries([
+      row({ id: "a-v1", runSeriesLabel: "series-a", runAttemptOrdinal: 1 }),
+      row({ id: "a-v2", runSeriesLabel: "series-a", runAttemptOrdinal: 2 }),
+      row({ id: "b-v1", runSeriesLabel: "series-b", runAttemptOrdinal: 1 }),
+      row({ id: "c-draft", runSeriesLabel: "series-c", runAttemptOrdinal: 1, status: "Draft" })
+    ]);
+
+    expect(result.map((entry) => entry.id).sort()).toEqual(["a-v2", "b-v1"]);
   });
 });

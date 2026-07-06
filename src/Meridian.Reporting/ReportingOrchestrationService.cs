@@ -371,9 +371,10 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             ? 1
             : priorRuns.Max(ResolveRunAttemptOrdinal) + 1;
 
-        // The "effective head" is the highest-ordinal run that is not Failed. Guarding on it rather
-        // than the absolute head keeps a still-released report protected even after a failed
-        // restatement attempt (whose Failed manifest would otherwise sit at the head and hide it).
+        // The "effective head" is the highest-ordinal run that is not Failed. It is both the lineage
+        // and diff basis (a Failed attempt has no content to compare against) and the guard subject,
+        // so a still-released report stays protected — and its grid diff intact — even after a failed
+        // restatement attempt whose Failed manifest would otherwise sit at the absolute head.
         var effectiveHead = priorRuns.FirstOrDefault(manifest => manifest.Status != ReportingRunStatus.Failed);
         var releasedHead = effectiveHead is { Status: ReportingRunStatus.Released } ? effectiveHead : null;
 
@@ -382,7 +383,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             var runId = BuildRunId(runSeriesId, nextOrdinal);
             if (reservedRunIds.TryAdd(runId, 0))
             {
-                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, priorRuns.FirstOrDefault(), releasedHead);
+                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, effectiveHead, releasedHead);
             }
 
             nextOrdinal++;

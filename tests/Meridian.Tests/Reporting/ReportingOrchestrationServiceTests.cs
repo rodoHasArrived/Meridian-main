@@ -149,6 +149,13 @@ public sealed class ReportingOrchestrationServiceTests
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
         store.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+
+        // An authorized restatement uses the released head as its prior basis (not the failed attempt),
+        // so its lineage and grid diff compare against the released report being superseded.
+        var authorized = await sut.ExecuteAsync(
+            contract with { AllowRestatement = true, RetryReason = "attempt two" },
+            CancellationToken.None);
+        authorized.PriorRunId.Should().Be(released.RunId);
     }
 
     private sealed class CappedListingRunStore : IReportingRunStore

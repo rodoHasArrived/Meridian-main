@@ -1737,6 +1737,27 @@ export function deriveRestatementSeriesJobId(
   return series;
 }
 
+/**
+ * Reduces run rows to the latest released run per series (highest attempt ordinal). Restatement
+ * always supersedes a series' released head, so only that head is a valid restatement target —
+ * offering an older released version would misrepresent which run the operator is superseding.
+ */
+export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): ReportingRunStatusRow[] {
+  const latest = new Map<string, ReportingRunStatusRow>();
+  for (const run of rows) {
+    if (run.status !== "Released") {
+      continue;
+    }
+
+    const existing = latest.get(run.runSeriesLabel);
+    if (!existing || run.runAttemptOrdinal > existing.runAttemptOrdinal) {
+      latest.set(run.runSeriesLabel, run);
+    }
+  }
+
+  return Array.from(latest.values());
+}
+
 export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
   return runs.map((run) => {
     const drilldownLinks = buildRunLinkRows(run);
