@@ -57,6 +57,13 @@ import {
   type CoverageGapsViewModel
 } from "@/screens/data-screen.coverage-gaps.view-model";
 import {
+  CellActionConfirmDialog,
+  CellActionTrigger,
+  ContextMenu,
+  useCellActions
+} from "@/screens/data-screen.cell-actions";
+import { useToast, type ToastApi } from "@/components/ui/toast";
+import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID,
@@ -2426,7 +2433,28 @@ function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxView
   );
 }
 
+/** Reveal the provider capability matrix region in response to a contextual "compare" action. */
+function revealCapabilityMatrix(toast: ToastApi, symbol?: string) {
+  const target = typeof document !== "undefined" ? document.getElementById("capability-matrix-title") : null;
+  if (!target) {
+    toast.warning("Provider capability matrix is not on this view.");
+    return;
+  }
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  toast.info(
+    "Provider capability matrix",
+    symbol ? `Comparing provider coverage relevant to ${symbol}.` : undefined
+  );
+}
+
 function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) {
+  const toast = useToast();
+  const cellActions = useCellActions({
+    toast,
+    onMasterSymbol: (symbol) => void panel.requestDraft(symbol),
+    onOpenCapabilityMatrix: (symbol) => revealCapabilityMatrix(toast, symbol),
+    onAfterMutation: () => void panel.refresh()
+  });
   return (
     <section aria-labelledby="coverage-gaps-title" className="workspace-region coverage-gaps-region">
       <Card>
@@ -2461,8 +2489,17 @@ function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) {
             <ul className="grid gap-2" aria-label="Unmastered active symbols">
               {panel.model.rows.map((row) => {
                 const draft = panel.drafts[row.symbol];
+                const context = {
+                  kind: "coverage-gap" as const,
+                  symbol: row.symbol,
+                  sourcesLabel: row.sourcesLabel
+                };
                 return (
-                  <li key={row.symbol} className="grid gap-1.5 text-sm">
+                  <li
+                    key={row.symbol}
+                    className="group grid gap-1.5 rounded-[2px] text-sm transition-colors hover:bg-muted/40"
+                    onContextMenu={(event) => cellActions.openFor(event, context)}
+                  >
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono font-semibold">{row.symbol}</span>
                       <span className="text-muted-foreground">active in {row.sourcesLabel}</span>
@@ -2476,6 +2513,11 @@ function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) {
                       >
                         {panel.draftingSymbol === row.symbol ? "Drafting…" : "Master this"}
                       </Button>
+                      <CellActionTrigger
+                        label={`Actions for ${row.symbol}`}
+                        onOpen={(event) => cellActions.openFor(event, context)}
+                        className="ml-auto"
+                      />
                       {panel.draftErrors[row.symbol] ? (
                         <span className="text-sm text-destructive" role="alert">{panel.draftErrors[row.symbol]}</span>
                       ) : null}
@@ -2514,11 +2556,29 @@ function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) {
           )}
         </CardContent>
       </Card>
+      <ContextMenu
+        open={cellActions.menu.open}
+        position={cellActions.menu.position}
+        items={cellActions.menu.items}
+        onClose={cellActions.menu.close}
+        label={cellActions.menu.label}
+      />
+      <CellActionConfirmDialog
+        confirm={cellActions.confirm}
+        running={cellActions.running}
+        onResolve={cellActions.resolveConfirm}
+      />
     </section>
   );
 }
 
 function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
+  const toast = useToast();
+  const cellActions = useCellActions({
+    toast,
+    onOpenCapabilityMatrix: (symbol) => revealCapabilityMatrix(toast, symbol),
+    onAfterMutation: () => void panel.refresh()
+  });
   return (
     <section aria-labelledby="data-quality-title" className="workspace-region data-quality-region">
       <Card>
@@ -2590,12 +2650,30 @@ function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
                 <div>
                   <h3 className="text-sm font-semibold">Unacknowledged anomalies</h3>
                   <ul className="mt-2 grid gap-1.5">
-                    {panel.model.unacknowledgedAnomalies.map((anomaly) => (
-                      <li key={anomaly.anomalyId} className="text-sm text-muted-foreground">
-                        <span className="font-mono font-semibold text-foreground">{anomaly.symbol}</span>{" "}
-                        {anomaly.anomalyType}: {anomaly.message}
-                      </li>
-                    ))}
+                    {panel.model.unacknowledgedAnomalies.map((anomaly) => {
+                      const context = {
+                        kind: "anomaly" as const,
+                        symbol: anomaly.symbol,
+                        anomalyId: anomaly.anomalyId,
+                        anomalyType: anomaly.anomalyType
+                      };
+                      return (
+                        <li
+                          key={anomaly.anomalyId}
+                          className="group flex items-center gap-2 rounded-[2px] text-sm text-muted-foreground transition-colors hover:bg-muted/40"
+                          onContextMenu={(event) => cellActions.openFor(event, context)}
+                        >
+                          <span className="min-w-0 flex-1 truncate">
+                            <span className="font-mono font-semibold text-foreground">{anomaly.symbol}</span>{" "}
+                            {anomaly.anomalyType}: {anomaly.message}
+                          </span>
+                          <CellActionTrigger
+                            label={`Actions for the ${anomaly.symbol} anomaly`}
+                            onOpen={(event) => cellActions.openFor(event, context)}
+                          />
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -2603,6 +2681,18 @@ function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
           )}
         </CardContent>
       </Card>
+      <ContextMenu
+        open={cellActions.menu.open}
+        position={cellActions.menu.position}
+        items={cellActions.menu.items}
+        onClose={cellActions.menu.close}
+        label={cellActions.menu.label}
+      />
+      <CellActionConfirmDialog
+        confirm={cellActions.confirm}
+        running={cellActions.running}
+        onResolve={cellActions.resolveConfirm}
+      />
     </section>
   );
 }
