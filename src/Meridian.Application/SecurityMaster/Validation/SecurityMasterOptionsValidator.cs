@@ -1,7 +1,7 @@
 using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Options;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Validation;
 
 /// <summary>
 /// Validates <see cref="SecurityMasterOptions"/> at startup so misconfigured

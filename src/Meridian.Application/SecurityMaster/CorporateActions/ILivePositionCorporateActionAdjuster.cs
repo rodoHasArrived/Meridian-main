@@ -1,4 +1,4 @@
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.CorporateActions;
 
 /// <summary>
 /// Result of applying corporate-action adjustments to a live open position.

@@ -1,7 +1,7 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Validation;
 
 public sealed class SecurityValidationGateService : ISecurityValidationGateService
 {

@@ -1,6 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.CorporateActions;
 
 internal static class CorporateActionValidation
 {

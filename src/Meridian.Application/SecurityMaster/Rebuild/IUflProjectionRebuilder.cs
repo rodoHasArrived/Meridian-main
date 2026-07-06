@@ -1,4 +1,4 @@
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Rebuild;
 
 /// <summary>
 /// Rebuilds UFL projections for a requested asset class.

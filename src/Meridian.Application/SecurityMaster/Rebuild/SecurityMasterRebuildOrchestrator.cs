@@ -2,7 +2,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Rebuild;
 
 public sealed class SecurityMasterRebuildOrchestrator
 {

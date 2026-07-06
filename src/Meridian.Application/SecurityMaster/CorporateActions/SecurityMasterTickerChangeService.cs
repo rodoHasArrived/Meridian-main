@@ -2,7 +2,7 @@ using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Logging;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.CorporateActions;
 
 /// <summary>
 /// Request to record a ticker change (e.g. FB→META) as a first-class security-master event.

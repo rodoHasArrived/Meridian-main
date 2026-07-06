@@ -302,7 +302,7 @@ public static class WorkstationServiceCollectionExtensions
             Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator>();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
-            Meridian.Application.SecurityMaster.SecurityProjectionRebuildHandler>());
+            Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.CoverageInvalidationHandler>());

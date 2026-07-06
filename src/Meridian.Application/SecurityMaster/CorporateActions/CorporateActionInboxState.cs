@@ -1,6 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.CorporateActions;
 
 /// <summary>Operator request to apply one staged inbox proposal.</summary>
 public sealed record CorporateActionInboxApplyRequest(

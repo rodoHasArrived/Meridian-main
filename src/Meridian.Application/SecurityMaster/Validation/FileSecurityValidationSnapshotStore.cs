@@ -6,7 +6,7 @@ using Meridian.Core.Serialization;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Validation;
 
 public interface ISecurityValidationSnapshotStore
 {

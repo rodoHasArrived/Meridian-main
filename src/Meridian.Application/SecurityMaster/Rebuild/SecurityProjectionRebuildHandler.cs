@@ -2,7 +2,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Rebuild;
 
 /// <summary>
 /// Published-revision side effect (<c>Order = 10</c>, runs first): refreshes the edited security's
