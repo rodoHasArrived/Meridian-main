@@ -514,6 +514,90 @@ Receive Activity
 * Evidence packages
 * Approval history
 
+### Exception Case Model
+
+Financial Operations exceptions should be treated as governed operating cases, not just break rows.
+Each exception should expose enough structured metadata for operators, controllers, reviewers, and
+auditors to understand who owns the issue, why it matters, what it blocks, and what evidence proves
+its resolution.
+
+Required exception fields include:
+
+| Field | Purpose |
+| --- | --- |
+| Owner | Named accountable operator, team, or reviewer responsible for next action. |
+| Queue | Current operating queue or work lane used for triage, assignment, escalation, and reporting. |
+| SLA due date | Date and time by which the exception must be resolved, escalated, waived, or re-baselined. |
+| Severity | Operational urgency such as informational, low, medium, high, or critical. |
+| Materiality | Financial significance using configured amount, percentage, fund, investor, report, or close thresholds. |
+| Root cause | Classified cause such as missing evidence, source mismatch, stale valuation, late file, booking error, timing difference, mapping issue, approval delay, or external-system defect. |
+| Source system | Originating custodian, administrator, bank, GL, provider, file, API, manual input, or derived Meridian process. |
+| Affected fund/book/period | Scoped fund, legal entity, portfolio, account, book, close period, and as-of date impacted by the exception. |
+| Blocked outputs | Close lane, journal posting, report approval, package delivery, NAV support, capital account statement, tax package, audit package, certified data mart export, or other output that cannot proceed while the exception is unresolved. |
+| Evidence status | Evidence posture such as missing, requested, received, validated, disputed, approved, frozen in manifest, or waived with approval. |
+
+Exception records should link directly to the Evidence Vault for support documents and request-list
+status, Ledger Explorer for journal and ledger impact, Report-Line Provenance Explorer for affected
+report numbers and packages, and the Operational Evidence Graph for the full source-to-output proof
+chain.
+
+### Exception Queue Views
+
+The Financial Operations control center should provide queue views that preserve one shared exception
+state model while letting operators focus on the next action required:
+
+| Queue view | Operating meaning |
+| --- | --- |
+| New | Newly created exceptions that need triage, owner assignment, materiality review, and blocked-output identification. |
+| Assigned | Exceptions with an accountable owner or team actively working the case. |
+| Waiting on evidence | Exceptions blocked by missing source records, documents, confirmations, administrator files, bank evidence, or reviewer support. |
+| Waiting on approval | Exceptions that have a proposed resolution, waiver, journal, report impact, or evidence package awaiting authorized approval. |
+| Resolved | Exceptions whose root cause, evidence, ledger/report impact, and audit trail are complete enough to unblock downstream outputs. |
+| Reopened | Previously resolved or waived exceptions returned to active work because new evidence, late activity, restatement, failed control, or reviewer challenge changed the conclusion. |
+| Waived | Exceptions intentionally accepted under a permissioned waiver with materiality rationale, approver, expiration or review date, blocked-output impact, and retained evidence. |
+
+### Escalation Behavior
+
+Escalation should be automatic and auditable when an exception blocks production financial outputs.
+If a case blocks period close, Meridian should mark the affected close lane as blocked, notify the
+owner and controller, show the blocker in close readiness, and prevent close sign-off until the case
+is resolved or formally waived. If a case blocks journal posting, Meridian should hold the journal in
+draft or pending state, prevent posting into locked or unsupported periods, and require evidence and
+approval before posting, reversal, or adjustment. If a case blocks report approval, Meridian should
+flag affected report lines and packages, route reviewers to the Report-Line Provenance Explorer, and
+prevent approval until the exception is resolved, waived, or documented as immaterial under policy.
+If a case blocks package delivery, Meridian should stop delivery release for affected recipients or
+packages, expose the blocked package in delivery readiness, and retain the escalation, waiver, or
+release decision in the audit trail.
+
+Every escalation should preserve the exception owner, queue, SLA due date, severity, materiality,
+root cause, source system, affected fund/book/period, blocked outputs, and evidence status so the
+Operational Evidence Graph can reconstruct the control decision later.
+
+### Roadmap Acceptance Criteria
+
+If the Financial Operations exception work becomes a committed roadmap item, a delivery row should
+be considered acceptable only when:
+
+* Exceptions can be created or derived from reconciliation, close, journal, report, delivery, and
+  evidence workflows with all required exception fields captured or explicitly marked unknown.
+* Operators can filter and manage new, assigned, waiting-on-evidence, waiting-on-approval, resolved,
+  reopened, and waived queues from the Financial Operations control center.
+* SLA, severity, materiality, owner, queue, root-cause, source-system, affected-scope,
+  blocked-output, and evidence-status changes are audit logged with timestamps and actors.
+* Close sign-off, journal posting, report approval, and package delivery surfaces show blocking
+  exceptions and enforce configured resolve-or-waive gates before production release.
+* Each exception links to relevant Evidence Vault records, Ledger Explorer records, Report-Line
+  Provenance Explorer records, and the Operational Evidence Graph without duplicating business
+  state across surfaces.
+* Waivers require permissioned approval, materiality rationale, retained evidence, and clear output
+  impact; reopened exceptions preserve the earlier resolution or waiver history.
+* Dashboards expose workload, aging, SLA breach, materiality, blocked-output, source-system, and
+  root-cause summaries by tenant, fund, book, period, owner, and queue.
+* Tests or acceptance evidence demonstrate at least one exception blocking close, one blocking
+  journal posting, one blocking report approval, and one blocking package delivery through resolve
+  or waive paths.
+
 ### Roadmap Productization
 
 `W5X-FINOPS-001` is the completed Financial Operations control-center milestone that turns
@@ -1571,6 +1655,28 @@ Meridian should reconcile across three dimensions.
 | Source-to-Source     | Custodian position vs administrator position |
 | Expected-to-Actual   | Expected coupon vs actual coupon received    |
 | Internal-to-Official | Meridian record vs general ledger            |
+
+Reconciliation output should flow into Financial Operations exception casework whenever an
+unmatched item, tolerance breach, stale input, missing document, disputed source value, approval
+gap, or ledger/report variance can affect close, journal posting, report approval, package
+delivery, NAV support, capital accounts, tax support, audit evidence, or certified exports.
+
+Each reconciliation exception should carry the same required case fields: owner, queue, SLA due
+date, severity, materiality, root cause, source system, affected fund/book/period, blocked outputs,
+and evidence status. These fields make reconciliation queues operationally useful rather than just
+analytical, and they allow managers to review workload, aging, breach risk, and production blockers
+by fund, book, period, owner, source system, and output type.
+
+Reconciliation queues should include views for new, assigned, waiting on evidence, waiting on
+approval, resolved, reopened, and waived exceptions. Resolution should require a root-cause
+classification, supporting evidence or approved waiver, explicit ledger/report/close impact, and a
+retained audit trail. Reopened exceptions should preserve the original resolution history and explain
+what new evidence, late activity, restatement, or reviewer challenge changed the state.
+
+Reconciliation should be linked into the proof surfaces that operators use to complete downstream
+work: Evidence Vault for source support and request lists, Ledger Explorer for journal and ledger
+impact, Report-Line Provenance Explorer for affected report numbers and packages, and the
+Operational Evidence Graph for source-to-output reconstruction.
 
 ## 10.7 Treasury Ledger Principles
 
