@@ -4115,6 +4115,7 @@ Meridian-main
 │   │   ├── AutomatedJournalDraftProjector.cs
 │   │   ├── AutomatedJournalEvent.cs
 │   │   ├── AutomatedJournalEventKind.cs
+│   │   ├── AutomatedJournalPostingTarget.cs
 │   │   ├── ChartOfAccounts.cs
 │   │   ├── ChartOfAccountsNode.cs
 │   │   ├── DailyPortfolioPriceMark.cs
@@ -4884,6 +4885,8 @@ Meridian-main
 │   │   │   │   │   │   ├── historical-chart.tsx
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
 │   │   │   │   │   │   ├── historical-chart.view-model.ts
+│   │   │   │   │   │   ├── layout-switcher.test.tsx
+│   │   │   │   │   │   ├── layout-switcher.tsx
 │   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
@@ -5053,6 +5056,8 @@ Meridian-main
 │   │   │   │   │   ├── companion-pane
 │   │   │   │   │   │   ├── chrome-bridge.test.ts
 │   │   │   │   │   │   ├── chrome-bridge.ts
+│   │   │   │   │   │   ├── open-registry.test.ts
+│   │   │   │   │   │   ├── open-registry.ts
 │   │   │   │   │   │   ├── opener-broadcast.ts
 │   │   │   │   │   │   ├── pane-window.test.ts
 │   │   │   │   │   │   └── pane-window.ts
@@ -5097,6 +5102,7 @@ Meridian-main
 │   │   │   │   │   ├── daily-control-tower.ts
 │   │   │   │   │   ├── dense-virtualization.test.ts
 │   │   │   │   │   ├── dense-virtualization.ts
+│   │   │   │   │   ├── density.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── format.test.ts
@@ -5114,6 +5120,8 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
+│   │   │   │   │   ├── saved-layouts.test.ts
+│   │   │   │   │   ├── saved-layouts.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
 │   │   │   │   │   ├── theme.test.ts
@@ -5170,6 +5178,7 @@ Meridian-main
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
+│   │   │   │   │   ├── daily-control-tower-screen.test.tsx
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
@@ -5202,8 +5211,10 @@ Meridian-main
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
+│   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
+│   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
 │   │   │   │   │   ├── operations-continuity-screen.tsx
@@ -5354,6 +5365,7 @@ Meridian-main
 │   │   │   ├── tailwind.config.ts
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
+│   │   │   ├── tsconfig.strict-null.json
 │   │   │   └── vite.config.ts
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
@@ -5601,7 +5613,9 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
+│   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.Stream.cs
+│   │   │   ├── WorkstationEndpoints.StructuredReportingExport.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -7126,6 +7140,7 @@ Meridian-main
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
+│   │   │   ├── AutomatedJournalPostingTargetTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
 │   │   │   └── PeriodCloseProjectorTests.cs
 │   │   ├── MoneyMarketFunds

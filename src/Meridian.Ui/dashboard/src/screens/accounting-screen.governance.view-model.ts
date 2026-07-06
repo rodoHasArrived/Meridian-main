@@ -2355,7 +2355,7 @@ export function useAccountingConfigurationViewModel(
         }
       : null;
     const selectedDryRunRuleVersion = dryRunPreview
-      ? workspace.postingRules.find((rule) => rule.ruleId === dryRunPreview.selectedRuleId)?.ruleVersion ?? "v1"
+      ? (workspace?.postingRules ?? []).find((rule) => rule.ruleId === dryRunPreview.selectedRuleId)?.ruleVersion ?? "v1"
       : null;
 
     return {

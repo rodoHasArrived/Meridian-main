@@ -3132,7 +3132,7 @@
     },
     {
       "path": "docs/product/web-ui-improvements-implementation-plan-2026-07.md",
-      "line_count": 354,
+      "line_count": 377,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4292,7 +4292,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 164,
+      "line_count": 170,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

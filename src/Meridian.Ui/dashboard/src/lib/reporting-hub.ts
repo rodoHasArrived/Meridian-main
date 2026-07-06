@@ -270,7 +270,7 @@ function buildDailyWorkItem(item: ReportingHubDailyWorkInput): ReportingHubDaily
   const nextActionLabel = item.primaryActionLabel.trim() || "Review";
   const proofLabel = buildProofLabel(evidenceGaps, item.secondaryActionLabel);
   const detailParts = [item.detail, dueLabel, evidenceGaps.length > 0 ? `${countUnit(evidenceGaps.length, "evidence gap")}` : ""]
-    .filter((part) => part.trim().length > 0);
+    .filter((part): part is string => part != null && part.trim().length > 0);
 
   return {
     workItemId: item.workItemId,

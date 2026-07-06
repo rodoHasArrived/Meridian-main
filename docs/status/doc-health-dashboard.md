@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
 - `Meridian Design System/components/charts/CandleChart.prompt.md`
 - `Meridian Design System/components/charts/ChartCard.prompt.md`
-- ... and 187 more
+- ... and 188 more
 
 ## Trend
 
