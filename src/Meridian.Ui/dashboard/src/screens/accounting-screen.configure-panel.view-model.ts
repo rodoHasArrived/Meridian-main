@@ -153,7 +153,7 @@ export function buildConfigureActivationSummary(
 ): ConfigureActivationSummary {
   const items: ConfigureChecklistItem[] = [];
 
-  for (const row of view.setupReadinessRows) {
+  for (const row of view.setupReadinessRows ?? []) {
     items.push({
       id: `setup-${row.id}`,
       label: row.label,
@@ -163,7 +163,7 @@ export function buildConfigureActivationSummary(
     });
   }
 
-  for (const issue of view.productionReadiness.blockerIssues) {
+  for (const issue of view.productionReadiness?.blockerIssues ?? []) {
     items.push({
       id: `blocker-${issue.id}`,
       label: issue.label,
@@ -310,16 +310,16 @@ export interface ChartPathSegment {
  * codes (e.g. `1200.Investments`) but nested paths may use `/`; we honor whichever the
  * operator is already using and default to `.`.
  */
-export function detectChartPathSeparator(path: string): string {
-  if (path.includes("/")) {
+export function detectChartPathSeparator(path: string | null | undefined): string {
+  if (path && path.includes("/")) {
     return "/";
   }
   return ".";
 }
 
 /** Break a chart path into cumulative breadcrumb segments for the tree/path builder. */
-export function buildChartPathSegments(path: string): ChartPathSegment[] {
-  const trimmed = path.trim();
+export function buildChartPathSegments(path: string | null | undefined): ChartPathSegment[] {
+  const trimmed = (path ?? "").trim();
   if (trimmed.length === 0) {
     return [];
   }
@@ -335,12 +335,12 @@ export function buildChartPathSegments(path: string): ChartPathSegment[] {
 }
 
 /** Append a new segment to a chart path using the path's existing separator. */
-export function appendChartPathSegment(path: string, segment: string): string {
-  const cleanSegment = segment.trim();
+export function appendChartPathSegment(path: string | null | undefined, segment: string | null | undefined): string {
+  const cleanSegment = (segment ?? "").trim();
+  const trimmed = (path ?? "").trim();
   if (cleanSegment.length === 0) {
-    return path;
+    return trimmed;
   }
-  const trimmed = path.trim();
   if (trimmed.length === 0) {
     return cleanSegment;
   }
