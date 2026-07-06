@@ -248,7 +248,7 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         if (referencePrice is null)
         {
-            WarnScaffoldPriceUsed(request.Symbol);
+            WarnScaffoldPriceUsed();
         }
 
         var fillPrice = referencePrice ?? _scaffoldMarketFillPrice;
@@ -278,7 +278,7 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// Emits a one-time loud warning when a fill is priced from the scaffold notional price
     /// instead of a real market price, so paper P&amp;L consumers cannot miss it.
     /// </summary>
-    private void WarnScaffoldPriceUsed(string symbol)
+    private void WarnScaffoldPriceUsed()
     {
         if (Interlocked.Exchange(ref _scaffoldPriceWarningIssued, 1) != 0)
         {
@@ -286,10 +286,10 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
 
         _logger.LogWarning(
-            "Paper gateway is filling market-style orders at the scaffold notional price {ScaffoldPrice} (first symbol: {Symbol}). " +
+            "Paper gateway is filling market-style orders at the scaffold notional price {ScaffoldPrice}. " +
             "No live feed price source is wired in, so paper P&L computed from these fills is not meaningful. " +
             "Tune via configuration section '{SectionKey}' or wire a live feed price source.",
-            _scaffoldMarketFillPrice, symbol, PaperTradingGatewayOptions.SectionKey);
+            _scaffoldMarketFillPrice, PaperTradingGatewayOptions.SectionKey);
     }
 
     /// <summary>

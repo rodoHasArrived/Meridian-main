@@ -78,7 +78,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
             // configured scaffold notional price applies (with a one-time warning).
             if (request.LimitPrice is null)
             {
-                WarnScaffoldPriceUsed(request.Symbol);
+                WarnScaffoldPriceUsed();
             }
 
             var report = new ExecutionReport
@@ -160,7 +160,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
     /// Emits a one-time loud warning when a market fill is priced from the scaffold
     /// notional price instead of a caller-provided simulated price.
     /// </summary>
-    private void WarnScaffoldPriceUsed(string symbol)
+    private void WarnScaffoldPriceUsed()
     {
         if (Interlocked.Exchange(ref _scaffoldPriceWarningIssued, 1) != 0)
         {
@@ -168,10 +168,10 @@ public sealed class PaperTradingGateway : IExecutionGateway
         }
 
         _logger.LogWarning(
-            "Paper execution gateway is filling market orders at the scaffold notional price {ScaffoldPrice} (first symbol: {Symbol}). " +
+            "Paper execution gateway is filling market orders at the scaffold notional price {ScaffoldPrice}. " +
             "No live feed price source is wired in, so paper P&L computed from these fills is not meaningful. " +
             "Tune via configuration section '{SectionKey}' or wire a live feed price source.",
-            _scaffoldMarketFillPrice, symbol, Adapters.PaperTradingGatewayOptions.SectionKey);
+            _scaffoldMarketFillPrice, Adapters.PaperTradingGatewayOptions.SectionKey);
     }
 
     private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)
