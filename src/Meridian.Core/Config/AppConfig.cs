@@ -68,7 +68,17 @@ public sealed record AppConfig(
     FeatureCapabilityOptions? FeatureCapabilities = null,
     FundOperationsPersistenceConfig? FundOperationsPersistence = null,
     ProviderModulesConfig? ProviderModules = null
-);
+)
+{
+    /// <summary>
+    /// Preserves top-level configuration sections this model does not declare (host-level
+    /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and
+    /// <c>Connectivity</c>) across load/save round-trips, so config mutation paths
+    /// (data-source/storage/symbol saves) do not silently drop operator-tuned host settings.
+    /// </summary>
+    [JsonExtensionData]
+    public Dictionary<string, System.Text.Json.JsonElement>? AdditionalSections { get; set; }
+}
 
 /// <summary>
 /// Configuration for the unified provider registry (Phase 1.2).
