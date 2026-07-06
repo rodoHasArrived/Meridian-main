@@ -691,8 +691,17 @@ public sealed class Ledger : IReadOnlyLedger
     public static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits)
     {
         ArgumentNullException.ThrowIfNull(account);
-        return LedgerInterop.CalculateNetBalance((int)account.AccountType, debits, credits);
+        return CalculateNetBalance(account.AccountType, debits, credits);
     }
+
+    /// <summary>
+    /// Calculates the normal-balance net amount for an account type using the shared posting kernel.
+    /// This is the single sanctioned entrypoint for debit/credit balance math; callers must not
+    /// reimplement the <c>Asset/Expense =&gt; debits - credits</c> rule locally (see the
+    /// <c>LedgerNetBalanceCentralizationTests</c> architecture guard).
+    /// </summary>
+    public static decimal CalculateNetBalance(LedgerAccountType accountType, decimal debits, decimal credits)
+        => LedgerInterop.CalculateNetBalance((int)accountType, debits, credits);
 
     private static int LastAccountBalanceSnapshotAtOrBefore(
         IReadOnlyList<AccountBalanceSnapshot> snapshots,

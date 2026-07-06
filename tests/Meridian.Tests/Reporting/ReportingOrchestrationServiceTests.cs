@@ -50,6 +50,61 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_BlocksSilentRegenerationOfReleasedManifest()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var contract = new ReportingJobContract("job-restate", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var released = await ExecuteAndReleaseAsync(sut, contract);
+
+        var act = async () => await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+        sut.GetAudit(released.RunId).Should().Contain(e => e.Action == "RestatementBlocked");
+        sut.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_RequiresRetryReasonForAuthorizedRestatement()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var contract = new ReportingJobContract("job-restate", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var released = await ExecuteAndReleaseAsync(sut, contract);
+
+        var act = async () => await sut.ExecuteAsync(contract with { AllowRestatement = true }, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires a RetryReason*");
+        sut.GetAudit(released.RunId).Should().Contain(e => e.Action == "RestatementBlocked");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AllowsAuditableRestatementWhenAuthorized()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var contract = new ReportingJobContract("job-restate", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var released = await ExecuteAndReleaseAsync(sut, contract);
+
+        var restatement = await sut.ExecuteAsync(
+            contract with { AllowRestatement = true, RetryReason = "Q2 NAV correction" },
+            CancellationToken.None);
+
+        restatement.RunId.Should().Be("job-restate-20260501-v2");
+        restatement.PriorRunId.Should().Be(released.RunId);
+        sut.GetAudit(released.RunId).Should().Contain(e =>
+            e.Action == "RestatementAuthorized" && e.Notes.Contains("Q2 NAV correction"));
+    }
+
+    private static async Task<ReportingOutputManifest> ExecuteAndReleaseAsync(
+        ReportingOrchestrationService sut,
+        ReportingJobContract contract)
+    {
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+        await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.InReview, "bob", "Reviewer", "review", CancellationToken.None);
+        await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Approved, "cora", "ComplianceOfficer", "approved", CancellationToken.None);
+        await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Released, "dan", "OperationsLead", "release", CancellationToken.None);
+        return sut.GetManifest(manifest.RunId)!;
+    }
+
+    [Fact]
     public async Task ExecuteDueSchedulesAsync_OnlyRunsDueSchedulesInStableOrder()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);

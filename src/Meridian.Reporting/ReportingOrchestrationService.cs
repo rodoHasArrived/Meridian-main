@@ -76,6 +76,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         try
         {
+            GuardReleasedRestatement(contract, version);
+
             for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -251,6 +253,50 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         AppendAudit(runId, "ApprovalTransition", actor, $"{current.Status}->{target}; role={role}; notes={notes}");
         await PersistAsync(updated, cancellationToken).ConfigureAwait(false);
         return true;
+    }
+
+    /// <summary>
+    /// Prevents a Released manifest at the head of a run series from being silently superseded by a
+    /// freshly generated run. Regenerating a released report is a governed restatement: the caller
+    /// must opt in via <see cref="ReportingJobContract.AllowRestatement"/> and supply a
+    /// <see cref="ReportingJobContract.RetryReason"/>. Both the blocked and the authorized paths are
+    /// written to the released run's audit trail so the action is never silent.
+    /// </summary>
+    private void GuardReleasedRestatement(ReportingJobContract contract, ReportingRunVersionPlan version)
+    {
+        if (version.PriorManifest is not { Status: ReportingRunStatus.Released } released)
+        {
+            return;
+        }
+
+        if (!contract.AllowRestatement)
+        {
+            AppendAudit(
+                released.RunId,
+                "RestatementBlocked",
+                contract.RequestedBy,
+                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=released manifest requires an explicit restatement action");
+            throw new InvalidOperationException(
+                $"Run series '{version.RunSeriesId}' has a Released manifest '{released.RunId}'. Regenerating it requires an explicit restatement (set AllowRestatement and supply a RetryReason).");
+        }
+
+        var retryReason = NormalizeOptional(contract.RetryReason);
+        if (retryReason is null)
+        {
+            AppendAudit(
+                released.RunId,
+                "RestatementBlocked",
+                contract.RequestedBy,
+                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=restatement requires a RetryReason");
+            throw new InvalidOperationException(
+                $"Restating Released manifest '{released.RunId}' requires a RetryReason describing the restatement.");
+        }
+
+        AppendAudit(
+            released.RunId,
+            "RestatementAuthorized",
+            contract.RequestedBy,
+            $"restatementRun={version.RunId}; runSeries={version.RunSeriesId}; retryReason={retryReason}");
     }
 
     private static bool IsTransitionAllowed(ReportingRunStatus from, ReportingRunStatus to)

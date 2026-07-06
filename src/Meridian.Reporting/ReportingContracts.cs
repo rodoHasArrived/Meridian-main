@@ -113,7 +113,8 @@ public sealed record ReportingJobContract(
     string? BrandingThemeId = null,
     ReportBrandingThemeDto? BrandingTheme = null,
     ReportAccessPolicyDto? AccessPolicy = null,
-    string? RetryReason = null);
+    string? RetryReason = null,
+    bool AllowRestatement = false);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,

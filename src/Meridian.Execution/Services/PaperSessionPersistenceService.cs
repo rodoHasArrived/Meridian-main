@@ -968,7 +968,7 @@ public sealed class PaperSessionPersistenceService
                 line.Account.Symbol,
                 line.Account.FinancialAccountId);
             balances.TryGetValue(account, out var balance);
-            balances[account] = balance + CalculateNormalBalanceDelta(accountType, line.Debit, line.Credit);
+            balances[account] = balance + Meridian.Ledger.Ledger.CalculateNetBalance(accountType, line.Debit, line.Credit);
         }
 
         return balances;
@@ -998,14 +998,6 @@ public sealed class PaperSessionPersistenceService
             }
         }
     }
-
-    private static decimal CalculateNormalBalanceDelta(
-        LedgerAccountType accountType,
-        decimal debit,
-        decimal credit)
-        => accountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debit - credit
-            : credit - debit;
 
     private static DateTimeOffset? ResolveLastOrderUpdatedAt(IReadOnlyList<OrderState> orderHistory)
     {
