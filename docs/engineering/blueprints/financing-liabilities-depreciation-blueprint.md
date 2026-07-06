@@ -545,7 +545,7 @@ day-count kernel for `dcf` and floating all-in-rate resolution.
 
 ## UI Design
 
-**Backend + browser-workstation feature.** UI is browser-first per `CLAUDE.md` (WPF deferred).
+**Backend + workstation feature.** UI ships across both active lanes per `CLAUDE.md`; WPF parity is tracked as `W8-WPF-PARITY-001`.
 Surface additions are read-model tiles on the existing **Accounting** screen
 (`src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts`): a "Financing & Fixed
 Assets" section listing open repos, borrowings, and the fixed-asset register with net book value. No

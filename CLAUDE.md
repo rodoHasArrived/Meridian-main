@@ -12,7 +12,7 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 - strategy, backtesting, paper validation, and execution workflows,
 - risk, ledger, reconciliation, approval, and governed reporting surfaces,
 - a browser-based operator workstation,
-- a deferred WPF desktop workstation retained for existing compatibility, validation, and maintenance,
+- an active WPF desktop workstation (co-equal UI lane) whose current focus is web-UI parity over shared contracts,
 - MCP and AI workflow assets for repository navigation and task automation.
 
 ## Critical Rules
@@ -41,13 +41,16 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
   charter. Treat prior baselines and named productization targets as roadmap/status evidence, not
   development ceilings; expansion lanes can proceed when current source, roadmap, or user direction
   supports them.
-- Active operator UI work is browser-first in `src/Meridian.Ui/dashboard/`; WPF product/UI work in
-  `src/Meridian.Wpf/` is deferred until explicitly reactivated.
+- Operator UI work runs across two active, co-equal lanes: the browser workstation in
+  `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+  The WPF lane's immediate focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`); see
+  `docs/development/wpf-web-ui-alignment-plan.md`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
   `src/Meridian.Ui.Shared/`.
-- Keep browser workflows and retained WPF compatibility backed by shared contracts, read models, and
-  API seams where the product behavior is common.
+- Keep both the browser and WPF workflows backed by shared contracts, read models, and API seams so
+  neither client forks product state; new WPF parity surfaces consume the shared seam before
+  composing presentation.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation may continue for the browser workstation.
@@ -93,7 +96,7 @@ gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotn
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` - shared UI/API read-model surface
-- `src/Meridian.Wpf/` - deferred Windows desktop shell retained for compatibility, maintenance, and validation
+- `src/Meridian.Wpf/` - active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity
 - `src/Meridian.Application/` - orchestration and pipelines
 - `src/Meridian.Infrastructure/` - provider and integration adapters
 - `src/Meridian.Storage/` - WAL, archival, packaging, and durability paths
