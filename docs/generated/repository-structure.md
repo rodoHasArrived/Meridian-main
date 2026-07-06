@@ -884,7 +884,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -999,6 +998,8 @@ Meridian-main
 ├── build
 │   ├── ci
 │   │   └── lane-manifest.json
+│   ├── config
+│   │   └── file-size-baseline.json
 │   ├── dotnet
 │   │   ├── DocGenerator
 │   │   │   ├── DocGenerator.csproj
@@ -1056,6 +1057,7 @@ Meridian-main
 │       │   ├── promptfoo-adapter.py
 │       │   └── promptfoo_adapter.py
 │       ├── ci
+│       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
@@ -1314,6 +1316,7 @@ Meridian-main
 │   │   ├── meridian-development-intelligence-framework.md
 │   │   ├── meridian-domain-model.md
 │   │   ├── meridian-vision.md
+│   │   ├── module-conventions.md
 │   │   ├── module-map.md
 │   │   ├── mvvm-guidelines.md
 │   │   ├── operator-observability-dashboard.md
@@ -3177,8 +3180,6 @@ Meridian-main
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   ├── SessionStats.cs
 │   │   │   │   └── Trade.cs
-│   │   │   ├── Reconciliation
-│   │   │   │   └── ReconciliationDomainModels.cs
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── IPositionSnapshotStore.cs
 │   │   │   ├── MarketDataModels.cs
@@ -3735,8 +3736,6 @@ Meridian-main
 │   │   │   ├── FileStatementReconciliationCheckpointStore.cs
 │   │   │   ├── ReconciliationContextContracts.cs
 │   │   │   ├── ReconciliationContractCatalog.cs
-│   │   │   ├── ReconciliationContracts.cs
-│   │   │   ├── ReconciliationEngine.cs
 │   │   │   ├── ReconciliationEngineService.cs
 │   │   │   ├── ReconciliationOrchestrationResilience.cs
 │   │   │   ├── ReconciliationServiceRegistration.cs
@@ -4115,6 +4114,7 @@ Meridian-main
 │   │   ├── AutomatedJournalDraftProjector.cs
 │   │   ├── AutomatedJournalEvent.cs
 │   │   ├── AutomatedJournalEventKind.cs
+│   │   ├── AutomatedJournalPostingTarget.cs
 │   │   ├── ChartOfAccounts.cs
 │   │   ├── ChartOfAccountsNode.cs
 │   │   ├── DailyPortfolioPriceMark.cs
@@ -4517,11 +4517,13 @@ Meridian-main
 │   │   │   │   ├── V_ledger_019__fund_profile_tenancy.sql
 │   │   │   │   ├── V_ledger_020__fund_scope_tenant_columns.sql
 │   │   │   │   ├── V_ledger_021__operations_continuity_tenant_column.sql
-│   │   │   │   └── V_ledger_022__tenant_lower_indexes.sql
+│   │   │   │   ├── V_ledger_022__tenant_lower_indexes.sql
+│   │   │   │   └── V_ledger_023__journal_as_of_indexes.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
+│   │   │   ├── LedgerJournalStoreHydrationExtensions.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
 │   │   │   ├── LedgerMigrationRunner.cs
 │   │   │   ├── LedgerPeriodPostingGuard.cs
@@ -5199,8 +5201,10 @@ Meridian-main
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
+│   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
+│   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
 │   │   │   │   │   ├── operations-continuity-screen.tsx
@@ -6495,6 +6499,21 @@ Meridian-main
 │   └── README.md
 ├── tests
 │   ├── fixtures
+│   │   ├── corporate-actions
+│   │   │   └── golden
+│   │   │       ├── aapl-split-4to1-2020.json
+│   │   │       ├── alias-normalization-mixed.json
+│   │   │       ├── bond-call-101-5.json
+│   │   │       ├── cash-stock-merger-2018.json
+│   │   │       ├── dividend-amended-supersede.json
+│   │   │       ├── dividend-cancelled-after-announce.json
+│   │   │       ├── dividend-missing-prior-bar.json
+│   │   │       ├── dividend-no-position-context.json
+│   │   │       ├── ge-reverse-split-1for8-2021.json
+│   │   │       ├── KNOWN-DEFECTS.md
+│   │   │       ├── mbs-factor-paydown.json
+│   │   │       ├── special-dividend-25pct-synthetic.json
+│   │   │       └── t-wbd-spinoff-2022.json
 │   │   ├── portfolio
 │   │   │   ├── source-payloads
 │   │   │   │   ├── bank-statement-2026-06-04.csv
@@ -6517,7 +6536,11 @@ Meridian-main
 │   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CanonicalBacktestResultNormalizerTests.cs
+│   │   ├── CorporateActionAdjustmentPropertyTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
+│   │   ├── CorporateActionGoldenAdjustmentTests.cs
+│   │   ├── CorporateActionKnownDefectTests.cs
+│   │   ├── CorporateActionSeriesInvariants.cs
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
@@ -7102,6 +7125,7 @@ Meridian-main
 │   │   │   ├── ProviderGoldenPathTransactionLedgerReconciliationTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
+│   │   │   ├── AutomatedJournalPostingTargetTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
 │   │   │   └── PeriodCloseProjectorTests.cs
 │   │   ├── MoneyMarketFunds
@@ -7205,8 +7229,12 @@ Meridian-main
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── CorporateActionEffectiveStateProjectorTests.cs
+│   │   │   ├── CorporateActionGoldenLedgerTests.cs
 │   │   │   ├── CorporateActionInboxStateTests.cs
 │   │   │   ├── CorporateActionIngestOrchestratorTests.cs
+│   │   │   ├── CorporateActionLedgerInvariants.cs
+│   │   │   ├── CorporateActionLedgerKnownDefectTests.cs
+│   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
@@ -7275,6 +7303,7 @@ Meridian-main
 │   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
+│   │   │   ├── LedgerJournalStoreHydrationTests.cs
 │   │   │   ├── LedgerJournalStoreTests.cs
 │   │   │   ├── LedgerPostgresTestDatabase.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
@@ -7817,6 +7846,10 @@ Meridian-main
 │   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   └── test_wpf_msix_manifest.py
+│   ├── Shared
+│   │   └── CorporateActions
+│   │       ├── GoldenCorporateActionScenario.cs
+│   │       └── GoldenCorporateActionScenarioLoader.cs
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md
