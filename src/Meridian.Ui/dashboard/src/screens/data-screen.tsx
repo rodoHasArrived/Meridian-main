@@ -37,7 +37,6 @@ import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-supp
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { workspaceForPath } from "@/lib/workspace";
 import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
 import { useDataQualityPanel } from "@/screens/data-screen.data-quality.view-model";
@@ -495,7 +494,6 @@ export function DataScreen({
                   ariaLabel={vm.providerSection.tableLabel}
                   caption={vm.providerSection.description}
                   maxVisibleRows={100}
-                  virtualization={denseTableVirtualization(vm.providerSection.rows.length)}
                 />
                 </div>
                 <ProviderDetailPanel
@@ -543,7 +541,6 @@ export function DataScreen({
                   ariaLabel={vm.backfillSection.tableLabel}
                   caption={vm.backfillSection.description}
                   maxVisibleRows={100}
-                  virtualization={denseTableVirtualization(vm.backfillSection.rows.length)}
                 />
               ) : (
                 <EmptyState state={vm.backfillSection.emptyState} />
@@ -579,7 +576,6 @@ export function DataScreen({
                   ariaLabel={vm.exportSection.tableLabel}
                   caption={vm.exportSection.description}
                   maxVisibleRows={100}
-                  virtualization={denseTableVirtualization(vm.exportSection.rows.length)}
                 />
               ) : (
                 <EmptyState state={vm.exportSection.emptyState} />
