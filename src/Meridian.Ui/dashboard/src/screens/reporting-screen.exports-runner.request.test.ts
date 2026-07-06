@@ -23,6 +23,7 @@ function draft(overrides: Partial<ExportsReportRunDraftState> = {}): ExportsRepo
     restatementTemplateId: "",
     restatementJobId: "",
     restatementAsOfDate: "",
+    restatementDatasetSourceId: "",
     ...overrides
   };
 }
@@ -44,6 +45,7 @@ describe("buildExportsReportRunRequest restatement authorization", () => {
         restatementTemplateId: "investor-monthly-statement",
         restatementJobId: "adhoc-investor-20260504153000123",
         restatementAsOfDate: "2026-05-04",
+        restatementDatasetSourceId: "portfolio-reporting-cuts",
         retryReason: "  Q2 NAV correction  "
       })
     );
@@ -53,6 +55,8 @@ describe("buildExportsReportRunRequest restatement authorization", () => {
     expect(request.jobId).toBe("adhoc-investor-20260504153000123");
     expect(request.asOfDate).toBe("2026-05-04");
     expect(request.templateId).toBe("investor-monthly-statement");
+    // Reuses the released run's dataset source so the restatement diffs against the same data.
+    expect(request.datasetSourceId).toBe("portfolio-reporting-cuts");
     expect(request.retryReason).toBe("Q2 NAV correction");
   });
 

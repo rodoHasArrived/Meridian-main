@@ -32,6 +32,7 @@ export interface ExportsReportRunDraftState {
   restatementTemplateId: string;
   restatementJobId: string;
   restatementAsOfDate: string;
+  restatementDatasetSourceId: string;
 }
 
 /** Identity carried when the operator authorizes restating a specific released run. */
@@ -40,6 +41,7 @@ export interface RestatementTargetSelection {
   templateId: string;
   jobId: string;
   asOfDate: string;
+  datasetSourceId: string;
 }
 
 interface ExportsReportRunnerProps {
@@ -92,7 +94,8 @@ export function ExportsReportRunner({
             runId: target.id,
             templateId: target.templateId,
             jobId: target.restatementJobId,
-            asOfDate: target.restatementAsOfDate
+            asOfDate: target.restatementAsOfDate,
+            datasetSourceId: target.restatementDatasetSourceId
           }
         : null
     );

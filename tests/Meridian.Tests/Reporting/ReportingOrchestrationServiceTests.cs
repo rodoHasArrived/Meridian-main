@@ -105,6 +105,48 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_DetectsReleasedSeriesHeadWhenGloballyCappedListingHidesIt()
+    {
+        // A durable store whose ListRuns() is globally capped and does NOT surface older runs.
+        var store = new CappedListingRunStore();
+        var contract = new ReportingJobContract("job-capped", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        // Release the series through one instance; the manifest lives in the store but is hidden by ListRuns().
+        var seeding = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var released = await ExecuteAndReleaseAsync(seeding, contract);
+
+        // A fresh instance has no in-memory manifests, so it must resolve the released head from the
+        // store by series-run-id probing rather than the capped listing.
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var act = async () => await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+        // The released manifest must not have been overwritten by a regenerated v1.
+        store.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+    }
+
+    private sealed class CappedListingRunStore : IReportingRunStore
+    {
+        private readonly Dictionary<string, ReportingOutputManifest> manifests = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, IReadOnlyList<ReportingRunAuditEntry>> audits = new(StringComparer.OrdinalIgnoreCase);
+
+        // Simulate a globally capped listing that omits older runs (e.g. many newer runs in other series).
+        public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) => [];
+
+        public ReportingOutputManifest? GetManifest(string runId) => manifests.GetValueOrDefault(runId);
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
+            audits.TryGetValue(runId, out var entries) ? entries : [];
+
+        public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> auditTrail, CancellationToken ct = default)
+        {
+            manifests[manifest.RunId] = manifest;
+            audits[manifest.RunId] = auditTrail;
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
     public async Task ExecuteDueSchedulesAsync_OnlyRunsDueSchedulesInStableOrder()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);

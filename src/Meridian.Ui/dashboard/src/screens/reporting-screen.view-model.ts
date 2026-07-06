@@ -288,6 +288,7 @@ export interface ReportingRunStatusRow {
   // Raw identity used to target this run's series when authorizing a restatement.
   restatementJobId: string;
   restatementAsOfDate: string;
+  restatementDatasetSourceId: string;
   attemptLabel: string;
   runAttemptLabel: string;
   latestGeneratedLabel: string;
@@ -1756,6 +1757,7 @@ export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): Report
       asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
       restatementJobId: deriveRestatementSeriesJobId(run.runSeriesId, run.runId, run.asOfDate),
       restatementAsOfDate: run.asOfDate?.trim() ?? "",
+      restatementDatasetSourceId: run.reportWriterDatasetSourceId?.trim() ?? "",
       attemptLabel: `${run.attemptCount} attempt${run.attemptCount === 1 ? "" : "s"}`,
       runAttemptLabel: buildRunAttemptLabel(run),
       latestGeneratedLabel: buildLatestGeneratedLabel(run),

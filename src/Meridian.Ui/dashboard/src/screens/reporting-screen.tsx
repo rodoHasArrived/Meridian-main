@@ -591,6 +591,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       restatementTemplateId: target?.templateId ?? "",
       restatementJobId: target?.jobId ?? "",
       restatementAsOfDate: target?.asOfDate ?? "",
+      restatementDatasetSourceId: target?.datasetSourceId ?? "",
       // Clear any carried reason when the operator cancels the restatement.
       retryReason: target ? current.retryReason : ""
     }));
@@ -3014,7 +3015,8 @@ function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceRespons
     restatementTargetRunId: "",
     restatementTemplateId: "",
     restatementJobId: "",
-    restatementAsOfDate: ""
+    restatementAsOfDate: "",
+    restatementDatasetSourceId: ""
   };
 }
 
@@ -3042,6 +3044,9 @@ export function buildExportsReportRunRequest(
       asOfDate: draft.restatementAsOfDate,
       maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
       requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
+      // Reuse the released run's dataset source so the restatement renders and diffs against the
+      // same data, not the default retained dataset.
+      datasetSourceId: normalizeOptionalDatasetSourceId(draft.restatementDatasetSourceId),
       retryReason: draft.retryReason.trim() || null,
       allowRestatement: true
     };

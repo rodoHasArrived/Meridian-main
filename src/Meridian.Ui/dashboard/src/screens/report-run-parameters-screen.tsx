@@ -76,7 +76,8 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     restatementTargetRunId: "",
     restatementTemplateId: "",
     restatementJobId: "",
-    restatementAsOfDate: ""
+    restatementAsOfDate: "",
+    restatementDatasetSourceId: ""
   }));
   const [status, setStatus] = useState<ReportingCommandStatus | null>(null);
   const [manualDrafts, setManualDrafts] = useState<ManualJournalEntryDraft[]>([]);
@@ -134,6 +135,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       restatementTemplateId: target?.templateId ?? "",
       restatementJobId: target?.jobId ?? "",
       restatementAsOfDate: target?.asOfDate ?? "",
+      restatementDatasetSourceId: target?.datasetSourceId ?? "",
       retryReason: target ? current.retryReason : ""
     }));
   };

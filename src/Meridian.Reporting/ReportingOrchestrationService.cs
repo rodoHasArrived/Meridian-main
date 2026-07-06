@@ -362,8 +362,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private ReportingRunVersionPlan AllocateRunVersion(ReportingJobContract contract)
     {
         var runSeriesId = BuildRunSeriesId(contract);
-        var priorRuns = ListKnownManifests()
-            .Where(manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase))
+        var priorRuns = ResolveSeriesManifests(runSeriesId)
             .OrderByDescending(ResolveRunAttemptOrdinal)
             .ThenByDescending(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -383,16 +382,46 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         }
     }
 
-    private IReadOnlyList<ReportingOutputManifest> ListKnownManifests()
+    /// <summary>
+    /// Resolves every run in a series exhaustively. The durable store is probed by the series'
+    /// deterministic run ids (<c>runSeriesId</c>, <c>runSeriesId-v2</c>, …) via <c>GetManifest</c>
+    /// rather than the globally capped <c>ListRuns</c>, so an older released head is never missed
+    /// when the store holds many newer runs in other series — which would otherwise let a
+    /// regeneration silently overwrite a released manifest instead of tripping the restatement guard.
+    /// </summary>
+    private IReadOnlyList<ReportingOutputManifest> ResolveSeriesManifests(string runSeriesId)
     {
-        IEnumerable<ReportingOutputManifest> stored = runStore is null
-            ? []
-            : runStore.ListRuns(200).Select(static snapshot => snapshot.Manifest);
-        return manifests.Values
-            .Concat(stored)
-            .GroupBy(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
+        var found = new Dictionary<string, ReportingOutputManifest>(StringComparer.OrdinalIgnoreCase);
+
+        // In-process manifests for this series (may not be persisted yet).
+        foreach (var manifest in manifests.Values.Where(
+            manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase)))
+        {
+            found[manifest.RunId] = manifest;
+        }
+
+        if (runStore is not null)
+        {
+            // Run ids in a series are contiguous by ordinal, so probe until an ordinal exists in
+            // neither the store nor memory. Bounded by the number of versions, not the store size.
+            for (var ordinal = 1; ; ordinal++)
+            {
+                var runId = BuildRunId(runSeriesId, ordinal);
+                var stored = runStore.GetManifest(runId);
+                if (stored is not null)
+                {
+                    found.TryAdd(runId, stored);
+                    continue;
+                }
+
+                if (!found.ContainsKey(runId))
+                {
+                    break;
+                }
+            }
+        }
+
+        return found.Values.ToArray();
     }
 
     private static ImmutableArray<ReportWriterGridDiffDto> BuildReportWriterGridDiffs(
