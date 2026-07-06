@@ -1,3 +1,4 @@
+import { formatCompactCurrency as formatCurrency } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
@@ -523,20 +524,6 @@ function ownershipToneRowClassName(tone: FamilyOfficeTone): string {
 
 function entityDisplayName(entityStructure: FamilyOfficeEntityStructure, entityId: string | null): string {
   return entityStructure.entities.find((entity) => entity.entityId === entityId)?.displayName ?? "Unmapped entity";
-}
-
-function formatCurrency(value: number): string {
-  const absoluteValue = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (absoluteValue >= 1_000_000) {
-    return `${sign}$${(absoluteValue / 1_000_000).toFixed(1)}M`;
-  }
-
-  if (absoluteValue >= 1_000) {
-    return `${sign}$${(absoluteValue / 1_000).toFixed(1)}K`;
-  }
-
-  return `${sign}$${absoluteValue.toFixed(0)}`;
 }
 
 function formatPercent(value: number): string {

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 namespace Meridian.Ui.Services;
 
 /// <summary>
-/// Default credential service for the shared UI services layer.
-/// Platform-specific projects (WPF) override this with their own implementations
-/// by setting the Instance property during app startup.
+/// Default no-op credential service for the shared UI services layer.
+/// Hosts with real credential storage implement
+/// <see cref="Contracts.ICredentialService"/> (see <c>Meridian.Wpf.Services.CredentialService</c>);
+/// shared code holding only this default gets no-op behaviour.
 /// </summary>
 public class CredentialService
 {

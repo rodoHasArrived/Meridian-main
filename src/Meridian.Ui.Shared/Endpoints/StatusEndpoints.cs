@@ -4,6 +4,7 @@ using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -202,7 +203,11 @@ public static class StatusEndpoints
         .Produces(200)
         .Produces(503);
 
-        // Server-Sent Events endpoint for real-time dashboard updates
+        // Server-Sent Events endpoint for real-time dashboard updates.
+        // Publish cadence is operator-tunable via configuration ("Status:SsePublishIntervalMs");
+        // non-positive values would spin or throw in the publish loop, so they fall back to the default.
+        var configuredSsePublishIntervalMs = app.Configuration.GetValue<int?>("Status:SsePublishIntervalMs");
+        var ssePublishIntervalMs = configuredSsePublishIntervalMs is > 0 ? configuredSsePublishIntervalMs.Value : 2000;
         app.MapGet("/api/events/stream", async (HttpContext ctx, CancellationToken ct) =>
         {
             ctx.Response.ContentType = "text/event-stream";
@@ -235,7 +240,7 @@ public static class StatusEndpoints
                     var json = JsonSerializer.Serialize(ssePayload, sseJsonOptions);
                     await ctx.Response.WriteAsync($"data: {json}\n\n", ct).ConfigureAwait(false);
                     await ctx.Response.Body.FlushAsync(ct).ConfigureAwait(false);
-                    await Task.Delay(2000, ct).ConfigureAwait(false);
+                    await Task.Delay(ssePublishIntervalMs, ct).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)

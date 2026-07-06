@@ -98,7 +98,7 @@ diagrams:
       - W5-ACCT-001
       - W5-MASSET-001
     update_when:
-      - Product system context, active operator surfaces, or external integration posture changes.
+      - Product system context, browser/WPF lane status, or external integration posture changes.
       - The W1-W5 operational-record baseline changes.
       - Visible root workstation navigation changes.
   - id: DIA-OPERATIONAL-RECORD-FLOW

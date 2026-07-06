@@ -33,7 +33,7 @@ public sealed class ApiClientService : IDisposable
 
     private ApiClientService()
     {
-        _baseUrl = "http://localhost:8080";
+        _baseUrl = ApiEndpointDefaults.LocalApiBaseUrl;
         _timeoutSeconds = 30;
         _backfillTimeoutMinutes = 60;
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
@@ -69,7 +69,7 @@ public sealed class ApiClientService : IDisposable
         if (settings == null)
             return;
 
-        var newUrl = settings.ServiceUrl ?? "http://localhost:8080";
+        var newUrl = settings.ServiceUrl ?? ApiEndpointDefaults.LocalApiBaseUrl;
         var newTimeout = settings.ServiceTimeoutSeconds > 0 ? settings.ServiceTimeoutSeconds : 30;
         var newBackfillTimeout = settings.BackfillTimeoutMinutes > 0 ? settings.BackfillTimeoutMinutes : 60;
 

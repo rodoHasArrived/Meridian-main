@@ -635,6 +635,73 @@ public sealed class OrderManagementSystemTests : IDisposable
     }
 
     [Fact]
+    public async Task PlaceOrderAsync_WithLiveBrokerAndClientOverrideMetadata_DoesNotBypassOperatorControls()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var bypassOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Operator approved emergency closeout.",
+            CreatedBy: "ops",
+            Symbol: "AAPL",
+            StrategyId: "strategy-live",
+            RunId: "run-live-001"));
+        await controls.SetCircuitBreakerAsync(
+            isOpen: true,
+            reason: "Operator halt",
+            changedBy: "ops");
+
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Approved("audit://live/run-live-001"));
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            auditTrail: auditTrail,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            StrategyId = "strategy-live",
+            FundAccountId = LiveFundAccountId,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "ops",
+                ["correlationId"] = "act-live-forged-override",
+                ["manualOverrideId"] = bypassOverride.OverrideId,
+                ["runId"] = "run-live-001"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Operator halt");
+        liveReadinessGate.Request.Should().NotBeNull();
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "OrderRejected" &&
+            entry.Reason == "CIRCUIT_BREAKER_OPEN" &&
+            entry.CorrelationId == "act-live-forged-override" &&
+            entry.Metadata != null &&
+            entry.Metadata["rejectCode"] == "CIRCUIT_BREAKER_OPEN");
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_WithClientBrokerAccountMetadata_StripsRoutingKeysBeforeGatewaySubmit()
     {
         OrderRequest? submittedRequest = null;

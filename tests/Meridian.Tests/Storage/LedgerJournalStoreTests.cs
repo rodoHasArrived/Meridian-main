@@ -760,6 +760,19 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("using gin (dimensions)");
     }
 
+    [Fact]
+    public void LedgerJournalAsOfIndexMigration_DefinesHydrationIndexes()
+    {
+        var sql = ReadMigration("V_ledger_023__journal_as_of_indexes.sql");
+
+        sql.Should().Contain("ix_accounting_periods_ledger_book_period");
+        sql.Should().Contain("on __SCHEMA__.accounting_periods (ledger_book_id, period_id)");
+        sql.Should().Contain("ix_journal_entries_period_as_of");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (period_id, occurred_at, global_sequence, journal_entry_id)");
+        sql.Should().Contain("ix_journal_entries_as_of");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (occurred_at, global_sequence, journal_entry_id)");
+    }
+
 
     [Fact]
     public void PostingCommand_ApprovedCommand_NormalizesWriteMetadataAndEvidence()

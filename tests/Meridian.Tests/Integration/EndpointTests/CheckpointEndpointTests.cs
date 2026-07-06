@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Meridian.Contracts.Backfill;
 using Meridian.Storage.Backfill;
+using BackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 

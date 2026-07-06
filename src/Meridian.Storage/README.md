@@ -171,6 +171,10 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+`LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
+durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
+timestamp so restart, close, and reporting projections can hydrate from the stored spine before
+running ledger-owned trial-balance or statement logic.
 
 ### Direct lending and operational projections
 

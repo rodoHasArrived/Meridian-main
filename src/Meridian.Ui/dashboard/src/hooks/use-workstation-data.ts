@@ -214,13 +214,17 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     staleMessage: "Older workstation refresh response discarded.",
     maxRetries: 2
   });
+  const refreshTradingRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const tradingRefreshLifecycle = useRequestLifecycle({
     operation: "trading workspace refresh",
     runningMessage: "Refreshing trading workspace evidence.",
     successMessage: "Trading workspace refreshed.",
     failureMessage: "Trading workspace refresh failed.",
     staleMessage: "Older trading refresh response discarded.",
-    maxRetries: 2
+    maxRetries: 2,
+    onRetry: ({ attempt }) => {
+      void refreshTradingRef.current({ attempt });
+    }
   });
   const providerRoutingRefreshLifecycle = useRequestLifecycle({
     operation: "provider routing refresh",
@@ -420,8 +424,8 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
 
   // Keep the trading cockpit fresh without re-fetching every workspace.
   // Positions, orders, fills, and readiness status change as trading runs.
-  const refreshTrading = useCallback(async () => {
-    const token = tradingRefreshLifecycle.start({ busyMode: "drop" });
+  const refreshTrading = useCallback(async (options: { attempt?: number } = {}) => {
+    const token = tradingRefreshLifecycle.start({ busyMode: "drop", attempt: options.attempt });
     if (!token) return;
     try {
       const result = await getTradingWorkspace({
@@ -474,6 +478,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     tradingRefreshLifecycle.succeed,
     workflowSummaryFundAccountId
   ]);
+
+  useEffect(() => {
+    refreshTradingRef.current = refreshTrading;
+  }, [refreshTrading]);
 
   const updateFeatureCapability = useCallback(async (capabilityKey: string, isEnabled: boolean) => {
     const result = await setFeatureCapability(capabilityKey, isEnabled);

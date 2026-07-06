@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useLocation } from "react-router-dom";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import {
   getCommandPaletteActionsSnapshot,
@@ -9,6 +10,11 @@ import {
 import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import { renderWithRouter } from "@/test/render";
 import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
+
+function LocationSearchProbe() {
+  const { search } = useLocation();
+  return <output aria-label="location search">{search}</output>;
+}
 
 const accounting: AccountingWorkspaceResponse = {
   metrics: [],
@@ -1723,6 +1729,40 @@ describe("ReportingScreen", () => {
       initialEntries: [`/reporting/report-builder?view=${foreignScreen}`]
     });
     expect(screen.getByLabelText("Exports report as-of date")).not.toHaveValue("2026-06-30");
+  });
+
+  it("strips a stale exports view query when the draft cannot encode", async () => {
+    const token = encodeViewStateEnvelope({
+      v: 1,
+      screen: "reporting-exports",
+      state: { selectedExportsTemplateId: "investor-monthly-statement:1.0.0", asOfDate: "2026-06-30" }
+    })!;
+
+    renderWithRouter(
+      <>
+        <ReportingScreen
+          data={{
+            ...accounting,
+            reporting: {
+              ...accounting.reporting,
+              templates: []
+            }
+          }}
+        />
+        <LocationSearchProbe />
+      </>,
+      {
+        initialEntries: [`/reporting/exports?fundAccountId=fund-alpha&view=${token}`]
+      }
+    );
+
+    fireEvent.change(screen.getByLabelText("Exports report as-of date"), { target: { value: "2026-07-31" } });
+
+    await waitFor(() => {
+      const params = new URLSearchParams(screen.getByLabelText("location search").textContent ?? "");
+      expect(params.get("view")).toBeNull();
+      expect(params.get("fundAccountId")).toBe("fund-alpha");
+    });
   });
 
   it("registers the exports-run palette action while mounted and unregisters on unmount", () => {
