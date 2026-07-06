@@ -1,11 +1,11 @@
 {
-  "total_files": 541,
-  "total_lines": 90529,
-  "orphaned_count": 207,
+  "total_files": 542,
+  "total_lines": 90611,
+  "orphaned_count": 208,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 167.3,
+  "average_lines": 167.2,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -214,6 +214,7 @@
     "plugins/testing-automation/skills/java-junit/SKILL.md",
     "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
     "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
+    "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
     "tests/setup-script-tests.md"
   ],
   "no_heading_files": [
@@ -2140,7 +2141,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7909,
+      "line_count": 7938,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4356,7 +4357,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 322,
+      "line_count": 326,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4380,7 +4381,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 1892,
+      "line_count": 1896,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4447,6 +4448,14 @@
       "line_count": 62,
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
