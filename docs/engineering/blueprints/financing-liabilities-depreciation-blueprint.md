@@ -250,6 +250,10 @@ public interface IRepoAgreementService
     ValueTask<RepoAgreementDetailDto> RollAsync(Guid repoId, DateOnly newMaturity, decimal? newRate, RepoWriteMetadata meta, CancellationToken ct = default);
     ValueTask<RepoAgreementDetailDto> CloseAsync(Guid repoId, DateOnly asOf, RepoWriteMetadata meta, CancellationToken ct = default);
     ValueTask<RepoAgreementDetailDto?> GetAsync(Guid repoId, CancellationToken ct = default);
+    // Read/query surface — required so background accrual schedulers can discover repos that
+    // need AccrueDailyAsync, and so UI read-models can list open agreements.
+    ValueTask<IReadOnlyList<RepoAgreementSummaryDto>> ListByStatusAsync(RepoStatusDto status, CancellationToken ct = default);
+    ValueTask<IReadOnlyList<RepoAgreementSummaryDto>> ListAccruableAsync(DateOnly asOf, CancellationToken ct = default);
 }
 
 /// <summary>Projects a repo lifecycle event into balanced ledger journal writes (mirrors LoanAccountingProjector).</summary>
@@ -293,10 +297,16 @@ public sealed record DepreciationProjection(
     public bool IsBalanced      => TotalDebits == TotalCredits;
 }
 
-/// <summary>Generates a full period-by-period depreciation schedule for an asset.</summary>
+/// <summary>Generates a period-by-period depreciation schedule for an asset.</summary>
 public interface IDepreciationScheduleCalculator
 {
-    IReadOnlyList<DepreciationPeriodDto> BuildSchedule(FixedAssetRecordDto asset);
+    // StraightLine and DecliningBalance produce a full forward schedule from the asset record alone.
+    // UnitsOfProduction is usage-driven: pass the projected (or actual) units for each period —
+    // when null, the calculator returns only the StraightLine/DecliningBalance schedule and reports
+    // that UnitsOfProduction requires per-period unit input (it cannot be projected forward blindly).
+    IReadOnlyList<DepreciationPeriodDto> BuildSchedule(
+        FixedAssetRecordDto asset,
+        IReadOnlyList<long>? projectedUnitsPerPeriod = null);
 }
 public sealed record DepreciationPeriodDto(
     int PeriodIndex, DateOnly PeriodEnd,
@@ -322,7 +332,13 @@ public interface IBorrowingService
     ValueTask<BorrowingDetailDto> DrawAsync(Guid borrowingId, decimal amount, DateOnly asOf, BorrowingWriteMetadata meta, CancellationToken ct = default);
     ValueTask<BorrowingDetailDto> AccrueInterestAsync(Guid borrowingId, DateOnly asOf, BorrowingWriteMetadata meta, CancellationToken ct = default);
     ValueTask<BorrowingDetailDto> RepayPrincipalAsync(Guid borrowingId, decimal amount, DateOnly asOf, BorrowingWriteMetadata meta, CancellationToken ct = default);
+    // RetireAsync is a status-only lifecycle marker (see the projector table below); it closes a
+    // facility whose principal is already zero and posts no journal lines.
     ValueTask<BorrowingDetailDto> RetireAsync(Guid borrowingId, DateOnly asOf, BorrowingWriteMetadata meta, CancellationToken ct = default);
+    // Read/query surface — required for background interest-accrual scheduling and UI read-models.
+    ValueTask<BorrowingDetailDto?> GetAsync(Guid borrowingId, CancellationToken ct = default);
+    ValueTask<IReadOnlyList<BorrowingSummaryDto>> ListByStatusAsync(BorrowingStatusDto status, CancellationToken ct = default);
+    ValueTask<IReadOnlyList<BorrowingSummaryDto>> ListAccruableAsync(DateOnly asOf, CancellationToken ct = default);
 }
 
 public interface IBorrowingAccountingProjector   // mirrors LoanAccountingProjector, liability-side
@@ -376,7 +392,11 @@ public sealed class FinancingOptions
                  "DefaultDecliningBalanceFactor": 2.0, "DepreciationRequiresApproval": true } }
 ```
 
-Use `IOptionsMonitor<FinancingOptions>` (ADR-011) so financing defaults hot-reload.
+Register with `services.AddOptions<FinancingOptions>().BindConfiguration(FinancingOptions.SectionName)`
+and consume via `IOptionsMonitor<FinancingOptions>` (ADR-011) so financing defaults hot-reload.
+`BindConfiguration` (not a manual `Configure(config.GetSection(...))`) registers the reload-token
+source, matching the repo convention in
+`src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs`.
 
 ### REST surface — `Meridian.Ui.Shared/Endpoints/FinancingEndpoints.cs` (read-model + command intake)
 
@@ -438,10 +458,13 @@ guard in `LoanAccountingProjector.cs`).
   `DepreciationAmount`. Validates amount >= 0, non-zero, and that
   `CostAccount.AccountType == Asset` (copy the guard in `FixedIncomeAmortizationProjector.cs`).
 
-**Paired governed builder — `FixedAssetDepreciationDraftBuilder` (Meridian.Ledger):** wraps the
-projection in an `AutomatedJournalDraft` with `AutomatedJournalEventKind.DepreciationPosted`,
-per-asset evidence, then routes through `AutomatedJournalApproval` (exactly as
-`DailyPortfolioPricingDraftBuilder` does for `FairValueMarkAdjustment`).
+**Paired governed builder — `FixedAssetDepreciationDraftBuilder` (Meridian.Ledger):** batches
+**all** in-scope asset projections for the period into a **single** `AutomatedJournalDraft` (kind
+`AutomatedJournalEventKind.DepreciationPosted`), carrying per-asset lines and per-asset evidence,
+then routes that one draft through `AutomatedJournalApproval` — exactly how
+`DailyPortfolioPricingDraftBuilder` batches all daily fair-value marks into one governed draft. This
+lets an accountant approve the entire period's depreciation run in a single action rather than one
+approval per asset.
 
 **DepreciationScheduleCalculator (`Meridian.Ledger`):** pure schedule generator.
 
@@ -464,7 +487,12 @@ per-asset evidence, then routes through `AutomatedJournalApproval` (exactly as
 | `borrowing.interest-paid` | Dr `InterestPayable`, Cr `Cash` |
 | `borrowing.principal-repaid` | Dr `DebtPrincipalPayable`, Cr `Cash` |
 | `borrowing.issuance-cost-amortized` | Dr `DebtIssuanceCostAmortization`, Cr `UnamortizedDebtIssuanceCost` |
-| `borrowing.retired` | Dr `DebtPrincipalPayable`, Cr `Cash` (guard: remaining principal == 0) |
+| `borrowing.retired` | *No journal lines.* Status-only lifecycle marker; guarded so it is accepted only when remaining principal, interest payable, and unamortized issuance cost are all zero. The final cash movement is the preceding `borrowing.principal-repaid` (which brings principal to zero), not this event. |
+
+> `borrowing.retired` deliberately produces no lines. Meridian's ledger design filters zero-amount
+> lines (see `LoanAccountingProjector.cs`), so a "Dr `DebtPrincipalPayable` 0 / Cr `Cash` 0" entry
+> would be dropped to an empty journal entry. Retirement is therefore modeled as a state transition
+> on the borrowing aggregate with retained evidence, not a ledger post.
 
 Interest amount = `FinancingAccrual.dailyInterest(drawn, allInRate, dcf)`, reusing the DirectLending
 day-count kernel for `dcf` and floating all-in-rate resolution.
@@ -498,11 +526,12 @@ day-count kernel for `dcf` and floating all-in-rate resolution.
 1. Operator issues `POST /api/accounting/fixed-assets/depreciate { periodEnd }`.
 2. `FixedAssetDepreciationService` loads the register and filters to assets that are in service, not
    fully depreciated, and not already posted through `periodEnd`.
-3. For each asset: `DepreciationScheduleCalculator.BuildSchedule` -> this period's amount ->
-   `FixedAssetDepreciationProjector.Project` -> `FixedAssetDepreciationDraftBuilder` -> a
-   **submitted** `AutomatedJournalApproval` draft.
-4. The accountant approves; the draft posts to `ILedgerJournalStore`; the register watermark
-   advances to `periodEnd`.
+3. For each in-scope asset: `DepreciationScheduleCalculator.BuildSchedule` -> this period's amount
+   -> `FixedAssetDepreciationProjector.Project`. `FixedAssetDepreciationDraftBuilder` then
+   **batches every asset's lines into one submitted `AutomatedJournalApproval` draft** for the
+   period (not one draft per asset).
+4. The accountant approves the single period draft; it posts to `ILedgerJournalStore`; the register
+   watermark advances to `periodEnd` for every asset included in that draft.
 
 ### Error path — locked period (all engines)
 
@@ -604,7 +633,9 @@ PR3 Borrowings.
 
 - [ ] Append the new `LedgerAccounts` factory methods plus XML docs.
 - [ ] Append the `AutomatedJournalEventKind` members.
-- [ ] Add `FinancingOptions` plus the `appsettings` section plus DI `Configure`.
+- [ ] Add `FinancingOptions` plus the `appsettings` section plus DI registration via
+      `AddOptions<FinancingOptions>().BindConfiguration(FinancingOptions.SectionName)` (not manual
+      `Configure`) so `IOptionsMonitor` hot-reload works.
 
 ### Phase 2: Depreciation (PR1)
 
