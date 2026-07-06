@@ -185,6 +185,9 @@ The gate also verifies that the readiness matrix covers every canonical Live che
 rejects partial or malformed W7 payloads with the missing checklist item names. Each canonical Live
 requirement must also be checklist-satisfied, evidence-satisfied, and backed by a nonblank retained
 evidence reference before live broker order evidence can be attached.
+Accounting-record and governed-reporting requirements must retain evidence references that identify
+the linked ledger journal/run and report output, so live-order approval cannot rely on readiness
+flags without an accounting/reporting evidence chain.
 Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
 their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
 readiness projection as the workstation payload.
