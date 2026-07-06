@@ -68,7 +68,7 @@ The best ideas for Meridian aren't isolated features. They're extensions that **
 ## Project Context
 
 **What Meridian is:**
-A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. WPF is the active desktop shell for operator workflows; the browser workstation under `src/Meridian.Ui/dashboard/` is the parallel surface for new operator-facing UI development.
+A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. The browser workstation under `src/Meridian.Ui/dashboard/` is the active operator UI lane; WPF product/UI work is deferred until explicitly reactivated.
 
 **Tech stack:** .NET 10, C# infrastructure, F# domain models, browser workstation UI, WPF desktop shell, Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet, GitHub Actions CI/CD.
 
@@ -88,13 +88,13 @@ A provider-agnostic .NET 10 platform for evidence-backed investment operations: 
 - Strategy lifecycle: register, run, pause, promote paper→live
 - Pre-trade risk validation via `CompositeRiskValidator` / `IRiskRule`
 - Browser workstation: operator workflows, live status, data browser, and API-backed work queues
-- Active WPF desktop operator surface: shared contracts, regressions, and desktop workflows
+- Retained WPF compatibility surface: shared contracts, regressions, and approved maintenance workflows
 - MCP server layer (`Meridian.Mcp` / `Meridian.McpServer`) exposing tools + prompts for AI agents
 - Deployment: Docker Compose, systemd, Kubernetes
 - Observability: OpenTelemetry tracing, Prometheus metrics, Grafana dashboards
 - CI/CD: 33 GitHub Actions workflows for build, test, and automated documentation
 
-**What's coming:** StockSharp 90+ provider activation, Python-accessible layer, Arrow Flight / DuckDB integration, assembly-level SIMD hot-path optimizations, full WPF UX parity (6 pages still showing placeholder data), live broker adapters beyond paper trading.
+**What's coming:** StockSharp 90+ provider activation, Python-accessible layer, Arrow Flight / DuckDB integration, assembly-level SIMD hot-path optimizations, browser-first operator UX improvements, and live broker adapters beyond paper trading.
 
 **Current count (authoritative: `../_shared/project-context.md`):** 868 source files (856 C# + 12 F#), 261 test files, 22 main projects, 33 CI/CD workflows.
 
@@ -127,7 +127,7 @@ Prop trading firm, hedge fund ops, or quant analyst at an asset manager. Pain po
 - **Progressive disclosure.** Show the essential view first. Let users expand into detail when they want it. A symbol's health score is the top layer; the per-provider tick rate breakdown is the drill-down.
 - **Contextual actions.** When showing data, show what the user can _do_ with it right there. Viewing a gap in historical data? Offer a one-click backfill. Seeing an anomalous tick? Offer to flag or exclude it.
 - **Consistency across views.** Symbols, providers, time ranges, and status indicators should look and behave the same way everywhere in the app. Build a shared visual vocabulary.
-- **Respect the WPF medium.** Ideas should feel native to a desktop application — data grids, split panes, keyboard shortcuts, system tray integration, multi-monitor awareness. Not a web app crammed into a window.
+- **Respect the active medium.** Browser-workstation ideas should feel native to a browser operator surface, while any explicitly approved WPF maintenance should preserve dense desktop affordances without reopening WPF product/UI scope.
 
 ---
 
@@ -221,7 +221,7 @@ After the ideas, step back and write a synthesis that:
 **Write ideas like you're pitching them to a product-minded developer**, not filling in a form. Each idea should read as a short, compelling argument — "here's what's painful today, here's what we'd build, here's what it looks like, here's why it's worth it."
 
 - **Be specific, not generic.** "Add a Python SDK" is weak. "Add a `marketdata` Python package with an async iterator over the live WebSocket feed, pandas DataFrame output, and a `snap()` convenience method for the last N ticks" is strong.
-- **Always describe the user experience.** Even backend optimizations have a user-facing moment: "The backfill that used to take 45 minutes now finishes in 8. The progress bar in the WPF app reflects this — the user sees symbols lighting up green in rapid succession."
+- **Always describe the user experience.** Even backend optimizations have a user-facing moment: "The backfill that used to take 45 minutes now finishes in 8. The browser progress strip reflects this - the user sees symbols resolving in rapid succession."
 - **Show how features connect.** "This data quality scorecard feeds into the existing dashboard's symbol list — the health score appears as a colored dot next to each symbol. Clicking it expands to the detailed breakdown."
 - **Acknowledge tradeoffs honestly.** Hidden complexity is the enemy. Name it.
 - **Anchor to the codebase.** Reference real abstractions: `IMarketDataClient`, `IHistoricalDataProvider`, `EventPipeline`, `IStorageSink`, `BindableBase`, the Options pattern. Include file paths from `../_shared/project-context.md` when it clarifies the implementation.

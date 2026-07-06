@@ -29,13 +29,15 @@
 - MDIF is the required context spine for broad generation, domain modeling, workflow design, and
   architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
   dictionary pages, and context packs before implementation.
-- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
-- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
-  workflows, launch automation, and desktop validation.
+- Active operator UI work is browser-first in `src/Meridian.Ui/dashboard/`.
+- `src/Meridian.Wpf/` product/UI work is deferred until explicitly reactivated; retain the
+  existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation as
+  support surfaces.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support both desktop and browser surfaces without duplicating business logic.
+  that should support the browser workstation and retained WPF compatibility without duplicating
+  business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -129,7 +131,7 @@ validation.
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the WPF desktop shell
+  services, workstation endpoints, and the deferred WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: performance suites
 
@@ -169,7 +171,7 @@ validation.
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: current shell orchestration anchor
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained shell orchestration anchor
 
 ---
 

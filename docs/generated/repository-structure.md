@@ -998,6 +998,8 @@ Meridian-main
 ├── build
 │   ├── ci
 │   │   └── lane-manifest.json
+│   ├── config
+│   │   └── file-size-baseline.json
 │   ├── dotnet
 │   │   ├── DocGenerator
 │   │   │   ├── DocGenerator.csproj
@@ -1055,6 +1057,7 @@ Meridian-main
 │       │   ├── promptfoo-adapter.py
 │       │   └── promptfoo_adapter.py
 │       ├── ci
+│       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
@@ -1313,6 +1316,7 @@ Meridian-main
 │   │   ├── meridian-development-intelligence-framework.md
 │   │   ├── meridian-domain-model.md
 │   │   ├── meridian-vision.md
+│   │   ├── module-conventions.md
 │   │   ├── module-map.md
 │   │   ├── mvvm-guidelines.md
 │   │   ├── operator-observability-dashboard.md
@@ -3176,8 +3180,6 @@ Meridian-main
 │   │   │   │   ├── OrderReplace.cs
 │   │   │   │   ├── SessionStats.cs
 │   │   │   │   └── Trade.cs
-│   │   │   ├── Reconciliation
-│   │   │   │   └── ReconciliationDomainModels.cs
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── IPositionSnapshotStore.cs
 │   │   │   ├── MarketDataModels.cs
@@ -3734,8 +3736,6 @@ Meridian-main
 │   │   │   ├── FileStatementReconciliationCheckpointStore.cs
 │   │   │   ├── ReconciliationContextContracts.cs
 │   │   │   ├── ReconciliationContractCatalog.cs
-│   │   │   ├── ReconciliationContracts.cs
-│   │   │   ├── ReconciliationEngine.cs
 │   │   │   ├── ReconciliationEngineService.cs
 │   │   │   ├── ReconciliationOrchestrationResilience.cs
 │   │   │   ├── ReconciliationServiceRegistration.cs

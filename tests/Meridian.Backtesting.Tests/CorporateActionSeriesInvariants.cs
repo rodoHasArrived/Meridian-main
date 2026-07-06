@@ -19,7 +19,10 @@ internal static class CorporateActionSeriesInvariants
         => new(symbol, bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume, Source: "golden-fixture");
 
     internal static IReadOnlyList<HistoricalBar> ToHistoricalBars(GoldenCorporateActionScenario scenario)
-        => scenario.Bars.Select(bar => ToHistoricalBar(bar, scenario.Ticker)).ToList();
+        => scenario.Bars
+            .Select(bar => ToHistoricalBar(bar, scenario.Ticker))
+            .OrderBy(static bar => bar.SessionDate)
+            .ToList();
 
     /// <summary>
     /// Day-over-day adjusted returns equal raw returns off ex-dates; across an ex-date the

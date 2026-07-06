@@ -56,4 +56,4 @@ do_not_edit: true
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `src/Meridian.Ui/dashboard` | UI Surface | active | Workstation Shell and UX | `src/Meridian.Ui/dashboard/README.md` |
 | `SRC-UI-SERVICES` | UI services | `src/Meridian.Ui.Services` | UI Services | active | Workstation Shell and UX | `src/Meridian.Ui.Services/README.md` |
 | `SRC-UI-SHARED` | UI shared contracts | `src/Meridian.Ui.Shared` | UI Shared | active | Workstation Shell and UX | `src/Meridian.Ui.Shared/README.md` |
-| `SRC-WPF` | WPF workstation | `src/Meridian.Wpf` | UI Surface | active | Workstation Shell and UX | `src/Meridian.Wpf/README.md` |
+| `SRC-WPF` | WPF workstation | `src/Meridian.Wpf` | UI Surface | deferred | Workstation Shell and UX | `src/Meridian.Wpf/README.md` |
