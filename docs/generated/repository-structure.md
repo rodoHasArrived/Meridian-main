@@ -6767,7 +6767,9 @@ Meridian-main
 │   │   ├── Commodities
 │   │   │   └── CommodityProjectionServiceTests.cs
 │   │   ├── Compliance
-│   │   │   └── CompliancePolicyEngineTests.cs
+│   │   │   ├── AccessReviewServiceTests.cs
+│   │   │   ├── CompliancePolicyEngineTests.cs
+│   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
@@ -6888,7 +6890,10 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── BrokerageOrderPlacementGateTests.cs
+│   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
+│   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
