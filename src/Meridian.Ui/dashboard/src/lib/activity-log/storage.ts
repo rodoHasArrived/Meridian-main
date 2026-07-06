@@ -79,9 +79,20 @@ function normalizeEntry(value: unknown): ActivityEntry | null {
   };
 }
 
-/** Strips the transient in-memory undo handler; only the serializable snapshot persists. */
+/** The serializable snapshot to persist (the entry is already a typed ActivityEntry). */
 function toPersistedEntry(entry: ActivityEntry): ActivityEntry {
-  return { ...normalizeEntry(entry)!, undoStatus: entry.undoStatus };
+  return {
+    id: entry.id,
+    kind: entry.kind,
+    title: entry.title,
+    detail: entry.detail,
+    route: entry.route,
+    routeLabel: entry.routeLabel,
+    tone: entry.tone,
+    timestamp: entry.timestamp,
+    undoStatus: entry.undoStatus,
+    undoError: entry.undoError
+  };
 }
 
 export function loadActivityLog(storage?: StorageLike | null): ActivityEntry[] {

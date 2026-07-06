@@ -60,7 +60,6 @@ export function useActivityLogService(options: UseActivityLogServiceOptions = {}
   const [entries, setEntries] = useState<ActivityEntry[]>(() => loadActivityLog(storage));
   // Undo handlers are transient — keyed by entry id, never persisted.
   const undoHandlers = useRef(new Map<string, ActivityUndoHandler>());
-  const seenIds = useRef(new Set<string>(entries.map((entry) => entry.id)));
   const [unseenCount, setUnseenCount] = useState(0);
 
   // Persist the serializable snapshot whenever the ledger changes.
@@ -135,9 +134,8 @@ export function useActivityLogService(options: UseActivityLogServiceOptions = {}
   }, []);
 
   const markAllSeen = useCallback(() => {
-    seenIds.current = new Set(entries.map((entry) => entry.id));
     setUnseenCount(0);
-  }, [entries]);
+  }, []);
 
   return useMemo(
     () => ({ entries, unseenCount, record, undo, remove, clear, markAllSeen }),

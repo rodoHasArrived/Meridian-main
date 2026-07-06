@@ -45,7 +45,16 @@ export function WatchlistScreen() {
             tone: "success",
             route: "/data/watchlist",
             routeLabel: "Watchlist",
-            undo: { run: () => removeSymbolApi(symbol).then(() => undefined) }
+            undo: {
+              run: async () => {
+                // `removeSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await removeSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not remove ${symbol}.`);
+                }
+              }
+            }
           });
         }
         return result;
@@ -60,7 +69,16 @@ export function WatchlistScreen() {
             tone: "warning",
             route: "/data/watchlist",
             routeLabel: "Watchlist",
-            undo: { run: () => addSymbolApi(symbol).then(() => undefined) }
+            undo: {
+              run: async () => {
+                // `addSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await addSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not add ${symbol} back.`);
+                }
+              }
+            }
           });
         }
         return result;
