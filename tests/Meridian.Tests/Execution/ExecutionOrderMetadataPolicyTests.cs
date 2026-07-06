@@ -99,7 +99,9 @@ public sealed class ExecutionOrderMetadataPolicyTests
     [Fact]
     public void RemoveClientRejectedServerOwnedKeys_RemovesKeysCaseInsensitively()
     {
-        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        // The input is deliberately case-sensitive: removal must be case-insensitive by
+        // the policy's own doing, not because of the caller's dictionary comparer.
+        var metadata = new Dictionary<string, string>
         {
             ["BROKER_ACCOUNT_ID"] = "acct-hijack"
         };
