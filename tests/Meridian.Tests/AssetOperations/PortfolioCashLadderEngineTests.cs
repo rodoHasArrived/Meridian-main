@@ -213,6 +213,19 @@ public sealed class PortfolioCashLadderEngineTests
         ladder.Contributions.Should().ContainSingle().Which.Amount.Should().Be(25_000m);
     }
 
+    [Fact]
+    public void Build_SurfacesPositionSourceNoticesInWarnings()
+    {
+        var inputs = BuildInputs() with
+        {
+            PositionSourceNotices = ["Positions are unit-quantity placeholders, not actual holdings."]
+        };
+
+        var ladder = PortfolioCashLadderEngine.Build(inputs);
+
+        ladder.Warnings.Should().ContainMatch("*unit-quantity placeholders*");
+    }
+
     private static PortfolioCashLadderInputs BuildInputs(
         IReadOnlyList<PortfolioCashLadderPositionDto>? positions = null,
         IReadOnlyList<PortfolioCashBalanceDto>? cashBalances = null,

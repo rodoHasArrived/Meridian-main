@@ -46,6 +46,10 @@ of this blueprint.
   views; the warning text makes the blend honest until the per-currency phase lands.
 - Terms-driven sourcing only (no `ISecurityMasterCashFlowService` tier yet); unprojected
   positions surface as a count warning rather than per-security exclusion rows.
+- Holdings are sourced through an optional `IPortfolioHoldingsSource` seam (held security IDs +
+  real quantities); a ledger/custodian adapter is not wired yet, so when the seam is absent the
+  read service falls back to enumerating active Security Master subjects at unit quantity and
+  stamps an explicit overstatement warning into the ladder rather than doing so silently.
 - Capital activity and an FX shock scenario shipped in the slice (the driving goal required
   them) even though this blueprint deferred both; the provider seam keeps investor-schedule
   data optional until the capital activity engine exists.

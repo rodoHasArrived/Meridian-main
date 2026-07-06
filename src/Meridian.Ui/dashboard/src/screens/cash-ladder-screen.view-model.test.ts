@@ -8,7 +8,7 @@ import {
   sourcePaletteIndex,
   CASH_LADDER_SOURCE_ORDER
 } from "@/screens/cash-ladder-screen.view-model";
-import type { PortfolioCashLadder } from "@/types";
+import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 function buildLadder(overrides: Partial<PortfolioCashLadder> = {}): PortfolioCashLadder {
   return {

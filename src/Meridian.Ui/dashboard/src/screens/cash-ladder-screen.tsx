@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { getPortfolioCashLadder } from "@/lib/api";
+import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
 import {
@@ -21,7 +21,7 @@ import {
   sourcePaletteIndex,
   type CashLadderDrillRow
 } from "@/screens/cash-ladder-screen.view-model";
-import type { PortfolioCashLadder } from "@/types";
+import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 const SOURCE_PALETTE = [
   "var(--chart-series-1, #16885F)",

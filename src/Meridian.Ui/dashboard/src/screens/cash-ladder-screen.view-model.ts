@@ -4,7 +4,7 @@ import type {
   PortfolioCashLadderBucket,
   PortfolioCashLadderContribution,
   PortfolioCashScenario
-} from "@/types";
+} from "@/types/portfolio-cash-ladder.types";
 
 export const CASH_LADDER_CHART_WIDTH = 960;
 export const CASH_LADDER_CHART_HEIGHT = 320;

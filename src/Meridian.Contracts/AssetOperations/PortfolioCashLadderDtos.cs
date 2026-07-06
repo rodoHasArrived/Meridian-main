@@ -119,6 +119,25 @@ public sealed record PortfolioCashLadderQuery(
     decimal? MinimumCashThreshold = null,
     int BucketDays = 7);
 
+/// <summary>
+/// One held position as the cash ladder consumes it: the security identity and
+/// the quantity actually held, expressed as a multiple of the retained terms
+/// basis the instrument projection is scaled against (1.0 = one unit of face/basis).
+/// </summary>
+public sealed record PortfolioHoldingDto(
+    Guid SecurityId,
+    decimal Quantity);
+
+/// <summary>
+/// Supplies the securities actually held by the portfolio and the quantity of each,
+/// so the ladder forecasts flows only for held instruments and scales them by the
+/// real position size rather than a unit-quantity placeholder.
+/// </summary>
+public interface IPortfolioHoldingsSource
+{
+    Task<IReadOnlyList<PortfolioHoldingDto>> GetHoldingsAsync(DateOnly asOf, CancellationToken ct = default);
+}
+
 /// <summary>Supplies opening cash balances for the portfolio cash ladder.</summary>
 public interface IPortfolioCashBalanceProvider
 {

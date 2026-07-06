@@ -18,7 +18,16 @@ public sealed record PortfolioCashLadderInputs(
     IReadOnlyList<PortfolioCashBalanceDto> CashBalances,
     IReadOnlyList<PortfolioCapitalActivityDto> CapitalActivity,
     decimal MinimumCashThreshold,
-    int BucketDays = 7);
+    int BucketDays = 7)
+{
+    /// <summary>
+    /// Provenance notices about how <see cref="Positions"/> were sourced (e.g. a
+    /// warning that they are unit-quantity placeholders because no holdings source
+    /// was wired). Surfaced in the ladder's warnings so overstated liquidity is
+    /// visible rather than silent.
+    /// </summary>
+    public IReadOnlyList<string> PositionSourceNotices { get; init; } = [];
+}
 
 /// <summary>
 /// Aggregates per-instrument projected cash flows across every held position,
@@ -124,6 +133,7 @@ public static class PortfolioCashLadderEngine
         var assumptions = new List<string>();
 
         var scenario = ResolveScenario(scenarioId, warnings);
+        warnings.AddRange(inputs.PositionSourceNotices);
         var openingCash = inputs.CashBalances.Sum(static balance => balance.Amount);
 
         var contributions = new List<PortfolioCashLadderContributionDto>();
