@@ -63,7 +63,10 @@ public static partial class FundStructureEndpoints
             var broadcaster = context.RequestServices.GetService<ReportRunStreamBroadcaster>();
             if (broadcaster is null)
             {
-                return WorkspaceServiceUnavailable();
+                // Mirror the quote stream endpoint: a missing broadcaster is an unavailable
+                // streaming surface (503), distinct from the 501 used when the core workspace
+                // orchestration service itself is not registered.
+                return Results.Problem("Report-run stream is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
             var subscription = broadcaster.TrySubscribe(
