@@ -6313,7 +6313,8 @@ export type ManualJournalEntryType =
   | "Subscription"
   | "Redemption"
   | "LpTransfer"
-  | "ManagementFee";
+  | "ManagementFee"
+  | "ClosingEntry";
 
 export interface LedgerBook {
   ledgerBookId: string;
@@ -7169,7 +7170,7 @@ export interface RuleDryRunResult {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
-export type LedgerPostingKind = "Originating" | "Adjustment";
+export type LedgerPostingKind = "Originating" | "Adjustment" | "ClosingEntry";
 export type AccountingTreatmentKind =
   | "General"
   | "Accrual"
@@ -7350,6 +7351,8 @@ export interface ManualJournalEntryLine {
   taxLotId?: string | null;
   description?: string | null;
   evidenceLink?: string | null;
+  ledgerAccountSymbol?: string | null;
+  ledgerAccountFinancialAccountId?: string | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {
