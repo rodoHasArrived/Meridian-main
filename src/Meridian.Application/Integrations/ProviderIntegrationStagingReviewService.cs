@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -8,10 +10,14 @@ public sealed class ProviderIntegrationStagingReviewService
     private const int MaxRecentRunLimit = 50;
 
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
 
-    public ProviderIntegrationStagingReviewService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationStagingReviewService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationStagingReviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationStagingReviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationStagingReviewDto> GetReviewAsync(
@@ -21,6 +27,35 @@ public sealed class ProviderIntegrationStagingReviewService
         => await GetReviewAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationStagingReviewDto> GetReviewAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetReviewAsync),
+            connectionId);
+        try
+        {
+            return await GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetReviewAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationStagingReviewDto> GetReviewCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,

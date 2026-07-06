@@ -17,10 +17,9 @@ internal sealed class SelfTestCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return CliArguments.HasFlag(args, "--selftest");
-    }
+    public IReadOnlyList<string> Triggers { get; } = [ "--selftest" ];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

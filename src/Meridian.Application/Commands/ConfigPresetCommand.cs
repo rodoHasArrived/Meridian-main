@@ -30,12 +30,9 @@ internal sealed class ConfigPresetCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return args.Any(a =>
-            a.Equals("--preset", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--list-presets", StringComparison.OrdinalIgnoreCase));
-    }
+    public IReadOnlyList<string> Triggers { get; } = [ "--preset", "--list-presets" ];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

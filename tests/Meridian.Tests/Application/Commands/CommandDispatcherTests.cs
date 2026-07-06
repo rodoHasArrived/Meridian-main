@@ -109,6 +109,8 @@ public class CommandDispatcherTests
             _exitCode = exitCode;
         }
 
+        public IReadOnlyList<string> Triggers => new[] { _flag };
+
         public bool CanHandle(string[] args) => args.Contains(_flag);
 
         public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
@@ -128,6 +130,8 @@ public class CommandDispatcherTests
 
         public int ExecutionCount { get; private set; }
         public CancellationToken ReceivedCancellationToken { get; private set; }
+
+        public IReadOnlyList<string> Triggers => Array.Empty<string>();
 
         public bool CanHandle(string[] args) => _canHandle;
 

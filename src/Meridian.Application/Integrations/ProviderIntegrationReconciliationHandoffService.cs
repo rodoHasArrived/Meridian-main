@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -9,13 +11,16 @@ public sealed class ProviderIntegrationReconciliationHandoffService
 
     private readonly IProviderIntegrationManifestStore store;
     private readonly ProviderIntegrationPromotionReadinessService readiness;
+    private readonly ILogger<ProviderIntegrationReconciliationHandoffService> logger;
 
     public ProviderIntegrationReconciliationHandoffService(
         IProviderIntegrationManifestStore store,
-        ProviderIntegrationPromotionReadinessService readiness)
+        ProviderIntegrationPromotionReadinessService readiness,
+        ILogger<ProviderIntegrationReconciliationHandoffService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.readiness = readiness ?? throw new ArgumentNullException(nameof(readiness));
+        this.logger = logger ?? NullLogger<ProviderIntegrationReconciliationHandoffService>.Instance;
     }
 
     public async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffAsync(
@@ -24,6 +29,34 @@ public sealed class ProviderIntegrationReconciliationHandoffService
         => await HandoffAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffAsync(
+        string? tenantId,
+        ProviderIntegrationReconciliationHandoffRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(HandoffAsync),
+            request?.ConnectionId);
+        try
+        {
+            return await HandoffCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(HandoffAsync),
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffCoreAsync(
         string? tenantId,
         ProviderIntegrationReconciliationHandoffRequestDto request,
         CancellationToken ct = default)
@@ -161,6 +194,34 @@ public sealed class ProviderIntegrationReconciliationHandoffService
         => await GetHistoryAsync(null, connectionId, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationReconciliationHandoffHistoryDto> GetHistoryAsync(
+        string? tenantId,
+        string connectionId,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetHistoryAsync),
+            connectionId);
+        try
+        {
+            return await GetHistoryCoreAsync(tenantId, connectionId, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetHistoryAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationReconciliationHandoffHistoryDto> GetHistoryCoreAsync(
         string? tenantId,
         string connectionId,
         CancellationToken ct = default)

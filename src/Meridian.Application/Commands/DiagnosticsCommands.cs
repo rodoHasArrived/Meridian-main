@@ -26,15 +26,9 @@ internal sealed class DiagnosticsCommands : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return CliArguments.HasFlag(args, "--diagnostics") ||
-            CliArguments.HasFlag(args, "--quick-check") ||
-            CliArguments.HasFlag(args, "--test-connectivity") ||
-            CliArguments.HasFlag(args, "--error-codes") ||
-            CliArguments.HasFlag(args, "--show-config") ||
-            CliArguments.HasFlag(args, "--validate-credentials");
-    }
+    public IReadOnlyList<string> Triggers { get; } = [ "--diagnostics", "--quick-check", "--test-connectivity", "--error-codes", "--show-config", "--validate-credentials" ];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

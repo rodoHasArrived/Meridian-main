@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -11,15 +13,18 @@ public sealed class ProviderIntegrationSyncOrchestrationService
     private readonly ProviderIntegrationSyncPlanningService planner;
     private readonly ProviderIntegrationRestDryRunService restDryRun;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationSyncOrchestrationService> logger;
 
     public ProviderIntegrationSyncOrchestrationService(
         ProviderIntegrationSyncPlanningService planner,
         ProviderIntegrationRestDryRunService restDryRun,
-        IProviderIntegrationManifestStore store)
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSyncOrchestrationService>? logger = null)
     {
         this.planner = planner ?? throw new ArgumentNullException(nameof(planner));
         this.restDryRun = restDryRun ?? throw new ArgumentNullException(nameof(restDryRun));
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSyncOrchestrationService>.Instance;
     }
 
     public async Task<ProviderIntegrationRunDueSyncResultDto> RunDueAsync(
@@ -28,6 +33,34 @@ public sealed class ProviderIntegrationSyncOrchestrationService
         => await RunDueAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationRunDueSyncResultDto> RunDueAsync(
+        string? tenantId,
+        ProviderIntegrationRunDueSyncRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(RunDueAsync),
+            request?.ConnectionId);
+        try
+        {
+            return await RunDueCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(RunDueAsync),
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationRunDueSyncResultDto> RunDueCoreAsync(
         string? tenantId,
         ProviderIntegrationRunDueSyncRequestDto request,
         CancellationToken ct = default)
@@ -148,6 +181,11 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             }
             catch (InvalidOperationException ex)
             {
+                logger.LogWarning(
+                    ex,
+                    "Provider integration sync plan item for capability {Capability} on connection {ConnectionId} was blocked at runtime.",
+                    planItem.Capability,
+                    request.ConnectionId);
                 return RuntimeBlocked(planItem, ex.Message);
             }
         }
@@ -185,6 +223,11 @@ public sealed class ProviderIntegrationSyncOrchestrationService
         }
         catch (InvalidOperationException ex)
         {
+            logger.LogWarning(
+                ex,
+                "Provider integration sync plan item for capability {Capability} on connection {ConnectionId} was blocked at runtime.",
+                planItem.Capability,
+                request.ConnectionId);
             return RuntimeBlocked(planItem, ex.Message);
         }
     }

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
 using Meridian.Contracts.SecurityMaster;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using UiApiRoutes = Meridian.Contracts.Api.UiApiRoutes;
 
 namespace Meridian.Application.Integrations;
@@ -12,13 +14,16 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
 
     private readonly IProviderIntegrationManifestStore store;
     private readonly ISecurityMasterQueryService? securityMaster;
+    private readonly ILogger<ProviderIntegrationIdentityResolutionPreviewService> logger;
 
     public ProviderIntegrationIdentityResolutionPreviewService(
         IProviderIntegrationManifestStore store,
-        ISecurityMasterQueryService? securityMaster = null)
+        ISecurityMasterQueryService? securityMaster = null,
+        ILogger<ProviderIntegrationIdentityResolutionPreviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.securityMaster = securityMaster;
+        this.logger = logger ?? NullLogger<ProviderIntegrationIdentityResolutionPreviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationStagingIdentityResolutionPreviewDto> PreviewAsync(
@@ -28,6 +33,35 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         => await PreviewAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationStagingIdentityResolutionPreviewDto> PreviewAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(PreviewAsync),
+            connectionId);
+        try
+        {
+            return await PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(PreviewAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationStagingIdentityResolutionPreviewDto> PreviewCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,

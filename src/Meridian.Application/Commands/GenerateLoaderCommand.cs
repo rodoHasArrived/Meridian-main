@@ -19,10 +19,9 @@ internal sealed class GenerateLoaderCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return args.Any(a => a.Equals("--generate-loader", StringComparison.OrdinalIgnoreCase));
-    }
+    public IReadOnlyList<string> Triggers { get; } = [ "--generate-loader" ];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

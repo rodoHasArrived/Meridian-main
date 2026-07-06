@@ -20,13 +20,9 @@ internal sealed class PackageCommands : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return CliArguments.HasFlag(args, "--package") ||
-            CliArguments.HasFlag(args, "--import-package") ||
-            CliArguments.HasFlag(args, "--list-package") ||
-            CliArguments.HasFlag(args, "--validate-package");
-    }
+    public IReadOnlyList<string> Triggers { get; } = [ "--package", "--import-package", "--list-package", "--validate-package" ];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

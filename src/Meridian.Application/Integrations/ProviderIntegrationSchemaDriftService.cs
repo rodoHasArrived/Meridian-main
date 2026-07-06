@@ -1,15 +1,21 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSchemaDriftService
 {
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
 
-    public ProviderIntegrationSchemaDriftService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSchemaDriftService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSchemaDriftService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSchemaDriftService>.Instance;
     }
 
     public async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckAsync(
@@ -18,6 +24,36 @@ public sealed class ProviderIntegrationSchemaDriftService
         => await CheckAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckAsync(
+        string? tenantId,
+        ProviderIntegrationSchemaDriftCheckRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
+            nameof(CheckAsync),
+            request?.ManifestId,
+            request?.ConnectionId);
+        try
+        {
+            return await CheckCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
+                nameof(CheckAsync),
+                request?.ManifestId,
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckCoreAsync(
         string? tenantId,
         ProviderIntegrationSchemaDriftCheckRequestDto request,
         CancellationToken ct = default)

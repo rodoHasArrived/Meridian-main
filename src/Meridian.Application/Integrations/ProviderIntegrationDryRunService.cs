@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -12,10 +14,14 @@ public sealed class ProviderIntegrationDryRunService
     private const string ManualCsvEndpointKey = "manual-csv-upload";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationDryRunService> logger;
 
-    public ProviderIntegrationDryRunService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationDryRunService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationDryRunService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationDryRunService>.Instance;
     }
 
     public async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunAsync(
@@ -24,6 +30,36 @@ public sealed class ProviderIntegrationDryRunService
         => await RunManualCsvDryRunAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunAsync(
+        string? tenantId,
+        ManualCsvProviderIntegrationDryRunRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
+            nameof(RunManualCsvDryRunAsync),
+            request?.ManifestId,
+            request?.ConnectionId);
+        try
+        {
+            return await RunManualCsvDryRunCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
+                nameof(RunManualCsvDryRunAsync),
+                request?.ManifestId,
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunCoreAsync(
         string? tenantId,
         ManualCsvProviderIntegrationDryRunRequestDto request,
         CancellationToken ct = default)

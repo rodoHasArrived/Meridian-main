@@ -10,6 +10,8 @@ public sealed class StatementImportCommands(
     IStatementRunWorkflowService statementRunWorkflowService,
     ILogger log) : ICliCommand
 {
+    public IReadOnlyList<string> Triggers { get; } = [ "--statement-validate", "--statement-import" ];
+
     public bool CanHandle(string[] args)
         => (args.Contains("--statement-validate", StringComparer.OrdinalIgnoreCase)
             || args.Contains("--statement-import", StringComparer.OrdinalIgnoreCase))
