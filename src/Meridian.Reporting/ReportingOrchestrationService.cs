@@ -267,7 +267,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         ReportingRunVersionPlan version,
         CancellationToken cancellationToken)
     {
-        if (version.PriorManifest is not { Status: ReportingRunStatus.Released } released)
+        if (version.ReleasedHead is not { } released)
         {
             return;
         }
@@ -370,12 +370,19 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var nextOrdinal = priorRuns.Length == 0
             ? 1
             : priorRuns.Max(ResolveRunAttemptOrdinal) + 1;
+
+        // The "effective head" is the highest-ordinal run that is not Failed. Guarding on it rather
+        // than the absolute head keeps a still-released report protected even after a failed
+        // restatement attempt (whose Failed manifest would otherwise sit at the head and hide it).
+        var effectiveHead = priorRuns.FirstOrDefault(manifest => manifest.Status != ReportingRunStatus.Failed);
+        var releasedHead = effectiveHead is { Status: ReportingRunStatus.Released } ? effectiveHead : null;
+
         while (true)
         {
             var runId = BuildRunId(runSeriesId, nextOrdinal);
             if (reservedRunIds.TryAdd(runId, 0))
             {
-                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, priorRuns.FirstOrDefault());
+                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, priorRuns.FirstOrDefault(), releasedHead);
             }
 
             nextOrdinal++;
@@ -473,7 +480,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         string RunSeriesId,
         int RunAttemptOrdinal,
         string RunId,
-        ReportingOutputManifest? PriorManifest);
+        ReportingOutputManifest? PriorManifest,
+        ReportingOutputManifest? ReleasedHead);
 }
 
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer

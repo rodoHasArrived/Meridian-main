@@ -125,6 +125,32 @@ public sealed class ReportingOrchestrationServiceTests
         store.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_StillRequiresAuthorizationAfterAFailedRestatementAttempt()
+    {
+        var store = new CappedListingRunStore();
+        var contract = new ReportingJobContract("job-failretry", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        // v1 released.
+        var seeding = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var released = await ExecuteAndReleaseAsync(seeding, contract);
+
+        // An authorized restatement whose render fails persists a Failed v2 at the absolute head.
+        var failing = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new AlwaysFailingRenderer(), () => FixedNow, store);
+        var restate = async () => await failing.ExecuteAsync(
+            contract with { AllowRestatement = true, RetryReason = "attempt one" },
+            CancellationToken.None);
+        await restate.Should().ThrowAsync<InvalidOperationException>();
+
+        // A later run without authorization must still be blocked: v1 remains the released report,
+        // even though the failed v2 now sits at the absolute head of the series.
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var act = async () => await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+        store.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+    }
+
     private sealed class CappedListingRunStore : IReportingRunStore
     {
         private readonly Dictionary<string, ReportingOutputManifest> manifests = new(StringComparer.OrdinalIgnoreCase);
