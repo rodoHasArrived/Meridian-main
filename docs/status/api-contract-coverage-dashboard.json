@@ -1839,6 +1839,24 @@
       "documented": true
     },
     {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/dividend-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:19",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/fee-accrual-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:61",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/period-close-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:103",
+      "documented": true
+    },
+    {
       "method": "GET",
       "path": "/api/ledger/books",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:25",
@@ -2134,32 +2152,14 @@
     },
     {
       "method": "POST",
-      "path": "/api/ledger/journal-automation/dividend-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2018",
-      "documented": true
-    },
-    {
-      "method": "POST",
-      "path": "/api/ledger/journal-automation/fee-accrual-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2060",
-      "documented": true
-    },
-    {
-      "method": "POST",
-      "path": "/api/ledger/journal-automation/period-close-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2102",
-      "documented": true
-    },
-    {
-      "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/evidence",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2144",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2020",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2187",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2063",
       "documented": true
     },
     {
