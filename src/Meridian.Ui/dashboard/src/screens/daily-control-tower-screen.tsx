@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
@@ -33,7 +34,12 @@ const badgeVariantToStatus: Record<"outline" | "success" | "warning" | "danger",
 
 export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
-  const selectedQueueRow = model.queueRows[0] ?? null;
+  // Triage-in-place: the operator can inspect any queue row's evidence without
+  // leaving the tower. Falls back to the top-ranked row until one is chosen
+  // (or when the chosen row leaves the queue on refresh).
+  const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
+  const selectedQueueRow =
+    model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
 
   return (
     <section
@@ -140,16 +146,26 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {model.queueRows.map((row, index) => (
+                  {model.queueRows.map((row) => {
+                    const isSelected = row.item.id === selectedQueueRow?.item.id;
+                    return (
                     <tr
                       key={row.item.id}
-                      className={index === 0 ? "align-top bg-primary/5" : "align-top"}
-                      aria-current={index === 0 ? "true" : undefined}
+                      className={isSelected ? "align-top bg-primary/5" : "align-top"}
+                      aria-current={isSelected ? "true" : undefined}
                     >
                       <td className="max-w-sm px-4 py-4">
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium text-foreground">{row.item.label}</span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedQueueItemId(row.item.id)}
+                              aria-pressed={isSelected}
+                              aria-label={`Show evidence for ${row.item.label}`}
+                              className="text-left font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                            >
+                              {row.item.label}
+                            </button>
                             <SeverityBadge
                               status={badgeVariantToStatus[row.badgeVariant]}
                               label={row.statusLabel}
@@ -174,7 +190,8 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                         {row.proof?.label ?? row.proofPassportItems.find((item) => item.id === "freshness")?.value ?? "No evidence linked"}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
