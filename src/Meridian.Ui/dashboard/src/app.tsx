@@ -62,6 +62,13 @@ import {
 import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
+import { ActivityCenter } from "@/components/meridian/activity-center";
+import { ActivityLogProvider } from "@/lib/activity-log/store";
+import {
+  OnboardingCoachMark,
+  OnboardingHeaderProgress,
+  useOnboardingTour
+} from "@/components/meridian/onboarding-tour";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
@@ -108,7 +115,9 @@ export function App() {
   return (
     <PriceAlertsProvider>
       <ToastProvider>
-        <AppRoot />
+        <ActivityLogProvider>
+          <AppRoot />
+        </ActivityLogProvider>
       </ToastProvider>
     </PriceAlertsProvider>
   );
@@ -133,6 +142,7 @@ function AppShell() {
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const [storedOperatingScope, setStoredOperatingScope] = useState(readStoredOperatingScope);
+  const onboardingTour = useOnboardingTour();
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
   const suppressScopePersistRef = useRef(false);
@@ -473,6 +483,8 @@ function AppShell() {
         <WorkstationTrustStrip viewModel={shell.trustStrip} />
 
         <div className="workstation-actions">
+          <OnboardingHeaderProgress controller={onboardingTour} />
+          <ActivityCenter />
           <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
           {session ? (
             <div
@@ -558,7 +570,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
-                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId} />} />
+                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
@@ -683,6 +695,7 @@ function AppShell() {
         operatingScope={operatingScopeInput}
         onPresetUsed={handleWorkflowPresetUsed}
       />
+      <OnboardingCoachMark controller={onboardingTour} />
       <ScopePicker
         open={scopePickerOpen}
         onOpenChange={setScopePickerOpen}
