@@ -12,7 +12,7 @@
     "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs": 2052,
     "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs": 2969,
     "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs": 3712,
-    "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs": 6865,
+    "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs": 6798,
     "src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs": 2954,
     "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs": 2565,
     "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs": 5359,
