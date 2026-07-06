@@ -241,7 +241,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
 
         foreach (var kvp in timeSeries)
         {
-            if (!DateOnly.TryParse(kvp.Key, out var sessionDate))
+            if (!ProviderDateParsing.TryParseProviderDate(kvp.Key, out var sessionDate))
                 continue;
 
             // Skip if outside requested range

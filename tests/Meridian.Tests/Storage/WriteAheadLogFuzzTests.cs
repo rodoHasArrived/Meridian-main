@@ -9,6 +9,9 @@ namespace Meridian.Tests.Storage;
 /// byte-level corruption to verify that WAL recovery is robust in the face of
 /// crash scenarios. Covers the scenario described in the improvement brainstorm:
 /// "if the process crashes mid-write, the WAL file may contain a truncated JSON line."
+/// Scope is limited to generating and recovering from raw byte-level damage; well-formed-log
+/// behavior lives in <see cref="WriteAheadLogTests"/> and the configured corruption-response modes
+/// live in <see cref="WriteAheadLogCorruptionModeTests"/>.
 /// </summary>
 public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
 {
