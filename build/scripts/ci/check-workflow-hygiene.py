@@ -18,11 +18,11 @@ WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
 
 CURRENT_ACTION_REFS = {
     "actions/checkout": "v6.0.2",
-    "actions/setup-dotnet": "v5.2.0",
+    "actions/setup-dotnet": "v5.4.0",
     "actions/cache": "v5.0.5",
     "actions/upload-artifact": "v7.0.1",
     "actions/setup-node": "v6.4.0",
-    "actions/setup-python": "v6.2.0",
+    "actions/setup-python": "v6.3.0",
 }
 
 ACTIVE_DOC_ROOTS = [
