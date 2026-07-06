@@ -2,6 +2,7 @@ import { Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import type { ReportingRunStatusRow, ReportingTemplateRow } from "@/screens/reporting-screen.view-model";
@@ -12,7 +13,13 @@ import {
 } from "@/screens/reporting-screen.shared-components";
 import type { ReportWriterDatasetSource } from "@/types";
 
-export type ExportsReportRunDraftField = "templateRowId" | "asOfDate" | "maxRetries" | "requestedBy" | "datasetSourceId";
+export type ExportsReportRunDraftField =
+  | "templateRowId"
+  | "asOfDate"
+  | "maxRetries"
+  | "requestedBy"
+  | "datasetSourceId"
+  | "retryReason";
 
 export interface ExportsReportRunDraftState {
   templateRowId: string;
@@ -20,6 +27,8 @@ export interface ExportsReportRunDraftState {
   maxRetries: string;
   requestedBy: string;
   datasetSourceId: string;
+  retryReason: string;
+  restatementAuthorized: boolean;
 }
 
 interface ExportsReportRunnerProps {
@@ -32,6 +41,7 @@ interface ExportsReportRunnerProps {
   runningTemplateRunId: string | null;
   defaultRequester: string;
   onDraftChange: (field: ExportsReportRunDraftField, value: string) => void;
+  onRestatementAuthorizedChange: (value: boolean) => void;
   onRun: () => void;
 }
 
@@ -45,10 +55,15 @@ export function ExportsReportRunner({
   runningTemplateRunId,
   defaultRequester,
   onDraftChange,
+  onRestatementAuthorizedChange,
   onRun
 }: ExportsReportRunnerProps) {
   const selectedDataset = datasetSources.find((source) => source.sourceId === draft.datasetSourceId) ?? null;
-  const runDisabledReason = resolveExportsRunDisabledReason(selectedTemplate);
+  const restatementReasonMissing = draft.restatementAuthorized && draft.retryReason.trim().length === 0;
+  const runDisabledReason = resolveExportsRunDisabledReason(selectedTemplate)
+    ?? (restatementReasonMissing
+      ? "Enter a restatement reason to authorize superseding a released report."
+      : null);
   const isRunningSelected = Boolean(selectedTemplate && runningTemplateRunId === selectedTemplate.id);
 
   return (
@@ -151,6 +166,30 @@ export function ExportsReportRunner({
                 Run report
               </Button>
             </div>
+          </div>
+
+          <div className="rounded-md border border-warning/40 bg-warning/5 px-3 py-3" aria-label="Restatement authorization">
+            <Checkbox
+              label="Authorize restatement of an already-released report"
+              hint="Regenerating a released report is a governed action that supersedes the released run. Enable this only to restate it, and record why — the reason is retained in the run's audit trail."
+              checked={draft.restatementAuthorized}
+              onCheckedChange={(checked) => onRestatementAuthorizedChange(checked)}
+            />
+            {draft.restatementAuthorized ? (
+              <label className="mt-3 block space-y-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Restatement reason</span>
+                <Input
+                  value={draft.retryReason}
+                  onChange={(event) => onDraftChange("retryReason", event.target.value)}
+                  placeholder="Reason for restating the released report"
+                  aria-label="Restatement reason"
+                  aria-invalid={restatementReasonMissing ? true : undefined}
+                />
+                {restatementReasonMissing ? (
+                  <span className="text-xs text-warning">A restatement reason is required to supersede a released report.</span>
+                ) : null}
+              </label>
+            ) : null}
           </div>
 
           <div className="grid gap-3 xl:grid-cols-[1fr_1fr]">

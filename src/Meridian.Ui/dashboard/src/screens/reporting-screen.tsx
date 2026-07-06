@@ -583,6 +583,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     });
   }
 
+  function updateExportsReportRestatementAuthorized(value: boolean) {
+    setExportsRunDraft((current) => ({
+      ...current,
+      restatementAuthorized: value,
+      // Clear any carried reason when the operator revokes restatement authorization.
+      retryReason: value ? current.retryReason : ""
+    }));
+  }
+
   async function handleExportsReportRun() {
     if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand || runningTemplateRunId) {
       return;
@@ -1926,6 +1935,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester={defaultExportsReportRunRequester}
         onDraftChange={updateExportsReportRunDraft}
+        onRestatementAuthorizedChange={updateExportsReportRestatementAuthorized}
         onRun={() => void handleExportsReportRun()}
       />
 
@@ -2980,7 +2990,9 @@ function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceRespons
     asOfDate: new Date().toISOString().slice(0, 10),
     maxRetries: "0",
     requestedBy: defaultExportsReportRunRequester,
-    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting)
+    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting),
+    retryReason: "",
+    restatementAuthorized: false
   };
 }
 
@@ -2998,12 +3010,16 @@ export function buildExportsReportRunRequest(
   template: ReportingTemplateRow,
   draft: ExportsReportRunDraftState
 ): ReportingRunRequest {
+  const allowRestatement = draft.restatementAuthorized;
+  const retryReason = allowRestatement ? draft.retryReason.trim() || null : null;
   return {
     templateId: template.templateName,
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
-    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
+    retryReason,
+    allowRestatement: allowRestatement || undefined
   };
 }
 

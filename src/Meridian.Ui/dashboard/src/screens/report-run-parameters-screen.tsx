@@ -70,7 +70,9 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     asOfDate: todayIsoDate(),
     maxRetries: "0",
     requestedBy: "browser-user",
-    datasetSourceId: ""
+    datasetSourceId: "",
+    retryReason: "",
+    restatementAuthorized: false
   }));
   const [status, setStatus] = useState<ReportingCommandStatus | null>(null);
   const [manualDrafts, setManualDrafts] = useState<ManualJournalEntryDraft[]>([]);
@@ -119,6 +121,14 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
 
   const onDraftChange = (field: ExportsReportRunDraftField, value: string) => {
     setDraft((current) => ({ ...current, [field]: value }));
+  };
+
+  const onRestatementAuthorizedChange = (value: boolean) => {
+    setDraft((current) => ({
+      ...current,
+      restatementAuthorized: value,
+      retryReason: value ? current.retryReason : ""
+    }));
   };
 
   const onStandardDraftChange = (field: keyof typeof standardDraft, value: string | boolean) => {
@@ -532,6 +542,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester="browser-user"
         onDraftChange={onDraftChange}
+        onRestatementAuthorizedChange={onRestatementAuthorizedChange}
         onRun={() => void onRun()}
       />
 
