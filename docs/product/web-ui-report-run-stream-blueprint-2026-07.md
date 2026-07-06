@@ -5,7 +5,7 @@
 **Owner:** Workstation Shell and UX
 **Reviewed:** 2026-07-06
 
-**Summary:** Design for review — no implementation in this PR.
+**Summary:** Design approved — open questions resolved 2026-07-06 (§11). Implementation begins with the D1 phase (§9), starting with the notifier seam.
 **Extends:** `docs/product/web-ui-stream-fan-out-blueprint-2026-07.md` (§9 "PR D — Additional topics").
 **Scope owner surfaces:** `src/Meridian.Reporting` (notify seam), `src/Meridian.Ui.Shared` (broadcaster generalization + SSE endpoint), `src/Meridian.Ui/dashboard` (stream client + reporting screen).
 
@@ -200,11 +200,11 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
 
 Run ids are opaque identifiers (no case/order canonicalization like symbols), so `ReportRun` just trims. Equality/hashing stay `Key`-based, so nothing else in the struct changes.
 
-### 5.3 Broadcaster: generalize the coalescing core (recommended) vs. parallel class
+### 5.3 Broadcaster: generic `StreamBroadcaster<TPayload>` (decided — Q1)
 
 The quote broadcaster's machinery — `topic → Set<Subscriber>`, the wake channel, the coalescing loop, bounded drop-oldest subscriber channels, registry reserve/release, idempotent subscription dispose — is **payload-agnostic**. Only three things are quote-typed: the payload (`QuotesSnapshotResponse`), the build delegate, and the coalesce-equality (`QuoteRowsEqual`).
 
-**Recommended: extract a generic `StreamBroadcaster<TPayload>`** in `src/Meridian.Ui.Shared/Streaming/`, parameterized by a build delegate and an equality delegate, and refactor `QuoteStreamBroadcaster` to be a thin configuration of it. The report-run broadcaster is then a second configuration.
+**Decision (Q1): extract a generic `StreamBroadcaster<TPayload>`** in `src/Meridian.Ui.Shared/Streaming/`, parameterized by a build delegate and an equality delegate, and refactor `QuoteStreamBroadcaster` to be a thin configuration of it. The report-run broadcaster is then a second configuration. The extraction lands as a **behavior-preserving commit gated by the unchanged quote suite**, kept separate from the report-run wiring so "did I break quotes" is isolated from "does report-run work" (§9 D1c/D1d).
 
 ```csharp
 public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable where TPayload : class
@@ -225,9 +225,12 @@ public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable where TPayloa
 - `QuoteStreamBroadcaster` becomes: `IQuoteStreamBroadcaster` façade wrapping `StreamBroadcaster<QuotesSnapshotResponse>` with `build = topic => LiveDataEndpoints.TryBuildQuotesSnapshotResponse(services, topic.SymbolFilter)` and `coalesceComparer` = a `QuoteRowsEqual`-backed comparer. `NotifyQuoteChanged` → `Wake(all)` (unchanged external behavior).
 - `ReportRunStreamBroadcaster` becomes: `IReportingRunNotifier` + a `TrySubscribe` façade wrapping `StreamBroadcaster<ReportingRunAuditTrailDto>` with `build = topic => BuildReportRunPayload(services, topic.Argument)` and `coalesceComparer` = record/status equality. `NotifyRunChanged(runId)` → `Wake(StreamTopic.ReportRun(runId))`.
 
-Because report-run wakes are **per-run** (not "all symbols changed"), `StreamBroadcaster` should support a **targeted** wake (mark only the named topic dirty) in addition to the quote path's wake-all. Quote path keeps wake-all (any symbol can change any topic); report-run uses targeted wake (a run id maps to exactly one topic) — a strictly cheaper rebuild set.
+Two semantics differ between the two configurations, and the generic must parameterize both:
 
-*Risk note:* refactoring `QuoteStreamBroadcaster` touches the shipped quote hot path. Mitigation: its existing test suite (`QuoteStreamBroadcasterTests`, `WorkstationStreamEndpointTests`) is the regression gate and must pass unchanged; the refactor is mechanical (same loop, generic element type). **Alternative if the reviewer prefers zero churn to the shipped path:** ship a standalone `ReportRunStreamBroadcaster` that duplicates the ~120-line loop. This avoids touching quotes but duplicates concurrency-sensitive code (a maintenance hazard). Recommendation stands with the generic extraction; see §11 Q1.
+- **Wake granularity.** Quotes wake **all** topics (any symbol can change any topic); report-run wakes a **single** topic (`Wake(StreamTopic.ReportRun(runId))`). The generic exposes both `Wake(topic)` and `WakeAll()`; the quote façade keeps wake-all, report-run uses targeted wake — a strictly cheaper rebuild set.
+- **Empty-topic lifecycle.** Quote topics are a *bounded* universe (canonical symbol sets) and are deliberately **retained** when empty (the shipped skip-build-when-empty optimization, which also avoids a subscribe/remove race). Report-run topics are keyed by run id — an **unbounded, ever-growing** set — so they **must be evicted on last unsubscribe**, or `TopicState` leaks one entry per run id forever. The generic takes an `EvictEmptyTopics` flag (quotes `false`, report-run `true`); eviction removes the topic under the same atomic claim used for subscriber dispose, and a later subscribe re-creates it. This is the one genuinely new piece of concurrency code and carries its own tests regardless (§8), so it is the risk to watch in D1c/D1d — not the mechanical element-type generalization.
+
+*Risk note:* the extraction touches the shipped quote hot path. Mitigation: `QuoteStreamBroadcasterTests` + `WorkstationStreamEndpointTests` are the regression gate and must pass **unchanged**; the quote refactor is a separate commit from the report-run wiring. A standalone parallel `ReportRunStreamBroadcaster` was considered and **rejected** — it would duplicate ~250 lines of concurrency-sensitive machinery (two copies that drift), a worse long-term hazard than a test-gated extraction.
 
 ### 5.4 Report-run payload builder (auth-free, by id)
 
@@ -353,24 +356,28 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## 9. Phasing (each a separate PR, hot-path review gated)
 
-1. **PR D1 — Notifier seam + `StreamTopic` generalization + generic broadcaster (shadow).** `IReportingRunNotifier`/`NullReportingRunNotifier`, `ReportingOrchestrationService` optional param firing in `PersistAsync`, `StreamTopic.ReportRun`/`Argument`, `StreamBroadcaster<TPayload>` extracted with `QuoteStreamBroadcaster` refactored onto it, `ReportRunStreamBroadcaster` + payload builder registered but **not yet exposed by an endpoint**. Unit tests; quote suite is the regression gate. **Requires hot-path review** of the notifier call site and the quote-broadcaster refactor.
-2. **PR D2 — SSE endpoint + auth + registry/caps.** Add `/reporting/runs/{runId}/stream` with subscribe-time authorization (403/404), 429/503, heartbeat. Endpoint tests. Flip the feature on.
+1. **PR D1 — Notifier seam + topic generalization + generic broadcaster (shadow).** Landed as isolated, individually CI-verifiable commits so hot-path review is scoped:
+   - **D1a — Notifier seam.** `IReportingRunNotifier`/`NullReportingRunNotifier` (Contracts); `ReportingOrchestrationService` gains the binary-compatible ctor overload (§5.1) firing `NotifyRunChanged` in `PersistAsync`; DI resolves it (null-object default). Tests: fires on generation/failure/each approval transition; a throwing notifier never surfaces and the run still persists. **Requires hot-path review** of the call site.
+   - **D1b — `StreamTopic` generalization.** Add `Argument` + `StreamTopic.ReportRun`, keeping the quote surface (`Quotes`/`AllQuotes`/`SymbolFilter`). Unit tests.
+   - **D1c — Generic broadcaster extraction.** Extract `StreamBroadcaster<TPayload>` (with `WakeAll()`/`Wake(topic)` and `EvictEmptyTopics`) and refactor `QuoteStreamBroadcaster` onto it — behavior-preserving; `QuoteStreamBroadcasterTests`/`WorkstationStreamEndpointTests` pass **unchanged** as the gate.
+   - **D1d — Report-run broadcaster (shadow).** `ReportRunStreamBroadcaster` (`EvictEmptyTopics=true`, targeted wake) + payload builder + DI, wired to `IReportingRunNotifier`, but **not yet exposed by an endpoint**. Broadcaster unit tests incl. topic eviction.
+2. **PR D2 — SSE endpoint + auth + registry/caps.** Extract the shared SSE loop/heartbeat/`ResolveStreamSessionId` helper out of `WorkstationEndpoints.Stream.cs`; add `GET /api/fund-structure/reporting/runs/{runId}/stream` with subscribe-time authorization (403/404), 429/503, heartbeat. Endpoint tests. Flip the feature on.
 3. **PR D3 — Client stream + reporting-screen adoption.** `report-run-stream.ts`, `use-report-run-stream.ts`, watched-run live status + `FreshnessChip`. Client tests. Additive — no poll suspended.
 
 ## 10. Risks & mitigations
 
 | Risk | Mitigation |
 | --- | --- |
-| Generic refactor regresses the shipped quote path | Mechanical extraction (same loop, generic element); `QuoteStreamBroadcasterTests` + `WorkstationStreamEndpointTests` must pass unchanged as the gate. Zero-churn alternative (parallel class) available if the reviewer prefers (§5.3, §11 Q1). |
+| Generic refactor regresses the shipped quote path | Mechanical extraction (same loop, generic element); `QuoteStreamBroadcasterTests` + `WorkstationStreamEndpointTests` must pass unchanged as the gate; the quote refactor is a separate commit from report-run wiring. Parallel-class alternative considered and rejected (§5.3). |
 | Notifier stalls or fails run execution | Non-blocking wake fired **after** the durable `SaveAsync`, wrapped in a call-site try/catch + a null-object default; explicit throwing-notifier test. No `await` added to the execution path beyond the existing save. |
 | Authorizing on a background loop (no HttpContext) | Authorization is done at **subscribe** (HttpContext present), reusing the audit endpoint's exact checks; the loop builds by run id only, and run status is viewer-independent. A subscriber that loses access mid-stream is bounded by the connection lifetime (acceptable; runs are short-lived governance objects). |
 | Low value if runs are only ever self-initiated | The value is **cross-operator approval transitions**, which are exactly the multi-user case the 30 s poll serves poorly; single-operator self-runs already get terminal status synchronously and simply see it via the stream too. |
-| Per-session cap shared with quotes rejects a legitimate run stream | Default cap is generous; 429 + `Retry-After` is explicit and the screen falls back to the 30 s poll, never hard-fails. A separate cap dimension is a possible refinement (§11 Q3). |
+| Per-session cap shared with quotes rejects a legitimate run stream | Default cap is generous; 429 + `Retry-After` is explicit and the screen falls back to the 30 s poll, never hard-fails. A separate cap dimension is a deferred refinement (§11 item 3). |
 | Durability guardrail drift | `IReportingRunStore` atomic-write path is untouched; the notify fires only after `SaveAsync` completes; no WAL/atomic-write code is modified. |
 
-## 11. Open questions for the reviewer
+## 11. Resolved decisions (2026-07-06)
 
-1. **Broadcaster generalization** — extract `StreamBroadcaster<TPayload>` and refactor the shipped `QuoteStreamBroadcaster` onto it (recommended; less duplication, quote tests gate it), or ship a standalone `ReportRunStreamBroadcaster` with a duplicated loop (zero churn to the shipped quote path)?
-2. **Route placement** — co-locate the SSE route under `/api/fund-structure/reporting/runs/{runId}/stream` (beside the run/audit routes, this blueprint's assumption), or under the workstation stream group for consistency with `/api/workstation/stream`?
-3. **Options + cap** — reuse `QuoteStreamOptions` (shared coalesce interval + per-session cap) for report-run, or introduce `ReportRunStreamOptions` with its own cadence and a separate cap dimension?
-4. **Payload shape** — stream the full `ReportingRunAuditTrailDto` (manifest status + audit trail; matches the existing endpoint and reuses `ProjectReportingRunAuditTrail`), or a lighter status-only projection (`ReportingStatusProjection`) to minimize frame size, at the cost of a second projection to maintain?
+1. **Broadcaster generalization → generic `StreamBroadcaster<TPayload>`.** Extract the generic core and refactor the shipped `QuoteStreamBroadcaster` onto it, as a behavior-preserving commit gated by the unchanged quote suite (§5.3, §9 D1c). Rationale: keep the concurrency-sensitive machinery in one audited place; the divergences (wake granularity, empty-topic eviction) are cleanly parameterized. The standalone parallel-class alternative was rejected — it duplicates ~250 lines of concurrency code that would drift.
+2. **Route placement → `/api/fund-structure/reporting/runs/{runId}/stream`.** The stream is another view of the same resource as `GET /runs/{runId}/audit`; co-locating in `FundStructureEndpoints` reuses the exact auth (`HasReportingReadPermission`, `EvaluateAccess`, `BuildReportAccessQueryContext`) in-place. The SSE loop/heartbeat/`ResolveStreamSessionId` helper is extracted from `WorkstationEndpoints.Stream.cs` into a shared internal helper so both endpoints share it (§9 D2).
+3. **Options + cap → reuse `QuoteStreamOptions` + the shared `StreamConnectionRegistry` cap.** The 250 ms coalesce is harmless at report-run's low frequency; the shared registry keeps the cap a stronger total-SSE-per-session guard; report-run is low-cardinality and a cap breach degrades gracefully to the 30 s poll. A separate `ReportRunStreamOptions`/cap dimension is deferred (YAGNI) until telemetry shows contention. (The `QuoteStreamOptions` name/section becomes slightly generic once it serves multiple stream types — an optional rename to `StreamOptions`, not pursued now to avoid churn.)
+4. **Payload shape → full `ReportingRunAuditTrailDto`.** The audit trail *is* the value (approval transitions carry actor + notes); it reuses the pure `ProjectReportingRunAuditTrail` and an existing client type, and per-run trails are small. The light `ReportingStatusProjection` was rejected — it drops the transition detail the stream exists to surface.
