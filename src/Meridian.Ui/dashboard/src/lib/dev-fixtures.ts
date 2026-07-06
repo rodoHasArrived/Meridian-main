@@ -30,8 +30,6 @@ import type {
   AccountingReportPackageBundle,
   AccountingConfigurationWorkspace,
   AccountingWorkspaceResponse,
-  HistoricalBarsResponse,
-  OrderBookResponse,
   OperatorInbox,
   OperatorWorkflowHomeSummary,
   OperationsApprovalPolicyMatrix,
@@ -64,8 +62,6 @@ import type {
   PromotionRecord,
   QuantParametersResponse,
   QuantTemplatesResponse,
-  QuotesResponse,
-  QuotesSnapshotResponse,
   ReconciliationCalibrationSummary,
   RiskRuleConfig,
   RiskRuleStatus,
@@ -86,13 +82,10 @@ import type {
   StrategyDesignDraftSummary,
   StrategyDesignFieldCatalogItem,
   StrategyDesignTemplate,
-  SymbolRecord,
-  SymbolStatistics,
   SystemOverviewResponse,
   TradingOperatorReadiness,
   TradingParameters,
   TradingWorkspaceResponse,
-  TradesResponse,
   UserAccessAssignment,
   WorkflowAction,
   WorkflowLibrary,
@@ -104,7 +97,6 @@ import {
   COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   FUND_STRUCTURE_API_ENDPOINTS,
-  MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
@@ -116,12 +108,20 @@ import {
   SECURITY_MASTER_API_ENDPOINTS,
   STATEMENT_CONNECTOR_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
-  SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionStatusEndpoint,
   riskRuleConfigEndpoint,
   workstationFinancialRecordExplorerEndpoint
 } from "./workstation-endpoints";
+import {
+  apiRoutePattern,
+  cloneFixture,
+  readDecodedPathSegment,
+  readFixtureSearchParams,
+  resolveFixtureFromMaps,
+  type DynamicFixturePattern
+} from "./dev-fixtures/fixture-resolver";
+import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -4718,41 +4718,6 @@ const fixtureOperatorOverrides: Record<string, OperatorOverridesDto> = {
   }
 };
 
-interface FixtureMarketProfile {
-  bidPrice: number;
-  bidSize: number;
-  askPrice: number;
-  askSize: number;
-  lastPrice: number;
-  venue: string;
-  streamId: string;
-}
-
-const fixtureMarketTimestamp = "2026-05-08T15:00:00.000Z";
-
-const fixtureMarketProfiles: Record<string, FixtureMarketProfile> = {
-  AAPL: { bidPrice: 188.05, bidSize: 200, askPrice: 188.07, askSize: 150, lastPrice: 188.06, venue: "NASDAQ", streamId: "fixture-aapl" },
-  MSFT: { bidPrice: 421.1, bidSize: 300, askPrice: 421.2, askSize: 250, lastPrice: 421.15, venue: "NASDAQ", streamId: "fixture-msft" },
-  NVDA: { bidPrice: 950.2, bidSize: 80, askPrice: 950.45, askSize: 65, lastPrice: 950.35, venue: "NASDAQ", streamId: "fixture-nvda" },
-  QQQ: { bidPrice: 438.24, bidSize: 420, askPrice: 438.28, askSize: 390, lastPrice: 438.26, venue: "NASDAQ", streamId: "fixture-qqq" },
-  SPY: { bidPrice: 512.44, bidSize: 500, askPrice: 512.48, askSize: 520, lastPrice: 512.46, venue: "NYSE Arca", streamId: "fixture-spy" }
-};
-
-const fixtureSymbolRecords: SymbolRecord[] = [
-  { symbol: "AAPL", status: "Active", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1842, hasHistoricalData: true },
-  { symbol: "MSFT", status: "Active", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1328, hasHistoricalData: true },
-  { symbol: "QQQ", status: "Monitored", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 942, hasHistoricalData: true },
-  { symbol: "SPY", status: "Monitored", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1104, hasHistoricalData: true }
-];
-
-const fixtureSymbolStatistics: SymbolStatistics = {
-  totalSymbols: fixtureSymbolRecords.length,
-  monitoredSymbols: fixtureSymbolRecords.filter((symbol) => symbol.status === "Active" || symbol.status === "Monitored").length,
-  archivedSymbols: 0,
-  symbolsWithErrors: 0,
-  totalEventsLast24h: fixtureSymbolRecords.reduce((total, symbol) => total + symbol.eventCount, 0)
-};
-
 const fixtureOperationsWorkflowId = "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6";
 const fixtureAccountingRecordId = "accounting-record-2026-05";
 const fixtureAccountingRecordEvidenceRoute = `/reporting/evidence?subjectKind=accounting-record&subjectId=${fixtureOperationsWorkflowId}`;
@@ -6540,14 +6505,8 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
-  [SYMBOL_API_ENDPOINTS.symbols]: fixtureSymbolRecords,
-  [SYMBOL_API_ENDPOINTS.statistics]: fixtureSymbolStatistics
+  ...marketDataFixtureRoutes
 } satisfies Record<string, unknown>;
-
-type DynamicFixturePattern = {
-  pattern: RegExp;
-  resolve: (cleanPath: string, path: string) => unknown | undefined;
-};
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
 
@@ -6611,14 +6570,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
         : undefined;
     }
   },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotes, "/[^/]+"), resolve: (cleanPath) => buildFixtureQuote(readSymbolFromPath(cleanPath)) },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.trades, "/[^/]+"), resolve: (cleanPath) => buildFixtureTrades(readSymbolFromPath(cleanPath)) },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.orderbook, "/[^/]+"), resolve: (cleanPath) => buildFixtureOrderbook(readSymbolFromPath(cleanPath)) },
-  {
-    pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.historical, "/[^/]+/bars"),
-    resolve: (cleanPath, path) => buildFixtureHistoricalBars(readSymbolFromPath(cleanPath, 1), path)
-  },
-  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotesSnapshot), resolve: (_cleanPath, path) => buildFixtureQuotesSnapshot(path) },
+  ...marketDataFixturePatterns,
   {
     pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
     resolve: (cleanPath) => {
@@ -6677,228 +6629,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {
-  const cleanPath = path.split("?")[0];
-  const exact = fixtures[cleanPath as keyof typeof fixtures];
-  if (exact !== undefined) {
-    return cloneFixture(exact as T);
-  }
-
-  for (const { pattern, resolve } of dynamicFixturePatterns) {
-    if (pattern.test(cleanPath)) {
-      const fixture = resolve(cleanPath, path);
-      if (fixture !== undefined) {
-        return cloneFixture(fixture as T);
-      }
-    }
-  }
-
-  return undefined;
-}
-
-function readSymbolFromPath(cleanPath: string, segmentFromEnd = 0): string {
-  const rawSymbol = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "AAPL";
-  try {
-    return decodeURIComponent(rawSymbol).trim().toUpperCase() || "AAPL";
-  } catch {
-    return rawSymbol.trim().toUpperCase() || "AAPL";
-  }
-}
-
-function readDecodedPathSegment(cleanPath: string, segmentFromEnd = 0): string {
-  const rawSegment = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "";
-  try {
-    return decodeURIComponent(rawSegment).trim();
-  } catch {
-    return rawSegment.trim();
-  }
-}
-
-function apiRoutePattern(baseRoute: string, suffixPattern = ""): RegExp {
-  return new RegExp(`^${escapeRegExp(baseRoute)}${suffixPattern}$`);
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function getFixtureMarketProfile(symbol: string): FixtureMarketProfile {
-  const normalized = symbol.trim().toUpperCase();
-  const known = fixtureMarketProfiles[normalized];
-  if (known) {
-    return known;
-  }
-
-  const offset = Math.max(0, Math.min(8, normalized.length)) * 0.13;
-  return {
-    ...fixtureMarketProfiles.AAPL!,
-    bidPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.bidPrice + offset),
-    askPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.askPrice + offset),
-    lastPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.lastPrice + offset),
-    streamId: `fixture-${normalized.toLowerCase()}`
-  };
-}
-
-function buildFixtureQuote(symbol: string): QuotesResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  return {
-    symbol: normalized,
-    timestamp: fixtureMarketTimestamp,
-    quote: {
-      symbol: normalized,
-      timestamp: fixtureMarketTimestamp,
-      bidPrice: profile.bidPrice,
-      bidSize: profile.bidSize,
-      askPrice: profile.askPrice,
-      askSize: profile.askSize,
-      midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
-      spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
-      sequenceNumber: 42,
-      streamId: profile.streamId,
-      venue: profile.venue,
-      session: null
-    }
-  };
-}
-
-function buildFixtureQuotesSnapshot(path: string): QuotesSnapshotResponse {
-  const params = readFixtureSearchParams(path);
-  const requestedSymbols = (params.get("symbols") ?? "")
-    .split(",")
-    .map((symbol) => symbol.trim().toUpperCase())
-    .filter(Boolean);
-  const symbols = requestedSymbols.length > 0 ? requestedSymbols : fixtureSymbolRecords.map((symbol) => symbol.symbol);
-
-  return {
-    timestamp: fixtureMarketTimestamp,
-    count: symbols.length,
-    quotes: symbols.map((symbol, index) => {
-      const profile = getFixtureMarketProfile(symbol);
-      return {
-        symbol,
-        timestamp: fixtureMarketTimestamp,
-        bidPrice: profile.bidPrice,
-        bidSize: profile.bidSize,
-        askPrice: profile.askPrice,
-        askSize: profile.askSize,
-        midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
-        spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
-        lastPrice: profile.lastPrice,
-        lastSize: 100 + index * 25,
-        lastTradeTimestamp: fixtureMarketTimestamp,
-        sequenceNumber: 1000 + index,
-        streamId: profile.streamId,
-        venue: profile.venue,
-        session: null
-      };
-    })
-  };
-}
-
-function buildFixtureTrades(symbol: string): TradesResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  const baseTimestamp = new Date(fixtureMarketTimestamp).getTime();
-  const offsets = [0.03, -0.01, 0.07, -0.04, -0.08, 0.02, -0.12, -0.05];
-  const trades = offsets.map((offset, index) => ({
-    symbol: normalized,
-    timestamp: new Date(baseTimestamp - index * 30_000).toISOString(),
-    price: roundMarketPrice(profile.lastPrice + offset),
-    size: 50 + index * 25,
-    aggressor: index % 3 === 0 ? "Buy" : index % 3 === 1 ? "Sell" : "Neutral",
-    sequenceNumber: 500 - index,
-    streamId: profile.streamId,
-    venue: profile.venue
-  }));
-
-  return {
-    symbol: normalized,
-    trades,
-    count: trades.length,
-    timestamp: fixtureMarketTimestamp
-  };
-}
-
-function buildFixtureOrderbook(symbol: string): OrderBookResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  return {
-    symbol: normalized,
-    timestamp: fixtureMarketTimestamp,
-    bids: [0, 1, 2, 3, 4].map((level) => ({
-      side: "Bid",
-      level: level + 1,
-      price: roundMarketPrice(profile.bidPrice - level * 0.02),
-      size: Math.max(25, profile.bidSize - level * 20),
-      marketMaker: null
-    })),
-    asks: [0, 1, 2, 3, 4].map((level) => ({
-      side: "Ask",
-      level: level + 1,
-      price: roundMarketPrice(profile.askPrice + level * 0.02),
-      size: Math.max(25, profile.askSize - level * 15),
-      marketMaker: null
-    })),
-    midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
-    imbalance: roundMarketPrice((profile.bidSize - profile.askSize) / Math.max(1, profile.bidSize + profile.askSize)),
-    marketState: "Open",
-    sequenceNumber: 42,
-    isStale: false,
-    streamId: profile.streamId,
-    venue: profile.venue
-  };
-}
-
-function buildFixtureHistoricalBars(symbol: string, path: string): HistoricalBarsResponse {
-  const normalized = symbol.trim().toUpperCase() || "AAPL";
-  const profile = getFixtureMarketProfile(normalized);
-  const params = readFixtureSearchParams(path);
-  const intervalMinutes = Number(params.get("intervalMinutes") ?? 5);
-  const start = new Date("2026-05-08T13:30:00.000Z").getTime();
-  const offsets = [-0.72, -0.46, -0.3, -0.16, 0.05, 0.12, 0.01, 0.18, 0.31, 0.24, 0.36, 0.29];
-  const bars = offsets.map((offset, index) => {
-    const open = roundMarketPrice(profile.lastPrice + offset);
-    const close = roundMarketPrice(profile.lastPrice + offsets[Math.min(index + 1, offsets.length - 1)]!);
-    const high = roundMarketPrice(Math.max(open, close) + 0.08);
-    const low = roundMarketPrice(Math.min(open, close) - 0.07);
-    const volume = 15_000 + index * 1_250;
-    return {
-      start: new Date(start + index * intervalMinutes * 60_000).toISOString(),
-      open,
-      high,
-      low,
-      close,
-      volume,
-      vwap: roundMarketPrice((open + high + low + close) / 4),
-      tradeCount: 40 + index * 3
-    };
-  });
-
-  return {
-    success: true,
-    message: null,
-    symbol: normalized,
-    intervalMinutes: Number.isFinite(intervalMinutes) && intervalMinutes > 0 ? intervalMinutes : 5,
-    from: params.get("from"),
-    to: params.get("to"),
-    totalBars: bars.length,
-    filesProcessed: 1,
-    totalFiles: 1,
-    queryTimeMs: 3,
-    bars
-  };
-}
-
-function readFixtureSearchParams(path: string): URLSearchParams {
-  try {
-    return new URL(path, "http://meridian.local").searchParams;
-  } catch {
-    return new URLSearchParams();
-  }
-}
-
-function roundMarketPrice(value: number): number {
-  return Math.round(value * 10000) / 10000;
+  return resolveFixtureFromMaps<T>(path, fixtures, dynamicFixturePatterns);
 }
 
 export function searchDevSecurityMasterEntries(query: string, take = 25, activeOnly = true): SecurityMasterEntry[] {
@@ -6929,12 +6660,4 @@ export function searchDevSecurityMasterEntries(query: string, take = 25, activeO
     })
     .slice(0, take)
     .map((entry) => cloneFixture(entry));
-}
-
-function cloneFixture<T>(fixture: T): T {
-  if (typeof structuredClone === "function") {
-    return structuredClone(fixture);
-  }
-
-  return JSON.parse(JSON.stringify(fixture)) as T;
 }

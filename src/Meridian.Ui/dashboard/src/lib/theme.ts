@@ -7,12 +7,20 @@ export function isAppearance(value: unknown): value is Appearance {
 }
 
 export function readStoredAppearance(storage: Storage | null = getLocalStorage()): Appearance {
-  const stored = storage?.getItem(APPEARANCE_STORAGE_KEY);
-  return isAppearance(stored) ? stored : "system";
+  try {
+    const stored = storage?.getItem(APPEARANCE_STORAGE_KEY);
+    return isAppearance(stored) ? stored : "system";
+  } catch {
+    return "system";
+  }
 }
 
 export function writeStoredAppearance(appearance: Appearance, storage: Storage | null = getLocalStorage()) {
-  storage?.setItem(APPEARANCE_STORAGE_KEY, appearance);
+  try {
+    storage?.setItem(APPEARANCE_STORAGE_KEY, appearance);
+  } catch {
+    // Appearance persistence is best-effort when browser storage is blocked.
+  }
 }
 
 export function applyAppearance(
@@ -31,7 +39,7 @@ export function applyAppearance(
   root.setAttribute("data-theme", appearance);
 }
 
-function getLocalStorage() {
+export function getLocalStorage() {
   try {
     return typeof localStorage === "undefined" ? null : localStorage;
   } catch {

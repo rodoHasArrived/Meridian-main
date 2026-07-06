@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -2373,8 +2374,7 @@ function formatQuantity(value: number): string {
 }
 
 function formatCurrency(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
 }
 
 function slugifyId(value: string): string {
