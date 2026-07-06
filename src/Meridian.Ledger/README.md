@@ -47,6 +47,14 @@ fair-value adjustments flow through `AutomatedJournalApproval` before posting; t
 Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
+`FixedAssetDepreciationProjector` is the depreciation analogue: it projects balanced
+depreciation-expense/accumulated-depreciation (contra-asset) lines scoped per fixed asset.
+`DepreciationScheduleCalculator` builds the period-by-period schedule (straight-line,
+declining-balance with an auto-switch to straight-line and salvage floor, and usage-driven
+units-of-production), always depreciating to salvage value with the final period absorbing rounding.
+`FixedAssetDepreciationDraftBuilder` batches all of a period's per-asset projections into a single
+governed `AutomatedJournalDraft` (kind `DepreciationPosted`) so one approval covers the whole
+depreciation run, mirroring `DailyPortfolioPricingDraftBuilder`.
 `LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger
 account level so accounting statements can follow front-office lot-relief policy.
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
