@@ -1899,7 +1899,7 @@ public static partial class LedgerEndpoints
             // Closing entries are the sanctioned exception to the closed-period posting bar; only the
             // in-process period-close automation may produce them. Reject client-submitted ClosingEntry
             // drafts so this HTTP boundary cannot be used to post to a closed period.
-            if (request.Draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            if (request.Draft?.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
             {
                 return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
             }
@@ -1955,7 +1955,7 @@ public static partial class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            if (request.Draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            if (request.Draft?.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
             {
                 return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
             }
