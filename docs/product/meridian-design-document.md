@@ -2934,6 +2934,65 @@ because accounting output exists; it is complete when the event's evidence, appr
 account or investor impact, reporting outputs, delivery records, and support package can be
 reconstructed.
 
+### Capital Account Workbench
+
+The Capital Account Workbench should be the operator surface for proving investor economics rather
+than a standalone investor portal. It should scope every view by tenant, organization, fund, legal
+entity, investor, investment vehicle, class or series, capital account, book, period, and report
+package so that a fund accountant can distinguish fund-level economics from investor-specific,
+entity-specific, and statement-specific results. Saved views should preserve that scope and expose
+whether the user is reviewing production records, an amendment candidate, a restatement package, or
+a tax/audit support request.
+
+The workbench should provide coordinated views for the core capital-account lifecycle:
+
+* Commitment view: subscription commitment, remaining commitment, unfunded balance, side-letter or
+  class terms, effective dates, subscription-document evidence, and related closing fund event.
+* Contribution view: capital calls, contribution notices, expected cash, bank receipt evidence,
+  contribution journal entries, true-up activity, and late or short funding exceptions.
+* Distribution view: distribution allocations, notices, expected payment intent, bank/custodian
+  confirmation, withholding or tax support, distribution journal entries, and returned or amended
+  payment evidence.
+* Allocation view: income, expense, realized gain/loss, unrealized gain/loss, fee, carry, special
+  allocation, and class/series rule application with allocation-rule version and reviewer state.
+* Fee view: management fee, incentive fee, carried-interest, waiver, offset, reimbursement, and
+  expense-allocation support linked to fee calculations and Meridian-owned journals.
+* NAV view: opening capital, period activity, valuation support, NAV share, roll-forward, shadow NAV
+  or administrator tie-out variance, close blockers, and reviewer sign-off.
+* Statement view: statement contents, template version, dataset version, report-line provenance,
+  delivery status, amendment/restatement state, recipient entitlement, and support manifest.
+
+Every capital-account row should tie out to Meridian-owned journal entries and fund events before it
+can be treated as reportable. The workbench should show the fund event that created or changed the
+activity, the draft or posted journal entries that carry the accounting impact, the reversal or
+adjustment chain for corrections, the period-lock state, and any reconciliation case blocking the
+capital-account roll-forward. External administrator, bank, tax, audit, or investor-portal records
+may provide evidence or comparison points, but the governed capital-account projection is derived
+from Meridian-owned fund events, journals, allocation rules, and approved valuations.
+
+Evidence links should be first-class fields, not notes. The workbench should attach and display
+subscription documents, investor notices, capital-call support, contribution receipt support,
+distribution support, valuation support, tax/K-1 support, audit-request files, and reviewer
+workpapers. Each evidence link should retain source, receipt timestamp, hash or immutable document
+version, extraction/review state, related fund event, related journal entry, related report line,
+and inclusion status in close, tax, audit, or governed reporting manifests.
+
+Investor statement amendments and restatements should be controlled lifecycle events. An amendment
+updates a not-yet-final or non-economic presentation issue while preserving the original statement
+version, reason, approver, recipient list, and delivery evidence. A restatement changes a released
+or economically material statement and must link to the correcting fund event, reversing or
+adjusting journal entries, revised capital-account roll-forward, affected report lines, reissued
+package, recipient notification, and audit event chain. Neither path may overwrite the original
+statement; users should see superseded, current, pending-amendment, and restated states side by side
+with variance explanations and release approvals.
+
+Required report links should connect each investor statement and capital-account roll-forward to the
+governed reporting package that consumed it. The workbench should expose report package ID, report
+line ID, package approval state, template version, dataset version, report-line provenance, delivery
+record, restatement lineage, and downstream tax or audit support package usage. A report line is
+ready only when the capital-account source rows, journals, fund events, evidence links, and reviewer
+approvals can be traced from the statement back through the Operational Evidence Graph.
+
 The Private-Capital Close Cockpit should operate by fund, book, period, and entity. A close lane is
 ready only when required data arrived, imports validated, reconciliation blockers cleared, journals
 posted, reversals approved, recurring journals completed, capital-account roll-forwards tied out,
