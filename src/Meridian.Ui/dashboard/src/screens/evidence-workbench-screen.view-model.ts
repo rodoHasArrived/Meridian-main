@@ -1759,13 +1759,13 @@ export function buildEvidencePacketActions(input: {
 
     return {
       id: action.actionId,
-      label: action.label,
       detail: action.detail,
       targetLabel: formatPageTag(action.targetPageTag),
       tone: mapWorkflowActionTone(action.tone),
       href,
       control,
-      ...command
+      ...command,
+      label: action.label // row title; keep it from being clobbered by the command's button-verb label
     };
   });
 }

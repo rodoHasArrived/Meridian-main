@@ -2340,10 +2340,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             <summary className="cursor-pointer text-sm font-semibold text-foreground">System details</summary>
             <div className="mt-4 space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              <CloseCommandCenterPanel
-                view={closeCommandCenter}
-                onRefresh={() => void refreshCloseWorkflow()}
-              />
+              {closeCommandCenter ? <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} /> : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
               <AccountingTaskModeLauncher />
             </div>
@@ -2353,11 +2350,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         <>
       {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
-      {sectionVisibility.showWorkflowDetails ? (
-      <CloseCommandCenterPanel
-        view={closeCommandCenter}
-        onRefresh={() => void refreshCloseWorkflow()}
-      />
+      {sectionVisibility.showWorkflowDetails && closeCommandCenter ? (
+        <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} />
       ) : null}
 
       {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}

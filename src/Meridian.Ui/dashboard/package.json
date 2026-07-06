@@ -10,6 +10,7 @@
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "smoke:workstation": "node scripts/smoke-workstation.mjs",
     "lint": "eslint src",
+    "typecheck:strict": "tsc --noEmit -p tsconfig.strict-null.json",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",
     "test:watch": "vitest",

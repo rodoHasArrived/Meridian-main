@@ -1383,7 +1383,7 @@ export function OperationsContinuityScreen() {
             actor: "browser-operator",
             reviewer: row.reviewer,
             rationale: `Approved workflow approval ${row.id} from Operations Continuity approval history.`,
-            reportPackId: row.approveWorkflowReportPackId,
+            reportPackId: row.approveWorkflowReportPackId!, // guarded above: approve returns early when absent
             correlationId: `browser-approval-decision:approve:${row.id}`,
             evidenceLinks: row.approveWorkflowEvidenceLinks,
             checklistControlApprovals: row.approveWorkflowChecklistControlApprovals,

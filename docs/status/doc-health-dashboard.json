@@ -1,11 +1,11 @@
 {
   "total_files": 543,
-  "total_lines": 90778,
+  "total_lines": 90738,
   "orphaned_count": 208,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 167.2,
+  "average_lines": 167.1,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2149,7 +2149,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7952,
+      "line_count": 7943,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3109,7 +3109,7 @@
     },
     {
       "path": "docs/product/portfolio-cash-ladder-blueprint-2026-07.md",
-      "line_count": 683,
+      "line_count": 635,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4293,7 +4293,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 164,
+      "line_count": 170,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4365,7 +4365,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 326,
+      "line_count": 337,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

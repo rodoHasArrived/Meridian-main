@@ -954,7 +954,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                         min={0}
                         step={0.01}
                         value={orderTicket.controls.limitPrice.value}
-                        onChange={(e) => orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
+                        onChange={(e) => orderTicket.controls.limitPrice && orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
                         aria-label={orderTicket.controls.limitPrice.ariaLabel}
                         aria-describedby={orderTicket.controls.limitPrice.describedBy}
                         error={orderTicket.controls.limitPrice.invalid}
