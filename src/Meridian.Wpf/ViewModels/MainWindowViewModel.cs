@@ -659,9 +659,10 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     private void NotifyCollectorPermissionDenied(string action)
     {
+        var gerund = action == "stop" ? "stopping" : "starting";
         _notificationService.ShowNotification(
             "Permission required",
-            $"Your role does not permit {action}ing data collection. Provider control requires the ManageProviders permission.",
+            $"Your role does not permit {gerund} data collection. Provider control requires the ManageProviders permission.",
             NotificationType.Warning,
             5000);
     }

@@ -86,6 +86,22 @@ public sealed class DesktopAuthenticationSessionTests
     }
 
     [Fact]
+    public void HasPermission_WhenProductionUnauthenticated_FailsClosed()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", "required");
+
+        var session = CreateSession("Production");
+
+        // No signed-in profile and credentials are required: gating must fail closed.
+        session.HasPermission(UserPermission.ManageProviders).Should().BeFalse();
+        session.HasPermission(UserPermission.ViewMarketData).Should().BeFalse();
+    }
+
+    [Fact]
     public void HasPermission_WhenNoResolvedProfile_DefersToAuthenticationGates()
     {
         using var env = new EnvironmentVariableScope()
