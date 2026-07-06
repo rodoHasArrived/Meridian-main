@@ -37,4 +37,7 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Period-close closing entries rolling net income into retained earnings.</summary>
     PeriodCloseClosingEntries,
+
+    /// <summary>Periodic fixed-asset depreciation charge (debit expense, credit accumulated depreciation).</summary>
+    DepreciationPosted,
 }
