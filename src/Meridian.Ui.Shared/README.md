@@ -181,6 +181,8 @@ initial browser payloads and refresh-only calls evaluate the same W7 live-readin
 `Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
 approved live promotion target, retained audit reference, ready live-operation requirements, and a
 retained snapshot version before the execution layer can attach live-readiness evidence to an order.
+The gate also verifies that the readiness matrix covers every canonical Live checklist token and
+rejects partial or malformed W7 payloads with the missing checklist item names.
 Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
 their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
 readiness projection as the workstation payload.

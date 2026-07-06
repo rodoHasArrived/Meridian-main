@@ -1,5 +1,7 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -85,13 +87,23 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
             blockers.AddRange(readiness.LiveOperationBlockers.Where(static blocker => !string.IsNullOrWhiteSpace(blocker)));
         }
 
+        var liveOperationRequirements = readiness.LiveOperationRequirements
+            ?? Array.Empty<TradingLiveOperationRequirementDto>();
+
         blockers.AddRange(
-            readiness.LiveOperationRequirements
+            liveOperationRequirements
                 .Where(static requirement => requirement.Status != TradingAcceptanceGateStatusDto.Ready)
                 .Select(static requirement =>
                     !string.IsNullOrWhiteSpace(requirement.BlockerCode)
                         ? requirement.BlockerCode!
                         : requirement.RequirementId));
+
+        blockers.AddRange(
+            PromotionApprovalChecklist
+                .GetMissingRequiredItems(
+                    RunType.Live,
+                    liveOperationRequirements.Select(static requirement => requirement.ChecklistItem))
+                .Select(static checklistItem => $"liveOperationRequirements:missing:{checklistItem}"));
 
         return blockers
             .Distinct(StringComparer.Ordinal)

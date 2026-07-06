@@ -2,6 +2,8 @@ using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -54,13 +56,13 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
     [Fact]
     public async Task EvaluateAsync_WhenLiveRequirementsAreBlocked_ShouldRejectWithRequirementBlockers()
     {
-        var requirements = new[]
-        {
+        var requirements = CreateLiveRequirements(
             CreateRequirement(
+                requirementId: "governance-signoff",
+                checklistItem: PromotionApprovalChecklist.GovernanceSignoffReviewed,
                 status: TradingAcceptanceGateStatusDto.Blocked,
                 evidenceReference: null,
-                blockerCode: "governance-signoff")
-        };
+                blockerCode: "governance-signoff"));
         var provider = new StaticReadinessProvider(CreateReadiness(
             readyForLiveOperation: false,
             blockers: ["governance-signoff"],
@@ -71,6 +73,22 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
 
         decision.IsApproved.Should().BeFalse();
         decision.Reason.Should().Contain("governance-signoff");
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_WhenLiveRequirementMatrixOmitsChecklistItem_ShouldRejectWithMissingRequirement()
+    {
+        var requirements = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+            .Where(static checklistItem => checklistItem != PromotionApprovalChecklist.AuditRetentionReviewed)
+            .Select(static checklistItem => CreateRequirement(checklistItem))
+            .ToArray();
+        var provider = new StaticReadinessProvider(CreateReadiness(requirements: requirements));
+        var gate = CreateGate(provider);
+
+        var decision = await gate.EvaluateAsync(CreateRequest());
+
+        decision.IsApproved.Should().BeFalse();
+        decision.Reason.Should().Contain("liveOperationRequirements:missing:AUDIT_RETENTION_REVIEWED");
     }
 
     private static TradingOperatorLiveOrderReadinessGate CreateGate(StaticReadinessProvider provider) =>
@@ -87,6 +105,23 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
             StrategyId: "strategy-001",
             Actor: "operator",
             FundAccountId: includeFundAccountId ? fundAccountId ?? FundAccountId : null);
+
+    private static TradingLiveOperationRequirementDto[] CreateLiveRequirements(
+        params TradingLiveOperationRequirementDto[] overrides)
+    {
+        var requirementsByChecklistItem = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+            .Select(static checklistItem => CreateRequirement(checklistItem))
+            .ToDictionary(
+                static requirement => requirement.ChecklistItem,
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var requirement in overrides)
+        {
+            requirementsByChecklistItem[requirement.ChecklistItem] = requirement;
+        }
+
+        return requirementsByChecklistItem.Values.ToArray();
+    }
 
     private static TradingOperatorReadinessDto CreateReadiness(
         bool readyForLiveOperation = true,
@@ -143,24 +178,32 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
             ReadyForPaperOperation = true,
             ReadyForLiveOperation = readyForLiveOperation,
             LiveOperationBlockers = blockers ?? [],
-            LiveOperationRequirements = requirements ?? [CreateRequirement()],
+            LiveOperationRequirements = requirements ?? CreateLiveRequirements(),
             SnapshotVersion = "snapshot-live-001"
         };
 
     private static TradingLiveOperationRequirementDto CreateRequirement(
+        string checklistItem,
+        string? requirementId = null,
         TradingAcceptanceGateStatusDto status = TradingAcceptanceGateStatusDto.Ready,
-        string? evidenceReference = "AUDIT-LIVE-001",
+        string? evidenceReference = null,
         string? blockerCode = null) =>
         new(
-            RequirementId: "governance-signoff",
-            Label: "Governance sign-off",
+            RequirementId: requirementId ?? ToRequirementId(checklistItem),
+            Label: checklistItem.Replace('_', ' '),
             Status: status,
-            Detail: "Governance sign-off evidence.",
-            ChecklistItem: "GOVERNANCE_SIGNOFF_REVIEWED",
-            EvidenceReference: evidenceReference,
+            Detail: $"{checklistItem} evidence.",
+            ChecklistItem: checklistItem,
+            EvidenceReference: evidenceReference ?? $"{checklistItem}:retained-evidence",
             ChecklistSatisfied: status == TradingAcceptanceGateStatusDto.Ready,
-            EvidenceSatisfied: !string.IsNullOrWhiteSpace(evidenceReference),
+            EvidenceSatisfied: status == TradingAcceptanceGateStatusDto.Ready,
             BlockerCode: blockerCode);
+
+    private static string ToRequirementId(string checklistItem) =>
+        checklistItem
+            .ToLowerInvariant()
+            .Replace("_reviewed", string.Empty)
+            .Replace('_', '-');
 
     private sealed class StaticReadinessProvider : ITradingOperatorReadinessProvider
     {
