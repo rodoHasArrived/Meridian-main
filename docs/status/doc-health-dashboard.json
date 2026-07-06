@@ -1,11 +1,11 @@
 {
-  "total_files": 543,
-  "total_lines": 90738,
-  "orphaned_count": 208,
+  "total_files": 544,
+  "total_lines": 91101,
+  "orphaned_count": 209,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 167.1,
+  "average_lines": 167.5,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -174,6 +174,7 @@
     "docs/plans/web-ui-development-pivot.md",
     "docs/product/data-provider-accounting-brainstorm-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
+    "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
     "docs/reference/governance-report-packs.md",
     "docs/reference/research-briefing-workflow.md",
     "docs/roadmap/generated-doc-policy.md",
@@ -2149,7 +2150,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7943,
+      "line_count": 7946,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3134,6 +3135,14 @@
     {
       "path": "docs/product/web-ui-improvements-implementation-plan-2026-07.md",
       "line_count": 354,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
+      "line_count": 360,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
