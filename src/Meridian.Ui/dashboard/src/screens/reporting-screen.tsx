@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -356,13 +356,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }, [search, templateRowsKey, vm.templateRows]);
 
   const reflectExportsViewTimer = useRef<number | null>(null);
-  useEffect(() => () => {
-    if (reflectExportsViewTimer.current !== null) {
-      window.clearTimeout(reflectExportsViewTimer.current);
-    }
-  }, []);
-
-  function reflectExportsViewState(nextDraft: ExportsReportRunDraftState) {
+  const shouldReflectExportsViewState = useRef(false);
+  const reflectExportsViewState = useCallback((nextDraft: ExportsReportRunDraftState) => {
     if (reflectExportsViewTimer.current !== null) {
       window.clearTimeout(reflectExportsViewTimer.current);
     }
@@ -388,7 +383,22 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       const nextSearch = params.toString();
       navigate(nextSearch ? `${pathname}?${nextSearch}` : pathname, { replace: true });
     }, exportsViewReflectDebounceMs);
-  }
+  }, [navigate, pathname, search, vm.templateRows]);
+
+  useEffect(() => () => {
+    if (reflectExportsViewTimer.current !== null) {
+      window.clearTimeout(reflectExportsViewTimer.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!shouldReflectExportsViewState.current) {
+      return;
+    }
+
+    shouldReflectExportsViewState.current = false;
+    reflectExportsViewState(exportsRunDraft);
+  }, [exportsRunDraft, reflectExportsViewState]);
 
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
@@ -460,10 +470,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
+    shouldReflectExportsViewState.current = true;
     setExportsRunDraft((current) => {
-      const next = { ...current, [field]: value };
-      reflectExportsViewState(next);
-      return next;
+      return { ...current, [field]: value };
     });
   }
 
