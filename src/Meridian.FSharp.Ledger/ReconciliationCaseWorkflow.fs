@@ -44,35 +44,60 @@ module ReconciliationCaseWorkflow =
     // ReconciliationCaseWorkflowVocabularyTests guard asserts parity, so a rename on either side is
     // caught by compilation or a failing test instead of silently misrouting a transition at runtime.
 
-    [<Literal>] let ActionStartReview = "StartReview"
-    [<Literal>] let ActionRequestApproval = "RequestApproval"
-    [<Literal>] let ActionApprove = "Approve"
-    [<Literal>] let ActionPost = "Post"
-    [<Literal>] let ActionReopen = "Reopen"
-    [<Literal>] let ActionSupersede = "Supersede"
+    [<Literal>]
+    let ActionStartReview = "StartReview"
+    [<Literal>]
+    let ActionRequestApproval = "RequestApproval"
+    [<Literal>]
+    let ActionApprove = "Approve"
+    [<Literal>]
+    let ActionPost = "Post"
+    [<Literal>]
+    let ActionReopen = "Reopen"
+    [<Literal>]
+    let ActionSupersede = "Supersede"
 
-    [<Literal>] let StateOpen = "Open"
-    [<Literal>] let StateReopened = "Reopened"
-    [<Literal>] let StateInvestigating = "Investigating"
-    [<Literal>] let StateAwaitingEvidence = "AwaitingEvidence"
-    [<Literal>] let StateResolved = "Resolved"
-    [<Literal>] let StateSignedOff = "SignedOff"
-    [<Literal>] let StateSuperseded = "Superseded"
+    [<Literal>]
+    let StateOpen = "Open"
+    [<Literal>]
+    let StateReopened = "Reopened"
+    [<Literal>]
+    let StateInvestigating = "Investigating"
+    [<Literal>]
+    let StateAwaitingEvidence = "AwaitingEvidence"
+    [<Literal>]
+    let StateResolved = "Resolved"
+    [<Literal>]
+    let StateSignedOff = "SignedOff"
+    [<Literal>]
+    let StateSuperseded = "Superseded"
 
-    [<Literal>] let QueueOpen = "Open"
-    [<Literal>] let QueueInReview = "InReview"
-    [<Literal>] let QueueResolved = "Resolved"
-    [<Literal>] let QueueSignedOff = "SignedOff"
-    [<Literal>] let QueueDismissed = "Dismissed"
+    [<Literal>]
+    let QueueOpen = "Open"
+    [<Literal>]
+    let QueueInReview = "InReview"
+    [<Literal>]
+    let QueueResolved = "Resolved"
+    [<Literal>]
+    let QueueSignedOff = "SignedOff"
+    [<Literal>]
+    let QueueDismissed = "Dismissed"
 
     // Error-code tokens (must match ReconciliationBreakQueueTransitionErrorCode member names).
-    [<Literal>] let ErrorNone = "None"
-    [<Literal>] let ErrorMissingActor = "MissingActor"
-    [<Literal>] let ErrorMissingReason = "MissingReason"
-    [<Literal>] let ErrorMissingEvidence = "MissingEvidence"
-    [<Literal>] let ErrorIllegalTransition = "IllegalTransition"
-    [<Literal>] let ErrorDualReviewRequired = "DualReviewRequired"
-    [<Literal>] let ErrorReopenNotAllowed = "ReopenNotAllowed"
+    [<Literal>]
+    let ErrorNone = "None"
+    [<Literal>]
+    let ErrorMissingActor = "MissingActor"
+    [<Literal>]
+    let ErrorMissingReason = "MissingReason"
+    [<Literal>]
+    let ErrorMissingEvidence = "MissingEvidence"
+    [<Literal>]
+    let ErrorIllegalTransition = "IllegalTransition"
+    [<Literal>]
+    let ErrorDualReviewRequired = "DualReviewRequired"
+    [<Literal>]
+    let ErrorReopenNotAllowed = "ReopenNotAllowed"
 
     /// Every action token the workflow understands.
     let recognizedActionTokens =

@@ -76,7 +76,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         try
         {
-            GuardReleasedRestatement(contract, version);
+            await GuardReleasedRestatementAsync(contract, version, cancellationToken).ConfigureAwait(false);
 
             for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
             {
@@ -262,7 +262,10 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     /// <see cref="ReportingJobContract.RetryReason"/>. Both the blocked and the authorized paths are
     /// written to the released run's audit trail so the action is never silent.
     /// </summary>
-    private void GuardReleasedRestatement(ReportingJobContract contract, ReportingRunVersionPlan version)
+    private async Task GuardReleasedRestatementAsync(
+        ReportingJobContract contract,
+        ReportingRunVersionPlan version,
+        CancellationToken cancellationToken)
     {
         if (version.PriorManifest is not { Status: ReportingRunStatus.Released } released)
         {
@@ -276,6 +279,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 "RestatementBlocked",
                 contract.RequestedBy,
                 $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=released manifest requires an explicit restatement action");
+            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
             throw new InvalidOperationException(
                 $"Run series '{version.RunSeriesId}' has a Released manifest '{released.RunId}'. Regenerating it requires an explicit restatement (set AllowRestatement and supply a RetryReason).");
         }
@@ -288,6 +292,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 "RestatementBlocked",
                 contract.RequestedBy,
                 $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=restatement requires a RetryReason");
+            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
             throw new InvalidOperationException(
                 $"Restating Released manifest '{released.RunId}' requires a RetryReason describing the restatement.");
         }
@@ -297,6 +302,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             "RestatementAuthorized",
             contract.RequestedBy,
             $"restatementRun={version.RunId}; runSeries={version.RunSeriesId}; retryReason={retryReason}");
+        await PersistAsync(released, cancellationToken).ConfigureAwait(false);
     }
 
     private static bool IsTransitionAllowed(ReportingRunStatus from, ReportingRunStatus to)
