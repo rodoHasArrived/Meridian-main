@@ -7,16 +7,16 @@ namespace Meridian.Wpf.Features;
 
 public static class DesktopFeatureModuleRegistry
 {
-    private static readonly IDesktopFeatureModule[] Modules =
+    private static readonly Func<IDesktopFeatureModule>[] ModuleFactories =
     [
-        new Home.HomeFeatureModule(),
-        new Trading.TradingFeatureModule(),
-        new Portfolio.PortfolioFeatureModule(),
-        new Accounting.AccountingFeatureModule(),
-        new Reporting.ReportingFeatureModule(),
-        new Strategy.StrategyFeatureModule(),
-        new Data.DataFeatureModule(),
-        new Settings.SettingsFeatureModule()
+        DesktopFeature.Module<Home.HomeFeatureModule>(),
+        DesktopFeature.Module<Trading.TradingFeatureModule>(),
+        DesktopFeature.Module<Portfolio.PortfolioFeatureModule>(),
+        DesktopFeature.Module<Accounting.AccountingFeatureModule>(),
+        DesktopFeature.Module<Reporting.ReportingFeatureModule>(),
+        DesktopFeature.Module<Strategy.StrategyFeatureModule>(),
+        DesktopFeature.Module<Data.DataFeatureModule>(),
+        DesktopFeature.Module<Settings.SettingsFeatureModule>()
     ];
 
     public static IServiceCollection AddMeridianWpfFeatureModules(this IServiceCollection services)
@@ -25,7 +25,7 @@ public static class DesktopFeatureModuleRegistry
 
         services.AddSingleton(ShellPageRegistryBuilder.BuildDefault());
 
-        foreach (var module in Modules)
+        foreach (var module in GetModules())
         {
             module.Register(services);
         }
@@ -48,13 +48,21 @@ public static class DesktopFeatureModuleRegistry
         return services.AddMeridianWpfFeatureModules();
     }
 
-    public static IReadOnlyList<IDesktopFeatureModule> GetModules() => Modules;
+    public static IReadOnlyList<IDesktopFeatureModule> GetModules()
+        => ModuleFactories.Select(static createModule => createModule()).ToArray();
 
     public static IReadOnlyList<FeatureCapabilityDescriptor> GetCapabilities()
-        => Modules
+        => GetModules()
             .SelectMany(static module => module.DeclareCapabilities())
             .GroupBy(static capability => capability.CapabilityKey, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .OrderBy(static capability => capability.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+}
+
+public static class DesktopFeature
+{
+    public static Func<IDesktopFeatureModule> Module<T>()
+        where T : IDesktopFeatureModule, new()
+        => static () => new T();
 }
