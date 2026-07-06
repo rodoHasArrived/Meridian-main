@@ -4964,6 +4964,8 @@ Meridian-main
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── accordion.test.tsx
 │   │   │   │   │       ├── accordion.tsx
+│   │   │   │   │       ├── async-region.test.tsx
+│   │   │   │   │       ├── async-region.tsx
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── breadcrumb.tsx
 │   │   │   │   │       ├── button.test.tsx
@@ -4987,6 +4989,8 @@ Meridian-main
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── drawer.test.tsx
 │   │   │   │   │       ├── drawer.tsx
+│   │   │   │   │       ├── error-boundary.test.tsx
+│   │   │   │   │       ├── error-boundary.tsx
 │   │   │   │   │       ├── eyebrow.tsx
 │   │   │   │   │       ├── feedback-primitives.test.tsx
 │   │   │   │   │       ├── field-support.test.tsx
@@ -5020,11 +5024,15 @@ Meridian-main
 │   │   │   │   │       ├── risk-control-panel.tsx
 │   │   │   │   │       ├── risk-control-panel.view-model.test.ts
 │   │   │   │   │       ├── risk-control-panel.view-model.ts
+│   │   │   │   │       ├── screen-layout.test.tsx
+│   │   │   │   │       ├── screen-layout.tsx
 │   │   │   │   │       ├── segmented-control.test.tsx
 │   │   │   │   │       ├── segmented-control.tsx
 │   │   │   │   │       ├── select.tsx
 │   │   │   │   │       ├── sheet.test.tsx
 │   │   │   │   │       ├── sheet.tsx
+│   │   │   │   │       ├── skeleton.test.tsx
+│   │   │   │   │       ├── skeleton.tsx
 │   │   │   │   │       ├── spinner.tsx
 │   │   │   │   │       ├── status-banner.tsx
 │   │   │   │   │       ├── stepper.test.tsx
@@ -5188,12 +5196,15 @@ Meridian-main
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
+│   │   │   │   │   ├── data-screen.cell-actions.test.tsx
+│   │   │   │   │   ├── data-screen.cell-actions.tsx
 │   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.test.ts
 │   │   │   │   │   ├── data-screen.corporate-action-inbox.view-model.ts
 │   │   │   │   │   ├── data-screen.coverage-gaps.view-model.test.ts
 │   │   │   │   │   ├── data-screen.coverage-gaps.view-model.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.test.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.ts
+│   │   │   │   │   ├── data-screen.data-regions.tsx
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
 │   │   │   │   │   ├── data-screen.linked-context.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
@@ -5201,6 +5212,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.query-panel.view-model.ts
 │   │   │   │   │   ├── data-screen.security-master.ts
 │   │   │   │   │   ├── data-screen.test.tsx
+│   │   │   │   │   ├── data-screen.tone-styles.ts
 │   │   │   │   │   ├── data-screen.tsx
 │   │   │   │   │   ├── data-screen.view-model.test.ts
 │   │   │   │   │   ├── data-screen.view-model.ts

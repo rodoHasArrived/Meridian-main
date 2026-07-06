@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2706 / 7354** items documented (**36.8%**) &mdash; Grade: **F**
+**2698 / 7338** items documented (**36.8%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 36.8%
@@ -15,15 +15,15 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2586 | 6931 | 37.3% | F |
-| API Endpoints | 106 | 276 | 38.4% | F |
+| Public Classes / Interfaces | 2578 | 6916 | 37.3% | F |
+| API Endpoints | 106 | 275 | 38.5% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4345 undocumented)
+### Public Classes / Interfaces (4338 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -76,7 +76,8 @@
 | `RestatementCandidateResult` | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:44` |
 | `SecurityMasterRevisionRecord` | `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:52` |
 | `NullSecurityMasterPricingService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:10` |
-| ... and 4295 more | |
+| `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
+| ... and 4288 more | |
 
 ### API Endpoints (170 undocumented)
 
@@ -192,8 +193,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4345 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 170 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 4338 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 169 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
