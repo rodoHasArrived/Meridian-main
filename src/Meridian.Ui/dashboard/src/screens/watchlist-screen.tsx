@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import {
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useActivityLog } from "@/lib/activity-log/store";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import {
   useWatchlistScreenViewModel,
@@ -28,13 +30,70 @@ import {
 } from "@/screens/watchlist-screen.view-model";
 
 export function WatchlistScreen() {
+  const { record: recordActivity } = useActivityLog();
+  // Decorate the mutating endpoints so each add/remove drops into the activity
+  // ledger with a real compensating action for one-tap undo.
+  const recordedApi = useMemo(
+    () => ({
+      addSymbol: async (symbol: string) => {
+        const result = await addSymbolApi(symbol);
+        if (result.success) {
+          recordActivity({
+            kind: "symbol.add",
+            title: `Added ${symbol} to the watchlist`,
+            detail: "Subscribed to the live data pipeline.",
+            tone: "success",
+            route: "/data/watchlist",
+            routeLabel: "Watchlist",
+            undo: {
+              run: async () => {
+                // `removeSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await removeSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not remove ${symbol}.`);
+                }
+              }
+            }
+          });
+        }
+        return result;
+      },
+      removeSymbol: async (symbol: string) => {
+        const result = await removeSymbolApi(symbol);
+        if (result.success) {
+          recordActivity({
+            kind: "symbol.remove",
+            title: `Removed ${symbol} from the watchlist`,
+            detail: "Unsubscribed from the live data pipeline.",
+            tone: "warning",
+            route: "/data/watchlist",
+            routeLabel: "Watchlist",
+            undo: {
+              run: async () => {
+                // `addSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await addSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not add ${symbol} back.`);
+                }
+              }
+            }
+          });
+        }
+        return result;
+      }
+    }),
+    [recordActivity]
+  );
+
   const vm = useWatchlistScreenViewModel({
     getSymbols,
     getSymbolsStatistics,
     getLiveQuotesSnapshot,
-    addSymbol: addSymbolApi,
+    addSymbol: recordedApi.addSymbol,
     bulkAddSymbols,
-    removeSymbol: removeSymbolApi
+    removeSymbol: recordedApi.removeSymbol
   });
   const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
   const inCompanionPane = isCompanionPaneRoute(useLocation().pathname);

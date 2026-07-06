@@ -15,7 +15,8 @@ describe("ScreenLayout", () => {
       </ScreenLayout>
     );
 
-    const heading = screen.getByRole("heading", { level: 1, name: "Trial Balance" });
+    // The app shell owns the page <h1>; a screen title is an <h2> beneath it.
+    const heading = screen.getByRole("heading", { level: 2, name: "Trial Balance" });
     expect(heading).toBeInTheDocument();
     expect(screen.getByText("All entities · Primary GL")).toBeInTheDocument();
 
@@ -101,13 +102,39 @@ describe("ScreenLayout", () => {
     expect(screen.queryByRole("complementary", { name: "Detail" })).not.toBeInTheDocument();
   });
 
-  it("renders the work zone children", () => {
+  it("renders the work zone children and stacks them with the default rhythm", () => {
     render(
       <ScreenLayout title="Screen">
         <table aria-label="ledger" />
       </ScreenLayout>
     );
-    expect(screen.getByRole("table", { name: "ledger" })).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "ledger" });
+    expect(table).toBeInTheDocument();
+    // The work container owns inter-card spacing so screens don't re-wrap content.
+    expect(table.parentElement).toHaveClass("space-y-4");
+  });
+
+  it("drops the default spacing when workClassName opts into a grid/flex layout", () => {
+    // `space-y-4` is a sibling-margin utility; keeping it under a grid/flex
+    // misaligns rows, so a layout override must own spacing instead.
+    render(
+      <ScreenLayout title="Screen" workClassName="grid grid-cols-2">
+        <table aria-label="ledger" />
+      </ScreenLayout>
+    );
+    const container = screen.getByRole("table", { name: "ledger" }).parentElement;
+    expect(container).toHaveClass("grid", "grid-cols-2");
+    expect(container).not.toHaveClass("space-y-4");
+  });
+
+  it("keeps the default spacing for a non-layout workClassName", () => {
+    render(
+      <ScreenLayout title="Screen" workClassName="pt-2">
+        <table aria-label="ledger" />
+      </ScreenLayout>
+    );
+    const container = screen.getByRole("table", { name: "ledger" }).parentElement;
+    expect(container).toHaveClass("space-y-4", "pt-2");
   });
 
   it("shows the context rail only when open, and closes on request", async () => {

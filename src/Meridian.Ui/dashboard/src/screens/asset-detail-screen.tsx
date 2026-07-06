@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -281,25 +282,21 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
   const overview = buildAssetDetailOverviewViewState({ entry, identity, corporateActions });
 
   return (
-    <div className="space-y-4">
-      <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>{overview.displayName}</CardTitle>
-            <CardDescription>{overview.symbol}</CardDescription>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
-            <Button asChild size="sm" variant="outline">
-              <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}>Open Security Master</Link>
-            </Button>
-          </div>
-        </CardHeader>
-      </Card>
-
+    <ScreenLayout
+      title={overview.displayName}
+      scope={overview.symbol}
+      actions={
+        <>
+          <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
+          <Button asChild size="sm" variant="outline">
+            <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link to={WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}>Open Security Master</Link>
+          </Button>
+        </>
+      }
+    >
       <Tabs
         tabs={[
           { id: "overview", label: "Overview" },
@@ -391,6 +388,6 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           </Card>
         </TabPanel>
       </Tabs>
-    </div>
+    </ScreenLayout>
   );
 }
