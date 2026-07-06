@@ -237,20 +237,25 @@ describe("quotes stream client", () => {
     unsubscribe();
   });
 
-  it("gives up after the probe budget and lets a fresh subscribe start over", () => {
-    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+  it("goes dormant after the probe budget and restarts every subscriber on new interest", () => {
+    const onSnapshot = vi.fn();
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot });
     expect(FakeEventSource.instances).toHaveLength(1);
 
     // A stream that never produces a frame is reaped by the stale watchdog and
-    // re-probed on the escalating cooldown; after five probes the client stops
-    // for good, so draining all timers terminates.
+    // re-probed on the escalating cooldown; after five probes the client goes
+    // dormant, so draining all timers terminates.
     vi.runAllTimers();
     expect(FakeEventSource.instances).toHaveLength(6);
     expect(FakeEventSource.instances.every((source) => source.closed)).toBe(true);
 
-    // A new subscribe for the symbol set starts a fresh budget.
+    // New interest restarts the dormant connection with a fresh budget, and
+    // the original subscriber shares the recovered stream instead of being
+    // stranded on its polling fallback.
     const again = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
     expect(FakeEventSource.instances).toHaveLength(7);
+    FakeEventSource.instances[6]!.emit("quotes", JSON.stringify(snapshot));
+    expect(onSnapshot).toHaveBeenCalledWith(snapshot);
 
     again();
     unsubscribe();

@@ -181,9 +181,19 @@ function subscribeAsOwner(symbols: readonly string[], handlers: QuotesStreamHand
     };
     connections.set(url, connection);
     attachOwnerSource(connection);
-  } else if (connection.closeTimer !== null) {
-    clearTimeout(connection.closeTimer);
-    connection.closeTimer = null;
+  } else {
+    if (connection.closeTimer !== null) {
+      clearTimeout(connection.closeTimer);
+      connection.closeTimer = null;
+    }
+    // A dormant connection (probe budget exhausted: no source, no pending
+    // probe) restarts on new interest with a fresh budget, so every existing
+    // subscriber shares the recovery instead of being stranded on polling.
+    if (connection.source === null && connection.reopenTimer === null) {
+      connection.reopenDelayMs = OWNER_REOPEN_BASE_DELAY_MS;
+      connection.reopenAttempts = 0;
+      attachOwnerSource(connection);
+    }
   }
 
   ensureOwnerRequestListener();
@@ -323,9 +333,9 @@ function scheduleOwnerReopen(connection: OwnerConnection): void {
     return;
   }
   if (connection.reopenAttempts >= OWNER_MAX_REOPEN_ATTEMPTS) {
-    // Probe budget exhausted — leave consumers on polling. Dropping the registry
-    // entry lets a later subscribe for this symbol set start over cleanly.
-    connections.delete(connection.url);
+    // Probe budget exhausted — go dormant but stay registered so current
+    // subscribers keep their polling fallback and the next subscribe restarts
+    // the stream for all of them together with a fresh budget.
     return;
   }
   connection.reopenAttempts += 1;
