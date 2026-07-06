@@ -3,9 +3,11 @@ using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using Meridian.Wpf.Workstation.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
-using Meridian.Wpf.Workstation.Controls;
 using Meridian.Wpf.Workstation.Models;
 using TableActivityLogGridControl = Meridian.Wpf.Workstation.Tables.ActivityLogGridControl;
 using TableDenseDataGridControl = Meridian.Wpf.Workstation.Tables.DenseDataGridControl;
@@ -258,6 +260,71 @@ public sealed class WorkstationPrimitiveControlsTests
         });
     }
 
+
+    [Fact]
+    public void DenseDataGridControl_ShouldExposeSharedKeyboardCommandsAndCopySelectedRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Polygon.io", "Healthy"),
+                new("Alpaca", "Degraded")
+            };
+            var opened = false;
+            var closed = false;
+            var cleared = false;
+            var jumped = false;
+            var filterBox = new TextBox();
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                FilterTarget = filterBox,
+                OpenSelectedDetailsCommand = new RelayCommand<object?>(_ => opened = true, parameter => parameter is RowFixture),
+                CloseDetailsCommand = new RelayCommand<object?>(_ => closed = true),
+                ClearFiltersCommand = new RelayCommand(() => cleared = true),
+                JumpToRelatedRecordsCommand = new RelayCommand<object?>(_ => jumped = true, parameter => parameter is RowFixture)
+            };
+
+            var window = Show(new StackPanel { Children = { filterBox, denseGrid } });
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[1];
+
+                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == ApplicationCommands.Copy);
+                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+
+                DenseGridKeyboardCommands.FocusFilter.Execute(null, denseGrid);
+                filterBox.IsKeyboardFocusWithin.Should().BeTrue();
+
+                DenseGridKeyboardCommands.OpenSelectedDetails.Execute(null, denseGrid);
+                DenseGridKeyboardCommands.CloseDetails.Execute(null, denseGrid);
+                DenseGridKeyboardCommands.ClearFilters.Execute(null, denseGrid);
+                DenseGridKeyboardCommands.JumpToRelatedRecords.Execute(null, denseGrid);
+
+                opened.Should().BeTrue();
+                closed.Should().BeTrue();
+                cleared.Should().BeTrue();
+                jumped.Should().BeTrue();
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be("Provider\tStatus\nAlpaca\tDegraded");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     [Fact]
     public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
     {
@@ -272,6 +339,11 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("EmptyContentPresenter");
         xaml.Should().Contain("VirtualizingPanel.VirtualizationMode=\"Recycling\"");
         xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
+        xaml.Should().Contain("DenseGridKeyboardCommands.FocusFilter");
+        xaml.Should().Contain("DenseGridKeyboardCommands.OpenSelectedDetails");
+        xaml.Should().Contain("Command=\"ApplicationCommands.Copy\"");
+        xaml.Should().Contain("DenseGridKeyboardCommands.ClearFilters");
+        xaml.Should().Contain("DenseGridKeyboardCommands.JumpToRelatedRecords");
     }
 
     [Fact]
@@ -315,6 +387,8 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("EmptyContent=\"{Binding ElementName=Root, Path=EmptyContent}\"");
         xaml.Should().Contain("InspectorHeaderContent");
         xaml.Should().Contain("SelectedItems=\"{Binding ElementName=Root, Path=SelectedItems}\"");
+        xaml.Should().Contain("OpenSelectedDetailsCommand=\"{Binding ElementName=Root, Path=OpenSelectedDetailsCommand}\"");
+        xaml.Should().Contain("ClearFiltersCommand=\"{Binding ElementName=Root, Path=ClearFiltersCommand}\"");
     }
 
     [Fact]
