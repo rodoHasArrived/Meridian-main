@@ -5670,7 +5670,14 @@ describe("ReportingScreen", () => {
 
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     const liveStatus = screen.getByTestId("report-run-live-status");
-    expect(liveStatus).toHaveTextContent("Live status: Approved · attempt 2");
+    expect(liveStatus).toHaveTextContent("Live · attempt 2");
     expect(screen.getByLabelText("Run investor-monthly-statement-20260501 status is streaming live.")).toBeInTheDocument();
+
+    // The prominent badge must use the streamed "Approved" status, not the stale polled "InReview",
+    // so the row never shows two contradictory states before the next poll.
+    const runRow = liveStatus.closest(".rounded-md") as HTMLElement;
+    expect(runRow).not.toBeNull();
+    expect(within(runRow).getByText("Approved")).toBeInTheDocument();
+    expect(within(runRow).queryByText("InReview")).not.toBeInTheDocument();
   });
 });
