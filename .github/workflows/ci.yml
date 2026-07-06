@@ -214,6 +214,9 @@ jobs:
       - name: Lint dashboard source
         run: npm --prefix src/Meridian.Ui/dashboard run lint
 
+      - name: Enforce strictNullChecks on dashboard source
+        run: npm --prefix src/Meridian.Ui/dashboard run typecheck:strict
+
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test
 
