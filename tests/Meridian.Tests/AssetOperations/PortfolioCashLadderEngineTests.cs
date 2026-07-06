@@ -239,6 +239,21 @@ public sealed class PortfolioCashLadderEngineTests
     }
 
     [Fact]
+    public void Build_PrefersLatestCompletedRun_WhenANewerFailedRunHasNoFlows()
+    {
+        // A completed run carries the schedule; a newer failed run (recorded later, no flows) must
+        // not erase the security from the ladder.
+        var position = BuildPositionWithLaterFailedRun("Resilient Bond", couponAmount: 1500m, couponDay: 10);
+
+        var ladder = PortfolioCashLadderEngine.Build(BuildInputs(positions: [position]));
+
+        ladder.SecuritiesWithFlows.Should().Be(1);
+        var contribution = ladder.Contributions.Should().ContainSingle().Subject;
+        contribution.Amount.Should().Be(1500m);
+        contribution.ProjectionEngineVersion.Should().Be("asset-obligation-projection-v1");
+    }
+
+    [Fact]
     public void Build_ScalesInstrumentFlowsByHeldQuantity()
     {
         var position = BuildPosition("Scaled Bond", "Bond", [("Coupon", AsOf.AddDays(10), 100m)]) with { Quantity = 250m };
@@ -395,6 +410,47 @@ public sealed class PortfolioCashLadderEngineTests
             [],
             readiness,
             []);
+        return new PortfolioCashLadderPositionDto(detail);
+    }
+
+    private static PortfolioCashLadderPositionDto BuildPositionWithLaterFailedRun(
+        string displayName,
+        decimal couponAmount,
+        int couponDay)
+    {
+        var securityId = Guid.NewGuid();
+        var subject = new AssetOperationSubjectDto(
+            securityId,
+            "Bond",
+            displayName,
+            $"CUSIP:{securityId:N}",
+            ["Identity", "TermsHistory", "ProjectedCashFlows"]);
+        var terms = new AssetTermsVersionDto(
+            Guid.NewGuid(), securityId, 1, $"security-master:{securityId:N}", AsOf.AddYears(-1),
+            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"), $"{displayName} retained terms");
+
+        var completedRunId = Guid.NewGuid();
+        var failedRunId = Guid.NewGuid();
+        var completedRun = new AssetCashFlowProjectionRunDto(
+            completedRunId, securityId, AsOf, "asset-obligation-projection-v1", "Completed",
+            DateTimeOffset.UtcNow.AddDays(-1), "SecurityMaster", securityId.ToString("D"));
+        // Newer, but failed and carrying no projected flows.
+        var failedRun = new AssetCashFlowProjectionRunDto(
+            failedRunId, securityId, AsOf, "asset-obligation-projection-v1", "Failed",
+            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"));
+
+        var flows = new[]
+        {
+            new AssetProjectedCashFlowDto(
+                Guid.NewGuid(), completedRunId, securityId, 1, "Coupon", AsOf.AddDays(couponDay), couponAmount,
+                "USD", "Projected", SourceDomain: "SecurityMaster", SourceEntityId: securityId.ToString("D"))
+        };
+        var readiness = new AssetOperationsReadinessDto(
+            securityId, "Ready", subject.OperationalProfile, subject.OperationalProfile, [], [],
+            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"));
+
+        var detail = new AssetOperationsDetailDto(
+            subject, [terms], [], [completedRun, failedRun], flows, [], [], [], [], readiness, []);
         return new PortfolioCashLadderPositionDto(detail);
     }
 

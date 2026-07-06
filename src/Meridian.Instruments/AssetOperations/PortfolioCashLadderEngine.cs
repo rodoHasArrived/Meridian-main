@@ -262,7 +262,7 @@ public static class PortfolioCashLadderEngine
             return [];
         }
 
-        var latestRun = operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
+        var latestRun = SelectProjectionRun(operations);
         var flows = LatestRunFlows(operations);
         var latestTerms = operations.TermsHistory
             .OrderByDescending(static row => row.EffectiveDate)
@@ -473,7 +473,7 @@ public static class PortfolioCashLadderEngine
         decimal amount,
         string currency)
     {
-        var latestRun = operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
+        var latestRun = SelectProjectionRun(operations);
         var latestTerms = operations.TermsHistory
             .OrderByDescending(static row => row.EffectiveDate)
             .ThenByDescending(static row => row.RecordedAt)
@@ -499,13 +499,25 @@ public static class PortfolioCashLadderEngine
 
     private static IReadOnlyList<AssetProjectedCashFlowDto> LatestRunFlows(AssetOperationsDetailDto operations)
     {
-        var latestRun = operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
-        return latestRun is null
+        var run = SelectProjectionRun(operations);
+        return run is null
             ? operations.ProjectedCashFlows
             : operations.ProjectedCashFlows
-                .Where(flow => flow.ProjectionRunId == latestRun.ProjectionRunId)
+                .Where(flow => flow.ProjectionRunId == run.ProjectionRunId)
                 .ToArray();
     }
+
+    /// <summary>
+    /// Chooses the projection run whose flows drive the ladder: the latest completed run, so a
+    /// failed, cancelled, or still-running run recorded after a good one cannot erase a security's
+    /// prior completed schedule. Falls back to the latest run of any status only when no completed
+    /// run exists (e.g. sources that do not stamp a status).
+    /// </summary>
+    private static AssetCashFlowProjectionRunDto? SelectProjectionRun(AssetOperationsDetailDto operations)
+        => operations.CashFlowProjectionRuns
+               .Where(static run => string.Equals(run.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+               .MaxBy(static run => run.GeneratedAt)
+           ?? operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
 
     private static List<PortfolioCashLadderContributionDto> ApplyRedemptionWave(
         List<PortfolioCashLadderContributionDto> contributions,
