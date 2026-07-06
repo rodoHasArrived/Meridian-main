@@ -13,43 +13,28 @@ namespace Meridian.Wpf.Tests.Services;
 /// regressions that would strand live trading connections with expired tokens.
 /// </summary>
 /// <remarks>
-/// <see cref="CredentialService"/> has no path seam: it always reads and writes
-/// %LocalAppData%\Meridian\credentials.enc and credential_metadata.json. Each test therefore
-/// backs up and deletes the live files in the constructor and restores them in
-/// <see cref="Dispose"/>. This is race-free because <c>TestAssemblyConfiguration.cs</c>
-/// disables all test parallelization for this assembly.
+/// Every service is constructed against an isolated per-test temp directory via the
+/// <see cref="CredentialService(string?)"/> storage seam, so the tests never read, move, or
+/// delete the real operator vault under %LocalAppData%\Meridian. The temp directory is removed
+/// in <see cref="Dispose"/>.
 /// </remarks>
 public sealed class CredentialServiceTests : IDisposable
 {
-    private static readonly string AppDataDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Meridian");
-
-    private static readonly string VaultPath = Path.Combine(AppDataDir, "credentials.enc");
-    private static readonly string MetadataPath = Path.Combine(AppDataDir, "credential_metadata.json");
-
-    private readonly string _backupDir;
-    private readonly string _vaultBackupPath;
-    private readonly string _metadataBackupPath;
-    private readonly bool _hadVaultFile;
-    private readonly bool _hadMetadataFile;
+    private readonly string _storageDir;
+    private readonly string _vaultPath;
+    private readonly string _metadataPath;
     private readonly List<CredentialService> _createdServices = new();
 
     public CredentialServiceTests()
     {
-        Directory.CreateDirectory(AppDataDir);
-
-        _backupDir = Path.Combine(
+        _storageDir = Path.Combine(
             Path.GetTempPath(),
             "meridian-tests",
             $"credential-service-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_backupDir);
+        Directory.CreateDirectory(_storageDir);
 
-        _vaultBackupPath = Path.Combine(_backupDir, "credentials.enc");
-        _metadataBackupPath = Path.Combine(_backupDir, "credential_metadata.json");
-
-        _hadVaultFile = BackupAndDeleteLiveFile(VaultPath, _vaultBackupPath);
-        _hadMetadataFile = BackupAndDeleteLiveFile(MetadataPath, _metadataBackupPath);
+        _vaultPath = Path.Combine(_storageDir, "credentials.enc");
+        _metadataPath = Path.Combine(_storageDir, "credential_metadata.json");
     }
 
     public void Dispose()
@@ -59,43 +44,15 @@ public sealed class CredentialServiceTests : IDisposable
             service.Dispose();
         }
 
-        RestoreLiveFile(VaultPath, _vaultBackupPath, _hadVaultFile);
-        RestoreLiveFile(MetadataPath, _metadataBackupPath, _hadMetadataFile);
-
-        if (Directory.Exists(_backupDir))
+        if (Directory.Exists(_storageDir))
         {
-            Directory.Delete(_backupDir, recursive: true);
-        }
-    }
-
-    private static bool BackupAndDeleteLiveFile(string livePath, string backupPath)
-    {
-        if (!File.Exists(livePath))
-        {
-            return false;
-        }
-
-        File.Copy(livePath, backupPath, overwrite: true);
-        File.Delete(livePath);
-        return true;
-    }
-
-    private static void RestoreLiveFile(string livePath, string backupPath, bool existedBefore)
-    {
-        if (File.Exists(livePath))
-        {
-            File.Delete(livePath);
-        }
-
-        if (existedBefore)
-        {
-            File.Copy(backupPath, livePath, overwrite: true);
+            Directory.Delete(_storageDir, recursive: true);
         }
     }
 
     private CredentialService CreateSut()
     {
-        var sut = new CredentialService();
+        var sut = new CredentialService(_storageDir);
         _createdServices.Add(sut);
         return sut;
     }
@@ -325,7 +282,7 @@ public sealed class CredentialServiceTests : IDisposable
     [MemberData(nameof(CorruptVaultPayloads))]
     public void Constructor_CorruptVaultFile_StartsWithEmptyVaultInsteadOfThrowing(byte[] corruptPayload)
     {
-        File.WriteAllBytes(VaultPath, corruptPayload);
+        File.WriteAllBytes(_vaultPath, corruptPayload);
 
         var sut = CreateSut();
 
@@ -337,7 +294,7 @@ public sealed class CredentialServiceTests : IDisposable
     [Fact]
     public void SaveCredential_AfterCorruptVaultRecovery_PersistsNewCleanVault()
     {
-        File.WriteAllBytes(VaultPath, new byte[] { 0x01, 0x02, 0x03, 0x04 });
+        File.WriteAllBytes(_vaultPath, new byte[] { 0x01, 0x02, 0x03, 0x04 });
         var resource = UniqueResource();
 
         var recovered = CreateSut();
@@ -357,7 +314,7 @@ public sealed class CredentialServiceTests : IDisposable
     [InlineData("")]
     public async Task InitializeAsync_CorruptMetadataFile_RecoversWithEmptyMetadata(string corruptJson)
     {
-        await File.WriteAllTextAsync(MetadataPath, corruptJson);
+        await File.WriteAllTextAsync(_metadataPath, corruptJson);
         var sut = CreateSut();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
@@ -410,7 +367,7 @@ public sealed class CredentialServiceTests : IDisposable
         sut.GetMetadata(resource).Should().NotBeNull("the first initialize loads the persisted metadata");
 
         // If the second call reloaded, this corrupt payload would reset the cache to empty.
-        await File.WriteAllTextAsync(MetadataPath, "corrupt {{{");
+        await File.WriteAllTextAsync(_metadataPath, "corrupt {{{");
         await sut.InitializeAsync(cts.Token);
 
         sut.GetMetadata(resource).Should().NotBeNull(

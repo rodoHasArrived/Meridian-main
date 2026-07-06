@@ -167,13 +167,21 @@ public sealed class CredentialService : ICredentialService, IDisposable
     public (int RetrievalFailures, int SaveFailures, int RemovalFailures, int VaultAccessFailures) GetTelemetryCounters()
         => (_credentialRetrievalFailures, _credentialSaveFailures, _credentialRemovalFailures, _vaultAccessFailures);
 
-    public CredentialService()
+    /// <param name="storageDirectory">
+    /// Optional override for the credential storage directory. Production and DI callers pass
+    /// nothing, so credentials persist under <c>%LocalAppData%\Meridian</c> exactly as before;
+    /// tests and alternative hosts can supply an isolated directory instead of touching the real
+    /// operator vault.
+    /// </param>
+    public CredentialService(string? storageDirectory = null)
     {
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.CredentialTest);
 
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Meridian");
+        var appDataDir = string.IsNullOrWhiteSpace(storageDirectory)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian")
+            : storageDirectory;
         Directory.CreateDirectory(appDataDir);
 
         _vaultPath = Path.Combine(appDataDir, CredentialVaultFileName);
