@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Ui;
 
+/// <summary>
+/// Guards the paper-to-live promotion scenario where retained W7 evidence is the last control
+/// before live broker orders can leave the OMS.
+/// </summary>
 public sealed class TradingOperatorLiveOrderReadinessGateTests
 {
     private static readonly Guid FundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -26,6 +30,41 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
         decision.Reason.Should().BeNull();
         provider.LastFundAccountId.Should().Be(FundAccountId);
         provider.CallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Scenario_PaperToLivePromotion_WithRetainedW7Evidence_ShouldApproveLiveBrokerOrder()
+    {
+        var requirements = CreateLiveRequirements(
+            CreateRequirement(
+                PromotionApprovalChecklist.AccountingRecordsReviewed,
+                evidenceReference: $"{PromotionApprovalChecklist.AccountingRecordsReviewed}:ledger-journal/run-live"),
+            CreateRequirement(
+                PromotionApprovalChecklist.GovernedReportingReviewed,
+                evidenceReference: $"{PromotionApprovalChecklist.GovernedReportingReviewed}:fund-report-pack/report-live"));
+        var provider = new StaticReadinessProvider(CreateReadiness(requirements: requirements));
+        var gate = CreateGate(provider);
+
+        var decision = await gate.EvaluateAsync(CreateRequest());
+
+        decision.IsApproved.Should().BeTrue();
+        decision.EvidenceReference.Should().Be("live-readiness:AUDIT-LIVE-001;snapshot:snapshot-live-001");
+        requirements
+            .Where(static requirement => PromotionApprovalChecklist
+                .CreateRequiredFor(RunType.Live)
+                .Contains(requirement.ChecklistItem, StringComparer.OrdinalIgnoreCase))
+            .Should()
+            .OnlyContain(static requirement =>
+                requirement.Status == TradingAcceptanceGateStatusDto.Ready &&
+                requirement.ChecklistSatisfied &&
+                requirement.EvidenceSatisfied &&
+                !string.IsNullOrWhiteSpace(requirement.EvidenceReference));
+        requirements.Should().ContainSingle(requirement =>
+            requirement.ChecklistItem == PromotionApprovalChecklist.AccountingRecordsReviewed &&
+            requirement.EvidenceReference == $"{PromotionApprovalChecklist.AccountingRecordsReviewed}:ledger-journal/run-live");
+        requirements.Should().ContainSingle(requirement =>
+            requirement.ChecklistItem == PromotionApprovalChecklist.GovernedReportingReviewed &&
+            requirement.EvidenceReference == $"{PromotionApprovalChecklist.GovernedReportingReviewed}:fund-report-pack/report-live");
     }
 
     [Fact]
@@ -91,6 +130,44 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
         decision.Reason.Should().Contain("liveOperationRequirements:missing:AUDIT_RETENTION_REVIEWED");
     }
 
+    [Fact]
+    public async Task EvaluateAsync_WhenLiveRequirementLacksRetainedEvidence_ShouldRejectWithEvidenceBlocker()
+    {
+        var requirements = CreateLiveRequirements(
+            CreateRequirement(
+                PromotionApprovalChecklist.GovernedReportingReviewed,
+                evidenceReference: "",
+                evidenceSatisfied: false));
+        var provider = new StaticReadinessProvider(CreateReadiness(requirements: requirements));
+        var gate = CreateGate(provider);
+
+        var decision = await gate.EvaluateAsync(CreateRequest());
+
+        decision.IsApproved.Should().BeFalse();
+        decision.Reason.Should().Contain("liveOperationRequirements:evidence-unsatisfied:GOVERNED_REPORTING_REVIEWED");
+    }
+
+    [Fact]
+    public async Task Scenario_LiveKillSwitchOpen_ShouldBlockLiveOrderWithReviewableEvidence()
+    {
+        var provider = new StaticReadinessProvider(CreateReadiness(
+            readyForLiveOperation: false,
+            blockers:
+            [
+                "acceptanceGate:execution-controls",
+                "execution-circuit-breaker-open",
+                "promotion:evidenceReferences:EXCEPTION_HANDLING_REVIEWED"
+            ],
+            controls: CreateControls(circuitBreakerOpen: true)));
+        var gate = CreateGate(provider);
+
+        var decision = await gate.EvaluateAsync(CreateRequest());
+
+        decision.IsApproved.Should().BeFalse();
+        decision.Reason.Should().Contain("execution-circuit-breaker-open");
+        decision.Reason.Should().Contain("promotion:evidenceReferences:EXCEPTION_HANDLING_REVIEWED");
+    }
+
     private static TradingOperatorLiveOrderReadinessGate CreateGate(StaticReadinessProvider provider) =>
         new(provider, NullLogger<TradingOperatorLiveOrderReadinessGate>.Instance);
 
@@ -128,20 +205,14 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
         string targetRunId = "run-live",
         string? auditReference = "AUDIT-LIVE-001",
         IReadOnlyList<string>? blockers = null,
-        IReadOnlyList<TradingLiveOperationRequirementDto>? requirements = null) =>
+        IReadOnlyList<TradingLiveOperationRequirementDto>? requirements = null,
+        TradingControlReadinessDto? controls = null) =>
         new(
             AsOf: DateTimeOffset.UtcNow,
             ActiveSession: null,
             Sessions: [],
             Replay: null,
-            Controls: new TradingControlReadinessDto(
-                CircuitBreakerOpen: false,
-                CircuitBreakerReason: null,
-                CircuitBreakerChangedBy: null,
-                CircuitBreakerChangedAt: null,
-                ManualOverrideCount: 0,
-                SymbolLimitCount: 0,
-                DefaultMaxPositionSize: 100m),
+            Controls: controls ?? CreateControls(),
             Promotion: new TradingPromotionReadinessDto(
                 State: "Approved",
                 Reason: "Approved for live operation.",
@@ -187,6 +258,8 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
         string? requirementId = null,
         TradingAcceptanceGateStatusDto status = TradingAcceptanceGateStatusDto.Ready,
         string? evidenceReference = null,
+        bool? checklistSatisfied = null,
+        bool? evidenceSatisfied = null,
         string? blockerCode = null) =>
         new(
             RequirementId: requirementId ?? ToRequirementId(checklistItem),
@@ -195,9 +268,21 @@ public sealed class TradingOperatorLiveOrderReadinessGateTests
             Detail: $"{checklistItem} evidence.",
             ChecklistItem: checklistItem,
             EvidenceReference: evidenceReference ?? $"{checklistItem}:retained-evidence",
-            ChecklistSatisfied: status == TradingAcceptanceGateStatusDto.Ready,
-            EvidenceSatisfied: status == TradingAcceptanceGateStatusDto.Ready,
+            ChecklistSatisfied: checklistSatisfied ?? status == TradingAcceptanceGateStatusDto.Ready,
+            EvidenceSatisfied: evidenceSatisfied ?? status == TradingAcceptanceGateStatusDto.Ready,
             BlockerCode: blockerCode);
+
+    private static TradingControlReadinessDto CreateControls(bool circuitBreakerOpen = false) =>
+        new(
+            CircuitBreakerOpen: circuitBreakerOpen,
+            CircuitBreakerReason: circuitBreakerOpen
+                ? "Governance kill-switch is open while exception evidence is reviewed."
+                : null,
+            CircuitBreakerChangedBy: circuitBreakerOpen ? "governance" : null,
+            CircuitBreakerChangedAt: circuitBreakerOpen ? DateTimeOffset.UtcNow : null,
+            ManualOverrideCount: 0,
+            SymbolLimitCount: 0,
+            DefaultMaxPositionSize: 100m);
 
     private static string ToRequirementId(string checklistItem) =>
         checklistItem

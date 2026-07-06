@@ -105,9 +105,42 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
                     liveOperationRequirements.Select(static requirement => requirement.ChecklistItem))
                 .Select(static checklistItem => $"liveOperationRequirements:missing:{checklistItem}"));
 
+        blockers.AddRange(BuildRetainedEvidenceBlockers(liveOperationRequirements));
+
         return blockers
             .Distinct(StringComparer.Ordinal)
             .ToList();
+    }
+
+    private static IEnumerable<string> BuildRetainedEvidenceBlockers(
+        IReadOnlyList<TradingLiveOperationRequirementDto> requirements)
+    {
+        var requirementsByChecklistItem = requirements
+            .Select(static requirement => (Requirement: requirement, ChecklistItem: NormalizeChecklistItem(requirement.ChecklistItem)))
+            .Where(static item => item.ChecklistItem.Length > 0)
+            .GroupBy(static item => item.ChecklistItem, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.First().Requirement,
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var checklistItem in PromotionApprovalChecklist.CreateRequiredFor(RunType.Live))
+        {
+            if (!requirementsByChecklistItem.TryGetValue(checklistItem, out var requirement))
+            {
+                continue;
+            }
+
+            if (!requirement.ChecklistSatisfied)
+            {
+                yield return $"liveOperationRequirements:checklist-unsatisfied:{checklistItem}";
+            }
+
+            if (!requirement.EvidenceSatisfied || string.IsNullOrWhiteSpace(requirement.EvidenceReference))
+            {
+                yield return $"liveOperationRequirements:evidence-unsatisfied:{checklistItem}";
+            }
+        }
     }
 
     private static string BuildBlockerSummary(IReadOnlyList<string> blockers)
@@ -122,4 +155,7 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeChecklistItem(string? checklistItem) =>
+        PromotionApprovalChecklist.Normalize([checklistItem ?? string.Empty]).FirstOrDefault() ?? string.Empty;
 }
