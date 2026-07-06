@@ -160,6 +160,14 @@ const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalM
 // The report-run live chip renders in the "Live" state whenever the SSE channel is healthy,
 // so this budget only governs its internal age tick; a modest interval keeps the dot lively.
 export const REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS = 15_000;
+
+// Governed report-pack workflow rows carry a `report-pack:{id}` run id (server ProjectWorkflowRun)
+// that the run-stream endpoint cannot resolve — it only knows IReportingOrchestrationService run
+// ids and 404s on the workflow scheme. Only generic reporting runs are streamable, so selection
+// skips workflow rows instead of opening an SSE channel that would just 404-loop.
+function isStreamableReportingRun(run: ReportingRunStatusRow): boolean {
+  return !run.id.startsWith("report-pack:");
+}
 const defaultExportsReportRunRequester = "browser-workstation";
 const EXPORTS_VIEW_STATE_SCREEN = "reporting-exports";
 const exportsViewReflectDebounceMs = 300;
@@ -218,7 +226,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   // reporting poll is unchanged and remains the source of truth for the rendered rows. When the
   // channel is healthy it surfaces that run's approval/status transitions instantly; while it is
   // unhealthy (or where EventSource is unavailable, e.g. in tests) nothing extra renders.
-  const watchedRunId = vm.runStatusRows[0]?.id ?? null;
+  const watchedRunId = vm.runStatusRows.find(isStreamableReportingRun)?.id ?? null;
   const { status: watchedRunStreamStatus, healthy: watchedRunStreamHealthy } = useReportRunStream(watchedRunId);
   // When the watched run's stream is healthy, its pushed status supersedes the stale polled status
   // for that row, so the prominent badge reflects the live approval state instead of contradicting

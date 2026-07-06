@@ -10,14 +10,43 @@ import {
 import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import { renderWithRouter } from "@/test/render";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
-import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
+import type {
+  AccountingWorkspaceResponse,
+  FinancialRecordExplorerDto,
+  ReportingRunStatusProjection,
+  ReportingTemplateMetadata
+} from "@/types";
 
 // The report-run live indicator is additive over the SSE hook; mock it so the default (unhealthy,
-// matching jsdom where EventSource is undefined) leaves every existing test untouched, and one test
-// below can drive the healthy/pushed-status path.
+// matching jsdom where EventSource is undefined) leaves every existing test untouched, and the tests
+// below can drive the healthy/pushed-status and run-selection paths.
 vi.mock("@/hooks/use-report-run-stream", () => ({
   useReportRunStream: vi.fn(() => ({ status: null, healthy: false }))
 }));
+
+function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
+  return {
+    runId: "investor-monthly-statement-20260501",
+    templateId: "investor-monthly-statement",
+    family: "InvestorStatement",
+    status: "InReview",
+    trigger: "Scheduled",
+    asOfDate: "2026-05-01",
+    attemptCount: 1,
+    sectionCount: 2,
+    lineageLinkedSections: 2,
+    artifacts: ["manifest.json"],
+    generatedReportWriterGrids: [],
+    reportWriterDatasetSourceId: "portfolio-reporting-cuts",
+    reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
+    reportWriterDatasetRowCount: 2,
+    auditActions: ["RunGenerated", "ApprovalTransition"],
+    failureReason: null,
+    drilldownLinks: [],
+    nextActions: [],
+    ...overrides
+  };
+}
 
 function LocationSearchProbe() {
   const { search } = useLocation();
@@ -1342,6 +1371,7 @@ describe("ReportingScreen", () => {
       })
     });
     vi.stubGlobal("fetch", fetchMock);
+    vi.mocked(useReportRunStream).mockClear();
     vi.mocked(useReportRunStream).mockReturnValue({ status: null, healthy: false });
   });
 
@@ -5627,28 +5657,7 @@ describe("ReportingScreen", () => {
       ...accounting,
       reporting: {
         ...accounting.reporting,
-        recentRuns: [
-          {
-            runId: "investor-monthly-statement-20260501",
-            templateId: "investor-monthly-statement",
-            family: "InvestorStatement",
-            status: "InReview",
-            trigger: "Scheduled",
-            asOfDate: "2026-05-01",
-            attemptCount: 1,
-            sectionCount: 2,
-            lineageLinkedSections: 2,
-            artifacts: ["manifest.json"],
-            generatedReportWriterGrids: [],
-            reportWriterDatasetSourceId: "portfolio-reporting-cuts",
-            reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
-            reportWriterDatasetRowCount: 2,
-            auditActions: ["RunGenerated", "ApprovalTransition"],
-            failureReason: null,
-            drilldownLinks: [],
-            nextActions: []
-          }
-        ]
+        recentRuns: [recentRun({})]
       }
     };
 
@@ -5679,5 +5688,32 @@ describe("ReportingScreen", () => {
     expect(runRow).not.toBeNull();
     expect(within(runRow).getByText("Approved")).toBeInTheDocument();
     expect(within(runRow).queryByText("InReview")).not.toBeInTheDocument();
+  });
+
+  it("skips report-pack workflow rows when choosing the streamed run", () => {
+    const accountingWithWorkflowFirst: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        recentRuns: [
+          // Newest row is a governed report-pack workflow item (report-pack:{guid}) — not resolvable
+          // by the run-stream endpoint, which only knows orchestration run ids.
+          recentRun({
+            runId: "report-pack:11111111-1111-1111-1111-111111111111",
+            templateId: "board-pack",
+            family: "ReportPack",
+            status: "PendingApproval"
+          }),
+          recentRun({ runId: "investor-monthly-statement-20260501" })
+        ]
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={accountingWithWorkflowFirst} />, { initialEntries: ["/reporting/report-builder"] });
+
+    // Selection falls through the non-streamable workflow row to the first generic run, so the SSE
+    // channel attaches to a run the endpoint can resolve instead of 404-looping.
+    expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
+    expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
   });
 });
