@@ -23,6 +23,10 @@ Keep shared contracts and read-model logic in shared UI services when browser an
 the behavior. The seven operator workspaces now register through feature modules under
 `src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
 matching module before it expands through the older flat page folders.
+The main shell also projects those registered pages into a structured left navigation panel with
+Favorites, Recent, and Workspace Menu sections. Visible workspace roots remain limited to Trading,
+Portfolio, Accounting, Reporting, Strategy, Data, and Settings; legacy route aliases and keywords
+stay search metadata rather than primary labels.
 
 ## Key folders and files
 

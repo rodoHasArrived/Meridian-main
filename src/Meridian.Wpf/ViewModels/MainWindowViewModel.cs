@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -100,6 +101,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     public event EventHandler? LogoutRequested;
 
     public StatusBarViewModel StatusBar { get; }
+
+    public IReadOnlyList<ShellNavigationPanelSection> NavigationSections { get; } = ShellNavigationCatalog.BuildNavigationPanel();
 
     public IRelayCommand<string> NavigateCommand { get; }
 

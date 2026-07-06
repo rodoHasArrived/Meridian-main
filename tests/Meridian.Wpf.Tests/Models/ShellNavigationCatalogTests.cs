@@ -491,3 +491,78 @@ public sealed class ShellNavigationCatalogTests
         }
     }
 }
+
+public sealed class ShellNavigationPanelCatalogTests
+{
+    [Fact]
+    public void BuildNavigationPanel_EmptyFavoritesAndRecents_ShouldExposeEmptyStateSections()
+    {
+        var sections = ShellNavigationCatalog.BuildNavigationPanel();
+
+        sections.Select(static section => section.Id)
+            .Should()
+            .Equal(
+                ShellNavigationSectionIds.Favorites,
+                ShellNavigationSectionIds.Recent,
+                ShellNavigationSectionIds.WorkspaceMenu);
+
+        sections[0].HasItems.Should().BeFalse();
+        sections[0].AutomationId.Should().Be("ShellNavigationSection_Favorites");
+        sections[1].HasItems.Should().BeFalse();
+        sections[1].AutomationId.Should().Be("ShellNavigationSection_Recent");
+    }
+
+    [Fact]
+    public void BuildNavigationPanel_WorkspaceMenu_ShouldGroupByCanonicalRootWorkspaceOrder()
+    {
+        var workspaceMenu = ShellNavigationCatalog.BuildNavigationPanel()
+            .Single(static section => section.Id == ShellNavigationSectionIds.WorkspaceMenu);
+
+        workspaceMenu.WorkspaceGroups.Select(static group => group.WorkspaceId)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+
+        workspaceMenu.WorkspaceGroups.Should().OnlyContain(static group => group.Items.All(item => item.WorkspaceId == group.WorkspaceId));
+        workspaceMenu.WorkspaceGroups.Select(static group => group.DisplayLabel)
+            .Should()
+            .Equal("Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings");
+    }
+
+    [Fact]
+    public void BuildNavigationPanel_WorkspaceItems_ShouldSortByVisibilityWorkflowOrderThenLabel()
+    {
+        var strategy = ShellNavigationCatalog.BuildNavigationPanel()
+            .Single(static section => section.Id == ShellNavigationSectionIds.WorkspaceMenu)
+            .WorkspaceGroups.Single(static group => group.WorkspaceId == "strategy");
+
+        var expected = ShellNavigationCatalog.WorkspaceCapabilities
+            .Single(static capability => capability.Workspace.Id == "strategy")
+            .Pages
+            .Where(static page => !page.HideFromDefaultPalette)
+            .OrderBy(static page => page.VisibilityTier)
+            .ThenBy(static page => page.SectionLabel, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static page => page.Order)
+            .ThenBy(static page => page.Title, StringComparer.OrdinalIgnoreCase)
+            .Select(static page => page.PageTag);
+
+        strategy.Items.Select(static item => item.PageTag).Should().Equal(expected);
+    }
+
+    [Fact]
+    public void BuildNavigationPanel_FavoritesAndRecents_ShouldCanonicalizeAliasesAndKeepAliasesSearchOnly()
+    {
+        var sections = ShellNavigationCatalog.BuildNavigationPanel(
+            favoritePageTags: ["ResearchShell", "Backtest"],
+            recentPageTags: ["Blotter", "TradingShell"]);
+
+        var favorites = sections.Single(static section => section.Id == ShellNavigationSectionIds.Favorites);
+        favorites.Items.Select(static item => item.PageTag).Should().Equal("StrategyShell", "Backtest");
+        favorites.Items.Should().OnlyContain(static item => !item.DisplayLabel.Contains("ResearchShell", StringComparison.OrdinalIgnoreCase));
+        favorites.Items.Single(static item => item.PageTag == "StrategyShell")
+            .SearchAliases.Should().Contain("ResearchShell");
+
+        var recents = sections.Single(static section => section.Id == ShellNavigationSectionIds.Recent);
+        recents.Items.Select(static item => item.PageTag).Should().Equal("TradingShell", "PositionBlotter");
+        recents.Items.Should().OnlyContain(static item => !item.DisplayLabel.Contains("Blotter", StringComparison.OrdinalIgnoreCase));
+    }
+}
