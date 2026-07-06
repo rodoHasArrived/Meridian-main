@@ -178,7 +178,7 @@ function buildCapitalAccountFundEventCommandRows(
   const rows: CapitalAccountWorkbenchFundEventCommandRowViewModel[] = [];
 
   for (const account of workbench.investorAccounts) {
-    for (const record of account.fundEventRecords) {
+    for (const record of account.fundEventRecords ?? []) {
       if (seen.has(record.fundEventId)) {
         continue;
       }
@@ -203,7 +203,7 @@ function buildCapitalAccountInvestorAccountRow(
     account.evidenceLinks,
     account.currency,
     account.netCapitalActivity,
-    account.fundEventRecords[0]?.effectiveDate ?? null
+    account.fundEventRecords?.[0]?.effectiveDate ?? null
   );
 
   return {

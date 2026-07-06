@@ -101,6 +101,69 @@ const fundEventLedgerRecord: PrivateCapitalFundEventLedgerRecord = {
   }
 };
 
+function createCapitalAccountWorkbench(
+  fundEventRecords: CapitalAccountWorkbench["investorAccounts"][number]["fundEventRecords"]
+): CapitalAccountWorkbench {
+  return {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    projectedAtUtc: "2026-06-30T17:00:00Z",
+    capitalAccountId: "capital-account:fund-alpha:lp-1",
+    investorId: "investor:lp-1",
+    currency: "USD",
+    workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+    statusLabel: "Ready",
+    statusReason: "Capital account projection loaded.",
+    investorAccountCount: 1,
+    fundEventCount: fundEventRecords?.length ?? 0,
+    statementCount: 0,
+    restatementLineageCount: 0,
+    auditDrillThroughCount: 0,
+    netCapitalActivity: 125,
+    investorAccounts: [{
+      accountKey: "capital-account:fund-alpha:lp-1|investor:lp-1|USD",
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1",
+      currency: "USD",
+      activityRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+      readiness: "Ready",
+      readinessLabel: "Ready",
+      readinessReason: "Retained evidence and statement support are available.",
+      nextAction: "Open statement",
+      nextActionRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
+      openingNetActivity: 0,
+      endingNetActivity: 125,
+      netCapitalActivity: 125,
+      contributions: 125,
+      distributions: 0,
+      subscriptions: 0,
+      redemptions: 0,
+      managementFees: 0,
+      fundEventCount: fundEventRecords?.length ?? 0,
+      postedFundEventCount: 0,
+      approvalQueueCount: 0,
+      publishedReportOutputCount: 0,
+      evidenceLinkCount: 0,
+      validationIssueCount: 0,
+      evidenceCategorySummary: "No evidence categories projected.",
+      evidenceLinks: [],
+      evidenceCategories: [],
+      fundEventRecords,
+      subledgerEntries: [],
+      ledgerImpacts: [],
+      reportOutputs: [],
+      validationIssues: [],
+      paymentIntentEvidence: null
+    }],
+    allocationRules: [],
+    statementLineage: [],
+    auditDrillThroughs: [],
+    validationIssues: [],
+    liveCapabilities: [],
+    plannedCapabilities: []
+  };
+}
+
 describe("accounting capital account view model", () => {
   it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {
     const workbench: CapitalAccountWorkbench = {
@@ -318,5 +381,22 @@ describe("accounting capital account view model", () => {
     });
     expect(result.current.liveCapabilities).toContain("Investor-level capital account evidence");
     expect(result.current.plannedCapabilities).toContain("Broad LP portal self-service");
+  });
+
+  it("renders investor accounts when fund-event records are absent from the projection", async () => {
+    const workbench = createCapitalAccountWorkbench(null as unknown as CapitalAccountWorkbench["investorAccounts"][number]["fundEventRecords"]);
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench)
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(
+      true,
+      "?capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
+      services
+    ));
+
+    await waitFor(() => expect(result.current.statusLabel).toBe("Ready"));
+    expect(result.current.investorAccounts).toHaveLength(1);
+    expect(result.current.fundEventCommandRows).toEqual([]);
   });
 });
