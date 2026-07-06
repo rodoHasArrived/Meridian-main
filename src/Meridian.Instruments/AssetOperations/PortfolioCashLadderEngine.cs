@@ -253,13 +253,17 @@ public static class PortfolioCashLadderEngine
         DateOnly windowEnd)
     {
         var operations = position.Operations;
-        var quantity = position.Quantity <= 0m ? 1m : position.Quantity;
+        // Preserve the signed held quantity: a negative (short) position inverts the
+        // cash-flow direction, and an explicit zero contributes nothing. The DTO default
+        // of 1 already covers an omitted quantity, so no coercion happens here.
+        var quantity = position.Quantity;
+        if (quantity == 0m)
+        {
+            return [];
+        }
+
         var latestRun = operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
-        var flows = latestRun is null
-            ? operations.ProjectedCashFlows
-            : operations.ProjectedCashFlows
-                .Where(flow => flow.ProjectionRunId == latestRun.ProjectionRunId)
-                .ToArray();
+        var flows = LatestRunFlows(operations);
         var latestTerms = operations.TermsHistory
             .OrderByDescending(static row => row.EffectiveDate)
             .ThenByDescending(static row => row.RecordedAt)
@@ -404,63 +408,102 @@ public static class PortfolioCashLadderEngine
         DateOnly windowStart,
         DateOnly windowEnd)
     {
-        var callDates = new Dictionary<Guid, DateOnly>();
+        var calledPositions = new Dictionary<Guid, (PortfolioCashLadderPositionDto Position, DateOnly CallDate)>();
         foreach (var position in inputs.Positions)
         {
             var callDate = ReadLatestTermsDate(position.Operations, "callDate", "mandatoryPutDate", "preRefundDate");
             if (callDate is { } date && date >= windowStart && date < windowEnd)
             {
-                callDates[position.Operations.Subject.SecurityId] = date;
+                calledPositions[position.Operations.Subject.SecurityId] = (position, date);
             }
         }
 
-        if (callDates.Count == 0)
+        if (calledPositions.Count == 0)
         {
             return contributions;
         }
 
-        var result = new List<PortfolioCashLadderContributionDto>(contributions.Count);
-        var pulledPrincipalBySecurity = new Dictionary<Guid, decimal>();
-        var templates = new Dictionary<Guid, PortfolioCashLadderContributionDto>();
-        foreach (var row in contributions)
-        {
-            if (!callDates.TryGetValue(row.SecurityId, out var callDate) || row.DueDate <= callDate)
-            {
-                result.Add(row);
-                continue;
-            }
+        // Drop the in-window coupon/principal rows dated after the call; those obligations
+        // no longer occur once the security is redeemed on the call date.
+        var result = contributions
+            .Where(row => !(calledPositions.TryGetValue(row.SecurityId, out var called) && row.DueDate > called.CallDate))
+            .ToList();
 
-            templates.TryAdd(row.SecurityId, row);
-            if (row.SourceLane == PrincipalLane)
-            {
-                pulledPrincipalBySecurity[row.SecurityId] =
-                    pulledPrincipalBySecurity.GetValueOrDefault(row.SecurityId) + row.BaseAmount;
-            }
-            // Coupons and other flows after the call date are removed under the call assumption.
-        }
-
-        foreach (var (securityId, pulledPrincipal) in pulledPrincipalBySecurity.OrderBy(static pair => pair.Key))
+        // Principal returned on the call date is the outstanding principal — every principal-lane
+        // flow due strictly after the call date, taken from the full projection rather than only the
+        // in-window rows, so a security whose maturity is beyond the horizon still returns principal
+        // at the call date. Quantity keeps its sign so short positions net correctly.
+        foreach (var (securityId, (position, callDate)) in calledPositions.OrderBy(static pair => pair.Key))
         {
-            if (pulledPrincipal <= 0m || !templates.TryGetValue(securityId, out var template))
+            var quantity = position.Quantity;
+            if (quantity == 0m)
             {
                 continue;
             }
 
-            var callDate = callDates[securityId];
+            var currency = inputs.BaseCurrency;
+            var pulledPrincipal = 0m;
+            foreach (var flow in LatestRunFlows(position.Operations))
+            {
+                if (flow.DueDate <= callDate || ResolveInstrumentLane(flow.FlowType) != PrincipalLane)
+                {
+                    continue;
+                }
+
+                currency = flow.Currency;
+                pulledPrincipal += RoundCash(flow.Amount * quantity * ResolveInstrumentDirection(flow.FlowType));
+            }
+
+            if (pulledPrincipal == 0m)
+            {
+                continue;
+            }
+
             var amount = RoundCash(pulledPrincipal);
-            result.Add(template with
-            {
-                FlowType = "CallRedemption",
-                SourceLane = PrincipalLane,
-                DueDate = callDate,
-                Amount = amount,
-                BaseAmount = amount,
-                ScenarioAdjustment =
-                    $"Assumed called on retained call date {callDate:yyyy-MM-dd}: principal otherwise due later is returned at par and subsequent coupons are removed."
-            });
+            result.Add(BuildCallRedemptionRow(position.Operations, callDate, amount, currency));
         }
 
         return result;
+    }
+
+    private static PortfolioCashLadderContributionDto BuildCallRedemptionRow(
+        AssetOperationsDetailDto operations,
+        DateOnly callDate,
+        decimal amount,
+        string currency)
+    {
+        var latestRun = operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
+        var latestTerms = operations.TermsHistory
+            .OrderByDescending(static row => row.EffectiveDate)
+            .ThenByDescending(static row => row.RecordedAt)
+            .FirstOrDefault();
+        return new PortfolioCashLadderContributionDto(
+            operations.Subject.SecurityId,
+            operations.Subject.DisplayName,
+            operations.Subject.AssetClass,
+            latestRun?.ProjectionRunId,
+            latestRun?.EngineVersion,
+            latestTerms?.TermsVersionId,
+            latestTerms?.TermsHash,
+            latestRun?.SourceDomain ?? "AssetOperations",
+            latestRun?.SourceEntityId,
+            "CallRedemption",
+            PrincipalLane,
+            callDate,
+            amount,
+            currency,
+            amount,
+            $"Assumed called on retained call date {callDate:yyyy-MM-dd}: principal otherwise due later is returned at par and subsequent coupons are removed.");
+    }
+
+    private static IReadOnlyList<AssetProjectedCashFlowDto> LatestRunFlows(AssetOperationsDetailDto operations)
+    {
+        var latestRun = operations.CashFlowProjectionRuns.MaxBy(static run => run.GeneratedAt);
+        return latestRun is null
+            ? operations.ProjectedCashFlows
+            : operations.ProjectedCashFlows
+                .Where(flow => flow.ProjectionRunId == latestRun.ProjectionRunId)
+                .ToArray();
     }
 
     private static List<PortfolioCashLadderContributionDto> ApplyRedemptionWave(

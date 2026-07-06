@@ -214,6 +214,52 @@ public sealed class PortfolioCashLadderEngineTests
     }
 
     [Fact]
+    public void Build_PreservesSignedQuantity_ShortPositionInvertsFlowDirection()
+    {
+        var shortPosition = BuildPosition("Short Bond", "Bond", [("Coupon", AsOf.AddDays(10), 100m)]) with { Quantity = -2m };
+
+        var ladder = PortfolioCashLadderEngine.Build(BuildInputs(positions: [shortPosition]));
+
+        ladder.Contributions.Should().ContainSingle().Which.Amount.Should().Be(-200m);
+    }
+
+    [Fact]
+    public void Build_ZeroQuantity_ContributesNothing()
+    {
+        var flatPosition = BuildPosition("Flat Bond", "Bond", [("Coupon", AsOf.AddDays(10), 100m)]) with { Quantity = 0m };
+
+        var ladder = PortfolioCashLadderEngine.Build(BuildInputs(positions: [flatPosition]));
+
+        ladder.Contributions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Build_EarlyCallScenario_ReturnsPrincipalEvenWhenMaturityIsBeyondHorizon()
+    {
+        var callDate = AsOf.AddDays(30);
+        var position = BuildPosition(
+            "Long-Dated Callable Bond",
+            "Bond",
+            [
+                ("Coupon", AsOf.AddDays(20), 2500m),
+                ("Maturity", AsOf.AddDays(400), 100_000m)
+            ],
+            termsPayload: new { callDate = callDate.ToString("yyyy-MM-dd") });
+
+        var ladder = PortfolioCashLadderEngine.Build(
+            BuildInputs(positions: [position]),
+            PortfolioCashLadderEngine.EarlyCallScenarioId);
+
+        // The maturity is 400 days out (beyond the 90-day horizon); under early call its principal
+        // is still pulled forward to the call date rather than vanishing from the ladder.
+        var call = ladder.Contributions.Should().ContainSingle(static row => row.FlowType == "CallRedemption").Subject;
+        call.DueDate.Should().Be(callDate);
+        call.Amount.Should().Be(100_000m);
+        ladder.Contributions.Should().ContainSingle(static row => row.FlowType == "Coupon")
+            .Which.DueDate.Should().Be(AsOf.AddDays(20));
+    }
+
+    [Fact]
     public void Build_SurfacesPositionSourceNoticesInWarnings()
     {
         var inputs = BuildInputs() with
