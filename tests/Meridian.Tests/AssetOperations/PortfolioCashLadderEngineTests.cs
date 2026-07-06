@@ -164,13 +164,15 @@ public sealed class PortfolioCashLadderEngineTests
             "Bond",
             [("Maturity", AsOf.AddDays(60), 100_000m)],
             termsPayload: new { callDate = callDate.ToString("yyyy-MM-dd") },
-            securityIdOverride: securityId) with { Quantity = 1m };
+            securityIdOverride: securityId,
+            quantity: 1m);
         var lotB = BuildPosition(
             "Lot B",
             "Bond",
             [("Maturity", AsOf.AddDays(60), 100_000m)],
             termsPayload: new { callDate = callDate.ToString("yyyy-MM-dd") },
-            securityIdOverride: securityId) with { Quantity = 3m };
+            securityIdOverride: securityId,
+            quantity: 3m);
 
         var ladder = PortfolioCashLadderEngine.Build(
             BuildInputs(positions: [lotA, lotB]),
@@ -421,7 +423,8 @@ public sealed class PortfolioCashLadderEngineTests
         object? termsPayload = null,
         string currency = "USD",
         decimal? annualRate = null,
-        Guid? securityIdOverride = null)
+        Guid? securityIdOverride = null,
+        decimal quantity = 1m)
     {
         var securityId = securityIdOverride ?? Guid.NewGuid();
         var projectionRunId = Guid.NewGuid();
@@ -487,7 +490,7 @@ public sealed class PortfolioCashLadderEngineTests
             [],
             readiness,
             []);
-        return new PortfolioCashLadderPositionDto(detail);
+        return new PortfolioCashLadderPositionDto(detail, quantity);
     }
 
     private static PortfolioCashLadderPositionDto BuildPositionWithLaterFailedRun(
