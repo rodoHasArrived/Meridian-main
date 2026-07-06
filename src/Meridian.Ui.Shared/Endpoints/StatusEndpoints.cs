@@ -204,8 +204,10 @@ public static class StatusEndpoints
         .Produces(503);
 
         // Server-Sent Events endpoint for real-time dashboard updates.
-        // Publish cadence is operator-tunable via configuration ("Status:SsePublishIntervalMs").
-        var ssePublishIntervalMs = app.Configuration.GetValue<int?>("Status:SsePublishIntervalMs") ?? 2000;
+        // Publish cadence is operator-tunable via configuration ("Status:SsePublishIntervalMs");
+        // non-positive values would spin or throw in the publish loop, so they fall back to the default.
+        var configuredSsePublishIntervalMs = app.Configuration.GetValue<int?>("Status:SsePublishIntervalMs");
+        var ssePublishIntervalMs = configuredSsePublishIntervalMs is > 0 ? configuredSsePublishIntervalMs.Value : 2000;
         app.MapGet("/api/events/stream", async (HttpContext ctx, CancellationToken ct) =>
         {
             ctx.Response.ContentType = "text/event-stream";
