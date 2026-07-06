@@ -61,8 +61,7 @@ internal sealed class DiagnosticsCommands : ICliCommand
         {
             _log.Information("Testing provider connectivity...");
             var result = await _configService.TestConnectivityAsync(_cfg, ct);
-            await using var tester = new ConnectivityTestService();
-            tester.DisplaySummary(result);
+            ConnectivityTestService.DisplaySummary(result);
             return CliResult.FromBool(result.AllReachable, ErrorCode.ConnectionFailed);
         }
 

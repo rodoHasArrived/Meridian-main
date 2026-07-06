@@ -1,11 +1,11 @@
 {
-  "total_files": 540,
-  "total_lines": 90073,
-  "orphaned_count": 206,
+  "total_files": 541,
+  "total_lines": 90149,
+  "orphaned_count": 207,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 166.8,
+  "average_lines": 166.6,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -213,6 +213,7 @@
     "plugins/testing-automation/skills/java-junit/SKILL.md",
     "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
     "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
+    "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
     "tests/setup-script-tests.md"
   ],
   "no_heading_files": [
@@ -2139,7 +2140,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 7903,
+      "line_count": 7934,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4438,6 +4439,14 @@
       "line_count": 62,
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

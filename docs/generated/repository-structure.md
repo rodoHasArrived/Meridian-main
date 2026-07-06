@@ -884,7 +884,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -6494,6 +6493,21 @@ Meridian-main
 │   └── README.md
 ├── tests
 │   ├── fixtures
+│   │   ├── corporate-actions
+│   │   │   └── golden
+│   │   │       ├── aapl-split-4to1-2020.json
+│   │   │       ├── alias-normalization-mixed.json
+│   │   │       ├── bond-call-101-5.json
+│   │   │       ├── cash-stock-merger-2018.json
+│   │   │       ├── dividend-amended-supersede.json
+│   │   │       ├── dividend-cancelled-after-announce.json
+│   │   │       ├── dividend-missing-prior-bar.json
+│   │   │       ├── dividend-no-position-context.json
+│   │   │       ├── ge-reverse-split-1for8-2021.json
+│   │   │       ├── KNOWN-DEFECTS.md
+│   │   │       ├── mbs-factor-paydown.json
+│   │   │       ├── special-dividend-25pct-synthetic.json
+│   │   │       └── t-wbd-spinoff-2022.json
 │   │   ├── portfolio
 │   │   │   ├── source-payloads
 │   │   │   │   ├── bank-statement-2026-06-04.csv
@@ -6516,7 +6530,11 @@ Meridian-main
 │   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CanonicalBacktestResultNormalizerTests.cs
+│   │   ├── CorporateActionAdjustmentPropertyTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
+│   │   ├── CorporateActionGoldenAdjustmentTests.cs
+│   │   ├── CorporateActionKnownDefectTests.cs
+│   │   ├── CorporateActionSeriesInvariants.cs
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
@@ -6766,7 +6784,9 @@ Meridian-main
 │   │   ├── Commodities
 │   │   │   └── CommodityProjectionServiceTests.cs
 │   │   ├── Compliance
-│   │   │   └── CompliancePolicyEngineTests.cs
+│   │   │   ├── AccessReviewServiceTests.cs
+│   │   │   ├── CompliancePolicyEngineTests.cs
+│   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
@@ -6887,7 +6907,10 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
+│   │   │   ├── BrokerageOrderPlacementGateTests.cs
+│   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
+│   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
@@ -7199,8 +7222,12 @@ Meridian-main
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── CorporateActionEffectiveStateProjectorTests.cs
+│   │   │   ├── CorporateActionGoldenLedgerTests.cs
 │   │   │   ├── CorporateActionInboxStateTests.cs
 │   │   │   ├── CorporateActionIngestOrchestratorTests.cs
+│   │   │   ├── CorporateActionLedgerInvariants.cs
+│   │   │   ├── CorporateActionLedgerKnownDefectTests.cs
+│   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
@@ -7811,6 +7838,10 @@ Meridian-main
 │   │   ├── test_windows_desktop_build_workflow.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   └── test_wpf_msix_manifest.py
+│   ├── Shared
+│   │   └── CorporateActions
+│   │       ├── GoldenCorporateActionScenario.cs
+│   │       └── GoldenCorporateActionScenarioLoader.cs
 │   ├── coverlet.runsettings
 │   ├── Directory.Build.props
 │   ├── setup-script-tests.md

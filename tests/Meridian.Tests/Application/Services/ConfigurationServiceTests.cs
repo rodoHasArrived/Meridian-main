@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Meridian.Application.Config;
+using System.Text.Json;
+using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Infrastructure.Adapters.Alpaca;
@@ -610,6 +613,82 @@ public class ConfigurationServiceTests : IAsyncDisposable
     }
 
     [Fact]
+    public void ResolveConnectivityProbeOptions_UsesRetainedConnectivitySection()
+    {
+        var config = new AppConfig
+        {
+            AdditionalSections = new Dictionary<string, JsonElement>
+            {
+                ["Connectivity"] = ParseJsonElement("""
+                {
+                  "Probes": {
+                    "TcpConnectTimeoutMs": 1234
+                  }
+                }
+                """)
+            }
+        };
+
+        var options = ConfigurationService.ResolveConnectivityProbeOptions(config);
+
+        options.TcpConnectTimeoutMs.Should().Be(1234);
+    }
+
+    [Fact]
+    public void ResolveConnectivityProbeOptions_UsesDefaultWhenSectionIsMissing()
+    {
+        var options = ConfigurationService.ResolveConnectivityProbeOptions(new AppConfig());
+
+        options.TcpConnectTimeoutMs.Should().Be(new ConnectivityProbeOptions().TcpConnectTimeoutMs);
+    }
+
+    [Fact]
+    public void ResolveConnectivityProbeOptions_MatchesSectionAndPropertyNamesCaseInsensitively()
+    {
+        var config = new AppConfig
+        {
+            AdditionalSections = new Dictionary<string, JsonElement>
+            {
+                ["connectivity"] = ParseJsonElement("""
+                {
+                  "probes": {
+                    "tcpConnectTimeoutMs": 2345
+                  }
+                }
+                """)
+            }
+        };
+
+        var options = ConfigurationService.ResolveConnectivityProbeOptions(config);
+
+        options.TcpConnectTimeoutMs.Should().Be(2345);
+    }
+
+    [Fact]
+    public void ResolveConnectivityProbeOptions_RejectsNonIntegerTimeout()
+    {
+        var config = new AppConfig
+        {
+            AdditionalSections = new Dictionary<string, JsonElement>
+            {
+                ["Connectivity"] = ParseJsonElement("""
+                {
+                  "Probes": {
+                    "TcpConnectTimeoutMs": "fast"
+                  }
+                }
+                """)
+            }
+        };
+
+        var act = () => ConfigurationService.ResolveConnectivityProbeOptions(config);
+
+        act.Should()
+            .Throw<ConfigurationException>()
+            .WithMessage("*Connectivity:Probes:TcpConnectTimeoutMs*integer*");
+    }
+
+    [Fact]
     public void CreateCredentialContext_UsesConfiguredValuesForAnnotatedProvider()
     {
         // Arrange
@@ -666,6 +745,12 @@ public class ConfigurationServiceTests : IAsyncDisposable
         {
             Environment.SetEnvironmentVariable(_name, _previousValue);
         }
+    }
+
+    private static JsonElement ParseJsonElement(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
     }
 
     #endregion

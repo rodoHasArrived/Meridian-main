@@ -155,7 +155,7 @@ public sealed class ConnectivityTestService : IAsyncDisposable
     /// <summary>
     /// Displays the connectivity test summary.
     /// </summary>
-    public void DisplaySummary(ConnectivitySummary summary)
+    public static void DisplaySummary(ConnectivitySummary summary)
     {
         Console.WriteLine();
 
