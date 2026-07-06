@@ -1,0 +1,37 @@
+{
+  "scenarioId": "t-wbd-spinoff-2022",
+  "description": "AT&T spin-off of Warner Bros. Discovery, ex 2022-04-08: 0.241917 WBD shares per T share. Per AT&T's Form 8937 the cost basis split was approximately 76.5% T / 23.5% WBD. The bridge currently posts a symbolic 1-unit memo with no basis allocation and no WBD position (CA-DEF-002); the entitlement engine (Idea #3) replaces that with fair-value basis allocation and cash-in-lieu for fractionals.",
+  "ticker": "T",
+  "securityId": "c0000000-cccc-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "c0000000-cccc-4000-8000-0000000000c1",
+      "securityId": "c0000000-cccc-4000-8000-000000000001",
+      "eventType": "SpinOff",
+      "exDate": "2022-04-08",
+      "payDate": null,
+      "dividendPerShare": null,
+      "currency": null,
+      "splitRatio": null,
+      "newSecurityId": "c0000000-cccc-4000-8000-000000000002",
+      "distributionRatio": 0.241917,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2022-04-05",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2022-04-06", "open": 24.10, "high": 24.30, "low": 23.90, "close": 24.14, "volume": 50000000 },
+    { "sessionDate": "2022-04-07", "open": 24.05, "high": 24.25, "low": 23.80, "close": 24.20, "volume": 48000000 },
+    { "sessionDate": "2022-04-08", "open": 19.60, "high": 19.90, "low": 19.20, "close": 19.63, "volume": 120000000 },
+    { "sessionDate": "2022-04-11", "open": 19.55, "high": 19.75, "low": 19.30, "close": 19.50, "volume": 70000000 }
+  ],
+  "postingContext": { "positionQuantity": 1000, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [ "journal-balanced", "idempotent-posting" ],
+  "knownDefectIds": [ "CA-DEF-002" ]
+}

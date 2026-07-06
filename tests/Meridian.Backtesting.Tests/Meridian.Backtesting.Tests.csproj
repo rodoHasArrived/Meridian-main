@@ -22,4 +22,8 @@
     <ProjectReference Include="..\..\src\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Shared\CorporateActions\*.cs" Link="Shared\CorporateActions\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,45 @@
+{
+  "scenarioId": "aapl-split-4to1-2020",
+  "description": "AAPL 4:1 forward split, ex 2020-08-31. Prices are plausible synthetic approximations of the real session values; assertions ride invariants, not point values. Locks price/volume scaling, exact-chain split arithmetic, and the split ledger memo.",
+  "ticker": "AAPL",
+  "securityId": "a0000000-aaaa-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "a0000000-aaaa-4000-8000-0000000000c1",
+      "securityId": "a0000000-aaaa-4000-8000-000000000001",
+      "eventType": "StockSplit",
+      "exDate": "2020-08-31",
+      "payDate": null,
+      "dividendPerShare": null,
+      "currency": null,
+      "splitRatio": 4,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2020-08-24",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2020-08-26", "open": 496.00, "high": 501.00, "low": 495.00, "close": 500.00, "volume": 40000000 },
+    { "sessionDate": "2020-08-27", "open": 500.00, "high": 505.00, "low": 498.00, "close": 502.00, "volume": 38000000 },
+    { "sessionDate": "2020-08-28", "open": 502.00, "high": 506.00, "low": 499.00, "close": 499.20, "volume": 46000000 },
+    { "sessionDate": "2020-08-31", "open": 127.58, "high": 131.00, "low": 126.00, "close": 129.04, "volume": 225000000 },
+    { "sessionDate": "2020-09-01", "open": 132.76, "high": 134.80, "low": 130.50, "close": 134.18, "volume": 152000000 }
+  ],
+  "postingContext": { "positionQuantity": 100, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [
+    "series-continuity",
+    "factor-monotonicity",
+    "notional-conservation",
+    "journal-balanced",
+    "idempotent-posting",
+    "position-basis-conserved"
+  ],
+  "knownDefectIds": []
+}
