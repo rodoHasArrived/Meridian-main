@@ -9,7 +9,15 @@ import {
 } from "@/components/meridian/command-palette.actions";
 import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import { renderWithRouter } from "@/test/render";
+import { useReportRunStream } from "@/hooks/use-report-run-stream";
 import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
+
+// The report-run live indicator is additive over the SSE hook; mock it so the default (unhealthy,
+// matching jsdom where EventSource is undefined) leaves every existing test untouched, and one test
+// below can drive the healthy/pushed-status path.
+vi.mock("@/hooks/use-report-run-stream", () => ({
+  useReportRunStream: vi.fn(() => ({ status: null, healthy: false }))
+}));
 
 function LocationSearchProbe() {
   const { search } = useLocation();
@@ -1334,6 +1342,7 @@ describe("ReportingScreen", () => {
       })
     });
     vi.stubGlobal("fetch", fetchMock);
+    vi.mocked(useReportRunStream).mockReturnValue({ status: null, healthy: false });
   });
 
   it("renders loading copy when reporting data is unavailable", () => {
@@ -5611,5 +5620,57 @@ describe("ReportingScreen", () => {
       "No export profiles are configured. Add a governed profile before report-pack approval."
     );
     expect(within(task).queryByRole("list", { name: "Report-pack export profiles" })).not.toBeInTheDocument();
+  });
+
+  it("surfaces the watched run's pushed status additively when the report-run stream is healthy", () => {
+    const accountingWithRecentRun: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        recentRuns: [
+          {
+            runId: "investor-monthly-statement-20260501",
+            templateId: "investor-monthly-statement",
+            family: "InvestorStatement",
+            status: "InReview",
+            trigger: "Scheduled",
+            asOfDate: "2026-05-01",
+            attemptCount: 1,
+            sectionCount: 2,
+            lineageLinkedSections: 2,
+            artifacts: ["manifest.json"],
+            generatedReportWriterGrids: [],
+            reportWriterDatasetSourceId: "portfolio-reporting-cuts",
+            reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
+            reportWriterDatasetRowCount: 2,
+            auditActions: ["RunGenerated", "ApprovalTransition"],
+            failureReason: null,
+            drilldownLinks: [],
+            nextActions: []
+          }
+        ]
+      }
+    };
+
+    // Healthy stream pushing a newer approval state than the polled "InReview" row.
+    vi.mocked(useReportRunStream).mockReturnValue({
+      status: {
+        runId: "investor-monthly-statement-20260501",
+        templateId: "investor-monthly-statement",
+        asOfDate: "2026-05-01",
+        status: "Approved",
+        trigger: "Scheduled",
+        attemptCount: 2,
+        entries: []
+      },
+      healthy: true
+    });
+
+    renderWithRouter(<ReportingScreen data={accountingWithRecentRun} />, { initialEntries: ["/reporting/report-builder"] });
+
+    expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
+    const liveStatus = screen.getByTestId("report-run-live-status");
+    expect(liveStatus).toHaveTextContent("Live status: Approved · attempt 2");
+    expect(screen.getByLabelText("Run investor-monthly-statement-20260501 status is streaming live.")).toBeInTheDocument();
   });
 });
