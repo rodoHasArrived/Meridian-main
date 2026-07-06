@@ -544,25 +544,33 @@ public sealed class PortfolioCashLadderEngineTests
             securityId, "Bond", "Superseded Terms Bond", $"CUSIP:{securityId:N}",
             ["Identity", "TermsHistory", "ProjectedCashFlows"]);
 
+        // Derive every timestamp from a single clock reading. The engine binds terms to a run by
+        // requiring terms.RecordedAt <= run.GeneratedAt, so the completed run's GeneratedAt and the
+        // run-bound terms' RecordedAt must be ordered deterministically. Two separate
+        // DateTimeOffset.UtcNow.AddDays(-2) readings are evaluated microseconds apart and would leave
+        // the terms recorded *after* the run, silently excluding them.
+        var now = DateTimeOffset.UtcNow;
+        var completedRunGeneratedAt = now.AddDays(-2);
+
         var completedRunId = Guid.NewGuid();
         var completedRun = new AssetCashFlowProjectionRunDto(
             completedRunId, securityId, AsOf.AddDays(-2), "asset-obligation-projection-v1", "Completed",
-            DateTimeOffset.UtcNow.AddDays(-2), "SecurityMaster", securityId.ToString("D"));
+            completedRunGeneratedAt, "SecurityMaster", securityId.ToString("D"));
         // Newer run failed and produced no flows; must not pull in its newer terms.
         var failedRun = new AssetCashFlowProjectionRunDto(
             Guid.NewGuid(), securityId, AsOf, "asset-obligation-projection-v1", "Failed",
-            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"));
+            now, "SecurityMaster", securityId.ToString("D"));
 
         // Terms tied to the completed run: effective and recorded on/before it, and carrying the call date.
         var runTerms = new AssetTermsVersionDto(
             Guid.NewGuid(), securityId, 1, $"security-master:{securityId:N}:1", AsOf.AddDays(-10),
-            DateTimeOffset.UtcNow.AddDays(-2), "SecurityMaster", securityId.ToString("D"),
+            completedRunGeneratedAt, "SecurityMaster", securityId.ToString("D"),
             "Superseded Terms Bond terms v1",
             JsonSerializer.SerializeToElement(new { callDate = callDate.ToString("yyyy-MM-dd") }));
         // Newer terms retained after the completed run, with no call date.
         var newerTerms = new AssetTermsVersionDto(
             Guid.NewGuid(), securityId, 2, $"security-master:{securityId:N}:2", AsOf.AddDays(-1),
-            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"),
+            now, "SecurityMaster", securityId.ToString("D"),
             "Superseded Terms Bond terms v2",
             JsonSerializer.SerializeToElement(new { note = "no call date" }));
 
