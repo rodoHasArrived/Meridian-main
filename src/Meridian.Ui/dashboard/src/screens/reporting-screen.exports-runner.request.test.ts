@@ -55,4 +55,25 @@ describe("buildExportsReportRunRequest restatement authorization", () => {
     expect(request.templateId).toBe("investor-monthly-statement");
     expect(request.retryReason).toBe("Q2 NAV correction");
   });
+
+  it("builds a restatement request without a current template selection", () => {
+    const request = buildExportsReportRunRequest(
+      null,
+      draft({
+        restatementTargetRunId: "series-a-20260504",
+        restatementTemplateId: "series-a-template",
+        restatementJobId: "series-a",
+        restatementAsOfDate: "2026-05-04",
+        retryReason: "correction"
+      })
+    );
+
+    expect(request.allowRestatement).toBe(true);
+    expect(request.jobId).toBe("series-a");
+    expect(request.templateId).toBe("series-a-template");
+  });
+
+  it("throws for an ordinary run when no template is selected", () => {
+    expect(() => buildExportsReportRunRequest(null, draft())).toThrow();
+  });
 });

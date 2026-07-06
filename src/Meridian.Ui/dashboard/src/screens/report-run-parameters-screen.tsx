@@ -143,31 +143,43 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
   };
 
   const onRun = async () => {
-    if (!selectedTemplate || !selectedTemplate.canRunOnDemand || runningTemplateRunId) {
+    if (runningTemplateRunId) {
+      return;
+    }
+
+    // Restatement runs from the selected released run's identity, independent of the current
+    // template selection; an ordinary run still needs a runnable template.
+    const isRestating = draft.restatementTargetRunId.trim().length > 0;
+    const identity = isRestating
+      ? { id: draft.restatementTargetRunId, name: `Restatement of ${draft.restatementTargetRunId}` }
+      : selectedTemplate && selectedTemplate.canRunOnDemand
+        ? { id: selectedTemplate.id, name: selectedTemplate.name }
+        : null;
+    if (!identity) {
       return;
     }
 
     setStatus({
-      id: selectedTemplate.id,
+      id: identity.id,
       label: "Report run",
       state: "running",
-      message: `${selectedTemplate.name} is running.`,
+      message: `${identity.name} is running.`,
       details: []
     });
 
     try {
       const result = await runReportingNow(buildExportsReportRunRequest(selectedTemplate, draft));
       setStatus({
-        id: selectedTemplate.id,
+        id: identity.id,
         label: "Report run",
         state: "success",
-        message: `${selectedTemplate.name} run created.`,
+        message: `${identity.name} run created.`,
         details: buildReportRunResultDetails(result.run)
       });
     } catch (error) {
-      const description = describeApiError(error, `${selectedTemplate.name} run failed.`);
+      const description = describeApiError(error, `${identity.name} run failed.`);
       setStatus({
-        id: selectedTemplate.id,
+        id: identity.id,
         label: "Report run",
         state: "error",
         message: description.summary,

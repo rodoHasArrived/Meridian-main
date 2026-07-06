@@ -597,7 +597,22 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   async function handleExportsReportRun() {
-    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand || runningTemplateRunId) {
+    if (runningTemplateRunId) {
+      return;
+    }
+
+    // Restatement runs from the selected released run's identity, independent of the current
+    // template selection (which may be empty or gated); an ordinary run needs a runnable template.
+    if (exportsRunDraft.restatementTargetRunId.trim().length > 0) {
+      await executeTemplateRun(
+        { id: exportsRunDraft.restatementTargetRunId, name: `Restatement of ${exportsRunDraft.restatementTargetRunId}` },
+        buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
+        "Exports report run"
+      );
+      return;
+    }
+
+    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand) {
       return;
     }
 
@@ -652,31 +667,31 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   ]);
 
   async function executeTemplateRun(
-    template: ReportingTemplateRow,
+    identity: { id: string; name: string },
     request: ReportingRunRequest,
     statusLabel: string
   ) {
     setTemplateRunStatus({
-      id: template.id,
+      id: identity.id,
       label: statusLabel,
       state: "running",
-      message: `${template.name} is running.`,
+      message: `${identity.name} is running.`,
       details: []
     });
 
     try {
       const result = await runReportingNow(request);
       setTemplateRunStatus({
-        id: template.id,
+        id: identity.id,
         label: statusLabel,
         state: "success",
-        message: `${template.name} run created.`,
+        message: `${identity.name} run created.`,
         details: buildReportRunResultDetails(result.run)
       });
     } catch (error) {
-      const display = describeApiError(error, `${template.name} run failed.`);
+      const display = describeApiError(error, `${identity.name} run failed.`);
       setTemplateRunStatus({
-        id: template.id,
+        id: identity.id,
         label: statusLabel,
         state: "error",
         message: display.summary,
@@ -3014,14 +3029,15 @@ function resolveSelectedExportsTemplate(
 }
 
 export function buildExportsReportRunRequest(
-  template: ReportingTemplateRow,
+  template: ReportingTemplateRow | null,
   draft: ExportsReportRunDraftState
 ): ReportingRunRequest {
   // Authorized restatement targets a specific released run's series: reuse its job id and as-of
   // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
+  // It carries its own template identity, so it does not depend on the current template selection.
   if (draft.restatementTargetRunId) {
     return {
-      templateId: draft.restatementTemplateId || template.templateName,
+      templateId: draft.restatementTemplateId,
       jobId: draft.restatementJobId,
       asOfDate: draft.restatementAsOfDate,
       maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
@@ -3029,6 +3045,10 @@ export function buildExportsReportRunRequest(
       retryReason: draft.retryReason.trim() || null,
       allowRestatement: true
     };
+  }
+
+  if (!template) {
+    throw new Error("A report template must be selected to run a report.");
   }
 
   return {

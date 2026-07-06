@@ -81,7 +81,8 @@ export function ExportsReportRunner({
       ? "Enter a restatement reason to supersede the selected released report."
       : null)
     : resolveExportsRunDisabledReason(selectedTemplate);
-  const isRunningSelected = Boolean(selectedTemplate && runningTemplateRunId === selectedTemplate.id);
+  const activeRunId = isRestating ? draft.restatementTargetRunId : selectedTemplate?.id;
+  const isRunningSelected = Boolean(activeRunId && runningTemplateRunId === activeRunId);
 
   const handleRestatementTargetChange = (runId: string) => {
     const target = runId ? releasedRuns.find((run) => run.id === runId) ?? null : null;
