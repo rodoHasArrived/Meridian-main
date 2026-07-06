@@ -519,6 +519,15 @@ export function PortfolioScreen({
           {vm.headerChips.map((chip) => (
             <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
           ))}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
+              aria-label="Open the portfolio cash ladder: projected inflows and outflows with liquidity scenarios"
+            >
+              <Wallet className="size-4" aria-hidden />
+              Cash Ladder
+            </Link>
+          </Button>
         </div>
       </section>
 

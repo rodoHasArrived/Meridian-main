@@ -68,6 +68,7 @@ const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
+const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
@@ -529,6 +530,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/cash-ladder" element={<CashLadderScreen />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen

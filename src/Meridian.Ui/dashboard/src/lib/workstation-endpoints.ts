@@ -169,7 +169,9 @@ export const PROMOTION_API_ENDPOINTS = {
 export const PORTFOLIO_API_ENDPOINTS = {
   aggregate: UI_API_ROUTES.PortfolioAggregate,
   exposure: UI_API_ROUTES.PortfolioExposure,
-  household: "/api/portfolio/household"
+  household: "/api/portfolio/household",
+  cashLadder: UI_API_ROUTES.PortfolioCashLadder,
+  cashLadderScenarios: UI_API_ROUTES.PortfolioCashLadderScenarios
 } as const;
 
 export const EXPORT_API_ENDPOINTS = {
@@ -1152,6 +1154,20 @@ export function portfolioHouseholdEndpoint(provider = "alpaca"): string {
 
 export function portfolioSymbolExposureEndpoint(symbol: string): string {
   return `${PORTFOLIO_API_ENDPOINTS.exposure.replace(/\/exposure$/, "/symbols")}/${pathSegment(symbol, "symbol")}/exposure`;
+}
+
+export function portfolioCashLadderEndpoint(options: {
+  scenario?: string;
+  horizonDays?: number;
+  minimumCash?: number;
+  bucketDays?: number;
+} = {}): string {
+  return `${PORTFOLIO_API_ENDPOINTS.cashLadder}${queryString({
+    scenario: options.scenario,
+    horizonDays: options.horizonDays,
+    minimumCash: options.minimumCash,
+    bucketDays: options.bucketDays
+  })}`;
 }
 
 export function exportPreviewEndpoint(profile?: string): string {

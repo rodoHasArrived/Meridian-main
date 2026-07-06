@@ -380,6 +380,7 @@ import {
   marketDataQuoteEndpoint,
   marketDataQuotesSnapshotEndpoint,
   marketDataTradesEndpoint,
+  portfolioCashLadderEndpoint,
   portfolioHouseholdEndpoint,
   portfolioRunCashFlowsEndpoint,
   portfolioSymbolExposureEndpoint,
@@ -3835,6 +3836,13 @@ export function getPortfolioExposure() {
 
 export function getPortfolioSymbolExposure(symbol: string) {
   return getJson<NetSymbolPosition>(portfolioSymbolExposureEndpoint(symbol));
+}
+
+export function getPortfolioCashLadder(
+  params: { scenario?: string; horizonDays?: number; minimumCash?: number; bucketDays?: number } = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<import("@/types").PortfolioCashLadder>(portfolioCashLadderEndpoint(params), options);
 }
 
 // --- Live market data ---
