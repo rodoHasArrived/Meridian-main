@@ -20,6 +20,25 @@
 
 ---
 
+## Status Update (2026-07-06)
+
+The codebase moved fast after this brainstorm was written: within a day, several ideas were fully
+or partially implemented on `main`. The narratives below are preserved as the point-in-time
+analysis of 2026-07-05, with dated update notes where the premise has changed. Current status:
+
+| # | Idea | Status | What remains |
+|---|------|--------|--------------|
+| 1 | Streaming unification + honest status | Partially done | Diagnostics gap closed — `NyseMarketDataClient`, `RobinhoodMarketDataClient`, and `IBMarketDataClient` now implement `IProviderConnectionDiagnosticsSource` directly. Remaining: consolidating the duplicated reconnect/heartbeat/resubscribe logic onto `WebSocketProviderBase` (or an equivalent shared seam). |
+| 2 | Canonical symbol spine | Core done | Resolver now wired into the backfill worker path and `ValidateBarsAsync` resolves per provider. Remaining: converging static `NormalizeSymbol`, `ISymbolResolver`, and the UI `SymbolMappingService` onto `CanonicalSymbolRegistry`. |
+| 3 | Unified data quality + browser dashboard | Partially done | The Data workspace now renders `DataQualityRegion` over `/api/quality/dashboard`. Remaining: unifying the three scoring subsystems behind one composite health model, and contextual gap actions (one-click backfill). |
+| 4 | Backfill feedback loop | Done | `OnProgressUpdate` is raised with subscriber-failure guards; SLA metadata is typed (`BackfillRemediationSlaDecision`/`Metadata`/`Status`); the remediation provider is an options default rather than hard-coded. |
+| 5 | Failure & rate-limit hardening | Partially done | `DataSourceRegistry` now records activation/registration failures via `RecordFailure`. Remaining: typed rate-limit detection (string matching on `"429"`/`"rate limit"` still present in the composite), streaming-side rate-limit tracking, and confirming registration failures surface in the provider catalog UI. |
+| 6 | Mark-to-market wiring | Largely done | `DailyMarkToMarketService` runs `DailyPortfolioPricingProjector` into governed drafts, with tests. Remaining: `NavAttributionService` still computes `totalNav` as a sum of all component balances rather than assets − liabilities, and NAV consumption of the marked book needs end-to-end verification. |
+| 7 | Automated journal drafts | Partially done | Corporate-action/dividend event producers and draft intake shipped (`AutomatedJournalEventKind`, `DurableAutomatedJournalPoster`, `AutomatedJournalDraftIntakeService`). Remaining: management/performance-fee and withholding-tax accrual producers on a schedule. |
+| 8 | Closing entries + retained-earnings roll | Projector built, unwired | `PeriodCloseProjector`/`PeriodCloseDraftBuilder` now exist in `Meridian.Ledger` but have no callers outside the library — the hard-close sequence in close management does not yet invoke them. |
+| 9 | One ledger spine | Open | `DurableAutomatedJournalPoster` is the emerging draft-posting seam, but hydration of read surfaces from `ILedgerJournalStore`, as-of indexing, and the F#/C# enum-ordinal guard test have not started. |
+| 10 | Fill-to-ledger durability | Done | `LedgerPostingConsumer.Publish` now blocks on channel capacity (`WaitToWriteAsync` loop) instead of dropping fills, with a regression test covering the full-channel case. |
+
 ## The Two Headline Findings
 
 **Data providers:** the subsystem is feature-complete but structurally fractured. Only Alpaca and
@@ -36,6 +55,11 @@ automated fee/dividend drafts, shadow NAV) with **zero live callers**. The gover
 close → certified report packs) is what the Accounting workspace actually runs on, and it never
 touches the projectors. Practical consequence: securities post at cost, nothing posts
 mark-to-market adjustments, and NAV is effectively NAV-at-cost.
+
+> **Update (2026-07-06):** both headline findings have narrowed — see the status table above.
+> `DailyMarkToMarketService` now drives the pricing projector into governed drafts, and the three
+> streaming providers named above emit connection diagnostics. The structural fractures (symbol
+> registry convergence, quality-model unification, ledger spine) remain the open work.
 
 ---
 
@@ -90,6 +114,14 @@ needs its recorded-session replay tests run before/after, and IB's simulation cl
 (`IBSimulationClient.cs`) needs to stay behaviorally identical. Do one provider per PR, never a
 big-bang migration.
 
+> **Update (2026-07-06):** the diagnostics premise above is resolved — `NyseMarketDataClient`,
+> `RobinhoodMarketDataClient`, and `IBMarketDataClient` now implement
+> `IProviderConnectionDiagnosticsSource` directly, and `ProviderEndpoints` consults the
+> diagnostics projection before falling back to enabled/metrics state. The remaining scope of
+> this idea is the *reconnect/heartbeat/resubscribe consolidation* — three hand-rolled
+> reconnection implementations still exist outside `WebSocketProviderBase` — not the status
+> plumbing.
+
 ### 2. Canonical Symbol-Resolution Spine
 
 Symbol identity currently lives in three places that don't talk to each other: per-provider static
@@ -119,6 +151,13 @@ Tradeoffs: identity resolution is the classic place where a "unification" quietl
 behavior for symbols that only worked by accident. Ship the registry convergence behind a
 comparison mode first (log where old and new resolution disagree, act on the report), then flip.
 
+> **Update (2026-07-06):** the correctness core is fixed — the backfill worker path now builds an
+> `OpenFigiSymbolResolver` when symbol resolution is enabled and passes it into
+> `CompositeHistoricalDataProvider`, and `ValidateBarsAsync` resolves the validation provider's
+> symbol before fetching. What remains is the structural half: three parallel identity mechanisms
+> (static `NormalizeSymbol`, the resolver, the UI `SymbolMappingService`) still have no single
+> source of truth in `CanonicalSymbolRegistry`.
+
 ### 3. Unified Data-Quality Model + Browser Data Quality Dashboard
 
 There are three overlapping data-quality code paths: the streaming monitor
@@ -145,6 +184,12 @@ The browser operator finally sees what the WPF operator sees, from the same read
 Tradeoffs: this is the largest provider-side item, and the unification risks becoming a rewrite.
 Sequence it as read-model + React view over *existing* endpoints first (the browser dashboard is
 pure additive value), then converge the three scoring paths behind the read-model one at a time.
+
+> **Update (2026-07-06):** the browser surface now exists — `data-screen.tsx` renders
+> `DataQualityRegion`, backed by `data-screen.data-quality.view-model.ts` and tests, over
+> `/api/quality/dashboard`. The remaining scope of this idea is improving that panel, not
+> building it: unify the three scoring subsystems behind one composite health model and add the
+> contextual actions (one-click backfill from a gap row).
 
 ### 4. Backfill Feedback Loop: Live Progress and Typed SLA Metadata
 
@@ -235,6 +280,13 @@ missing-price handling (grade the valuation run by data confidence; never silent
 Posting through the governed path means the projector's output shape must map onto the
 posting-rule/draft contracts — that mapping layer is the real design work, and it's the pilot for
 idea 9.
+
+> **Update (2026-07-06):** the marquee wiring landed — `DailyMarkToMarketService`
+> (`src/Meridian.Application/Accounting/`) runs `DailyPortfolioPricingProjector.Project` and
+> builds a governed draft, with test coverage. Still open from this idea: `NavAttributionService`
+> continues to compute `totalNav` as `components.Sum(c => c.Balance)` rather than
+> assets − liabilities, and the end-to-end path (drafts approved → posted → NAV reflects marks)
+> needs verification before the NAV-at-cost consequence can be declared closed.
 
 ### 7. Automated Journal Drafts in the Close Cockpit
 
@@ -344,6 +396,12 @@ Tradeoffs: awaiting capacity moves backpressure upstream into the execution even
 gateway must tolerate a briefly-blocking publish, or the WAL-append variant decouples it at the
 cost of one more durable write per fill. Given fill volumes (not tick volumes), the durable
 append is cheap insurance.
+
+> **Update (2026-07-06):** implemented — `Publish` now takes a blocking slow path
+> (`WaitToWriteAsync` loop) when the channel is full instead of dropping the fill, and a
+> regression test covers the full-channel case. This idea is done; the WAL-append variant remains
+> available as a future hardening option if the synchronous block ever becomes a problem at the
+> gateway.
 
 ---
 
