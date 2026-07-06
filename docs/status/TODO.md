@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **209**
+Total items: **212**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -103,18 +103,21 @@ Total items: **209**
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6070 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 80 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 374 | `NOTE` | ❌ | note: "Matches issuer relations and SEC 8-K references." |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 385 | `NOTE` | ❌ | note: "Awaiting final packet annotation from treasury." |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 396 | `NOTE` | ❌ | note: "Retained for longitudinal identifier reconciliation." |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 597 | `NOTE` | ❌ | note: "Matches paying agent notice and treasury schedule." |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 608 | `NOTE` | ❌ | note: "Historical programme amendment retained for evidence." |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 127 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 140 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 436 | `NOTE` | ❌ | note: "Matches issuer relations and SEC 8-K references. Amount amended from $2.75 at board confirmation.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 458 | `NOTE` | ❌ | note: "Awaiting final packet annotation from treasury.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 479 | `NOTE` | ❌ | note: "Retained for longitudinal identifier reconciliation.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 500 | `NOTE` | ❌ | note: "Issuer withdrew the distribution before record date; retained for audit evidence.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 712 | `NOTE` | ❌ | note: "Matches paying agent notice and treasury schedule.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 735 | `NOTE` | ❌ | note: "Historical programme amendment retained for evidence.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 883 | `NOTE` | ❌ | note: seed.note, |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 40 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 439 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 116 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 132 | `NOTE` | ❌ | note: "Configured with paper API keys.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1095 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1605 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 121 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 137 | `NOTE` | ❌ | note: "Configured with paper API keys.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1219 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1729 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 263 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2366 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.view-model.test.ts` | 123 | `NOTE` | ❌ | note: "Ready" |

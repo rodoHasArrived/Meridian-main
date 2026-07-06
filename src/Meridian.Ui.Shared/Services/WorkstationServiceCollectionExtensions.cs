@@ -71,9 +71,18 @@ public static class WorkstationServiceCollectionExtensions
             return new ConfigStore(core.ConfigPath);
         });
 
-        // The UI coordinator wraps the core coordinator and adds preview support for workstation flows.
+        // The UI coordinator is a read-model façade over the core coordinator. Reuse the
+        // composition-root core singleton when it is registered so UI endpoints and non-UI
+        // callers (execution gateway, governance summaries) share one run gate; otherwise
+        // build a façade-owned core from the shared UI config store.
         services.AddSingleton<BackfillCoordinator>(sp =>
         {
+            var core = sp.GetService<Meridian.Application.Backfill.BackfillCoordinator>();
+            if (core is not null)
+            {
+                return new BackfillCoordinator(core);
+            }
+
             var configStore = sp.GetRequiredService<ConfigStore>();
             var registry = sp.GetService<ProviderRegistry>();
             var factory = sp.GetService<ProviderFactory>();
