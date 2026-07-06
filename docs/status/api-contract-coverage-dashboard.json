@@ -17,13 +17,13 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:355",
+      "source": "src/Meridian/UiServer.cs:356",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:377",
+      "source": "src/Meridian/UiServer.cs:378",
       "documented": true
     },
     {
@@ -3215,7 +3215,7 @@
     {
       "method": "GET",
       "path": "/api/events/stream",
-      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:209",
+      "source": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:211",
       "documented": true
     },
     {
