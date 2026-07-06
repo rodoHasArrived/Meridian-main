@@ -6,7 +6,8 @@ import {
   formatNumber,
   formatPercent,
   formatPrefixedCurrency,
-  formatSignedCurrency
+  formatSignedCurrency,
+  pluralizeCount
 } from "@/lib/format";
 
 describe("formatNumber", () => {
@@ -125,5 +126,24 @@ describe("formatAmountWithCode", () => {
 
   it("renders the fallback for non-finite values", () => {
     expect(formatAmountWithCode(Number.NaN, "USD", { fallback: "-" })).toBe("-");
+  });
+});
+
+describe("pluralizeCount", () => {
+  it("uses the singular noun for exactly one and appends 's' otherwise", () => {
+    expect(pluralizeCount(1, "item")).toBe("1 item");
+    expect(pluralizeCount(0, "item")).toBe("0 items");
+    expect(pluralizeCount(3, "item")).toBe("3 items");
+  });
+
+  it("honours an explicit plural for irregular nouns", () => {
+    expect(pluralizeCount(1, "entry", { plural: "entries" })).toBe("1 entry");
+    expect(pluralizeCount(2, "entry", { plural: "entries" })).toBe("2 entries");
+    expect(pluralizeCount(2, "anomaly", { plural: "anomalies" })).toBe("2 anomalies");
+  });
+
+  it("localizes the count when requested", () => {
+    expect(pluralizeCount(1234, "row", { localizeCount: true })).toBe("1,234 rows");
+    expect(pluralizeCount(1234, "row")).toBe("1234 rows");
   });
 });

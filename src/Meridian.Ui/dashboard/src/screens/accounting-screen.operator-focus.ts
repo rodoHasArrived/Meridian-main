@@ -1,4 +1,5 @@
 import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
+import { pluralizeCount } from "@/lib/format";
 import {
   normalizeLocalWorkstationRoute,
   WORKSTATION_ROUTE_CATALOG,
@@ -161,5 +162,5 @@ function normalizeWorkflowText(value: string | null | undefined): string {
 }
 
 function formatAccountingFocusCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }

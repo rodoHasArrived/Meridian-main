@@ -1,4 +1,5 @@
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { pluralizeCount } from "@/lib/format";
 import type { AppShellWorkspaceErrorMap } from "@/app-shell.status-panel";
 import packageJson from "../package.json";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";
@@ -180,5 +181,5 @@ function titleCase(value: string): string {
 }
 
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }

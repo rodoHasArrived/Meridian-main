@@ -4,6 +4,7 @@ import {
   type AppShellLinkedContextItem
 } from "@/app-shell.linked-context";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
+import { pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { ReportingWorkspaceResponse } from "@/types";
 
@@ -41,5 +42,5 @@ export function buildReportingLinkedContextItem(
 }
 
 function formatReportingLinkedContextCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }
