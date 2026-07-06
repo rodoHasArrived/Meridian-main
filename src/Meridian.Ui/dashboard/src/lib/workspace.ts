@@ -25,6 +25,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioAttribution: "/portfolio/attribution",
   portfolioAssetDetail: "/portfolio/asset-detail",
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
+  portfolioCashLadder: "/portfolio/cash-ladder",
   portfolioFamilyOffice: "/portfolio/family-office",
   accounting: "/accounting",
   accountingConfigure: "/accounting/configure",
