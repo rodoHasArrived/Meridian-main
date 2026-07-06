@@ -544,6 +544,12 @@ export function useLiveQuotesScreenViewModel(
   const [paused, setPaused] = useState(false);
   const streamSymbols = useMemo(() => (paused ? [] : symbolSet), [paused, symbolSet]);
   const quotesStream = useQuotesStream(streamSymbols);
+  // Operator intent gates automatic retries: a scheduled retry must never
+  // refresh a paused tape or a symbol that is no longer subscribed. The retry
+  // timer fires outside the render cycle, so it reads intent through refs.
+  const pausedRef = useRef(paused);
+  const activeSymbolRef = useRef<string | null>(activeSymbol);
+  const symbolSetRef = useRef<readonly string[]>(symbolSet);
   const fetchMarketDataRef = useRef<(symbol: string, options?: { attempt?: number }) => Promise<void>>(async () => {});
   const lastMarketSymbolRef = useRef<string | null>(null);
   const marketLifecycle = useRequestLifecycle({
@@ -555,7 +561,7 @@ export function useLiveQuotesScreenViewModel(
     maxRetries: 2,
     onRetry: ({ attempt }) => {
       const symbol = lastMarketSymbolRef.current;
-      if (symbol) {
+      if (!pausedRef.current && symbol && symbol === activeSymbolRef.current) {
         void fetchMarketDataRef.current(symbol, { attempt });
       }
     }
@@ -571,7 +577,13 @@ export function useLiveQuotesScreenViewModel(
     maxRetries: 2,
     onRetry: ({ attempt }) => {
       const symbols = lastSnapshotSymbolsRef.current;
-      if (symbols && symbols.length > 0) {
+      const subscribed = normalizeLiveQuoteSymbols(symbolSetRef.current.join(","));
+      if (
+        !pausedRef.current &&
+        symbols &&
+        symbols.length > 0 &&
+        symbols.join(",") === subscribed.join(",")
+      ) {
         void fetchSnapshotDataRef.current(symbols, { attempt });
       }
     }
@@ -687,6 +699,43 @@ export function useLiveQuotesScreenViewModel(
   useEffect(() => {
     fetchSnapshotDataRef.current = fetchSnapshotData;
   }, [fetchSnapshotData]);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+
+  useEffect(() => {
+    activeSymbolRef.current = activeSymbol;
+  }, [activeSymbol]);
+
+  useEffect(() => {
+    symbolSetRef.current = symbolSet;
+  }, [symbolSet]);
+
+  // Freezing the tape cancels in-flight refreshes and any armed retry timer so
+  // nothing mutates the panels the operator just froze.
+  useEffect(() => {
+    if (!paused) {
+      return;
+    }
+    marketLifecycle.invalidate();
+    snapshotLifecycle.invalidate();
+  }, [marketLifecycle.invalidate, paused, snapshotLifecycle.invalidate]);
+
+  // When nothing is subscribed any pending retry would refetch a symbol the
+  // operator just removed — drop it. Non-empty transitions are superseded by
+  // the polling effects' fresh start() calls instead.
+  useEffect(() => {
+    if (!activeSymbol) {
+      marketLifecycle.invalidate();
+    }
+  }, [activeSymbol, marketLifecycle.invalidate]);
+
+  useEffect(() => {
+    if (symbolSet.length === 0) {
+      snapshotLifecycle.invalidate();
+    }
+  }, [snapshotLifecycle.invalidate, symbolSet]);
 
   useEffect(() => {
     if (!activeSymbol || paused) {
