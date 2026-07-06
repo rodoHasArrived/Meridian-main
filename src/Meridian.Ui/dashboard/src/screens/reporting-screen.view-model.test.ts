@@ -443,6 +443,66 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.hasRunStatusRows).toBe(true);
   });
 
+  it("builds first-visit reporting starter-kit cards from bootstrap data", () => {
+    const starterReporting: GovernanceReportingSummary = {
+      ...reporting,
+      starterKits: [
+        {
+          kitId: "emerging-manager",
+          archetype: "Emerging Manager",
+          displayName: "Emerging Manager",
+          description: "Investor-ready monthly statements and shadow NAV packs.",
+          templateIds: ["investor-monthly-statement", "capital-account-statement"],
+          defaultLayoutId: "reporting-hub.emerging-manager.v1",
+          defaultPeriod: "CurrentMonth",
+          seedSchedules: [
+            {
+              scheduleId: "starter-emerging-manager-investor-monthly",
+              templateId: "investor-monthly-statement",
+              cronExpression: "0 9 5 * *",
+              cadence: "Monthly",
+              description: "Draft monthly investor statement schedule.",
+              state: "Draft",
+              deliveryTargets: [
+                {
+                  distributionId: "investor-relations",
+                  formats: ["Pdf", "Xlsx"],
+                  deliveryMode: "SecurePortal",
+                  note: "Starter target"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      starterKitState: {
+        isProvisioned: false,
+        selectedKitId: null,
+        archetype: null,
+        enabledTemplateIds: [],
+        defaultLayoutId: null,
+        defaultPeriod: null,
+        seedScheduleIds: []
+      }
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(starterReporting));
+
+    expect(result.current.starterKitPanel.showChooser).toBe(true);
+    expect(result.current.starterKitPanel.title).toBe("Set up your reporting desk");
+    expect(result.current.starterKitPanel.cards).toHaveLength(1);
+    expect(result.current.starterKitPanel.cards[0]).toMatchObject({
+      id: "emerging-manager",
+      title: "Emerging Manager",
+      templateSummary: "2 templates",
+      defaultPeriodLabel: "Current month",
+      seedScheduleSummary: "1 draft schedule",
+      actionAriaLabel: "Use Emerging Manager starter kit"
+    });
+    expect(result.current.starterKitPanel.cards[0].templateNames).toContain("Investor Monthly Statement");
+    expect(result.current.starterKitPanel.cards[0].seedSchedules[0].deliveryTargetSummary).toContain("investor-relations via SecurePortal");
+  });
+
   it("surfaces aggregate report access audit posture", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 

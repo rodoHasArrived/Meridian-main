@@ -111,6 +111,8 @@ function toneFromReadinessStatus(status: TradingAcceptanceGate["status"]): Opera
       return "review";
     case "Ready":
       return "ready";
+    case "Unknown":
+      return "pending";
   }
 }
 

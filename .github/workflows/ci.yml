@@ -60,6 +60,9 @@ jobs:
       - name: Validate warning suppression inventory
         run: python3 build/scripts/ci/check-warning-suppressions.py
 
+      - name: Enforce no-new-god-file ratchet
+        run: python3 build/scripts/ci/check-file-size.py
+
       - name: Build web workstation lane
         run: |
           mkdir -p artifacts/build-logs
@@ -176,7 +179,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
@@ -203,8 +206,16 @@ jobs:
       - name: Install dashboard dependencies
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
+      - name: Generated UI contract drift gate
+        run: |
+          python3 build/scripts/generate-ui-api-routes-ts.py --check
+          python3 build/scripts/generate-workspace-catalog-ts.py --check
+
       - name: Lint dashboard source
         run: npm --prefix src/Meridian.Ui/dashboard run lint
+
+      - name: Enforce strictNullChecks on dashboard source
+        run: npm --prefix src/Meridian.Ui/dashboard run typecheck:strict
 
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test

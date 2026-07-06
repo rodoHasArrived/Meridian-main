@@ -1,0 +1,55 @@
+{
+  "scenarioId": "cash-stock-merger-2018",
+  "description": "Cash+stock merger modeled on Cigna/Express Scripts (closed 2018-12-20): each target share received 0.2434 acquirer shares plus $48.75 cash. CorporateActionDto has no cash-consideration carrier, so the cash leg is modeled as a paired SpecialDividend on the same ex-date (documented gap; Idea #3 owns the DTO extension). The merger event itself currently posts a symbolic 1-unit memo (CA-DEF-002).",
+  "ticker": "ESRX",
+  "securityId": "d0000000-dddd-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "d0000000-dddd-4000-8000-0000000000c1",
+      "securityId": "d0000000-dddd-4000-8000-000000000001",
+      "eventType": "MergerAbsorption",
+      "exDate": "2018-12-20",
+      "payDate": null,
+      "dividendPerShare": null,
+      "currency": null,
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": "d0000000-dddd-4000-8000-000000000002",
+      "exchangeRatio": 0.2434,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2018-12-19",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    },
+    {
+      "corpActId": "d0000000-dddd-4000-8000-0000000000c2",
+      "securityId": "d0000000-dddd-4000-8000-000000000001",
+      "eventType": "SpecialDividend",
+      "exDate": "2018-12-20",
+      "payDate": "2018-12-27",
+      "dividendPerShare": 48.75,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2018-12-19",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2018-12-18", "open": 91.50, "high": 92.40, "low": 91.10, "close": 92.00, "volume": 6000000 },
+    { "sessionDate": "2018-12-19", "open": 92.00, "high": 92.60, "low": 91.60, "close": 92.30, "volume": 5500000 }
+  ],
+  "postingContext": { "positionQuantity": 500, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [ "journal-balanced", "receivable-settled", "idempotent-posting" ],
+  "knownDefectIds": [ "CA-DEF-002" ]
+}

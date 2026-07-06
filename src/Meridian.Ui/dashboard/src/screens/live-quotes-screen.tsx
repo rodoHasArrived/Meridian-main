@@ -28,6 +28,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DepthChart } from "@/components/charts";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
@@ -1040,6 +1041,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
         emptyText={market.tradesDetailEmptyText}
         ariaLabel={market.tradesTableLabel}
         caption={market.tradesTableCaption}
+        virtualization={denseTableVirtualization(market.tradeDisplayRows.length)}
       />
       <div id={market.tradesDetailPanelId} aria-live="polite">
         {market.selectedTradeDetail ? (

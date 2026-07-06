@@ -56,6 +56,37 @@ public sealed class DurableAutomatedJournalPosterTests
     }
 
     [Fact]
+    public async Task PostAsync_AsPostingTarget_AppendsGovernedWriteFromSharedContext()
+    {
+        var aggregateId = Guid.Parse("af8bd6c2-b624-4ec4-b5be-577d09eeebf9");
+        var store = new Mock<ILedgerJournalStore>();
+        LedgerJournalEntryWrite? captured = null;
+        store.Setup(s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()))
+            .Callback<LedgerJournalEntryWrite, CancellationToken>((write, _) => captured = write)
+            .Returns(Task.CompletedTask);
+        var projection = new Meridian.Ledger.Ledger();
+        IAutomatedJournalPostingTarget target = new DurableAutomatedJournalPoster(store.Object, projection);
+        var approval = ApprovedFeeDraft();
+
+        var posted = await target.PostAsync(
+            approval,
+            new AutomatedJournalPostingContext(
+                PeriodId,
+                "controller",
+                AsOf,
+                "posted",
+                ["/evidence/fees/2026-Q2"],
+                aggregateId));
+
+        posted.Status.Should().Be(AutomatedJournalApprovalStatus.Posted);
+        captured.Should().NotBeNull();
+        captured!.AggregateId.Should().Be(aggregateId);
+        captured.PeriodId.Should().Be(PeriodId);
+        projection.Journal.Should().ContainSingle()
+            .Which.JournalEntryId.Should().Be(approval.JournalEntryId);
+    }
+
+    [Fact]
     public async Task PostAsync_DurableFailure_LeavesApprovalUnposted()
     {
         var store = new Mock<ILedgerJournalStore>();

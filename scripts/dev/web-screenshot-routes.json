@@ -171,6 +171,21 @@
       ]
     },
     {
+      "id": "W02E",
+      "name": "web-portfolio-cash-ladder",
+      "path": "/portfolio/cash-ladder",
+      "docLabel": "Portfolio \u2014 Cash Ladder",
+      "waitForText": "Cash Ladder",
+      "requiredApiRoutes": [
+        "/api/portfolio/cash-ladder"
+      ],
+      "waitForTexts": [
+        "Projected cash by bucket",
+        "Contributing flows",
+        "Scenario semantics"
+      ]
+    },
+    {
       "id": "W02C",
       "name": "web-portfolio-family-office",
       "path": "/portfolio/family-office",

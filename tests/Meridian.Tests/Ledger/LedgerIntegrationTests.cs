@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FsCheck.Xunit;
+using Meridian.FSharp.Ledger;
 using Meridian.Ledger;
 using Xunit;
 
@@ -49,6 +50,20 @@ public sealed class LedgerIntegrationTests
 
         trialBalance[cash].Should().Be(100m);
         trialBalance[revenue].Should().Be(100m);
+    }
+
+    [Fact]
+    public void LedgerAccountTypeOrdinals_MatchFSharpPostingKernelContract()
+    {
+        ((int)LedgerAccountType.Asset).Should().Be(0);
+        ((int)LedgerAccountType.Liability).Should().Be(1);
+        ((int)LedgerAccountType.Equity).Should().Be(2);
+        ((int)LedgerAccountType.Revenue).Should().Be(3);
+        ((int)LedgerAccountType.Expense).Should().Be(4);
+
+        LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Asset, 10m, 3m).Should().Be(7m);
+        LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Expense, 10m, 3m).Should().Be(7m);
+        LedgerInterop.CalculateNetBalance((int)LedgerAccountType.Revenue, 10m, 3m).Should().Be(-7m);
     }
 
     [Fact]
@@ -907,6 +922,28 @@ public sealed class LedgerIntegrationTests
         snapAtT2.Balances[cash].Should().Be(150m);
         snapAtT2.JournalEntryCount.Should().Be(2);
         snapAtT2.LedgerEntryCount.Should().Be(4);
+    }
+
+    [Fact]
+    public void Ledger_AsOfBalanceSnapshots_HandleOutOfOrderPostings()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+
+        ledger.PostLines(t2, "second sale", new[] { (cash, 50m, 0m), (revenue, 0m, 50m) });
+        ledger.PostLines(t1, "first sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
+
+        ledger.GetBalanceAsOf(cash, t1).Should().Be(100m);
+        ledger.GetBalanceAsOf(cash, t2).Should().Be(150m);
+        ledger.TrialBalanceAsOf(t1)[revenue].Should().Be(100m);
+        ledger.TrialBalanceAsOf(t2)[revenue].Should().Be(150m);
+
+        var snapshot = ledger.SnapshotAsOf(t1);
+        snapshot.JournalEntryCount.Should().Be(1);
+        snapshot.LedgerEntryCount.Should().Be(2);
     }
 
     [Fact]

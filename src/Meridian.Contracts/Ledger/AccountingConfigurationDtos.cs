@@ -141,7 +141,10 @@ public enum ManualJournalEntryTypeDto
     Subscription = 11,
     Redemption = 12,
     LpTransfer = 13,
-    ManagementFee = 14
+    ManagementFee = 14,
+
+    /// <summary>Period-close closing entries rolling temporary balances into retained earnings.</summary>
+    ClosingEntry = 15
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalFundEventLedgerReadinessDto>))]
@@ -719,7 +722,13 @@ public sealed record ManualJournalEntryLineDto(
     string? TaxLotId = null,
     string? Description = null,
     string? EvidenceLink = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null,
+    // Structured ledger-account identity beyond the chart path. Automated drafts built from
+    // scoped trial-balance rows (for example period-close entries on symbol- or
+    // financial-account-scoped revenue/expense accounts) carry these so posting lands on the
+    // scoped account and actually zeroes the scoped balance instead of an unscoped aggregate.
+    string? LedgerAccountSymbol = null,
+    string? LedgerAccountFinancialAccountId = null);
 
 public sealed record ManualJournalEntryEvidenceAttachmentDto(
     string AttachmentId,

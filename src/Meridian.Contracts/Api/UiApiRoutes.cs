@@ -654,6 +654,13 @@ public static class UiApiRoutes
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationWorkflowLibrary = "/api/workstation/workflows";
+    public const string WorkstationWorkflowPresets = "/api/workstation/workflows/presets";
+    public const string WorkstationWorkflowPresetById = "/api/workstation/workflows/presets/{presetId}";
+    public const string WorkstationWorkflowPresetPin = "/api/workstation/workflows/presets/{presetId}/pin";
+    public const string WorkstationWorkflowPresetUsed = "/api/workstation/workflows/presets/{presetId}/used";
+    public const string WorkstationCollateralIngest = "/api/workstation/collateral/ingest";
+    public const string WorkstationCollateralExposure = "/api/workstation/collateral/exposure";
     public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
     public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
     public const string WorkstationFinancialRecordExplorer = "/api/workstation/financial-record-explorers/{explorerId}";
@@ -667,6 +674,11 @@ public static class UiApiRoutes
     public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
     public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
     public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
+    public const string WorkstationEvidenceVaultSearch = "/api/workstation/evidence/vault/search";
+    public const string WorkstationEvidenceVaultIntake = "/api/workstation/evidence/vault/intake";
+    public const string WorkstationEvidenceVaultRequestLists = "/api/workstation/evidence/vault/request-lists";
+    public const string WorkstationEvidenceVaultDocuments = "/api/workstation/evidence/vault/documents";
+    public const string WorkstationEvidenceVaultDocumentReview = "/api/workstation/evidence/vault/{vaultId}/documents/{documentId}/review";
     public const string OperationsContinuity = "/api/workstation/operations/continuity";
     public const string OperationsContinuityById = "/api/workstation/operations/continuity/{workflowId:guid}";
     public const string OperationsContinuityCloseReadiness = "/api/workstation/operations/continuity/{workflowId:guid}/close-readiness";
@@ -704,6 +716,9 @@ public static class UiApiRoutes
     public const string RunsFills = "/api/workstation/runs/{runId}/fills";
     public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
     public const string RunHistory = "/api/workstation/runs/history";
+    public const string RunsTimeline = "/api/workstation/runs/timeline";
+    public const string RunsLineageTimeline = "/api/workstation/runs/lineage-timeline";
+    public const string RunsSweeps = "/api/workstation/runs/sweeps";
     public const string ReconciliationRuns = "/api/workstation/reconciliation/runs";
     public const string ReconciliationRunById = "/api/workstation/reconciliation/runs/{reconciliationRunId}";
     public const string ReconciliationStatementRuns = "/api/workstation/reconciliation/statement-runs";
@@ -784,6 +799,7 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
+    public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
@@ -798,6 +814,25 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterEconomicDefinition = "/api/workstation/security-master/securities/{securityId:guid}/economic-definition";
     public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
+
+    // Workstation strategy designer endpoints
+    public const string WorkstationStrategyDesignerTemplates = "/api/workstation/strategy/designer/templates";
+    public const string WorkstationStrategyDesignerFieldCatalog = "/api/workstation/strategy/designer/field-catalog";
+    public const string WorkstationStrategyDesignerDrafts = "/api/workstation/strategy/designer/drafts";
+    public const string WorkstationStrategyDesignerDraftById = "/api/workstation/strategy/designer/drafts/{documentId}";
+    public const string WorkstationStrategyDesignerValidate = "/api/workstation/strategy/designer/validate";
+    public const string WorkstationStrategyDesignerPreview = "/api/workstation/strategy/designer/preview";
+    public const string WorkstationStrategyDesignerRunBacktest = "/api/workstation/strategy/designer/run-backtest";
+
+    // Workstation strategy engine endpoints
+    public const string WorkstationStrategyEngineDefinitions = "/api/workstation/strategy/engine/definitions";
+    public const string WorkstationStrategyEngineValidateRun = "/api/workstation/strategy/engine/validate-run";
+
+    // Workstation family-office endpoints
+    public const string WorkstationFamilyOfficeOverview = "/api/workstation/family-office/overview";
+    public const string WorkstationFamilyOfficeBalanceSheet = "/api/workstation/family-office/balance-sheet";
+    public const string WorkstationFamilyOfficeEntities = "/api/workstation/family-office/entities";
+    public const string WorkstationFamilyOfficeOwnershipGraph = "/api/workstation/family-office/ownership-graph";
     public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
     public const string ReconciliationCaseTaxonomy = "/api/workstation/reconciliation/break-queue/taxonomy";
@@ -838,6 +873,8 @@ public static class UiApiRoutes
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
     public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
     public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
+    public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
+    public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
     public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
     public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";
@@ -860,6 +897,10 @@ public static class UiApiRoutes
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
+
+    // Portfolio-wide cash ladder and liquidity scenarios
+    public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
+    public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
 
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";
@@ -954,6 +995,10 @@ public static class UiApiRoutes
     public const string ProviderModuleEnabled = "/api/providers/modules/{moduleId}/enabled";
     public const string ProviderModuleTest = "/api/providers/modules/{moduleId}/test";
     public const string ProviderRestart = "/api/providers/restart";
+
+    // Strategy run catalog endpoints (/api/strategies surface)
+    public const string StrategyRunsByStrategy = "/api/strategies/{strategyId}/runs";
+    public const string StrategyRunsCompare = "/api/strategies/runs/compare";
 
     // Covered-call strategy endpoints (slice 1: backtest UI)
     public const string CoveredCallRuns = "/api/strategies/covered-call/runs";

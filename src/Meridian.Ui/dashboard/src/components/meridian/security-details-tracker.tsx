@@ -476,7 +476,7 @@ function loadLots(securityId: string): SecurityLot[] {
       && typeof l.tradeDate === "string"
       && typeof l.quantity === "number"
       && typeof l.price === "number"
-    ).map((l) => ({ fees: 0, note: "", ...l }));
+    ).map((l) => ({ ...l, fees: l.fees ?? 0, note: l.note ?? "" }));
   } catch {
     return [];
   }
