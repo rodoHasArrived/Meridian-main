@@ -3575,13 +3575,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2578",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2579",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2699",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2700",
       "documented": true
     }
   ],
