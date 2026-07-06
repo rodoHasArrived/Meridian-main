@@ -9,8 +9,8 @@
     "endpoint_count": 595,
     "documented_endpoint_count": 595,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 814,
-    "documented_workstation_contract_count": 814,
+    "workstation_contract_count": 815,
+    "documented_workstation_contract_count": 815,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -5324,6 +5324,11 @@
     {
       "name": "FundWorkflowState",
       "source": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24",
+      "documented": true
+    },
+    {
+      "name": "NullReportingRunNotifier",
+      "source": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:15",
       "documented": true
     },
     {
