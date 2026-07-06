@@ -1,10 +1,13 @@
 namespace Meridian.Infrastructure.Adapters.Polygon;
 
 /// <summary>
-/// WebSocket endpoint constants for the Polygon.io Market Data API.
+/// Endpoint constants for the Polygon.io Market Data API.
 /// </summary>
 internal static class PolygonEndpoints
 {
+    /// <summary>Base URI for the Polygon.io REST API (reference, aggregates, corporate actions).</summary>
+    public const string RestBase = "https://api.polygon.io";
+
     /// <summary>Live WebSocket base URI template. Substitute <c>{feed}</c> with a feed name.</summary>
     public const string LiveWssBase = "wss://socket.polygon.io/{feed}";
 
