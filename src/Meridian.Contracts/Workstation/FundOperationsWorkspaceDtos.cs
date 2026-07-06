@@ -1151,7 +1151,8 @@ public sealed record ReportingRunRequestDto(
     string? RequestedBy = null,
     IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
     string? DatasetSourceId = null,
-    string? RetryReason = null);
+    string? RetryReason = null,
+    bool AllowRestatement = false);
 
 public sealed record ReportingRunResultDto(
     WorkstationReportingRunPayload Run);
