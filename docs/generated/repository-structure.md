@@ -6770,6 +6770,7 @@ Meridian-main
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
+│   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
