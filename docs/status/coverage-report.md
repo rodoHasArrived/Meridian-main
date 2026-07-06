@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2687 / 7425** items documented (**36.2%**) &mdash; Grade: **F**
+**2684 / 7422** items documented (**36.2%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 36.2%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2566 | 6929 | 37.0% | F |
+| Public Classes / Interfaces | 2563 | 6926 | 37.0% | F |
 | API Endpoints | 107 | 349 | 30.7% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -40,6 +40,9 @@
 | `BackfillRemediationSlaSnapshot` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:98` |
 | `BackfillRemediationSlaPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:106` |
 | `BackfillPartitionEstimate` | `src/Meridian.Application/Backfill/BackfillPartitionPlanner.cs:147` |
+| `BackfillPreviewResult` | `src/Meridian.Application/Backfill/BackfillPreview.cs:9` |
+| `SymbolPreview` | `src/Meridian.Application/Backfill/BackfillPreview.cs:24` |
+| `ExistingDataInfo` | `src/Meridian.Application/Backfill/BackfillPreview.cs:35` |
 | `CrossSourceBackfillReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:473` |
 | `CrossSourceBackfillBatchReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:482` |
 | `CrossSourceBackfillReconciliationResult` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:491` |
@@ -74,9 +77,6 @@
 | `SecurityMasterRestatementDecision` | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:32` |
 | `RestatementCandidateResult` | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:44` |
 | `SecurityMasterRevisionRecord` | `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:52` |
-| `NullSecurityMasterPricingService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:10` |
-| `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
-| `NullDataVendorEntitlementService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:53` |
 | ... and 4313 more | |
 
 ### API Endpoints (242 undocumented)
