@@ -88,6 +88,50 @@ public sealed class PortfolioCashLadderReadServiceTests
             .And.ContainMatch("*25 were omitted*");
     }
 
+    [Fact]
+    public async Task GetCashLadderAsync_WhenHeldSecurityHasNoProjection_WarnsInsteadOfSilentlyDropping()
+    {
+        var projectableId = Guid.NewGuid();
+        var missingId = Guid.NewGuid();
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(projectableId, Arg.Any<CancellationToken>())
+            .Returns(BuildDetail(projectableId, "Projectable Bond", couponAmount: 100m));
+        assetOperations.GetOperationsAsync(missingId, Arg.Any<CancellationToken>())
+            .Returns((AssetOperationsDetailDto?)null);
+        var holdingsSource = Substitute.For<IPortfolioHoldingsSource>();
+        holdingsSource.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { new PortfolioHoldingDto(projectableId, 1m), new PortfolioHoldingDto(missingId, 1m) });
+
+        var service = new PortfolioCashLadderReadService(
+            assetOperationsQueryService: assetOperations,
+            holdingsSource: holdingsSource);
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
+
+        ladder.Warnings.Should().ContainMatch("*1 of 2 held securities have no asset-operations projection*");
+    }
+
+    [Fact]
+    public async Task GetCashLadderAsync_WhenFundAccountScoped_WarnsScopeIsNotApplied()
+    {
+        var securityId = Guid.NewGuid();
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        assetOperations.GetOperationsAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildDetail(securityId, "Held Bond", couponAmount: 100m));
+        var holdingsSource = Substitute.For<IPortfolioHoldingsSource>();
+        holdingsSource.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(new[] { new PortfolioHoldingDto(securityId, 1m) });
+
+        var service = new PortfolioCashLadderReadService(
+            assetOperationsQueryService: assetOperations,
+            holdingsSource: holdingsSource);
+
+        var ladder = await service.GetCashLadderAsync(
+            new PortfolioCashLadderQuery(HorizonDays: 30, FundAccountId: "fund-123"));
+
+        ladder.Warnings.Should().ContainMatch("*Fund-account scope 'fund-123' is not yet applied*");
+    }
+
     private static AssetOperationsDetailDto BuildDetail(Guid securityId, string displayName, decimal couponAmount)
     {
         var runId = Guid.NewGuid();

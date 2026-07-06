@@ -134,6 +134,29 @@ public sealed class PortfolioCashLadderEngineTests
     }
 
     [Fact]
+    public void Build_DoesNotFlagBreach_WhenSameDayOutflowAndInflowNetSafe()
+    {
+        // A same-day redemption and coupon net to zero on the same date; with only day-level
+        // settlement the balance never actually dips, so no breach should be flagged regardless of
+        // the arbitrary source order of the two rows within that day.
+        var position = BuildPosition("Same Day Coupon", "Bond", [("Coupon", AsOf.AddDays(3), 100_000m)]);
+        var inputs = BuildInputs(
+            positions: [position],
+            cashBalances: [new PortfolioCashBalanceDto("op-cash", "Operating cash", 50_000m, "USD", "Ledger", null)],
+            capitalActivity:
+            [
+                new PortfolioCapitalActivityDto(
+                    Guid.NewGuid(), "Redemption", AsOf.AddDays(3), 100_000m, "USD", "PartnershipLedger", "inv-1", "Redemption")
+            ],
+            minimumCashThreshold: 0m);
+
+        var ladder = PortfolioCashLadderEngine.Build(inputs);
+
+        ladder.Buckets[0].NetFlow.Should().Be(0m);
+        ladder.Buckets.Should().OnlyContain(static bucket => !bucket.BreachesMinimumBalance);
+    }
+
+    [Fact]
     public void Build_EarlyCallScenario_ReadsCallDateFromPascalCaseNestedTerms()
     {
         var callDate = AsOf.AddDays(30);

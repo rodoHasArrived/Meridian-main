@@ -48,7 +48,21 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         var horizonDays = Math.Max(1, query.HorizonDays);
         var windowEnd = asOfDate.AddDays(horizonDays);
 
-        var (positions, positionNotices) = await LoadPositionsAsync(asOfDate, ct).ConfigureAwait(false);
+        var (positions, loadNotices) = await LoadPositionsAsync(asOfDate, ct).ConfigureAwait(false);
+        var positionNotices = new List<string>(loadNotices);
+
+        // The slice computes a portfolio-wide ladder; it does not yet filter by fund account. When a
+        // fund-account scope is requested, say so explicitly rather than returning a global ladder
+        // that silently ignores the scope the operator selected.
+        if (!string.IsNullOrWhiteSpace(query.FundAccountId)
+            && !string.Equals(query.FundAccountId, "all", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(query.FundAccountId, "portfolio", StringComparison.OrdinalIgnoreCase))
+        {
+            positionNotices.Add(
+                $"Fund-account scope '{query.FundAccountId}' is not yet applied: the ladder is portfolio-wide, "
+                + "so these figures are not filtered to the selected fund account.");
+        }
+
         var cashBalances = _cashBalanceProvider is null
             ? []
             : await _cashBalanceProvider.GetCashBalancesAsync(ct).ConfigureAwait(false);
@@ -147,11 +161,13 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         }
 
         var positions = new List<PortfolioCashLadderPositionDto>(ids.Length);
+        var missingProjection = 0;
         foreach (var batch in ids.Chunk(ProjectionBatchSize))
         {
             ct.ThrowIfCancellationRequested();
             var details = await Task.WhenAll(batch.Select(securityId =>
                 _assetOperationsQueryService!.GetOperationsAsync(securityId, ct))).ConfigureAwait(false);
+            missingProjection += details.Count(static detail => detail is null);
             positions.AddRange(details
                 .Where(static detail => detail is not null)
                 .Select(detail => new PortfolioCashLadderPositionDto(
@@ -159,6 +175,14 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
                     heldQuantities is not null && heldQuantities.TryGetValue(detail!.Subject.SecurityId, out var quantity)
                         ? quantity
                         : 1m)));
+        }
+
+        if (missingProjection > 0)
+        {
+            notices.Add(
+                $"{missingProjection} of {ids.Length} {sourceLabel} have no asset-operations projection "
+                + "(stale holding IDs or missing Security Master/projection records) and were excluded, "
+                + "so their coupons/principal and any resulting liquidity breaches are not shown.");
         }
 
         return positions;

@@ -39,7 +39,8 @@ public static class PortfolioCashLadderEndpoints
                 ScenarioId: context.Request.Query["scenario"].FirstOrDefault(),
                 HorizonDays: ParseBoundedInt(context.Request.Query["horizonDays"].FirstOrDefault(), 90, 1, MaxHorizonDays),
                 MinimumCashThreshold: ParseOptionalDecimal(context.Request.Query["minimumCash"].FirstOrDefault()),
-                BucketDays: ParseBoundedInt(context.Request.Query["bucketDays"].FirstOrDefault(), 7, 1, 31));
+                BucketDays: ParseBoundedInt(context.Request.Query["bucketDays"].FirstOrDefault(), 7, 1, 31),
+                FundAccountId: context.Request.Query["fundAccountId"].FirstOrDefault());
             var ladder = await service.GetCashLadderAsync(query, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })

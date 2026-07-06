@@ -117,7 +117,8 @@ public sealed record PortfolioCashLadderQuery(
     string? ScenarioId = null,
     int HorizonDays = 90,
     decimal? MinimumCashThreshold = null,
-    int BucketDays = 7);
+    int BucketDays = 7,
+    string? FundAccountId = null);
 
 /// <summary>
 /// One held position as the cash ladder consumes it: the security identity and

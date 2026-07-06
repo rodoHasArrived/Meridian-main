@@ -1161,12 +1161,14 @@ export function portfolioCashLadderEndpoint(options: {
   horizonDays?: number;
   minimumCash?: number;
   bucketDays?: number;
+  fundAccountId?: string;
 } = {}): string {
   return `${PORTFOLIO_API_ENDPOINTS.cashLadder}${queryString({
     scenario: options.scenario,
     horizonDays: options.horizonDays,
     minimumCash: options.minimumCash,
-    bucketDays: options.bucketDays
+    bucketDays: options.bucketDays,
+    fundAccountId: options.fundAccountId
   })}`;
 }
 

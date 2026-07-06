@@ -9,7 +9,7 @@ import { portfolioCashLadderEndpoint } from "@/lib/workstation-endpoints";
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 export function getPortfolioCashLadder(
-  params: { scenario?: string; horizonDays?: number; minimumCash?: number; bucketDays?: number } = {},
+  params: { scenario?: string; horizonDays?: number; minimumCash?: number; bucketDays?: number; fundAccountId?: string } = {},
   options: ApiRequestOptions = {}
 ): Promise<PortfolioCashLadder> {
   return apiGetJson<PortfolioCashLadder>(portfolioCashLadderEndpoint(params), options);

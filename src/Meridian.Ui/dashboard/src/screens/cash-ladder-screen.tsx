@@ -121,7 +121,11 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
   }
 ];
 
-export function CashLadderScreen() {
+export interface CashLadderScreenProps {
+  fundAccountId?: string;
+}
+
+export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) {
   const [ladder, setLadder] = useState<PortfolioCashLadder | null>(null);
   const [scenarioId, setScenarioId] = useState("base");
   const [minimumCashInput, setMinimumCashInput] = useState("");
@@ -133,7 +137,7 @@ export function CashLadderScreen() {
   useEffect(() => {
     const currentRequest = ++requestId.current;
     setStatus("loading");
-    getPortfolioCashLadder({ scenario: scenarioId, minimumCash: appliedMinimumCash })
+    getPortfolioCashLadder({ scenario: scenarioId, minimumCash: appliedMinimumCash, fundAccountId })
       .then((response) => {
         if (requestId.current === currentRequest) {
           setLadder(response);
@@ -145,7 +149,7 @@ export function CashLadderScreen() {
           setStatus("error");
         }
       });
-  }, [scenarioId, appliedMinimumCash]);
+  }, [scenarioId, appliedMinimumCash, fundAccountId]);
 
   const chart = buildCashLadderChart(ladder);
   const scenarioOptions = selectScenarioOptions(ladder);

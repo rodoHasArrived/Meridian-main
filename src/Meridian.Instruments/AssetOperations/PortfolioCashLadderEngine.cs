@@ -631,11 +631,13 @@ public static class PortfolioCashLadderEngine
             // Track the running balance by due date within the bucket so a large intra-bucket
             // outflow that is later offset by an inflow still registers a breach; netting the whole
             // bucket first would hide the trough (e.g. a day-1 redemption covered by a day-6 coupon).
+            // Flows are netted per day first — with only DateOnly granularity, a same-day outflow and
+            // inflow settle together, so the day's net is what matters, not source order within it.
             var intraBucketMinimum = cumulative;
             var runningBalance = cumulative;
-            foreach (var row in rows.OrderBy(static row => row.DueDate))
+            foreach (var day in rows.GroupBy(static row => row.DueDate).OrderBy(static group => group.Key))
             {
-                runningBalance = RoundCash(runningBalance + row.Amount);
+                runningBalance = RoundCash(runningBalance + day.Sum(static row => row.Amount));
                 if (runningBalance < intraBucketMinimum)
                 {
                     intraBucketMinimum = runningBalance;
