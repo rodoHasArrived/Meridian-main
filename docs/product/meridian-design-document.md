@@ -2953,9 +2953,78 @@ banks, tax providers, audit providers, BI tools, and investor portals remain val
 but Meridian owns the verification, evidence, reconciliation, approval, ledger impact, report
 provenance, delivery history, and audit trail that prove whether outputs can be trusted.
 
-Reviewed automation must remain ledger-safe. It can suggest, classify, extract, match, summarize,
-draft, and flag. It cannot post material journals without approval, override period locks, approve
-its own work, release payments, publish reports, edit posted entries, or erase evidence.
+### Reviewed Automation Assistant
+
+Reviewed automation must remain ledger-safe and evidence-bound. The Reviewed Automation Assistant is
+a cross-workflow assistant for operator review, not an autonomous accounting, payment, reporting, or
+evidence-destruction actor. It can accelerate close, reporting, and audit preparation only when every
+suggestion remains reviewable, attributable, and reversible before acceptance.
+
+**Allowed actions**
+
+* Extraction suggestions from source evidence, imported files, statements, confirmations, agreements,
+  notices, report packs, and operator-provided context.
+* Match suggestions between source records, normalized transactions, reconciliations, journals,
+  fund events, capital-account impacts, report lines, and retained evidence.
+* Variance explanations that summarize probable drivers, materiality context, stale-data signals,
+  timing differences, mapping differences, or unresolved source conflicts.
+* Duplicate detection for documents, transactions, journal-template candidates, evidence links,
+  report-line support, and audit request responses.
+* Journal-template drafts that propose debits, credits, descriptions, source links, reversal timing,
+  and supporting evidence without posting or approving entries.
+* Evidence summaries that condense document contents, extracted fields, lineage, confidence,
+  review state, source hash, and downstream dependencies.
+* Missing-support flags for absent confirmations, incomplete source documents, unsupported report
+  lines, open reconciliations, unresolved extraction conflicts, or missing approval evidence.
+* Report commentary drafts that explain approved data, known exceptions, period activity, variance
+  drivers, and evidence-backed caveats for human editing and approval.
+* Audit request list drafts that group required support by event, period, report package, journal,
+  reconciliation, stakeholder delivery, or evidence manifest.
+
+**Prohibited actions**
+
+* Posting material journals.
+* Overriding period locks.
+* Approving its own work or any downstream workflow that depends on its suggestion.
+* Releasing payments.
+* Publishing reports.
+* Editing posted entries.
+* Deleting evidence, evidence manifests, source files, extracted fields, audit events, or lineage
+  records.
+
+**Review workflow**
+
+Automation output must move through explicit human-controlled states: `Suggested`, `Reviewed`,
+`Accepted`, `Edited`, `Rejected`, and `Escalated`. `Suggested` records are assistant-authored and
+non-authoritative. `Reviewed` records have been inspected by an assigned operator. `Accepted`
+records may feed the next governed workflow step only when permissions, evidence requirements, and
+segregation-of-duties rules allow it. `Edited` records retain both assistant output and human
+revision. `Rejected` records remain available for audit and model-quality review. `Escalated`
+records require a domain owner, controller, compliance reviewer, or configured approver before they
+can influence close, report, audit, or payment workflows.
+
+**Audit requirements**
+
+Every assistant suggestion must retain the model and version, prompt or input context, assigned
+reviewer, review timestamp, source evidence references, and resulting action. The audit record must
+link the suggestion to source hashes or vault references, affected business objects, confidence or
+uncertainty markers, review decision, human edits, downstream workflow transition, and any escalation
+or rejection reason.
+
+**UI placement**
+
+* `Data` workflows surface extraction suggestions, match suggestions, duplicate detection,
+  variance explanations, missing-support flags, and evidence summaries during import, validation,
+  mapping, confidence review, and source-certification steps.
+* `Accounting` workflows surface journal-template drafts, reconciliation explanations,
+  missing-support flags, duplicate detection, and evidence summaries during close, adjustment,
+  fund-event, capital-account, and ledger-support review.
+* `Reporting` workflows surface report commentary drafts, report-line support summaries, variance
+  explanations, duplicate detection, missing-support flags, and audit request list drafts before
+  package approval or publication.
+* `Evidence Vault` workflows surface extraction suggestions, evidence summaries, duplicate
+  detection, missing-support flags, audit request list drafts, and manifest-readiness warnings while
+  preserving document retention and lineage controls.
 
 The v0.18 product promise is:
 
