@@ -260,6 +260,9 @@ public sealed class AutomatedJournalDraftIntakeService
             AutomatedJournalEventKind.CommissionAccrued or
             AutomatedJournalEventKind.WithholdingTaxAccrued => ManualJournalEntryTypeDto.AccruedExpense,
             AutomatedJournalEventKind.CorporateActionExpense => ManualJournalEntryTypeDto.Expense,
+            // Closing entries carry a dedicated type so the workbench posts them as the sanctioned
+            // ClosingEntry kind into the (closed) period being finalized.
+            AutomatedJournalEventKind.PeriodCloseClosingEntries => ManualJournalEntryTypeDto.ClosingEntry,
             _ => ManualJournalEntryTypeDto.General
         };
 

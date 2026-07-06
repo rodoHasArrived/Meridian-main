@@ -4143,9 +4143,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     }
 
     private static LedgerPostingKindDto BuildManualPostingKind(ManualJournalEntryDraftDto draft)
-        => draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
-            ? LedgerPostingKindDto.Adjustment
-            : LedgerPostingKindDto.Originating;
+        => draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry
+            ? LedgerPostingKindDto.ClosingEntry
+            : draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
+                ? LedgerPostingKindDto.Adjustment
+                : LedgerPostingKindDto.Originating;
 
     private static AccountingPostingEvidenceKindDto ClassifyManualPostingEvidence(string evidenceLink)
     {
@@ -5024,7 +5026,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "Select a period that belongs to the journal entry ledger book."));
         }
 
-        if (!string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+        // Closing entries are the governed exception: they must post into the (closed) period
+        // being finalized, so the closed-period bar does not apply to them. The posting guard and
+        // the ClosingEntry posting kind carry the governance for this path.
+        if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
+            !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
         {
             issues.Add(Issue(
                 "manual-je.period-closed",

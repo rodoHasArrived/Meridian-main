@@ -458,6 +458,8 @@ public sealed class AutomatedJournalEventProducerTests
             .Should().Be(draft.Lines.Sum(line => line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m));
         draft.AccountingDate.Should().Be(PeriodEndDate,
             "closing entries are dated to the period end date, not the soft-close/run time");
+        draft.EntryType.Should().Be(ManualJournalEntryTypeDto.ClosingEntry,
+            "the ClosingEntry type drives the ClosingEntry posting kind so the close can post into the closed period");
 
         var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
         workbench.Drafts.Should().ContainSingle(
