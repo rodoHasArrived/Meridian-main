@@ -4,7 +4,14 @@ import {
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput
 } from "@/app-shell.operating-scope";
-import { canonicalizeWorkspaceSummaries, isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
+import {
+  canonicalizeWorkspaceSummaries,
+  isWorkspacePathActive,
+  UNWIRED_WORKSTATION_ROUTES,
+  WORKSPACES,
+  WORKSTATION_ROUTE_CATALOG,
+  workspacePath
+} from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -147,7 +154,7 @@ export function buildWorkspaceNavViewModel(
     const exactWorkspaceActive = isExactRouteActive(pathname, workspaceCanonicalRoute);
     const workspaceRoute = appendOperatingScopeToRoute(workspaceCanonicalRoute, operatingScope);
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
-    const rawSubRoutes = WORKSPACE_SUBROUTES[workspace.key] ?? [];
+    const rawSubRoutes = visibleWorkspaceSubroutes(workspace.key);
     const subItems: WorkspaceNavSubItemViewModel[] = rawSubRoutes.map((sub) => {
       const subActive = isSubRouteActive(pathname, sub.route, sub.match);
       const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
@@ -215,12 +222,16 @@ export function buildWorkspaceNavViewModel(
   };
 }
 
+function visibleWorkspaceSubroutes(workspaceKey: WorkspaceKey): WorkspaceSubrouteDefinition[] {
+  return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
+}
+
 function buildContextItems(
   pathname: string,
   workspaceKey: WorkspaceKey,
   operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>
 ): WorkspaceNavSubItemViewModel[] {
-  return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).map((sub) => {
+  return visibleWorkspaceSubroutes(workspaceKey).map((sub) => {
     const active = isSubRouteActive(pathname, sub.route, sub.match);
     const route = appendOperatingScopeToRoute(sub.route, operatingScope);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
