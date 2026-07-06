@@ -27,10 +27,14 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _stateProvider = stateProvider ?? throw new ArgumentNullException(nameof(stateProvider));
         ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        ViewModel.AttentionPrimaryActionRequested += OnAttentionPrimaryActionRequested;
         DataContext = viewModel;
     }
 
     protected TViewModel ViewModel { get; }
+
+    private void OnAttentionPrimaryActionRequested(object? sender, string pageTag)
+        => NavigateToRegisteredPage(pageTag);
 
     protected TStateProvider StateProvider => _stateProvider;
 
