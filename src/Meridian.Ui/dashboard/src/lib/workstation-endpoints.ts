@@ -66,8 +66,8 @@ export const WORKSTATION_API_ENDPOINTS = {
   extensibilityTenantTemplateActivate: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateActivate,
   extensibilityTenantTemplateActivations: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateActivations,
   extensibilityTenantTemplateReadiness: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateReadiness,
-  workflowLibrary: "/api/workstation/workflows",
-  workflowPresets: "/api/workstation/workflows/presets",
+  workflowLibrary: UI_API_ROUTES.WorkstationWorkflowLibrary,
+  workflowPresets: UI_API_ROUTES.WorkstationWorkflowPresets,
   operationsContinuity: UI_API_ROUTES.OperationsContinuity,
   operationsContinuityApprovalPolicyMatrix: UI_API_ROUTES.OperationsContinuityApprovalPolicyMatrix,
   operationsContinuityApprovalPolicyRules: UI_API_ROUTES.OperationsContinuityApprovalPolicyRules,
@@ -77,13 +77,13 @@ export const WORKSTATION_API_ENDPOINTS = {
   operationsPrivateCapitalCloseCockpit: UI_API_ROUTES.OperationsPrivateCapitalCloseCockpit,
   chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: UI_API_ROUTES.RunHistory,
-  runTimeline: "/api/workstation/runs/timeline",
-  runSweeps: "/api/workstation/runs/sweeps",
+  runTimeline: UI_API_ROUTES.RunsTimeline,
+  runSweeps: UI_API_ROUTES.RunsSweeps,
   evidenceSubjects: UI_API_ROUTES.WorkstationEvidenceSubjects,
-  evidenceVaultSearch: "/api/workstation/evidence/vault/search",
-  evidenceVaultIntake: "/api/workstation/evidence/vault/intake",
-  evidenceVaultRequestLists: "/api/workstation/evidence/vault/request-lists",
-  evidenceVaultDocuments: "/api/workstation/evidence/vault/documents",
+  evidenceVaultSearch: UI_API_ROUTES.WorkstationEvidenceVaultSearch,
+  evidenceVaultIntake: UI_API_ROUTES.WorkstationEvidenceVaultIntake,
+  evidenceVaultRequestLists: UI_API_ROUTES.WorkstationEvidenceVaultRequestLists,
+  evidenceVaultDocuments: UI_API_ROUTES.WorkstationEvidenceVaultDocuments,
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
@@ -155,8 +155,8 @@ export const RISK_API_ENDPOINTS = {
 } as const;
 
 export const REPLAY_API_ENDPOINTS = {
-  files: "/api/replay/files",
-  start: "/api/replay/start"
+  files: UI_API_ROUTES.ReplayFiles,
+  start: UI_API_ROUTES.ReplayStart
 } as const;
 
 export const PROMOTION_API_ENDPOINTS = {
@@ -189,17 +189,17 @@ export const STRATEGY_API_ENDPOINTS = {
 } as const;
 
 export const STRATEGY_DESIGNER_API_ENDPOINTS = {
-  templates: "/api/workstation/strategy/designer/templates",
-  fieldCatalog: "/api/workstation/strategy/designer/field-catalog",
-  drafts: "/api/workstation/strategy/designer/drafts",
-  validate: "/api/workstation/strategy/designer/validate",
-  preview: "/api/workstation/strategy/designer/preview",
-  runBacktest: "/api/workstation/strategy/designer/run-backtest"
+  templates: UI_API_ROUTES.WorkstationStrategyDesignerTemplates,
+  fieldCatalog: UI_API_ROUTES.WorkstationStrategyDesignerFieldCatalog,
+  drafts: UI_API_ROUTES.WorkstationStrategyDesignerDrafts,
+  validate: UI_API_ROUTES.WorkstationStrategyDesignerValidate,
+  preview: UI_API_ROUTES.WorkstationStrategyDesignerPreview,
+  runBacktest: UI_API_ROUTES.WorkstationStrategyDesignerRunBacktest
 } as const;
 
 export const STRATEGY_ENGINE_API_ENDPOINTS = {
-  definitions: "/api/workstation/strategy/engine/definitions",
-  validateRun: "/api/workstation/strategy/engine/validate-run"
+  definitions: UI_API_ROUTES.WorkstationStrategyEngineDefinitions,
+  validateRun: UI_API_ROUTES.WorkstationStrategyEngineValidateRun
 } as const;
 
 export const SECURITY_MASTER_API_ENDPOINTS = {
@@ -399,9 +399,9 @@ export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
 } as const;
 
 export const PLAID_API_ENDPOINTS = {
-  institutionSearch: "/api/plaid/institutions/search",
-  linkToken: "/api/plaid/link-token",
-  publicTokenExchange: "/api/plaid/public-token/exchange"
+  institutionSearch: UI_API_ROUTES.PlaidInstitutionSearch,
+  linkToken: UI_API_ROUTES.PlaidLinkToken,
+  publicTokenExchange: UI_API_ROUTES.PlaidPublicTokenExchange
 } as const;
 
 export const PROVIDER_ROUTING_API_ENDPOINTS = {

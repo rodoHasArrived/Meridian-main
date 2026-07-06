@@ -203,6 +203,11 @@ jobs:
       - name: Install dashboard dependencies
         run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
+      - name: Generated UI contract drift gate
+        run: |
+          python3 build/scripts/generate-ui-api-routes-ts.py --check
+          python3 build/scripts/generate-workspace-catalog-ts.py --check
+
       - name: Lint dashboard source
         run: npm --prefix src/Meridian.Ui/dashboard run lint
 

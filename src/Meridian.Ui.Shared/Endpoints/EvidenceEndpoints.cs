@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.Builder;
@@ -67,7 +68,7 @@ public static class EvidenceEndpoints
 
         var group = app.MapGroup("/api/workstation/evidence");
 
-        group.MapGet("/subjects", async (HttpContext context) =>
+        group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjects), async (HttpContext context) =>
         {
             var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
             var subjects = await service.ListSubjectsAsync(context.RequestAborted).ConfigureAwait(false);
@@ -76,7 +77,7 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidenceSubjects")
         .Produces<IReadOnlyList<EvidenceSubjectDto>>(200);
 
-        group.MapGet("/subjects/{subjectKind}/{subjectId}/packet", async (
+        group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectPacket), async (
             string subjectKind,
             string subjectId,
             HttpContext context) =>
@@ -89,7 +90,7 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404);
 
-        group.MapGet("/subjects/{subjectKind}/{subjectId}/graph", async (
+        group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectGraph), async (
             string subjectKind,
             string subjectId,
             HttpContext context) =>
@@ -119,7 +120,7 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404);
 
-        group.MapPost("/subjects/{subjectKind}/{subjectId}/validate", async (
+        group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectValidate), async (
             string subjectKind,
             string subjectId,
             HttpContext context) =>
@@ -134,7 +135,7 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404);
 
-        group.MapPost("/subjects/{subjectKind}/{subjectId}/export-manifest", async (
+        group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectExportManifest), async (
             string subjectKind,
             string subjectId,
             HttpContext context) =>
@@ -163,7 +164,7 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        group.MapGet("/templates", (HttpContext context) =>
+        group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceTemplates), (HttpContext context) =>
         {
             var registry = context.RequestServices.GetRequiredService<EvidenceTemplateRegistry>();
             return Results.Json(registry.GetTemplates(), jsonOptions);
@@ -171,7 +172,7 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidenceTemplates")
         .Produces<IReadOnlyList<EvidenceTemplateDto>>(200);
 
-        group.MapPost("/vault/intake", async (EvidenceVaultIntakeRequestDto? request, HttpContext context) =>
+        group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultIntake), async (EvidenceVaultIntakeRequestDto? request, HttpContext context) =>
         {
             if (request is null)
             {
@@ -230,7 +231,7 @@ public static class EvidenceEndpoints
         .Produces<EvidenceEndpointErrorDto>(StatusCodes.Status400BadRequest)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        group.MapPost("/vault/search", async (EvidenceVaultLookupRequestDto request, HttpContext context) =>
+        group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultSearch), async (EvidenceVaultLookupRequestDto request, HttpContext context) =>
         {
             if (!HasLookupCriteria(request))
             {
@@ -247,7 +248,7 @@ public static class EvidenceEndpoints
         .Produces<IReadOnlyList<EvidenceVaultIdentityDto>>(200)
         .Produces<EvidenceEndpointErrorDto>(400);
 
-        group.MapGet("/vault/request-lists", async (
+        group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultRequestLists), async (
             string? requestListKind,
             string? requestListKindCode,
             string? targetKind,
@@ -289,7 +290,7 @@ public static class EvidenceEndpoints
         .Produces<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(200)
         .Produces<EvidenceEndpointErrorDto>(400);
 
-        group.MapGet("/vault/documents", async (
+        group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultDocuments), async (
             string? classification,
             string? channelKind,
             string? intakeChannelKind,
@@ -343,7 +344,7 @@ public static class EvidenceEndpoints
         .Produces<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(200)
         .Produces<EvidenceEndpointErrorDto>(400);
 
-        group.MapPost("/vault/{vaultId}/documents/{documentId}/review", async (
+        group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultDocumentReview), async (
             string vaultId,
             string documentId,
             EvidenceVaultDocumentReviewRequestDto? request,
@@ -388,6 +389,16 @@ public static class EvidenceEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         return app;
+    }
+
+    private const string EvidenceApiRoutePrefix = "/api/workstation/evidence";
+
+    private static string EvidenceSubroute(string route)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        return route.StartsWith(EvidenceApiRoutePrefix, StringComparison.Ordinal)
+            ? route[EvidenceApiRoutePrefix.Length..]
+            : route;
     }
 
     private static bool HasLookupCriteria(EvidenceVaultLookupRequestDto request)

@@ -2,6 +2,7 @@ import {
   appendRouteQuery,
   canonicalizeWorkspaceSummaries,
   normalizeWorkspacePath,
+  UNWIRED_WORKSTATION_ROUTES,
   WORKSPACES,
   WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath,
@@ -709,7 +710,9 @@ function formatFocusTone(tone: CommandPaletteFocusAction["tone"]) {
 }
 
 function buildRouteItems(pathname: string, operatingScope: AppShellOperatingScopeState): CommandPaletteItem[] {
-  return LOCAL_ROUTE_COMMANDS.map<CommandPaletteItem>((routeCommand) => {
+  return LOCAL_ROUTE_COMMANDS.filter(
+    (routeCommand) => !UNWIRED_WORKSTATION_ROUTES.has(routeCommand.route)
+  ).map<CommandPaletteItem>((routeCommand) => {
     const route = materializeCommandRoute(routeCommand.route, operatingScope);
     const carriedScopeSummary = summarizeOperatingScopeForRoute(routeCommand.route, operatingScope);
     const description = carriedScopeSummary && route !== routeCommand.route
