@@ -1,0 +1,117 @@
+<!-- @dsCard group="Documentation" viewport="1200x820" name="Token Browser" subtitle="Searchable, copy-to-clipboard index of every design token with live swatches" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary);}
+  .wrap{max-width:1140px;margin:0 auto;}
+  .head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;}
+  h1{font:600 20px var(--font-display);margin:0;}
+  .count{font-family:var(--font-data);font-size:12px;color:var(--text-muted);}
+  .search{width:100%;box-sizing:border-box;padding:9px 12px;font-size:13px;font-family:var(--font-data);
+    border:1px solid var(--border);background:var(--bg-light);color:var(--text-primary);border-radius:2px;margin-bottom:14px;}
+  .search:focus{outline:var(--focus-ring);outline-offset:1px;}
+  .group{margin-bottom:20px;}
+  .group h2{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.06em;
+    color:var(--text-muted);margin:0 0 8px;border-bottom:1px solid var(--border);padding-bottom:5px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2px;}
+  .tok{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid transparent;cursor:pointer;border-radius:2px;}
+  .tok:hover{border-color:var(--border);background:var(--bg-light);}
+  .sw{width:22px;height:22px;flex:none;border:1px solid var(--border);border-radius:2px;}
+  .sw--dim{background:repeating-conic-gradient(#8882 0 25%, transparent 0 50%) 50%/8px 8px;}
+  .tok__name{font-family:var(--font-data);font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+  .tok__val{font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .copied{color:var(--green,#16885F);}
+  .empty{color:var(--text-muted);font-size:13px;padding:20px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><h1>Token Browser</h1><span class="count" id="count"></span></div>
+  <input class="search" id="q" placeholder="Filter tokens — name or value…" autocomplete="off">
+  <div id="out"></div>
+</div>
+<script>
+const FILES = ["colors","typography","elevation","base","theme"].map(n=>`../../tokens/${n}.css`);
+const GROUPS = [
+  ["Color", /color|bg|text|border|accent|green|red|orange|blue|amber|surface|shadow|focus|overlay|scrim|ring/i],
+  ["Typography", /font|leading|tracking|weight|type/i],
+  ["Space & size", /space|spacing|gap|pad|radius|row|height|width|size/i],
+];
+const probe = document.createElement("span");
+probe.style.display="none"; document.body.appendChild(probe);
+function resolve(v){ probe.style.background=""; probe.style.background=v; return getComputedStyle(probe).backgroundColor; }
+function isColor(name,val){
+  if(/#|rgb|hsl|oklch|oklab/i.test(val)) return true;
+  if(/color|bg|border|accent|green|red|orange|blue|amber|shadow|focus|overlay|scrim/i.test(name) && /var\(/.test(val)) return true;
+  return false;
+}
+// Primary: read whatever actually cascaded from the loaded stylesheet closure
+// (../../styles.css @imports every token file). Path-independent — no fetch needed.
+function fromStyleSheets(){
+  const map=new Map();
+  function walk(rules){
+    for(const r of rules){
+      if(r.style && typeof r.style.length==="number"){
+        for(let i=0;i<r.style.length;i++){ const p=r.style[i]; if(p.charCodeAt(0)===45&&p.charCodeAt(1)===45&&!map.has(p)) map.set(p, r.style.getPropertyValue(p).trim()); }
+      }
+      if(r.styleSheet){ try{ walk(r.styleSheet.cssRules); }catch(e){} }      // @import
+      else if(r.cssRules){ try{ walk(r.cssRules); }catch(e){} }              // @media / nested
+    }
+  }
+  for(const sheet of document.styleSheets){ try{ walk(sheet.cssRules); }catch(e){} }
+  return [...map.entries()].map(([name,val])=>({name,val}));
+}
+// Fallback: fetch the raw token files (used only if the sheets are unreadable).
+async function fromFetch(){
+  const map=new Map();
+  for(const f of FILES){
+    try{
+      const css=await (await fetch(f)).text();
+      const re=/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi; let m;
+      while((m=re.exec(css))){ if(!map.has(m[1])) map.set(m[1],m[2].trim()); }
+    }catch(e){}
+  }
+  return [...map.entries()].map(([name,val])=>({name,val}));
+}
+async function load(){
+  const sheets=fromStyleSheets();
+  if(sheets.length>4) return sheets;
+  const fetched=await fromFetch();
+  return fetched.length?fetched:sheets;
+}
+let TOKENS=[];
+function render(filter){
+  const q=(filter||"").toLowerCase();
+  const rows=TOKENS.filter(t=>!q||t.name.toLowerCase().includes(q)||t.val.toLowerCase().includes(q));
+  document.getElementById("count").textContent=`${rows.length} / ${TOKENS.length} tokens`;
+  const out=document.getElementById("out"); out.innerHTML="";
+  if(!rows.length){ out.innerHTML='<div class="empty">No tokens match.</div>'; return; }
+  const used=new Set();
+  const buckets=GROUPS.map(([label,re])=>[label,rows.filter(t=>{ if(used.has(t.name))return false; if(re.test(t.name)){used.add(t.name);return true;} return false; })]);
+  buckets.push(["Other", rows.filter(t=>!used.has(t.name))]);
+  for(const [label,items] of buckets){
+    if(!items.length) continue;
+    const g=document.createElement("div"); g.className="group";
+    g.innerHTML=`<h2>${label} · ${items.length}</h2>`;
+    const grid=document.createElement("div"); grid.className="grid";
+    for(const t of items){
+      const row=document.createElement("div"); row.className="tok"; row.title="Click to copy var("+t.name+")";
+      const col=isColor(t.name,t.val)?resolve(`var(${t.name})`):null;
+      const sw=document.createElement("span"); sw.className="sw"+(col&&col!=="rgba(0, 0, 0, 0)"?"":" sw--dim"); if(col&&col!=="rgba(0, 0, 0, 0)") sw.style.background=col;
+      const nm=document.createElement("span"); nm.className="tok__name"; nm.textContent=t.name;
+      const vl=document.createElement("span"); vl.className="tok__val"; vl.textContent=t.val.length>28?t.val.slice(0,27)+"…":t.val;
+      row.append(sw,nm,vl);
+      row.onclick=()=>{ try{navigator.clipboard&&navigator.clipboard.writeText(`var(${t.name})`);}catch(e){} const o=vl.textContent; vl.textContent="copied ✓"; vl.classList.add("copied"); setTimeout(()=>{vl.textContent=o;vl.classList.remove("copied");},900); };
+      grid.appendChild(row);
+    }
+    g.appendChild(grid); out.appendChild(g);
+  }
+}
+document.getElementById("q").addEventListener("input",e=>render(e.target.value));
+load().then(t=>{ TOKENS=t; render(""); });
+</script>
+</body>
+</html>

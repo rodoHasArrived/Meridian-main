@@ -1,0 +1,1 @@
+Thin determinate / indeterminate progress bar — for batch operations, reconciliation runs, sync status. Squared track with a semantic fill. Pass `value` 0–100 for determinate; omit (or `null`) for an indeterminate sweep (respects `prefers-reduced-motion`).

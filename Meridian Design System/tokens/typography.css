@@ -11,18 +11,27 @@
   --font-body:    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-data:    "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
 
-  /* Type ramp (px / line-height) — mirrors the XAML TextBlock styles */
-  --type-page-title:   22px;  --lh-page-title:   28px;  /* PageTitleStyle, SemiBold */
-  --type-section:      15px;  --lh-section:      20px;  /* SectionHeaderStyle, SemiBold */
-  --type-card-title:   14px;                            /* StudioPanelTitle / ChartHeader */
-  --type-body:         13px;  --lh-body:         20px;  /* CardDescription / body */
-  --type-metric:       24px;                            /* MetricValueStyle, mono SemiBold */
-  --type-data-value:   18px;                            /* DataValueStyle, mono SemiBold */
-  --type-label:        10px;                            /* MetricLabel / DataLabel — small-caps, muted */
-  --type-caption:      12px;
+  /* Type ramp (px / line-height) — refined hierarchy with tighter leading */
+  --type-page-title:   24px;  --lh-page-title:   32px;  /* SemiBold, clear separation */
+  --type-section:      16px;  --lh-section:      24px;  /* SectionHeaderStyle, SemiBold */
+  --type-card-title:   13px;  --lh-card-title:   20px;  /* Card header, medium weight */
+  --type-body:         13px;  --lh-body:         20px;  /* Body text, balanced */
+  --type-metric:       28px;                            /* MetricValueStyle, mono, bold */
+  --type-data-value:   16px;                            /* DataValueStyle, mono, SemiBold */
+  --type-label:         9px;                            /* MetricLabel — small-caps, muted, tighter */
+  --type-caption:      11px;  --lh-caption:      16px;  /* Secondary info */
 
-  /* Weights */
+  /* Weights — intentional hierarchy */
   --weight-normal:   400;
   --weight-medium:   500;
   --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* Letter spacing — refine whitespace */
+  --letter-spacing-label: 0.04em;  /* small-caps labels */
+  --letter-spacing-data:  0.01em;  /* tabular data (tight) */
+
+  /* Numeric rendering — mono data surfaces: disambiguated 0/O + column-aligned digits.
+     Apply as font-variant-numeric: var(--numeric-data). Data components bake this in. */
+  --numeric-data: slashed-zero tabular-nums;  /* @kind other */
 }

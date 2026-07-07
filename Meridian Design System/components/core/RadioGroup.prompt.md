@@ -1,0 +1,1 @@
+Single-select radio group — the form primitive `Checkbox`/`Toggle` don't cover. A column (or row) of radios with a filled accent center dot, optional per-option hint. Controlled via `value` + `onChange`.

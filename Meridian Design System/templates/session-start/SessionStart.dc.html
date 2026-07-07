@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Session Start" description="Workstation sign-in — credentials, MFA verify, and the environment gate (Live / Paper / Fixture with typed live confirm) before any surface loads" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="session-start">
+<style>html,body{margin:0;padding:0;height:100%;}</style>
+</helmet>
+<div data-screen-label="Session start" style="height:100vh;">
+<x-import component-from-global-scope="SessionStartScreen" from="./screen.jsx" environment="{{ envDefault }}" require-mfa="{{ mfa }}" hint-size="100%,860px"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;environment&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;PAPER&quot;, &quot;tsType&quot;: &quot;\&quot;PAPER\&quot; | \&quot;LIVE\&quot; | \&quot;FIXTURE\&quot;&quot;, &quot;options&quot;: [&quot;PAPER&quot;, &quot;LIVE&quot;, &quot;FIXTURE&quot;], &quot;section&quot;: &quot;Session&quot; },
+  &quot;requireMfa&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Session&quot; }
+}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      envDefault: this.props.environment ?? "PAPER",
+      mfa: this.props.requireMfa ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,140 +1,165 @@
 /* Meridian Theming Layer — CSS variables for white-label customization.
-   Override these at the root level to customize accent color, density, brand colors, fonts.
-   Example: --theme-accent: #3B82F6; --theme-density: compact; --theme-brand-primary: #1E40AF;
+   Override at root or via data-* attributes to customize accent, density, brand, fonts.
+   Usage: <html data-brand="indigo" data-theme-density="compact">
 */
 
 :root {
-  /* ── Primary Theme Colors (override these for white-label) ── */
-  --theme-accent: var(--accent, #2F6F8F);
-  --theme-accent-dim: var(--accent-dim, #255B75);
-  --theme-accent-light: rgba(47, 111, 143, 0.10);
+  /* ── Default Theme (Meridian — teal-blue institutional, refined v1.8) ── */
+  --theme-accent: #2F6F8F;
+  --theme-accent-dim: #255B75;
+  --theme-accent-hover: #3B82A6;
 
-  --theme-primary-text: var(--text-primary, #22272E);
-  --theme-secondary-text: var(--text-secondary, #4D5967);
-  --theme-muted-text: var(--text-muted, #6E7781);
-  --theme-disabled-text: var(--text-disabled, #9AA4AF);
+  --theme-primary-text: #22272E;
+  --theme-secondary-text: #4D5967;
+  --theme-muted-text: #59636F;
+  --theme-disabled-text: #889099;
 
-  --theme-bg-canvas: var(--bg-canvas, #ECEFF3);
-  --theme-bg-light: var(--bg-light, #FFFFFF);
-  --theme-bg-medium: var(--bg-medium, #F5F7FA);
-  --theme-bg-active: var(--bg-active, #E6EEF5);
+  --theme-bg-canvas: #DEE3EA;
+  --theme-bg-light: #FFFFFF;
+  --theme-bg-hover: #EAEEF3;
+  --theme-bg-active: #D7E5F1;
 
-  --theme-border: var(--border, #D7DCE2);
-  --theme-border-hover: var(--border-hover, #B8C2CC);
-  --theme-border-focus: var(--border-focus, #2F6F8F);
+  --theme-border: #CBD3DC;
+  --theme-border-hover: #ADB8C4;
+  --theme-border-focus: #2F6F8F;
+  --theme-border-strong: #99A5B2;
 
-  /* ── Semantic Colors ── */
-  --theme-green: var(--green, #16885F);
-  --theme-red: var(--red, #BA3F55);
-  --theme-amber: var(--amber, #B7791F);
-  --theme-purple: var(--purple, #6F5BA7);
+  /* Semantic */
+  --theme-green: #16885F;
+  --theme-red: #BA3F55;
+  --theme-orange: #8A520E;   /* warning (a.k.a. amber) */
+  --theme-amber: var(--theme-orange);
 
-  /* ── Density Tokens (compact | cozy | spacious) ── */
-  --theme-density: cozy; /* @kind other */
+  /* Chrome */
+  --theme-topbar-bg: #171A1F;
+  --theme-topbar-text: #F4F6F8;
+  --theme-statusbar-bg: #171A1F;
+  --theme-statusbar-text: #D7DCE2;
 
-  /* Compact: tight rows, small padding */
-  --theme-spacing-section: 20px;
-  --theme-spacing-card: 12px;
-  --theme-spacing-compact: 8px;
-  --theme-spacing-tight: 4px;
-  --theme-row-height: 32px;
-  --theme-table-padding: 6px 10px;
-
-  /* Cozy: default Meridian spacing */
-  --theme-spacing-section: 24px;
-  --theme-spacing-card: 16px;
-  --theme-spacing-compact: 12px;
-  --theme-spacing-tight: 8px;
-  --theme-row-height: 34px;
-  --theme-table-padding: 7px 12px;
-
-  /* Spacious: generous padding for accessibility */
-  --theme-spacing-section: 32px;
-  --theme-spacing-card: 20px;
-  --theme-spacing-compact: 16px;
-  --theme-spacing-tight: 12px;
+  /* ── Default Spacing (cozy) ── */
+  --theme-spacing-xs: 4px;
+  --theme-spacing-sm: 8px;
+  --theme-spacing-md: 12px;
+  --theme-spacing-lg: 16px;
+  --theme-spacing-xl: 24px;
   --theme-row-height: 40px;
-  --theme-table-padding: 10px 16px;
 
-  /* ── Brand Logo & Imagery ── */
-  --theme-brand-logo-url: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="%232F6F8F"/><text x="16" y="20" text-anchor="middle" fill="white" font-size="14" font-weight="bold">M</text></svg>'); /* @kind other */
-  --theme-brand-color-primary: #2F6F8F;
-  --theme-brand-color-secondary: #4D5967;
-
-  /* ── Font Stack (override for white-label) ── */
+  /* ── Brand & Font ── */
+  --theme-brand-name: "Meridian"; /* @kind other */
+  --theme-brand-color: #2F6F8F;
   --theme-font-display: "Segoe UI Variable Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --theme-font-body: "Segoe UI Variable Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --theme-font-mono: "Cascadia Mono", "JetBrains Mono", "Courier New", monospace;
 }
 
-/* ── Density Variants (append to body or root to switch) ── */
+/* ── Density Variants ── */
+body[data-theme-density="terminal"] {
+  --theme-spacing-xs: 1px;
+  --theme-spacing-sm: 4px;
+  --theme-spacing-md: 6px;
+  --theme-spacing-lg: 8px;
+  --theme-spacing-xl: 12px;
+  --theme-row-height: 26px;
+  /* densest scope — multi-monitor ops walls; interiors compress hardest */
+  --pad-panel: 8px;
+  --pad-panel-tight: 6px;
+  --gap-panel: 6px;
+}
+
 body[data-theme-density="compact"] {
-  --theme-spacing-section: 16px;
-  --theme-spacing-card: 12px;
-  --theme-spacing-compact: 8px;
-  --theme-spacing-tight: 4px;
+  --theme-spacing-xs: 2px;
+  --theme-spacing-sm: 6px;
+  --theme-spacing-md: 8px;
+  --theme-spacing-lg: 12px;
+  --theme-spacing-xl: 16px;
   --theme-row-height: 32px;
-  --theme-table-padding: 5px 8px;
+  /* panel interiors compress too, not just rows (see --pad-panel in elevation.css) */
+  --pad-panel: 12px;
+  --pad-panel-tight: 8px;
+  --gap-panel: 8px;
 }
 
 body[data-theme-density="spacious"] {
-  --theme-spacing-section: 32px;
-  --theme-spacing-card: 24px;
-  --theme-spacing-compact: 18px;
-  --theme-spacing-tight: 12px;
-  --theme-row-height: 42px;
-  --theme-table-padding: 12px 18px;
+  --theme-spacing-xs: 6px;
+  --theme-spacing-sm: 12px;
+  --theme-spacing-md: 16px;
+  --theme-spacing-lg: 20px;
+  --theme-spacing-xl: 32px;
+  --theme-row-height: 48px;
+  --pad-panel: 22px;
+  --pad-panel-tight: 16px;
+  --gap-panel: 16px;
 }
 
-/* ── Brand Color Overrides (for multi-tenant setups) ── */
-/* Example: <html data-brand="indigo"> applies custom accent */
+/* ── Brand Color Variants (white-label: data-brand="name") ── */
 html[data-brand="indigo"] {
   --theme-accent: #4F46E5;
   --theme-accent-dim: #4338CA;
-  --theme-brand-color-primary: #4F46E5;
+  --theme-accent-hover: #6366F1;
+  --theme-brand-color: #4F46E5;
 }
 
 html[data-brand="emerald"] {
-  --theme-accent: #10B981;
-  --theme-accent-dim: #059669;
-  --theme-brand-color-primary: #10B981;
+  --theme-accent: #0B7A55;
+  --theme-accent-dim: #0A6748;
+  --theme-accent-hover: #0E875F;
+  --theme-brand-color: #0B7A55;
 }
 
 html[data-brand="rose"] {
   --theme-accent: #E11D48;
   --theme-accent-dim: #BE123C;
-  --theme-brand-color-primary: #E11D48;
+  --theme-accent-hover: #F43F5E;
+  --theme-brand-color: #E11D48;
 }
 
 html[data-brand="slate"] {
   --theme-accent: #64748B;
   --theme-accent-dim: #475569;
-  --theme-brand-color-primary: #64748B;
+  --theme-accent-hover: #94A3B8;
+  --theme-brand-color: #64748B;
 }
 
 html[data-brand="cyan"] {
-  --theme-accent: #06B6D4;
-  --theme-accent-dim: #0891B2;
-  --theme-brand-color-primary: #06B6D4;
+  --theme-accent: #0C6A85;
+  --theme-accent-dim: #0B5E76;
+  --theme-accent-hover: #0E7490;
+  --theme-brand-color: #0C6A85;
 }
 
-/* ── Apply theme tokens to existing component tokens (map) ── */
-:root {
+html[data-brand="amber"] {
+  --theme-accent: #A34A08;
+  --theme-accent-dim: #8F4108;
+  --theme-accent-hover: #B45309;
+  --theme-brand-color: #A34A08;
+}
+
+/* ── Map theme tokens to component tokens ── */
+/* Also matches [data-theme="light"] so forcing light (even under OS dark) re-applies
+   the brand/light mapping at higher specificity than colors-dark.css's media :root. */
+:root,
+:root[data-theme="light"] {
   --accent: var(--theme-accent);
   --accent-dim: var(--theme-accent-dim);
+  --accent-hover: var(--theme-accent-hover);
   --text-primary: var(--theme-primary-text);
   --text-secondary: var(--theme-secondary-text);
   --text-muted: var(--theme-muted-text);
   --text-disabled: var(--theme-disabled-text);
-  --bg-canvas: var(--theme-bg-canvas);
+  --bg: var(--theme-bg-canvas);
   --bg-light: var(--theme-bg-light);
-  --bg-medium: var(--theme-bg-medium);
+  --bg-hover: var(--theme-bg-hover);
   --bg-active: var(--theme-bg-active);
   --border: var(--theme-border);
   --border-hover: var(--theme-border-hover);
   --border-focus: var(--theme-border-focus);
+  --border-strong: var(--theme-border-strong);
   --green: var(--theme-green);
   --red: var(--theme-red);
-  --amber: var(--theme-amber);
-  --purple: var(--theme-purple);
+  --orange: var(--theme-orange);
+  --amber: var(--orange);
+  --topbar-bg: var(--theme-topbar-bg);
+  --topbar-text: var(--theme-topbar-text);
+  --statusbar-bg: var(--theme-statusbar-bg);
+  --statusbar-text: var(--theme-statusbar-text);
 }

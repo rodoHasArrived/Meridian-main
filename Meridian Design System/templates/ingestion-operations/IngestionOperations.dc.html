@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Ingestion Operations" description="Data-pipeline operator view — provider freshness, backfill queue with inline progress, symbol×session coverage heat, and the raw run log" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="ingestion-operations">
+</helmet>
+<x-import component-from-global-scope="IngestionOperationsScreen" from="./screen.jsx" hint-size="100%,860px"></x-import>
+</x-dc>
+</body>
+</html>

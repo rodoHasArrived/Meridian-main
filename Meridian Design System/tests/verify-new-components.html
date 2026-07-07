@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>New components — verify harness</title>
+<link rel="stylesheet" href="../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);" data-theme="light">
+<div id="root"></div>
+<script type="text/babel">
+const M = window.MeridianDesignSystem_4f61be;
+const { DrawdownChart, Histogram, DepthChart, CorrelationHeatmap,
+        FreshnessIndicator, ConnectionDot, DensityToggle, CommandPalette } = M;
+const { useState } = React;
+
+function Box({ t, children, h = 230 }) {
+  return <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", padding:12, borderRadius:2 }}>
+    <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:8 }}>{t}</div>
+    <div style={{ height:h }}>{children}</div>
+  </div>;
+}
+
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const returns = Array.from({length:600},()=>+(gauss()*1.1+0.08).toFixed(2));
+let eq=0,peak=0;const dd=[],ddL=[];for(let i=0;i<130;i++){eq+=Math.sin(i/9)*1.4+(Math.random()-0.46)*2.2;peak=Math.max(peak,eq);dd.push(+(((eq-peak)/(100+peak))*100).toFixed(2));ddL.push(i%22===0?`M${Math.floor(i/22)+1}`:"");}
+const bids=[],asks=[];for(let i=0;i<22;i++){bids.push({price:+(214-i*0.05-0.01).toFixed(2),size:Math.round(40+Math.random()*120+i*14)});asks.push({price:+(214+i*0.05+0.01).toFixed(2),size:Math.round(40+Math.random()*120+i*14)});}
+const cl=["SPY","QQQ","AAPL","NVDA","TLT","GLD"];
+const corr=[[1,.94,.71,.66,-.42,-.11],[.94,1,.78,.82,-.51,-.18],[.71,.78,1,.69,-.33,-.06],[.66,.82,.69,1,-.39,.04],[-.42,-.51,-.33,-.39,1,.46],[-.11,-.18,-.06,.04,.46,1]];
+
+function App(){
+  const [open, setOpen] = useState(false);
+  return <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1100 }}>
+    <Box t="DrawdownChart"><DrawdownChart series={dd} labels={ddL} threshold={-8} markMax/></Box>
+    <Box t="Histogram"><Histogram values={returns} binCount={28} signed showMean/></Box>
+    <Box t="DepthChart"><DepthChart bids={bids} asks={asks}/></Box>
+    <Box t="CorrelationHeatmap" h={290}><CorrelationHeatmap labels={cl} matrix={corr} cellSize={42} headerSize={48}/></Box>
+    <Box t="Freshness + Density" h={120}>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <FreshnessIndicator status="live" source="Polygon" lastSeen={Date.now()-2000}/>
+        <FreshnessIndicator status="offline" source="IBKR" lastSeen={Date.now()-360000} timeFormat="utc"/>
+        <div style={{ display:"flex", gap:8 }}><ConnectionDot status="live"/><ConnectionDot status="stale"/><ConnectionDot status="offline"/></div>
+        <DensityToggle defaultValue="default"/>
+      </div>
+    </Box>
+    <Box t="CommandPalette" h={120}>
+      <button onClick={() => setOpen(true)} style={{ padding:"8px 12px", border:"1px solid var(--border)", background:"var(--bg-medium)", cursor:"pointer", borderRadius:2 }}>Open palette (Ctrl K)</button>
+      <CommandPalette open={open} onOpenChange={setOpen} commands={[
+        {id:"a",group:"Workstations",label:"Trading workstation",hint:"→",run:()=>{}},
+        {id:"b",group:"Workstations",label:"Accounting · general ledger",hint:"→",run:()=>{}},
+        {id:"c",group:"Runs",label:"Run backtest — momentum.v4",shortcut:"R",run:()=>{}},
+        {id:"d",group:"Settings",label:"Halt live trading",danger:true,run:()=>{}},
+      ]}/>
+    </Box>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

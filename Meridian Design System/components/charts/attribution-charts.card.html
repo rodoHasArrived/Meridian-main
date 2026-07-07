@@ -1,0 +1,107 @@
+<!-- @dsCard group="Charts" viewport="1180x1170" name="Attribution & exposure" subtitle="WaterfallChart P&L bridge · squarified exposure Treemap · categorical BarChart (vertical + ranked rows)" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Attribution &amp; exposure</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { WaterfallChart, Treemap, BarChart } = window.MeridianDesignSystem_4f61be;
+
+function Section({ title, sub, children, span, h = 250 }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
+      padding:14, gridColumn: span ? `span ${span}` : undefined, display:"flex", flexDirection:"column" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:10 }}>
+        <span style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em", color:"var(--text-muted)" }}>{title}</span>
+        {sub && <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-secondary)" }}>{sub}</span>}
+      </div>
+      <div style={{ height:h }}>{children}</div>
+    </div>
+  );
+}
+
+// ── P&L attribution bridge — gross alpha to net, 2026-Q2 ($k) ──
+const ATTRIB = [
+  { label: "Gross alpha", value: 1248, kind: "start" },
+  { label: "Carry", value: 318 },
+  { label: "Dividends", value: 94 },
+  { label: "Funding", value: -186 },
+  { label: "Commissions", value: -77 },
+  { label: "Slippage", value: -132 },
+  { label: "Mgmt fee", value: -208 },
+];
+const k = (v) => "$" + Math.round(v) + "k";
+
+// ── exposure treemap — position weight ($M) · day change (%) ──
+const EXPOSURE = [
+  { label: "NVDA", value: 4.21, delta: 1.84 },
+  { label: "MSFT", value: 3.84, delta: 0.31 },
+  { label: "AAPL", value: 3.42, delta: -0.42 },
+  { label: "AVGO", value: 2.36, delta: 2.12 },
+  { label: "JPM",  value: 2.18, delta: 0.58 },
+  { label: "XOM",  value: 1.94, delta: -1.21 },
+  { label: "UNH",  value: 1.71, delta: -0.18 },
+  { label: "GS",   value: 1.52, delta: 0.94 },
+  { label: "LIN",  value: 1.28, delta: 0.12 },
+  { label: "CAT",  value: 1.14, delta: -0.66 },
+  { label: "NEE",  value: 0.98, delta: -0.31 },
+  { label: "COST", value: 0.87, delta: 0.44 },
+  { label: "PG",   value: 0.74, delta: 0.08 },
+  { label: "TLT",  value: 0.68, delta: -0.52 },
+  { label: "GLD",  value: 0.52, delta: 0.27 },
+  { label: "CASH", value: 0.46, delta: 0 },
+];
+
+// ── P&L by sector ($k, signed) ──
+const SECTOR_PNL = [
+  { label: "Tech", value: 412 },
+  { label: "Financials", value: 186 },
+  { label: "Health", value: 67 },
+  { label: "Industrials", value: 38 },
+  { label: "Staples", value: 12 },
+  { label: "Utilities", value: -21 },
+  { label: "Materials", value: -58 },
+  { label: "Energy", value: -94 },
+];
+const sk = (v) => (v < 0 ? "\u2212" : "") + "$" + Math.abs(Math.round(v)) + "k";
+
+// ── gross exposure by strategy ($M, ranked rows) ──
+const STRATEGY_EXP = [
+  { label: "Momentum", value: 12.4 },
+  { label: "Carry & roll", value: 9.8 },
+  { label: "Stat arb", value: 7.2 },
+  { label: "Overwrite", value: 4.4 },
+  { label: "Event", value: 3.1 },
+  { label: "Cash", value: 1.9 },
+];
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1120 }}>
+      <Section title="WaterfallChart · P&L attribution" sub="2026-Q2 · gross \u2192 net · $k" span={2} h={280}>
+        <WaterfallChart items={ATTRIB} totalLabel="Net P&L" valueFmt={k} />
+      </Section>
+      <Section title="Treemap · exposure by position" sub="area = weight $M · wash = day \u0394" span={2} h={330}>
+        <Treemap items={EXPOSURE} valueFmt={(v) => "$" + v.toFixed(2) + "M"} />
+      </Section>
+      <Section title="BarChart · P&L by sector" sub="signed · Q2 realized · $k" h={240}>
+        <BarChart data={SECTOR_PNL} signed valueFmt={sk} />
+      </Section>
+      <Section title="BarChart · gross exposure by strategy" sub="horizontal ranked · $M" h={240}>
+        <div style={{ paddingTop:38 }}>
+          <BarChart data={STRATEGY_EXP} horizontal valueFmt={(v) => "$" + v.toFixed(1) + "M"} />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

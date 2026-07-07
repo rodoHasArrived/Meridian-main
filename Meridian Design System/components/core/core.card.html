@@ -1,4 +1,4 @@
-<!-- @dsCard group="Components" viewport="1200x800" name="Core primitives" subtitle="Buttons, inputs, cells, selection" -->
+<!-- @dsCard group="Core" viewport="1200x800" name="Core primitives" subtitle="Buttons, inputs, cells, selection" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +31,7 @@
     .demo-card {
       background: var(--bg-light);
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: 2px;
       padding: 16px;
     }
     .demo-row {
@@ -78,10 +78,10 @@
         </thead>
         <tbody id="editable-table">
           <tr>
-            <td><span id="cell-name">John Doe</span></td>
+            <td><span id="cell-name">Citadel Securities</span></td>
             <td><span id="cell-amount">12,500.00</span></td>
             <td><span id="cell-status">Pending</span></td>
-            <td><span id="cell-date">2024-01-15</span></td>
+            <td><span id="cell-date">2026-06-30</span></td>
           </tr>
         </tbody>
       </table>
@@ -141,7 +141,7 @@
     <div class="demo-grid">
       <div class="demo-card">
         <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Button</div>
-        <button style="padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
+        <button style="padding: 8px 16px; background: var(--accent); color: var(--text-on-accent); border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
           Primary
         </button>
         <button style="padding: 8px 16px; background: transparent; color: var(--accent); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 13px; margin-left: 8px;">
@@ -184,10 +184,10 @@
         <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--blue-a10);">
           <span style="font-size: 12px; font-weight: 500; color: var(--text-secondary);">${selected.size} selected</span>
           <button onclick="alert('Delete ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--red); background: transparent; border: 1px solid var(--red-a20); border-radius: 2px; cursor: pointer;">
-            🗑️ Delete
+            Delete
           </button>
           <button onclick="alert('Export ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--accent); background: transparent; border: 1px solid var(--border); border-radius: 2px; cursor: pointer;">
-            ⬇️ Export
+            Export
           </button>
           <button onclick="selected.clear(); updateToolbar(); rows.forEach(r => r.querySelector('input').checked = false);" style="margin-left: auto; padding: 4px 8px; font-size: 11px; color: var(--text-muted); background: transparent; border: none; cursor: pointer; text-decoration: underline;">
             Clear

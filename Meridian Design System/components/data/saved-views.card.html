@@ -1,0 +1,97 @@
+<!-- @dsCard group="Data" viewport="1080x780" name="Saved views" subtitle="SavedViews — named, persisted filter · sort · search snapshots over useTableState, with presets, save-as, and a dirty indicator" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Saved views</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { SavedViews, DenseDataTable, Toolbar, ToolbarGroup, ToolbarSpacer, Input, Select, Badge, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const { useTableState } = window.MeridianDesignSystem_4f61be.TableHooks;
+
+const ORDERS = [
+  { time: "14:31:44Z", sym: "NVDA",  side: "BUY",  qty: 1200, px: "128.4200", venue: "ARCA", status: "WORKING" },
+  { time: "14:29:08Z", sym: "AAPL",  side: "SELL", qty: 800,  px: "214.1100", venue: "NSDQ", status: "FILLED" },
+  { time: "14:27:51Z", sym: "MSFT",  side: "BUY",  qty: 350,  px: "462.7800", venue: "EDGX", status: "FILLED" },
+  { time: "14:25:12Z", sym: "AVGO",  side: "BUY",  qty: 2400, px: "171.0300", venue: "ARCA", status: "WORKING" },
+  { time: "14:22:39Z", sym: "XOM",   side: "SELL", qty: 1500, px: "109.8800", venue: "NYSE", status: "REJECTED" },
+  { time: "14:19:04Z", sym: "JPM",   side: "BUY",  qty: 600,  px: "228.4500", venue: "NYSE", status: "FILLED" },
+  { time: "14:16:47Z", sym: "GS",    side: "BUY",  qty: 240,  px: "512.6600", venue: "NSDQ", status: "CANCELLED" },
+  { time: "14:12:20Z", sym: "TLT",   side: "SELL", qty: 3000, px: "94.2100",  venue: "ARCA", status: "FILLED" },
+  { time: "14:08:55Z", sym: "UNH",   side: "BUY",  qty: 180,  px: "488.3400", venue: "EDGX", status: "WORKING" },
+  { time: "14:05:31Z", sym: "CAT",   side: "SELL", qty: 420,  px: "351.7200", venue: "NYSE", status: "FILLED" },
+  { time: "14:02:18Z", sym: "NEE",   side: "BUY",  qty: 950,  px: "72.4400",  venue: "NSDQ", status: "REJECTED" },
+  { time: "13:58:02Z", sym: "COST",  side: "BUY",  qty: 110,  px: "918.2500", venue: "ARCA", status: "FILLED" },
+];
+
+const STATUS_VARIANT = { WORKING: "info", FILLED: "success", REJECTED: "danger", CANCELLED: "neutral" };
+
+const PRESETS = [
+  { name: "Working orders", state: { query: "", sortStack: [{ column: "time", direction: "desc" }], filters: { status: ["WORKING"] } } },
+  { name: "Fills \u00b7 size desc", state: { query: "", sortStack: [{ column: "qty", direction: "desc" }], filters: { status: ["FILLED"] } } },
+  { name: "Rejects", state: { query: "", sortStack: [{ column: "time", direction: "desc" }], filters: { status: ["REJECTED"] } } },
+];
+
+function Demo() {
+  const table = useTableState(ORDERS);
+  const statusFilter = (table.filters.status && table.filters.status[0]) || "all";
+
+  return (
+    <div style={{ maxWidth: 1040 }}>
+      <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)" }}>
+        <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}>
+          <Eyebrow>Order blotter</Eyebrow>
+          <div style={{ flex: 1 }}></div>
+          <Badge variant="paper" dot>PAPER</Badge>
+        </div>
+        <Toolbar style={{ borderLeft: 0, borderRight: 0 }}>
+          <ToolbarGroup>
+            <div style={{ width: 240 }}>
+              <Input placeholder={"\u2315 Search orders\u2026"} value={table.query} onChange={(e) => table.setQuery(e.target.value)} aria-label="Search orders" />
+            </div>
+            <div style={{ width: 160 }}>
+              <Select value={statusFilter}
+                onChange={(v) => table.setFilters(v === "all" ? {} : { status: [v] })}
+                options={[
+                  { value: "all", label: "All statuses" },
+                  { value: "WORKING", label: "Working" },
+                  { value: "FILLED", label: "Filled" },
+                  { value: "REJECTED", label: "Rejected" },
+                  { value: "CANCELLED", label: "Cancelled" },
+                ]} />
+            </div>
+          </ToolbarGroup>
+          <ToolbarSpacer />
+          <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
+            {table.resultCount} of {ORDERS.length}
+          </span>
+          <SavedViews storageKey="mds-card.blotter" table={table} presets={PRESETS} defaultLabel="All orders" />
+        </Toolbar>
+        <DenseDataTable
+          columns={[
+            { key: "time", label: "Time" },
+            { key: "sym", label: "Symbol" },
+            { key: "side", label: "Side", render: (r) => <Badge variant={r.side === "BUY" ? "success" : "danger"}>{r.side}</Badge> },
+            { key: "qty", label: "Qty", align: "right", render: (r) => r.qty.toLocaleString("en-US") },
+            { key: "px", label: "Limit", align: "right" },
+            { key: "venue", label: "Venue" },
+            { key: "status", label: "Status", render: (r) => <Badge variant={STATUS_VARIANT[r.status]}>{r.status}</Badge> },
+          ]}
+          rows={table.data} />
+      </div>
+      <p style={{ font: "11px var(--font-data)", color: "var(--text-muted)", margin: "10px 2px" }}>
+        Pick a preset, then edit the search or status filter — the trigger flags "· edited". Save the
+        current state under a new name; saved views persist per storageKey and can be deleted (×).
+      </p>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

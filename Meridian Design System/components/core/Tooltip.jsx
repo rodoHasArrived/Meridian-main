@@ -8,11 +8,9 @@ function inject() {
   const css = `
 .mds-tip-host{position:relative;display:inline-flex;align-items:center;}
 .mds-tip-box{position:absolute;z-index:300;pointer-events:none;
-  background:#22272E;color:#F5F7FA;border-radius:4px;
-  padding:6px 9px;font-family:var(--font-body);font-size:11px;line-height:1.4;
-  white-space:nowrap;box-shadow:0 2px 8px rgba(23,26,31,.20);
-  animation:mds-tip-in 120ms ease;}
-@keyframes mds-tip-in{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+  background:var(--text-primary,#22272E);color:var(--bg-light,#FAFBFC);
+  padding:8px 12px;font-family:var(--font-body);font-size:11px;line-height:1.4;
+  white-space:nowrap;border:1px solid var(--border-strong,#AAB4BF);box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));}
 .mds-tip-box--above{bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);}
 .mds-tip-box--below{top:calc(100% + 6px);left:50%;transform:translateX(-50%);}
 .mds-tip-box--left{right:calc(100% + 6px);top:50%;transform:translateY(-50%);}
@@ -29,7 +27,7 @@ export function Tooltip({ content, children, placement = "above", delay = 300 })
   const [visible, setVisible] = React.useState(false);
   const timer = React.useRef(null);
 
-  const show = () => { timer.current = setTimeout(() => setVisible(true), delay); };
+  const show = () => { timer.current = setTimeout(() => setVisible(true), 200); };
   const hide = () => { clearTimeout(timer.current); setVisible(false); };
 
   return (
