@@ -5843,7 +5843,7 @@ describe("ReportingScreen", () => {
       healthy: true
     });
 
-    renderWithRouter(<ReportingScreen data={accountingWithRecentRun} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accountingWithRecentRun} />, { initialEntries: ["/reporting/run-status"] });
 
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     const liveStatus = screen.getByTestId("report-run-live-status");
