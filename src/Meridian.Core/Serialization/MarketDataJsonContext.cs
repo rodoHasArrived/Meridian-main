@@ -75,6 +75,7 @@ namespace Meridian.Core.Serialization;
 // Configuration types
 [JsonSerializable(typeof(List<string>))]
 [JsonSerializable(typeof(AppConfig))]
+[JsonSerializable(typeof(PipelineRuntimeConfig))]
 [JsonSerializable(typeof(FeatureCapabilityOptions))]
 [JsonSerializable(typeof(Dictionary<string, bool>))]
 [JsonSerializable(typeof(StorageConfig))]
