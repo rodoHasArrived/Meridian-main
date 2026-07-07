@@ -624,7 +624,6 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         {
             evidenceLink ??= BestEvidenceLink(evidence, "ProviderEvidence");
         }
-    }
 
         var status = targetSpec.UseCloseEvidenceStatus
             ? EvaluateTargetStatus(evidence, "CloseReadiness") ?? RequirementStatus(requirements, "ProviderEvidence")
