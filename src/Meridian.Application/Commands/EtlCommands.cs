@@ -218,7 +218,7 @@ internal sealed class EtlCommands : ICliCommand
         };
 }
 
-internal enum EtlInspectionMode
+public enum EtlInspectionMode
 {
     None,
     Preview,

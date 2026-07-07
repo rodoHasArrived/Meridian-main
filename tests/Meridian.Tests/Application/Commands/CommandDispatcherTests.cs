@@ -169,6 +169,8 @@ public class CommandDispatcherTests
 
     private sealed class ThrowingCommand : ICliCommand
     {
+        public IReadOnlyList<string> Triggers => new[] { "--throw" };
+
         public bool CanHandle(string[] args) => args.Contains("--throw");
 
         public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
