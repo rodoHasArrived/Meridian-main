@@ -1,14 +1,21 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationActivationService
 {
+    private readonly ILogger<ProviderIntegrationActivationService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationActivationService> logger;
 
-    public ProviderIntegrationActivationService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationActivationService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationActivationService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationActivationService>.Instance;
     }
 
     public async Task<ProviderIntegrationActivationResultDto> ActivateAsync(
@@ -17,6 +24,44 @@ public sealed class ProviderIntegrationActivationService
         => await ActivateAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationActivationResultDto> ActivateAsync(
+        string? tenantId,
+        ProviderIntegrationActivationRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "activation-activate",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
+            nameof(ActivateAsync),
+            request?.ManifestId,
+            request?.ConnectionId);
+        try
+        {
+            return await ActivateCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
+                nameof(ActivateAsync),
+                request?.ManifestId,
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationActivationResultDto> ActivateCoreAsync(
         string? tenantId,
         ProviderIntegrationActivationRequestDto request,
         CancellationToken ct = default)
@@ -76,7 +121,7 @@ public sealed class ProviderIntegrationActivationService
             readiness,
             activationConnection.ApprovalEvidenceId,
             "Provider integration connection activated.");
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

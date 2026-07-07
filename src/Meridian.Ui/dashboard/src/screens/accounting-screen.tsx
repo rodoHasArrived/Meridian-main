@@ -42,6 +42,14 @@ import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, Close
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
+  ChartAccountPathBuilder,
+  ConfigureActivationRail,
+  ConfigureChangePreviewPanel,
+  ConfigureCommandBar,
+  ConfigureProductionReadinessCard,
+  LedgerBookSetupWizard
+} from "@/screens/accounting-screen.configure-panel";
+import {
   buildAccountingSectionVisibility,
   buildAccountingTaskMode,
   resolveAccountingWorkstream
@@ -108,12 +116,25 @@ import type {
   FinancialOperationsCommandCenter,
   MultiAssetCoverageSummary,
   OperationsApproval,
-  OperationsApprovalState,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
-  OperationsWorkflowBlocker
 } from "@/types";
+import {
+  approvalBlockedReason,
+  approvalEvidenceSummary,
+  approvalNextAction,
+  approvalQueueStatusLabel,
+  approvalQueueStatusTone,
+  approvalSignerLabel,
+  approvalStatusTone,
+  buildApprovalActionDisabledReason,
+  formatApprovalDate,
+  formatApprovalError,
+  missingApprovalEvidenceLabel,
+  resolveApprovalReportPackId,
+  splitApprovalWords
+} from "@/screens/accounting-screen.approvals";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -1444,165 +1465,6 @@ function selectApproval(workflow: OperationsContinuityWorkflow | null, requested
   })[0] ?? null;
 }
 
-function approvalQueueStatusLabel(workflow: OperationsContinuityWorkflowSummary): string {
-  const approvalGate = workflow.gates.find((gate) => gate.gateKey === "Approval") ?? null;
-  if (workflow.status === "Blocked" || approvalGate?.status === "Blocked") {
-    return "Blocked";
-  }
-
-  if (workflow.status === "Closed" || workflow.status === "ReadyForClose" || approvalGate?.status === "Passed") {
-    return "Approved";
-  }
-
-  return "Pending";
-}
-
-function approvalQueueStatusTone(workflow: OperationsContinuityWorkflowSummary): "success" | "warning" | "danger" | "outline" {
-  const label = approvalQueueStatusLabel(workflow);
-  if (label === "Approved") return "success";
-  if (label === "Blocked") return "danger";
-  return "warning";
-}
-
-function approvalStatusTone(status: OperationsApprovalState): "success" | "warning" | "danger" | "outline" {
-  if (status === "Approved") return "success";
-  if (status === "Rejected") return "danger";
-  if (status === "Pending") return "outline";
-  return "warning";
-}
-
-function approvalSignerLabel(approvals: OperationsApproval[]): string {
-  const signers = approvals
-    .flatMap((approval) => [approval.reviewer, approval.operator])
-    .map((value) => value?.trim())
-    .filter((value): value is string => Boolean(value));
-  const unique = [...new Set(signers)];
-  return unique.length > 0 ? unique.join(", ") : "Reviewer pending";
-}
-
-function approvalEvidenceSummary(workflow: OperationsContinuityWorkflow | null): string {
-  if (!workflow) {
-    return "Detail pending";
-  }
-
-  const count = workflow.evidenceLinks.length
-    + workflow.reportPackReadiness.evidenceLinks.length
-    + workflow.approvals.reduce((total, approval) => total + approval.evidenceLinks.length, 0);
-  return count === 0 ? "No evidence links" : `${count} evidence link${count === 1 ? "" : "s"}`;
-}
-
-function missingApprovalEvidenceLabel(workflow: OperationsContinuityWorkflow | null): string {
-  if (!workflow) {
-    return "Detail pending";
-  }
-
-  const missing: string[] = [];
-  if (!resolveApprovalReportPackId(workflow)) {
-    missing.push("report pack");
-  }
-
-  if (!workflow.reportPackReadiness.isReady) {
-    missing.push("report readiness");
-  }
-
-  const blockerEvidenceMissing = approvalBlockers(workflow).some((blocker) => blocker.evidenceLinks.length === 0);
-  if (blockerEvidenceMissing) {
-    missing.push("blocker evidence");
-  }
-
-  return missing.length === 0 ? "None" : missing.join(", ");
-}
-
-function approvalBlockedReason(workflow: OperationsContinuityWorkflow | null): string {
-  if (!workflow) {
-    return "Approval detail is still loading.";
-  }
-
-  const blockers = approvalBlockers(workflow);
-  if (blockers.length > 0) {
-    return blockers.map((blocker) => blocker.message).join(" ");
-  }
-
-  if (!workflow.reportPackReadiness.isReady) {
-    return workflow.reportPackReadiness.blockingReason ?? "Report pack readiness is still blocked.";
-  }
-
-  return "No approval blockers are surfaced for the selected workflow.";
-}
-
-function approvalNextAction(workflow: OperationsContinuityWorkflow | null, summary: OperationsContinuityWorkflowSummary): string {
-  const source = workflow ?? summary;
-  const approvalAction = source.nextActions.find((action) => action.gate === "Approval") ?? source.nextActions[0] ?? null;
-  if (approvalAction) {
-    return approvalAction.label;
-  }
-
-  if (approvalQueueStatusLabel(summary) === "Approved") {
-    return "Approval is complete; continue to evidence production or close package publication.";
-  }
-
-  return "Review blockers, evidence, and required signers before taking an approval action.";
-}
-
-function approvalBlockers(workflow: OperationsContinuityWorkflow): OperationsWorkflowBlocker[] {
-  return [
-    ...workflow.blockers,
-    ...workflow.gates.flatMap((gate) => gate.gateKey === "Approval" ? gate.blockers : [])
-  ];
-}
-
-function buildApprovalActionDisabledReason(
-  workflow: OperationsContinuityWorkflow | OperationsContinuityWorkflowSummary | null,
-  approval: OperationsApproval | null,
-  action: string | null
-): string | null {
-  if (action) {
-    return "Wait for the current approval action to finish.";
-  }
-
-  if (!workflow) {
-    return "Select an approval before approving.";
-  }
-
-  if (approval?.status === "Approved") {
-    return "This approval is already approved.";
-  }
-
-  if ("reportPackReadiness" in workflow && !resolveApprovalReportPackId(workflow)) {
-    return "Approval requires a report pack id from the selected workflow.";
-  }
-
-  return null;
-}
-
-function resolveApprovalReportPackId(workflow: OperationsContinuityWorkflow | OperationsContinuityWorkflowSummary): string | null {
-  if ("closePackage" in workflow && workflow.closePackage?.reportPackId) {
-    return workflow.closePackage.reportPackId;
-  }
-
-  if ("reportPackReadiness" in workflow && workflow.reportPackReadiness.reportPackId) {
-    return workflow.reportPackReadiness.reportPackId;
-  }
-
-  return null;
-}
-
-function formatApprovalDate(value: string | null | undefined): string {
-  if (!value) {
-    return "Not recorded";
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("en-US", { timeZone: "UTC" });
-}
-
-function splitApprovalWords(value: string): string {
-  return value.replace(/([a-z])([A-Z])/g, "$1 $2");
-}
-
-function formatApprovalError(err: unknown, fallback: string): string {
-  return err instanceof Error ? err.message || fallback : fallback;
-}
 
 interface AccountingCaseWorkbenchProps {
   breakRows: ReconciliationBreakRowViewModel[];
@@ -2340,10 +2202,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             <summary className="cursor-pointer text-sm font-semibold text-foreground">System details</summary>
             <div className="mt-4 space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              <CloseCommandCenterPanel
-                view={closeCommandCenter}
-                onRefresh={() => void refreshCloseWorkflow()}
-              />
+              {closeCommandCenter ? <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} /> : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
               <AccountingTaskModeLauncher />
             </div>
@@ -2353,11 +2212,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         <>
       {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
-      {sectionVisibility.showWorkflowDetails ? (
-      <CloseCommandCenterPanel
-        view={closeCommandCenter}
-        onRefresh={() => void refreshCloseWorkflow()}
-      />
+      {sectionVisibility.showWorkflowDetails && closeCommandCenter ? (
+        <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} />
       ) : null}
 
       {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}
@@ -6313,6 +6169,10 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </div>
       </div>
 
+      <ConfigureCommandBar />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
       {view.errorText ? (
         <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
           <div className="font-semibold">{view.errorText}</div>
@@ -6324,7 +6184,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {view.metricRows.map((metric) => (
           <div key={metric.id} className="panel-surface px-4 py-3">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
@@ -6355,12 +6215,13 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         >
           {view.createLedgerBookButtonLabel}
         </Button>
+        <LedgerBookSetupWizard view={view} />
         {view.createLedgerBookStatusText ? (
           <p className="text-xs leading-5 text-muted-foreground">{view.createLedgerBookStatusText}</p>
         ) : null}
       </div>
 
-      <Card className="panel-surface" aria-labelledby="accounting-ledger-books-heading">
+      <Card id="configure-section-books" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-ledger-books-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -6416,7 +6277,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </CardContent>
       </Card>
 
-      <Card className="panel-surface" aria-labelledby="accounting-chart-account-editor-heading">
+      <Card id="configure-section-chart" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-chart-account-editor-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -6489,546 +6350,16 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               />
             </FormRow>
           </div>
+          <ChartAccountPathBuilder editor={view.chartAccountEditor} />
           {view.chartAccountEditor.statusText ? (
             <p className="text-sm text-muted-foreground">{view.chartAccountEditor.statusText}</p>
           ) : null}
         </CardContent>
       </Card>
 
-      <Card className="panel-surface" aria-labelledby="accounting-production-readiness-heading">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle id="accounting-production-readiness-heading" className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-                {view.productionReadiness.title}
-              </CardTitle>
-              <CardDescription>{view.productionReadiness.scopeLabel}</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={accountingToolingBadgeVariant(view.productionReadiness.components.length === 0 ? "default" : view.productionReadiness.components.some((component) => component.tone === "danger") ? "danger" : view.productionReadiness.components.some((component) => component.tone === "warning") ? "warning" : "success")} dot>
-                {view.productionReadiness.statusLabel}
-              </Badge>
-              <Badge variant="outline">{view.productionReadiness.scoreLabel}</Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {view.productionReadiness.errorText ? (
-            <div role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-              <div className="font-semibold">{view.productionReadiness.errorText}</div>
-              {view.productionReadiness.errorDetails.length > 0 ? (
-                <ul className="mt-2 list-disc pl-4">
-                  {view.productionReadiness.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
-                </ul>
-              ) : null}
-            </div>
-          ) : null}
+      <ConfigureProductionReadinessCard view={view} />
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
-              <div className={cn("mt-2 text-sm font-semibold", view.productionReadiness.blockerIssues.some((issue) => issue.tone === "danger") ? "text-danger" : view.productionReadiness.blockerIssues.length > 0 ? "text-warning" : "text-success")}>{view.productionReadiness.issueSummaryLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.generatedAtLabel}</p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Ledger books</div>
-              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.ledgerBookRolloutLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Rollout evidence remains service-owned.</p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">External GL</div>
-              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.externalGlLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export posture.</p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Dimensions</div>
-              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.dimensionalReportingLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.dimensionalReportingEvidenceLabel}</p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Control plane</div>
-              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.components.length} component checks</div>
-              <p className="mt-1 text-xs text-muted-foreground">Rules, posting, JE lifecycle, dimensions, close, and admin readiness.</p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tenant admin</div>
-              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.tenantAdministrationLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.tenantAdministrationEvidenceLabel}</p>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Migration evidence</div>
-              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.migrationArtifactSummaryLabel}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Retained migration run artifacts from the shared Accounting System store.</p>
-            </div>
-          </div>
-
-          {view.productionReadiness.productionGapRows.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" role="region" aria-label="Accounting production gap checklist">
-              {view.productionReadiness.productionGapRows.map((gap) => (
-                <div key={gap.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(gap.tone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold text-foreground">{gap.label}</div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.id}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(gap.tone)}>{gap.statusLabel}</Badge>
-                  </div>
-                  <div className="mt-2 text-[11px] text-muted-foreground">{gap.severityLabel} | {gap.areaLabel}</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.summary}</p>
-                  <p className="mt-2 text-xs leading-5 text-foreground">{gap.requiredAction}</p>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.issueDetailLabel}</p>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{gap.blockingIssueLabel}</div>
-                  <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.routeLabel}</div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {view.productionReadiness.tenantAdministrationControls.length > 0 ? (
-            <div className="grid gap-2 md:grid-cols-4" role="region" aria-label="Accounting tenant administration readiness controls">
-              {view.productionReadiness.tenantAdministrationControls.map((control) => (
-                <div key={control.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(control.tone))}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-foreground">{control.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(control.tone)}>{control.statusLabel}</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="rounded-lg border border-border/70 bg-background/35 p-3" role="region" aria-label="Accounting production certification profile editor">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="font-semibold text-foreground">{view.productionCertificationProfile.title}</div>
-                <div className="mt-1 font-mono text-xs text-muted-foreground">{view.productionCertificationProfile.scopeLabel}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{view.productionCertificationProfile.updatedLabel}</div>
-              </div>
-              <Button
-                size="sm"
-                disabled={!view.productionCertificationProfile.canSave}
-                disabledReason={view.productionCertificationProfile.saveDisabledReason}
-                busy={view.productionCertificationProfile.saveBusy}
-                busyLabel={view.productionCertificationProfile.saveButtonLabel}
-                onClick={() => void view.productionCertificationProfile.save()}
-              >
-                {view.productionCertificationProfile.saveButtonLabel}
-              </Button>
-            </div>
-            <div className="mt-3 grid gap-2 md:grid-cols-4">
-              {view.productionCertificationProfile.controls.map((control) => (
-                <label key={control.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
-                  <span className="flex items-center gap-2 font-semibold text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={control.checked}
-                      onChange={(event) => view.productionCertificationProfile.updateControl(control.id, event.currentTarget.checked)}
-                    />
-                    {control.label}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{control.description}</span>
-                </label>
-              ))}
-            </div>
-            <FormRow label="Retained certification evidence" labelFor="accounting-production-certification-evidence">
-              <Input
-                id="accounting-production-certification-evidence"
-                value={view.productionCertificationProfile.evidenceValue}
-                onChange={(event) => view.productionCertificationProfile.updateEvidence(event.currentTarget.value)}
-                placeholder="evidence://accounting/production-certification"
-              />
-            </FormRow>
-            {view.productionCertificationProfile.statusText ? (
-              <p className={cn("text-sm", view.productionCertificationProfile.errorText ? "text-danger" : "text-muted-foreground")}>
-                {view.productionCertificationProfile.statusText}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="rounded-lg border border-border/70 bg-background/35 p-3" role="region" aria-label="Accounting tenant administration setup editor">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="font-semibold text-foreground">{view.tenantAdministrationProfile.title}</div>
-                <div className="mt-1 font-mono text-xs text-muted-foreground">{view.tenantAdministrationProfile.scopeLabel}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{view.tenantAdministrationProfile.updatedLabel}</div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!view.tenantAdministrationProfile.canRetainSandboxProof}
-                  disabledReason={view.tenantAdministrationProfile.sandboxDisabledReason}
-                  busy={view.tenantAdministrationProfile.sandboxBusy}
-                  busyLabel={view.tenantAdministrationProfile.sandboxButtonLabel}
-                  onClick={() => void view.tenantAdministrationProfile.retainSandboxProof()}
-                >
-                  {view.tenantAdministrationProfile.sandboxButtonLabel}
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={!view.tenantAdministrationProfile.canSave}
-                  disabledReason={view.tenantAdministrationProfile.saveDisabledReason}
-                  busy={view.tenantAdministrationProfile.saveBusy}
-                  busyLabel={view.tenantAdministrationProfile.saveButtonLabel}
-                  onClick={() => void view.tenantAdministrationProfile.save()}
-                >
-                  {view.tenantAdministrationProfile.saveButtonLabel}
-                </Button>
-              </div>
-            </div>
-            <div className="mt-3 grid gap-2 md:grid-cols-5">
-              {view.tenantAdministrationProfile.controls.map((control) => (
-                <label key={control.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
-                  <span className="flex items-center gap-2 font-semibold text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={control.checked}
-                      onChange={(event) => view.tenantAdministrationProfile.updateControl(control.id, event.currentTarget.checked)}
-                    />
-                    {control.label}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{control.description}</span>
-                </label>
-              ))}
-            </div>
-            <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting approval queue setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Approval queue setup</div>
-              <div className="grid gap-3 md:grid-cols-3">
-                <FormRow label="Queue id" labelFor="accounting-approval-queue-id">
-                  <Input
-                    id="accounting-approval-queue-id"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.queueIdValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ queueId: event.currentTarget.value })}
-                  />
-                </FormRow>
-                <FormRow label="Display name" labelFor="accounting-approval-queue-display-name">
-                  <Input
-                    id="accounting-approval-queue-display-name"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.displayNameValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ displayName: event.currentTarget.value })}
-                  />
-                </FormRow>
-                <FormRow label="Workflow kind" labelFor="accounting-approval-queue-workflow-kind">
-                  <Input
-                    id="accounting-approval-queue-workflow-kind"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.workflowKindValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ workflowKind: event.currentTarget.value })}
-                  />
-                </FormRow>
-              </div>
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_8rem_minmax(0,1.5fr)]">
-                <FormRow label="Approval role" labelFor="accounting-approval-queue-role">
-                  <Input
-                    id="accounting-approval-queue-role"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.requiredApprovalRoleValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ requiredApprovalRole: event.currentTarget.value })}
-                  />
-                </FormRow>
-                <FormRow label="Count" labelFor="accounting-approval-queue-count">
-                  <Input
-                    id="accounting-approval-queue-count"
-                    type="number"
-                    min={1}
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.requiredApprovalCountValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ requiredApprovalCount: event.currentTarget.value })}
-                  />
-                </FormRow>
-                <FormRow label="Evidence requirement" labelFor="accounting-approval-queue-evidence">
-                  <Input
-                    id="accounting-approval-queue-evidence"
-                    value={view.tenantAdministrationProfile.approvalQueueSetup.evidenceRequirementValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ evidenceRequirement: event.currentTarget.value })}
-                  />
-                </FormRow>
-              </div>
-              <FormRow label="Segregation policy" labelFor="accounting-approval-queue-segregation">
-                <Input
-                  id="accounting-approval-queue-segregation"
-                  value={view.tenantAdministrationProfile.approvalQueueSetup.segregationPolicyValue}
-                  onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ segregationPolicy: event.currentTarget.value })}
-                />
-              </FormRow>
-            </div>
-            <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting dimension mapping setup editor">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Dimension mapping setup</div>
-              <div className="grid gap-3 md:grid-cols-3">
-                <FormRow label="Mapping id" labelFor="accounting-dimension-mapping-id">
-                  <Input
-                    id="accounting-dimension-mapping-id"
-                    value={view.tenantAdministrationProfile.dimensionMappingSetup.mappingIdValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ mappingId: event.currentTarget.value })}
-                  />
-                </FormRow>
-                <FormRow label="Display name" labelFor="accounting-dimension-mapping-display-name">
-                  <Input
-                    id="accounting-dimension-mapping-display-name"
-                    value={view.tenantAdministrationProfile.dimensionMappingSetup.displayNameValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ displayName: event.currentTarget.value })}
-                  />
-                </FormRow>
-                <FormRow label="Provider id" labelFor="accounting-dimension-mapping-provider-id">
-                  <Input
-                    id="accounting-dimension-mapping-provider-id"
-                    value={view.tenantAdministrationProfile.dimensionMappingSetup.providerIdValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerId: event.currentTarget.value })}
-                  />
-                </FormRow>
-              </div>
-              <div className="grid gap-3 lg:grid-cols-2">
-                <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
-                  <textarea
-                    id="accounting-dimension-mapping-meridian-dimensions"
-                    value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
-                    className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                    placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
-                  />
-                </FormRow>
-                <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
-                  <textarea
-                    id="accounting-dimension-mapping-provider-dimensions"
-                    value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
-                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
-                    className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                    placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
-                  />
-                </FormRow>
-              </div>
-              <FormRow label="Evidence requirement" labelFor="accounting-dimension-mapping-evidence">
-                <Input
-                  id="accounting-dimension-mapping-evidence"
-                  value={view.tenantAdministrationProfile.dimensionMappingSetup.evidenceRequirementValue}
-                  onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ evidenceRequirement: event.currentTarget.value })}
-                />
-              </FormRow>
-            </div>
-            <FormRow label="Retained setup evidence" labelFor="accounting-tenant-admin-evidence">
-              <Input
-                id="accounting-tenant-admin-evidence"
-                value={view.tenantAdministrationProfile.evidenceValue}
-                onChange={(event) => view.tenantAdministrationProfile.updateEvidence(event.currentTarget.value)}
-                placeholder="evidence://tenant-admin/setup"
-              />
-            </FormRow>
-            {view.tenantAdministrationProfile.statusText ? (
-              <p className={cn("text-sm", view.tenantAdministrationProfile.errorText ? "text-danger" : "text-muted-foreground")}>
-                {view.tenantAdministrationProfile.statusText}
-              </p>
-            ) : null}
-            {view.tenantAdministrationProfile.sandboxStatusText ? (
-              <p className={cn("text-sm", view.tenantAdministrationProfile.sandboxStatusText.includes("failed") ? "text-danger" : "text-muted-foreground")}>
-                {view.tenantAdministrationProfile.sandboxStatusText}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="rounded-lg border border-border/70 bg-background/35 p-3" role="region" aria-label="Accounting external GL provider mapping editor">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="font-semibold text-foreground">{view.externalGlMappingProfile.title}</div>
-                <div className="mt-1 font-mono text-xs text-muted-foreground">{view.externalGlMappingProfile.scopeLabel}</div>
-              </div>
-              <Button
-                size="sm"
-                disabled={!view.externalGlMappingProfile.canSave}
-                disabledReason={view.externalGlMappingProfile.saveDisabledReason}
-                busy={view.externalGlMappingProfile.saveBusy}
-                busyLabel={view.externalGlMappingProfile.saveButtonLabel}
-                onClick={() => void view.externalGlMappingProfile.save()}
-              >
-                {view.externalGlMappingProfile.saveButtonLabel}
-              </Button>
-            </div>
-            <div className="mt-3 grid gap-3 md:grid-cols-3">
-              <FormRow label="Provider" labelFor="accounting-external-gl-mapping-provider">
-                <Input
-                  id="accounting-external-gl-mapping-provider"
-                  value={view.externalGlMappingProfile.providerIdValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateProviderId(event.currentTarget.value)}
-                />
-              </FormRow>
-              <FormRow label="Profile" labelFor="accounting-external-gl-mapping-profile">
-                <Input
-                  id="accounting-external-gl-mapping-profile"
-                  value={view.externalGlMappingProfile.profileIdValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateProfileId(event.currentTarget.value)}
-                />
-              </FormRow>
-              <FormRow label="Display name" labelFor="accounting-external-gl-mapping-display-name">
-                <Input
-                  id="accounting-external-gl-mapping-display-name"
-                  value={view.externalGlMappingProfile.displayNameValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateDisplayName(event.currentTarget.value)}
-                />
-              </FormRow>
-            </div>
-            <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
-                <textarea
-                  id="accounting-external-gl-account-mappings"
-                  value={view.externalGlMappingProfile.accountMappingsValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="Meridian:Account=external-account-id"
-                />
-              </FormRow>
-              <FormRow label="Retained mapping evidence" labelFor="accounting-external-gl-mapping-evidence">
-                <textarea
-                  id="accounting-external-gl-mapping-evidence"
-                  value={view.externalGlMappingProfile.evidenceValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateEvidence(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="approval:external-gl-mapping:profile-id"
-                />
-              </FormRow>
-            </div>
-            <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
-                <textarea
-                  id="accounting-external-gl-meridian-dimensions"
-                  value={view.externalGlMappingProfile.meridianDimensionsValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
-                  className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
-                />
-              </FormRow>
-              <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
-                <textarea
-                  id="accounting-external-gl-provider-dimensions"
-                  value={view.externalGlMappingProfile.externalDimensionsValue}
-                  onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
-                  className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
-                  placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
-                />
-              </FormRow>
-            </div>
-            <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <input
-                type="checkbox"
-                checked={view.externalGlMappingProfile.certified}
-                onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)}
-              />
-              Certify mapping profile for guarded export readiness
-            </label>
-            {view.externalGlMappingProfile.mappingRows.length > 0 ? (
-              <div className="mt-3 grid gap-2 md:grid-cols-3" role="region" aria-label="Retained external GL mapping profiles">
-                {view.externalGlMappingProfile.mappingRows.map((row) => (
-                  <div key={row.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(row.tone))}>
-                    <div className="text-sm font-semibold text-foreground">{row.label}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{row.statusLabel}</div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            {view.externalGlMappingProfile.statusText ? (
-              <p className={cn("mt-3 text-sm", view.externalGlMappingProfile.errorText ? "text-danger" : "text-muted-foreground")}>
-                {view.externalGlMappingProfile.statusText}
-              </p>
-            ) : null}
-          </div>
-
-          {view.productionReadiness.migrationPlanRows.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Accounting migration rollout plan">
-              {view.productionReadiness.migrationPlanRows.map((item) => (
-                <div key={item.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(item.tone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold text-foreground">{item.title}</div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.id}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.statusLabel}</Badge>
-                  </div>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.certificationLabel} | {item.latestRunLabel}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{item.scopeLabel}</div>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.metricsLabel} | {item.evidenceLabel}</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.requiredAction}</p>
-                  <div className="mt-2 text-[11px] text-muted-foreground">{item.blockingIssueLabel}</div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {view.productionReadiness.migrationArtifactRows.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Retained accounting migration run artifacts">
-              {view.productionReadiness.migrationArtifactRows.map((artifact) => (
-                <div key={artifact.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(artifact.tone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold text-foreground">{artifact.kindLabel}</div>
-                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{artifact.id}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(artifact.tone)}>{artifact.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{artifact.title}</p>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{artifact.recordCountLabel} | {artifact.issueCountLabel} | {artifact.evidenceLabel}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">{artifact.detail}</div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
-            <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {view.productionReadiness.migrationWorkerPlanSummaryLabel}
-              </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {view.productionReadiness.migrationWorkerPlanRows.map((plan) => (
-                  <div key={plan.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(plan.tone))}>
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <div className="font-semibold text-foreground">{plan.kindLabel}</div>
-                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{plan.id}</div>
-                      </div>
-                      <Badge variant={accountingToolingBadgeVariant(plan.tone)}>{plan.tone === "success" ? "Reconciled" : "Mismatch"}</Badge>
-                    </div>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.title}</p>
-                    <div className="mt-2 font-mono text-[11px] text-muted-foreground">{plan.countLabel} | {plan.evidenceLabel}</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">{plan.scopeLabel}</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">{plan.detail}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {view.productionReadiness.components.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Accounting production readiness components">
-              {view.productionReadiness.components.map((component) => (
-                <div key={component.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(component.tone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="font-semibold text-foreground">{component.label}</div>
-                    <Badge variant={accountingToolingBadgeVariant(component.tone)}>{component.statusLabel}</Badge>
-                  </div>
-                  <div className="mt-2 font-mono text-xs text-muted-foreground">{component.scoreLabel} | {component.issueCountLabel}</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{component.summary}</p>
-                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{component.evidenceLabel} | {component.routeLabel}</div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {view.productionReadiness.blockerIssues.length > 0 ? (
-            <div className="space-y-2" aria-label="Accounting production readiness blockers">
-              {view.productionReadiness.blockerIssues.map((issue) => (
-                <div key={issue.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(issue.tone))}>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-semibold text-foreground">{issue.label}</span>
-                    <Badge variant={accountingToolingBadgeVariant(issue.tone)}>{issue.tone === "danger" ? "Blocker" : "Review"}</Badge>
-                  </div>
-                  <p className="mt-1 text-muted-foreground">{issue.message}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{issue.suggestedAction} | {issue.evidenceLabel}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">No production-readiness blockers returned by the shared accounting control-plane assessment.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="panel-surface">
+      <Card id="configure-section-rules" className="panel-surface configure-anchor scroll-mt-20">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -7503,6 +6834,11 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           </CardContent>
         </Card>
+      </div>
+
+          <ConfigureChangePreviewPanel view={view} />
+        </div>
+        <ConfigureActivationRail view={view} />
       </div>
     </section>
   );

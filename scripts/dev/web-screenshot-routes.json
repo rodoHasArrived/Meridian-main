@@ -171,6 +171,21 @@
       ]
     },
     {
+      "id": "W02E",
+      "name": "web-portfolio-cash-ladder",
+      "path": "/portfolio/cash-ladder",
+      "docLabel": "Portfolio \u2014 Cash Ladder",
+      "waitForText": "Cash Ladder",
+      "requiredApiRoutes": [
+        "/api/portfolio/cash-ladder"
+      ],
+      "waitForTexts": [
+        "Projected cash by bucket",
+        "Contributing flows",
+        "Scenario semantics"
+      ]
+    },
+    {
       "id": "W02C",
       "name": "web-portfolio-family-office",
       "path": "/portfolio/family-office",
@@ -599,11 +614,11 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Report packs, governed exports",
+        "Reporting owns governed export previews",
         "Investor PDF",
-        "Report run audit and lineage",
-        "Report-pack recipients",
-        "report-run-board-202605"
+        "Run a governed report now",
+        "Recent export runs",
+        "Governed export queue"
       ]
     },
     {
@@ -617,7 +632,7 @@
       ],
       "waitForTexts": [
         "Reporting owns governed output design",
-        "Run a governed report now",
+        "Template families",
         "Governed report templates"
       ]
     },
@@ -633,7 +648,7 @@
       "waitForTexts": [
         "Reporting owns report-run readiness",
         "Report run audit and lineage",
-        "Recent export runs"
+        "Generated grids"
       ]
     },
     {
@@ -664,7 +679,7 @@
       "waitForTexts": [
         "Reporting owns access scope",
         "Governed report templates",
-        "Report run audit and lineage"
+        "User, group, and company scope"
       ]
     },
     {

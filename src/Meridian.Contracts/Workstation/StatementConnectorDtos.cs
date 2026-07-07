@@ -129,8 +129,26 @@ public sealed record StatementImportCommitResultDto(
     public EvidenceVaultIdentityDto? EvidenceVaultIdentity { get; init; }
     public string? EvidenceWorkbenchRoute { get; init; }
     public string? ReconciliationRoute { get; init; }
+    public IReadOnlyList<string> BreakIds { get; init; } = [];
+    public IReadOnlyList<string> CaseIds { get; init; } = [];
+    public IReadOnlyList<string> ReconciliationCaseRoutes { get; init; } = [];
+    public IReadOnlyList<StatementImportReconciliationCaseLinkDto> ReconciliationCaseLinks { get; init; } = [];
     public IReadOnlyList<string> NextActions { get; init; } = [];
 }
+
+/// <summary>
+/// Direct reconciliation case handoff returned after statement import so workstation clients can
+/// render case actions without relying on parallel route arrays or rebuilding case routes.
+/// </summary>
+public sealed record StatementImportReconciliationCaseLinkDto(
+    string CaseId,
+    string? BreakId,
+    string Route,
+    string Label,
+    string Status,
+    string Priority,
+    string Reason,
+    string SuggestedNextAction);
 
 /// <summary>A persisted scheduled-fetch configuration for a fetch-capable connector.</summary>
 public sealed record StatementFetchScheduleDto(

@@ -283,6 +283,7 @@ export interface StatementImportPanelViewModel {
   commitError: ApiErrorDisplay | null;
   commitResult: StatementImportCommitResult | null;
   commitOutcome: StatementImportCommitOutcome | null;
+  commitDisabledReason: string | null;
   canCommit: boolean;
   commit: () => Promise<void>;
 }
@@ -593,6 +594,42 @@ export function useStatementImportPanelViewModel(
     setCommitError(null);
   }, []);
 
+  const issues = preview?.issues ?? [];
+  const hasBlockingIssues = issues.some((issue) => issue.severity === "Error");
+  const kindSummaries = preview?.kindSummaries ?? [];
+  const selectedKindSummary = useMemo(
+    () => kindSummaries.find((summary) => summary.kind === selectedKind) ?? null,
+    [kindSummaries, selectedKind]
+  );
+
+  const commitDisabledReason = useMemo(() => {
+    if (!selectedFile) {
+      return "Select a statement file before committing the import.";
+    }
+
+    if (commitBusy) {
+      return "Statement import is already being committed.";
+    }
+
+    if (previewBusy) {
+      return "Wait for the statement preview to finish before committing.";
+    }
+
+    if (previewError) {
+      return "Resolve the statement preview failure before committing.";
+    }
+
+    if (!preview) {
+      return "Preview the statement before committing.";
+    }
+
+    if (hasBlockingIssues || preview.status !== "ReadyToImport") {
+      return "Resolve preview errors before committing the statement import.";
+    }
+
+    return null;
+  }, [commitBusy, hasBlockingIssues, preview, previewBusy, previewError, selectedFile]);
+
   const commit = useCallback(async () => {
     if (commitBusy) {
       return;
@@ -604,6 +641,14 @@ export function useStatementImportPanelViewModel(
       setCommitError({
         summary: "Fix the highlighted fields before committing the statement import.",
         details: Object.values(errors)
+      });
+      return;
+    }
+
+    if (commitDisabledReason) {
+      setCommitError({
+        summary: commitDisabledReason,
+        details: []
       });
       return;
     }
@@ -641,7 +686,7 @@ export function useStatementImportPanelViewModel(
         setCommitBusy(false);
       }
     }
-  }, [commitBusy, commitForm, selectedConnectorId, selectedFile, selectedProfileId, services]);
+  }, [commitBusy, commitDisabledReason, commitForm, selectedConnectorId, selectedFile, selectedProfileId, services]);
 
   const selectedConnector = useMemo(
     () => connectors.find((entry) => entry.connectorId === selectedConnectorId) ?? null,
@@ -660,14 +705,6 @@ export function useStatementImportPanelViewModel(
     ));
     return normalized.length > 0 ? normalized.join(",") : "*";
   }, [connectors, selectedConnector]);
-
-  const issues = preview?.issues ?? [];
-  const hasBlockingIssues = issues.some((issue) => issue.severity === "Error");
-  const kindSummaries = preview?.kindSummaries ?? [];
-  const selectedKindSummary = useMemo(
-    () => kindSummaries.find((summary) => summary.kind === selectedKind) ?? null,
-    [kindSummaries, selectedKind]
-  );
 
   const commitOutcome: StatementImportCommitOutcome | null = commitResult
     ? (commitResult.duplicate ? "duplicate" : "committed")
@@ -719,7 +756,8 @@ export function useStatementImportPanelViewModel(
     commitError,
     commitResult,
     commitOutcome,
-    canCommit: Boolean(selectedFile) && !commitBusy && !previewBusy,
+    commitDisabledReason,
+    canCommit: commitDisabledReason === null,
     commit
   };
 }

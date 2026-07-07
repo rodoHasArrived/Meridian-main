@@ -9,6 +9,14 @@ namespace Meridian.Application.Commands;
 public interface ICliCommand
 {
     /// <summary>
+    /// The CLI flags (or leading verbs) this command owns. Declaring them here is the single
+    /// source of truth for what the command handles: <see cref="CanHandle"/> is derived from
+    /// this set (via <see cref="CliArguments.MatchesAnyFlag"/>) and <see cref="ExecuteAsync"/>
+    /// dispatches over the same values, so the trigger set and the handler cannot drift apart.
+    /// </summary>
+    IReadOnlyList<string> Triggers { get; }
+
+    /// <summary>
     /// Returns true if this command should handle the given args.
     /// </summary>
     bool CanHandle(string[] args);

@@ -177,6 +177,65 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
     private readonly AssetClassValidatorRegistry _assetClassValidators;
     private readonly ISecurityAssetProfileCatalog _assetProfileCatalog;
 
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>> AssetClassDepthTargetSpecs =
+        new Dictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Bond"] =
+            [
+                ProviderTarget("factor-corporate-action-evidence", "FactorCorporateActionEvidence", "Factor and corporate-action evidence")
+            ],
+            ["DirectLoan"] =
+            [
+                ProviderTarget("loan-schedule-evidence", "LoanScheduleEvidence", "Loan schedule and borrower notices"),
+                ProviderTarget("commitment-covenant-evidence", "CommitmentCovenantEvidence", "Commitment, unfunded commitment, and covenant evidence"),
+                LedgerTarget("paydown-obligation-ledger", "PaydownObligationLedger", "Paydown and obligation ledger support", "LoanAccountingProjector"),
+                LedgerTarget("direct-lending-rule-kernel", "DirectLendingRuleKernel", "Direct-lending F# rule kernel evidence", "Meridian.FSharp.DirectLending.Aggregates")
+            ],
+            ["StructuredCredit"] =
+            [
+                ProviderTarget("trustee-servicer-remittance", "StructuredCreditTrusteeEvidence", "Trustee, servicer, and cash remittance evidence"),
+                ProviderTarget("factor-schedule", "FactorScheduleEvidence", "Factor schedule evidence"),
+                ProviderTarget("collateral-tape", "StructuredCollateralTape", "Collateral tape evidence"),
+                ProviderTarget("valuation-source", "StructuredValuationEvidence", "Dealer or valuation-source evidence")
+            ],
+            ["PrivateFundInterest"] =
+            [
+                ProviderTarget("administrator-gp-statement", "FundAdministratorStatement", "Administrator or GP statement"),
+                ProviderTarget("capital-call-distribution", "CapitalCallDistributionEvidence", "Capital call and distribution notice evidence"),
+                ProviderTarget("nav-statement", "PrivateFundNavEvidence", "NAV statement evidence"),
+                ProviderTarget("capital-account-schedule", "CapitalAccountScheduleEvidence", "Capital account schedule evidence")
+            ],
+            ["PrivateCompanyEquity"] =
+            [
+                ProviderTarget("cap-table", "CapTableEvidence", "Cap table or transfer-agent evidence"),
+                ProviderTarget("financing-share-class", "FinancingShareClassEvidence", "Financing and share-class documents"),
+                ProviderTarget("valuation", "PrivateCompanyValuationEvidence", "Valuation memo or 409A evidence"),
+                ProviderTarget("transaction-exit-dividend", "TransactionExitDividendEvidence", "Transaction, exit, and dividend evidence")
+            ],
+            ["RealEstateHolding"] =
+            [
+                ProviderTarget("property-manager", "PropertyManagerEvidence", "Property manager statement evidence"),
+                ProviderTarget("rent-roll-lease", "RentRollLeaseEvidence", "Rent roll and lease schedule evidence"),
+                ProviderTarget("appraisal", "RealEstateAppraisalEvidence", "Appraisal evidence"),
+                ProviderTarget("debt-service-ownership", "DebtServiceOwnershipEvidence", "Debt-service and ownership/SPV evidence")
+            ],
+            ["CommitmentGuarantee"] =
+            [
+                ProviderTarget("agreement", "CommitmentAgreementEvidence", "Commitment or guarantee agreement"),
+                ProviderTarget("draw-usage", "DrawUsageNoticeEvidence", "Draw or usage notice evidence"),
+                ProviderTarget("fee-accrual", "FeeAccrualScheduleEvidence", "Fee and accrual schedule evidence"),
+                ProviderTarget("collateral-covenant", "CollateralCovenantEvidence", "Collateral and covenant evidence"),
+                ProviderTarget("release-expiry", "ReleaseExpiryEvidence", "Release or expiry evidence")
+            ],
+            ["CustomAsset"] =
+            [
+                new("profile-lineage", "AssetProfileLineage", "Approved profile lineage", AssetClassDepthRouteKind.AssetProfiles, "SecurityMaster", "Governance", "SecurityAssetProfileGovernanceService"),
+                ProviderTarget("servicer-trustee-evidence", "ServicerTrusteeEvidence", "Servicer, trustee, warehouse, and factor evidence"),
+                ProviderTarget("valuation-nav-evidence", "StructuredValuationEvidence", "NAV, dealer pricing, capital call, and distribution evidence"),
+                new("obligation-close-evidence", "ObligationCloseEvidence", "Obligation schedule and close-readiness evidence", AssetClassDepthRouteKind.Close, "CloseReadiness", "ProviderEvidence", "FundAccountCloseReadinessService", FallbackEvidenceToProvider: true, UseCloseEvidenceStatus: true)
+            ]
+        };
+
     public SecurityMasterOperationalReadinessService(
         AssetClassValidatorRegistry? assetClassValidators = null,
         ISecurityAssetProfileCatalog? assetProfileCatalog = null)
@@ -450,6 +509,80 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         return targets;
     }
 
+    private enum DepthTargetEvidenceKind
+    {
+        Provider,
+        Ledger,
+        Governance,
+        Close
+    }
+
+    private sealed record AssetClassDepthTarget(
+        string IdSuffix,
+        string TargetType,
+        string Label,
+        DepthTargetEvidenceKind EvidenceKind,
+        string Source);
+
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTarget>> DepthTargetsByAssetClass =
+        new Dictionary<string, IReadOnlyList<AssetClassDepthTarget>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Bond"] =
+            [
+                new("factor-corporate-action-evidence", "FactorCorporateActionEvidence", "Factor and corporate-action evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["DirectLoan"] =
+            [
+                new("loan-schedule-evidence", "LoanScheduleEvidence", "Loan schedule and borrower notices", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("commitment-covenant-evidence", "CommitmentCovenantEvidence", "Commitment, unfunded commitment, and covenant evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("paydown-obligation-ledger", "PaydownObligationLedger", "Paydown and obligation ledger support", DepthTargetEvidenceKind.Ledger, "LoanAccountingProjector"),
+                new("direct-lending-rule-kernel", "DirectLendingRuleKernel", "Direct-lending F# rule kernel evidence", DepthTargetEvidenceKind.Ledger, "Meridian.FSharp.DirectLending.Aggregates"),
+            ],
+            ["StructuredCredit"] =
+            [
+                new("trustee-servicer-remittance", "StructuredCreditTrusteeEvidence", "Trustee, servicer, and cash remittance evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("factor-schedule", "FactorScheduleEvidence", "Factor schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("collateral-tape", "StructuredCollateralTape", "Collateral tape evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("valuation-source", "StructuredValuationEvidence", "Dealer or valuation-source evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["PrivateFundInterest"] =
+            [
+                new("administrator-gp-statement", "FundAdministratorStatement", "Administrator or GP statement", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("capital-call-distribution", "CapitalCallDistributionEvidence", "Capital call and distribution notice evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("nav-statement", "PrivateFundNavEvidence", "NAV statement evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("capital-account-schedule", "CapitalAccountScheduleEvidence", "Capital account schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["PrivateCompanyEquity"] =
+            [
+                new("cap-table", "CapTableEvidence", "Cap table or transfer-agent evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("financing-share-class", "FinancingShareClassEvidence", "Financing and share-class documents", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("valuation", "PrivateCompanyValuationEvidence", "Valuation memo or 409A evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("transaction-exit-dividend", "TransactionExitDividendEvidence", "Transaction, exit, and dividend evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["RealEstateHolding"] =
+            [
+                new("property-manager", "PropertyManagerEvidence", "Property manager statement evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("rent-roll-lease", "RentRollLeaseEvidence", "Rent roll and lease schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("appraisal", "RealEstateAppraisalEvidence", "Appraisal evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("debt-service-ownership", "DebtServiceOwnershipEvidence", "Debt-service and ownership/SPV evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["CommitmentGuarantee"] =
+            [
+                new("agreement", "CommitmentAgreementEvidence", "Commitment or guarantee agreement", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("draw-usage", "DrawUsageNoticeEvidence", "Draw or usage notice evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("fee-accrual", "FeeAccrualScheduleEvidence", "Fee and accrual schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("collateral-covenant", "CollateralCovenantEvidence", "Collateral and covenant evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("release-expiry", "ReleaseExpiryEvidence", "Release or expiry evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["CustomAsset"] =
+            [
+                new("profile-lineage", "AssetProfileLineage", "Approved profile lineage", DepthTargetEvidenceKind.Governance, "SecurityAssetProfileGovernanceService"),
+                new("servicer-trustee-evidence", "ServicerTrusteeEvidence", "Servicer, trustee, warehouse, and factor evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("valuation-nav-evidence", "StructuredValuationEvidence", "NAV, dealer pricing, capital call, and distribution evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("obligation-close-evidence", "ObligationCloseEvidence", "Obligation schedule and close-readiness evidence", DepthTargetEvidenceKind.Close, "FundAccountCloseReadinessService"),
+            ],
+        };
+
     private static void AddAssetClassDepthTargets(
         List<MultiAssetDrillThroughTargetDto> targets,
         MultiAssetCoverageSpecification spec,
@@ -459,286 +592,59 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         string ledgerRoute,
         string closeRoute)
     {
-        if (string.Equals(spec.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+        if (!AssetClassDepthTargetSpecs.TryGetValue(spec.AssetClass, out var specs))
         {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:factor-corporate-action-evidence",
-                "FactorCorporateActionEvidence",
-                "Factor and corporate-action evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
+            return;
         }
 
-        if (string.Equals(spec.AssetClass, "DirectLoan", StringComparison.OrdinalIgnoreCase))
+        foreach (var targetSpec in specs)
         {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:loan-schedule-evidence",
-                "LoanScheduleEvidence",
-                "Loan schedule and borrower notices",
+            targets.Add(CreateDepthTarget(
+                spec.AssetClass,
+                targetSpec,
+                requirements,
+                evidence,
                 providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:commitment-covenant-evidence",
-                "CommitmentCovenantEvidence",
-                "Commitment, unfunded commitment, and covenant evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:paydown-obligation-ledger",
-                "PaydownObligationLedger",
-                "Paydown and obligation ledger support",
                 ledgerRoute,
-                BestEvidenceLink(evidence, "Ledger") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
-                RequirementStatus(requirements, "Ledger"),
-                "LoanAccountingProjector"));
-            targets.Add(new(
-                $"{spec.AssetClass}:direct-lending-rule-kernel",
-                "DirectLendingRuleKernel",
-                "Direct-lending F# rule kernel evidence",
-                ledgerRoute,
-                BestEvidenceLink(evidence, "Ledger") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
-                RequirementStatus(requirements, "Ledger"),
-                "Meridian.FSharp.DirectLending.Aggregates"));
+                closeRoute));
         }
+    }
 
-        if (string.Equals(spec.AssetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase))
+    private static MultiAssetDrillThroughTargetDto CreateDepthTarget(
+        string assetClass,
+        AssetClassDepthTargetSpec targetSpec,
+        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+        string providerRoute,
+        string ledgerRoute,
+        string closeRoute)
+    {
+        var evidenceLink = BestEvidenceLink(evidence, targetSpec.EvidenceCategory);
+        if (targetSpec.FallbackEvidenceToProvider)
         {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:trustee-servicer-remittance",
-                "StructuredCreditTrusteeEvidence",
-                "Trustee, servicer, and cash remittance evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:factor-schedule",
-                "FactorScheduleEvidence",
-                "Factor schedule evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:collateral-tape",
-                "StructuredCollateralTape",
-                "Collateral tape evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:valuation-source",
-                "StructuredValuationEvidence",
-                "Dealer or valuation-source evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
+            evidenceLink ??= BestEvidenceLink(evidence, "ProviderEvidence");
         }
+    }
 
-        if (string.Equals(spec.AssetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase))
-        {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:administrator-gp-statement",
-                "FundAdministratorStatement",
-                "Administrator or GP statement",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:capital-call-distribution",
-                "CapitalCallDistributionEvidence",
-                "Capital call and distribution notice evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:nav-statement",
-                "PrivateFundNavEvidence",
-                "NAV statement evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:capital-account-schedule",
-                "CapitalAccountScheduleEvidence",
-                "Capital account schedule evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-        }
+        var status = targetSpec.UseCloseEvidenceStatus
+            ? EvaluateTargetStatus(evidence, "CloseReadiness") ?? RequirementStatus(requirements, "ProviderEvidence")
+            : RequirementStatus(requirements, targetSpec.RequirementCategory);
 
-        if (string.Equals(spec.AssetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase))
-        {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:cap-table",
-                "CapTableEvidence",
-                "Cap table or transfer-agent evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:financing-share-class",
-                "FinancingShareClassEvidence",
-                "Financing and share-class documents",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:valuation",
-                "PrivateCompanyValuationEvidence",
-                "Valuation memo or 409A evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:transaction-exit-dividend",
-                "TransactionExitDividendEvidence",
-                "Transaction, exit, and dividend evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-        }
-
-        if (string.Equals(spec.AssetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase))
-        {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:property-manager",
-                "PropertyManagerEvidence",
-                "Property manager statement evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:rent-roll-lease",
-                "RentRollLeaseEvidence",
-                "Rent roll and lease schedule evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:appraisal",
-                "RealEstateAppraisalEvidence",
-                "Appraisal evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:debt-service-ownership",
-                "DebtServiceOwnershipEvidence",
-                "Debt-service and ownership/SPV evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-        }
-
-        if (string.Equals(spec.AssetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase))
-        {
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:agreement",
-                "CommitmentAgreementEvidence",
-                "Commitment or guarantee agreement",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:draw-usage",
-                "DrawUsageNoticeEvidence",
-                "Draw or usage notice evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:fee-accrual",
-                "FeeAccrualScheduleEvidence",
-                "Fee and accrual schedule evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:collateral-covenant",
-                "CollateralCovenantEvidence",
-                "Collateral and covenant evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:release-expiry",
-                "ReleaseExpiryEvidence",
-                "Release or expiry evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-        }
-
-        if (string.Equals(spec.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
-        {
-            var governanceStatus = RequirementStatus(requirements, "Governance");
-            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
-            targets.Add(new(
-                $"{spec.AssetClass}:profile-lineage",
-                "AssetProfileLineage",
-                "Approved profile lineage",
-                UiApiRoutes.SecurityMasterAssetProfiles,
-                BestEvidenceLink(evidence, "SecurityMaster"),
-                governanceStatus,
-                "SecurityAssetProfileGovernanceService"));
-            targets.Add(new(
-                $"{spec.AssetClass}:servicer-trustee-evidence",
-                "ServicerTrusteeEvidence",
-                "Servicer, trustee, warehouse, and factor evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:valuation-nav-evidence",
-                "StructuredValuationEvidence",
-                "NAV, dealer pricing, capital call, and distribution evidence",
-                providerRoute,
-                BestEvidenceLink(evidence, "ProviderEvidence"),
-                providerStatus,
-                "ProviderLedgerReconciliation"));
-            targets.Add(new(
-                $"{spec.AssetClass}:obligation-close-evidence",
-                "ObligationCloseEvidence",
-                "Obligation schedule and close-readiness evidence",
-                closeRoute,
-                BestEvidenceLink(evidence, "CloseReadiness") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
-                EvaluateTargetStatus(evidence, "CloseReadiness") ?? providerStatus,
-                "FundAccountCloseReadinessService"));
-        }
+        return new(
+            $"{assetClass}:{targetSpec.KeySuffix}",
+            targetSpec.TargetType,
+            targetSpec.Label,
+            targetSpec.RouteKind switch
+            {
+                AssetClassDepthRouteKind.Provider => providerRoute,
+                AssetClassDepthRouteKind.Ledger => ledgerRoute,
+                AssetClassDepthRouteKind.Close => closeRoute,
+                AssetClassDepthRouteKind.AssetProfiles => UiApiRoutes.SecurityMasterAssetProfiles,
+                _ => providerRoute
+            },
+            evidenceLink,
+            status,
+            targetSpec.Source);
     }
 
     private static IReadOnlyList<MultiAssetReadinessBlockerDto> BuildBlockers(
@@ -1074,6 +980,34 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             ledgerClassification,
             reconciliationSignals,
             hardBlocker);
+
+    private static AssetClassDepthTargetSpec ProviderTarget(
+        string keySuffix,
+        string targetType,
+        string label)
+        => new(
+            keySuffix,
+            targetType,
+            label,
+            AssetClassDepthRouteKind.Provider,
+            "ProviderEvidence",
+            "ProviderEvidence",
+            "ProviderLedgerReconciliation");
+
+    private static AssetClassDepthTargetSpec LedgerTarget(
+        string keySuffix,
+        string targetType,
+        string label,
+        string source)
+        => new(
+            keySuffix,
+            targetType,
+            label,
+            AssetClassDepthRouteKind.Ledger,
+            "Ledger",
+            "Ledger",
+            source,
+            FallbackEvidenceToProvider: true);
 }
 
 internal sealed record MultiAssetCoverageSpecification(
@@ -1086,3 +1020,22 @@ internal sealed record MultiAssetCoverageSpecification(
     string LedgerClassification,
     IReadOnlyList<string> ReconciliationSignals,
     bool HardBlocker);
+
+internal enum AssetClassDepthRouteKind
+{
+    Provider,
+    Ledger,
+    Close,
+    AssetProfiles
+}
+
+internal sealed record AssetClassDepthTargetSpec(
+    string KeySuffix,
+    string TargetType,
+    string Label,
+    AssetClassDepthRouteKind RouteKind,
+    string EvidenceCategory,
+    string RequirementCategory,
+    string Source,
+    bool FallbackEvidenceToProvider = false,
+    bool UseCloseEvidenceStatus = false);

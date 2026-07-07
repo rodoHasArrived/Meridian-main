@@ -1,12 +1,12 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-07-05 | **Status**: Deferred product lane / retained support guidance
+**Version**: 1.8.x | **Last updated**: 2026-07-06 | **Status**: Active product lane — co-equal with the browser workstation; current focus is web-UI parity (`W8-WPF-PARITY-001`)
 
 ## Overview
 
-Meridian's WPF desktop application (`src/Meridian.Wpf/`) is deferred for new product/UI work and retained for existing compatibility, validation, and maintenance. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
+Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active, co-equal operator UI lane alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
-For historical Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) only when explicitly approved WPF maintenance must preserve existing behavior. New product/UI progress should route to the browser workstation unless WPF is explicitly reactivated. Any approved desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
+The desktop lane's immediate priority is closing web-UI parity gaps for screens that shipped browser-first while WPF was deferred (v0.24→v0.25). The prioritized gap list and closure sequence live in [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md). For historical Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md). Any desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation, so neither client forks product state.
 
 ## Architecture
 
@@ -569,6 +569,7 @@ make desktop-test
 
 ## Related Documentation
 
+- [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md) — WPF ↔ web-UI parity matrix and closure sequence (`W8-WPF-PARITY-001`)
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
 - [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules

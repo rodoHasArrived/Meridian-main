@@ -330,6 +330,28 @@ No feature work; confirm and document the rules each later phase must follow.
   contract (validated + tested) and reserved for scope-aware panes; fanned-out stream data over the
   channel remains the documented Phase 4 follow-up (the exemplar panes still open their own feeds).
 
+### 6e. Saved operator layouts + multi-monitor presets
+- Institutional operators run 3–4 monitors and want the same arrangement each morning: live quotes
+  popped to one monitor, reconciliation on another, scope and density set. A saved layout captures
+  that arrangement and restores it in one click; shared team presets ship as read-only seeds.
+
+  **Landed:** `lib/saved-layouts.ts` serializes a layout's state — route (scope query params and
+  all), operating scope, display density, and popped-out companion pane ids — through the existing
+  versioned view-state envelope (`lib/view-state-envelope.ts`), so persistence, the version gate, and
+  defensive decode are shared. User layouts live in `localStorage`
+  (`meridian.workstation.layouts.v1`); `TEAM_LAYOUT_PRESETS` are normalized read-only in-code seeds
+  (Month-End Close, Trading Morning, Reporting Review). `lib/companion-pane/open-registry.ts` records
+  pop-out *intent* (`meridian.workstation.openPanes.v1`) — a `noopener` open returns `null` so the
+  main window can't observe live child-window state; `PopOutPaneButton` records on both the button and
+  the fallback link. `lib/density.ts` extracts the density token/persistence/apply helpers (shared by
+  `DensityToggle` and restore). `components/meridian/layout-switcher.tsx` is the header workspace
+  switcher: it lists user layouts alongside shared team presets, captures the current arrangement into
+  a named layout, and hands a pure `LayoutRestorePlan` back to `AppShell`. Restore (`app.tsx`
+  `handleRestoreLayout`) applies density and operating scope, re-opens the recorded panes, then
+  navigates the captured route. Window *placement* across monitors is browser-permission-limited, so a
+  restored pop-out may open where the browser chooses and be dragged once — the arrangement otherwise
+  restores whole.
+
 **Validation for all of Phase 6:** `npm --prefix src/Meridian.Ui/dashboard run test`; grid work
 additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 `dense-row-detail-accessibility.test.tsx`).
@@ -339,6 +361,7 @@ additionally re-runs the a11y suites (`*-screen.a11y.test.tsx`,
 - [x] 6b virtualization inside `DenseDataTable` with a11y contract tests green.
 - [x] 6c chart callback props + `ChartSyncContext` + one evidence-drill screen.
 - [x] 6d chrome-less pane branch + BroadcastChannel bridge + popup fallback link.
+- [x] 6e saved layouts + team presets + header workspace switcher (envelope-serialized, restore replays panes).
 
 ---
 

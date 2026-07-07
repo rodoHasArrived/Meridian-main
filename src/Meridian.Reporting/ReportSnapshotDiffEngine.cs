@@ -175,5 +175,5 @@ public static class ReportSnapshotDiffEngine
     }
 
     private static string FormatDecimal(decimal value) =>
-        value.ToString("0.######", CultureInfo.InvariantCulture);
+        ReportingNumberFormat.FormatDecimal(value);
 }

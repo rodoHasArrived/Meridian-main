@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Archival;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace Meridian.Identity;
@@ -36,10 +37,12 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
 
     private readonly string _path;
     private readonly object _gate = new();
+    private readonly ILogger<FileScopedAccessAssignmentStore>? _logger;
 
-    public FileScopedAccessAssignmentStore(string path)
+    public FileScopedAccessAssignmentStore(string path, ILogger<FileScopedAccessAssignmentStore>? logger = null)
     {
         _path = path ?? throw new ArgumentNullException(nameof(path));
+        _logger = logger;
     }
 
     public Task<IReadOnlyList<UserAccessAssignmentDto>> ListAsync(CancellationToken ct = default)
@@ -132,8 +135,15 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
             return JsonSerializer.Deserialize<ScopedAccessAssignmentSnapshot>(json, JsonOptions)
                 ?? new ScopedAccessAssignmentSnapshot([]);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
+            // Fail safe (no assignments) so authorization keeps evaluating, but surface the
+            // data-integrity problem instead of silently masking a corrupt governance file as
+            // "no scoped access assignments exist".
+            _logger?.LogError(
+                ex,
+                "Corrupt scoped-access-assignment governance file at {Path}; treating as no assignments. Manual data-integrity review required.",
+                _path);
             return new ScopedAccessAssignmentSnapshot([]);
         }
     }

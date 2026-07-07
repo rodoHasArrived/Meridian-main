@@ -304,6 +304,7 @@ import type {
   ReportingRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
+  ReportingStarterKitProvisionResult,
   ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
@@ -441,6 +442,7 @@ import {
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
+  reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
   securityMasterAssetProfileLineageEndpoint,
@@ -2652,6 +2654,10 @@ export function listReportingSchedules(options: ApiRequestOptions = {}) {
 
 export function saveReportingSchedule(request: ReportingScheduleUpsertRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, request, options);
+}
+
+export function provisionReportingStarterKit(kitId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingStarterKitProvisionResult>(reportingStarterKitProvisionEndpoint(kitId), undefined, options);
 }
 
 export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {

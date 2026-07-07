@@ -176,6 +176,17 @@ durable journal-read seam, including an as-of helper that scopes by ledger book 
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before
 running ledger-owned trial-balance or statement logic.
 
+`LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
+durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
+timestamp plus a book/period helper for close-period reporting, so restart, close, and reporting
+projections can hydrate from the stored spine before running ledger-owned trial-balance or statement
+logic. `DurableAutomatedJournalPoster` implements the ledger-owned
+`IAutomatedJournalPostingTarget` contract so approved automated projector output can use the same
+target shape as in-memory backtests while still appending to the governed journal store first.
+`PostgresLedgerBookService` now uses that book/period hydration path before building period-close
+trial-balance summaries, keeping UI-facing close evidence tied to `ILedgerJournalStore.QueryAsync`
+and ledger-owned balance math.
+
 ### Direct lending and operational projections
 
 Direct-lending persistence normally shares the Security Master storage lane. When

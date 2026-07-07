@@ -2,7 +2,18 @@
 // `view=<base64url(JSON)>` query param so operating-scope keys stay untouched and
 // the token can be stored opaquely (e.g. on a workflow preset as a saved view).
 import { appendRouteQuery } from "@/lib/workspace";
-import type { TableFilters, TableSort } from "@/components/data/use-table-state";
+
+// Serializable table-state shape (search/sort/filter) persisted in a saved view. These
+// types outlived the `useTableState` hook they originated in (archived 2026-07-06) and
+// now live with their only consumer.
+export type SortDirection = "asc" | "desc";
+
+export interface TableSort {
+  column: string;
+  direction: SortDirection;
+}
+
+export type TableFilters = Record<string, string[] | undefined>;
 
 export const VIEW_STATE_QUERY_KEY = "view";
 export const VIEW_STATE_ENVELOPE_VERSION = 1 as const;

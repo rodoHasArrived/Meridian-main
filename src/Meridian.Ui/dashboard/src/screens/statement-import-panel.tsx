@@ -609,7 +609,7 @@ function CommitSection({ viewModel }: { viewModel: StatementImportPanelViewModel
           <Button
             type="button"
             disabled={!viewModel.canCommit}
-            disabledReason={errors.file ?? "Select a statement file before committing the import."}
+            disabledReason={viewModel.commitDisabledReason ?? errors.file ?? "Preview the statement before committing."}
             busy={viewModel.commitBusy}
             busyLabel="Committing statement import…"
             onClick={() => void viewModel.commit()}
@@ -709,9 +709,151 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           ))}
         </ul>
       ) : null}
+      <CommitCaseLinks result={result} />
       <CommitResultActions result={result} />
     </PanelSurface>
   );
+}
+
+function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
+  const caseLinks = result ? resolveStatementCaseLinks(result) : [];
+  if (!result || caseLinks.length === 0) {
+    return null;
+  }
+
+  const visibleCaseLinks = caseLinks.slice(0, 5);
+  const remainingCount = caseLinks.length - visibleCaseLinks.length;
+
+  return (
+    <div className="flex flex-col gap-2" aria-label="Statement import reconciliation cases">
+      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Reconciliation cases
+      </span>
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {visibleCaseLinks.map((caseLink) => (
+          <li
+            key={caseLink.caseId}
+            className="flex min-w-0 flex-col gap-2 rounded-[2px] border border-border/70 bg-card/70 p-2 text-xs"
+          >
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="min-w-[10rem] flex-1 truncate font-medium text-foreground">{caseLink.label}</span>
+              <Button asChild variant="outline" size="sm">
+                <Link to={caseLink.route}>
+                  <span className="max-w-[14rem] truncate font-mono text-[11px]">{caseLink.caseId}</span>
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Badge variant="outline">{caseLink.status}</Badge>
+              <Badge variant={statementCasePriorityBadgeVariant(caseLink.priority)}>{caseLink.priority}</Badge>
+            </div>
+            <p className="line-clamp-2 text-muted-foreground">{caseLink.reason}</p>
+            {caseLink.suggestedNextAction ? (
+              <p className="line-clamp-2 text-muted-foreground">
+                Next: {caseLink.suggestedNextAction}
+              </p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {remainingCount > 0 ? (
+        <span className="text-xs text-muted-foreground">
+          {remainingCount} more case{remainingCount === 1 ? "" : "s"} are available from the reconciliation queue.
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+interface ResolvedStatementCaseLink {
+  caseId: string;
+  breakId: string | null;
+  route: string;
+  label: string;
+  status: string;
+  priority: string;
+  reason: string;
+  suggestedNextAction: string;
+}
+
+function resolveStatementCaseLinks(
+  result: NonNullable<StatementImportPanelViewModel["commitResult"]>
+): ResolvedStatementCaseLink[] {
+  const structuredLinks = (result.reconciliationCaseLinks ?? [])
+    .map((link) => ({
+      caseId: link.caseId?.trim() ?? "",
+      breakId: link.breakId?.trim() || null,
+      route: link.route?.trim() ?? "",
+      label: link.label?.trim() ?? "",
+      status: link.status?.trim() ?? "",
+      priority: link.priority?.trim() ?? "",
+      reason: link.reason?.trim() ?? "",
+      suggestedNextAction: link.suggestedNextAction?.trim() ?? ""
+    }))
+    .filter((link) => link.caseId);
+
+  if (structuredLinks.length > 0) {
+    return dedupeCaseLinks(structuredLinks.map((link, index) => ({
+      ...link,
+      route: link.route || resolveStatementCaseRoute(result, link.caseId, index),
+      label: link.label || `Reconciliation case ${link.caseId}`,
+      status: link.status || "Open",
+      priority: link.priority || "Normal",
+      reason: link.reason || "Statement import created a reconciliation case.",
+      suggestedNextAction: link.suggestedNextAction || "Review the linked statement evidence before disposition."
+    })));
+  }
+
+  return dedupeCaseLinks((result.caseIds ?? [])
+    .map((caseId, index) => {
+      const trimmedCaseId = caseId.trim();
+      if (!trimmedCaseId) {
+        return null;
+      }
+
+      const breakId = trimmedCaseId.toLowerCase().startsWith("case:")
+        ? trimmedCaseId.slice("case:".length).trim() || null
+        : null;
+      return {
+        caseId: trimmedCaseId,
+        breakId,
+        route: resolveStatementCaseRoute(result, trimmedCaseId, index),
+        label: `Reconciliation case ${trimmedCaseId}`,
+        status: "Open",
+        priority: "Normal",
+        reason: "Statement import created a reconciliation case.",
+        suggestedNextAction: "Review the linked statement evidence before disposition."
+      };
+    })
+    .filter((link): link is ResolvedStatementCaseLink => Boolean(link)));
+}
+
+function dedupeCaseLinks(links: ResolvedStatementCaseLink[]) {
+  const seen = new Set<string>();
+  const deduped: ResolvedStatementCaseLink[] = [];
+  for (const link of links) {
+    const key = link.caseId.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    deduped.push(link);
+  }
+
+  return deduped;
+}
+
+function statementCasePriorityBadgeVariant(priority: string): "outline" | "warning" | "danger" | "paper" {
+  switch (priority.toLowerCase()) {
+    case "critical":
+      return "danger";
+    case "high":
+      return "warning";
+    case "low":
+      return "paper";
+    default:
+      return "outline";
+  }
 }
 
 function CommitResultActions({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
@@ -738,4 +880,23 @@ function CommitResultActions({ result }: { result: StatementImportPanelViewModel
       </Button>
     </div>
   );
+}
+
+function resolveStatementCaseRoute(
+  result: NonNullable<StatementImportPanelViewModel["commitResult"]>,
+  caseId: string,
+  index: number
+) {
+  const explicitRoute = result.reconciliationCaseRoutes?.[index];
+  if (explicitRoute && explicitRoute.trim()) {
+    return explicitRoute;
+  }
+
+  const baseRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
+  const separator = baseRoute.includes("?") ? "&" : "?";
+  const caseParam = `caseId=${encodeURIComponent(caseId)}`;
+  const breakId = caseId.toLowerCase().startsWith("case:") ? caseId.slice("case:".length).trim() : "";
+  return breakId
+    ? `${baseRoute}${separator}${caseParam}&breakId=${encodeURIComponent(breakId)}`
+    : `${baseRoute}${separator}${caseParam}`;
 }

@@ -1,6 +1,17 @@
 namespace Meridian.Ledger;
 
 /// <summary>
+/// One trial-balance row feeding period-close projection: an account, its normal-balance
+/// value, and the optional dimensional scope (entity, sleeve, ...) it was posted under.
+/// Rows with the same account but different dimensions are closed independently so
+/// entity/sleeve P&amp;L and retained earnings stay dimension-scoped.
+/// </summary>
+public sealed record PeriodCloseAccountBalance(
+    LedgerAccount Account,
+    decimal Balance,
+    LedgerLineDimensionSet? Dimensions = null);
+
+/// <summary>
 /// Input for projecting period-close closing entries from a point-in-time trial balance.
 /// </summary>
 public sealed record PeriodCloseInput
@@ -8,7 +19,7 @@ public sealed record PeriodCloseInput
     public PeriodCloseInput(
         string periodId,
         DateTimeOffset closedAtUtc,
-        IReadOnlyDictionary<LedgerAccount, decimal> trialBalance,
+        IReadOnlyList<PeriodCloseAccountBalance> trialBalance,
         string closedBy)
     {
         ArgumentNullException.ThrowIfNull(trialBalance);
@@ -23,15 +34,35 @@ public sealed record PeriodCloseInput
         ClosedBy = closedBy.Trim();
     }
 
+    /// <summary>
+    /// Convenience overload for a dimension-flat trial balance (for example the in-memory
+    /// <see cref="Ledger.TrialBalanceAsOf(DateTimeOffset, string?, LedgerLineDimensionSet?)"/>),
+    /// which carries no per-line dimensional scope.
+    /// </summary>
+    public PeriodCloseInput(
+        string periodId,
+        DateTimeOffset closedAtUtc,
+        IReadOnlyDictionary<LedgerAccount, decimal> trialBalance,
+        string closedBy)
+        : this(
+            periodId,
+            closedAtUtc,
+            (trialBalance ?? throw new ArgumentNullException(nameof(trialBalance)))
+                .Select(static pair => new PeriodCloseAccountBalance(pair.Key, pair.Value))
+                .ToArray(),
+            closedBy)
+    {
+    }
+
     public string PeriodId { get; }
 
     public DateTimeOffset ClosedAtUtc { get; }
 
     /// <summary>
-    /// Point-in-time trial balance with normal-balance values (see
-    /// <see cref="Ledger.TrialBalanceAsOf(DateTimeOffset, string?, LedgerLineDimensionSet?)"/>).
+    /// Point-in-time trial balance with normal-balance values, one row per
+    /// account + dimensional scope.
     /// </summary>
-    public IReadOnlyDictionary<LedgerAccount, decimal> TrialBalance { get; }
+    public IReadOnlyList<PeriodCloseAccountBalance> TrialBalance { get; }
 
     public string ClosedBy { get; }
 }

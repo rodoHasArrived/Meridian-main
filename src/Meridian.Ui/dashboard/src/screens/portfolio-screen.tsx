@@ -35,7 +35,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { workstationRouteWithQuery } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
@@ -519,6 +519,15 @@ export function PortfolioScreen({
           {vm.headerChips.map((chip) => (
             <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
           ))}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
+              aria-label="Open the portfolio cash ladder: projected inflows and outflows with liquidity scenarios"
+            >
+              <Wallet className="size-4" aria-hidden />
+              Cash Ladder
+            </Link>
+          </Button>
         </div>
       </section>
 

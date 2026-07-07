@@ -1,4 +1,4 @@
-import { formatCompactCurrency as formatCurrency } from "@/lib/format";
+import { formatCompactCurrency as formatCurrency, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
@@ -531,7 +531,7 @@ function formatPercent(value: number): string {
 }
 
 function formatCountLabel(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }
 
 function uniqueCount(values: string[]): number {

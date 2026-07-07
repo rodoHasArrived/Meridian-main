@@ -135,3 +135,4 @@ do_not_edit: true
 | `SRC-WPF` | WPF workstation | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-WPF` | WPF workstation | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-WPF` | WPF workstation | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `SRC-WPF` | WPF workstation | `W8-WPF-PARITY-001` | WPF desktop workstation reactivation and web-UI parity |

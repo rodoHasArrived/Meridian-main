@@ -2,6 +2,7 @@ using System.Linq;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
@@ -75,8 +76,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         StatusBar = new StatusBarViewModel(statusService, notificationService);
 
         NavigateCommand = new RelayCommand<string>(Navigate);
-        StartCollectorCommand = new AsyncRelayCommand(StartCollectorAsync);
-        StopCollectorCommand = new AsyncRelayCommand(StopCollectorAsync);
+        StartCollectorCommand = new AsyncRelayCommand(StartCollectorAsync, CanControlCollector);
+        StopCollectorCommand = new AsyncRelayCommand(StopCollectorAsync, CanControlCollector);
         RefreshCommand = new RelayCommand(() => _messagingService.Send("RefreshStatus"));
         LogoutCommand = new RelayCommand(Logout, CanLogout);
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
@@ -239,7 +240,19 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         AuthenticatedRoleText = ResolveAuthenticatedRoleText();
         AuthenticatedSessionDetail = ResolveAuthenticatedSessionDetail();
         LogoutCommand.NotifyCanExecuteChanged();
+        StartCollectorCommand.NotifyCanExecuteChanged();
+        StopCollectorCommand.NotifyCanExecuteChanged();
     }
+
+    /// <summary>
+    /// Client-side defense-in-depth gate for collector control. Starting or stopping data
+    /// collection reconfigures a provider connection, so it requires
+    /// <see cref="UserPermission.ManageProviders"/> when a signed-in operator profile is
+    /// resolved. Anonymous development and unauthenticated sessions are not gated here (they are
+    /// governed by the authentication gates); server-side authorization stays authoritative.
+    /// </summary>
+    private bool CanControlCollector()
+        => _authenticationSession.HasPermission(UserPermission.ManageProviders);
 
     public void ShowStartupExperience()
     {
@@ -584,6 +597,12 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     private async Task StartCollectorAsync()
     {
+        if (!CanControlCollector())
+        {
+            NotifyCollectorPermissionDenied("start");
+            return;
+        }
+
         try
         {
             var provider = _connectionService.CurrentProvider;
@@ -613,6 +632,12 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     private async Task StopCollectorAsync()
     {
+        if (!CanControlCollector())
+        {
+            NotifyCollectorPermissionDenied("stop");
+            return;
+        }
+
         try
         {
             await _connectionService.DisconnectAsync();
@@ -630,6 +655,16 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
                 NotificationType.Error,
                 0);
         }
+    }
+
+    private void NotifyCollectorPermissionDenied(string action)
+    {
+        var gerund = action == "stop" ? "stopping" : "starting";
+        _notificationService.ShowNotification(
+            "Permission required",
+            $"Your role does not permit {gerund} data collection. Provider control requires the ManageProviders permission.",
+            NotificationType.Warning,
+            5000);
     }
 
     private async Task TestConnectionAsync()

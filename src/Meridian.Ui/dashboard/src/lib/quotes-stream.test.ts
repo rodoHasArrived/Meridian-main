@@ -216,6 +216,47 @@ describe("quotes stream client", () => {
     unsubscribe();
   });
 
+  it("restores the flap budget on frames, but never on a bare open handshake", () => {
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+    const source = FakeEventSource.instances[0]!;
+
+    // A frame between errors resets the consecutive-error count …
+    for (let i = 0; i < 4; i += 1) {
+      source.emit("error");
+    }
+    source.emit("quotes", JSON.stringify(snapshot));
+    for (let i = 0; i < 4; i += 1) {
+      source.emit("error");
+    }
+    expect(source.closed).toBe(false);
+
+    // … but an accept-then-drop loop (open succeeds, no frame arrives before
+    // the drop) stays bounded: handshakes alone never launder the budget.
+    source.emit("open");
+    source.emit("error");
+    expect(source.closed).toBe(true);
+
+    unsubscribe();
+  });
+
+  it("resets the probe cooldown when a recovered stream delivers a frame", () => {
+    const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn() });
+
+    FakeEventSource.instances[0]!.failClose();
+    vi.advanceTimersByTime(30_000);
+    expect(FakeEventSource.instances).toHaveLength(2);
+
+    // The probe recovers with a real frame, restoring the full budget …
+    FakeEventSource.instances[1]!.emit("quotes", JSON.stringify(snapshot));
+    FakeEventSource.instances[1]!.failClose();
+
+    // … so the next failure probes at the 30s base again, not the doubled 60s.
+    vi.advanceTimersByTime(30_000);
+    expect(FakeEventSource.instances).toHaveLength(3);
+
+    unsubscribe();
+  });
+
   it("reaps a wedged stream when heartbeats stop, and heartbeats keep it alive", () => {
     const onHealthChange = vi.fn();
     const unsubscribe = subscribeQuotesStream(["SPY"], { onSnapshot: vi.fn(), onHealthChange });

@@ -98,6 +98,11 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+Statement import commit results render the shared Evidence Vault identity, Evidence Workbench route,
+reconciliation route, and structured reconciliation case links directly from the commit response,
+including status, priority, reason, and suggested next action. The browser blocks commit while
+preview errors remain, so operators can move from imported custodian/broker source to retained
+proof and exact casework without browser-local routing rules or avoidable server rejections.
 The request-list queue renders typed close, audit, tax, report-package, and operational-event family
 badges beside each frozen support list so operators can distinguish close binder blockers from audit
 or report-support package gaps without parsing manifest JSON.
@@ -649,6 +654,11 @@ The Reporting workspace also renders the shared `AccessAudit` summary from `Work
 showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
 packs, schedules, deliveries, and structured exports. React displays the service-owned denial
 reasons without probing or naming hidden report objects.
+On the daily Reporting landing, React renders `starterKits` and `starterKitState` from the shared
+Reporting payload as the "Set up your reporting desk" chooser. Selecting a kit posts to the shared
+starter-kit provisioning endpoint, then shows the server-returned enabled template ids, layout id,
+default period, and draft schedule ids; the browser does not locally decide which templates or
+schedules belong to an archetype.
 Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
 Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
 delivery evidence packets or audit graph state locally. Publication review and delivery package

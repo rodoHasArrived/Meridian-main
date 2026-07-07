@@ -123,4 +123,28 @@ public sealed class EtlCommandsTests
         definition.Source.ArchiveLocation.Should().Be("/archive");
         definition.Source.SecretRef.Should().Be("env:BANK_PASSWORD");
     }
+
+    [Theory]
+    [InlineData("--etl-list-files", EtlInspectionMode.ListFiles)]
+    [InlineData("--etl-test-connection", EtlInspectionMode.TestConnection)]
+    [InlineData("--etl-preview", EtlInspectionMode.Preview)]
+    public void ResolveInspectionMode_SeparatesReadOnlyModesFromPreview(string flag, EtlInspectionMode expected)
+    {
+        EtlCommands.ResolveInspectionMode([flag]).Should().Be(expected);
+    }
+
+    [Fact]
+    public void FormatListedFile_DescribesSourceFileWithoutPreviewFields()
+    {
+        var file = new EtlRemoteFile
+        {
+            Path = "/inbound/positions.csv",
+            Name = "positions.csv",
+            SizeBytes = 42,
+            LastModifiedUtc = DateTimeOffset.Parse("2026-01-01T00:00:00Z")
+        };
+
+        EtlCommands.FormatListedFile(file).Should().Be(
+            "positions.csv: Path=/inbound/positions.csv; Size=42; LastModified=2026-01-01T00:00:00.0000000+00:00");
+    }
 }

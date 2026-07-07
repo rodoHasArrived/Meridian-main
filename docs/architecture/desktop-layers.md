@@ -2,10 +2,10 @@
 
 ## Overview
 
-Meridian uses an active browser operator workstation, a retained deferred WPF desktop shell, and local API surfaces:
+Meridian uses two active co-equal operator UI lanes — a browser operator workstation and a WPF desktop workstation — plus local API surfaces:
 
 1. **Browser workstation (`src/Meridian.Ui/dashboard`)** for browser operator workflow delivery, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`.
-2. **WPF Desktop (`Meridian.Wpf`)** as a deferred Windows desktop shell retained for compatibility, validation, and maintenance.
+2. **WPF Desktop (`Meridian.Wpf`)** as an active Windows desktop workstation (co-equal UI lane); current focus is web-UI parity (`W8-WPF-PARITY-001`).
 3. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
 
 These surfaces share contracts and application logic through shared libraries, with clear boundaries between the browser shell, retained WPF desktop shell, the local host, and reusable UI functionality.

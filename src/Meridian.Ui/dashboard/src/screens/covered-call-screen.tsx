@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { ChartCard, EquityCurve as EquityCurveChart } from "@/components/charts";
 import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -171,19 +172,17 @@ export function CoveredCallScreen() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
+          Covered Call Backtest
+        </span>
+      }
+      scope="Strategy Lane"
+      description="Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff."
+    >
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
-            Covered Call Backtest
-          </CardTitle>
-          <CardDescription>
-            Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure
-            filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <StageStepper navigation={vm.stageNavigation} onSelect={vm.goToStage} />
         </CardContent>
@@ -218,7 +217,7 @@ export function CoveredCallScreen() {
       {vm.stage === "results" ? <ResultsStage vm={vm} /> : null}
 
       <HistoryPanel vm={vm} />
-    </div>
+    </ScreenLayout>
   );
 }
 

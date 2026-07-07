@@ -42,7 +42,15 @@ public enum LedgerPeriodSignoffStatusDto
 public enum LedgerPostingKindDto
 {
     Originating = 0,
-    Adjustment = 1
+    Adjustment = 1,
+
+    /// <summary>
+    /// Period-close closing entries. Produced only by the governed period-close workflow after
+    /// human approval, these are the sanctioned exception to the closed-period posting bar: they
+    /// finalize the period being closed by zeroing temporary accounts and rolling net income to
+    /// retained earnings, so the posting guard permits them into soft- and hard-closed periods.
+    /// </summary>
+    ClosingEntry = 2
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<LedgerAdjustmentApprovalStatusDto>))]

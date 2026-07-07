@@ -27,10 +27,3 @@ export {
   type EntitySummaryItem,
 } from "./entity-summary";
 export { MetricCard, type MetricCardProps, type MetricCardTone } from "./metric-card";
-export {
-  useTableState,
-  type TableState,
-  type TableSort,
-  type TableFilters,
-  type SortDirection,
-} from "./use-table-state";
