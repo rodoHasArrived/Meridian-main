@@ -110,43 +110,43 @@ public sealed class ProviderFactory
         var providersCfg = backfillCfg?.Providers;
 
         // Synthetic offline dataset
-        TryAddBackfillProvider(providers, () => CreateSyntheticBackfillProvider(providersCfg?.Synthetic));
+        TryAddBackfillProvider(providers, "synthetic", () => CreateSyntheticBackfillProvider(providersCfg?.Synthetic));
 
         // Interactive Brokers native historical path (or guidance-only stub in non-IBAPI builds)
-        TryAddBackfillProvider(providers, () => CreateIbBackfillProvider(_config.IB));
+        TryAddBackfillProvider(providers, "interactive-brokers", () => CreateIbBackfillProvider(_config.IB));
 
         // Alpaca Markets (highest priority when configured)
-        TryAddBackfillProvider(providers, () => CreateAlpacaBackfillProvider(providersCfg?.Alpaca));
+        TryAddBackfillProvider(providers, "alpaca", () => CreateAlpacaBackfillProvider(providersCfg?.Alpaca));
 
         // Yahoo Finance (broad free coverage)
-        TryAddBackfillProvider(providers, () => CreateYahooBackfillProvider(providersCfg?.Yahoo));
+        TryAddBackfillProvider(providers, "yahoo", () => CreateYahooBackfillProvider(providersCfg?.Yahoo));
 
         // Polygon.io
-        TryAddBackfillProvider(providers, () => CreatePolygonBackfillProvider(providersCfg?.Polygon));
+        TryAddBackfillProvider(providers, "polygon", () => CreatePolygonBackfillProvider(providersCfg?.Polygon));
 
         // Tiingo
-        TryAddBackfillProvider(providers, () => CreateTiingoBackfillProvider(providersCfg?.Tiingo));
+        TryAddBackfillProvider(providers, "tiingo", () => CreateTiingoBackfillProvider(providersCfg?.Tiingo));
 
         // Twelve Data
-        TryAddBackfillProvider(providers, CreateTwelveDataBackfillProvider);
+        TryAddBackfillProvider(providers, "twelvedata", CreateTwelveDataBackfillProvider);
 
         // Finnhub
-        TryAddBackfillProvider(providers, () => CreateFinnhubBackfillProvider(providersCfg?.Finnhub));
+        TryAddBackfillProvider(providers, "finnhub", () => CreateFinnhubBackfillProvider(providersCfg?.Finnhub));
 
         // Stooq
-        TryAddBackfillProvider(providers, () => CreateStooqBackfillProvider(providersCfg?.Stooq));
+        TryAddBackfillProvider(providers, "stooq", () => CreateStooqBackfillProvider(providersCfg?.Stooq));
 
         // Alpha Vantage
-        TryAddBackfillProvider(providers, () => CreateAlphaVantageBackfillProvider(providersCfg?.AlphaVantage));
+        TryAddBackfillProvider(providers, "alphavantage", () => CreateAlphaVantageBackfillProvider(providersCfg?.AlphaVantage));
 
         // FRED economic data
-        TryAddBackfillProvider(providers, () => CreateFredBackfillProvider(providersCfg?.Fred));
+        TryAddBackfillProvider(providers, "fred", () => CreateFredBackfillProvider(providersCfg?.Fred));
 
         // Nasdaq Data Link
-        TryAddBackfillProvider(providers, () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq));
+        TryAddBackfillProvider(providers, "nasdaq", () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq));
 
         // Robinhood historical bars (unofficial API, explicitly enabled)
-        TryAddBackfillProvider(providers, () => CreateRobinhoodBackfillProvider(providersCfg?.Robinhood));
+        TryAddBackfillProvider(providers, "robinhood", () => CreateRobinhoodBackfillProvider(providersCfg?.Robinhood));
 
         return providers
             .OrderBy(p => p.Priority)
@@ -155,6 +155,7 @@ public sealed class ProviderFactory
 
     private void TryAddBackfillProvider(
         List<IHistoricalDataProvider> providers,
+        string providerLabel,
         Func<IHistoricalDataProvider?> factory)
     {
         try
@@ -167,14 +168,16 @@ public sealed class ProviderFactory
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to create backfill provider");
+            // Isolate one provider's construction failure so the rest still register, but name the
+            // provider and surface the exception so configuration/credential errors are not silent.
+            _log.Warning(ex, "Failed to create backfill provider {Provider}; skipping it for this run", providerLabel);
         }
     }
 
 
     private IHistoricalDataProvider? CreateSyntheticBackfillProvider(SyntheticMarketDataConfig? cfg)
     {
-        if (cfg?.Enabled != true)
+        if (!EnabledWhenOptedIn(cfg?.Enabled))
             return null;
 
         return new SyntheticHistoricalDataProvider(cfg);
@@ -201,7 +204,7 @@ public sealed class ProviderFactory
 
     private IHistoricalDataProvider? CreateAlpacaBackfillProvider(AlpacaBackfillConfig? cfg)
     {
-        if (!(cfg?.Enabled ?? true))
+        if (!EnabledByDefault(cfg?.Enabled))
             return null;
 
         var configuredOptions = new AlpacaOptions(
@@ -216,7 +219,7 @@ public sealed class ProviderFactory
         var aliasAwareCredentials = AlpacaCredentialEnvironment.Resolve(configuredOptions);
         var keyId = FirstNonBlank(credentials.Get("ALPACA_KEY_ID"), aliasAwareCredentials.KeyId);
         var secretKey = FirstNonBlank(credentials.Get("ALPACA_SECRET_KEY"), aliasAwareCredentials.SecretKey);
-        if (string.IsNullOrEmpty(keyId) || string.IsNullOrEmpty(secretKey))
+        if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
         return new AlpacaHistoricalDataProvider(
@@ -231,105 +234,68 @@ public sealed class ProviderFactory
 
     private IHistoricalDataProvider? CreateYahooBackfillProvider(YahooBackfillConfig? cfg)
     {
-        if (!(cfg?.Enabled ?? true))
+        if (!EnabledByDefault(cfg?.Enabled))
             return null;
         return new YahooFinanceHistoricalDataProvider(log: _log);
     }
 
     private IHistoricalDataProvider? CreatePolygonBackfillProvider(PolygonBackfillConfig? cfg)
-    {
-        if (!(cfg?.Enabled ?? true))
-            return null;
-
-        var credentials = CreateCredentialContext<PolygonHistoricalDataProvider>(
-            ("POLYGON_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("POLYGON_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new PolygonHistoricalDataProvider(apiKey: apiKey, log: _log);
-    }
+        => CreateCredentialGatedBackfillProvider<PolygonHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "POLYGON_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new PolygonHistoricalDataProvider(apiKey: apiKey, log: _log));
 
     private IHistoricalDataProvider? CreateTiingoBackfillProvider(TiingoBackfillConfig? cfg)
-    {
-        if (!(cfg?.Enabled ?? true))
-            return null;
-
-        var credentials = CreateCredentialContext<TiingoHistoricalDataProvider>(
-            ("TIINGO_API_TOKEN", cfg?.ApiToken));
-        var token = credentials.Get("TIINGO_API_TOKEN");
-        if (string.IsNullOrEmpty(token))
-            return null;
-
-        return new TiingoHistoricalDataProvider(apiToken: token, log: _log);
-    }
+        => CreateCredentialGatedBackfillProvider<TiingoHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "TIINGO_API_TOKEN",
+            cfg?.ApiToken,
+            token => new TiingoHistoricalDataProvider(apiToken: token, log: _log));
 
     private IHistoricalDataProvider? CreateTwelveDataBackfillProvider()
-    {
-        var credentials = CreateCredentialContext<TwelveDataHistoricalDataProvider>(
-            ("TWELVEDATA_API_KEY", null));
-        var apiKey = credentials.Get("TWELVEDATA_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log);
-    }
+        => CreateCredentialGatedBackfillProvider<TwelveDataHistoricalDataProvider>(
+            enabled: true,
+            "TWELVEDATA_API_KEY",
+            configuredValue: null,
+            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log));
 
     private IHistoricalDataProvider? CreateFinnhubBackfillProvider(FinnhubBackfillConfig? cfg)
-    {
-        if (!(cfg?.Enabled ?? true))
-            return null;
-
-        var credentials = CreateCredentialContext<FinnhubHistoricalDataProvider>(
-            ("FINNHUB_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("FINNHUB_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new FinnhubHistoricalDataProvider(apiKey: apiKey, log: _log);
-    }
+        => CreateCredentialGatedBackfillProvider<FinnhubHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "FINNHUB_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new FinnhubHistoricalDataProvider(apiKey: apiKey, log: _log));
 
     private IHistoricalDataProvider? CreateStooqBackfillProvider(StooqBackfillConfig? cfg)
     {
-        if (!(cfg?.Enabled ?? true))
+        if (!EnabledByDefault(cfg?.Enabled))
             return null;
         return new StooqHistoricalDataProvider(log: _log);
     }
 
     private IHistoricalDataProvider? CreateAlphaVantageBackfillProvider(AlphaVantageBackfillConfig? cfg)
-    {
-        // Disabled by default due to very limited free tier
-        if (!(cfg?.Enabled ?? false))
-            return null;
-
-        var credentials = CreateCredentialContext<AlphaVantageHistoricalDataProvider>(
-            ("ALPHA_VANTAGE_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("ALPHA_VANTAGE_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log);
-    }
+        // Opt-in only: the free tier is severely rate-limited, so absent config leaves it disabled.
+        => CreateCredentialGatedBackfillProvider<AlphaVantageHistoricalDataProvider>(
+            EnabledWhenOptedIn(cfg?.Enabled),
+            "ALPHA_VANTAGE_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log));
 
     private IHistoricalDataProvider? CreateFredBackfillProvider(FredBackfillConfig? cfg)
-    {
-        if (!(cfg?.Enabled ?? false))
-            return null;
-
-        var credentials = CreateCredentialContext<FredHistoricalDataProvider>(
-            ("FRED_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("FRED_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new FredHistoricalDataProvider(apiKey: apiKey, log: _log);
-    }
+        => CreateCredentialGatedBackfillProvider<FredHistoricalDataProvider>(
+            EnabledWhenOptedIn(cfg?.Enabled),
+            "FRED_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new FredHistoricalDataProvider(apiKey: apiKey, log: _log));
 
     private IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
     {
-        if (!(cfg?.Enabled ?? true))
+        if (!EnabledByDefault(cfg?.Enabled))
             return null;
 
+        // Nasdaq Data Link serves a limited free universe without a key, so an absent
+        // credential is not disqualifying — the key only raises rate limits.
         var credentials = CreateCredentialContext<NasdaqDataLinkHistoricalDataProvider>(
             ("NASDAQ_DATA_LINK_API_KEY", cfg?.ApiKey));
         var apiKey = credentials.Get("NASDAQ_DATA_LINK_API_KEY");
@@ -340,21 +306,15 @@ public sealed class ProviderFactory
     }
 
     private IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
-    {
-        if (cfg?.Enabled != true)
-            return null;
-
-        var credentials = CreateCredentialContext<RobinhoodHistoricalDataProvider>(
-            ("ROBINHOOD_ACCESS_TOKEN", null));
-        var accessToken = credentials.Get("ROBINHOOD_ACCESS_TOKEN");
-        if (string.IsNullOrEmpty(accessToken))
-            return null;
-
-        return new RobinhoodHistoricalDataProvider(
-            accessToken: accessToken,
-            priority: cfg.Priority,
-            log: _log);
-    }
+        // Opt-in only: unofficial API that requires an explicitly supplied access token.
+        => CreateCredentialGatedBackfillProvider<RobinhoodHistoricalDataProvider>(
+            EnabledWhenOptedIn(cfg?.Enabled),
+            "ROBINHOOD_ACCESS_TOKEN",
+            configuredValue: null,
+            accessToken => new RobinhoodHistoricalDataProvider(
+                accessToken: accessToken,
+                priority: cfg!.Priority,
+                log: _log));
 
     /// <summary>
     /// Creates all configured symbol search providers.
@@ -366,31 +326,31 @@ public sealed class ProviderFactory
         var backfillProviders = _config.Backfill?.Providers;
 
         // Synthetic reference universe search
-        TryAddSearchProvider(providers, () => CreateSyntheticSearchProvider(backfillProviders?.Synthetic));
+        TryAddSearchProvider(providers, "synthetic", () => CreateSyntheticSearchProvider(backfillProviders?.Synthetic));
 
         // Alpaca Symbol Search (uses same credentials as Alpaca backfill)
-        TryAddSearchProvider(providers, () => CreateAlpacaSearchProvider(backfillProviders?.Alpaca));
+        TryAddSearchProvider(providers, "alpaca", () => CreateAlpacaSearchProvider(backfillProviders?.Alpaca));
 
         // Finnhub Symbol Search (uses same credentials as Finnhub backfill)
-        TryAddSearchProvider(providers, () => CreateFinnhubSearchProvider(backfillProviders?.Finnhub));
+        TryAddSearchProvider(providers, "finnhub", () => CreateFinnhubSearchProvider(backfillProviders?.Finnhub));
 
         // Tiingo Symbol Search (uses same credentials as Tiingo backfill)
-        TryAddSearchProvider(providers, () => CreateTiingoSearchProvider(backfillProviders?.Tiingo));
+        TryAddSearchProvider(providers, "tiingo", () => CreateTiingoSearchProvider(backfillProviders?.Tiingo));
 
         // Alpha Vantage Symbol Search (uses same credentials as Alpha Vantage backfill)
-        TryAddSearchProvider(providers, () => CreateAlphaVantageSearchProvider(backfillProviders?.AlphaVantage));
+        TryAddSearchProvider(providers, "alphavantage", () => CreateAlphaVantageSearchProvider(backfillProviders?.AlphaVantage));
 
         // Twelve Data Symbol Search (uses same credentials as Twelve Data backfill)
-        TryAddSearchProvider(providers, CreateTwelveDataSearchProvider);
+        TryAddSearchProvider(providers, "twelvedata", CreateTwelveDataSearchProvider);
 
         // FRED Symbol Search (uses same credentials as FRED backfill)
-        TryAddSearchProvider(providers, () => CreateFredSearchProvider(backfillProviders?.Fred));
+        TryAddSearchProvider(providers, "fred", () => CreateFredSearchProvider(backfillProviders?.Fred));
 
         // Nasdaq Data Link Symbol Search (uses same credentials as Nasdaq Data Link backfill)
-        TryAddSearchProvider(providers, () => CreateNasdaqSearchProvider(backfillProviders?.Nasdaq));
+        TryAddSearchProvider(providers, "nasdaq", () => CreateNasdaqSearchProvider(backfillProviders?.Nasdaq));
 
         // Polygon Symbol Search (uses same credentials as Polygon backfill)
-        TryAddSearchProvider(providers, () => CreatePolygonSearchProvider(backfillProviders?.Polygon));
+        TryAddSearchProvider(providers, "polygon", () => CreatePolygonSearchProvider(backfillProviders?.Polygon));
 
         return providers
             .OrderBy(p => p.Priority)
@@ -399,6 +359,7 @@ public sealed class ProviderFactory
 
     private void TryAddSearchProvider(
         List<ISymbolSearchProvider> providers,
+        string providerLabel,
         Func<ISymbolSearchProvider?> factory)
     {
         try
@@ -411,14 +372,16 @@ public sealed class ProviderFactory
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to create symbol search provider");
+            // Isolate one provider's construction failure so the rest still register, but name the
+            // provider and surface the exception so configuration/credential errors are not silent.
+            _log.Warning(ex, "Failed to create symbol search provider {Provider}; skipping it for this run", providerLabel);
         }
     }
 
 
     private ISymbolSearchProvider? CreateSyntheticSearchProvider(SyntheticMarketDataConfig? cfg)
     {
-        if (cfg?.Enabled != true)
+        if (!EnabledWhenOptedIn(cfg?.Enabled))
             return null;
 
         return new SyntheticMarketDataClient(new NullMarketEventPublisher(), cfg);
@@ -426,8 +389,8 @@ public sealed class ProviderFactory
 
     private ISymbolSearchProvider? CreateAlpacaSearchProvider(AlpacaBackfillConfig? cfg)
     {
-        // Enabled by default if config is null (credential-based activation)
-        if (cfg != null && !cfg.Enabled)
+        // Enabled by default unless config explicitly disables it (credential-based activation).
+        if (!EnabledByDefault(cfg?.Enabled))
             return null;
 
         var credentials = CreateCredentialContext<AlpacaHistoricalDataProvider>(
@@ -435,110 +398,62 @@ public sealed class ProviderFactory
             ("ALPACA_SECRET_KEY", cfg?.SecretKey));
         var keyId = credentials.Get("ALPACA_KEY_ID");
         var secretKey = credentials.Get("ALPACA_SECRET_KEY");
-        if (string.IsNullOrEmpty(keyId) || string.IsNullOrEmpty(secretKey))
+        if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
         return new AlpacaSymbolSearchProviderRefactored(keyId, secretKey, httpClient: null, log: _log);
     }
 
     private ISymbolSearchProvider? CreateFinnhubSearchProvider(FinnhubBackfillConfig? cfg)
-    {
-        // Enabled by default if config is null (credential-based activation)
-        if (cfg != null && !cfg.Enabled)
-            return null;
-
-        var credentials = CreateCredentialContext<FinnhubHistoricalDataProvider>(
-            ("FINNHUB_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("FINNHUB_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new FinnhubSymbolSearchProviderRefactored(apiKey, httpClient: null, log: _log);
-    }
+        => CreateCredentialGatedSearchProvider<FinnhubHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "FINNHUB_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new FinnhubSymbolSearchProviderRefactored(apiKey, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreateTiingoSearchProvider(TiingoBackfillConfig? cfg)
-    {
-        // Enabled by default if config is null (credential-based activation)
-        if (cfg != null && !cfg.Enabled)
-            return null;
-
-        var credentials = CreateCredentialContext<TiingoHistoricalDataProvider>(
-            ("TIINGO_API_TOKEN", cfg?.ApiToken));
-        var token = credentials.Get("TIINGO_API_TOKEN");
-        if (string.IsNullOrEmpty(token))
-            return null;
-
-        return new TiingoSymbolSearchProvider(token, httpClient: null, log: _log);
-    }
+        => CreateCredentialGatedSearchProvider<TiingoHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "TIINGO_API_TOKEN",
+            cfg?.ApiToken,
+            token => new TiingoSymbolSearchProvider(token, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreateAlphaVantageSearchProvider(AlphaVantageBackfillConfig? cfg)
-    {
         // Keep Alpha Vantage opt-in to avoid consuming the constrained free-tier quota implicitly.
-        if (!(cfg?.Enabled ?? false))
-            return null;
-
-        var credentials = CreateCredentialContext<AlphaVantageHistoricalDataProvider>(
-            ("ALPHA_VANTAGE_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("ALPHA_VANTAGE_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log);
-    }
+        => CreateCredentialGatedSearchProvider<AlphaVantageHistoricalDataProvider>(
+            EnabledWhenOptedIn(cfg?.Enabled),
+            "ALPHA_VANTAGE_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreateTwelveDataSearchProvider()
-    {
-        var credentials = CreateCredentialContext<TwelveDataHistoricalDataProvider>(
-            ("TWELVEDATA_API_KEY", null));
-        var apiKey = credentials.Get("TWELVEDATA_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log);
-    }
+        => CreateCredentialGatedSearchProvider<TwelveDataHistoricalDataProvider>(
+            enabled: true,
+            "TWELVEDATA_API_KEY",
+            configuredValue: null,
+            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreateFredSearchProvider(FredBackfillConfig? cfg)
-    {
-        if (cfg != null && !cfg.Enabled)
-            return null;
-
-        var credentials = CreateCredentialContext<FredHistoricalDataProvider>(
-            ("FRED_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("FRED_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new FredSymbolSearchProvider(apiKey, httpClient: null, log: _log);
-    }
+        => CreateCredentialGatedSearchProvider<FredHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "FRED_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new FredSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreateNasdaqSearchProvider(NasdaqBackfillConfig? cfg)
-    {
-        if (cfg != null && !cfg.Enabled)
-            return null;
-
-        var credentials = CreateCredentialContext<NasdaqDataLinkHistoricalDataProvider>(
-            ("NASDAQ_DATA_LINK_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("NASDAQ_DATA_LINK_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new NasdaqDataLinkSymbolSearchProvider(apiKey, httpClient: null, log: _log);
-    }
+        => CreateCredentialGatedSearchProvider<NasdaqDataLinkHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "NASDAQ_DATA_LINK_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new NasdaqDataLinkSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreatePolygonSearchProvider(PolygonBackfillConfig? cfg)
-    {
-        // Enabled by default if config is null (credential-based activation)
-        if (cfg != null && !cfg.Enabled)
-            return null;
-
-        var credentials = CreateCredentialContext<PolygonHistoricalDataProvider>(
-            ("POLYGON_API_KEY", cfg?.ApiKey));
-        var apiKey = credentials.Get("POLYGON_API_KEY");
-        if (string.IsNullOrEmpty(apiKey))
-            return null;
-
-        return new PolygonSymbolSearchProvider(apiKey, httpClient: null, log: _log);
-    }
+        // Enabled by default unless config explicitly disables it (credential-based activation).
+        => CreateCredentialGatedSearchProvider<PolygonHistoricalDataProvider>(
+            EnabledByDefault(cfg?.Enabled),
+            "POLYGON_API_KEY",
+            cfg?.ApiKey,
+            apiKey => new PolygonSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     /// <summary>
     /// Creates a composite backfill provider with automatic failover.
@@ -561,6 +476,60 @@ public sealed class ProviderFactory
             enableCrossValidation: false,
             log: _log);
     }
+
+    /// <summary>
+    /// A provider participates unless its configuration explicitly disables it.
+    /// Absent configuration (<see langword="null"/>) is treated as enabled.
+    /// </summary>
+    private static bool EnabledByDefault(bool? configuredEnabled) => configuredEnabled != false;
+
+    /// <summary>
+    /// A provider participates only when its configuration explicitly enables it.
+    /// Absent configuration (<see langword="null"/>) is treated as disabled (opt-in).
+    /// </summary>
+    private static bool EnabledWhenOptedIn(bool? configuredEnabled) => configuredEnabled == true;
+
+    /// <summary>
+    /// Shared template for the single-credential, credential-gated providers. Resolves one
+    /// credential through the attribute-based <typeparamref name="TCredentialSource"/> context
+    /// and invokes <paramref name="factory"/> only when the provider is <paramref name="enabled"/>
+    /// and the credential resolves to a non-blank value. Returns <see langword="null"/> (provider
+    /// omitted) when disabled or the credential is absent.
+    /// </summary>
+    /// <typeparam name="TCredentialSource">
+    /// The provider type whose <c>[RequiresCredential]</c> attributes drive credential resolution.
+    /// Symbol-search providers reuse their historical-provider counterpart's credential metadata.
+    /// </typeparam>
+    /// <typeparam name="TResult">The provider interface returned by <paramref name="factory"/>.</typeparam>
+    private TResult? CreateCredentialGatedProvider<TCredentialSource, TResult>(
+        bool enabled,
+        string credentialName,
+        string? configuredValue,
+        Func<string, TResult> factory)
+        where TResult : class
+    {
+        if (!enabled)
+            return null;
+
+        var credential = CreateCredentialContext<TCredentialSource>((credentialName, configuredValue)).Get(credentialName);
+        return string.IsNullOrWhiteSpace(credential) ? null : factory(credential);
+    }
+
+    private IHistoricalDataProvider? CreateCredentialGatedBackfillProvider<TCredentialSource>(
+        bool enabled,
+        string credentialName,
+        string? configuredValue,
+        Func<string, IHistoricalDataProvider> factory)
+        => CreateCredentialGatedProvider<TCredentialSource, IHistoricalDataProvider>(
+            enabled, credentialName, configuredValue, factory);
+
+    private ISymbolSearchProvider? CreateCredentialGatedSearchProvider<TCredentialSource>(
+        bool enabled,
+        string credentialName,
+        string? configuredValue,
+        Func<string, ISymbolSearchProvider> factory)
+        => CreateCredentialGatedProvider<TCredentialSource, ISymbolSearchProvider>(
+            enabled, credentialName, configuredValue, factory);
 
     private ICredentialContext CreateCredentialContext<TProvider>(params (string Name, string? Value)[] configuredValues)
     {
