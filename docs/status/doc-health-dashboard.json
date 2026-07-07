@@ -1,7 +1,7 @@
 {
-  "total_files": 543,
-  "total_lines": 90724,
-  "orphaned_count": 208,
+  "total_files": 538,
+  "total_lines": 88633,
+  "orphaned_count": 205,
   "no_heading_count": 38,
   "stale_count": 0,
   "todo_count": 204,
@@ -4189,7 +4189,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1374,
+      "line_count": 1342,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4253,7 +4253,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 526,
+      "line_count": 530,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4421,7 +4421,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 1899,
+      "line_count": 1837,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4429,7 +4429,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1248,
+      "line_count": 1218,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

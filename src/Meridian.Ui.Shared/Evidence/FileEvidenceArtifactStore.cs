@@ -773,7 +773,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             return false;
         if (!string.IsNullOrWhiteSpace(request.ReportPackId) && !string.Equals(request.ReportPackId, linkage?.ReportPackId, StringComparison.OrdinalIgnoreCase))
             return false;
-        if (!string.IsNullOrWhiteSpace(request.ReconciliationCaseId) && !string.Equals(request.ReconciliationCaseId, linkage?.ReconciliationCaseId, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(request.ReconciliationCaseId) && !ReconciliationCaseIdMatches(request.ReconciliationCaseId, linkage, identity))
             return false;
         if (!string.IsNullOrWhiteSpace(request.AccountingRecordId) && !AccountingRecordIdMatches(request.AccountingRecordId, linkage, identity))
         {
@@ -1052,6 +1052,18 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         => string.Equals(evidenceSubject, linkage?.EvidenceSubject, StringComparison.OrdinalIgnoreCase) ||
            string.Equals(evidenceSubject, $"{identity.SubjectKind}/{identity.SubjectId}", StringComparison.OrdinalIgnoreCase) ||
            string.Equals(evidenceSubject, identity.SubjectId, StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReconciliationCaseIdMatches(
+        string reconciliationCaseId,
+        EvidenceSubjectLinkageDto? linkage,
+        EvidenceVaultIdentityDto identity)
+        => string.Equals(reconciliationCaseId, linkage?.ReconciliationCaseId, StringComparison.OrdinalIgnoreCase) ||
+           (string.Equals(identity.SubjectKind, "reconciliation-case", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(reconciliationCaseId, identity.SubjectId, StringComparison.OrdinalIgnoreCase)) ||
+           ResolveIdentityDocuments(identity).Any(document =>
+               document.ObjectLinks.Any(link =>
+                   link.LinkKind == EvidenceDocumentLinkKindDto.ReconciliationCase &&
+                   string.Equals(link.ObjectId, reconciliationCaseId, StringComparison.OrdinalIgnoreCase)));
 
     private static bool AccountingRecordIdMatches(
         string accountingRecordId,
