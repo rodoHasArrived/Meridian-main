@@ -241,25 +241,29 @@ public class EventPipelineTests : IAsyncLifetime
     [Fact]
     public async Task PeakQueueSize_TracksHighWaterMark()
     {
-        // Arrange - Use a slow consumer so events queue up
-        await using var sink = new MockStorageSink { ProcessingDelay = TimeSpan.FromMilliseconds(50) };
-        await using var pipeline = new EventPipeline(sink, capacity: 1000, enablePeriodicFlush: false);
+        // Arrange - block the first append so subsequent events remain queued deterministically.
+        var releaseTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var sink = new BlockingStorageSink(releaseTcs.Task);
+        await using var pipeline = new EventPipeline(sink, capacity: 1000, batchSize: 1, enablePeriodicFlush: false);
 
-        // Act - Publish events faster than they can be consumed
+        // Act - Publish events while the single consumer is blocked on the first append.
         for (int i = 0; i < 100; i++)
         {
             pipeline.TryPublish(CreateTradeEvent("SPY"));
         }
 
-        // Wait until at least some events are consumed (proves pipeline ran)
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        while (pipeline.ConsumedCount < 1 && sw.ElapsedMilliseconds < 2000)
+        try
         {
-            await Task.Delay(1);
-        }
+            await sink.WaitForFirstBlockAsync(TimeSpan.FromSeconds(5));
+            sink.ReceivedCount.Should().BeGreaterThan(0);
 
-        // Assert - Peak should have been recorded when events were queued
-        pipeline.PeakQueueSize.Should().BeGreaterThan(0);
+            // Assert - Peak should have been recorded when events were queued
+            pipeline.PeakQueueSize.Should().BeGreaterThan(0);
+        }
+        finally
+        {
+            releaseTcs.TrySetResult(true);
+        }
     }
 
     #endregion
