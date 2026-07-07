@@ -14,68 +14,55 @@ internal sealed class ConfigCommands : ICliCommand
 {
     private readonly ConfigurationService _configService;
     private readonly ILogger _log;
+    private readonly CliCommandRouteTable _routes;
 
     public ConfigCommands(ConfigurationService configService, ILogger log)
     {
         _configService = configService;
         _log = log;
+        _routes = new CliCommandRouteTable(
+            CliCommandRoute.Flag("--wizard", RunWizardAsync),
+            CliCommandRoute.Flag("--auto-config", RunAutoConfig),
+            CliCommandRoute.When(IsQuickstartAlias, RunQuickstartAsync),
+            CliCommandRoute.Flag("--detect-providers", _ => RunDetectProviders()),
+            CliCommandRoute.Flag("--generate-config", RunGenerateConfig),
+            CliCommandRoute.Flag("--generate-config-schema", RunGenerateConfigSchema),
+            CliCommandRoute.Flag("--list-presets", _ => RunListPresets()),
+            CliCommandRoute.Flag("--preset", RunApplyPreset));
     }
 
-    public IReadOnlyList<string> Triggers { get; } = ["--wizard", "--auto-config", "--detect-providers", "--generate-config", "--generate-config-schema", "--preset", "--list-presets"];
+    public IReadOnlyList<string> Triggers { get; } = ["--auto-config", "--detect-providers", "--generate-config", "--generate-config-schema", "--list-presets", "--preset", "--wizard"];
 
-    public bool CanHandle(string[] args)
-        => CliArguments.MatchesAnyFlag(args, Triggers) || IsQuickstartAlias(args);
+    public bool CanHandle(string[] args) => _routes.CanHandle(args);
 
-    public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+    public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+        => _routes.ExecuteAsync(args, ct);
+
+    private async Task<CliResult> RunWizardAsync(string[] args, CancellationToken ct)
     {
-        if (CliArguments.HasFlag(args, "--wizard"))
-        {
-            _log.Information("Starting configuration wizard...");
-            var result = await _configService.RunWizardAsync(ct);
-            return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
-        }
+        _log.Information("Starting configuration wizard...");
+        var result = await _configService.RunWizardAsync(ct);
+        return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
+    }
 
-        if (CliArguments.HasFlag(args, "--auto-config"))
-        {
-            _log.Information("Running auto-configuration...");
-            var result = _configService.RunAutoConfig();
-            return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
-        }
+    private CliResult RunAutoConfig(string[] args)
+    {
+        _log.Information("Running auto-configuration...");
+        var result = _configService.RunAutoConfig();
+        return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
+    }
 
-        if (IsQuickstartAlias(args))
-        {
-            _log.Information("Running quickstart setup...");
-            var result = await _configService.RunQuickstartAsync(ct);
-            return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
-        }
+    private async Task<CliResult> RunQuickstartAsync(string[] args, CancellationToken ct)
+    {
+        _log.Information("Running quickstart setup...");
+        var result = await _configService.RunQuickstartAsync(ct);
+        return CliResult.FromBool(result.Success, ErrorCode.ConfigurationInvalid);
+    }
 
-        if (CliArguments.HasFlag(args, "--detect-providers"))
-        {
-            _configService.PrintProviderDetection();
-            return CliResult.Ok();
-        }
-
-        if (CliArguments.HasFlag(args, "--generate-config"))
-        {
-            return RunGenerateConfig(args);
-        }
-
-        if (CliArguments.HasFlag(args, "--generate-config-schema"))
-        {
-            return RunGenerateConfigSchema(args);
-        }
-
-        if (CliArguments.HasFlag(args, "--list-presets"))
-        {
-            return RunListPresets();
-        }
-
-        if (CliArguments.HasFlag(args, "--preset"))
-        {
-            return await RunApplyPreset(args);
-        }
-
-        return CliResult.Fail(ErrorCode.Unknown);
+    private CliResult RunDetectProviders()
+    {
+        _configService.PrintProviderDetection();
+        return CliResult.Ok();
     }
 
     private static CliResult RunListPresets()
