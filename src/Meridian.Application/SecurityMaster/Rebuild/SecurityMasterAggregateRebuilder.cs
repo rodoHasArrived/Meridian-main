@@ -1,7 +1,7 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Rebuild;
 
 public sealed class SecurityMasterAggregateRebuilder
 {

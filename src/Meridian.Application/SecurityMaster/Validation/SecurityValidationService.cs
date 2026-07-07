@@ -4,7 +4,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Validation;
 
 public interface ISecurityValidationService
 {

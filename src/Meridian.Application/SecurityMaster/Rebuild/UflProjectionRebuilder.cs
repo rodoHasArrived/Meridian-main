@@ -2,7 +2,7 @@ using Meridian.Core.Exceptions;
 using Meridian.ReferenceData.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Rebuild;
 
 /// <summary>
 /// Routes UFL projection rebuild requests through the shared Security Master rebuild pipeline.

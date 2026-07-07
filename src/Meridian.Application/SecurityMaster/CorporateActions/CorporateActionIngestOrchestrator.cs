@@ -3,7 +3,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.CorporateActions;
 
 /// <summary>
 /// Request for a corporate-action ingest sweep. When <see cref="Symbols"/> is null or empty

@@ -3,7 +3,7 @@ using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Application.SecurityMaster.Validation;
 
 public sealed record SecurityValidationContext(
     SecurityProjectionRecord Record,
