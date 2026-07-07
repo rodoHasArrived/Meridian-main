@@ -3540,11 +3540,14 @@ public sealed class EvidenceWorkflowFabricTests
 
     private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection(Guid? ledgerBookId = null)
     {
-        // Anchor evidence timestamps to the current time so the seven-day freshness window in
-        // EvidenceContributors.Node keeps the projected evidence "Ready" regardless of the run date.
-        // The 20260630 subject identifiers and DateOnly effective dates below are stable literals and
-        // are intentionally left fixed; only the as-of/occurred timestamp needs to stay recent.
+        // Anchor evidence timestamps and effective dates to the current time so the seven-day
+        // freshness window in EvidenceContributors.Node keeps the projected required evidence
+        // "Ready" regardless of the run date. Required-node freshness derives from both the
+        // as-of timestamp (now) and the expected-cash/bank EffectiveDate (via DateFrom), so both
+        // must stay recent. The 20260630 subject identifiers below are stable string literals and
+        // are intentionally left fixed.
         var now = DateTimeOffset.UtcNow.AddHours(-1);
+        var effectiveDate = DateOnly.FromDateTime(now.UtcDateTime);
         var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var fundEvent = new PrivateCapitalFundEventDto(
             "fund-event:fund-alpha:capital-call:20260630",
@@ -3552,7 +3555,7 @@ public sealed class EvidenceWorkflowFabricTests
             ManualJournalEntryTypeDto.CapitalCall,
             ManualJournalEntryStatusDto.Submitted,
             journalEntryId,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             "capital-account:fund-alpha:lp-1",
             "investor:lp-1",
             "USD",
@@ -3575,7 +3578,7 @@ public sealed class EvidenceWorkflowFabricTests
             ManualJournalEntryTypeDto.CapitalCall,
             ManualJournalEntryStatusDto.Submitted,
             journalEntryId,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             100m,
             100m,
             100m,
@@ -3591,7 +3594,7 @@ public sealed class EvidenceWorkflowFabricTests
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId,
             ManualJournalEntryStatusDto.Submitted,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             "USD",
             100m,
             100m,
@@ -3615,7 +3618,7 @@ public sealed class EvidenceWorkflowFabricTests
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId,
             ManualJournalEntryStatusDto.Submitted,
-            new DateOnly(2026, 6, 30),
+            effectiveDate,
             "USD",
             100m,
             1,
@@ -3634,7 +3637,7 @@ public sealed class EvidenceWorkflowFabricTests
             ManagementFees: 0m,
             NetActivity: 100m,
             FundEventCount: 1,
-            LastEffectiveDate: new DateOnly(2026, 6, 30),
+            LastEffectiveDate: effectiveDate,
             LastFundEventType: fundEvent.FundEventType,
             FundEventIds: [fundEvent.FundEventId]);
         var records = PrivateCapitalFundEventLedgerRecordBuilder.Build(
@@ -3672,7 +3675,7 @@ public sealed class EvidenceWorkflowFabricTests
                 PaymentIntentCashDirectionDto.Inflow,
                 100m,
                 "USD",
-                new DateOnly(2026, 6, 30),
+                effectiveDate,
                 fundEvent.SettlementReference,
                 fundEvent.FundEventId,
                 fundEvent.FundEventType,
@@ -3712,7 +3715,7 @@ public sealed class EvidenceWorkflowFabricTests
                     "Retained cash evidence confirms the expected capital-call inflow.",
                     Amount: 100m,
                     Currency: "USD",
-                    EffectiveDate: new DateOnly(2026, 6, 30),
+                    EffectiveDate: effectiveDate,
                     RecordedAtUtc: now,
                     ExternalRef: fundEvent.SettlementReference,
                     EvidenceRoute: "/evidence/fund-alpha/bank-cash-capital-call.pdf")
