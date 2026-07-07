@@ -1,0 +1,58 @@
+<!-- @dsCard group="Accounting" viewport="1120x720" name="Trial balance & aging" subtitle="TrialBalance sectioned proof + AgingTable escalating buckets" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting — trial balance & aging</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); }
+  .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
+    letter-spacing: .03em; color: var(--text-muted); margin: 0 0 8px; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .grid { display: grid; grid-template-columns: 480px 1fr; gap: 20px; align-items: start; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { TrialBalance, AgingTable } = window.MeridianDesignSystem_4f61be;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div className="grid">
+    <div className="col">
+      <p className="lbl">TrialBalance — sectioned, Σdebit = Σcredit</p>
+      <TrialBalance
+        currency="$" selectedIndex={1} onRowClick={() => {}}
+        rows={[
+          { code: "1010", account: "Cash — operating",      type: "asset",        balance: 412800.55 },
+          { code: "1210", account: "Fees receivable",       type: "asset",        balance: 92520.00 },
+          { code: "1550", account: "Accum. depreciation",   type: "contra-asset", balance: 42100.00 },
+          { code: "2100", account: "Accrued expenses",      type: "liability",    balance: 18240.00 },
+          { code: "3000", account: "Partners' capital",     type: "equity",       balance: 380000.00 },
+          { code: "4010", account: "Management fees",       type: "revenue",      balance: 61180.55 },
+          { code: "6020", account: "Market-data expense",   type: "expense",      balance: 38300.00 },
+          { code: "6110", account: "Custody charges",       type: "expense",      balance: 1900.00 },
+        ]}
+      />
+    </div>
+    <div className="col">
+      <p className="lbl">AgingTable — receivables, escalating washes</p>
+      <AgingTable
+        currency="$" caption="Receivables aging" selectedIndex={2} onRowClick={() => {}}
+        rows={[
+          { name: "Helios Capital",   ref: "AR-1102", amounts: [48200.00, 12800.00, 0, 0, 0] },
+          { name: "Northgate Fund",   ref: "AR-1088", amounts: [0, 0, 22400.00, 0, 9120.00] },
+          { name: "Blue Cedar LP",    ref: "AR-1121", amounts: [15750.00, 0, 0, 6200.00, 0] },
+          { name: "Straits Advisors", ref: "AR-1075", amounts: [0, 8400.00, 0, 0, 2310.50] },
+        ]}
+      />
+    </div>
+  </div>
+);
+</script>
+</body>
+</html>

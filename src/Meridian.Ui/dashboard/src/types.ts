@@ -4545,7 +4545,22 @@ export interface StatementImportCommitResult {
   evidenceVaultIdentity?: EvidenceVaultIdentity | null;
   evidenceWorkbenchRoute?: string | null;
   reconciliationRoute?: string | null;
+  breakIds?: string[];
+  caseIds?: string[];
+  reconciliationCaseRoutes?: string[];
+  reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
   nextActions?: string[];
+}
+
+export interface StatementImportReconciliationCaseLink {
+  caseId: string;
+  breakId?: string | null;
+  route: string;
+  label: string;
+  status: string;
+  priority: string;
+  reason: string;
+  suggestedNextAction: string;
 }
 
 export interface StatementFetchSchedule {

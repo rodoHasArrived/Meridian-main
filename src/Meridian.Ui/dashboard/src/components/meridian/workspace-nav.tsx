@@ -3,27 +3,10 @@ import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
+import { meridianWorkspaceIconAssets } from "@/design-system/assets";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { WorkspaceKey } from "@/types";
-import tradingIcon from "@/assets/icons/trading.svg";
-import portfolioIcon from "@/assets/icons/account-portfolio.svg";
-import accountingIcon from "@/assets/icons/run-ledger.svg";
-import reportingIcon from "@/assets/icons/governance.svg";
-import strategyIcon from "@/assets/icons/strategy-builder.svg";
-import dataIcon from "@/assets/icons/data-sources.svg";
-import settingsIcon from "@/assets/icons/settings.svg";
-
-// Meridian line-icon module set (24px grid, 1.5px stroke) — one per operator workspace.
-const icons: Record<WorkspaceKey, string> = {
-  trading: tradingIcon,
-  portfolio: portfolioIcon,
-  accounting: accountingIcon,
-  reporting: reportingIcon,
-  strategy: strategyIcon,
-  data: dataIcon,
-  settings: settingsIcon
-};
 
 /**
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
@@ -107,7 +90,7 @@ export function WorkspaceNav({
           </div>
         ) : null}
         {viewModel.items.map((item) => {
-          const iconSrc = icons[item.key];
+          const iconSrc = meridianWorkspaceIconAssets[item.key];
           const expanded = expandedWorkspaces.has(item.key);
           const subMenuId = `workspace-nav-${density}-${item.key}-sections`;
           return (

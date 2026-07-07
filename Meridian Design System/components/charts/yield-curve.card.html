@@ -1,0 +1,66 @@
+<!-- @dsCard group="Charts" viewport="1180x540" name="Yield curve" subtitle="YieldCurve — term structure with prior-date overlay and 2Y–10Y spread readout" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yield curve</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { YieldCurve } = window.MeridianDesignSystem_4f61be;
+
+const CURRENT = [
+  { tenor: "1M",  years: 1/12, value: 5.34 },
+  { tenor: "3M",  years: 0.25, value: 5.30 },
+  { tenor: "6M",  years: 0.5,  value: 5.18 },
+  { tenor: "1Y",  years: 1,    value: 4.86 },
+  { tenor: "2Y",  years: 2,    value: 4.52 },
+  { tenor: "3Y",  years: 3,    value: 4.31 },
+  { tenor: "5Y",  years: 5,    value: 4.18 },
+  { tenor: "7Y",  years: 7,    value: 4.21 },
+  { tenor: "10Y", years: 10,   value: 4.28 },
+  { tenor: "20Y", years: 20,   value: 4.55 },
+  { tenor: "30Y", years: 30,   value: 4.44 },
+];
+const PRIOR = [
+  { tenor: "1M",  years: 1/12, value: 5.36 },
+  { tenor: "3M",  years: 0.25, value: 5.33 },
+  { tenor: "6M",  years: 0.5,  value: 5.24 },
+  { tenor: "1Y",  years: 1,    value: 5.01 },
+  { tenor: "2Y",  years: 2,    value: 4.71 },
+  { tenor: "3Y",  years: 3,    value: 4.49 },
+  { tenor: "5Y",  years: 5,    value: 4.33 },
+  { tenor: "7Y",  years: 7,    value: 4.34 },
+  { tenor: "10Y", years: 10,   value: 4.39 },
+  { tenor: "20Y", years: 20,   value: 4.66 },
+  { tenor: "30Y", years: 30,   value: 4.53 },
+];
+
+function Demo() {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
+      padding:14, maxWidth:1120, display:"flex", flexDirection:"column" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:10 }}>
+        <span style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em", color:"var(--text-muted)" }}>
+          YieldCurve · UST par curve
+        </span>
+        <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-secondary)" }}>
+          as-of 2026-07-02 · prior 2026-06-02
+        </span>
+      </div>
+      <div style={{ height:380 }}>
+        <YieldCurve points={CURRENT} compare={PRIOR}
+          label="2026-07-02" compareLabel="2026-06-02"
+          spread={{ a: "2Y", b: "10Y" }} />
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

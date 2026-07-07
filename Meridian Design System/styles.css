@@ -1,9 +1,15 @@
 /* Meridian Design System — global CSS entry point.
    @import lines only; everything reachable from here ships to consumers.
-   Grounded in the desktop app (src/Meridian.Wpf) "Institutional Ops" language. */
+   Light mode by default; dark mode via @media (prefers-color-scheme: dark) or [data-theme="dark"].
+   Grounded in the desktop app (src/Meridian.Wpf) "Institutional Ops" language.
+   Load order matters: colors (base) → theme (white-label remap) → colors-dark
+   (dark overrides) LAST, so dark's attribute/media rules win the cascade tie. */
 @import "./tokens/fonts.css";
 @import "./tokens/colors.css";
 @import "./tokens/typography.css";
 @import "./tokens/elevation.css";
 @import "./tokens/base.css";
 @import "./tokens/theme.css";
+@import "./tokens/colors-dark.css";
+@import "./tokens/contrast-modes.css";
+@import "./tokens/print.css";

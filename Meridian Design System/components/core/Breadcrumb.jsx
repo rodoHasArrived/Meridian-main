@@ -7,7 +7,7 @@ export function Breadcrumb({ items = [], separator = "·" }) {
     <nav aria-label="breadcrumb" style={{
       display:"flex", alignItems:"center", gap:6,
       fontFamily:"var(--font-data)", fontSize:12,
-      color:"var(--text-muted,#6E7781)",
+      color:"var(--text-muted,#59636F)",
       flexWrap:"wrap",
     }}>
       {items.map((item, i) => {
@@ -15,7 +15,7 @@ export function Breadcrumb({ items = [], separator = "·" }) {
         return (
           <React.Fragment key={i}>
             {i > 0 && (
-              <span style={{ color:"var(--text-disabled,#9AA4AF)", fontSize:10 }}>{separator}</span>
+              <span style={{ color:"var(--text-disabled,#889099)", fontSize:10 }}>{separator}</span>
             )}
             {isLast ? (
               <span style={{

@@ -2588,6 +2588,51 @@ public sealed class EvidenceWorkflowFabricTests
         fundDocuments.Should().ContainSingle(entry =>
             entry.VaultId == response.VaultIdentity.VaultId &&
             entry.Document.ObjectLinks.Any(link => link.LinkKind == EvidenceDocumentLinkKindDto.Fund));
+
+        var mismatchedLinkDocuments = await store.ListDocumentsAsync(new EvidenceVaultDocumentQueryDto(
+            LinkKind: EvidenceDocumentLinkKindDto.Period,
+            ObjectId: "close-task:cash-support"));
+        mismatchedLinkDocuments.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RequiresReviewWhenExtractionFindsNoFields()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-empty-extraction-{Guid.NewGuid():N}");
+        var bytes = Encoding.UTF8.GetBytes("unstructured document text");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var response = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            SubjectKind: "account",
+            SubjectId: "fund-alpha-cash",
+            IntakeChannel: "api",
+            FileName: "unclassified-support.txt",
+            ContentBase64: Convert.ToBase64String(bytes),
+            ReceivedBy: "fund-controller"), cts.Token);
+
+        var identity = await store.TryGetVaultIdentityAsync(response.VaultIdentity.VaultId, cts.Token);
+        identity.Should().NotBeNull();
+        identity!.SupportRequests.Should().ContainSingle(request =>
+            request.RequestKind == "ValidationIssue" &&
+            request.EvidenceId == response.IntakeId &&
+            request.Severity == EvidenceValidationSeverityDto.Warning);
+        identity.ManifestSnapshot.Should().NotBeNull();
+        identity.ManifestSnapshot!.Requests.Should().ContainSingle(request =>
+            request.RequestKind == "ValidationIssue" &&
+            request.Severity == EvidenceValidationSeverityDto.Warning);
+
+        await using var manifest = (await store.TryOpenManifestByVaultIdAsync(response.VaultIdentity.VaultId, cts.Token))!.Content;
+        using var manifestDocument = await JsonDocument.ParseAsync(manifest, cancellationToken: cts.Token);
+        var completeness = manifestDocument.RootElement.GetProperty("completeness");
+        completeness.GetProperty("status").GetString().Should().Be("ReviewRequired");
+        completeness.GetProperty("score").GetInt32().Should().Be(75);
+        completeness.GetProperty("readyIds").GetArrayLength().Should().Be(0);
+        completeness
+            .GetProperty("validationIssues")
+            .EnumerateArray()
+            .Should()
+            .Contain(issue => issue.GetProperty("code").GetString() == "intake-extraction-required");
     }
 
     [Fact]
@@ -2609,6 +2654,7 @@ public sealed class EvidenceWorkflowFabricTests
             ExtractionStatus = EvidenceExtractionStatusDto.NeedsReview,
             ReviewerState = new EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto.NeedsReview)
         }, cts.Token);
+        var originalContentHash = intake.VaultIdentity.ContentHashSha256;
 
         var review = await store.ReviewDocumentAsync(
             intake.VaultIdentity.VaultId,
@@ -2677,6 +2723,8 @@ public sealed class EvidenceWorkflowFabricTests
             !document.Authority.CanPost &&
             !document.Authority.CanCertify &&
             !document.Authority.CanRelease);
+        identity.ContentHashSha256.Should().NotBe(originalContentHash);
+        identity.ManifestSnapshot.ContentHashSha256.Should().Be(identity.ContentHashSha256);
 
         await using var manifest = (await store.TryOpenManifestByVaultIdAsync(intake.VaultIdentity.VaultId, cts.Token))!.Content;
         using var reader = new StreamReader(manifest);
@@ -2684,6 +2732,7 @@ public sealed class EvidenceWorkflowFabricTests
         manifestJson.Should().Contain("\"action\": \"DocumentReviewRecorded\"");
         manifestJson.Should().Contain("\"status\": \"Accepted\"");
         manifestJson.Should().Contain("\"fieldName\": \"endingCash\"");
+        manifestJson.Should().Contain(identity.ContentHashSha256);
 
         var unconfirmedReview = () => store.ReviewDocumentAsync(
             intake.VaultIdentity.VaultId,

@@ -34,6 +34,14 @@ function readRepositoryFile(path: string) {
   return readFileSync(resolve(process.cwd(), "../../..", path), "utf8");
 }
 
+function readDesignSystemPackageFile(path: string) {
+  return readFileSync(resolve(process.cwd(), "../../../Meridian Design System", path), "utf8");
+}
+
+function resolveDashboardAsset(path: string) {
+  return resolve(process.cwd(), "src/assets", path);
+}
+
 function resolveDashboardPrimitive(path: string) {
   return resolve(process.cwd(), "src/components/ui", path);
 }
@@ -43,10 +51,108 @@ function readDashboardPrimitive(path: string) {
 }
 
 describe("dashboard design-system contract", () => {
+  it("vendors the Meridian design-system source package beside the dashboard bridge", () => {
+    const manifest = JSON.parse(readDesignSystemPackageFile("_ds_manifest.json")) as {
+      components: Array<{ name: string; sourcePath: string }>;
+      tokens: Array<{ name: string; value: string; definedIn: string; scope?: string }>;
+    };
+    const componentSourceByName = new Map(
+      manifest.components.map((component) => [component.name, component.sourcePath])
+    );
+    const defaultThemeTokenByName = new Map(
+      manifest.tokens
+        .filter((token) => token.definedIn === "tokens/theme.css" && token.scope === undefined)
+        .map((token) => [token.name, token])
+    );
+
+    expect(componentSourceByName.get("Button")).toBe("components/core/Button.jsx");
+    expect(componentSourceByName.get("DenseDataTable")).toBe("components/data/DenseDataTable.jsx");
+    expect(componentSourceByName.get("WorkstationTopbar")).toBe("components/shell/WorkstationTopbar.jsx");
+    expect(componentSourceByName.get("StatusBar")).toBe("components/shell/StatusBar.jsx");
+    expect(componentSourceByName.get("SessionControls")).toBe("components/shell/SessionControls.jsx");
+    expect(componentSourceByName.get("TrialBalance")).toBe("components/accounting/TrialBalance.jsx");
+    expect(componentSourceByName.get("AgingTable")).toBe("components/accounting/AgingTable.jsx");
+    expect(componentSourceByName.get("ReconciliationPanel")).toBe("components/accounting/ReconciliationPanel.jsx");
+    expect(defaultThemeTokenByName.get("--theme-bg-canvas")).toMatchObject({
+      value: "#DEE3EA",
+      definedIn: "tokens/theme.css"
+    });
+    expect(defaultThemeTokenByName.get("--theme-accent")).toMatchObject({
+      value: "#2F6F8F",
+      definedIn: "tokens/theme.css"
+    });
+
+    expect(existsSync(resolve(process.cwd(), "../../../Meridian Design System/CHANGELOG.md"))).toBe(true);
+    expect(existsSync(resolve(process.cwd(), "../../../Meridian Design System/PATTERNS.md"))).toBe(true);
+    expect(existsSync(resolve(process.cwd(), "../../../Meridian Design System/guidelines/TOKEN_REFERENCE.md"))).toBe(true);
+    expect(existsSync(resolve(process.cwd(), "../../../Meridian Design System/components/operations/ReadinessPanel.jsx"))).toBe(true);
+    expect(existsSync(resolve(process.cwd(), "../../../Meridian Design System/templates/report-library/screen.jsx"))).toBe(true);
+    expect(existsSync(resolve(process.cwd(), "../../../Meridian Design System/screenshots/core-top.png"))).toBe(true);
+  });
+
+  it("declares dashboard-native live adapters backed by manifest component names", () => {
+    const manifest = JSON.parse(readDesignSystemPackageFile("_ds_manifest.json")) as {
+      components: Array<{ name: string; sourcePath: string }>;
+    };
+    const componentNames = new Set(manifest.components.map((component) => component.name));
+    const bridge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts");
+    const topbar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-topbar.tsx");
+    const statusBar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-status-bar.tsx");
+    const trialBalance = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/accounting/TrialBalanceTable.tsx");
+    const aging = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/accounting/AgingTable.tsx");
+    const reconciliation = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/accounting/ReconciliationComparisonPanel.tsx");
+
+    const liveComponentNames = [
+      "WorkstationTopbar",
+      "StatusBar",
+      "SessionControls",
+      "TrialBalance",
+      "AgingTable",
+      "ReconciliationPanel"
+    ];
+    for (const componentName of liveComponentNames) {
+      expect(componentNames.has(componentName)).toBe(true);
+      expect(bridge).toContain(`"${componentName}"`);
+    }
+
+    expect(bridge).toContain("DESIGN_SYSTEM_MANIFEST_FILE");
+    expect(bridge).toContain("DESIGN_SYSTEM_SHELL_ASSET_MAPPINGS");
+    expect(topbar).toContain("export function WorkstationTopbar");
+    expect(statusBar).toContain("export function WorkstationStatusBar");
+    expect(trialBalance).toContain("export function TrialBalanceTable");
+    expect(aging).toContain("export function AgingTable");
+    expect(reconciliation).toContain("export function ReconciliationComparisonPanel");
+  });
+
+  it("routes dashboard brand and workspace icons through the design-system asset bridge", () => {
+    const app = readRepositoryFile("src/Meridian.Ui/dashboard/src/app.tsx");
+    const bridge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts");
+    const nav = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.tsx");
+
+    expect(bridge).toContain('export const DESIGN_SYSTEM_PACKAGE_ROOT = "../../../Meridian Design System"');
+    expect(bridge).toContain('import meridianMarkLightUrl from "@/assets/brand/meridian-mark-light.svg"');
+    expect(bridge).toContain('import meridianTilePngUrl from "@/assets/brand/meridian-tile-256.png"');
+    expect(bridge).toContain('import strategyIconUrl from "@/assets/icons/strategy-builder.svg"');
+    expect(bridge).toContain("satisfies Record<WorkspaceKey, string>");
+    expect(app).toContain('import { meridianBrandAssets } from "@/design-system/assets"');
+    expect(app).toContain("meridianBrandAssets.markLight");
+    expect(nav).toContain('import { meridianWorkspaceIconAssets } from "@/design-system/assets"');
+    expect(nav).toContain("meridianWorkspaceIconAssets[item.key]");
+
+    expect(existsSync(resolveDashboardAsset("app.ico"))).toBe(true);
+    expect(existsSync(resolveDashboardAsset("brand/README.md"))).toBe(true);
+    expect(existsSync(resolveDashboardAsset("brand/meridian-tile-256.png"))).toBe(true);
+    expect(existsSync(resolveDashboardAsset("icons/README.md"))).toBe(true);
+  });
+
   it("keeps the workstation color tokens aligned with the Concrete light design-system source", () => {
     const styles = readDashboardStyles();
+    const designSystemTheme = readDesignSystemPackageFile("tokens/theme.css");
 
     // Concrete canvas #DEE3EA → 215 22% 89%; steel accent #2F6F8F → 200 51% 37%.
+    expect(designSystemTheme).toContain("--theme-bg-canvas: #DEE3EA");
+    expect(designSystemTheme).toContain("--theme-accent: #2F6F8F");
+    expect(designSystemTheme).toContain("--theme-border: #CBD3DC");
     expect(styles).toContain("--background: 215 22% 89%");
     expect(styles).toContain("--foreground: 215 15% 16%");
     expect(styles).toContain("--primary: 200 51% 37%");

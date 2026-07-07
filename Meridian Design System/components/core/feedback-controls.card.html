@@ -1,0 +1,148 @@
+<!-- @dsCard group="Core" viewport="1100x860" name="Feedback & Controls" subtitle="Spinner, ProgressBar, Slider, Skeleton, RadioGroup, SegmentedControl, Kbd" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Feedback & Controls</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const {
+  Spinner, ProgressBar, Slider, Skeleton, SkeletonTable,
+  RadioGroup, SegmentedControl, Kbd
+} = window.MeridianDesignSystem_4f61be;
+const { useState, useEffect } = React;
+
+function Section({ title, children, span }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:6,
+      padding:16, gridColumn: span ? `span ${span}` : undefined }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function Demo() {
+  const [pct, setPct] = useState(38);
+  const [view, setView] = useState("table");
+  const [range, setRange] = useState("1d");
+  const [recon, setRecon] = useState("auto");
+  const [loading, setLoading] = useState(true);
+  const [minYield, setMinYield] = useState(4.5);
+  const [maxDD, setMaxDD] = useState(12);
+
+  useEffect(() => {
+    const t = setInterval(() => setPct(function(p){ return p >= 100 ? 12 : p + 4; }), 700);
+    return function(){ clearInterval(t); };
+  }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 2600);
+    return function(){ clearTimeout(t); };
+  }, []);
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1040 }}>
+
+      <Section title="Spinner · async loading">
+        <div style={{ display:"flex", gap:24, alignItems:"center" }}>
+          <Spinner size="sm" />
+          <Spinner size="md" />
+          <Spinner size="lg" />
+          <Spinner variant="muted" />
+        </div>
+        <div style={{ marginTop:16 }}>
+          <Spinner size="sm" label="Backfilling 412,008 bars…" />
+        </div>
+      </Section>
+
+      <Section title="SegmentedControl · view switch">
+        <div style={{ display:"flex", flexDirection:"column", gap:12, alignItems:"flex-start" }}>
+          <SegmentedControl value={view} onChange={setView} options={[
+            { value:"table", label:"Table" },
+            { value:"chart", label:"Chart" },
+            { value:"split", label:"Split" }
+          ]} />
+          <SegmentedControl size="sm" value={range} onChange={setRange} options={[
+            { value:"1d", label:"1D" }, { value:"1w", label:"1W" },
+            { value:"1m", label:"1M" }, { value:"1y", label:"1Y" }
+          ]} />
+          <SegmentedControl value={recon} onChange={setRecon} fullWidth options={[
+            { value:"auto", label:"Matched", count:128 },
+            { value:"review", label:"Review", count:6 },
+            { value:"unmatched", label:"Unmatched", count:2 }
+          ]} />
+        </div>
+      </Section>
+
+      <Section title="Slider · backtest parameter sweeps">
+        <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+          <Slider label="Min yield" value={minYield} onChange={setMinYield}
+            min={0} max={10} step={0.25} showValue valueFmt={(v) => v.toFixed(2) + "%"} />
+          <Slider label="Max drawdown tolerance" value={maxDD} onChange={setMaxDD}
+            min={0} max={30} variant="danger" showValue valueFmt={(v) => "−" + v + "%"} />
+        </div>
+      </Section>
+
+      <Section title="ProgressBar · determinate & indeterminate">
+        <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+          <ProgressBar value={pct} label="Reconciliation run" showValue />
+          <ProgressBar value={82} variant="success" label="Sync · provider A" showValue />
+          <ProgressBar value={64} variant="warning" label="Disk usage" showValue size="sm" />
+          <ProgressBar label="Importing statements…" />
+        </div>
+      </Section>
+
+      <Section title="RadioGroup · single-select">
+        <RadioGroup value={recon} onChange={setRecon} options={[
+          { value:"auto", label:"Auto-match", hint:"Tolerance ±$0.01" },
+          { value:"review", label:"Manual review" },
+          { value:"unmatched", label:"Flag unmatched", hint:"Hold for operator" }
+        ]} />
+      </Section>
+
+      <Section title="Kbd · keyboard shortcuts">
+        <div style={{ display:"grid", gridTemplateColumns:"auto 1fr", gap:"10px 16px",
+          alignItems:"center", fontSize:13, color:"var(--text-secondary)" }}>
+          <Kbd keys="⌘ K" /><span>Command palette</span>
+          <Kbd keys="Ctrl+Enter" /><span>Post journal entry</span>
+          <Kbd keys="⌘ ⇧ R" /><span>Run reconciliation</span>
+          <Kbd keys="Esc" variant="solid" /><span>Cancel inline edit</span>
+        </div>
+      </Section>
+
+      <Section title="Skeleton · loading placeholders">
+        {loading ? (
+          <div>
+            <div style={{ display:"flex", gap:12, alignItems:"center", marginBottom:14 }}>
+              <Skeleton variant="circle" width={36} />
+              <div style={{ flex:1 }}><Skeleton variant="text" lines={2} /></div>
+            </div>
+            <SkeletonTable rows={4} columns={4} />
+          </div>
+        ) : (
+          <div style={{ fontSize:13, color:"var(--text-secondary)" }}>
+            <div style={{ display:"flex", gap:12, alignItems:"center", marginBottom:10 }}>
+              <div style={{ width:36, height:36, borderRadius:"50%", background:"var(--accent-ghost)",
+                display:"flex", alignItems:"center", justifyContent:"center", color:"var(--accent)",
+                fontWeight:700, fontFamily:"var(--font-data)" }}>AC</div>
+              <div><strong style={{ color:"var(--text-primary)" }}>Apex Capital LP</strong><br/>
+                <span style={{ fontSize:11, color:"var(--text-muted)" }}>Loaded in 2.6s</span></div>
+            </div>
+            <div style={{ fontFamily:"var(--font-data)", fontSize:12 }}>4 rows · 0 gaps · reconciled</div>
+          </div>
+        )}
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+DrawdownChart — the underwater plot. Drawdown (peak-to-trough decline, always ≤ 0) hangs below a 0% waterline as a filled curve, with an optional dashed limit rule and a marker on the maximum drawdown. Pairs beside an EquityCurve in backtest / strategy reporting.

@@ -1,0 +1,79 @@
+<!-- @dsCard group="Operations" viewport="980x620" name="Case triage & SLA" subtitle="CaseQueue · SlaChip · ProvenanceChip — mirrors the reconciliation case contracts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Operations — case triage & SLA</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 18px; background: var(--bg); }
+  .wrap { display: grid; gap: 16px; max-width: 940px; }
+  .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
+    letter-spacing: .04em; color: var(--text-muted); margin: 0 0 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { CaseQueue, SlaChip, ProvenanceChip } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+const NOW = "2026-07-05T14:32:00Z";
+const CASES = [
+  { id: "CASE-4181", summary: "Custody cash break exceeds tolerance band", category: "QuantityMismatch",
+    status: "Open", priority: "Critical", assignee: "D. Chen", openedAtUtc: "07-04 06:10Z",
+    sla: { state: "Breached", dueAtUtc: "2026-07-05T09:00:00Z" } },
+  { id: "CASE-4184", summary: "Dividend accrual unmatched — MSFT", category: "MissingCounterpart",
+    status: "InProgress", priority: "High", openedAtUtc: "07-04 11:40Z",
+    sla: { state: "Warning", dueAtUtc: "2026-07-05T17:00:00Z" } },
+  { id: "CASE-4188", summary: "FX rate variance on EUR settlement", category: "PriceTolerance",
+    status: "InProgress", priority: "Normal", assignee: "S. Patel", openedAtUtc: "07-05 08:02Z",
+    sla: { state: "OnTrack", dueAtUtc: "2026-07-07T09:00:00Z" } },
+  { id: "CASE-4173", summary: "Statement row failed canonicalization", category: "MappingError",
+    status: "Resolved", priority: "Normal", assignee: "D. Chen", openedAtUtc: "07-02 15:21Z",
+    sla: { state: "OnTrack", ageBand: "2–3 days" } },
+];
+
+function Demo() {
+  const [sel, setSel] = useState("CASE-4181");
+  return (
+    <div className="wrap">
+      <div>
+        <p className="lbl">CaseQueue — reconciliation case triage (priority rail · status · SLA · assignee)</p>
+        <CaseQueue items={CASES} selectedId={sel} onSelect={setSel} now={NOW} />
+      </div>
+
+      <div>
+        <p className="lbl">SlaChip — the case clock (deterministic: pass `now`)</p>
+        <div className="row">
+          <SlaChip state="OnTrack" dueAtUtc="2026-07-06T09:00:00Z" now={NOW} />
+          <SlaChip state="Warning" dueAtUtc="2026-07-05T17:00:00Z" now={NOW} />
+          <SlaChip state="Breached" dueAtUtc="2026-07-05T09:00:00Z" now={NOW} />
+          <SlaChip state="Paused" ageBand="3–5 days" />
+        </div>
+      </div>
+
+      <div>
+        <p className="lbl">ProvenanceChip — where a figure came from (worst-of evidence · reconciliation dot)</p>
+        <div className="row">
+          <ProvenanceChip sourceSystem="Northern Trust" asOfDate="2026-06-30"
+            completeness="Complete" reconciliation="Matched" />
+          <ProvenanceChip sourceSystem="Plaid" asOfDate="2026-07-01"
+            completeness="Complete" reconciliation="BreaksDetected" />
+          <ProvenanceChip sourceSystem="Manual upload" asOfDate="2026-05-31"
+            completeness="Partial" reconciliation="Unknown"
+            sourceDocumentId="stmt-2026-05.pdf" onOpen={() => {}} />
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

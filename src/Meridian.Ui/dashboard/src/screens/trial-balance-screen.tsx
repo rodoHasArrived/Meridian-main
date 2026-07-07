@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AccountTree, type AccountNode } from "@/components/accounting/AccountTree";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
+import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,6 +115,9 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     );
     return selectedRow ? trialBalanceAccountTreeCode(selectedRow) : undefined;
   }, [reconciliation.trialBalanceView.rows, reconciliation.trialBalanceView.selectedRowId]);
+
+  const shouldVirtualizeTrialBalance =
+    reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD;
 
   const relatedSecurities = useMemo(() => {
     const seen = new Map<string, string>();
@@ -311,25 +315,30 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
           </div>
           {reconciliation.trialBalanceView.hasRows ? (
             viewMode === "table" ? (
-              <DenseDataTable
-                columns={trialBalanceColumns}
-                rows={reconciliation.trialBalanceView.rows}
-                getRowId={(line) => line.rowId}
-                getRowAriaLabel={(line) => line.ariaLabel}
-                getRowSelectAriaLabel={(line) => line.selectAriaLabel}
-                getRowAriaControls={(line) => line.detailPanelId}
-                getRowAriaExpanded={(line) => line.isExpanded}
-                getRowTypeaheadText={(line) => line.accountLabel}
-                selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                emptyText={reconciliation.trialBalanceView.emptyDetail}
-                ariaLabel={reconciliation.trialBalanceView.tableLabel}
-                virtualization={
-                  reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD
-                    ? { rowHeight: 36, viewportRowCount: 15 }
-                    : null
-                }
-              />
+              shouldVirtualizeTrialBalance ? (
+                <DenseDataTable
+                  columns={trialBalanceColumns}
+                  rows={reconciliation.trialBalanceView.rows}
+                  getRowId={(line) => line.rowId}
+                  getRowAriaLabel={(line) => line.ariaLabel}
+                  getRowSelectAriaLabel={(line) => line.selectAriaLabel}
+                  getRowAriaControls={(line) => line.detailPanelId}
+                  getRowAriaExpanded={(line) => line.isExpanded}
+                  getRowTypeaheadText={(line) => line.accountLabel}
+                  selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                  onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                  emptyText={reconciliation.trialBalanceView.emptyDetail}
+                  ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                  virtualization={{ rowHeight: 36, viewportRowCount: 15 }}
+                />
+              ) : (
+                <TrialBalanceTable
+                  rows={reconciliation.trialBalanceView.rows}
+                  selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                  caption={reconciliation.trialBalanceView.tableLabel}
+                  onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                />
+              )
             ) : (
               <AccountTree
                 nodes={treeNodes}
