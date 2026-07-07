@@ -17,11 +17,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout, type FocusSignal, type FocusSignalTone } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
 import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts";
+import type { MetricSnapshot } from "@/types";
 import {
   usePriceAlertsScreenViewModel,
   type PriceAlertDetailAction,
@@ -33,6 +34,14 @@ import {
   type PriceAlertRowViewModel,
   type PriceAlertTriggerRowViewModel
 } from "@/screens/price-alerts-screen.view-model";
+
+/** Map a metric snapshot tone onto the ScreenLayout focus-signal accent. */
+const metricFocusTone: Record<MetricSnapshot["tone"], FocusSignalTone> = {
+  default: "neutral",
+  success: "positive",
+  warning: "caution",
+  danger: "critical"
+};
 
 export function PriceAlertsScreen() {
   const alerts = usePriceAlerts();
@@ -167,58 +176,58 @@ export function PriceAlertsScreen() {
   ];
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Data Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <BellRing className="h-5 w-5 text-primary" aria-hidden="true" />
-            Price alerts
-          </CardTitle>
-          <CardDescription>
-            {vm.heroDescription}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {vm.summaryMetrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
-          </div>
-          {vm.pollErrorPanel ? (
-            <p role={vm.pollErrorPanel.role} aria-live={vm.pollErrorPanel.ariaLive} className={vm.pollErrorPanel.className}>
-              {vm.pollErrorPanel.text}
-            </p>
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <BellRing className="h-5 w-5 text-primary" aria-hidden="true" />
+          Price alerts
+        </span>
+      }
+      scope="Data Lane"
+      description={vm.heroDescription}
+      focus={vm.summaryMetrics.map((metric): FocusSignal => ({
+        id: metric.id,
+        label: metric.label,
+        value: metric.value,
+        hint: metric.delta,
+        tone: metricFocusTone[metric.tone]
+      }))}
+      focusLabel="At a glance"
+    >
+      {vm.pollErrorPanel ? (
+        <p role={vm.pollErrorPanel.role} aria-live={vm.pollErrorPanel.ariaLive} className={vm.pollErrorPanel.className}>
+          {vm.pollErrorPanel.text}
+        </p>
+      ) : null}
+      {vm.storageWarningPanel ? (
+        <p
+          id={vm.storageWarningPanel.id}
+          role={vm.storageWarningPanel.role}
+          aria-live={vm.storageWarningPanel.ariaLive}
+          className={vm.storageWarningPanel.className}
+        >
+          {vm.storageWarningPanel.text}
+        </p>
+      ) : null}
+      {vm.notificationPanel ? (
+        <div
+          id={vm.notificationPanel.id}
+          role={vm.notificationPanel.role}
+          className={`flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm ${
+            vm.notificationPanel.tone === "warning"
+              ? "border-warning/30 bg-warning/10 text-warning"
+              : "border-border/70 bg-secondary/25 text-muted-foreground"
+          }`}
+        >
+          <span>{vm.notificationPanel.text}</span>
+          {vm.notificationPanel.action ? (
+          <Button type="button" variant="outline" size="sm" onClick={() => void vm.requestNotifications()} aria-label={vm.notificationPanel.action.ariaLabel}>
+            <Bell className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="ml-1.5">{vm.notificationPanel.action.label}</span>
+          </Button>
           ) : null}
-          {vm.storageWarningPanel ? (
-            <p
-              id={vm.storageWarningPanel.id}
-              role={vm.storageWarningPanel.role}
-              aria-live={vm.storageWarningPanel.ariaLive}
-              className={vm.storageWarningPanel.className}
-            >
-              {vm.storageWarningPanel.text}
-            </p>
-          ) : null}
-          {vm.notificationPanel ? (
-            <div
-              id={vm.notificationPanel.id}
-              role={vm.notificationPanel.role}
-              className={`mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm ${
-                vm.notificationPanel.tone === "warning"
-                  ? "border-warning/30 bg-warning/10 text-warning"
-                  : "border-border/70 bg-secondary/25 text-muted-foreground"
-              }`}
-            >
-              <span>{vm.notificationPanel.text}</span>
-              {vm.notificationPanel.action ? (
-              <Button type="button" variant="outline" size="sm" onClick={() => void vm.requestNotifications()} aria-label={vm.notificationPanel.action.ariaLabel}>
-                <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="ml-1.5">{vm.notificationPanel.action.label}</span>
-              </Button>
-              ) : null}
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -473,7 +482,7 @@ export function PriceAlertsScreen() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ScreenLayout>
   );
 }
 

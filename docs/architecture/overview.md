@@ -28,7 +28,7 @@ This is an expansion of the existing architecture, not a replacement of it.
 ### Presentation layer
 
 - browser workstation dashboard
-- WPF desktop application — deferred desktop shell retained for compatibility, validation, and maintenance
+- WPF desktop application — active desktop workstation (co-equal UI lane); current focus is web-UI parity
 - desktop-local API host and workstation API surfaces
 - CLI and operator tooling
 

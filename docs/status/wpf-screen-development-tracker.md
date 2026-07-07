@@ -650,7 +650,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Provider (ProviderPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +70 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +71 more.
 
 #### Backfill (`Backfill`)
 

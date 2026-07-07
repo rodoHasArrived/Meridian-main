@@ -7,7 +7,7 @@ namespace Meridian.Ledger;
 public sealed record PeriodCloseProjection(
     PeriodCloseInput Input,
     IReadOnlyList<PeriodCloseLine> Lines,
-    IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> JournalLines,
+    IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)> JournalLines,
     IReadOnlyDictionary<string, decimal> NetIncomeByScope)
 {
     /// <summary>Scope key used for accounts without a financial-account identifier.</summary>

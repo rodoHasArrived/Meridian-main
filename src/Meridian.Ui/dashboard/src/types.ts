@@ -1,4 +1,12 @@
 export * from "./types/market-data";
+export * from "./types/workstation-1";
+export * from "./types/workstation-2";
+export * from "./types/workstation-3";
+export * from "./types/workstation-4";
+export * from "./types/workstation-5";
+export * from "./types/workstation-6";
+export * from "./types/workstation-7";
+export * from "./types/workstation-8";
 
 export type WorkspaceKey =
   | "trading"
@@ -5666,6 +5674,46 @@ export interface ReportingDueScheduleRunResult {
   runs: ReportingScheduleRunResult[];
 }
 
+export interface ReportingStarterSeedSchedule {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  cadence: string;
+  description: string;
+  state?: ReportingScheduleRecord["state"] | string;
+  defaultPeriod?: string | null;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
+}
+
+export interface ReportingStarterKit {
+  kitId: string;
+  archetype: string;
+  displayName: string;
+  description: string;
+  templateIds: string[];
+  defaultLayoutId: string;
+  defaultPeriod: string;
+  seedSchedules: ReportingStarterSeedSchedule[];
+}
+
+export interface ReportingStarterKitState {
+  isProvisioned: boolean;
+  selectedKitId?: string | null;
+  archetype?: string | null;
+  enabledTemplateIds: string[];
+  defaultLayoutId?: string | null;
+  defaultPeriod?: string | null;
+  seedScheduleIds: string[];
+  provisionedAtUtc?: string | null;
+  provisionedBy?: string | null;
+}
+
+export interface ReportingStarterKitProvisionResult {
+  kit: ReportingStarterKit;
+  state: ReportingStarterKitState;
+  seededSchedules: ReportingScheduleRecord[];
+}
+
 export interface ReportingRunRequest {
   templateId: string;
   asOfDate?: string | null;
@@ -5675,6 +5723,7 @@ export interface ReportingRunRequest {
   datasetRows?: Record<string, string>[] | null;
   datasetSourceId?: string | null;
   retryReason?: string | null;
+  allowRestatement?: boolean;
 }
 
 export interface ReportingRunResult {
@@ -5839,6 +5888,8 @@ export interface AccountingReportingSummary {
   brandingThemes?: ReportBrandingTheme[];
   reportWriterDatasetSources?: ReportWriterDatasetSource[];
   dailyWork?: ReportingDailyWorkItem[];
+  starterKits?: ReportingStarterKit[] | null;
+  starterKitState?: ReportingStarterKitState | null;
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
@@ -6313,7 +6364,8 @@ export type ManualJournalEntryType =
   | "Subscription"
   | "Redemption"
   | "LpTransfer"
-  | "ManagementFee";
+  | "ManagementFee"
+  | "ClosingEntry";
 
 export interface LedgerBook {
   ledgerBookId: string;
@@ -7169,7 +7221,7 @@ export interface RuleDryRunResult {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
-export type LedgerPostingKind = "Originating" | "Adjustment";
+export type LedgerPostingKind = "Originating" | "Adjustment" | "ClosingEntry";
 export type AccountingTreatmentKind =
   | "General"
   | "Accrual"
@@ -7350,6 +7402,8 @@ export interface ManualJournalEntryLine {
   taxLotId?: string | null;
   description?: string | null;
   evidenceLink?: string | null;
+  ledgerAccountSymbol?: string | null;
+  ledgerAccountFinancialAccountId?: string | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {

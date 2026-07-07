@@ -19,8 +19,10 @@ internal sealed class LedgerCliCommand : ICliCommand
         "register",
     };
 
+    public IReadOnlyList<string> Triggers { get; } = ["ledger"];
+
     public bool CanHandle(string[] args)
-        => args.Length > 0 && args[0].Equals("ledger", StringComparison.OrdinalIgnoreCase);
+        => args.Length > 0 && Triggers.Any(trigger => args[0].Equals(trigger, StringComparison.OrdinalIgnoreCase));
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

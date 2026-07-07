@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [#########################-----] 83/100
+  [#########################-----] 84/100
   Rating: Good
 ```
 
@@ -26,7 +26,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 | Files without headings | 38 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 204 |
-| **Health score** | **83/100** |
+| **Health score** | **84/100** |
 
 ### Score Breakdown
 

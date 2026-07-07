@@ -8,23 +8,24 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 851 |
-| Valid | 470 |
+| Total code blocks | 875 |
+| Valid | 487 |
 | Invalid | 0 |
-| Skipped | 381 |
+| Skipped | 388 |
 
 ## Summary by Language
 
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
-| `(none)` | 85 | 0 | 0 | 85 |
-| `bash` | 150 | 150 | 0 | 0 |
+| `(none)` | 89 | 0 | 0 | 89 |
+| `bash` | 152 | 152 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 232 | 232 | 0 | 0 |
+| `csharp` | 246 | 246 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
-| `fsharp` | 53 | 0 | 0 | 53 |
+| `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 60 | 60 | 0 | 0 |
+| `jsonc` | 1 | 1 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
 | `markdown` | 16 | 0 | 0 | 16 |
@@ -34,7 +35,7 @@
 | `python` | 3 | 3 | 0 | 0 |
 | `text` | 101 | 0 | 0 | 101 |
 | `toml` | 31 | 0 | 0 | 31 |
-| `ts` | 1 | 0 | 0 | 1 |
+| `ts` | 3 | 0 | 0 | 3 |
 | `xml` | 9 | 9 | 0 | 0 |
 | `yaml` | 16 | 16 | 0 | 0 |
 
@@ -97,11 +98,13 @@ No invalid code examples found.
 | `docs/development/synthetic-provider-test-harness.md` | 1 |
 | `docs/development/ui-fixture-mode-guide.md` | 20 |
 | `docs/development/wpf-implementation-notes.md` | 2 |
+| `docs/development/wpf-web-ui-alignment-plan.md` | 1 |
 | `docs/diagrams/README.md` | 7 |
 | `docs/diagrams/ui/README.md` | 1 |
 | `docs/diagrams/uml/README.md` | 2 |
 | `docs/docfx/README.md` | 2 |
 | `docs/docfx/api/index.md` | 1 |
+| `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |
 | `docs/generated/README.md` | 1 |
 | `docs/integrations/fsharp-integration.md` | 7 |
@@ -110,6 +113,7 @@ No invalid code examples found.
 | `docs/operators/provider-backfill-operations.md` | 1 |
 | `docs/plans/security-master-passport-workbench.md` | 4 |
 | `docs/product/portfolio-cash-ladder-blueprint-2026-07.md` | 6 |
+| `docs/product/web-ui-report-run-stream-blueprint-2026-07.md` | 7 |
 | `docs/product/web-ui-stream-fan-out-blueprint-2026-07.md` | 4 |
 | `docs/reference/api-reference.md` | 11 |
 | `docs/reference/appsettings-schema.md` | 1 |

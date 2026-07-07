@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pluralizeCount } from "@/lib/format";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -1759,13 +1760,13 @@ export function buildEvidencePacketActions(input: {
 
     return {
       id: action.actionId,
-      label: action.label,
       detail: action.detail,
       targetLabel: formatPageTag(action.targetPageTag),
       tone: mapWorkflowActionTone(action.tone),
       href,
       control,
-      ...command
+      ...command,
+      label: action.label // row title; keep it from being clobbered by the command's button-verb label
     };
   });
 }
@@ -2256,7 +2257,7 @@ function buildFreshnessLabel(node: EvidenceNode): { label: string; tone: Evidenc
 }
 
 function formatCount(count: number, singular: string) {
-  return count === 1 ? `1 ${singular}` : `${count} ${singular}s`;
+  return pluralizeCount(count, singular);
 }
 
 function slugifyId(value: string) {

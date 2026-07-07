@@ -14,7 +14,8 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   ExportsReportRunner,
   type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState
+  type ExportsReportRunDraftState,
+  type RestatementTargetSelection
 } from "@/screens/reporting-screen.exports-runner";
 import { ReportingCommandStatusView, type ReportingCommandStatus } from "@/screens/reporting-screen.shared-components";
 import {
@@ -70,7 +71,13 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     asOfDate: todayIsoDate(),
     maxRetries: "0",
     requestedBy: "browser-user",
-    datasetSourceId: ""
+    datasetSourceId: "",
+    retryReason: "",
+    restatementTargetRunId: "",
+    restatementTemplateId: "",
+    restatementJobId: "",
+    restatementAsOfDate: "",
+    restatementDatasetSourceId: ""
   }));
   const [status, setStatus] = useState<ReportingCommandStatus | null>(null);
   const [manualDrafts, setManualDrafts] = useState<ManualJournalEntryDraft[]>([]);
@@ -121,36 +128,60 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
+  const onRestatementTargetChange = (target: RestatementTargetSelection | null) => {
+    setDraft((current) => ({
+      ...current,
+      restatementTargetRunId: target?.runId ?? "",
+      restatementTemplateId: target?.templateId ?? "",
+      restatementJobId: target?.jobId ?? "",
+      restatementAsOfDate: target?.asOfDate ?? "",
+      restatementDatasetSourceId: target?.datasetSourceId ?? "",
+      retryReason: target ? current.retryReason : ""
+    }));
+  };
+
   const onStandardDraftChange = (field: keyof typeof standardDraft, value: string | boolean) => {
     setStandardDraft((current) => ({ ...current, [field]: value }));
   };
 
   const onRun = async () => {
-    if (!selectedTemplate || !selectedTemplate.canRunOnDemand || runningTemplateRunId) {
+    if (runningTemplateRunId) {
+      return;
+    }
+
+    // Restatement runs from the selected released run's identity, independent of the current
+    // template selection; an ordinary run still needs a runnable template.
+    const isRestating = draft.restatementTargetRunId.trim().length > 0;
+    const identity = isRestating
+      ? { id: draft.restatementTargetRunId, name: `Restatement of ${draft.restatementTargetRunId}` }
+      : selectedTemplate && selectedTemplate.canRunOnDemand
+        ? { id: selectedTemplate.id, name: selectedTemplate.name }
+        : null;
+    if (!identity) {
       return;
     }
 
     setStatus({
-      id: selectedTemplate.id,
+      id: identity.id,
       label: "Report run",
       state: "running",
-      message: `${selectedTemplate.name} is running.`,
+      message: `${identity.name} is running.`,
       details: []
     });
 
     try {
       const result = await runReportingNow(buildExportsReportRunRequest(selectedTemplate, draft));
       setStatus({
-        id: selectedTemplate.id,
+        id: identity.id,
         label: "Report run",
         state: "success",
-        message: `${selectedTemplate.name} run created.`,
+        message: `${identity.name} run created.`,
         details: buildReportRunResultDetails(result.run)
       });
     } catch (error) {
-      const description = describeApiError(error, `${selectedTemplate.name} run failed.`);
+      const description = describeApiError(error, `${identity.name} run failed.`);
       setStatus({
-        id: selectedTemplate.id,
+        id: identity.id,
         label: "Report run",
         state: "error",
         message: description.summary,
@@ -532,6 +563,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester="browser-user"
         onDraftChange={onDraftChange}
+        onRestatementTargetChange={onRestatementTargetChange}
         onRun={() => void onRun()}
       />
 

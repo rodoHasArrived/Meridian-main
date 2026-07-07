@@ -233,7 +233,7 @@ function setOwnerHealthy(connection: OwnerConnection, healthy: boolean): void {
   }
 }
 
-/** Every frame (or successful open) proves liveness and restores the full failure budget. */
+/** Every data/heartbeat frame proves the stream works and restores the full failure budget. */
 function markOwnerSourceAlive(connection: OwnerConnection): void {
   connection.consecutiveErrors = 0;
   connection.reopenDelayMs = OWNER_REOPEN_BASE_DELAY_MS;
@@ -261,11 +261,16 @@ function attachOwnerSource(connection: OwnerConnection): void {
 
   // Guard every listener on `connection.source === source`: a replaced or reaped
   // source can still emit late events that must not disturb its successor.
+  //
+  // A 200 handshake alone must not restore the failure budget: an accept-then-drop
+  // loop (server crash-looping behind a proxy that streams the handshake) opens
+  // successfully on every browser auto-reconnect and would otherwise never hit the
+  // flap bound. Only real frames (quotes/heartbeat) prove the stream works.
   source.addEventListener("open", () => {
     if (connection.source !== source) {
       return;
     }
-    markOwnerSourceAlive(connection);
+    armOwnerStaleTimer(connection);
   });
 
   source.addEventListener("quotes", (event) => {

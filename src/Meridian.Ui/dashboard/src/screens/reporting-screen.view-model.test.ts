@@ -5,8 +5,11 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   buildRestatementReviewPanel,
+  deriveRestatementSeriesJobId,
+  latestReleasedRunsPerSeries,
   resolveReportPackProfileKeyCommand,
-  useReportingScreenViewModel
+  useReportingScreenViewModel,
+  type ReportingRunStatusRow
 } from "@/screens/reporting-screen.view-model";
 import { reportingTaskModeLauncherLinks } from "@/screens/reporting-screen.task-mode-view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
@@ -441,6 +444,66 @@ describe("useReportingScreenViewModel", () => {
       ]
     });
     expect(result.current.hasRunStatusRows).toBe(true);
+  });
+
+  it("builds first-visit reporting starter-kit cards from bootstrap data", () => {
+    const starterReporting: GovernanceReportingSummary = {
+      ...reporting,
+      starterKits: [
+        {
+          kitId: "emerging-manager",
+          archetype: "Emerging Manager",
+          displayName: "Emerging Manager",
+          description: "Investor-ready monthly statements and shadow NAV packs.",
+          templateIds: ["investor-monthly-statement", "capital-account-statement"],
+          defaultLayoutId: "reporting-hub.emerging-manager.v1",
+          defaultPeriod: "CurrentMonth",
+          seedSchedules: [
+            {
+              scheduleId: "starter-emerging-manager-investor-monthly",
+              templateId: "investor-monthly-statement",
+              cronExpression: "0 9 5 * *",
+              cadence: "Monthly",
+              description: "Draft monthly investor statement schedule.",
+              state: "Draft",
+              deliveryTargets: [
+                {
+                  distributionId: "investor-relations",
+                  formats: ["Pdf", "Xlsx"],
+                  deliveryMode: "SecurePortal",
+                  note: "Starter target"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      starterKitState: {
+        isProvisioned: false,
+        selectedKitId: null,
+        archetype: null,
+        enabledTemplateIds: [],
+        defaultLayoutId: null,
+        defaultPeriod: null,
+        seedScheduleIds: []
+      }
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(starterReporting));
+
+    expect(result.current.starterKitPanel.showChooser).toBe(true);
+    expect(result.current.starterKitPanel.title).toBe("Set up your reporting desk");
+    expect(result.current.starterKitPanel.cards).toHaveLength(1);
+    expect(result.current.starterKitPanel.cards[0]).toMatchObject({
+      id: "emerging-manager",
+      title: "Emerging Manager",
+      templateSummary: "2 templates",
+      defaultPeriodLabel: "Current month",
+      seedScheduleSummary: "1 draft schedule",
+      actionAriaLabel: "Use Emerging Manager starter kit"
+    });
+    expect(result.current.starterKitPanel.cards[0].templateNames).toContain("Investor Monthly Statement");
+    expect(result.current.starterKitPanel.cards[0].seedSchedules[0].deliveryTargetSummary).toContain("investor-relations via SecurePortal");
   });
 
   it("surfaces aggregate report access audit posture", () => {
@@ -1507,5 +1570,38 @@ describe("useReportingScreenViewModel", () => {
   it("count label reflects profile count", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.countLabel).toBe("2 profiles");
+  });
+});
+
+describe("deriveRestatementSeriesJobId", () => {
+  it("strips the as-of suffix from the run series id to recover the job id", () => {
+    expect(
+      deriveRestatementSeriesJobId("adhoc-investor-20260504153000123-20260504", "run-id", "2026-05-04")
+    ).toBe("adhoc-investor-20260504153000123");
+  });
+
+  it("falls back to the run id when no series id is present", () => {
+    expect(deriveRestatementSeriesJobId(null, "job-alpha-20260504", "2026-05-04")).toBe("job-alpha");
+  });
+
+  it("returns the series unchanged when the as-of suffix does not match", () => {
+    expect(deriveRestatementSeriesJobId("series-without-date", "run-id", "2026-05-04")).toBe("series-without-date");
+    expect(deriveRestatementSeriesJobId("series-x", "run-id", null)).toBe("series-x");
+  });
+});
+
+describe("latestReleasedRunsPerSeries", () => {
+  const row = (overrides: Partial<ReportingRunStatusRow>): ReportingRunStatusRow =>
+    ({ id: "run", status: "Released", runSeriesLabel: "series-a", runAttemptOrdinal: 1, ...overrides }) as ReportingRunStatusRow;
+
+  it("keeps only the highest-ordinal released run per series and drops non-released runs", () => {
+    const result = latestReleasedRunsPerSeries([
+      row({ id: "a-v1", runSeriesLabel: "series-a", runAttemptOrdinal: 1 }),
+      row({ id: "a-v2", runSeriesLabel: "series-a", runAttemptOrdinal: 2 }),
+      row({ id: "b-v1", runSeriesLabel: "series-b", runAttemptOrdinal: 1 }),
+      row({ id: "c-draft", runSeriesLabel: "series-c", runAttemptOrdinal: 1, status: "Draft" })
+    ]);
+
+    expect(result.map((entry) => entry.id).sort()).toEqual(["a-v2", "b-v1"]);
   });
 });

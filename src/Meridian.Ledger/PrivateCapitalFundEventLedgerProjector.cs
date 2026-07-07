@@ -226,7 +226,7 @@ public static class PrivateCapitalFundEventLedgerProjector
                     line.Account.FinancialAccountId,
                     line.Debit,
                     line.Credit,
-                    CalculateNormalBalanceImpact(line.Account.AccountType, line.Debit, line.Credit)))
+                    Ledger.CalculateNetBalance(line.Account.AccountType, line.Debit, line.Credit)))
                 .ToArray());
     }
 
@@ -256,7 +256,9 @@ public static class PrivateCapitalFundEventLedgerProjector
                     first.Line.Account.FinancialAccountId,
                     debits,
                     credits,
-                    credits - debits,
+                    // Capital-account subledger lines are all equity; route the net through the
+                    // shared posting kernel rather than reimplementing the credit-normal rule.
+                    Ledger.CalculateNetBalance(LedgerAccountType.Equity, debits, credits),
                     group.Select(static line => line.Line.EntryId).Distinct().ToArray());
             })
             .OrderBy(static item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
@@ -559,9 +561,4 @@ public static class PrivateCapitalFundEventLedgerProjector
            !string.IsNullOrWhiteSpace(value)
             ? value.Trim()
             : null;
-
-    private static decimal CalculateNormalBalanceImpact(LedgerAccountType accountType, decimal debit, decimal credit) =>
-        accountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debit - credit
-            : credit - debit;
 }

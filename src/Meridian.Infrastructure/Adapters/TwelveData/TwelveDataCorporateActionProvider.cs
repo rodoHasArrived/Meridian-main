@@ -186,7 +186,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         Guid securityId,
         string? currency)
     {
-        if (!DateOnly.TryParse(dividend.ExDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate) ||
+        if (!ProviderDateParsing.TryParseProviderDate(dividend.ExDate, out var exDate) ||
             dividend.Amount is not > 0m)
         {
             return null;
@@ -210,7 +210,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         TwelveDataSplit split,
         Guid securityId)
     {
-        if (!DateOnly.TryParse(split.Date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate))
+        if (!ProviderDateParsing.TryParseProviderDate(split.Date, out var exDate))
         {
             return null;
         }

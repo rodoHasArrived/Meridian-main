@@ -12,6 +12,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.TwelveData;
@@ -135,7 +136,7 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
             if (string.IsNullOrEmpty(value.Datetime))
                 continue;
 
-            if (!DateOnly.TryParseExact(value.Datetime, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+            if (!ProviderDateParsing.TryParseProviderDate(value.Datetime, "yyyy-MM-dd", out var sessionDate))
                 continue;
 
             if (from.HasValue && sessionDate < from.Value)
