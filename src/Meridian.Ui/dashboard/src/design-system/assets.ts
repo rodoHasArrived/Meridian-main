@@ -51,6 +51,34 @@ export type DesignSystemLiveComponentName =
   | DesignSystemShellComponentName
   | DesignSystemAccountingComponentName;
 
+/**
+ * Canonical workstation token contract the shell adapters are wired against. These
+ * `--ws-*` custom properties are authored in `src/styles/index.css` from the Concrete
+ * light source in the vendored design-system package (`tokens/theme.css` + `colors.css`)
+ * and consumed by the masthead, rail, and surface CSS. Keeping the list here lets the
+ * design-system primitives and the contract test reference one authoritative surface.
+ */
+export const DESIGN_SYSTEM_WORKSTATION_TOKENS = [
+  "--ws-page-bg",
+  "--ws-surface",
+  "--ws-surface-subtle",
+  "--ws-surface-raised",
+  "--ws-masthead-bg",
+  "--ws-rail-bg",
+  "--ws-rail-active",
+  "--ws-row-hover",
+  "--ws-border",
+  "--ws-border-strong",
+  "--ws-accent",
+  "--ws-accent-hover",
+  "--ws-accent-pressed",
+  "--ws-text",
+  "--ws-text-muted",
+  "--ws-text-secondary"
+] as const;
+
+export type DesignSystemWorkstationTokenName = typeof DESIGN_SYSTEM_WORKSTATION_TOKENS[number];
+
 export const DESIGN_SYSTEM_SHELL_ASSET_MAPPINGS = {
   brandMark: "assets/brand/meridian-mark-light.svg",
   workspaceTrading: "assets/icons/trading.svg",

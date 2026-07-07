@@ -1142,6 +1142,10 @@ component references, patterns, templates, and governance scripts. The browser w
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
 and runtime CSS alignment under test.
+Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
+`WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
+adapt the manifest-backed design-system references without importing root JSX or runtime-injected
+package CSS into the dashboard build.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
 Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
 Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
