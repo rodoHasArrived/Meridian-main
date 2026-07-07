@@ -4317,7 +4317,6 @@ Meridian-main
 │   │   │   ├── FundStructure.fs
 │   │   │   ├── Integrity.fs
 │   │   │   ├── MarketEvents.fs
-│   │   │   ├── SecMasterDomain.fs
 │   │   │   ├── SecurityClassification.fs
 │   │   │   ├── SecurityEconomicDefinition.fs
 │   │   │   ├── SecurityIdentifiers.fs
