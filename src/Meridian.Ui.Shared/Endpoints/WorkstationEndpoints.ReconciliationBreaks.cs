@@ -88,14 +88,19 @@ public static partial class WorkstationEndpoints
         };
 
     private static string ComputeStatementBreakFingerprint(StatementBreakDto statementBreak)
-        => ComputeReconciliationSourceFingerprint(
+    {
+        // Use the same null-Delta fallback as MapStatementBreakToQueueItem's variance so breaks
+        // with distinct StatementAmount/BookAmount do not collide to the same BreakId.
+        var delta = statementBreak.Delta ?? ((statementBreak.StatementAmount ?? 0m) - (statementBreak.BookAmount ?? 0m));
+        return ComputeReconciliationSourceFingerprint(
             "statement",
             NormalizeStatementReference(statementBreak.StatementReference),
             statementBreak.BreakType?.ToString(),
             statementBreak.Currency,
-            (statementBreak.Delta ?? 0m).ToString(CultureInfo.InvariantCulture),
+            delta.ToString(CultureInfo.InvariantCulture),
             (statementBreak.Tolerance ?? 0m).ToString(CultureInfo.InvariantCulture),
             NormalizeMetadata(statementBreak.Description));
+    }
 
     private static string? ExtractStatementImportId(string? value)
     {
