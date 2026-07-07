@@ -31,6 +31,11 @@ public sealed class ProviderIntegrationPromotionReadinessService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "promotion-readiness-preview",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -81,7 +86,7 @@ public sealed class ProviderIntegrationPromotionReadinessService
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReadyForReconciliation),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReviewRequired),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.Blocked));
-    }
+    }).ConfigureAwait(false);
 
     private static ProviderIntegrationPromotionReadinessRowDto BuildReadinessRow(
         ProviderIntegrationStagingIdentityResolutionRowDto row)

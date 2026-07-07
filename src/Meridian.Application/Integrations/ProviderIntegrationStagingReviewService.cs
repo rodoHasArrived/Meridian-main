@@ -9,6 +9,7 @@ public sealed class ProviderIntegrationStagingReviewService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
 
@@ -31,6 +32,11 @@ public sealed class ProviderIntegrationStagingReviewService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "staging-review",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -120,7 +126,7 @@ public sealed class ProviderIntegrationStagingReviewService
             records.Count,
             records.Count(record => record.ValidationWarnings.Count == 0),
             records.Count(record => record.ValidationWarnings.Count > 0));
-    }
+    }).ConfigureAwait(false);
 
     private static int NormalizeLimit(int recentRunLimit)
     {

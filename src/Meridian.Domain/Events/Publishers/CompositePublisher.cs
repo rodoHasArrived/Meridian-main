@@ -9,6 +9,7 @@ namespace Meridian.Domain.Events.Publishers;
 /// </summary>
 public sealed class CompositePublisher : IMarketEventPublisher
 {
+    private readonly ILogger<CompositePublisher> _logger;
     private readonly IMarketEventPublisher[] _publishers;
     private readonly ILogger<CompositePublisher> _logger;
 
@@ -43,12 +44,11 @@ public sealed class CompositePublisher : IMarketEventPublisher
             }
             catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
             {
-                // Continue to other publishers even if one fails.
-                // OutOfMemoryException and OperationCanceledException are re-thrown.
                 _logger.LogWarning(
                     ex,
-                    "Publisher {PublisherType} failed to publish market event; continuing with remaining publishers.",
-                    publisher?.GetType().Name ?? "Unknown");
+                    "Market-event publisher {PublisherType} failed while publishing {EventType}; continuing fan-out.",
+                    publisher.GetType().FullName,
+                    evt.Type);
             }
         }
 

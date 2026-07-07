@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Xunit;
 
 namespace Meridian.Tests.Application.Commands;
@@ -98,6 +101,27 @@ public class CommandDispatcherTests
         command.ReceivedCancellationToken.Should().Be(cts.Token);
     }
 
+    [Fact]
+    public async Task TryDispatchAsync_WhenCommandThrows_LogsCommandTypeAndRethrows()
+    {
+        var sink = new RecordingSerilogSink();
+        var logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+        var command = new ThrowingCommand();
+        var dispatcher = new CommandDispatcher(new ICliCommand[] { command }, logger);
+
+        var act = () => dispatcher.TryDispatchAsync(new[] { "--throw" });
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("handler failed");
+        sink.Events.Should().Contain(entry =>
+            entry.Level == LogEventLevel.Warning &&
+            entry.Exception is InvalidOperationException &&
+            entry.RenderMessage().Contains(nameof(ThrowingCommand), StringComparison.Ordinal));
+    }
+
     private sealed class TestCommand : ICliCommand
     {
         private readonly string _flag;
@@ -141,6 +165,22 @@ public class CommandDispatcherTests
             ReceivedCancellationToken = ct;
             return Task.FromResult(_exitCode == 0 ? CliResult.Ok() : CliResult.Fail(_exitCode));
         }
+    }
+
+    private sealed class ThrowingCommand : ICliCommand
+    {
+        public bool CanHandle(string[] args) => args.Contains("--throw");
+
+        public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+            => throw new InvalidOperationException("handler failed");
+    }
+
+    private sealed class RecordingSerilogSink : ILogEventSink
+    {
+        public List<LogEvent> Events { get; } = [];
+
+        public void Emit(LogEvent logEvent)
+            => Events.Add(logEvent);
     }
 
 }

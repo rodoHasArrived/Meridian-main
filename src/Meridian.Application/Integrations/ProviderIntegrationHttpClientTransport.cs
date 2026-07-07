@@ -22,6 +22,13 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
     public async Task<ProviderIntegrationHttpResponse> SendAsync(
         ProviderIntegrationHttpRequest request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "http-transport-send",
+            new ProviderIntegrationBoundaryContext(
+                EndpointKey: request?.Path,
+                Capability: request is null ? null : request.Method.ToString()),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for {Method} {Path}.",
@@ -78,11 +85,11 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                 .Concat(response.Content.Headers)
                 .GroupBy(header => header.Key, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
-                    group => group.Key,
-                    group => string.Join(",", group.SelectMany(header => header.Value)),
-                    StringComparer.OrdinalIgnoreCase),
+                group => group.Key,
+                group => string.Join(",", group.SelectMany(header => header.Value)),
+                StringComparer.OrdinalIgnoreCase),
             body);
-    }
+    }).ConfigureAwait(false);
 
     private static string BuildRequestUri(ProviderIntegrationHttpRequest request)
     {

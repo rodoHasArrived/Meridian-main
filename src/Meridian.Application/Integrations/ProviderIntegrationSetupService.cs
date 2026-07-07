@@ -6,6 +6,7 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSetupService
 {
+    private readonly ILogger<ProviderIntegrationSetupService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationSetupService> logger;
 
@@ -26,6 +27,14 @@ public sealed class ProviderIntegrationSetupService
         string? tenantId,
         ProviderIntegrationSetupSaveRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "setup-save-draft",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.Manifest?.ManifestId,
+                ConnectionId: request?.Connection?.ConnectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
@@ -97,7 +106,7 @@ public sealed class ProviderIntegrationSetupService
             savedConnection.State,
             readiness,
             "Provider integration setup draft saved.");
-    }
+    }).ConfigureAwait(false);
 
     private static void ValidateSetupScope(
         ProviderIntegrationManifestDto manifest,

@@ -9,6 +9,7 @@ public sealed class ProviderIntegrationMonitoringService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationMonitoringService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationMonitoringService> logger;
 
@@ -31,6 +32,11 @@ public sealed class ProviderIntegrationMonitoringService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "monitor-connection",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -84,7 +90,7 @@ public sealed class ProviderIntegrationMonitoringService
             evidence.RunEvidence.Sum(run => run.DurableStagingRecordCount),
             evidence.RunEvidence.Sum(run => run.DurableQuarantinedRecordCount),
             evidence.RunEvidence.Any(run => run.CriticalIssueCount > 0));
-    }
+    }).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsAsync(
         string connectionId,
@@ -97,6 +103,11 @@ public sealed class ProviderIntegrationMonitoringService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "monitor-sync-runs",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -139,7 +150,7 @@ public sealed class ProviderIntegrationMonitoringService
             evidence.TotalSyncRuns,
             evidence.RunEvidence.Count,
             evidence.RunEvidence.FirstOrDefault()?.StartedAt);
-    }
+    }).ConfigureAwait(false);
 
     private async Task<ConnectionSyncRunEvidence> BuildConnectionSyncRunEvidenceAsync(
         string? tenantId,

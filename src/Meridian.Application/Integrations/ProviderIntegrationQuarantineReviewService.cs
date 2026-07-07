@@ -9,6 +9,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationQuarantineReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationQuarantineReviewService> logger;
 
@@ -31,6 +32,11 @@ public sealed class ProviderIntegrationQuarantineReviewService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "quarantine-review",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -119,7 +125,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             decisionPosture.ReplayRequestedRecordCount,
             decisionPosture.IgnoredRecordCount,
             decisionPosture.CashPositionCandidateCount);
-    }
+    }).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationQuarantineResolutionResultDto> ResolveAsync(
         ProviderIntegrationQuarantineResolutionRequestDto request,
@@ -130,6 +136,14 @@ public sealed class ProviderIntegrationQuarantineReviewService
         string? tenantId,
         ProviderIntegrationQuarantineResolutionRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "quarantine-resolve",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId,
+                SyncRunId: request?.SyncRunId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -194,7 +208,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             record,
             decision,
             "Provider integration quarantine review decision recorded.");
-    }
+    }).ConfigureAwait(false);
 
     private static int NormalizeLimit(int recentRunLimit)
     {

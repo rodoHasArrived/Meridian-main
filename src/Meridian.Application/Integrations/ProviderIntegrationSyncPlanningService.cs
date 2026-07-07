@@ -13,6 +13,7 @@ public sealed class ProviderIntegrationSyncPlanningService
         ProviderIntegrationProcessingStatusDto.Published
     ];
 
+    private readonly ILogger<ProviderIntegrationSyncPlanningService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationSyncPlanningService> logger;
 
@@ -33,6 +34,13 @@ public sealed class ProviderIntegrationSyncPlanningService
         string? tenantId,
         ProviderIntegrationSyncPlanRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "sync-plan",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -90,7 +98,7 @@ public sealed class ProviderIntegrationSyncPlanningService
             items,
             DueCount: items.Count(item => item.IsDue),
             BlockedCount: items.Count(item => item.IsBlocked));
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

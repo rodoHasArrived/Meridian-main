@@ -31,6 +31,7 @@ public sealed record ProviderIntegrationHttpResponse(
 public sealed class ProviderIntegrationRestDryRunService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly IProviderIntegrationHttpTransport transport;
     private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
@@ -54,6 +55,17 @@ public sealed class ProviderIntegrationRestDryRunService
         string? tenantId,
         ProviderIntegrationRestDryRunRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "rest-dry-run",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: request?.EndpointKey,
+                SyncRunId: request?.SyncRunId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
@@ -304,7 +316,7 @@ public sealed class ProviderIntegrationRestDryRunService
             allIssues);
         await SaveSyncRunAsync(scopedStore, request, manifest, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
         return result;
-    }
+    }).ConfigureAwait(false);
 
     private Task SaveSyncRunAsync(
         IProviderIntegrationManifestStore scopedStore,

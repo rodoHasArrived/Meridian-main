@@ -7,6 +7,7 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSchemaDriftService
 {
+    private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
 
@@ -27,6 +28,17 @@ public sealed class ProviderIntegrationSchemaDriftService
         string? tenantId,
         ProviderIntegrationSchemaDriftCheckRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "schema-drift-check",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: request?.EndpointKey,
+                SyncRunId: request?.SyncRunId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
@@ -141,7 +153,7 @@ public sealed class ProviderIntegrationSchemaDriftService
             ShouldPauseCapability: critical,
             RecordsInspected: records.Count,
             Issues: issues);
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

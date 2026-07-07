@@ -13,47 +13,46 @@ internal sealed class PackageCommands : ICliCommand
 {
     private readonly AppConfig _cfg;
     private readonly ILogger _log;
+    private readonly CliCommandRouteTable _routes;
 
     public PackageCommands(AppConfig cfg, ILogger log)
     {
         _cfg = cfg;
         _log = log;
+        _routes = new CliCommandRouteTable(
+            CliCommandRoute.Flag("--package", RunCreateAsync),
+            CliCommandRoute.Flag("--import-package", RunImportCommandAsync),
+            CliCommandRoute.Flag("--list-package", RunListCommandAsync),
+            CliCommandRoute.Flag("--validate-package", RunValidateCommandAsync));
     }
 
-    public IReadOnlyList<string> Triggers { get; } = ["--package", "--import-package", "--list-package", "--validate-package"];
+    public bool CanHandle(string[] args) => _routes.CanHandle(args);
 
-    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
+    public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+        => _routes.ExecuteAsync(args, ct);
 
-    public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+    private async Task<CliResult> RunImportCommandAsync(string[] args, CancellationToken ct)
     {
-        if (CliArguments.HasFlag(args, "--package"))
-            return await RunCreateAsync(args, ct);
+        var path = CliArguments.RequireValue(args, "--import-package", "--import-package ./packages/data.zip");
+        if (path is null)
+            return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+        return await RunImportAsync(path, args, ct);
+    }
 
-        if (CliArguments.HasFlag(args, "--import-package"))
-        {
-            var path = CliArguments.RequireValue(args, "--import-package", "--import-package ./packages/data.zip");
-            if (path is null)
-                return CliResult.Fail(ErrorCode.RequiredFieldMissing);
-            return await RunImportAsync(path, args, ct);
-        }
+    private async Task<CliResult> RunListCommandAsync(string[] args, CancellationToken ct)
+    {
+        var path = CliArguments.RequireValue(args, "--list-package", "--list-package ./packages/data.zip");
+        if (path is null)
+            return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+        return await RunListAsync(path, ct);
+    }
 
-        if (CliArguments.HasFlag(args, "--list-package"))
-        {
-            var path = CliArguments.RequireValue(args, "--list-package", "--list-package ./packages/data.zip");
-            if (path is null)
-                return CliResult.Fail(ErrorCode.RequiredFieldMissing);
-            return await RunListAsync(path, ct);
-        }
-
-        if (CliArguments.HasFlag(args, "--validate-package"))
-        {
-            var path = CliArguments.RequireValue(args, "--validate-package", "--validate-package ./packages/data.zip");
-            if (path is null)
-                return CliResult.Fail(ErrorCode.RequiredFieldMissing);
-            return await RunValidateAsync(path, ct);
-        }
-
-        return CliResult.Fail(ErrorCode.Unknown);
+    private async Task<CliResult> RunValidateCommandAsync(string[] args, CancellationToken ct)
+    {
+        var path = CliArguments.RequireValue(args, "--validate-package", "--validate-package ./packages/data.zip");
+        if (path is null)
+            return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+        return await RunValidateAsync(path, ct);
     }
 
     private async Task<CliResult> RunCreateAsync(string[] args, CancellationToken ct)

@@ -6,6 +6,7 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationActivationService
 {
+    private readonly ILogger<ProviderIntegrationActivationService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationActivationService> logger;
 
@@ -26,6 +27,14 @@ public sealed class ProviderIntegrationActivationService
         string? tenantId,
         ProviderIntegrationActivationRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "activation-activate",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
@@ -112,7 +121,7 @@ public sealed class ProviderIntegrationActivationService
             readiness,
             activationConnection.ApprovalEvidenceId,
             "Provider integration connection activated.");
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

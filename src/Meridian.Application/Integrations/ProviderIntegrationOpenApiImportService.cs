@@ -30,6 +30,7 @@ public sealed class ProviderIntegrationOpenApiImportService
         ProviderCapabilityKindDto.Executions
     ];
 
+    private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
 
@@ -50,6 +51,13 @@ public sealed class ProviderIntegrationOpenApiImportService
         string? tenantId,
         ProviderIntegrationOpenApiImportRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "openapi-import",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for manifest {ManifestId}, provider {ProviderId}.",
@@ -177,7 +185,7 @@ public sealed class ProviderIntegrationOpenApiImportService
         }
 
         return result;
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

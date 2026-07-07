@@ -10,6 +10,7 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSyncOrchestrationService
 {
+    private readonly ILogger<ProviderIntegrationSyncOrchestrationService> logger;
     private readonly ProviderIntegrationSyncPlanningService planner;
     private readonly ProviderIntegrationRestDryRunService restDryRun;
     private readonly IProviderIntegrationManifestStore store;
@@ -36,6 +37,13 @@ public sealed class ProviderIntegrationSyncOrchestrationService
         string? tenantId,
         ProviderIntegrationRunDueSyncRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "sync-run-due",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -105,7 +113,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             StartedCount: items.Count(item => item.Started),
             SkippedCount: items.Count(item => item.Skipped),
             items);
-    }
+    }).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationRunDueSyncItemResultDto> RunPlanItemAsync(
         string? tenantId,

@@ -37,6 +37,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "identity-resolution-preview",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for connection {ConnectionId}.",
@@ -104,7 +109,7 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
                 or ProviderIntegrationIdentityResolutionStatusDto.NotFound
                 or ProviderIntegrationIdentityResolutionStatusDto.NotConfigured),
             rows.Count(row => row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier));
-    }
+    }).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationStagingIdentityResolutionRowDto> ResolveRecordAsync(
         ProviderConnectionDto connection,

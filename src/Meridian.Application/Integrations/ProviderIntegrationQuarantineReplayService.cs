@@ -12,6 +12,7 @@ namespace Meridian.Application.Integrations;
 public sealed class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
 
@@ -32,6 +33,16 @@ public sealed class ProviderIntegrationQuarantineReplayService
         string? tenantId,
         ProviderIntegrationQuarantineReplayRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "quarantine-replay",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                SyncRunId: request?.ReplaySyncRunId),
+            async () =>
     {
         logger.LogDebug(
             "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
@@ -249,7 +260,7 @@ public sealed class ProviderIntegrationQuarantineReplayService
         await SaveSyncRunAsync(scopedStore, request, manifest, sourceSyncRun.EndpointKey, rawPayloadId, result, ct)
             .ConfigureAwait(false);
         return result;
-    }
+    }).ConfigureAwait(false);
 
     private async Task<IReadOnlyList<QuarantinedRecordDto>> ResolveRequestedRecordsAsync(
         IProviderIntegrationManifestStore scopedStore,
