@@ -543,12 +543,17 @@ public static partial class AtomicFileWriter
 
     private static async Task SyncFileAsync(string path, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+
+        // Open for write and force an OS-level flush to physical disk. A read-only handle with
+        // FlushAsync only touches the (empty) managed read buffer and never performs an fsync,
+        // so the file contents would remain non-durable before the rename.
         await using var fs = new FileStream(
             path,
             FileMode.Open,
-            FileAccess.Read,
+            FileAccess.Write,
             FileShare.ReadWrite);
-        await fs.FlushAsync(ct);
+        fs.Flush(flushToDisk: true);
     }
 
     /// <summary>

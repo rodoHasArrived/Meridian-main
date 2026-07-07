@@ -339,8 +339,10 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
     }
 
     /// <summary>
-    /// Re-checks, at execution time, that a file flagged for deletion still satisfies its retention
-    /// policy. Guards against acting on stale evaluation results.
+    /// Validates, at execution time, that a file flagged for deletion is safe to remove. Guards
+    /// against deleting non-data files, files that have moved outside the managed root, or data
+    /// classified as <see cref="DataClassification.Critical"/>. Retention eligibility itself is
+    /// determined during evaluation; this is a defensive gate against stale or malformed actions.
     /// </summary>
     private bool IsStillDeletable(string filePath)
     {
@@ -348,21 +350,26 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
         if (!fileInfo.Exists)
             return false;
 
-        // The file must still live under the managed root.
+        // Only ever delete recognised data files.
+        if (!DataExtensions.Any(ext => filePath.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        // The file must still live under the managed root. Compare against the root with a
+        // trailing separator so a sibling directory (e.g. "/var/data-other" vs "/var/data")
+        // cannot bypass the check via partial-name matching.
         if (!string.IsNullOrEmpty(_options.RootPath))
         {
             var root = Path.GetFullPath(_options.RootPath);
+            var rootWithSeparator = root.EndsWith(Path.DirectorySeparatorChar)
+                ? root
+                : root + Path.DirectorySeparatorChar;
             var full = Path.GetFullPath(filePath);
-            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            if (!full.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase))
                 return false;
         }
 
-        var policy = ResolvePolicy(filePath);
-        if (policy.Classification == DataClassification.Critical)
-            return false;
-
-        var fileAge = DateTime.UtcNow - fileInfo.LastWriteTimeUtc;
-        return IsExpired(fileAge, policy);
+        // Never delete data classified as Critical.
+        return ResolvePolicy(filePath).Classification != DataClassification.Critical;
     }
 
     private static bool IsExpired(TimeSpan fileAge, StoragePolicyConfig policy)

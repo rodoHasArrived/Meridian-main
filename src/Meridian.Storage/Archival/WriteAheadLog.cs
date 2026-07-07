@@ -396,12 +396,17 @@ public sealed class WriteAheadLog : IAsyncDisposable
                             bufferSize: 64 * 1024,
                             FileOptions.WriteThrough | FileOptions.Asynchronous))
                         {
-                            await using (var gzip = new GZipStream(output, CompressionLevel.Optimal))
+                            // leaveOpen so disposing the GZipStream (which flushes its trailer)
+                            // does not close 'output' before we fsync it below.
+                            await using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true))
                             {
                                 await input.CopyToAsync(gzip, ct);
                             }
 
                             await output.FlushAsync(ct);
+                            // Force an OS-level fsync so the archive is durable on every OS/filesystem
+                            // before the original WAL file is removed.
+                            output.Flush(flushToDisk: true);
                         }
 
                         // Persist the archive rename and verify the archive actually landed before

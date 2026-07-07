@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Threading;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 
 namespace Meridian.Storage.Services;
@@ -312,6 +313,18 @@ public sealed class TierMigrationService : ITierMigrationService
         // Delete source if requested
         if (options.DeleteSource)
         {
+            // Force the migrated file's data blocks to physical disk. The copy above writes only
+            // through the OS cache, so a crash immediately after deleting the source could lose
+            // the data irrecoverably.
+            await using (var fs = new FileStream(
+                targetPath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+            {
+                fs.Flush(flushToDisk: true);
+            }
+
+            // Persist the target directory metadata (the newly created file entry).
+            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(targetPath)!, ct);
+
             // Validate the migrated file actually landed on disk before removing the source of
             // truth. A missing or empty target (for a non-empty source) means the copy did not
             // complete, so deleting the source would lose data irrecoverably.
@@ -323,6 +336,9 @@ public sealed class TierMigrationService : ITierMigrationService
             }
 
             File.Delete(sourcePath);
+
+            // Make the deletion durable so the source cannot reappear after a crash.
+            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(sourcePath)!, ct);
         }
 
         return new FileMigrationResult(
