@@ -63,6 +63,7 @@ using Meridian.Workflow.EnvironmentDesign;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.Composition.Features;
@@ -141,7 +142,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
-                return new FileScopedAccessAssignmentStore(persistencePath);
+                return new FileScopedAccessAssignmentStore(
+                    persistencePath,
+                    sp.GetService<ILogger<FileScopedAccessAssignmentStore>>());
             });
         }
         services.TryAddSingleton<IAccessScopeLineageProvider, FundStructureAccessScopeLineageProvider>();
