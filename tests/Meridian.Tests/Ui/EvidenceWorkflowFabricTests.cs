@@ -3540,7 +3540,11 @@ public sealed class EvidenceWorkflowFabricTests
 
     private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection(Guid? ledgerBookId = null)
     {
-        var now = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        // Evidence freshness is evaluated against the wall clock (nodes older than seven
+        // days are marked Stale, which flips Completeness away from Ready). Anchor the
+        // projection's occurrence/recording timestamps to "now" so this fixture stays fresh
+        // regardless of the calendar date it runs on; business dates remain fixed below.
+        var now = DateTimeOffset.UtcNow;
         var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var fundEvent = new PrivateCapitalFundEventDto(
             "fund-event:fund-alpha:capital-call:20260630",
