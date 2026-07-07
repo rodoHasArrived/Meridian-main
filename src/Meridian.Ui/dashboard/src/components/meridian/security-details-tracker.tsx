@@ -124,6 +124,10 @@ export function SecurityDetailsPanel({
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const loadGenerationRef = useRef(0);
+  // Serializes optimistic override patches: only the most recently issued patch is
+  // allowed to apply its server response, so a slow/failed earlier patch can neither
+  // clobber a newer edit nor mask its own failure.
+  const persistGenerationRef = useRef(0);
 
   useEffect(() => {
     if (!securityId) {
@@ -187,6 +191,10 @@ export function SecurityDetailsPanel({
 
   const persistPatch = useCallback(async (next: Record<string, string>, patch: OperatorOverridesPatchRequest) => {
     if (!securityId) return;
+    // Capture the last-known-good state so a rejected patch can be rolled back instead
+    // of leaving an optimistic value the server never accepted.
+    const previous = overrides;
+    const generation = ++persistGenerationRef.current;
     setOverrides(next);
     saveOverrides(securityId, next);
     dispatchOverridesChanged(securityId);
@@ -194,6 +202,9 @@ export function SecurityDetailsPanel({
     setServerErrorText(null);
     try {
       const dto = await overridesService.patch(securityId, patch);
+      // A newer patch has superseded this one; discard the stale response so it cannot
+      // overwrite the newer optimistic value.
+      if (persistGenerationRef.current !== generation) return;
       const merged = sanitiseOverrideValues(dto.values);
       setOverrides(merged);
       saveOverrides(securityId, merged);
@@ -202,10 +213,16 @@ export function SecurityDetailsPanel({
       setServerStatus("synced");
       dispatchOverridesChanged(securityId);
     } catch (err) {
+      if (persistGenerationRef.current !== generation) return;
+      // Roll the optimistic change back to the last-known-good values so a failed patch
+      // is not silently presented as applied.
+      setOverrides(previous);
+      saveOverrides(securityId, previous);
+      dispatchOverridesChanged(securityId);
       setServerStatus("offline");
-      setServerErrorText(err instanceof Error ? err.message : "Failed to save override on the server. Changes kept locally.");
+      setServerErrorText(err instanceof Error ? err.message : "Failed to save override on the server. Reverted to the last saved values.");
     }
-  }, [overridesService, securityId]);
+  }, [overrides, overridesService, securityId]);
 
   const commitEdit = useCallback((field: SecurityDetailFieldDef) => {
     if (!securityId) return;

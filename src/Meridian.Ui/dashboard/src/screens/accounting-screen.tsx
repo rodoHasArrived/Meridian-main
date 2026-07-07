@@ -36,6 +36,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
@@ -398,8 +399,6 @@ const accountingSystemEvidencePackageVariant = {
   Missing: "danger"
 } as const;
 
-const TRIAL_BALANCE_DESIGN_SYSTEM_TABLE_THRESHOLD = 40;
-
 function AccountingSystemReconciliationPanel({
   providers,
   importDetail,
@@ -500,9 +499,7 @@ function AccountingSystemReconciliationPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? (
-          <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-            {error}
-          </div>
+          <StatusBanner tone="danger" role="alert" title={error} />
         ) : null}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <AccountingValue label="Import state" value={importDetail?.summary.state ?? (loading ? "Loading" : "Not loaded")} />
@@ -1182,8 +1179,8 @@ function AccountingApprovalsWorkstream() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             {detailLoading ? <p role="status" className="text-muted-foreground">Loading selected approval detail...</p> : null}
-            {detailError ? <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-danger">{detailError}</div> : null}
-            {actionError ? <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-danger">{actionError}</div> : null}
+            {detailError ? <StatusBanner tone="danger" role="alert" title={detailError} /> : null}
+            {actionError ? <StatusBanner tone="danger" role="alert" title={actionError} /> : null}
             {selectedWorkflow ? (
               <>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1238,7 +1235,7 @@ function ApprovalStatusMessage({ loading, error, empty }: { loading: boolean; er
   }
 
   if (error) {
-    return <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</div>;
+    return <StatusBanner tone="danger" role="alert" title={error} />;
   }
 
   if (empty) {
@@ -2636,7 +2633,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               </div>
               {reconciliation.trialBalanceView.hasRows ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-                  {reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_DESIGN_SYSTEM_TABLE_THRESHOLD ? (
+                  {reconciliation.trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD ? (
                     <DenseDataTable
                       columns={trialBalanceColumns}
                       rows={reconciliation.trialBalanceView.rows}
