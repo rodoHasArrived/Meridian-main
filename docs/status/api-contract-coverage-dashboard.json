@@ -9,8 +9,8 @@
     "endpoint_count": 596,
     "documented_endpoint_count": 596,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 810,
-    "documented_workstation_contract_count": 810,
+    "workstation_contract_count": 820,
+    "documented_workstation_contract_count": 820,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
@@ -1839,24 +1839,6 @@
       "documented": true
     },
     {
-      "method": "POST",
-      "path": "/api/ledger/journal-automation/dividend-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:19",
-      "documented": true
-    },
-    {
-      "method": "POST",
-      "path": "/api/ledger/journal-automation/fee-accrual-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:61",
-      "documented": true
-    },
-    {
-      "method": "POST",
-      "path": "/api/ledger/journal-automation/period-close-intake",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:103",
-      "documented": true
-    },
-    {
       "method": "GET",
       "path": "/api/ledger/books",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:28",
@@ -2160,6 +2142,24 @@
       "method": "POST",
       "path": "/api/ledger/journal-entry-workbench/lifecycle-action",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:2079",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/dividend-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:19",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/fee-accrual-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:61",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/period-close-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:103",
       "documented": true
     },
     {
@@ -5353,11 +5353,6 @@
       "documented": true
     },
     {
-      "name": "NullReportingRunNotifier",
-      "source": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:15",
-      "documented": true
-    },
-    {
       "name": "InvestmentAccountingTransactionKindDto",
       "source": "src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:6",
       "documented": true
@@ -5395,6 +5390,11 @@
     {
       "name": "InvestmentAccountingTransactionLabPreviewDto",
       "source": "src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:71",
+      "documented": true
+    },
+    {
+      "name": "NullReportingRunNotifier",
+      "source": "src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:15",
       "documented": true
     },
     {

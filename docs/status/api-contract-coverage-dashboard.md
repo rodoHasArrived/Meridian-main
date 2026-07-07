@@ -14,8 +14,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 588 / 588 |
-| Workstation contracts documented | 810 / 810 |
+| Endpoints documented | 596 / 596 |
+| Workstation contracts documented | 820 / 820 |
 
 ## Endpoint Coverage
 
