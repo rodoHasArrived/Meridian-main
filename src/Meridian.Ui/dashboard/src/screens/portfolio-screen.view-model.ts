@@ -3,7 +3,8 @@ import {
   formatNumber as formatNumberAmount,
   formatPercent as formatPercentAmount,
   formatPrefixedCurrency,
-  formatSignedCurrency as formatSignedCurrencyAmount
+  formatSignedCurrency as formatSignedCurrencyAmount,
+  pluralizeCount
 } from "@/lib/format";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -2524,7 +2525,7 @@ function formatNumber(value: number): string {
 }
 
 function formatCountLabel(count: number, noun: string): string {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+  return pluralizeCount(count, noun);
 }
 
 function formatDateTime(value: string): string {

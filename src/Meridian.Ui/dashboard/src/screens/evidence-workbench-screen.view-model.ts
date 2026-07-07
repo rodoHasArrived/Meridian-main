@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { pluralizeCount } from "@/lib/format";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -2256,7 +2257,7 @@ function buildFreshnessLabel(node: EvidenceNode): { label: string; tone: Evidenc
 }
 
 function formatCount(count: number, singular: string) {
-  return count === 1 ? `1 ${singular}` : `${count} ${singular}s`;
+  return pluralizeCount(count, singular);
 }
 
 function slugifyId(value: string) {

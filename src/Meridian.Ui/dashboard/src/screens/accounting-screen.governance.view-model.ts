@@ -203,10 +203,106 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   approveRulePromotion: (request) => approveAccountingConfigurationPostingRulePromotion(request),
   activate: (request) => activateAccountingConfiguration(request)
 };
+
+/** Operation keys tracked by the accounting-configuration busy-map (one per async action). */
+type GovernanceBusyKey =
+  | "externalGlMappingProfileSave"
+  | "productionCertificationProfileSave"
+  | "tenantAdministrationProfileSave"
+  | "sandboxProof"
+  | "preview"
+  | "dryRun"
+  | "createLedgerBook"
+  | "chartAccountSave"
+  | "journalCandidate"
+  | "applyEventPredicate"
+  | "applyThreshold"
+  | "applyEffectiveStart"
+  | "applyScope"
+  | "capturePostings"
+  | "applyFormula"
+  | "applyAllocation"
+  | "raisePriority"
+  | "ruleTest"
+  | "saveRuleTest"
+  | "duplicateRule"
+  | "archiveRule"
+  | "approveRulePromotion"
+  | "activate";
+
+/**
+ * Single keyed busy-map replacing what were ~23 individual `useState(false)` flags.
+ * Returns the current map and a stable setter; functional updates keep concurrent
+ * operations on different keys from clobbering one another.
+ */
+function useGovernanceBusyMap(): [
+  Partial<Record<GovernanceBusyKey, boolean>>,
+  (key: GovernanceBusyKey, value: boolean) => void
+] {
+  const [busy, setBusy] = useState<Partial<Record<GovernanceBusyKey, boolean>>>({});
+  const setBusyKey = useCallback((key: GovernanceBusyKey, value: boolean) => {
+    setBusy((prev) => (prev[key] === value ? prev : { ...prev, [key]: value }));
+  }, []);
+  return [busy, setBusyKey];
+}
+
 export function useAccountingConfigurationViewModel(
   services: AccountingConfigurationServices = defaultAccountingConfigurationServices
 ): AccountingConfigurationViewModel {
   const [workspace, setWorkspace] = useState<AccountingConfigurationWorkspace | null>(null);
+  // Keyed busy-map: one source of truth for the ~23 per-operation "in flight" flags
+  // that were previously separate useState(false) hooks. Each operation still reads
+  // `<op>Busy` and calls `set<Op>Busy(...)` exactly as before via the aliases below;
+  // only the underlying storage changed. Functional updates mean concurrent operations
+  // toggling different keys never clobber one another.
+  const [governanceBusy, setGovernanceBusy] = useGovernanceBusyMap();
+  const externalGlMappingProfileSaveBusy = governanceBusy["externalGlMappingProfileSave"] === true;
+  const setExternalGlMappingProfileSaveBusy = (value: boolean) => setGovernanceBusy("externalGlMappingProfileSave", value);
+  const productionCertificationProfileSaveBusy = governanceBusy["productionCertificationProfileSave"] === true;
+  const setProductionCertificationProfileSaveBusy = (value: boolean) => setGovernanceBusy("productionCertificationProfileSave", value);
+  const tenantAdministrationProfileSaveBusy = governanceBusy["tenantAdministrationProfileSave"] === true;
+  const setTenantAdministrationProfileSaveBusy = (value: boolean) => setGovernanceBusy("tenantAdministrationProfileSave", value);
+  const sandboxProofBusy = governanceBusy["sandboxProof"] === true;
+  const setSandboxProofBusy = (value: boolean) => setGovernanceBusy("sandboxProof", value);
+  const previewBusy = governanceBusy["preview"] === true;
+  const setPreviewBusy = (value: boolean) => setGovernanceBusy("preview", value);
+  const dryRunBusy = governanceBusy["dryRun"] === true;
+  const setDryRunBusy = (value: boolean) => setGovernanceBusy("dryRun", value);
+  const createLedgerBookBusy = governanceBusy["createLedgerBook"] === true;
+  const setCreateLedgerBookBusy = (value: boolean) => setGovernanceBusy("createLedgerBook", value);
+  const chartAccountSaveBusy = governanceBusy["chartAccountSave"] === true;
+  const setChartAccountSaveBusy = (value: boolean) => setGovernanceBusy("chartAccountSave", value);
+  const journalCandidateBusy = governanceBusy["journalCandidate"] === true;
+  const setJournalCandidateBusy = (value: boolean) => setGovernanceBusy("journalCandidate", value);
+  const applyEventPredicateBusy = governanceBusy["applyEventPredicate"] === true;
+  const setApplyEventPredicateBusy = (value: boolean) => setGovernanceBusy("applyEventPredicate", value);
+  const applyThresholdBusy = governanceBusy["applyThreshold"] === true;
+  const setApplyThresholdBusy = (value: boolean) => setGovernanceBusy("applyThreshold", value);
+  const applyEffectiveStartBusy = governanceBusy["applyEffectiveStart"] === true;
+  const setApplyEffectiveStartBusy = (value: boolean) => setGovernanceBusy("applyEffectiveStart", value);
+  const applyScopeBusy = governanceBusy["applyScope"] === true;
+  const setApplyScopeBusy = (value: boolean) => setGovernanceBusy("applyScope", value);
+  const capturePostingsBusy = governanceBusy["capturePostings"] === true;
+  const setCapturePostingsBusy = (value: boolean) => setGovernanceBusy("capturePostings", value);
+  const applyFormulaBusy = governanceBusy["applyFormula"] === true;
+  const setApplyFormulaBusy = (value: boolean) => setGovernanceBusy("applyFormula", value);
+  const applyAllocationBusy = governanceBusy["applyAllocation"] === true;
+  const setApplyAllocationBusy = (value: boolean) => setGovernanceBusy("applyAllocation", value);
+  const raisePriorityBusy = governanceBusy["raisePriority"] === true;
+  const setRaisePriorityBusy = (value: boolean) => setGovernanceBusy("raisePriority", value);
+  const ruleTestBusy = governanceBusy["ruleTest"] === true;
+  const setRuleTestBusy = (value: boolean) => setGovernanceBusy("ruleTest", value);
+  const saveRuleTestBusy = governanceBusy["saveRuleTest"] === true;
+  const setSaveRuleTestBusy = (value: boolean) => setGovernanceBusy("saveRuleTest", value);
+  const duplicateRuleBusy = governanceBusy["duplicateRule"] === true;
+  const setDuplicateRuleBusy = (value: boolean) => setGovernanceBusy("duplicateRule", value);
+  const archiveRuleBusy = governanceBusy["archiveRule"] === true;
+  const setArchiveRuleBusy = (value: boolean) => setGovernanceBusy("archiveRule", value);
+  const approveRulePromotionBusy = governanceBusy["approveRulePromotion"] === true;
+  const setApproveRulePromotionBusy = (value: boolean) => setGovernanceBusy("approveRulePromotion", value);
+  const activateBusy = governanceBusy["activate"] === true;
+  const setActivateBusy = (value: boolean) => setGovernanceBusy("activate", value);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [productionReadiness, setProductionReadiness] = useState<AccountingProductionReadiness | null>(null);
@@ -215,7 +311,6 @@ export function useAccountingConfigurationViewModel(
   const [externalGlMappingProfiles, setExternalGlMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
   const [externalGlMappingProfileDraft, setExternalGlMappingProfileDraft] = useState<AccountingExternalGlMappingProfileDraft | null>(null);
   const [externalGlMappingProfileError, setExternalGlMappingProfileError] = useState<ApiErrorDisplay | null>(null);
-  const [externalGlMappingProfileSaveBusy, setExternalGlMappingProfileSaveBusy] = useState(false);
   const [externalGlMappingProfileSaveError, setExternalGlMappingProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [externalGlMappingProfileSaveMessage, setExternalGlMappingProfileSaveMessage] = useState<string | null>(null);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
@@ -223,74 +318,52 @@ export function useAccountingConfigurationViewModel(
   const [productionCertificationProfile, setProductionCertificationProfile] = useState<AccountingProductionCertificationProfile | null>(null);
   const [productionCertificationDraft, setProductionCertificationDraft] = useState<AccountingProductionCertificationProfileDraft | null>(null);
   const [productionCertificationProfileError, setProductionCertificationProfileError] = useState<ApiErrorDisplay | null>(null);
-  const [productionCertificationProfileSaveBusy, setProductionCertificationProfileSaveBusy] = useState(false);
   const [productionCertificationProfileSaveError, setProductionCertificationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [productionCertificationProfileSaveMessage, setProductionCertificationProfileSaveMessage] = useState<string | null>(null);
   const [tenantAdministrationProfile, setTenantAdministrationProfile] = useState<AccountingTenantAdministrationProfile | null>(null);
   const [tenantAdministrationDraft, setTenantAdministrationDraft] = useState<AccountingTenantAdministrationProfileDraft | null>(null);
   const [tenantAdministrationProfileError, setTenantAdministrationProfileError] = useState<ApiErrorDisplay | null>(null);
-  const [tenantAdministrationProfileSaveBusy, setTenantAdministrationProfileSaveBusy] = useState(false);
   const [tenantAdministrationProfileSaveError, setTenantAdministrationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [tenantAdministrationProfileSaveMessage, setTenantAdministrationProfileSaveMessage] = useState<string | null>(null);
-  const [sandboxProofBusy, setSandboxProofBusy] = useState(false);
   const [sandboxProofError, setSandboxProofError] = useState<ApiErrorDisplay | null>(null);
   const [sandboxProofMessage, setSandboxProofMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
-  const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
   const [dryRunPreview, setDryRunPreview] = useState<RuleDryRunResult | null>(null);
-  const [dryRunBusy, setDryRunBusy] = useState(false);
   const [dryRunError, setDryRunError] = useState<ApiErrorDisplay | null>(null);
-  const [createLedgerBookBusy, setCreateLedgerBookBusy] = useState(false);
   const [createLedgerBookError, setCreateLedgerBookError] = useState<ApiErrorDisplay | null>(null);
   const [createdLedgerBookName, setCreatedLedgerBookName] = useState<string | null>(null);
   const [chartAccountDraft, setChartAccountDraft] = useState<AccountingChartAccountDraft>(() => buildDefaultAccountingChartAccountDraft());
-  const [chartAccountSaveBusy, setChartAccountSaveBusy] = useState(false);
   const [chartAccountSaveError, setChartAccountSaveError] = useState<ApiErrorDisplay | null>(null);
   const [chartAccountSaveMessage, setChartAccountSaveMessage] = useState<string | null>(null);
   const [journalCandidatePreview, setJournalCandidatePreview] = useState<PostingRuleJournalCandidateResult | null>(null);
-  const [journalCandidateBusy, setJournalCandidateBusy] = useState(false);
   const [journalCandidateError, setJournalCandidateError] = useState<ApiErrorDisplay | null>(null);
-  const [applyEventPredicateBusy, setApplyEventPredicateBusy] = useState(false);
   const [applyEventPredicateError, setApplyEventPredicateError] = useState<ApiErrorDisplay | null>(null);
   const [eventPredicateRuleId, setEventPredicateRuleId] = useState<string | null>(null);
-  const [applyThresholdBusy, setApplyThresholdBusy] = useState(false);
   const [applyThresholdError, setApplyThresholdError] = useState<ApiErrorDisplay | null>(null);
   const [thresholdRuleId, setThresholdRuleId] = useState<string | null>(null);
-  const [applyEffectiveStartBusy, setApplyEffectiveStartBusy] = useState(false);
   const [applyEffectiveStartError, setApplyEffectiveStartError] = useState<ApiErrorDisplay | null>(null);
   const [effectiveStartRuleId, setEffectiveStartRuleId] = useState<string | null>(null);
-  const [applyScopeBusy, setApplyScopeBusy] = useState(false);
   const [applyScopeError, setApplyScopeError] = useState<ApiErrorDisplay | null>(null);
   const [scopedRuleId, setScopedRuleId] = useState<string | null>(null);
-  const [capturePostingsBusy, setCapturePostingsBusy] = useState(false);
   const [capturePostingsError, setCapturePostingsError] = useState<ApiErrorDisplay | null>(null);
   const [capturedPostingsRuleId, setCapturedPostingsRuleId] = useState<string | null>(null);
-  const [applyFormulaBusy, setApplyFormulaBusy] = useState(false);
   const [applyFormulaError, setApplyFormulaError] = useState<ApiErrorDisplay | null>(null);
   const [formulaRuleId, setFormulaRuleId] = useState<string | null>(null);
-  const [applyAllocationBusy, setApplyAllocationBusy] = useState(false);
   const [applyAllocationError, setApplyAllocationError] = useState<ApiErrorDisplay | null>(null);
   const [allocationRuleId, setAllocationRuleId] = useState<string | null>(null);
-  const [raisePriorityBusy, setRaisePriorityBusy] = useState(false);
   const [raisePriorityError, setRaisePriorityError] = useState<ApiErrorDisplay | null>(null);
   const [raisedPriorityRuleId, setRaisedPriorityRuleId] = useState<string | null>(null);
   const [ruleTestSuite, setRuleTestSuite] = useState<AccountingRuleTestSuiteResult | null>(null);
-  const [ruleTestBusy, setRuleTestBusy] = useState(false);
   const [ruleTestError, setRuleTestError] = useState<ApiErrorDisplay | null>(null);
-  const [saveRuleTestBusy, setSaveRuleTestBusy] = useState(false);
   const [saveRuleTestError, setSaveRuleTestError] = useState<ApiErrorDisplay | null>(null);
-  const [duplicateRuleBusy, setDuplicateRuleBusy] = useState(false);
   const [duplicateRuleError, setDuplicateRuleError] = useState<ApiErrorDisplay | null>(null);
   const [duplicatedRuleId, setDuplicatedRuleId] = useState<string | null>(null);
-  const [archiveRuleBusy, setArchiveRuleBusy] = useState(false);
   const [archiveRuleError, setArchiveRuleError] = useState<ApiErrorDisplay | null>(null);
   const [archivedRuleId, setArchivedRuleId] = useState<string | null>(null);
-  const [approveRulePromotionBusy, setApproveRulePromotionBusy] = useState(false);
   const [approveRulePromotionError, setApproveRulePromotionError] = useState<ApiErrorDisplay | null>(null);
   const [approvedRulePromotionId, setApprovedRulePromotionId] = useState<string | null>(null);
-  const [activateBusy, setActivateBusy] = useState(false);
   const [activateError, setActivateError] = useState<ApiErrorDisplay | null>(null);
 
   const refresh = useCallback(async () => {

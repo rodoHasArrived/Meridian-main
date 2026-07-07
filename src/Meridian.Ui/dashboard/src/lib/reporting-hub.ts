@@ -13,6 +13,7 @@
  */
 import { compareIsoDate, formatReportingPeriodLabel } from "@/lib/reporting-periods";
 
+import { pluralizeCount } from "@/lib/format";
 export type ReportingHubReadiness =
   | "Released"
   | "Approved"
@@ -198,7 +199,7 @@ function resolveOpenLink(run: ReportingHubRunInput): { href: string; label: stri
 }
 
 function countUnit(count: number, singular: string): string {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+  return pluralizeCount(count, singular);
 }
 
 function presentWorkKind(kind: string): string {
