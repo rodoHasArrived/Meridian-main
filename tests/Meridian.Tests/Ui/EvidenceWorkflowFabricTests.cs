@@ -3540,7 +3540,11 @@ public sealed class EvidenceWorkflowFabricTests
 
     private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection(Guid? ledgerBookId = null)
     {
-        var now = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        // Anchor evidence timestamps to the current time so the seven-day freshness window in
+        // EvidenceContributors.Node keeps the projected evidence "Ready" regardless of the run date.
+        // The 20260630 subject identifiers and DateOnly effective dates below are stable literals and
+        // are intentionally left fixed; only the as-of/occurred timestamp needs to stay recent.
+        var now = DateTimeOffset.UtcNow.AddHours(-1);
         var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var fundEvent = new PrivateCapitalFundEventDto(
             "fund-event:fund-alpha:capital-call:20260630",
