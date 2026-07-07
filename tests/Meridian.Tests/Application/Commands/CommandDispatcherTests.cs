@@ -171,6 +171,8 @@ public class CommandDispatcherTests
     {
         public bool CanHandle(string[] args) => args.Contains("--throw");
 
+        public IReadOnlyList<string> Triggers => new[] { "--throw" };
+
         public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
             => throw new InvalidOperationException("handler failed");
     }
