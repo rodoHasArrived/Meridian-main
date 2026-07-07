@@ -364,10 +364,13 @@ public static class SecurityIdentifierNormalizer
             return false;
         }
 
+        // RICs are strictly ASCII; use an explicit ASCII test rather than the Unicode-aware
+        // char.IsLetterOrDigit so accented/non-Latin letters cannot bypass the guard. Values are
+        // already upper-cased during normalization.
         var hasAlphaNumeric = false;
         foreach (var character in normalized)
         {
-            if (char.IsLetterOrDigit(character))
+            if (character is (>= 'A' and <= 'Z') or (>= '0' and <= '9'))
             {
                 hasAlphaNumeric = true;
             }

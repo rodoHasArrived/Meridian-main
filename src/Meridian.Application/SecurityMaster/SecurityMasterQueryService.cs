@@ -255,8 +255,9 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         // as-of term rebuild still governs which economic terms are returned, so this only
         // restores identity resolution — it never hands back today's terms under yesterday's
         // identity.
+        var identifierKindText = identifierKind.ToString();
         return universe.FirstOrDefault(candidate =>
-            MatchesIdentifierIgnoringWindow(candidate, identifierKind, normalizedValue, normalizedProvider));
+            MatchesIdentifierIgnoringWindow(candidate, identifierKind, identifierKindText, normalizedValue, normalizedProvider));
     }
 
     private static IReadOnlyList<string?> BuildLookupCandidates(string? value, Func<string?, string> normalize)
@@ -325,6 +326,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     private static bool MatchesIdentifierIgnoringWindow(
         SecurityProjectionRecord candidate,
         SecurityIdentifierKind identifierKind,
+        string identifierKindText,
         string normalizedValue,
         string normalizedProvider)
     {
@@ -337,7 +339,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         }
 
         if (candidate.Aliases.Any(alias =>
-                string.Equals(alias.AliasKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+                string.Equals(alias.AliasKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
                 && alias.IsEnabled
                 && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
                 && ProviderMatches(alias.Provider, normalizedProvider)))
@@ -345,7 +347,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
             return true;
         }
 
-        return string.Equals(candidate.PrimaryIdentifierKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+        return string.Equals(candidate.PrimaryIdentifierKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
     }
 
