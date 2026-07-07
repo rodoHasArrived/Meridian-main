@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Text.Json;
+using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
@@ -14,11 +13,19 @@ namespace Meridian.Application.SecurityMaster;
 /// Client-provided sources take precedence and remain until explicitly changed,
 /// consistent with the Clearwater cash flow governance model.
 /// </summary>
+/// <remarks>
+/// Economic terms are resolved once, up front, into a typed <see cref="StructuredCashFlowTerms"/> via
+/// <see cref="StructuredCashFlowTermsResolver"/> rather than probed inline; source freshness is
+/// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection; and a fresh
+/// base-scenario projection can be routed to the ledger through
+/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only.
+/// </remarks>
 public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowService
 {
     private readonly ISecurityMasterCashFlowStore _store;
     private readonly IReadOnlyList<IStructuredCashFlowProvider> _providers;
     private readonly ISecurityMasterQueryService _queryService;
+    private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
@@ -27,12 +34,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         ISecurityMasterCashFlowStore store,
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterCashFlowService> logger)
+        ILogger<SecurityMasterCashFlowService> logger,
+        IStructuredCashFlowLedgerBridge? ledgerBridge = null)
     {
         _store = store;
         _providers = providers?.ToList() ?? [];
         _queryService = queryService;
         _logger = logger;
+        _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
     }
 
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default)
@@ -74,13 +83,13 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             return null;
         }
 
-        if (assignment.LastUpdatedUtc.HasValue
-            && DateTimeOffset.UtcNow - assignment.LastUpdatedUtc.Value > StalenessThreshold)
+        var staleness = EvaluateStaleness(assignment.LastUpdatedUtc);
+        if (staleness == StructuredCashFlowStaleness.Stale)
         {
             _logger.LogWarning(
-                "Cash flow source for security {SecurityId} was last updated {DaysAgo} days ago and may be stale.",
+                "Cash flow source for security {SecurityId} was last updated {DaysAgo} days ago and is marked stale; ledger posting is gated.",
                 securityId,
-                (int)(DateTimeOffset.UtcNow - assignment.LastUpdatedUtc.Value).TotalDays);
+                (int)(DateTimeOffset.UtcNow - assignment.LastUpdatedUtc!.Value).TotalDays);
         }
 
         // Client-provided source: no external provider delegation; caller must supply projections directly.
@@ -103,7 +112,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (assignment.SourceKind is StructuredCashFlowSourceKind.CalculatedBullet
             or StructuredCashFlowSourceKind.CalculatedSinker)
         {
-            return BuildCalculatedProjection(security, assignment.SourceKind, scenario);
+            return BuildCalculatedProjection(
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc);
         }
 
         var isin = security.Identifiers
@@ -120,52 +130,123 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             return null;
         }
 
-        return await provider.GetProjectedCashFlowsAsync(
+        var providerProjection = await provider.GetProjectedCashFlowsAsync(
             securityId, isin, DateTimeOffset.UtcNow, scenario, ct).ConfigureAwait(false);
+
+        // Stamp freshness onto provider projections too so every consumer sees a consistent gate.
+        return providerProjection is null
+            ? null
+            : providerProjection with
+            {
+                Staleness = staleness,
+                SourceLastUpdatedUtc = assignment.LastUpdatedUtc
+            };
+    }
+
+    public async Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
+        Guid securityId,
+        string? financialAccountId = null,
+        DateOnly? through = null,
+        CancellationToken ct = default)
+    {
+        // Accruals post from actual (base-scenario) cash flows only; rate-shocked scenarios are
+        // analysis-only and are additionally rejected by the bridge.
+        var projection = await GetProjectionAsync(securityId, StructuredCashFlowScenario.Base, ct).ConfigureAwait(false);
+        if (projection is null)
+        {
+            return StructuredCashFlowLedgerPostingResult.Blocked(
+                securityId, "No cash flow projection is available for this security.");
+        }
+
+        var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+        var symbol = ResolveSymbol(security, securityId);
+        return _ledgerBridge.BuildCouponAccrualPostings(projection, symbol, financialAccountId, through);
+    }
+
+    private static StructuredCashFlowStaleness EvaluateStaleness(DateTimeOffset? lastUpdatedUtc)
+    {
+        if (lastUpdatedUtc is not DateTimeOffset lastUpdated)
+        {
+            return StructuredCashFlowStaleness.Unknown;
+        }
+
+        return DateTimeOffset.UtcNow - lastUpdated > StalenessThreshold
+            ? StructuredCashFlowStaleness.Stale
+            : StructuredCashFlowStaleness.Fresh;
+    }
+
+    private static string ResolveSymbol(SecurityDetailDto? security, Guid securityId)
+    {
+        if (security is not null)
+        {
+            var ticker = security.Identifiers
+                .FirstOrDefault(i => i.Kind == SecurityIdentifierKind.Ticker)?.Value;
+            if (!string.IsNullOrWhiteSpace(ticker))
+            {
+                return ticker.Trim().ToUpperInvariant();
+            }
+
+            var anyIdentifier = security.Identifiers.FirstOrDefault()?.Value;
+            if (!string.IsNullOrWhiteSpace(anyIdentifier))
+            {
+                return anyIdentifier.Trim().ToUpperInvariant();
+            }
+
+            if (!string.IsNullOrWhiteSpace(security.DisplayName))
+            {
+                return security.DisplayName.Trim().ToUpperInvariant();
+            }
+        }
+
+        return securityId.ToString("N");
     }
 
     private static StructuredCashFlowProjectionDto BuildCalculatedProjection(
         SecurityDetailDto security,
         StructuredCashFlowSourceKind sourceKind,
-        StructuredCashFlowScenario scenario)
+        StructuredCashFlowScenario scenario,
+        StructuredCashFlowStaleness staleness,
+        DateTimeOffset? sourceLastUpdatedUtc)
     {
         var asOf = DateTimeOffset.UtcNow;
-        if (!TryReadDate(security, out var maturity, "maturityDate", "maturity", "legalFinalMaturity"))
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+        var factorSchedule = terms.FactorSchedule;
+
+        StructuredCashFlowProjectionDto Empty() => new(
+            security.SecurityId, sourceKind, scenario, asOf, [], staleness, sourceLastUpdatedUtc, factorSchedule);
+
+        if (terms.MaturityDate is not DateOnly maturity)
         {
-            return new StructuredCashFlowProjectionDto(security.SecurityId, sourceKind, scenario, asOf, []);
+            return Empty();
         }
 
-        var issueDate = TryReadDate(security, out var issue, "issueDate", "originationDate", "effectiveDate")
-            ? issue
-            : DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
+        var issueDate = terms.IssueDate ?? DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
         var asOfDate = DateOnly.FromDateTime(asOf.UtcDateTime.Date);
         if (issueDate > maturity)
         {
-            return new StructuredCashFlowProjectionDto(security.SecurityId, sourceKind, scenario, asOf, []);
+            return Empty();
         }
 
-        _ = TryReadDecimal(security, out var principalValue, "par", "originalFace", "notional", "principal", "principalAmount");
-        _ = TryReadDecimal(security, out var factorValue, "currentFactor", "factor");
-        _ = TryReadDecimal(security, out var couponValue, "fixedCouponRate", "couponRate", "coupon", "annualRate");
-        _ = TryReadString(security, out var frequencyValue, "paymentFrequency", "paymentFrequencyPerYear", "couponFrequency");
-        _ = TryReadString(security, out var dayCountValue, "dayCountConvention", "dayCount", "dayCountBasis");
+        var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m;
 
-        var principalBasis = principalValue is > 0m ? principalValue.Value : 100m;
-        var factor = factorValue is > 0m ? factorValue.Value : 1m;
+        // Seed the outstanding factor from the typed factor schedule as of today, falling back to the
+        // scalar current factor when no dated schedule point applies.
+        var scheduledFactor = terms.FactorAsOf(asOfDate);
+        var factor = scheduledFactor is > 0m ? scheduledFactor.Value : 1m;
         var outstanding = RoundCash(principalBasis * factor);
-        var annualRate = NormalizeAnnualRate(couponValue ?? 0m) + ScenarioRateShift(scenario);
+        var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
             annualRate = 0m;
         }
 
-        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(frequencyValue));
+        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(terms.PaymentFrequency));
         var dates = BuildPaymentDates(issueDate, maturity, periodMonths)
             .Where(date => date >= asOfDate)
             .ToArray();
         if (dates.Length == 0)
         {
-            return new StructuredCashFlowProjectionDto(security.SecurityId, sourceKind, scenario, asOf, []);
+            return Empty();
         }
 
         var entries = new List<StructuredCashFlowScheduleEntry>(dates.Length);
@@ -182,7 +263,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             }
 
             var interest = annualRate > 0m && outstanding > 0m
-                ? RoundCash(outstanding * annualRate * CalculateYearFraction(dayCountValue, accrualStart, date, periodMonths))
+                ? RoundCash(outstanding * annualRate * CalculateYearFraction(terms.DayCountConvention, accrualStart, date, periodMonths))
                 : 0m;
             var principal = 0m;
             var isLast = i == dates.Length - 1;
@@ -204,7 +285,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             accrualStart = date;
         }
 
-        return new StructuredCashFlowProjectionDto(security.SecurityId, sourceKind, scenario, asOf, entries);
+        return new StructuredCashFlowProjectionDto(
+            security.SecurityId, sourceKind, scenario, asOf, entries, staleness, sourceLastUpdatedUtc, factorSchedule);
     }
 
     private static string MapSourceKindToProviderId(StructuredCashFlowSourceKind kind) => kind switch
@@ -318,126 +400,4 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
 
     private static decimal RoundCash(decimal amount)
         => decimal.Round(amount, 4, MidpointRounding.AwayFromZero);
-
-    private static bool TryReadString(SecurityDetailDto security, out string? value, params string[] propertyNames)
-    {
-        foreach (var source in EnumerateTermSources(security))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(source, propertyName, out var property))
-                {
-                    continue;
-                }
-
-                if (property.ValueKind == JsonValueKind.String)
-                {
-                    value = property.GetString();
-                    return !string.IsNullOrWhiteSpace(value);
-                }
-
-                if (property.ValueKind is JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False)
-                {
-                    value = property.ToString();
-                    return true;
-                }
-            }
-        }
-
-        value = null;
-        return false;
-    }
-
-    private static bool TryReadDecimal(SecurityDetailDto security, out decimal? value, params string[] propertyNames)
-    {
-        foreach (var source in EnumerateTermSources(security))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(source, propertyName, out var property))
-                {
-                    continue;
-                }
-
-                if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
-                {
-                    value = number;
-                    return true;
-                }
-
-                if (property.ValueKind == JsonValueKind.String &&
-                    decimal.TryParse(property.GetString(), out var parsed))
-                {
-                    value = parsed;
-                    return true;
-                }
-            }
-        }
-
-        value = null;
-        return false;
-    }
-
-    private static bool TryReadDate(SecurityDetailDto security, out DateOnly value, params string[] propertyNames)
-    {
-        foreach (var source in EnumerateTermSources(security))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(source, propertyName, out var property) ||
-                    property.ValueKind != JsonValueKind.String)
-                {
-                    continue;
-                }
-
-                var raw = property.GetString();
-                if (DateOnly.TryParse(raw, out value))
-                {
-                    return true;
-                }
-
-                if (DateTimeOffset.TryParse(raw, out var timestamp))
-                {
-                    value = DateOnly.FromDateTime(timestamp.UtcDateTime.Date);
-                    return true;
-                }
-            }
-        }
-
-        value = default;
-        return false;
-    }
-
-    private static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
-    {
-        yield return security.AssetSpecificTerms;
-        if (TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields) &&
-            profileFields.ValueKind == JsonValueKind.Object)
-        {
-            yield return profileFields;
-        }
-
-        yield return security.CommonTerms;
-    }
-
-    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
-    {
-        if (element.ValueKind != JsonValueKind.Object)
-        {
-            value = default;
-            return false;
-        }
-
-        foreach (var property in element.EnumerateObject())
-        {
-            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                value = property.Value;
-                return true;
-            }
-        }
-
-        value = default;
-        return false;
-    }
 }
