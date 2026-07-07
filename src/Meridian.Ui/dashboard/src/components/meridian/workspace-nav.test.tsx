@@ -48,6 +48,26 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Open Backfill queues")).toHaveAttribute("href", "/data/backfills");
   });
 
+  it("renders exactly the seven root workspaces and shows status pills only in detailed mode", () => {
+    const detailed = renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const detailedItems = detailed.container.querySelectorAll(".operator-nav-item");
+    expect(detailedItems).toHaveLength(7);
+    const labels = Array.from(detailedItems).map((item) => item.querySelector(".font-medium")?.textContent);
+    expect(new Set(labels)).toEqual(
+      new Set(["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"])
+    );
+    // Detailed rail surfaces the per-workspace status pill.
+    expect(detailed.container.querySelectorAll(".operator-nav-status").length).toBeGreaterThan(0);
+
+    detailed.unmount();
+
+    const compact = renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/trading"] });
+    expect(compact.container.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    // Compact rail keeps the same seven workspaces but drops the status pills.
+    expect(compact.container.querySelectorAll(".operator-nav-status")).toHaveLength(0);
+  });
+
   it("expands inactive workspace pages from the rail toggle", async () => {
     const user = userEvent.setup();
     renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/portfolio"] });

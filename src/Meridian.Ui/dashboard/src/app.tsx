@@ -59,7 +59,7 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
-import { WorkstationTopbar } from "@/components/meridian/workstation-topbar";
+import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
   WorkstationStatusBar,
   buildWorkstationStatusItems
@@ -443,7 +443,7 @@ function AppShell() {
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {routeAnnouncement}
       </div>
-      <WorkstationTopbar
+      <DesignSystemMasthead
         brandMarkSrc={meridianBrandAssets.markLight}
         workspaceLabel={headerWorkspace.label}
         navOpen={navOpen}
