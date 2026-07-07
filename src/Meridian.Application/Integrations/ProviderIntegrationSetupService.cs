@@ -33,7 +33,12 @@ public sealed class ProviderIntegrationSetupService
                 TenantId: tenantId,
                 ManifestId: request?.Manifest?.ManifestId,
                 ConnectionId: request?.Connection?.ConnectionId),
-            async () =>
+            () => SaveDraftCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftCoreAsync(
+        string? tenantId,
+        ProviderIntegrationSetupSaveRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Manifest);
@@ -75,7 +80,7 @@ public sealed class ProviderIntegrationSetupService
             savedConnection.State,
             readiness,
             "Provider integration setup draft saved.");
-    }).ConfigureAwait(false);
+    }
 
     private static void ValidateSetupScope(
         ProviderIntegrationManifestDto manifest,

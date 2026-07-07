@@ -64,7 +64,12 @@ public sealed class ProviderIntegrationRestDryRunService
                 Capability: request is null ? null : request.Capability.ToString(),
                 EndpointKey: request?.EndpointKey,
                 SyncRunId: request?.SyncRunId),
-            async () =>
+            () => RunRestDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunCoreAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SyncRunId);
@@ -285,7 +290,7 @@ public sealed class ProviderIntegrationRestDryRunService
             allIssues);
         await SaveSyncRunAsync(scopedStore, request, manifest, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
         return result;
-    }).ConfigureAwait(false);
+    }
 
     private Task SaveSyncRunAsync(
         IProviderIntegrationManifestStore scopedStore,

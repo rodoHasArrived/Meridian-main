@@ -30,8 +30,8 @@ public sealed class ProviderIntegrationOpenApiImportService
         ProviderCapabilityKindDto.Executions
     ];
 
-    private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
 
     public ProviderIntegrationOpenApiImportService(
         IProviderIntegrationManifestStore store,
@@ -56,7 +56,12 @@ public sealed class ProviderIntegrationOpenApiImportService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ManifestId: request?.ManifestId),
-            async () =>
+            () => ImportCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationOpenApiImportResultDto> ImportCoreAsync(
+        string? tenantId,
+        ProviderIntegrationOpenApiImportRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
@@ -154,7 +159,7 @@ public sealed class ProviderIntegrationOpenApiImportService
         }
 
         return result;
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

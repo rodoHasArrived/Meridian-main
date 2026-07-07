@@ -42,7 +42,12 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ConnectionId: request?.ConnectionId),
-            async () =>
+            () => RunDueCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationRunDueSyncResultDto> RunDueCoreAsync(
+        string? tenantId,
+        ProviderIntegrationRunDueSyncRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -84,7 +89,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             StartedCount: items.Count(item => item.Started),
             SkippedCount: items.Count(item => item.Skipped),
             items);
-    }).ConfigureAwait(false);
+    }
 
     private async Task<ProviderIntegrationRunDueSyncItemResultDto> RunPlanItemAsync(
         string? tenantId,
@@ -160,6 +165,11 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             }
             catch (InvalidOperationException ex)
             {
+                logger.LogWarning(
+                    ex,
+                    "Provider integration sync plan item for capability {Capability} on connection {ConnectionId} was blocked at runtime.",
+                    planItem.Capability,
+                    request.ConnectionId);
                 return RuntimeBlocked(planItem, ex.Message);
             }
         }
@@ -197,6 +207,11 @@ public sealed class ProviderIntegrationSyncOrchestrationService
         }
         catch (InvalidOperationException ex)
         {
+            logger.LogWarning(
+                ex,
+                "Provider integration sync plan item for capability {Capability} on connection {ConnectionId} was blocked at runtime.",
+                planItem.Capability,
+                request.ConnectionId);
             return RuntimeBlocked(planItem, ex.Message);
         }
     }

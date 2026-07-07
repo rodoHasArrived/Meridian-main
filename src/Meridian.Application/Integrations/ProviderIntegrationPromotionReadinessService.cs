@@ -35,7 +35,13 @@ public sealed class ProviderIntegrationPromotionReadinessService
             logger,
             "promotion-readiness-preview",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
+            () => PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var identityPreview = await identityResolution
@@ -57,7 +63,7 @@ public sealed class ProviderIntegrationPromotionReadinessService
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReadyForReconciliation),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReviewRequired),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.Blocked));
-    }).ConfigureAwait(false);
+    }
 
     private static ProviderIntegrationPromotionReadinessRowDto BuildReadinessRow(
         ProviderIntegrationStagingIdentityResolutionRowDto row)

@@ -12,8 +12,8 @@ namespace Meridian.Application.Integrations;
 public sealed class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
 
     public ProviderIntegrationQuarantineReplayService(
         IProviderIntegrationManifestStore store,
@@ -41,7 +41,12 @@ public sealed class ProviderIntegrationQuarantineReplayService
                 ConnectionId: request?.ConnectionId,
                 Capability: request is null ? null : request.Capability.ToString(),
                 SyncRunId: request?.ReplaySyncRunId),
-            async () =>
+            () => ReplayCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationQuarantineReplayResultDto> ReplayCoreAsync(
+        string? tenantId,
+        ProviderIntegrationQuarantineReplayRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ReplaySyncRunId);
@@ -229,7 +234,7 @@ public sealed class ProviderIntegrationQuarantineReplayService
         await SaveSyncRunAsync(scopedStore, request, manifest, sourceSyncRun.EndpointKey, rawPayloadId, result, ct)
             .ConfigureAwait(false);
         return result;
-    }).ConfigureAwait(false);
+    }
 
     private async Task<IReadOnlyList<QuarantinedRecordDto>> ResolveRequestedRecordsAsync(
         IProviderIntegrationManifestStore scopedStore,

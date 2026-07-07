@@ -41,7 +41,13 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             logger,
             "identity-resolution-preview",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
+            () => PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationStagingIdentityResolutionPreviewDto> PreviewCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -80,7 +86,7 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
                 or ProviderIntegrationIdentityResolutionStatusDto.NotFound
                 or ProviderIntegrationIdentityResolutionStatusDto.NotConfigured),
             rows.Count(row => row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier));
-    }).ConfigureAwait(false);
+    }
 
     private async Task<ProviderIntegrationStagingIdentityResolutionRowDto> ResolveRecordAsync(
         ProviderConnectionDto connection,

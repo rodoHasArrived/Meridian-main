@@ -13,8 +13,8 @@ public sealed class ProviderIntegrationActivationReadinessService
         ProviderCapabilityKindDto.OrderCancellation
     ];
 
-    private readonly ILogger<ProviderIntegrationActivationReadinessService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationActivationReadinessService> logger;
 
     public ProviderIntegrationActivationReadinessService(
         IProviderIntegrationManifestStore store,
@@ -42,7 +42,13 @@ public sealed class ProviderIntegrationActivationReadinessService
                 TenantId: tenantId,
                 ManifestId: manifestId,
                 ConnectionId: connectionId),
-            async () =>
+            () => EvaluateCoreAsync(tenantId, manifestId, connectionId, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationActivationReadinessDto> EvaluateCoreAsync(
+        string? tenantId,
+        string manifestId,
+        string? connectionId = null,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
         if (connectionId is not null)
@@ -59,7 +65,7 @@ public sealed class ProviderIntegrationActivationReadinessService
                 ?? throw new KeyNotFoundException($"Provider integration connection '{connectionId}' was not found.");
 
         return Evaluate(manifest, connection);
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)
