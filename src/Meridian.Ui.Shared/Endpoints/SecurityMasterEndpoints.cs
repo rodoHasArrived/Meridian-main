@@ -62,7 +62,7 @@ public static class SecurityMasterEndpoints
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterValidation, async (
             Guid securityId,
-            [FromServices] AppSecurityMaster.ISecurityValidationService validationService,
+            [FromServices] AppSecurityMaster.Validation.ISecurityValidationService validationService,
             CancellationToken ct) =>
         {
             var report = await validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
@@ -651,25 +651,25 @@ public static class SecurityMasterEndpoints
         /// Runs provider-backed corporate-action ingest across mastered ticker symbols.
         /// </summary>
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
-            AppSecurityMaster.CorporateActionIngestRequest? request,
+            AppSecurityMaster.CorporateActions.CorporateActionIngestRequest? request,
             HttpContext context,
-            [FromServices] AppSecurityMaster.CorporateActionIngestOrchestrator orchestrator,
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionIngestOrchestrator orchestrator,
             CancellationToken ct) =>
         {
             var actor = ResolveActor(context);
-            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActionIngestRequest()) with
+            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActions.CorporateActionIngestRequest()) with
             {
                 Actor = actor,
                 CorrelationId = context.TraceIdentifier
             };
 
             var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
-            context.RequestServices.GetService<AppSecurityMaster.CorporateActionInboxState>()?.Record(result);
+            context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
             return Results.Json(result, jsonOptions);
         })
         .WithName("IngestSecurityMasterCorporateActions")
-        .Accepts<AppSecurityMaster.CorporateActionIngestRequest>("application/json")
-        .Produces<AppSecurityMaster.CorporateActionIngestResult>(StatusCodes.Status200OK)
+        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
+        .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
@@ -680,19 +680,19 @@ public static class SecurityMasterEndpoints
         /// the workbench inbox badge and review list.
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
-            [FromServices] AppSecurityMaster.CorporateActionInboxState inboxState) =>
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState) =>
             Results.Json(inboxState.GetInbox(), jsonOptions))
         .WithName("GetSecurityMasterCorporateActionInbox")
-        .Produces<AppSecurityMaster.CorporateActionInboxDto>(StatusCodes.Status200OK);
+        .Produces<AppSecurityMaster.CorporateActions.CorporateActionInboxDto>(StatusCodes.Status200OK);
 
         /// <summary>
         /// Applies one staged inbox proposal: consumes it from the snapshot and appends the
         /// corporate action through the governed command service under the operator's identity.
         /// </summary>
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
-            AppSecurityMaster.CorporateActionInboxApplyRequest? request,
+            AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest? request,
             HttpContext context,
-            [FromServices] AppSecurityMaster.CorporateActionInboxState inboxState,
+            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState,
             [FromServices] ISecurityMasterCorporateActionCommandService commandService,
             CancellationToken ct) =>
         {
@@ -725,7 +725,7 @@ public static class SecurityMasterEndpoints
             }
         })
         .WithName("ApplySecurityMasterCorporateActionInboxProposal")
-        .Accepts<AppSecurityMaster.CorporateActionInboxApplyRequest>("application/json")
+        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
         .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound)
