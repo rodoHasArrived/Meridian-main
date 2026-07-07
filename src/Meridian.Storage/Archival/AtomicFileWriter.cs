@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,8 +20,10 @@ public static partial class AtomicFileWriter
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
     /// </summary>
-    public static void Write(string destinationPath, string content)
+    public static void Write(string destinationPath, string content, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -45,6 +48,7 @@ public static partial class AtomicFileWriter
                 stream.Flush(flushToDisk: true);
             }
 
+            ct.ThrowIfCancellationRequested();
             File.Move(tempPath, destinationPath, overwrite: true);
             SyncDirectory(directory!);
 
@@ -192,6 +196,62 @@ public static partial class AtomicFileWriter
             File.Move(tempPath, destinationPath, overwrite: true);
 
             // Sync directory
+            await SyncDirectoryAsync(directory!, ct);
+        }
+        catch
+        {
+            TryDeleteFile(tempPath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Atomically writes content to a file using a raw stream writer action, overwriting any
+    /// existing file. The destination is only replaced once the temporary file has been fully
+    /// written, flushed, and fsynced, and the rename is made durable with a directory fsync.
+    /// </summary>
+    public static async Task WriteStreamAsync(
+        string destinationPath,
+        Func<Stream, Task> writeAction,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(writeAction);
+
+        var directory = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var tempPath = GetTempPath(destinationPath);
+        var destinationExists = File.Exists(destinationPath);
+
+        try
+        {
+            await using (var tempStream = new FileStream(
+                tempPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 65536,
+                FileOptions.Asynchronous))
+            {
+                await writeAction(tempStream);
+                await tempStream.FlushAsync(ct);
+            }
+
+            if (destinationExists)
+            {
+                CopySecurityMetadata(destinationPath, tempPath);
+            }
+
+            // Sync the temp file to disk before publishing it.
+            await SyncFileAsync(tempPath, ct);
+
+            // Atomic rename
+            File.Move(tempPath, destinationPath, overwrite: true);
+
+            // Sync the directory to ensure the rename is persisted.
             await SyncDirectoryAsync(directory!, ct);
         }
         catch
@@ -410,6 +470,10 @@ public static partial class AtomicFileWriter
                     File.Delete(backupPath);
                 }
                 File.Move(destinationPath, backupPath);
+
+                // Make the backup rename durable before the destination is overwritten, so a
+                // crash mid-sequence can never leave both the original and its backup missing.
+                await SyncDirectoryAsync(directory!, ct);
             }
 
             // Move temp to destination
@@ -426,23 +490,25 @@ public static partial class AtomicFileWriter
 
             Log.Debug("Atomically replaced {Path}", destinationPath);
         }
-        catch
+        catch (Exception writeException)
         {
-            // On failure, try to restore backup
+            // On failure, try to restore the backup without masking the original exception.
             if (File.Exists(backupPath) && !File.Exists(destinationPath))
             {
                 try
                 {
                     File.Move(backupPath, destinationPath);
                 }
-                catch (Exception ex)
+                catch (Exception restoreException)
                 {
-                    Log.Error(ex, "Failed to restore backup for {Path}", destinationPath);
+                    Log.Error(restoreException, "Failed to restore backup for {Path}", destinationPath);
                 }
             }
 
             TryDeleteFile(tempPath);
-            throw;
+
+            // Re-throw the original failure with its stack trace intact.
+            ExceptionDispatchInfo.Throw(writeException);
         }
     }
 
@@ -485,7 +551,11 @@ public static partial class AtomicFileWriter
         await fs.FlushAsync(ct);
     }
 
-    private static Task SyncDirectoryAsync(string directory, CancellationToken ct)
+    /// <summary>
+    /// Fsyncs a directory so that prior rename/link operations within it are durable after a crash
+    /// or power loss. No-op on platforms where directory metadata is journaled automatically.
+    /// </summary>
+    public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         SyncDirectory(directory);

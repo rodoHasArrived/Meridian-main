@@ -173,6 +173,18 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                     case LifecycleActionType.Delete:
                         if (File.Exists(action.FilePath))
                         {
+                            // Re-validate eligibility at execution time: an action computed during
+                            // evaluation can be stale (the file may have been rewritten, reclassified,
+                            // or moved out of the managed root before execution). Never delete a file
+                            // that no longer satisfies its retention policy.
+                            if (!IsStillDeletable(action.FilePath))
+                            {
+                                _logger.LogWarning(
+                                    "Skipping stale delete for {FilePath}: file is no longer eligible for retention expiry",
+                                    action.FilePath);
+                                break;
+                            }
+
                             bytesDeleted += new FileInfo(action.FilePath).Length;
                             File.Delete(action.FilePath);
                             _fileStates.TryRemove(action.FilePath, out _);
@@ -324,6 +336,33 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                                       && !filePath.EndsWith(".zst", StringComparison.OrdinalIgnoreCase),
             _ => true
         };
+    }
+
+    /// <summary>
+    /// Re-checks, at execution time, that a file flagged for deletion still satisfies its retention
+    /// policy. Guards against acting on stale evaluation results.
+    /// </summary>
+    private bool IsStillDeletable(string filePath)
+    {
+        var fileInfo = new FileInfo(filePath);
+        if (!fileInfo.Exists)
+            return false;
+
+        // The file must still live under the managed root.
+        if (!string.IsNullOrEmpty(_options.RootPath))
+        {
+            var root = Path.GetFullPath(_options.RootPath);
+            var full = Path.GetFullPath(filePath);
+            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        var policy = ResolvePolicy(filePath);
+        if (policy.Classification == DataClassification.Critical)
+            return false;
+
+        var fileAge = DateTime.UtcNow - fileInfo.LastWriteTimeUtc;
+        return IsExpired(fileAge, policy);
     }
 
     private static bool IsExpired(TimeSpan fileAge, StoragePolicyConfig policy)

@@ -312,6 +312,16 @@ public sealed class TierMigrationService : ITierMigrationService
         // Delete source if requested
         if (options.DeleteSource)
         {
+            // Validate the migrated file actually landed on disk before removing the source of
+            // truth. A missing or empty target (for a non-empty source) means the copy did not
+            // complete, so deleting the source would lose data irrecoverably.
+            targetInfo.Refresh();
+            if (!targetInfo.Exists || (originalSize > 0 && targetInfo.Length == 0))
+            {
+                throw new IOException(
+                    $"Refusing to delete source '{sourcePath}': migrated file '{targetPath}' is missing or empty.");
+            }
+
             File.Delete(sourcePath);
         }
 
