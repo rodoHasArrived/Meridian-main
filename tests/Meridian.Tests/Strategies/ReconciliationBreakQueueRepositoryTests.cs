@@ -138,8 +138,17 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         migrated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
         migrated.SourceFingerprint.Should().Be("new-fingerprint");
 
+        // The full audit trail follows the re-key: the migration event plus the pre-migration rows
+        // that remain stored under the superseded id are all returned under the new id.
         var history = await repo.GetAuditHistoryAsync("statement:new-fingerprint");
         history.Should().Contain(e => e.EventType == "BreakIdMigrated" && e.Note!.Contains("statement:old-fingerprint"));
+        history.Should().Contain(e => e.EventType == "CaseCreated");
+        history.Should().Contain(e => e.EventType == "ReviewStarted");
+        history.Select(e => e.Sequence).Should().BeInAscendingOrder();
+
+        // Rebuild from the linked trail still resolves to the current, re-keyed case.
+        var rebuilt = await repo.RebuildSnapshotFromAuditAsync("statement:new-fingerprint");
+        rebuilt!.BreakId.Should().Be("statement:new-fingerprint");
     }
 
     [Fact]

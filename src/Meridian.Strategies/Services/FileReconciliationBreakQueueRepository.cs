@@ -730,7 +730,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             return [];
         }
 
-        var events = new List<ReconciliationBreakQueueAuditEvent>();
+        var all = new List<ReconciliationBreakQueueAuditEvent>();
 
         await using var stream = File.OpenRead(_auditPath);
         using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -747,9 +747,9 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             try
             {
                 var auditEvent = JsonSerializer.Deserialize<ReconciliationBreakQueueAuditEvent>(line, _jsonOptions);
-                if (auditEvent is not null && string.Equals(auditEvent.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
+                if (auditEvent is not null)
                 {
-                    events.Add(auditEvent);
+                    all.Add(auditEvent);
                 }
             }
             catch (JsonException ex)
@@ -758,10 +758,52 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             }
         }
 
-        return events
+        // Follow "BreakIdMigrated" links so a re-keyed case surfaces its full pre-migration trail,
+        // which remains stored immutably under the superseded break id (the migration event carries
+        // the prior item — and thus the prior break id — in its BeforePayload).
+        var relevantIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { breakId };
+        var pending = new Queue<string>();
+        pending.Enqueue(breakId);
+        while (pending.Count > 0)
+        {
+            var currentId = pending.Dequeue();
+            foreach (var migration in all.Where(entry =>
+                entry.EventType == "BreakIdMigrated"
+                && string.Equals(entry.BreakId, currentId, StringComparison.OrdinalIgnoreCase)))
+            {
+                var previousId = TryReadBreakIdFromPayload(migration.BeforePayload);
+                if (previousId is not null && relevantIds.Add(previousId))
+                {
+                    pending.Enqueue(previousId);
+                }
+            }
+        }
+
+        return all
+            .Where(entry => relevantIds.Contains(entry.BreakId))
             .OrderBy(static entry => entry.Sequence)
             .ThenBy(static entry => entry.OccurredAt)
             .ToArray();
+    }
+
+    private static string? TryReadBreakIdFromPayload(string? payload)
+    {
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            return document.RootElement.TryGetProperty("breakId", out var value)
+                ? value.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
 
