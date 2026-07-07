@@ -1783,6 +1783,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
 │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
+│   │   ├── web-ui-report-run-stream-blueprint-2026-07.md
 │   │   └── web-ui-stream-fan-out-blueprint-2026-07.md
 │   ├── prompts
 │   │   ├── automation-prompts.md
@@ -2687,6 +2688,7 @@ Meridian-main
 │   │   ├── Commands
 │   │   │   ├── CatalogCommand.cs
 │   │   │   ├── CliArguments.cs
+│   │   │   ├── CliCommandRouteTable.cs
 │   │   │   ├── CommandDispatcher.cs
 │   │   │   ├── ConfigCommands.cs
 │   │   │   ├── ConfigPresetCommand.cs
@@ -2817,6 +2819,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationReconciliationHandoffService.cs
 │   │   │   ├── ProviderIntegrationRestDryRunService.cs
 │   │   │   ├── ProviderIntegrationSchemaDriftService.cs
+│   │   │   ├── ProviderIntegrationServiceBoundary.cs
 │   │   │   ├── ProviderIntegrationSetupService.cs
 │   │   │   ├── ProviderIntegrationStagingDedupeValidator.cs
 │   │   │   ├── ProviderIntegrationStagingReviewService.cs
@@ -3335,6 +3338,7 @@ Meridian-main
 │   │   │   ├── FundWorkflowCommands.cs
 │   │   │   ├── InvestmentAccountingTransactionLabDtos.cs
 │   │   │   ├── IOperatorInboxService.cs
+│   │   │   ├── IReportingRunNotifier.cs
 │   │   │   ├── LedgerReconciliationContractCompatibility.cs
 │   │   │   ├── OperationsContinuityDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
@@ -3865,6 +3869,7 @@ Meridian-main
 │   │   ├── Application
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── FundStructureAccessScopeLineageProvider.cs
+│   │   │   ├── IdentityGovernanceNormalization.cs
 │   │   │   ├── LoginSessionService.cs
 │   │   │   ├── PasswordHashing.cs
 │   │   │   ├── ScopedAccessServices.cs
@@ -3921,16 +3926,20 @@ Meridian-main
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
+│   │   │   │   ├── CrossProviderValidator.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalAggregateBarProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── IProviderConnectionDiagnosticsSource.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
+│   │   │   │   ├── PollingProviderBase.cs
 │   │   │   │   ├── ProviderCapabilityDescriptorCatalog.cs
 │   │   │   │   ├── ProviderDataQualityValidator.cs
 │   │   │   │   ├── ProviderFactory.cs
+│   │   │   │   ├── ProviderHealthTracker.cs
 │   │   │   │   ├── ProviderIdentity.cs
 │   │   │   │   ├── ProviderRegistry.cs
+│   │   │   │   ├── ProviderRotationStrategy.cs
 │   │   │   │   ├── ProviderServiceExtensions.cs
 │   │   │   │   ├── ProviderSubscriptionRanges.cs
 │   │   │   │   ├── ProviderTemplate.cs
@@ -3974,7 +3983,9 @@ Meridian-main
 │   │   │   │   ├── NasdaqDataLinkHistoricalDataProvider.cs
 │   │   │   │   └── NasdaqDataLinkSymbolSearchProvider.cs
 │   │   │   ├── NYSE
+│   │   │   │   ├── NyseAccessTokenProvider.cs
 │   │   │   │   ├── NYSEDataSource.cs
+│   │   │   │   ├── NyseHistoricalDataProvider.cs
 │   │   │   │   ├── NyseMarketDataClient.cs
 │   │   │   │   ├── NyseNationalTradesCsvParser.cs
 │   │   │   │   ├── NYSEOptions.cs
@@ -4408,10 +4419,12 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── ReportGenerationService.cs
 │   │   ├── ReportingContracts.cs
+│   │   ├── ReportingNumberFormat.cs
 │   │   ├── ReportingOrchestrationService.cs
 │   │   ├── ReportingStarterKitCatalog.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
-│   │   └── ReportWriterGridEngine.cs
+│   │   ├── ReportWriterGridEngine.cs
+│   │   └── SecurityMasterReportingLookup.cs
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
@@ -4732,6 +4745,7 @@ Meridian-main
 │   │   │   ├── PortfolioReadService.cs
 │   │   │   ├── PromotionService.cs
 │   │   │   ├── ReconciliationCaseWorkflowService.cs
+│   │   │   ├── ReconciliationCaseWorkflowVocabulary.cs
 │   │   │   ├── ReconciliationGovernanceService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
@@ -5075,6 +5089,8 @@ Meridian-main
 │   │   │   │   │   ├── use-notification-center.ts
 │   │   │   │   │   ├── use-quotes-stream.test.ts
 │   │   │   │   │   ├── use-quotes-stream.ts
+│   │   │   │   │   ├── use-report-run-stream.test.ts
+│   │   │   │   │   ├── use-report-run-stream.ts
 │   │   │   │   │   ├── use-request-lifecycle.test.ts
 │   │   │   │   │   ├── use-request-lifecycle.ts
 │   │   │   │   │   ├── use-workstation-data.test.ts
@@ -5160,6 +5176,8 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
 │   │   │   │   │   ├── quotes-stream.ts
+│   │   │   │   │   ├── report-run-stream.test.ts
+│   │   │   │   │   ├── report-run-stream.ts
 │   │   │   │   │   ├── report-writer-grid-diff.test.ts
 │   │   │   │   │   ├── report-writer-grid-diff.ts
 │   │   │   │   │   ├── report-writer-grid-format.test.ts
@@ -5198,6 +5216,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.close-cockpit-panels.tsx
 │   │   │   │   │   ├── accounting-screen.close-cockpit.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.close-cockpit.view-model.ts
+│   │   │   │   │   ├── accounting-screen.configure-panel.test.tsx
+│   │   │   │   │   ├── accounting-screen.configure-panel.tsx
+│   │   │   │   │   ├── accounting-screen.configure-panel.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.configure-panel.view-model.ts
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
 │   │   │   │   │   ├── accounting-screen.formatting.ts
 │   │   │   │   │   ├── accounting-screen.governance.view-model.test.ts
@@ -5309,6 +5331,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.a11y.test.tsx
 │   │   │   │   │   ├── reporting-screen.branding-access.tsx
 │   │   │   │   │   ├── reporting-screen.delivery-history.tsx
+│   │   │   │   │   ├── reporting-screen.exports-runner.request.test.ts
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
 │   │   │   │   │   ├── reporting-screen.linked-context.ts
 │   │   │   │   │   ├── reporting-screen.operator-focus.ts
@@ -5621,6 +5644,7 @@ Meridian-main
 │   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── FundProfileScopeEndpointFilters.cs
 │   │   │   ├── FundStructureEndpoints.cs
+│   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FutureReferenceEndpoints.cs
 │   │   │   ├── FxSpotReferenceEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
@@ -5664,6 +5688,7 @@ Meridian-main
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
 │   │   │   ├── StrategyLifecycleEndpoints.cs
+│   │   │   ├── StreamEndpointHelpers.cs
 │   │   │   ├── SubscriptionEndpoints.cs
 │   │   │   ├── SwapReferenceEndpoints.cs
 │   │   │   ├── SymbolEndpoints.cs
@@ -5682,6 +5707,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.SecurityCoverage.cs
+│   │   │   ├── WorkstationEndpoints.SecurityMasterMapping.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
 │   │   │   ├── WorkstationEndpoints.Strategy.cs
@@ -5822,7 +5848,10 @@ Meridian-main
 │   │   │   ├── QuoteStreamBroadcaster.cs
 │   │   │   ├── QuoteStreamOptions.cs
 │   │   │   ├── QuoteStreamSubscription.cs
+│   │   │   ├── ReportRunStreamBroadcaster.cs
+│   │   │   ├── StreamBroadcaster.cs
 │   │   │   ├── StreamConnectionRegistry.cs
+│   │   │   ├── StreamSubscription.cs
 │   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
@@ -6877,7 +6906,8 @@ Meridian-main
 │   │   │   └── SecurityMasterCashFlowServiceTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
-│   │   │   └── LayerBoundaryTests.cs
+│   │   │   ├── LayerBoundaryTests.cs
+│   │   │   └── LedgerNetBalanceCentralizationTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
@@ -7053,8 +7083,15 @@ Meridian-main
 │   │   ├── FxSpot
 │   │   │   └── FxSpotProjectionServiceTests.cs
 │   │   ├── Identity
-│   │   │   └── FundStructure
-│   │   │       └── FundAccountTraversalQueryServiceTests.cs
+│   │   │   ├── FundStructure
+│   │   │   │   └── FundAccountTraversalQueryServiceTests.cs
+│   │   │   ├── FileUserAccountStoreTests.cs
+│   │   │   ├── FundStructureAccessScopeLineageProviderTests.cs
+│   │   │   ├── GovernanceStoreDataIntegrityTests.cs
+│   │   │   ├── IdentityTestSupport.cs
+│   │   │   ├── LoginSessionServiceTests.cs
+│   │   │   ├── PasswordHashingTests.cs
+│   │   │   └── UserProfileRegistryTests.cs
 │   │   ├── Infrastructure
 │   │   │   ├── Adapters
 │   │   │   │   └── TradierCanonicalMappersTests.cs
@@ -7454,6 +7491,7 @@ Meridian-main
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueRepositoryTests.cs
 │   │   │   ├── ReconciliationCaseWorkflowServiceTests.cs
+│   │   │   ├── ReconciliationCaseWorkflowVocabularyTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── SecurityMasterAccountingEventServiceTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
@@ -7492,6 +7530,7 @@ Meridian-main
 │   │   │   ├── ActivityTestListenerFactory.cs
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
+│   │   │   ├── RecordingLogger.cs
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
@@ -7510,6 +7549,8 @@ Meridian-main
 │   │   │   │   └── SecurityMasterAndVaultEvidenceContributorTests.cs
 │   │   │   ├── Streaming
 │   │   │   │   ├── QuoteStreamBroadcasterTests.cs
+│   │   │   │   ├── ReportRunStreamBroadcasterTests.cs
+│   │   │   │   ├── StreamBroadcasterTests.cs
 │   │   │   │   ├── StreamConnectionRegistryTests.cs
 │   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
@@ -7565,6 +7606,7 @@ Meridian-main
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
+│   │   │   ├── ReportingRunStreamEndpointTests.cs
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
