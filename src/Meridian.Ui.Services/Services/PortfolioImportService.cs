@@ -266,55 +266,20 @@ public sealed class PortfolioImportService
 
     private static IndexConstituentsResult GetHardcodedIndex(string indexName)
     {
-        return indexName.ToUpperInvariant() switch
+        if (IndexConstituentCatalog.TryGet(indexName, out var definition))
         {
-            "SP500" or "SPX" or "S&P500" => new IndexConstituentsResult
+            return new IndexConstituentsResult
             {
                 Success = true,
-                IndexName = "S&P 500",
-                Symbols = new List<string>
-                {
-                    "AAPL", "MSFT", "AMZN", "NVDA", "GOOGL", "META", "TSLA", "BRK.B", "UNH", "XOM",
-                    "JNJ", "JPM", "V", "PG", "MA", "HD", "CVX", "MRK", "ABBV", "LLY",
-                    "PEP", "KO", "COST", "AVGO", "WMT", "MCD", "CSCO", "TMO", "ABT", "ACN"
-                    // Top 30 by weight - full list would be 500+
-                }
-            },
-            "QQQ" or "NDX" or "NASDAQ100" => new IndexConstituentsResult
-            {
-                Success = true,
-                IndexName = "Nasdaq-100",
-                Symbols = new List<string>
-                {
-                    "AAPL", "MSFT", "AMZN", "NVDA", "META", "GOOGL", "GOOG", "TSLA", "AVGO", "COST",
-                    "PEP", "CSCO", "NFLX", "AMD", "ADBE", "INTC", "CMCSA", "TMUS", "TXN", "QCOM"
-                }
-            },
-            "DIA" or "DJIA" or "DOW30" => new IndexConstituentsResult
-            {
-                Success = true,
-                IndexName = "Dow Jones 30",
-                Symbols = new List<string>
-                {
-                    "AAPL", "MSFT", "UNH", "GS", "HD", "MCD", "V", "CAT", "AMGN", "CRM",
-                    "BA", "HON", "TRV", "AXP", "JPM", "IBM", "JNJ", "PG", "CVX", "MRK",
-                    "DIS", "NKE", "KO", "MMM", "WBA", "VZ", "INTC", "CSCO", "DOW", "WMT"
-                }
-            },
-            "IWM" or "RTY" or "RUSSELL2000" => new IndexConstituentsResult
-            {
-                Success = true,
-                IndexName = "Russell 2000 (Sample)",
-                Symbols = new List<string>
-                {
-                    "AMC", "SFIX", "PLUG", "RKT", "SPCE", "CLOV", "WISH", "SOFI", "HOOD", "RIVN"
-                }
-            },
-            _ => new IndexConstituentsResult
-            {
-                Success = false,
-                Error = $"Unknown index: {indexName}"
-            }
+                IndexName = definition.DisplayName,
+                Symbols = definition.Symbols.ToList()
+            };
+        }
+
+        return new IndexConstituentsResult
+        {
+            Success = false,
+            Error = $"Unknown index: {indexName}"
         };
     }
 
