@@ -3387,6 +3387,52 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ReportingRunCommandService_CarriesRestatementAuthorizationThroughRequest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var catalog = new DefaultReportingTemplateCatalog();
+        var orchestration = new ReportingOrchestrationService(
+            catalog,
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 4, 9, 0, 0, TimeSpan.Zero),
+            runStore);
+        var service = new ReportingRunCommandService(orchestration, catalog);
+
+        var initial = await service.RunAsync(
+            new ReportingRunRequestDto("investor-monthly-statement", new DateOnly(2026, 5, 4), JobId: "adhoc-restate"),
+            "fund-controller",
+            CancellationToken.None);
+        (await orchestration.TransitionApprovalAsync(initial.Run.RunId, ReportingRunStatus.InReview, "rev", "Reviewer", "review", CancellationToken.None)).Should().BeTrue();
+        (await orchestration.TransitionApprovalAsync(initial.Run.RunId, ReportingRunStatus.Approved, "cmp", "ComplianceOfficer", "approve", CancellationToken.None)).Should().BeTrue();
+        (await orchestration.TransitionApprovalAsync(initial.Run.RunId, ReportingRunStatus.Released, "ops", "OperationsLead", "release", CancellationToken.None)).Should().BeTrue();
+
+        // Default request (no restatement authorization) must be rejected once the series is released.
+        var blocked = async () => await service.RunAsync(
+            new ReportingRunRequestDto("investor-monthly-statement", new DateOnly(2026, 5, 4), JobId: "adhoc-restate"),
+            "fund-controller",
+            CancellationToken.None);
+        await blocked.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+
+        // Authorized restatement flows the flag through the request/service layer and succeeds.
+        var restated = await service.RunAsync(
+            new ReportingRunRequestDto(
+                "investor-monthly-statement",
+                new DateOnly(2026, 5, 4),
+                JobId: "adhoc-restate",
+                RetryReason: "Q2 NAV correction",
+                AllowRestatement: true),
+            "fund-controller",
+            CancellationToken.None);
+
+        restated.Run.RunId.Should().Be("adhoc-restate-20260504-v2");
+        orchestration.GetAudit(initial.Run.RunId).Should().Contain(entry =>
+            entry.Action == "RestatementAuthorized" && entry.Notes.Contains("Q2 NAV correction"));
+    }
+
+    [Fact]
     public async Task ReportingRunCommandService_RunsAdHocReportsOnDemand()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));

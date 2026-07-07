@@ -285,6 +285,10 @@ export interface ReportingRunStatusRow {
   isLatestApproved: boolean;
   templateLabel: string;
   asOfDateLabel: string;
+  // Raw identity used to target this run's series when authorizing a restatement.
+  restatementJobId: string;
+  restatementAsOfDate: string;
+  restatementDatasetSourceId: string;
   attemptLabel: string;
   runAttemptLabel: string;
   latestGeneratedLabel: string;
@@ -1710,6 +1714,50 @@ function templateStatusVariant(status?: string): Exclude<ReportingBadgeVariant, 
   return "outline";
 }
 
+/**
+ * Recovers the job id that identifies a run's series from its `runSeriesId`
+ * (formatted `{jobId}-{yyyyMMdd}`). Restating a released run must reuse this job id
+ * together with the run's as-of date so the regenerated run versions into the same
+ * series (`-v2`) and the orchestration guard records it as an auditable restatement.
+ */
+export function deriveRestatementSeriesJobId(
+  runSeriesId: string | null | undefined,
+  runId: string,
+  asOfDate: string | null | undefined
+): string {
+  const series = runSeriesId?.trim() || runId;
+  const iso = asOfDate?.trim();
+  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const suffix = `-${iso.replace(/-/g, "")}`;
+    if (series.endsWith(suffix)) {
+      return series.slice(0, -suffix.length);
+    }
+  }
+
+  return series;
+}
+
+/**
+ * Reduces run rows to the latest released run per series (highest attempt ordinal). Restatement
+ * always supersedes a series' released head, so only that head is a valid restatement target —
+ * offering an older released version would misrepresent which run the operator is superseding.
+ */
+export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): ReportingRunStatusRow[] {
+  const latest = new Map<string, ReportingRunStatusRow>();
+  for (const run of rows) {
+    if (run.status !== "Released") {
+      continue;
+    }
+
+    const existing = latest.get(run.runSeriesLabel);
+    if (!existing || run.runAttemptOrdinal > existing.runAttemptOrdinal) {
+      latest.set(run.runSeriesLabel, run);
+    }
+  }
+
+  return Array.from(latest.values());
+}
+
 export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
   return runs.map((run) => {
     const drilldownLinks = buildRunLinkRows(run);
@@ -1728,6 +1776,9 @@ export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): Report
       isLatestApproved: Boolean(run.isLatestApproved),
       templateLabel: run.templateId,
       asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
+      restatementJobId: deriveRestatementSeriesJobId(run.runSeriesId, run.runId, run.asOfDate),
+      restatementAsOfDate: run.asOfDate?.trim() ?? "",
+      restatementDatasetSourceId: run.reportWriterDatasetSourceId?.trim() ?? "",
       attemptLabel: `${run.attemptCount} attempt${run.attemptCount === 1 ? "" : "s"}`,
       runAttemptLabel: buildRunAttemptLabel(run),
       latestGeneratedLabel: buildLatestGeneratedLabel(run),

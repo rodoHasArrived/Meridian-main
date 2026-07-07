@@ -91,6 +91,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         try
         {
+            await GuardReleasedRestatementAsync(contract, version, cancellationToken).ConfigureAwait(false);
+
             for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -268,6 +270,56 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         return true;
     }
 
+    /// <summary>
+    /// Prevents a Released manifest at the head of a run series from being silently superseded by a
+    /// freshly generated run. Regenerating a released report is a governed restatement: the caller
+    /// must opt in via <see cref="ReportingJobContract.AllowRestatement"/> and supply a
+    /// <see cref="ReportingJobContract.RetryReason"/>. Both the blocked and the authorized paths are
+    /// written to the released run's audit trail so the action is never silent.
+    /// </summary>
+    private async Task GuardReleasedRestatementAsync(
+        ReportingJobContract contract,
+        ReportingRunVersionPlan version,
+        CancellationToken cancellationToken)
+    {
+        if (version.ReleasedHead is not { } released)
+        {
+            return;
+        }
+
+        if (!contract.AllowRestatement)
+        {
+            AppendAudit(
+                released.RunId,
+                "RestatementBlocked",
+                contract.RequestedBy,
+                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=released manifest requires an explicit restatement action");
+            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+            throw new InvalidOperationException(
+                $"Run series '{version.RunSeriesId}' has a Released manifest '{released.RunId}'. Regenerating it requires an explicit restatement (set AllowRestatement and supply a RetryReason).");
+        }
+
+        var retryReason = NormalizeOptional(contract.RetryReason);
+        if (retryReason is null)
+        {
+            AppendAudit(
+                released.RunId,
+                "RestatementBlocked",
+                contract.RequestedBy,
+                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=restatement requires a RetryReason");
+            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+            throw new InvalidOperationException(
+                $"Restating Released manifest '{released.RunId}' requires a RetryReason describing the restatement.");
+        }
+
+        AppendAudit(
+            released.RunId,
+            "RestatementAuthorized",
+            contract.RequestedBy,
+            $"restatementRun={version.RunId}; runSeries={version.RunSeriesId}; retryReason={retryReason}");
+        await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+    }
+
     private static bool IsTransitionAllowed(ReportingRunStatus from, ReportingRunStatus to)
         => (from, to) switch
         {
@@ -340,8 +392,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private ReportingRunVersionPlan AllocateRunVersion(ReportingJobContract contract)
     {
         var runSeriesId = BuildRunSeriesId(contract);
-        var priorRuns = ListKnownManifests()
-            .Where(manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase))
+        var priorRuns = ResolveSeriesManifests(runSeriesId)
             .OrderByDescending(ResolveRunAttemptOrdinal)
             .ThenByDescending(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -349,28 +400,66 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var nextOrdinal = priorRuns.Length == 0
             ? 1
             : priorRuns.Max(ResolveRunAttemptOrdinal) + 1;
+
+        // The "effective head" is the highest-ordinal run that is not Failed. It is both the lineage
+        // and diff basis (a Failed attempt has no content to compare against) and the guard subject,
+        // so a still-released report stays protected — and its grid diff intact — even after a failed
+        // restatement attempt whose Failed manifest would otherwise sit at the absolute head.
+        var effectiveHead = priorRuns.FirstOrDefault(manifest => manifest.Status != ReportingRunStatus.Failed);
+        var releasedHead = effectiveHead is { Status: ReportingRunStatus.Released } ? effectiveHead : null;
+
         while (true)
         {
             var runId = BuildRunId(runSeriesId, nextOrdinal);
             if (reservedRunIds.TryAdd(runId, 0))
             {
-                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, priorRuns.FirstOrDefault());
+                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, effectiveHead, releasedHead);
             }
 
             nextOrdinal++;
         }
     }
 
-    private IReadOnlyList<ReportingOutputManifest> ListKnownManifests()
+    /// <summary>
+    /// Resolves every run in a series exhaustively. The durable store is probed by the series'
+    /// deterministic run ids (<c>runSeriesId</c>, <c>runSeriesId-v2</c>, …) via <c>GetManifest</c>
+    /// rather than the globally capped <c>ListRuns</c>, so an older released head is never missed
+    /// when the store holds many newer runs in other series — which would otherwise let a
+    /// regeneration silently overwrite a released manifest instead of tripping the restatement guard.
+    /// </summary>
+    private IReadOnlyList<ReportingOutputManifest> ResolveSeriesManifests(string runSeriesId)
     {
-        IEnumerable<ReportingOutputManifest> stored = runStore is null
-            ? []
-            : runStore.ListRuns(200).Select(static snapshot => snapshot.Manifest);
-        return manifests.Values
-            .Concat(stored)
-            .GroupBy(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
+        var found = new Dictionary<string, ReportingOutputManifest>(StringComparer.OrdinalIgnoreCase);
+
+        // In-process manifests for this series (may not be persisted yet).
+        foreach (var manifest in manifests.Values.Where(
+            manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase)))
+        {
+            found[manifest.RunId] = manifest;
+        }
+
+        if (runStore is not null)
+        {
+            // Run ids in a series are contiguous by ordinal, so probe until an ordinal exists in
+            // neither the store nor memory. Bounded by the number of versions, not the store size.
+            for (var ordinal = 1; ; ordinal++)
+            {
+                var runId = BuildRunId(runSeriesId, ordinal);
+                var stored = runStore.GetManifest(runId);
+                if (stored is not null)
+                {
+                    found.TryAdd(runId, stored);
+                    continue;
+                }
+
+                if (!found.ContainsKey(runId))
+                {
+                    break;
+                }
+            }
+        }
+
+        return found.Values.ToArray();
     }
 
     private static ImmutableArray<ReportWriterGridDiffDto> BuildReportWriterGridDiffs(
@@ -422,7 +511,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         string RunSeriesId,
         int RunAttemptOrdinal,
         string RunId,
-        ReportingOutputManifest? PriorManifest);
+        ReportingOutputManifest? PriorManifest,
+        ReportingOutputManifest? ReleasedHead);
 }
 
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer

@@ -5723,6 +5723,7 @@ export interface ReportingRunRequest {
   datasetRows?: Record<string, string>[] | null;
   datasetSourceId?: string | null;
   retryReason?: string | null;
+  allowRestatement?: boolean;
 }
 
 export interface ReportingRunResult {

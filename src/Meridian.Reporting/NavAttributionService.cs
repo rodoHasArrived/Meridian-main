@@ -87,20 +87,9 @@ public sealed class NavAttributionService
         {
             ct.ThrowIfCancellationRequested();
 
-            SecurityDetailDto? security = null;
-            if (!string.IsNullOrWhiteSpace(account.Symbol))
-            {
-                try
-                {
-                    security = await _securityMaster
-                        .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, account.Symbol, null, ct)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _log.LogDebug(ex, "Security Master lookup failed for symbol {Symbol}", account.Symbol);
-                }
-            }
+            var security = await SecurityMasterReportingLookup
+                .TryGetByTickerAsync(_securityMaster, _log, account.Symbol, ct)
+                .ConfigureAwait(false);
 
             components.Add(new NavComponent(
                 AccountName: account.Name,

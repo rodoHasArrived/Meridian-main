@@ -5,8 +5,11 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   buildRestatementReviewPanel,
+  deriveRestatementSeriesJobId,
+  latestReleasedRunsPerSeries,
   resolveReportPackProfileKeyCommand,
-  useReportingScreenViewModel
+  useReportingScreenViewModel,
+  type ReportingRunStatusRow
 } from "@/screens/reporting-screen.view-model";
 import { reportingTaskModeLauncherLinks } from "@/screens/reporting-screen.task-mode-view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
@@ -1567,5 +1570,38 @@ describe("useReportingScreenViewModel", () => {
   it("count label reflects profile count", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.countLabel).toBe("2 profiles");
+  });
+});
+
+describe("deriveRestatementSeriesJobId", () => {
+  it("strips the as-of suffix from the run series id to recover the job id", () => {
+    expect(
+      deriveRestatementSeriesJobId("adhoc-investor-20260504153000123-20260504", "run-id", "2026-05-04")
+    ).toBe("adhoc-investor-20260504153000123");
+  });
+
+  it("falls back to the run id when no series id is present", () => {
+    expect(deriveRestatementSeriesJobId(null, "job-alpha-20260504", "2026-05-04")).toBe("job-alpha");
+  });
+
+  it("returns the series unchanged when the as-of suffix does not match", () => {
+    expect(deriveRestatementSeriesJobId("series-without-date", "run-id", "2026-05-04")).toBe("series-without-date");
+    expect(deriveRestatementSeriesJobId("series-x", "run-id", null)).toBe("series-x");
+  });
+});
+
+describe("latestReleasedRunsPerSeries", () => {
+  const row = (overrides: Partial<ReportingRunStatusRow>): ReportingRunStatusRow =>
+    ({ id: "run", status: "Released", runSeriesLabel: "series-a", runAttemptOrdinal: 1, ...overrides }) as ReportingRunStatusRow;
+
+  it("keeps only the highest-ordinal released run per series and drops non-released runs", () => {
+    const result = latestReleasedRunsPerSeries([
+      row({ id: "a-v1", runSeriesLabel: "series-a", runAttemptOrdinal: 1 }),
+      row({ id: "a-v2", runSeriesLabel: "series-a", runAttemptOrdinal: 2 }),
+      row({ id: "b-v1", runSeriesLabel: "series-b", runAttemptOrdinal: 1 }),
+      row({ id: "c-draft", runSeriesLabel: "series-c", runAttemptOrdinal: 1, status: "Draft" })
+    ]);
+
+    expect(result.map((entry) => entry.id).sort()).toEqual(["a-v2", "b-v1"]);
   });
 });

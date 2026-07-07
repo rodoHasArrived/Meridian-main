@@ -68,7 +68,8 @@ import {
 import {
   ExportsReportRunner,
   type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState
+  type ExportsReportRunDraftState,
+  type RestatementTargetSelection
 } from "@/screens/reporting-screen.exports-runner";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
@@ -614,8 +615,36 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     });
   }
 
+  function updateExportsReportRestatementTarget(target: RestatementTargetSelection | null) {
+    setExportsRunDraft((current) => ({
+      ...current,
+      restatementTargetRunId: target?.runId ?? "",
+      restatementTemplateId: target?.templateId ?? "",
+      restatementJobId: target?.jobId ?? "",
+      restatementAsOfDate: target?.asOfDate ?? "",
+      restatementDatasetSourceId: target?.datasetSourceId ?? "",
+      // Clear any carried reason when the operator cancels the restatement.
+      retryReason: target ? current.retryReason : ""
+    }));
+  }
+
   async function handleExportsReportRun() {
-    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand || runningTemplateRunId) {
+    if (runningTemplateRunId) {
+      return;
+    }
+
+    // Restatement runs from the selected released run's identity, independent of the current
+    // template selection (which may be empty or gated); an ordinary run needs a runnable template.
+    if (exportsRunDraft.restatementTargetRunId.trim().length > 0) {
+      await executeTemplateRun(
+        { id: exportsRunDraft.restatementTargetRunId, name: `Restatement of ${exportsRunDraft.restatementTargetRunId}` },
+        buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
+        "Exports report run"
+      );
+      return;
+    }
+
+    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand) {
       return;
     }
 
@@ -671,31 +700,31 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   ]);
 
   async function executeTemplateRun(
-    template: ReportingTemplateRow,
+    identity: { id: string; name: string },
     request: ReportingRunRequest,
     statusLabel: string
   ) {
     setTemplateRunStatus({
-      id: template.id,
+      id: identity.id,
       label: statusLabel,
       state: "running",
-      message: `${template.name} is running.`,
+      message: `${identity.name} is running.`,
       details: []
     });
 
     try {
       const result = await runReportingNow(request);
       setTemplateRunStatus({
-        id: template.id,
+        id: identity.id,
         label: statusLabel,
         state: "success",
-        message: `${template.name} run created.`,
+        message: `${identity.name} run created.`,
         details: buildReportRunResultDetails(result.run)
       });
     } catch (error) {
-      const display = describeApiError(error, `${template.name} run failed.`);
+      const display = describeApiError(error, `${identity.name} run failed.`);
       setTemplateRunStatus({
-        id: template.id,
+        id: identity.id,
         label: statusLabel,
         state: "error",
         message: display.summary,
@@ -1967,6 +1996,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester={defaultExportsReportRunRequester}
         onDraftChange={updateExportsReportRunDraft}
+        onRestatementTargetChange={updateExportsReportRestatementTarget}
         onRun={() => void handleExportsReportRun()}
       />
       ) : null}
@@ -3071,7 +3101,13 @@ function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceRespons
     asOfDate: new Date().toISOString().slice(0, 10),
     maxRetries: "0",
     requestedBy: defaultExportsReportRunRequester,
-    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting)
+    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting),
+    retryReason: "",
+    restatementTargetRunId: "",
+    restatementTemplateId: "",
+    restatementJobId: "",
+    restatementAsOfDate: "",
+    restatementDatasetSourceId: ""
   };
 }
 
@@ -3086,9 +3122,31 @@ function resolveSelectedExportsTemplate(
 }
 
 export function buildExportsReportRunRequest(
-  template: ReportingTemplateRow,
+  template: ReportingTemplateRow | null,
   draft: ExportsReportRunDraftState
 ): ReportingRunRequest {
+  // Authorized restatement targets a specific released run's series: reuse its job id and as-of
+  // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
+  // It carries its own template identity, so it does not depend on the current template selection.
+  if (draft.restatementTargetRunId) {
+    return {
+      templateId: draft.restatementTemplateId,
+      jobId: draft.restatementJobId,
+      asOfDate: draft.restatementAsOfDate,
+      maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
+      requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
+      // Reuse the released run's dataset source so the restatement renders and diffs against the
+      // same data, not the default retained dataset.
+      datasetSourceId: normalizeOptionalDatasetSourceId(draft.restatementDatasetSourceId),
+      retryReason: draft.retryReason.trim() || null,
+      allowRestatement: true
+    };
+  }
+
+  if (!template) {
+    throw new Error("A report template must be selected to run a report.");
+  }
+
   return {
     templateId: template.templateName,
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
