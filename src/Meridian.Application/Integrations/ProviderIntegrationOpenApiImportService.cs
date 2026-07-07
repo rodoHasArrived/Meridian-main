@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -28,11 +30,15 @@ public sealed class ProviderIntegrationOpenApiImportService
         ProviderCapabilityKindDto.Executions
     ];
 
+    private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationOpenApiImportService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationOpenApiImportService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationOpenApiImportService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationOpenApiImportService>.Instance;
     }
 
     public async Task<ProviderIntegrationOpenApiImportResultDto> ImportAsync(
@@ -44,6 +50,13 @@ public sealed class ProviderIntegrationOpenApiImportService
         string? tenantId,
         ProviderIntegrationOpenApiImportRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "openapi-import",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
@@ -141,7 +154,7 @@ public sealed class ProviderIntegrationOpenApiImportService
         }
 
         return result;
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

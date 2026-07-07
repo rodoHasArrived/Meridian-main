@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -7,11 +9,15 @@ public sealed class ProviderIntegrationQuarantineReviewService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationQuarantineReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationQuarantineReviewService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationQuarantineReviewService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationQuarantineReviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationQuarantineReviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationQuarantineReviewDto> GetReviewAsync(
@@ -25,6 +31,11 @@ public sealed class ProviderIntegrationQuarantineReviewService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "quarantine-review",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -84,7 +95,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             decisionPosture.ReplayRequestedRecordCount,
             decisionPosture.IgnoredRecordCount,
             decisionPosture.CashPositionCandidateCount);
-    }
+    }).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationQuarantineResolutionResultDto> ResolveAsync(
         ProviderIntegrationQuarantineResolutionRequestDto request,
@@ -95,6 +106,14 @@ public sealed class ProviderIntegrationQuarantineReviewService
         string? tenantId,
         ProviderIntegrationQuarantineResolutionRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "quarantine-resolve",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId,
+                SyncRunId: request?.SyncRunId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -131,7 +150,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             record,
             decision,
             "Provider integration quarantine review decision recorded.");
-    }
+    }).ConfigureAwait(false);
 
     private static int NormalizeLimit(int recentRunLimit)
     {

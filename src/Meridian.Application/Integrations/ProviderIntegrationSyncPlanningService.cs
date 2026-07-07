@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -11,11 +13,15 @@ public sealed class ProviderIntegrationSyncPlanningService
         ProviderIntegrationProcessingStatusDto.Published
     ];
 
+    private readonly ILogger<ProviderIntegrationSyncPlanningService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationSyncPlanningService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSyncPlanningService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSyncPlanningService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSyncPlanningService>.Instance;
     }
 
     public async Task<ProviderIntegrationSyncPlanDto> PlanAsync(
@@ -27,6 +33,13 @@ public sealed class ProviderIntegrationSyncPlanningService
         string? tenantId,
         ProviderIntegrationSyncPlanRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "sync-plan",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -56,7 +69,7 @@ public sealed class ProviderIntegrationSyncPlanningService
             items,
             DueCount: items.Count(item => item.IsDue),
             BlockedCount: items.Count(item => item.IsBlocked));
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

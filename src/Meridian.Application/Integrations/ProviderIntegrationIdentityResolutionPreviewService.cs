@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
 using Meridian.Contracts.SecurityMaster;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using UiApiRoutes = Meridian.Contracts.Api.UiApiRoutes;
 
 namespace Meridian.Application.Integrations;
@@ -12,13 +14,16 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
 
     private readonly IProviderIntegrationManifestStore store;
     private readonly ISecurityMasterQueryService? securityMaster;
+    private readonly ILogger<ProviderIntegrationIdentityResolutionPreviewService> logger;
 
     public ProviderIntegrationIdentityResolutionPreviewService(
         IProviderIntegrationManifestStore store,
-        ISecurityMasterQueryService? securityMaster = null)
+        ISecurityMasterQueryService? securityMaster = null,
+        ILogger<ProviderIntegrationIdentityResolutionPreviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.securityMaster = securityMaster;
+        this.logger = logger ?? NullLogger<ProviderIntegrationIdentityResolutionPreviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationStagingIdentityResolutionPreviewDto> PreviewAsync(
@@ -32,6 +37,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "identity-resolution-preview",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -70,7 +80,7 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
                 or ProviderIntegrationIdentityResolutionStatusDto.NotFound
                 or ProviderIntegrationIdentityResolutionStatusDto.NotConfigured),
             rows.Count(row => row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier));
-    }
+    }).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationStagingIdentityResolutionRowDto> ResolveRecordAsync(
         ProviderConnectionDto connection,

@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -9,13 +11,16 @@ public sealed class ProviderIntegrationReconciliationHandoffService
 
     private readonly IProviderIntegrationManifestStore store;
     private readonly ProviderIntegrationPromotionReadinessService readiness;
+    private readonly ILogger<ProviderIntegrationReconciliationHandoffService> logger;
 
     public ProviderIntegrationReconciliationHandoffService(
         IProviderIntegrationManifestStore store,
-        ProviderIntegrationPromotionReadinessService readiness)
+        ProviderIntegrationPromotionReadinessService readiness,
+        ILogger<ProviderIntegrationReconciliationHandoffService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.readiness = readiness ?? throw new ArgumentNullException(nameof(readiness));
+        this.logger = logger ?? NullLogger<ProviderIntegrationReconciliationHandoffService>.Instance;
     }
 
     public async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffAsync(
@@ -27,6 +32,13 @@ public sealed class ProviderIntegrationReconciliationHandoffService
         string? tenantId,
         ProviderIntegrationReconciliationHandoffRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "reconciliation-handoff",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -153,7 +165,7 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             DuplicateRecordCount: 0,
             Issues: [],
             Message: "Reconciliation handoff evidence was retained for the selected staged records.");
-    }
+    }).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationReconciliationHandoffHistoryDto> GetHistoryAsync(
         string connectionId,
@@ -164,6 +176,11 @@ public sealed class ProviderIntegrationReconciliationHandoffService
         string? tenantId,
         string connectionId,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "reconciliation-handoff-history",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -183,7 +200,7 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             records.Length,
             records.Select(record => record.HandoffId).Distinct(StringComparer.Ordinal).Count(),
             records.FirstOrDefault()?.RequestedAt);
-    }
+    }).ConfigureAwait(false);
 
     private static string CreateHandoffId(DateTimeOffset requestedAt)
         => $"handoff-{requestedAt.UtcDateTime:yyyyMMddHHmmss}-{Guid.NewGuid():N}";

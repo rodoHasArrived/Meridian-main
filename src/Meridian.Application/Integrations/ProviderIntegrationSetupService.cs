@@ -1,14 +1,20 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSetupService
 {
+    private readonly ILogger<ProviderIntegrationSetupService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationSetupService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSetupService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSetupService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSetupService>.Instance;
     }
 
     public async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftAsync(
@@ -20,6 +26,14 @@ public sealed class ProviderIntegrationSetupService
         string? tenantId,
         ProviderIntegrationSetupSaveRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "setup-save-draft",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.Manifest?.ManifestId,
+                ConnectionId: request?.Connection?.ConnectionId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Manifest);
@@ -61,7 +75,7 @@ public sealed class ProviderIntegrationSetupService
             savedConnection.State,
             readiness,
             "Provider integration setup draft saved.");
-    }
+    }).ConfigureAwait(false);
 
     private static void ValidateSetupScope(
         ProviderIntegrationManifestDto manifest,

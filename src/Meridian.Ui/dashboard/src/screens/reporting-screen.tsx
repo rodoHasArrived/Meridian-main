@@ -45,6 +45,7 @@ import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
   type ReportingProfileRow,
+  type ReportingExportStatusState,
   type ReportingRunActionRow,
   type ReportingRunStatusRow,
   type ReportingScheduleDeliveryPlanRow,
@@ -373,8 +374,13 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
+  const isReportBuilderTaskMode = vm.taskMode.id === "report-builder";
+  const isRunStatusTaskMode = vm.taskMode.id === "run-status";
+  const isDeliveryEvidenceTaskMode = vm.taskMode.id === "delivery-evidence" || vm.taskMode.id === "report-pack-approval";
+  const isExportsTaskMode = vm.taskMode.id === "exports";
+  const isGovernanceTaskMode = vm.taskMode.id === "governance";
   const showStarterKitChooser =
-    isDailyReportingCockpitLanding &&
+    isReportBuilderTaskMode &&
     vm.starterKitPanel.showChooser &&
     starterKitStatus?.state !== "success";
   const scheduleModel: ReportingScheduleManagementModel = {
@@ -604,7 +610,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const selectedExportsTemplateRunDisabledReason = selectedExportsTemplate?.runDisabledReason ?? null;
 
   useEffect(() => {
-    if (!selectedExportsTemplateId || !selectedExportsTemplateName) {
+    if (!isExportsTaskMode || !selectedExportsTemplateId || !selectedExportsTemplateName) {
       return;
     }
 
@@ -631,6 +637,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       }
     ]);
   }, [
+    isExportsTaskMode,
     runningTemplateRunId,
     selectedExportsTemplateCanRun,
     selectedExportsTemplateId,
@@ -1283,7 +1290,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         chips={vm.workbenchChips}
       />
 
-      <ReportingHub model={hubModel} />
+      {isDailyReportingCockpitLanding ? (
+        <ReportingHub model={hubModel} />
+      ) : null}
 
       {showStarterKitChooser ? (
         <ReportingStarterKitChooser
@@ -1292,7 +1301,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           runningStarterKitId={runningStarterKitId}
           onProvision={handleProvisionStarterKit}
         />
-      ) : starterKitStatus ? (
+      ) : isReportBuilderTaskMode && starterKitStatus ? (
         <ReportingCommandStatusView status={starterKitStatus} />
       ) : null}
 
@@ -1300,12 +1309,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         <ReportingTaskModeLauncher />
       ) : (
         <>
+      {isRunStatusTaskMode && data.metrics.length > 0 ? (
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
           <MetricSnapshotCard key={metric.id} {...metric} />
         ))}
       </section>
+      ) : null}
 
+      {isGovernanceTaskMode ? (
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
           <CardHeader>
@@ -1348,8 +1360,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
-      {data.reporting.reportLineProvenanceExplorer ? (
+      {isDeliveryEvidenceTaskMode && data.reporting.reportLineProvenanceExplorer ? (
         <FinancialRecordExplorerShell
           className="report-line-provenance-explorer"
           explorerLabel="Report-line provenance"
@@ -1366,7 +1379,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </FinancialRecordExplorerShell>
       ) : null}
 
-      {(data.reporting.portfolioCuts ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.portfolioCuts ?? []).length > 0 ? (
         <section role="region" aria-label="Portfolio reporting cuts">
           <Card className="panel-surface">
             <CardHeader>
@@ -1409,7 +1422,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.livePortfolioViews ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.livePortfolioViews ?? []).length > 0 ? (
         <section role="region" aria-label="Live portfolio views">
           <Card className="panel-surface">
             <CardHeader>
@@ -1528,7 +1541,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.pnlSlices ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.pnlSlices ?? []).length > 0 ? (
         <section role="region" aria-label="P&L slicing">
           <Card className="panel-surface">
             <CardHeader>
@@ -1583,7 +1596,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.analyticsRows ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.analyticsRows ?? []).length > 0 ? (
         <section role="region" aria-label="Top-N and contribution analytics">
           <Card className="panel-surface">
             <CardHeader>
@@ -1655,7 +1668,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.crossFundConsolidations ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.crossFundConsolidations ?? []).length > 0 ? (
         <section role="region" aria-label="Cross-fund consolidations">
           <Card className="panel-surface">
             <CardHeader>
@@ -1712,7 +1725,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.structuredExports ?? []).length > 0 ? (
+      {isExportsTaskMode && (data.reporting.structuredExports ?? []).length > 0 ? (
         <section role="region" aria-label="Structured reporting exports">
           <Card className="panel-surface">
             <CardHeader>
@@ -1857,6 +1870,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isReportBuilderTaskMode ? (
       <ReportingBrandingAccessPanel
         themes={data.reporting.brandingThemes ?? []}
         draft={brandingDraft}
@@ -1869,8 +1883,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         onPreviewCustom={handlePreviewCustomBrandedPack}
         onGenerateCustom={handleGenerateCustomBrandedPack}
       />
+      ) : null}
 
-      {writerGrids.length > 0 ? (
+      {isReportBuilderTaskMode && writerGrids.length > 0 ? (
         <ReportingReportWriterSection>
           {writerGrids.map((grid) => (
             <ReportWriterDesignerGrid
@@ -1916,6 +1931,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </ReportingReportWriterSection>
       ) : null}
 
+      {isExportsTaskMode ? (
       <ExportsReportRunner
         draft={exportsRunDraft}
         templates={vm.templateRows}
@@ -1928,8 +1944,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         onDraftChange={updateExportsReportRunDraft}
         onRun={() => void handleExportsReportRun()}
       />
+      ) : null}
 
+      {isReportBuilderTaskMode || isRunStatusTaskMode || isGovernanceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        {isReportBuilderTaskMode || isGovernanceTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Template families</div>
@@ -2070,7 +2089,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </CardContent>
         </Card>
+        ) : null}
 
+        {isRunStatusTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Run status</div>
@@ -2200,11 +2221,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </CardContent>
         </Card>
+        ) : null}
       </section>
+      ) : null}
 
-      <ReportingPrivateCapitalReadinessPanel data={data} />
+      {isReportBuilderTaskMode ? (
+        <ReportingPrivateCapitalReadinessPanel data={data} />
+      ) : null}
 
+      {isReportBuilderTaskMode || isDeliveryEvidenceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {isReportBuilderTaskMode ? (
         <ReportingScheduleManagementPanel
           model={scheduleModel}
           scheduleDraft={scheduleDraft}
@@ -2221,16 +2248,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           onScheduleAction={handleScheduleAction}
           onSchedulePlanRun={handleSchedulePlanRun}
         />
+        ) : null}
 
+        {isReportBuilderTaskMode || isDeliveryEvidenceTaskMode ? (
         <ReportingDeliveryHistoryPanel
           deliveryAttempts={data.reporting.deliveryAttempts ?? []}
           deliveryFailureStatus={deliveryFailureStatus}
           runningDeliveryFailureId={runningDeliveryFailureId}
           onRecordDeliveryFailure={handleRecordDeliveryFailure}
         />
+        ) : null}
       </section>
+      ) : null}
 
-      {vm.workflowTaskPanel ? (
+      {isDeliveryEvidenceTaskMode && vm.workflowTaskPanel ? (
         <section
           role="region"
           aria-label={vm.workflowTaskPanel.regionLabel}
@@ -2639,6 +2670,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isDeliveryEvidenceTaskMode && vm.exportStatus ? (
+        <ReportingExportStatusPanel status={vm.exportStatus} />
+      ) : null}
+
+      {isDeliveryEvidenceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2682,7 +2718,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             {vm.hasPackTargets ? (
               <div
                 role="list"
-                aria-label={vm.packTargetsListLabel}
+                aria-label="Report-pack distribution route recipients"
                 className="data-grid-surface space-y-2 border-0 bg-background/40 p-3"
               >
                 {vm.packTargets.map((target) => (
@@ -2735,7 +2771,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
+      {isExportsTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2808,54 +2846,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
             {vm.exportStatus ? (
-              <div
-                role="status"
-                aria-label={vm.exportStatus.ariaLabel}
-                className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
-              >
-                <p>{vm.exportStatus.text}</p>
-                {vm.exportStatus.fields.length > 0 ? (
-                  <dl className="grid gap-2 sm:grid-cols-2">
-                    {vm.exportStatus.fields.map((field) => (
-                      <div
-                        key={field.label}
-                        className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                      >
-                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {field.label}
-                        </dt>
-                        <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
-                          {field.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-                {vm.exportStatus.warnings.length > 0 ? (
-                  <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
-                    {vm.exportStatus.warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                {vm.exportStatus.artifacts.length > 0 ? (
-                  <dl
-                    aria-label="Export artifacts"
-                    className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                  >
-                    {vm.exportStatus.artifacts.map((artifact) => (
-                      <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
-                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {artifact.label}
-                        </dt>
-                        <dd className={cn("break-words font-mono text-xs", artifact.className)}>
-                          {artifact.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-              </div>
+              <ReportingExportStatusPanel status={vm.exportStatus} className="mt-3" />
             ) : null}
             <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
             {vm.selectedProfile ? (
@@ -2930,6 +2921,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </div>
         </aside>
       </section>
+      ) : null}
         </>
       )}
     </div>
@@ -2941,6 +2933,65 @@ function ReportingHighlight({ title, description }: { title: string; description
     <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ReportingExportStatusPanel({
+  status,
+  className
+}: {
+  status: ReportingExportStatusState;
+  className?: string;
+}) {
+  return (
+    <div
+      role="status"
+      aria-label={status.ariaLabel}
+      className={cn("space-y-3 rounded-md border px-3 py-2 text-sm leading-6", status.className, className)}
+    >
+      <p>{status.text}</p>
+      {status.fields.length > 0 ? (
+        <dl className="grid gap-2 sm:grid-cols-2">
+          {status.fields.map((field) => (
+            <div
+              key={field.label}
+              className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                {field.label}
+              </dt>
+              <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
+                {field.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      {status.warnings.length > 0 ? (
+        <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+          {status.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+      {status.artifacts.length > 0 ? (
+        <dl
+          aria-label="Export artifacts"
+          className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+        >
+          {status.artifacts.map((artifact) => (
+            <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                {artifact.label}
+              </dt>
+              <dd className={cn("break-words font-mono text-xs", artifact.className)}>
+                {artifact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </div>
   );
 }

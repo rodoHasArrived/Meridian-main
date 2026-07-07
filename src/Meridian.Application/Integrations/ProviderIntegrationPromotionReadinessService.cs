@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -8,11 +10,14 @@ public sealed class ProviderIntegrationPromotionReadinessService
     private const int DefaultRecentRunLimit = 10;
 
     private readonly ProviderIntegrationIdentityResolutionPreviewService identityResolution;
+    private readonly ILogger<ProviderIntegrationPromotionReadinessService> logger;
 
     public ProviderIntegrationPromotionReadinessService(
-        ProviderIntegrationIdentityResolutionPreviewService identityResolution)
+        ProviderIntegrationIdentityResolutionPreviewService identityResolution,
+        ILogger<ProviderIntegrationPromotionReadinessService>? logger = null)
     {
         this.identityResolution = identityResolution ?? throw new ArgumentNullException(nameof(identityResolution));
+        this.logger = logger ?? NullLogger<ProviderIntegrationPromotionReadinessService>.Instance;
     }
 
     public async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewAsync(
@@ -26,6 +31,11 @@ public sealed class ProviderIntegrationPromotionReadinessService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "promotion-readiness-preview",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         ct.ThrowIfCancellationRequested();
         var identityPreview = await identityResolution
@@ -47,7 +57,7 @@ public sealed class ProviderIntegrationPromotionReadinessService
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReadyForReconciliation),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReviewRequired),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.Blocked));
-    }
+    }).ConfigureAwait(false);
 
     private static ProviderIntegrationPromotionReadinessRowDto BuildReadinessRow(
         ProviderIntegrationStagingIdentityResolutionRowDto row)

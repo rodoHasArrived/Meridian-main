@@ -1,14 +1,20 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationActivationService
 {
+    private readonly ILogger<ProviderIntegrationActivationService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationActivationService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationActivationService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationActivationService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationActivationService>.Instance;
     }
 
     public async Task<ProviderIntegrationActivationResultDto> ActivateAsync(
@@ -20,6 +26,14 @@ public sealed class ProviderIntegrationActivationService
         string? tenantId,
         ProviderIntegrationActivationRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "activation-activate",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
@@ -76,7 +90,7 @@ public sealed class ProviderIntegrationActivationService
             readiness,
             activationConnection.ApprovalEvidenceId,
             "Provider integration connection activated.");
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

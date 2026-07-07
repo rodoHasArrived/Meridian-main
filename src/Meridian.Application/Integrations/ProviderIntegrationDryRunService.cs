@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -11,11 +13,15 @@ public sealed class ProviderIntegrationDryRunService
 {
     private const string ManualCsvEndpointKey = "manual-csv-upload";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ILogger<ProviderIntegrationDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationDryRunService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationDryRunService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationDryRunService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationDryRunService>.Instance;
     }
 
     public async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunAsync(
@@ -27,6 +33,17 @@ public sealed class ProviderIntegrationDryRunService
         string? tenantId,
         ManualCsvProviderIntegrationDryRunRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "manual-csv-dry-run",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: ManualCsvEndpointKey,
+                SyncRunId: request?.SyncRunId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SyncRunId);
@@ -210,7 +227,7 @@ public sealed class ProviderIntegrationDryRunService
             allIssues);
         await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, result, ct).ConfigureAwait(false);
         return result;
-    }
+    }).ConfigureAwait(false);
 
     private Task SaveSyncRunAsync(
         IProviderIntegrationManifestStore scopedStore,

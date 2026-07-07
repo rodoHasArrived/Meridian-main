@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -7,11 +9,15 @@ public sealed class ProviderIntegrationMonitoringService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationMonitoringService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationMonitoringService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationMonitoringService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationMonitoringService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationMonitoringService>.Instance;
     }
 
     public async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorAsync(
@@ -25,6 +31,11 @@ public sealed class ProviderIntegrationMonitoringService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "monitor-connection",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         var evidence = await BuildConnectionSyncRunEvidenceAsync(
             tenantId,
@@ -49,7 +60,7 @@ public sealed class ProviderIntegrationMonitoringService
             evidence.RunEvidence.Sum(run => run.DurableStagingRecordCount),
             evidence.RunEvidence.Sum(run => run.DurableQuarantinedRecordCount),
             evidence.RunEvidence.Any(run => run.CriticalIssueCount > 0));
-    }
+    }).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsAsync(
         string connectionId,
@@ -62,6 +73,11 @@ public sealed class ProviderIntegrationMonitoringService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "monitor-sync-runs",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         var evidence = await BuildConnectionSyncRunEvidenceAsync(
             tenantId,
@@ -75,7 +91,7 @@ public sealed class ProviderIntegrationMonitoringService
             evidence.TotalSyncRuns,
             evidence.RunEvidence.Count,
             evidence.RunEvidence.FirstOrDefault()?.StartedAt);
-    }
+    }).ConfigureAwait(false);
 
     private async Task<ConnectionSyncRunEvidence> BuildConnectionSyncRunEvidenceAsync(
         string? tenantId,

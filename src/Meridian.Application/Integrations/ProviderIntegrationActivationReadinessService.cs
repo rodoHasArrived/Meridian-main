@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -11,11 +13,15 @@ public sealed class ProviderIntegrationActivationReadinessService
         ProviderCapabilityKindDto.OrderCancellation
     ];
 
+    private readonly ILogger<ProviderIntegrationActivationReadinessService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationActivationReadinessService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationActivationReadinessService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationActivationReadinessService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationActivationReadinessService>.Instance;
     }
 
     public async Task<ProviderIntegrationActivationReadinessDto> EvaluateAsync(
@@ -29,6 +35,14 @@ public sealed class ProviderIntegrationActivationReadinessService
         string manifestId,
         string? connectionId = null,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "activation-readiness-evaluate",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: manifestId,
+                ConnectionId: connectionId),
+            async () =>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
         if (connectionId is not null)
@@ -45,7 +59,7 @@ public sealed class ProviderIntegrationActivationReadinessService
                 ?? throw new KeyNotFoundException($"Provider integration connection '{connectionId}' was not found.");
 
         return Evaluate(manifest, connection);
-    }
+    }).ConfigureAwait(false);
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

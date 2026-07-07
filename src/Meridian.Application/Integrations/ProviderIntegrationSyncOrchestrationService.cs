@@ -3,11 +3,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSyncOrchestrationService
 {
+    private readonly ILogger<ProviderIntegrationSyncOrchestrationService> logger;
     private readonly ProviderIntegrationSyncPlanningService planner;
     private readonly ProviderIntegrationRestDryRunService restDryRun;
     private readonly IProviderIntegrationManifestStore store;
@@ -15,11 +18,13 @@ public sealed class ProviderIntegrationSyncOrchestrationService
     public ProviderIntegrationSyncOrchestrationService(
         ProviderIntegrationSyncPlanningService planner,
         ProviderIntegrationRestDryRunService restDryRun,
-        IProviderIntegrationManifestStore store)
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSyncOrchestrationService>? logger = null)
     {
         this.planner = planner ?? throw new ArgumentNullException(nameof(planner));
         this.restDryRun = restDryRun ?? throw new ArgumentNullException(nameof(restDryRun));
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSyncOrchestrationService>.Instance;
     }
 
     public async Task<ProviderIntegrationRunDueSyncResultDto> RunDueAsync(
@@ -31,6 +36,13 @@ public sealed class ProviderIntegrationSyncOrchestrationService
         string? tenantId,
         ProviderIntegrationRunDueSyncRequestDto request,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "sync-run-due",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId),
+            async () =>
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -72,7 +84,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             StartedCount: items.Count(item => item.Started),
             SkippedCount: items.Count(item => item.Skipped),
             items);
-    }
+    }).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationRunDueSyncItemResultDto> RunPlanItemAsync(
         string? tenantId,

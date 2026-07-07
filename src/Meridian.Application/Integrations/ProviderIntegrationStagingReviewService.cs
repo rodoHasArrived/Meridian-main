@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -7,11 +9,15 @@ public sealed class ProviderIntegrationStagingReviewService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
+    private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationStagingReviewService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationStagingReviewService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationStagingReviewService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationStagingReviewService>.Instance;
     }
 
     public async Task<ProviderIntegrationStagingReviewDto> GetReviewAsync(
@@ -25,6 +31,11 @@ public sealed class ProviderIntegrationStagingReviewService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "staging-review",
+            new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
+            async () =>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -85,7 +96,7 @@ public sealed class ProviderIntegrationStagingReviewService
             records.Count,
             records.Count(record => record.ValidationWarnings.Count == 0),
             records.Count(record => record.ValidationWarnings.Count > 0));
-    }
+    }).ConfigureAwait(false);
 
     private static int NormalizeLimit(int recentRunLimit)
     {
