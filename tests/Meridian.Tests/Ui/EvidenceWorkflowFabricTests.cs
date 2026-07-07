@@ -3545,6 +3545,13 @@ public sealed class EvidenceWorkflowFabricTests
         // projection's occurrence/recording timestamps to "now" so this fixture stays fresh
         // regardless of the calendar date it runs on; business dates remain fixed below.
         var now = DateTimeOffset.UtcNow;
+        // The expected-cash-movement evidence node derives its freshness "asOf" from the
+        // ExpectedCashMovement.EffectiveDate (see EvidenceContributionHelpers.DateFrom), so a
+        // fixed effective date more than seven days in the past would mark the node Stale and
+        // flip packet Completeness away from Ready. Anchor the freshness-critical effective
+        // date to today and keep the bank-evidence effective date in sync so field-extraction
+        // validation still matches; other business DateOnly values below stay fixed.
+        var nowDate = DateOnly.FromDateTime(now.UtcDateTime);
         var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var fundEvent = new PrivateCapitalFundEventDto(
             "fund-event:fund-alpha:capital-call:20260630",
@@ -3672,7 +3679,7 @@ public sealed class EvidenceWorkflowFabricTests
                 PaymentIntentCashDirectionDto.Inflow,
                 100m,
                 "USD",
-                new DateOnly(2026, 6, 30),
+                nowDate,
                 fundEvent.SettlementReference,
                 fundEvent.FundEventId,
                 fundEvent.FundEventType,
@@ -3712,7 +3719,7 @@ public sealed class EvidenceWorkflowFabricTests
                     "Retained cash evidence confirms the expected capital-call inflow.",
                     Amount: 100m,
                     Currency: "USD",
-                    EffectiveDate: new DateOnly(2026, 6, 30),
+                    EffectiveDate: nowDate,
                     RecordedAtUtc: now,
                     ExternalRef: fundEvent.SettlementReference,
                     EvidenceRoute: "/evidence/fund-alpha/bank-cash-capital-call.pdf")
