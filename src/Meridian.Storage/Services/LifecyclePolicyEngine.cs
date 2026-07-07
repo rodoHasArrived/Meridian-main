@@ -356,15 +356,20 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
 
         // The file must still live under the managed root. Compare against the root with a
         // trailing separator so a sibling directory (e.g. "/var/data-other" vs "/var/data")
-        // cannot bypass the check via partial-name matching.
+        // cannot bypass the check via partial-name matching. Use a case-sensitive comparison on
+        // Linux (where the filesystem is case-sensitive) so a path differing from the root only by
+        // casing is correctly treated as out-of-root; Windows/macOS default to case-insensitive.
         if (!string.IsNullOrEmpty(_options.RootPath))
         {
+            var pathComparison = OperatingSystem.IsLinux()
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
             var root = Path.GetFullPath(_options.RootPath);
             var rootWithSeparator = root.EndsWith(Path.DirectorySeparatorChar)
                 ? root
                 : root + Path.DirectorySeparatorChar;
             var full = Path.GetFullPath(filePath);
-            if (!full.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase))
+            if (!full.StartsWith(rootWithSeparator, pathComparison))
                 return false;
         }
 
