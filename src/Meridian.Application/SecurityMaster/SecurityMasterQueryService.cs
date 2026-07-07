@@ -32,7 +32,13 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
     {
         var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
-        var projection = await TryGetProjectionByIdentifierAsync(identifierKind, identifierValue, provider, asOf, ct)
+        var projection = await TryGetProjectionByIdentifierAsync(
+                identifierKind,
+                identifierValue,
+                provider,
+                asOf,
+                allowIdentityFallback: asOfUtc is not null,
+                ct)
             .ConfigureAwait(false);
         if (projection is null)
         {
@@ -203,6 +209,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         string identifierValue,
         string? provider,
         DateTimeOffset asOf,
+        bool allowIdentityFallback,
         CancellationToken ct)
     {
         var providerCandidates = BuildLookupCandidates(provider, SecurityIdentifierNormalizer.NormalizeProvider);
@@ -234,7 +241,22 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
 
         var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
         var universe = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        return universe.FirstOrDefault(candidate => MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+        var asOfMatch = universe.FirstOrDefault(candidate =>
+            MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+        if (asOfMatch is not null || !allowIdentityFallback)
+        {
+            return asOfMatch;
+        }
+
+        // As-of fallback: an identifier row's recorded validity window is frequently its
+        // data-entry time rather than the real-world assignment time, so a point-in-time lookup
+        // can miss a security whose identity is genuinely stable. When nothing is active at the
+        // requested as-of, resolve by identity while ignoring the temporal window. The caller's
+        // as-of term rebuild still governs which economic terms are returned, so this only
+        // restores identity resolution — it never hands back today's terms under yesterday's
+        // identity.
+        return universe.FirstOrDefault(candidate =>
+            MatchesIdentifierIgnoringWindow(candidate, identifierKind, normalizedValue, normalizedProvider));
     }
 
     private static IReadOnlyList<string?> BuildLookupCandidates(string? value, Func<string?, string> normalize)
@@ -289,6 +311,33 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
                 string.Equals(alias.AliasKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
                 && alias.ValidFrom <= asOf
                 && (!alias.ValidTo.HasValue || alias.ValidTo.Value > asOf)
+                && alias.IsEnabled
+                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(alias.Provider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        return string.Equals(candidate.PrimaryIdentifierKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+               && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
+    }
+
+    private static bool MatchesIdentifierIgnoringWindow(
+        SecurityProjectionRecord candidate,
+        SecurityIdentifierKind identifierKind,
+        string normalizedValue,
+        string normalizedProvider)
+    {
+        if (candidate.Identifiers.Any(identifier =>
+                identifier.Kind == identifierKind
+                && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(identifier.Provider, identifier.NormalizedProvider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        if (candidate.Aliases.Any(alias =>
+                string.Equals(alias.AliasKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
                 && alias.IsEnabled
                 && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
                 && ProviderMatches(alias.Provider, normalizedProvider)))

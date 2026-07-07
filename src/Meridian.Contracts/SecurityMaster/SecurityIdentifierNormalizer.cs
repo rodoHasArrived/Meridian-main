@@ -73,7 +73,9 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Cusip => ValidateCusip(normalized),
             SecurityIdentifierKind.Sedol => ValidateSedol(normalized),
             SecurityIdentifierKind.OccOptionSymbol => ValidateOccOptionSymbol(normalized),
-            SecurityIdentifierKind.Lei => normalized.Length == 20 && IsAlphaNumeric(normalized),
+            SecurityIdentifierKind.Lei => ValidateLei(normalized),
+            SecurityIdentifierKind.Figi => ValidateFigi(normalized),
+            SecurityIdentifierKind.Ric => ValidateRic(normalized),
             SecurityIdentifierKind.Wkn => normalized.Length == 6 && IsAlphaNumeric(normalized),
             SecurityIdentifierKind.Valoren => normalized.Length is >= 6 and <= 9 && IsDigitsOnly(normalized),
             SecurityIdentifierKind.Cik => normalized.Length is >= 1 and <= 10 && IsDigitsOnly(normalized),
@@ -86,7 +88,9 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Cusip => "CUSIP must be a 9-character code with a valid check digit.",
             SecurityIdentifierKind.Sedol => "SEDOL must be a 7-character alphanumeric code with a valid check digit.",
             SecurityIdentifierKind.OccOptionSymbol => "OCC option symbols must match the compact OSI format: root(1-6) + yymmdd + C/P + 8-digit strike.",
-            SecurityIdentifierKind.Lei => "LEI must be a 20-character alphanumeric code.",
+            SecurityIdentifierKind.Lei => "LEI must be a 20-character alphanumeric code with a valid ISO 17442 (mod 97-10) check digit.",
+            SecurityIdentifierKind.Figi => "FIGI must be a 12-character code of consonants and digits with 'G' in position 3 and a valid check digit.",
+            SecurityIdentifierKind.Ric => "RIC must be 1-40 characters using letters, digits, and RIC punctuation (. = # / ^ : _ -).",
             SecurityIdentifierKind.Wkn => "WKN must be a 6-character alphanumeric code.",
             SecurityIdentifierKind.Valoren => "Valoren must be a 6- to 9-digit Swiss security number.",
             SecurityIdentifierKind.Cik => "CIK must be a 1- to 10-digit SEC issuer code.",
@@ -304,5 +308,112 @@ public static class SecurityIdentifierNormalizer
 
         var strike = normalized[(rootLength + 7)..];
         return strike.Length == 8 && strike.All(static character => character is >= '0' and <= '9');
+    }
+
+    private static bool ValidateLei(string normalized)
+    {
+        if (normalized.Length != 20 || !IsAlphaNumeric(normalized))
+        {
+            return false;
+        }
+
+        // ISO 17442 carries an ISO 7064 MOD 97-10 checksum in the last two digits. Expanding
+        // letters to two-digit values (A=10 .. Z=35) and taking the whole 20-character code
+        // modulo 97 yields 1 for a valid LEI. See also the reference algorithm in
+        // src/Meridian.FSharp/Domain/SecurityIdentifiers.fs.
+        return Mod97(normalized) == 1;
+    }
+
+    private static bool ValidateFigi(string normalized)
+    {
+        if (normalized.Length != 12)
+        {
+            return false;
+        }
+
+        // FIGI values use upper-case consonants (vowels are never used, to avoid ISIN/ticker
+        // collisions) and digits; the third character is always 'G' and the last is a MOD-10
+        // check digit.
+        for (var index = 0; index < 12; index++)
+        {
+            var character = normalized[index];
+            var isDigit = character is >= '0' and <= '9';
+            var isConsonant = character is >= 'A' and <= 'Z' && !IsVowel(character);
+            if (!isDigit && !isConsonant)
+            {
+                return false;
+            }
+        }
+
+        if (normalized[2] != 'G' || !char.IsDigit(normalized[11]))
+        {
+            return false;
+        }
+
+        return FigiCheckDigit(normalized) == normalized[11] - '0';
+    }
+
+    private static bool ValidateRic(string normalized)
+    {
+        // Reuters Instrument Codes are a root plus optional exchange/chain suffix and may include
+        // '.', '=', '#', '/', '^', ':', '_' and '-'. There is no published check digit, so this
+        // stays a lightweight structural guard: RIC characters only, at least one alphanumeric,
+        // and no embedded whitespace (already removed by trimming during normalization).
+        if (normalized.Length is < 1 or > 40)
+        {
+            return false;
+        }
+
+        var hasAlphaNumeric = false;
+        foreach (var character in normalized)
+        {
+            if (char.IsLetterOrDigit(character))
+            {
+                hasAlphaNumeric = true;
+            }
+            else if (character is not ('.' or '=' or '#' or '/' or '^' or ':' or '_' or '-'))
+            {
+                return false;
+            }
+        }
+
+        return hasAlphaNumeric;
+    }
+
+    private static bool IsVowel(char character)
+        => character is 'A' or 'E' or 'I' or 'O' or 'U';
+
+    private static int Mod97(string value)
+    {
+        var remainder = 0;
+        foreach (var character in value)
+        {
+            remainder = char.IsDigit(character)
+                ? (remainder * 10 + (character - '0')) % 97
+                : (remainder * 100 + (character - 'A' + 10)) % 97;
+        }
+
+        return remainder;
+    }
+
+    private static int FigiCheckDigit(string figi)
+    {
+        // Luhn-style MOD 10 over the first 11 characters (digits keep face value; letters map
+        // A=10 .. Z=35); values in odd (0-based) positions are doubled and their decimal digits
+        // summed. The check digit makes the running total a multiple of 10.
+        var sum = 0;
+        for (var index = 0; index < 11; index++)
+        {
+            var character = figi[index];
+            var value = char.IsDigit(character) ? character - '0' : character - 'A' + 10;
+            if (index % 2 == 1)
+            {
+                value *= 2;
+            }
+
+            sum += (value / 10) + (value % 10);
+        }
+
+        return (10 - (sum % 10)) % 10;
     }
 }
