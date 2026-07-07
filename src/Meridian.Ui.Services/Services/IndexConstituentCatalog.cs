@@ -52,10 +52,18 @@ internal static class IndexConstituentCatalog
     private static readonly IReadOnlyDictionary<string, string> Aliases =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["SP500"] = "SP500", ["SPX"] = "SP500", ["S&P500"] = "SP500",
-            ["QQQ"] = "NDX", ["NDX"] = "NDX", ["NASDAQ100"] = "NDX",
-            ["DIA"] = "DOW", ["DJIA"] = "DOW", ["DOW30"] = "DOW",
-            ["IWM"] = "RUSSELL2000", ["RTY"] = "RUSSELL2000", ["RUSSELL2000"] = "RUSSELL2000"
+            ["SP500"] = "SP500",
+            ["SPX"] = "SP500",
+            ["S&P500"] = "SP500",
+            ["QQQ"] = "NDX",
+            ["NDX"] = "NDX",
+            ["NASDAQ100"] = "NDX",
+            ["DIA"] = "DOW",
+            ["DJIA"] = "DOW",
+            ["DOW30"] = "DOW",
+            ["IWM"] = "RUSSELL2000",
+            ["RTY"] = "RUSSELL2000",
+            ["RUSSELL2000"] = "RUSSELL2000"
         };
 
     /// <summary>
