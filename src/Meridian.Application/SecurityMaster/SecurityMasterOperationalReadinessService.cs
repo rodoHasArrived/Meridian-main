@@ -626,11 +626,11 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         }
     }
 
-        var status = targetSpec.UseCloseEvidenceStatus
-            ? EvaluateTargetStatus(evidence, "CloseReadiness") ?? RequirementStatus(requirements, "ProviderEvidence")
-            : RequirementStatus(requirements, targetSpec.RequirementCategory);
+    var status = targetSpec.UseCloseEvidenceStatus
+        ? EvaluateTargetStatus(evidence, "CloseReadiness") ?? RequirementStatus(requirements, "ProviderEvidence")
+        : RequirementStatus(requirements, targetSpec.RequirementCategory);
 
-        return new(
+        return new (
             $"{assetClass}:{targetSpec.KeySuffix}",
             targetSpec.TargetType,
             targetSpec.Label,
@@ -641,7 +641,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 AssetClassDepthRouteKind.Close => closeRoute,
                 AssetClassDepthRouteKind.AssetProfiles => UiApiRoutes.SecurityMasterAssetProfiles,
                 _ => providerRoute
-            },
+},
             evidenceLink,
             status,
             targetSpec.Source);
@@ -654,360 +654,360 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         bool hasProfileCoverage,
         SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot,
         IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence)
+{
+    var blockers = new List<MultiAssetReadinessBlockerDto>();
+    if (!hasCatalogDescriptor)
     {
-        var blockers = new List<MultiAssetReadinessBlockerDto>();
-        if (!hasCatalogDescriptor)
-        {
-            blockers.Add(new(
-                $"{spec.AssetClass}:catalog-missing",
-                "Blocker",
-                $"{spec.DisplayName} is missing from SecurityAssetClassCatalog.",
-                "SecurityMaster",
-                UiApiRoutes.WorkstationSecurityMasterSearch));
-        }
-
-        if (!hasValidator)
-        {
-            blockers.Add(new(
-                $"{spec.AssetClass}:validator-missing",
-                "Blocker",
-                $"{spec.DisplayName} is missing asset-class validator rules.",
-                "SecurityMaster",
-                UiApiRoutes.WorkstationSecurityMasterSearch));
-        }
-
-        if (RequiresGovernedProfile(spec.AssetClass) && !hasProfileCoverage)
-        {
-            blockers.Add(new(
-                $"{spec.AssetClass}:profile-missing",
-                "Blocker",
-                $"{spec.DisplayName} requires an approved governed profile before valuation, ledger, reconciliation, or close can rely on it.",
-                "SecurityMaster",
-                UiApiRoutes.SecurityMasterAssetProfiles));
-        }
-
-        var evidenceGaps = evidenceSnapshot is null
-            ? []
-            : evidence
-                .Where(static item => !string.Equals(EvaluateEvidenceItemStatus(item.Status), "Ready", StringComparison.OrdinalIgnoreCase))
-                .GroupBy(static item => item.EvidenceKind, StringComparer.OrdinalIgnoreCase)
-                .Select(static group => group.First())
-                .ToArray();
-        foreach (var gap in evidenceGaps)
-        {
-            blockers.Add(new(
-                $"{spec.AssetClass}:retained-evidence:{NormalizeToken(gap.EvidenceKind)}",
-                string.Equals(EvaluateEvidenceItemStatus(gap.Status), "Blocked", StringComparison.OrdinalIgnoreCase) ? "Blocker" : "Review",
-                string.IsNullOrWhiteSpace(gap.Reason)
-                    ? $"{spec.DisplayName} retained evidence for {gap.EvidenceKind} is {gap.Status}."
-                    : gap.Reason!,
-                gap.Category,
-                gap.EvidenceRoute));
-        }
-
-        if (spec.HardBlocker && (evidenceSnapshot is null || evidence.Count == 0))
-        {
-            blockers.Add(new(
-                $"{spec.AssetClass}:provider-evidence-review",
-                "Review",
-                $"{spec.DisplayName} needs retained provider evidence for {string.Join(", ", spec.ProviderFeeds)} before close readiness can be marked complete.",
-                "ProviderEvidence",
-                UiApiRoutes.WorkstationPortfolioMultiAssetCoverage));
-        }
-
-        return blockers;
+        blockers.Add(new(
+            $"{spec.AssetClass}:catalog-missing",
+            "Blocker",
+            $"{spec.DisplayName} is missing from SecurityAssetClassCatalog.",
+            "SecurityMaster",
+            UiApiRoutes.WorkstationSecurityMasterSearch));
     }
 
-    private static IReadOnlyList<SecurityMasterOperationalEvidenceItem> SelectEvidence(
-        MultiAssetCoverageSpecification spec,
-        SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot)
+    if (!hasValidator)
     {
-        if (evidenceSnapshot?.EvidenceItems is null || evidenceSnapshot.EvidenceItems.Count == 0)
-        {
-            return [];
-        }
+        blockers.Add(new(
+            $"{spec.AssetClass}:validator-missing",
+            "Blocker",
+            $"{spec.DisplayName} is missing asset-class validator rules.",
+            "SecurityMaster",
+            UiApiRoutes.WorkstationSecurityMasterSearch));
+    }
 
-        return evidenceSnapshot.EvidenceItems
-            .Where(item => MatchesAssetClass(spec.AssetClass, item.AssetClass) &&
-                           (MatchesAny(item, spec.ProviderFeeds) ||
-                            MatchesAny(item, spec.ReconciliationSignals) ||
-                            MatchesText(item, spec.LedgerClassification) ||
-                            string.Equals(item.Category, "SecurityMaster", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(item.Category, "Reconciliation", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(item.Category, "CloseReadiness", StringComparison.OrdinalIgnoreCase)))
-            .GroupBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+    if (RequiresGovernedProfile(spec.AssetClass) && !hasProfileCoverage)
+    {
+        blockers.Add(new(
+            $"{spec.AssetClass}:profile-missing",
+            "Blocker",
+            $"{spec.DisplayName} requires an approved governed profile before valuation, ledger, reconciliation, or close can rely on it.",
+            "SecurityMaster",
+            UiApiRoutes.SecurityMasterAssetProfiles));
+    }
+
+    var evidenceGaps = evidenceSnapshot is null
+        ? []
+        : evidence
+            .Where(static item => !string.Equals(EvaluateEvidenceItemStatus(item.Status), "Ready", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(static item => item.EvidenceKind, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToArray();
-    }
-
-    private static string EvaluateEvidenceStatus(
-        IReadOnlyList<string> expected,
-        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
-        SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot,
-        string defaultWhenNoSnapshot)
+    foreach (var gap in evidenceGaps)
     {
-        if (evidenceSnapshot is null)
-        {
-            return defaultWhenNoSnapshot;
-        }
-
-        if (evidence.Count == 0)
-        {
-            return "ReviewRequired";
-        }
-
-        if (evidence.Any(static item => string.Equals(EvaluateEvidenceItemStatus(item.Status), "Blocked", StringComparison.OrdinalIgnoreCase)))
-        {
-            return "Blocked";
-        }
-
-        if (evidence.Any(static item => string.Equals(EvaluateEvidenceItemStatus(item.Status), "ReviewRequired", StringComparison.OrdinalIgnoreCase)))
-        {
-            return "ReviewRequired";
-        }
-
-        var matchedExpectedCount = expected
-            .Select(NormalizeToken)
-            .Where(static token => token.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Count(token => evidence.Any(item => MatchesToken(item, token)));
-
-        return matchedExpectedCount == 0 ? "ReviewRequired" : "Ready";
+        blockers.Add(new(
+            $"{spec.AssetClass}:retained-evidence:{NormalizeToken(gap.EvidenceKind)}",
+            string.Equals(EvaluateEvidenceItemStatus(gap.Status), "Blocked", StringComparison.OrdinalIgnoreCase) ? "Blocker" : "Review",
+            string.IsNullOrWhiteSpace(gap.Reason)
+                ? $"{spec.DisplayName} retained evidence for {gap.EvidenceKind} is {gap.Status}."
+                : gap.Reason!,
+            gap.Category,
+            gap.EvidenceRoute));
     }
 
-    private static string EvaluateReconciliationStatus(
-        MultiAssetCoverageSpecification spec,
-        SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot,
-        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence)
+    if (spec.HardBlocker && (evidenceSnapshot is null || evidence.Count == 0))
     {
-        if (evidenceSnapshot is null)
-        {
-            return spec.HardBlocker ? "ReviewRequired" : "Ready";
-        }
-
-        if (string.Equals(evidenceSnapshot.ReconciliationStatus, "Blocked", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Blocked";
-        }
-
-        if (string.Equals(evidenceSnapshot.ReconciliationStatus, "Breaks", StringComparison.OrdinalIgnoreCase))
-        {
-            return "ReviewRequired";
-        }
-
-        return EvaluateEvidenceStatus(spec.ReconciliationSignals, evidence, evidenceSnapshot, "ReviewRequired");
-    }
-
-    private static string EvaluateEvidenceItemStatus(string status)
-        => status switch
-        {
-            "Matched" or "Ready" or "Resolved" => "Ready",
-            "Blocked" or "Unresolved" => "Blocked",
-            _ => "ReviewRequired"
-        };
-
-    private static string? BestEvidenceRoute(
-        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
-        string category)
-        => evidence.FirstOrDefault(item =>
-                string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase) &&
-                !string.IsNullOrWhiteSpace(item.EvidenceRoute))
-            ?.EvidenceRoute;
-
-    private static string? BestEvidenceLink(
-        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
-        string category)
-        => evidence.FirstOrDefault(item =>
-                string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase) &&
-                !string.IsNullOrWhiteSpace(item.EvidenceLink))
-            ?.EvidenceLink;
-
-    private static string? RouteForRequirement(
-        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
-        string category)
-        => requirements.FirstOrDefault(requirement =>
-                string.Equals(requirement.Category, category, StringComparison.OrdinalIgnoreCase) &&
-                !string.IsNullOrWhiteSpace(requirement.EvidenceRoute))
-            ?.EvidenceRoute;
-
-    private static string RequirementStatus(
-        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
-        string category)
-        => requirements
-               .Where(requirement => string.Equals(requirement.Category, category, StringComparison.OrdinalIgnoreCase))
-               .Select(static requirement => requirement.Status)
-               .OrderBy(static status => status switch
-               {
-                   "Blocked" => 0,
-                   "ReviewRequired" => 1,
-                   "Degraded" => 2,
-                   "Ready" => 3,
-                   _ => 2
-               })
-               .FirstOrDefault()
-           ?? "ReviewRequired";
-
-    private static string? EvaluateTargetStatus(
-        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
-        string category)
-    {
-        var statuses = evidence
-            .Where(item => string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase))
-            .Select(static item => EvaluateEvidenceItemStatus(item.Status))
-            .ToArray();
-
-        if (statuses.Length == 0)
-        {
-            return null;
-        }
-
-        return statuses.Contains("Blocked", StringComparer.OrdinalIgnoreCase)
-            ? "Blocked"
-            : statuses.Contains("ReviewRequired", StringComparer.OrdinalIgnoreCase)
-                ? "ReviewRequired"
-                : "Ready";
-    }
-
-    private static bool MatchesAny(SecurityMasterOperationalEvidenceItem item, IReadOnlyList<string> values)
-        => values.Any(value => MatchesText(item, value));
-
-    private static bool MatchesText(SecurityMasterOperationalEvidenceItem item, string value)
-    {
-        var token = NormalizeToken(value);
-        return token.Length > 0 && MatchesToken(item, token);
-    }
-
-    private static bool MatchesToken(SecurityMasterOperationalEvidenceItem item, string token)
-        => NormalizeToken(item.EvidenceKind).Contains(token, StringComparison.OrdinalIgnoreCase) ||
-           NormalizeToken(item.Category).Contains(token, StringComparison.OrdinalIgnoreCase) ||
-           NormalizeToken(item.Label).Contains(token, StringComparison.OrdinalIgnoreCase) ||
-           NormalizeToken(item.Source).Contains(token, StringComparison.OrdinalIgnoreCase) ||
-           NormalizeToken(item.Reason).Contains(token, StringComparison.OrdinalIgnoreCase);
-
-    private static bool MatchesAssetClass(string expected, string? actual)
-    {
-        if (string.IsNullOrWhiteSpace(actual))
-        {
-            return true;
-        }
-
-        var normalizedExpected = NormalizeToken(expected);
-        var normalizedActual = NormalizeToken(actual);
-        if (normalizedExpected == normalizedActual)
-        {
-            return true;
-        }
-
-        return normalizedExpected switch
-        {
-            "bond" => normalizedActual is "fixedincome" or "fixedincomesecurity" or "debt" or "mbs" or "abs" or "clo" or "cmbs",
-            "directloan" => normalizedActual is "loan" or "directloan" or "privatecredit",
-            "structuredcredit" => normalizedActual is "structuredcredit" or "structuredproduct" or "mbs" or "abs" or "clo" or "cmbs",
-            "privatefundinterest" => normalizedActual is "privatefundinterest" or "privatefund" or "partnershipinterest" or "limitedpartnershipinterest" or "privateasset",
-            "privatecompanyequity" => normalizedActual is "privatecompanyequity" or "privateequity" or "privatecompany" or "venturecapital",
-            "realestateholding" => normalizedActual is "realestateholding" or "realestate" or "realestateinterest" or "property" or "spv",
-            "commitmentguarantee" => normalizedActual is "commitmentguarantee" or "unfundedcommitment" or "guarantee" or "creditfacility" or "commitment",
-            "customasset" => normalizedActual is "structuredproduct" or "structuredcredit" or "privateasset" or "privatefund" or "privateequity" or "mbs" or "abs" or "clo" or "cmbs" or "customasset",
-            "othersecurity" => normalizedActual is "other" or "othersecurity" or "customasset",
-            "fxspot" => normalizedActual is "fx" or "foreignexchange" or "currency",
-            _ => false
-        };
-    }
-
-    private static string NormalizeToken(string? value)
-        => string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : new string(value.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
-
-    private static string ProjectorsFor(string assetClass)
-        => assetClass switch
-        {
-            "Bond" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
-            "DirectLoan" => "Meridian.FSharp.DirectLending.Aggregates, LoanAccountingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
-            "StructuredCredit" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
-            "PrivateFundInterest" => "DailyPortfolioPricingProjector, Security Master accounting-event services, FundAccountCloseReadinessService",
-            "PrivateCompanyEquity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",
-            "RealEstateHolding" => "DailyPortfolioPricingProjector, Security Master accounting-event services, FundAccountCloseReadinessService",
-            "CommitmentGuarantee" => "Security Master accounting-event services, FundAccountCloseReadinessService",
-            "FxSpot" => "MultiCurrency remeasurement projectors",
-            "Option" or "Future" => "DailyPortfolioPricingProjector, LedgerTaxLotReliefProjector",
-            "CustomAsset" or "OtherSecurity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",
-            _ => "DailyPortfolioPricingProjector, LedgerTaxLotReliefProjector"
-        };
-
-    private static bool RequiresGovernedProfile(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase);
-
-    private static MultiAssetPackCoverageDto ToAssetPackCoverage(SecurityAssetPackDescriptor pack)
-    {
-        var validation = SecurityAssetPackRegistry.ValidateDescriptor(pack);
-        return new(
-            PackId: pack.PackId,
-            DisplayName: pack.DisplayName,
-            AssetClasses: pack.AssetClasses,
-            ContractSchema: pack.ContractSchema,
-            LifecycleEvents: pack.LifecycleEvents,
-            LifecycleCoverage: pack.LifecycleCoverage,
-            ValuationMethods: pack.ValuationMethods,
-            AccountingRules: pack.AccountingRules,
-            ValidationRules: pack.ValidationRules,
-            ReportingTaxonomy: pack.ReportingTaxonomy,
-            AutomationDepth: pack.AutomationDepth.ToString(),
-            AdmissionPolicy: pack.AdmissionPolicy,
-            LedgerExtensionPolicy: pack.LedgerExtensionPolicy,
-            RegistryValidationStatus: validation.IsValid ? "Valid" : "Invalid",
-            RegistryValidationIssues: validation.Issues);
-    }
-
-    private static MultiAssetCoverageSpecification Listed(
-        string assetClass,
-        string displayName,
-        string summary,
-        IReadOnlyList<string> requiredIdentifiers,
-        IReadOnlyList<string> economicTerms,
-        IReadOnlyList<string> providerFeeds,
-        string ledgerClassification,
-        IReadOnlyList<string> reconciliationSignals,
-        bool hardBlocker)
-        => new(
-            assetClass,
-            displayName,
-            summary,
-            requiredIdentifiers,
-            economicTerms,
-            providerFeeds,
-            ledgerClassification,
-            reconciliationSignals,
-            hardBlocker);
-
-    private static AssetClassDepthTargetSpec ProviderTarget(
-        string keySuffix,
-        string targetType,
-        string label)
-        => new(
-            keySuffix,
-            targetType,
-            label,
-            AssetClassDepthRouteKind.Provider,
+        blockers.Add(new(
+            $"{spec.AssetClass}:provider-evidence-review",
+            "Review",
+            $"{spec.DisplayName} needs retained provider evidence for {string.Join(", ", spec.ProviderFeeds)} before close readiness can be marked complete.",
             "ProviderEvidence",
-            "ProviderEvidence",
-            "ProviderLedgerReconciliation");
+            UiApiRoutes.WorkstationPortfolioMultiAssetCoverage));
+    }
 
-    private static AssetClassDepthTargetSpec LedgerTarget(
-        string keySuffix,
-        string targetType,
-        string label,
-        string source)
-        => new(
-            keySuffix,
-            targetType,
-            label,
-            AssetClassDepthRouteKind.Ledger,
-            "Ledger",
-            "Ledger",
-            source,
-            FallbackEvidenceToProvider: true);
+    return blockers;
+}
+
+private static IReadOnlyList<SecurityMasterOperationalEvidenceItem> SelectEvidence(
+    MultiAssetCoverageSpecification spec,
+    SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot)
+{
+    if (evidenceSnapshot?.EvidenceItems is null || evidenceSnapshot.EvidenceItems.Count == 0)
+    {
+        return [];
+    }
+
+    return evidenceSnapshot.EvidenceItems
+        .Where(item => MatchesAssetClass(spec.AssetClass, item.AssetClass) &&
+                       (MatchesAny(item, spec.ProviderFeeds) ||
+                        MatchesAny(item, spec.ReconciliationSignals) ||
+                        MatchesText(item, spec.LedgerClassification) ||
+                        string.Equals(item.Category, "SecurityMaster", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(item.Category, "Reconciliation", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(item.Category, "CloseReadiness", StringComparison.OrdinalIgnoreCase)))
+        .GroupBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+        .Select(static group => group.First())
+        .ToArray();
+}
+
+private static string EvaluateEvidenceStatus(
+    IReadOnlyList<string> expected,
+    IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+    SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot,
+    string defaultWhenNoSnapshot)
+{
+    if (evidenceSnapshot is null)
+    {
+        return defaultWhenNoSnapshot;
+    }
+
+    if (evidence.Count == 0)
+    {
+        return "ReviewRequired";
+    }
+
+    if (evidence.Any(static item => string.Equals(EvaluateEvidenceItemStatus(item.Status), "Blocked", StringComparison.OrdinalIgnoreCase)))
+    {
+        return "Blocked";
+    }
+
+    if (evidence.Any(static item => string.Equals(EvaluateEvidenceItemStatus(item.Status), "ReviewRequired", StringComparison.OrdinalIgnoreCase)))
+    {
+        return "ReviewRequired";
+    }
+
+    var matchedExpectedCount = expected
+        .Select(NormalizeToken)
+        .Where(static token => token.Length > 0)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Count(token => evidence.Any(item => MatchesToken(item, token)));
+
+    return matchedExpectedCount == 0 ? "ReviewRequired" : "Ready";
+}
+
+private static string EvaluateReconciliationStatus(
+    MultiAssetCoverageSpecification spec,
+    SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot,
+    IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence)
+{
+    if (evidenceSnapshot is null)
+    {
+        return spec.HardBlocker ? "ReviewRequired" : "Ready";
+    }
+
+    if (string.Equals(evidenceSnapshot.ReconciliationStatus, "Blocked", StringComparison.OrdinalIgnoreCase))
+    {
+        return "Blocked";
+    }
+
+    if (string.Equals(evidenceSnapshot.ReconciliationStatus, "Breaks", StringComparison.OrdinalIgnoreCase))
+    {
+        return "ReviewRequired";
+    }
+
+    return EvaluateEvidenceStatus(spec.ReconciliationSignals, evidence, evidenceSnapshot, "ReviewRequired");
+}
+
+private static string EvaluateEvidenceItemStatus(string status)
+    => status switch
+    {
+        "Matched" or "Ready" or "Resolved" => "Ready",
+        "Blocked" or "Unresolved" => "Blocked",
+        _ => "ReviewRequired"
+    };
+
+private static string? BestEvidenceRoute(
+    IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+    string category)
+    => evidence.FirstOrDefault(item =>
+            string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(item.EvidenceRoute))
+        ?.EvidenceRoute;
+
+private static string? BestEvidenceLink(
+    IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+    string category)
+    => evidence.FirstOrDefault(item =>
+            string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(item.EvidenceLink))
+        ?.EvidenceLink;
+
+private static string? RouteForRequirement(
+    IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+    string category)
+    => requirements.FirstOrDefault(requirement =>
+            string.Equals(requirement.Category, category, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(requirement.EvidenceRoute))
+        ?.EvidenceRoute;
+
+private static string RequirementStatus(
+    IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+    string category)
+    => requirements
+           .Where(requirement => string.Equals(requirement.Category, category, StringComparison.OrdinalIgnoreCase))
+           .Select(static requirement => requirement.Status)
+           .OrderBy(static status => status switch
+           {
+               "Blocked" => 0,
+               "ReviewRequired" => 1,
+               "Degraded" => 2,
+               "Ready" => 3,
+               _ => 2
+           })
+           .FirstOrDefault()
+       ?? "ReviewRequired";
+
+private static string? EvaluateTargetStatus(
+    IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+    string category)
+{
+    var statuses = evidence
+        .Where(item => string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase))
+        .Select(static item => EvaluateEvidenceItemStatus(item.Status))
+        .ToArray();
+
+    if (statuses.Length == 0)
+    {
+        return null;
+    }
+
+    return statuses.Contains("Blocked", StringComparer.OrdinalIgnoreCase)
+        ? "Blocked"
+        : statuses.Contains("ReviewRequired", StringComparer.OrdinalIgnoreCase)
+            ? "ReviewRequired"
+            : "Ready";
+}
+
+private static bool MatchesAny(SecurityMasterOperationalEvidenceItem item, IReadOnlyList<string> values)
+    => values.Any(value => MatchesText(item, value));
+
+private static bool MatchesText(SecurityMasterOperationalEvidenceItem item, string value)
+{
+    var token = NormalizeToken(value);
+    return token.Length > 0 && MatchesToken(item, token);
+}
+
+private static bool MatchesToken(SecurityMasterOperationalEvidenceItem item, string token)
+    => NormalizeToken(item.EvidenceKind).Contains(token, StringComparison.OrdinalIgnoreCase) ||
+       NormalizeToken(item.Category).Contains(token, StringComparison.OrdinalIgnoreCase) ||
+       NormalizeToken(item.Label).Contains(token, StringComparison.OrdinalIgnoreCase) ||
+       NormalizeToken(item.Source).Contains(token, StringComparison.OrdinalIgnoreCase) ||
+       NormalizeToken(item.Reason).Contains(token, StringComparison.OrdinalIgnoreCase);
+
+private static bool MatchesAssetClass(string expected, string? actual)
+{
+    if (string.IsNullOrWhiteSpace(actual))
+    {
+        return true;
+    }
+
+    var normalizedExpected = NormalizeToken(expected);
+    var normalizedActual = NormalizeToken(actual);
+    if (normalizedExpected == normalizedActual)
+    {
+        return true;
+    }
+
+    return normalizedExpected switch
+    {
+        "bond" => normalizedActual is "fixedincome" or "fixedincomesecurity" or "debt" or "mbs" or "abs" or "clo" or "cmbs",
+        "directloan" => normalizedActual is "loan" or "directloan" or "privatecredit",
+        "structuredcredit" => normalizedActual is "structuredcredit" or "structuredproduct" or "mbs" or "abs" or "clo" or "cmbs",
+        "privatefundinterest" => normalizedActual is "privatefundinterest" or "privatefund" or "partnershipinterest" or "limitedpartnershipinterest" or "privateasset",
+        "privatecompanyequity" => normalizedActual is "privatecompanyequity" or "privateequity" or "privatecompany" or "venturecapital",
+        "realestateholding" => normalizedActual is "realestateholding" or "realestate" or "realestateinterest" or "property" or "spv",
+        "commitmentguarantee" => normalizedActual is "commitmentguarantee" or "unfundedcommitment" or "guarantee" or "creditfacility" or "commitment",
+        "customasset" => normalizedActual is "structuredproduct" or "structuredcredit" or "privateasset" or "privatefund" or "privateequity" or "mbs" or "abs" or "clo" or "cmbs" or "customasset",
+        "othersecurity" => normalizedActual is "other" or "othersecurity" or "customasset",
+        "fxspot" => normalizedActual is "fx" or "foreignexchange" or "currency",
+        _ => false
+    };
+}
+
+private static string NormalizeToken(string? value)
+    => string.IsNullOrWhiteSpace(value)
+        ? string.Empty
+        : new string(value.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+
+private static string ProjectorsFor(string assetClass)
+    => assetClass switch
+    {
+        "Bond" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
+        "DirectLoan" => "Meridian.FSharp.DirectLending.Aggregates, LoanAccountingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
+        "StructuredCredit" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
+        "PrivateFundInterest" => "DailyPortfolioPricingProjector, Security Master accounting-event services, FundAccountCloseReadinessService",
+        "PrivateCompanyEquity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",
+        "RealEstateHolding" => "DailyPortfolioPricingProjector, Security Master accounting-event services, FundAccountCloseReadinessService",
+        "CommitmentGuarantee" => "Security Master accounting-event services, FundAccountCloseReadinessService",
+        "FxSpot" => "MultiCurrency remeasurement projectors",
+        "Option" or "Future" => "DailyPortfolioPricingProjector, LedgerTaxLotReliefProjector",
+        "CustomAsset" or "OtherSecurity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",
+        _ => "DailyPortfolioPricingProjector, LedgerTaxLotReliefProjector"
+    };
+
+private static bool RequiresGovernedProfile(string assetClass)
+    => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+       || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase);
+
+private static MultiAssetPackCoverageDto ToAssetPackCoverage(SecurityAssetPackDescriptor pack)
+{
+    var validation = SecurityAssetPackRegistry.ValidateDescriptor(pack);
+    return new(
+        PackId: pack.PackId,
+        DisplayName: pack.DisplayName,
+        AssetClasses: pack.AssetClasses,
+        ContractSchema: pack.ContractSchema,
+        LifecycleEvents: pack.LifecycleEvents,
+        LifecycleCoverage: pack.LifecycleCoverage,
+        ValuationMethods: pack.ValuationMethods,
+        AccountingRules: pack.AccountingRules,
+        ValidationRules: pack.ValidationRules,
+        ReportingTaxonomy: pack.ReportingTaxonomy,
+        AutomationDepth: pack.AutomationDepth.ToString(),
+        AdmissionPolicy: pack.AdmissionPolicy,
+        LedgerExtensionPolicy: pack.LedgerExtensionPolicy,
+        RegistryValidationStatus: validation.IsValid ? "Valid" : "Invalid",
+        RegistryValidationIssues: validation.Issues);
+}
+
+private static MultiAssetCoverageSpecification Listed(
+    string assetClass,
+    string displayName,
+    string summary,
+    IReadOnlyList<string> requiredIdentifiers,
+    IReadOnlyList<string> economicTerms,
+    IReadOnlyList<string> providerFeeds,
+    string ledgerClassification,
+    IReadOnlyList<string> reconciliationSignals,
+    bool hardBlocker)
+    => new(
+        assetClass,
+        displayName,
+        summary,
+        requiredIdentifiers,
+        economicTerms,
+        providerFeeds,
+        ledgerClassification,
+        reconciliationSignals,
+        hardBlocker);
+
+private static AssetClassDepthTargetSpec ProviderTarget(
+    string keySuffix,
+    string targetType,
+    string label)
+    => new(
+        keySuffix,
+        targetType,
+        label,
+        AssetClassDepthRouteKind.Provider,
+        "ProviderEvidence",
+        "ProviderEvidence",
+        "ProviderLedgerReconciliation");
+
+private static AssetClassDepthTargetSpec LedgerTarget(
+    string keySuffix,
+    string targetType,
+    string label,
+    string source)
+    => new(
+        keySuffix,
+        targetType,
+        label,
+        AssetClassDepthRouteKind.Ledger,
+        "Ledger",
+        "Ledger",
+        source,
+        FallbackEvidenceToProvider: true);
 }
 
 internal sealed record MultiAssetCoverageSpecification(
