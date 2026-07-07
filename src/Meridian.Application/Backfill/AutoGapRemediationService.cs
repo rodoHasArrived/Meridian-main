@@ -341,24 +341,45 @@ public sealed class AutoGapRemediationService : IDisposable
 
         _shutdownCts.Cancel();
 
-        // Best-effort graceful drain: give background remediation tasks a bounded window to
-        // observe cancellation and unwind so we do not tear down the semaphore beneath them.
+        // Graceful drain: give background remediation tasks a bounded window to observe cancellation
+        // and unwind. Track whether the drain actually completed so we only tear down the shutdown
+        // token and concurrency gate once no task can still touch them.
+        var drained = true;
         var pending = _inFlight.Keys.ToArray();
         if (pending.Length > 0)
         {
             try
             {
-                Task.WhenAll(pending).Wait(ShutdownDrainTimeout);
+                // Wait returns false on timeout (tasks still running); true when all completed.
+                drained = Task.WhenAll(pending).Wait(ShutdownDrainTimeout);
             }
             catch (Exception ex)
             {
-                // Faulted/cancelled background tasks are expected during shutdown; log and continue.
+                // An AggregateException here means the tasks finished (faulting) within the window,
+                // so the drain is complete — the tasks are no longer running.
                 _log.Debug(ex, "In-flight auto-remediation tasks completed with errors during shutdown drain");
+                drained = true;
             }
         }
 
-        _shutdownCts.Dispose();
-        _concurrencyGate.Dispose();
+        if (drained)
+        {
+            _shutdownCts.Dispose();
+            _concurrencyGate.Dispose();
+        }
+        else
+        {
+            // Drain timed out: at least one remediation is still running and will release the
+            // semaphore / observe the token as it unwinds (e.g. in its finally block). Disposing
+            // now would turn that valid in-flight work into an ObjectDisposedException, so we defer
+            // teardown to finalization instead. Neither type holds an unmanaged handle here (we
+            // never allocated a wait handle), so skipping explicit Dispose does not leak resources.
+            _log.Warning(
+                "Auto-remediation shutdown drain timed out after {TimeoutSeconds}s with up to {Count} task(s) " +
+                "still running; deferring disposal of shutdown resources to finalization to avoid tearing them " +
+                "down under active use",
+                ShutdownDrainTimeout.TotalSeconds, pending.Length);
+        }
     }
 
     public Task HandleDataQualityGapAsync(QualityDataGap gap, string? provider = null, CancellationToken ct = default)
