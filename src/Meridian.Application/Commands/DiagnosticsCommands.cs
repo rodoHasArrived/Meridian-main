@@ -34,7 +34,8 @@ internal sealed class DiagnosticsCommands : ICliCommand
             CliCommandRoute.Flag("--validate-credentials", RunValidateCredentialsAsync));
     }
 
-    public IReadOnlyList<string> Triggers { get; } = ["--diagnostics", "--quick-check", "--test-connectivity", "--error-codes", "--show-config", "--validate-credentials"];
+    public IReadOnlyList<string> Triggers { get; } =
+        ["--diagnostics", "--quick-check", "--test-connectivity", "--error-codes", "--show-config", "--validate-credentials"];
 
     public bool CanHandle(string[] args) => _routes.CanHandle(args);
 

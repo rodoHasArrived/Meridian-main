@@ -37,7 +37,12 @@ public sealed class ProviderIntegrationSchemaDriftService
                 Capability: request is null ? null : request.Capability.ToString(),
                 EndpointKey: request?.EndpointKey,
                 SyncRunId: request?.SyncRunId),
-            async () =>
+            () => CheckCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckCoreAsync(
+        string? tenantId,
+        ProviderIntegrationSchemaDriftCheckRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
@@ -122,7 +127,7 @@ public sealed class ProviderIntegrationSchemaDriftService
             ShouldPauseCapability: critical,
             RecordsInspected: records.Count,
             Issues: issues);
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

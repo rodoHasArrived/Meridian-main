@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { GateRail, SeverityBadge } from "@/components/operations";
+import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
 import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
 import { cn } from "@/lib/utils";
 import {
@@ -187,40 +187,22 @@ export function OperatorReadinessConsole({
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className={cn("panel-surface-strong border", levelPanel[vm.overallLevel])}>
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="eyebrow-label">Trading Readiness</div>
-                <CardTitle className="mt-2 flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  {vm.title}
-                </CardTitle>
-                <CardDescription className="mt-2">{vm.subtitle}</CardDescription>
-              </div>
-              <SeverityBadge status={levelStatus[vm.overallLevel]} label={vm.overallLabel} />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm leading-6 text-foreground/85">{vm.overallDetail}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <ConsoleChip label="Snapshot" value={vm.asOf} />
-              <ConsoleChip label="Operator inbox" value={vm.inboxSummary} />
-            </div>
-            <PrimaryNextAction action={vm.nextAction} />
-            {vm.inboxLoadingLabel ? (
-              <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
-            ) : null}
-            {vm.inboxErrorRecovery ? (
-              <InboxErrorRecovery
-                recovery={vm.inboxErrorRecovery}
-                onRetry={vm.refreshInbox}
-                disabled={vm.inboxRefreshDisabled}
-                disabledReason={vm.inboxRefreshDisabledReason}
-                busy={vm.inboxRefreshBusy}
-              />
-            ) : null}
-            <div className="flex flex-wrap gap-2">
+        <ReadinessPanel
+          state={levelStatus[vm.overallLevel]}
+          statusLabel={vm.overallLabel}
+          title={(
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+              <span className="min-w-0">{vm.title}</span>
+            </span>
+          )}
+          detail={vm.subtitle}
+          score={vm.asOf}
+          role="region"
+          ariaLabel="Trading readiness summary"
+          className="h-full"
+          actions={(
+            <>
               <Button asChild variant="secondary" size="sm">
                 <Link to="/trading">Trading cockpit</Link>
               </Button>
@@ -244,9 +226,28 @@ export function OperatorReadinessConsole({
                 <RefreshCcw className="h-4 w-4" aria-hidden="true" />
                 {vm.inboxRefreshLabel}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </>
+          )}
+        >
+          <p className="text-sm leading-6 text-foreground/85">{vm.overallDetail}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <ConsoleChip label="Snapshot" value={vm.asOf} />
+            <ConsoleChip label="Operator inbox" value={vm.inboxSummary} />
+          </div>
+          <PrimaryNextAction action={vm.nextAction} />
+          {vm.inboxLoadingLabel ? (
+            <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
+          ) : null}
+          {vm.inboxErrorRecovery ? (
+            <InboxErrorRecovery
+              recovery={vm.inboxErrorRecovery}
+              onRetry={vm.refreshInbox}
+              disabled={vm.inboxRefreshDisabled}
+              disabledReason={vm.inboxRefreshDisabledReason}
+              busy={vm.inboxRefreshBusy}
+            />
+          ) : null}
+        </ReadinessPanel>
 
         <Card aria-labelledby="api-contract-coverage-title" className="panel-surface">
           <CardHeader>
@@ -577,33 +578,24 @@ function SelectedEvidenceDetail({
 
 function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
   return (
-    <div
+    <ReadinessPanel
+      state={levelStatus[row.level]}
+      statusLabel={row.value}
+      title={row.label}
+      detail={row.detail}
+      detailId={row.detailId}
       role="group"
-      aria-label={row.ariaLabel}
-      aria-describedby={row.detailId}
-      className={cn(
-        "rounded-[var(--radius-card)] border border-l-[3px] px-3 py-3",
-        levelPanel[row.level]
-      )}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-foreground">{row.label}</div>
-          <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{row.meta}</div>
-        </div>
-        <SeverityBadge status={levelStatus[row.level]} label={row.value} aria-label={row.statusAriaLabel} />
-      </div>
-      <p id={row.detailId} className="mt-2 text-xs leading-5 text-foreground/80">{row.detail}</p>
-      {row.action ? (
-        <div className="mt-3">
-          <Button asChild variant={row.action.variant} size="sm">
-            <Link to={row.action.route} aria-label={row.action.ariaLabel}>
-              {row.action.label}
-            </Link>
-          </Button>
-        </div>
+      ariaLabel={row.ariaLabel}
+      actions={row.action ? (
+        <Button asChild variant={row.action.variant} size="sm">
+          <Link to={row.action.route} aria-label={row.action.ariaLabel}>
+            {row.action.label}
+          </Link>
+        </Button>
       ) : null}
-    </div>
+    >
+      <p className="break-words font-mono text-xs text-muted-foreground">{row.meta}</p>
+    </ReadinessPanel>
   );
 }
 

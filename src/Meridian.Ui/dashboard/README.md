@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-19
+last_reviewed: 2026-07-07
 ---
 
 # src/Meridian.Ui/dashboard
@@ -37,6 +37,8 @@ instead of introducing one-off screen styling.
 - `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
+- `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
+- `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
 - `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
 - `package.json` - dashboard build, test, and tooling commands.
@@ -1135,6 +1137,15 @@ The final light-first workspace surface cascade now lives in `src/styles/workspa
 imported immediately after `src/styles/index.css` in `main.tsx`, so `index.css` stays focused on
 global tokens, Tailwind layers, and legacy shared rules while the workspace surface overrides remain
 order-pinned and reviewable.
+The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
+component references, patterns, templates, and governance scripts. The browser workstation consumes
+the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
+`src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
+and runtime CSS alignment under test.
+Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
+`WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
+adapt the manifest-backed design-system references without importing root JSX or runtime-injected
+package CSS into the dashboard build.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
 Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
 Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is

@@ -38,7 +38,12 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ConnectionId: request?.ConnectionId),
-            async () =>
+            () => HandoffCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffCoreAsync(
+        string? tenantId,
+        ProviderIntegrationReconciliationHandoffRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -165,7 +170,7 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             DuplicateRecordCount: 0,
             Issues: [],
             Message: "Reconciliation handoff evidence was retained for the selected staged records.");
-    }).ConfigureAwait(false);
+    }
 
     public async Task<ProviderIntegrationReconciliationHandoffHistoryDto> GetHistoryAsync(
         string connectionId,
@@ -180,7 +185,12 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             logger,
             "reconciliation-handoff-history",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
+            () => GetHistoryCoreAsync(tenantId, connectionId, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationReconciliationHandoffHistoryDto> GetHistoryCoreAsync(
+        string? tenantId,
+        string connectionId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -200,7 +210,7 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             records.Length,
             records.Select(record => record.HandoffId).Distinct(StringComparer.Ordinal).Count(),
             records.FirstOrDefault()?.RequestedAt);
-    }).ConfigureAwait(false);
+    }
 
     private static string CreateHandoffId(DateTimeOffset requestedAt)
         => $"handoff-{requestedAt.UtcDateTime:yyyyMMddHHmmss}-{Guid.NewGuid():N}";

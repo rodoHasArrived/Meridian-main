@@ -1,0 +1,1 @@
+CorrelationHeatmap — a square matrix of pairwise correlations (-1..1). Positive correlation washes green, negative red, intensity by magnitude; the diagonal reads 1.00. A token-driven grid (not SVG) so values stay legible and cells stay square at any size.

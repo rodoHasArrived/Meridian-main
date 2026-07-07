@@ -152,6 +152,92 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         }
     }
 
+    public async Task<bool> CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        if (!string.IsNullOrWhiteSpace(previousBreakId)
+            && !string.Equals(previousBreakId, item.BreakId, StringComparison.OrdinalIgnoreCase))
+        {
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await EnsureLoadedAsync(ct).ConfigureAwait(false);
+
+                // Re-key an existing case only when it still lives under the superseded id, no case
+                // has already been created under the current id (which would win by dedupe), and the
+                // stored case demonstrably identifies the SAME upstream break as the incoming item.
+                // The latter guards Delta==null legacy-fingerprint collisions, where several distinct
+                // breaks share one previousBreakId, from attaching one break's casework to another.
+                if (!_items!.ContainsKey(item.BreakId)
+                    && _items.TryGetValue(previousBreakId!, out var existing)
+                    && LegacyCaseMatchesSource(existing, item))
+                {
+                    var migrated = existing with
+                    {
+                        BreakId = item.BreakId,
+                        SourceFingerprint = item.SourceFingerprint
+                    };
+                    _items.Remove(previousBreakId!);
+                    _items[item.BreakId] = migrated;
+                    await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                    await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+                        EventId: Guid.NewGuid().ToString("N"),
+                        BreakId: migrated.BreakId,
+                        EventType: "BreakIdMigrated",
+                        PreviousStatus: existing.Status,
+                        NewStatus: migrated.Status,
+                        PreviousLifecycleState: existing.LifecycleState,
+                        NewLifecycleState: migrated.LifecycleState,
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        AssignedTo: migrated.AssignedTo,
+                        ReviewedBy: migrated.ReviewedBy,
+                        ResolvedBy: migrated.ResolvedBy,
+                        Note: $"Re-keyed reconciliation case from superseded break id '{previousBreakId}' to '{migrated.BreakId}' after a statement fingerprint-input change.",
+                        ExceptionRoute: migrated.ExceptionRoute,
+                        ToleranceBand: migrated.ToleranceBand,
+                        RequiredSignoffRole: migrated.RequiredSignoffRole,
+                        SignoffStatus: migrated.SignoffStatus,
+                        ExternalAccountId: migrated.ExternalAccountId,
+                        CustodianId: migrated.CustodianId,
+                        UpstreamSyncCursor: migrated.UpstreamSyncCursor,
+                        Actor: migrated.AssignedTo ?? migrated.ReviewedBy ?? migrated.ResolvedBy,
+                        BeforePayload: JsonSerializer.Serialize(existing, _jsonOptions),
+                        AfterPayload: JsonSerializer.Serialize(migrated, _jsonOptions),
+                        Source: migrated.SourceType,
+                        Reason: migrated.SourceReference), ct).ConfigureAwait(false);
+                    return false;
+                }
+            }
+            finally
+            {
+                _gate.Release();
+            }
+        }
+
+        // No case to migrate → standard create-if-missing semantics (also a no-op when the current
+        // BreakId already exists).
+        return await CreateIfMissingAsync(item, ct).ConfigureAwait(false);
+    }
+
+    private static bool LegacyCaseMatchesSource(ReconciliationBreakQueueItem existing, ReconciliationBreakQueueItem incoming)
+    {
+        // Prefer the upstream source break id; fall back to the source reference. Only confirm a match
+        // when both sides carry the identity, so a legacy case whose stored identity differs from (or
+        // cannot be compared to) the incoming break is never re-keyed onto the wrong case.
+        if (!string.IsNullOrWhiteSpace(existing.SourceBreakId) && !string.IsNullOrWhiteSpace(incoming.SourceBreakId))
+        {
+            return string.Equals(existing.SourceBreakId, incoming.SourceBreakId, StringComparison.Ordinal);
+        }
+
+        if (!string.IsNullOrWhiteSpace(existing.SourceReference) && !string.IsNullOrWhiteSpace(incoming.SourceReference))
+        {
+            return string.Equals(existing.SourceReference, incoming.SourceReference, StringComparison.Ordinal);
+        }
+
+        return false;
+    }
+
     public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -667,7 +753,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             return [];
         }
 
-        var events = new List<ReconciliationBreakQueueAuditEvent>();
+        var all = new List<ReconciliationBreakQueueAuditEvent>();
 
         await using var stream = File.OpenRead(_auditPath);
         using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -684,9 +770,9 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             try
             {
                 var auditEvent = JsonSerializer.Deserialize<ReconciliationBreakQueueAuditEvent>(line, _jsonOptions);
-                if (auditEvent is not null && string.Equals(auditEvent.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
+                if (auditEvent is not null)
                 {
-                    events.Add(auditEvent);
+                    all.Add(auditEvent);
                 }
             }
             catch (JsonException ex)
@@ -695,10 +781,52 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             }
         }
 
-        return events
+        // Follow "BreakIdMigrated" links so a re-keyed case surfaces its full pre-migration trail,
+        // which remains stored immutably under the superseded break id (the migration event carries
+        // the prior item — and thus the prior break id — in its BeforePayload).
+        var relevantIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { breakId };
+        var pending = new Queue<string>();
+        pending.Enqueue(breakId);
+        while (pending.Count > 0)
+        {
+            var currentId = pending.Dequeue();
+            foreach (var migration in all.Where(entry =>
+                entry.EventType == "BreakIdMigrated"
+                && string.Equals(entry.BreakId, currentId, StringComparison.OrdinalIgnoreCase)))
+            {
+                var previousId = TryReadBreakIdFromPayload(migration.BeforePayload);
+                if (previousId is not null && relevantIds.Add(previousId))
+                {
+                    pending.Enqueue(previousId);
+                }
+            }
+        }
+
+        return all
+            .Where(entry => relevantIds.Contains(entry.BreakId))
             .OrderBy(static entry => entry.Sequence)
             .ThenBy(static entry => entry.OccurredAt)
             .ToArray();
+    }
+
+    private static string? TryReadBreakIdFromPayload(string? payload)
+    {
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            return document.RootElement.TryGetProperty("breakId", out var value)
+                ? value.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
 

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Reconciliation Workstation" description="Statement reconciliation — imports, statement runs, SLA-tracked break-case triage with matcher rationale, and account sign-off queue" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="reconciliation-workstation">
+</helmet>
+<x-import component-from-global-scope="ReconciliationWorkstationScreen" from="./screen.jsx" hint-size="100%,860px"></x-import>
+</x-dc>
+</body>
+</html>

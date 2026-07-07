@@ -1,0 +1,1 @@
+Editable cell — inline editing in tables without modals. Click to enter edit mode, Tab/Enter to commit, Escape to cancel. On blur, commits automatically. Validator function receives the draft value and returns true (valid) or an error message string. Error state is shown as a red border; a hint line appears below the input.

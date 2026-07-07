@@ -10,6 +10,18 @@ public interface IReconciliationBreakQueueRepository
 
     Task<bool> CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);
 
+    /// <summary>
+    /// Creates <paramref name="item"/> when no case exists under its <c>BreakId</c>, or — when a
+    /// case is still stored under a superseded <paramref name="previousBreakId"/> (for example after
+    /// a fingerprint-input change altered the derived <c>BreakId</c>) — re-keys that existing case
+    /// onto the current <c>BreakId</c>, preserving its assignment, resolution, and audit lineage
+    /// instead of creating a duplicate. Returns <see langword="true"/> only when a brand-new case is
+    /// created; a migration returns <see langword="false"/>. The default implementation ignores
+    /// <paramref name="previousBreakId"/> and delegates to <see cref="CreateIfMissingAsync"/>.
+    /// </summary>
+    Task<bool> CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default)
+        => CreateIfMissingAsync(item, ct);
+
     Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);
 
     Task<bool> DeleteAsync(string breakId, CancellationToken ct = default);

@@ -3909,10 +3909,10 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/ledger");
 
-    const table = await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    const table = await screen.findByRole("region", { name: "Primary trial balance lines for run-42" });
     expect(table).toBeInTheDocument();
-    const cashRow = screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" });
-    const financingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
+    const cashRow = screen.getByRole("row", { name: /Cash Asset\. Primary basis/ });
+    const financingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
     expect(cashRow).toHaveAttribute("aria-selected", "true");
     expect(cashRow).toHaveAttribute("aria-expanded", "true");
     expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
@@ -3933,13 +3933,13 @@ describe("AccountingScreen", () => {
       "/accounting/approvals?approvalId=approval-cash-1"
     );
     expect(financingRow).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByText("-$500")).toHaveClass("text-danger");
+    expect(financingRow).toHaveAccessibleName(/Balance -\$500/);
 
     await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
 
     expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).not.toBeInTheDocument();
-    const filteredFinancingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
+    expect(screen.queryByRole("row", { name: /Cash Asset\. Primary basis/ })).not.toBeInTheDocument();
+    const filteredFinancingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
     expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
 
     await user.click(filteredFinancingRow);
@@ -3954,7 +3954,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/ledger");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
   });
 
   it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {

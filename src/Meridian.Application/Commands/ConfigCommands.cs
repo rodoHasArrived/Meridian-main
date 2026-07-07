@@ -31,7 +31,11 @@ internal sealed class ConfigCommands : ICliCommand
             CliCommandRoute.Flag("--preset", RunApplyPreset));
     }
 
-    public IReadOnlyList<string> Triggers { get; } = ["--auto-config", "--detect-providers", "--generate-config", "--generate-config-schema", "--list-presets", "--preset", "--wizard", "--quickstart", "--setup", "--first-run"];
+    public IReadOnlyList<string> Triggers { get; } =
+    [
+        "--wizard", "--auto-config", "--quickstart", "--setup", "--first-run", "--detect-providers",
+        "--generate-config", "--generate-config-schema", "--list-presets", "--preset"
+    ];
 
     public bool CanHandle(string[] args) => _routes.CanHandle(args);
 

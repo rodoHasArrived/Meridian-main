@@ -28,7 +28,11 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
             new ProviderIntegrationBoundaryContext(
                 EndpointKey: request?.Path,
                 Capability: request is null ? null : request.Method.ToString()),
-            async () =>
+            () => SendCoreAsync(request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationHttpResponse> SendCoreAsync(
+        ProviderIntegrationHttpRequest request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -60,7 +64,7 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                 group => string.Join(",", group.SelectMany(header => header.Value)),
                 StringComparer.OrdinalIgnoreCase),
             body);
-    }).ConfigureAwait(false);
+    }
 
     private static string BuildRequestUri(ProviderIntegrationHttpRequest request)
     {

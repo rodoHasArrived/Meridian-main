@@ -1,6 +1,6 @@
 import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
@@ -13,10 +13,10 @@ import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
-import { SeverityBadge } from "@/components/operations";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
+import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
 import {
   approveOperationsContinuityWorkflow,
   certifyAccountingSystemExportPackage,
@@ -80,8 +80,6 @@ import type {
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
-  ReconciliationComparisonViewState,
-  ReconciliationLineItemViewModel,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
   ReconciliationStatementRunRowViewModel,
@@ -400,186 +398,7 @@ const accountingSystemEvidencePackageVariant = {
   Missing: "danger"
 } as const;
 
-const reconciliationComparisonToneClass: Record<ReconciliationLineItemViewModel["statusTone"], string> = {
-  success: "is-matched",
-  warning: "is-timing",
-  danger: "is-break"
-};
-
-type ReconciliationComparisonSide = "statement" | "ledger";
-
-type ReconciliationComparisonSelection = { matchKey: string; side: ReconciliationComparisonSide } | null;
-
-function ReconciliationComparisonPane({
-  heading,
-  ariaLabel,
-  side,
-  lines,
-  selection,
-  onSelect,
-  scrollRef,
-  onScroll
-}: {
-  heading: string;
-  ariaLabel: string;
-  side: ReconciliationComparisonSide;
-  lines: ReconciliationLineItemViewModel[];
-  selection: ReconciliationComparisonSelection;
-  onSelect: (matchKey: string, side: ReconciliationComparisonSide) => void;
-  scrollRef?: React.Ref<HTMLDivElement>;
-  onScroll?: () => void;
-}) {
-  const { matched, timing, breaks } = useMemo(() => {
-    let matchedCount = 0;
-    let timingCount = 0;
-    let breaksCount = 0;
-    for (const line of lines) {
-      if (line.statusTone === "success") {
-        matchedCount++;
-      } else if (line.statusTone === "warning") {
-        timingCount++;
-      } else if (line.statusTone === "danger") {
-        breaksCount++;
-      }
-    }
-    return { matched: matchedCount, timing: timingCount, breaks: breaksCount };
-  }, [lines]);
-
-  return (
-    <div className="reconcile-pane">
-      <div className="reconcile-pane-head">
-        <span className="reconcile-pane-title">{heading}</span>
-        <span className="reconcile-pane-chips">
-          <SeverityBadge status="ready" dot={false} label={`${matched} matched`} />
-          {timing > 0 && <SeverityBadge status="action" dot={false} label={`${timing} timing`} />}
-          {breaks > 0 && <SeverityBadge status="blocked" dot={false} label={`${breaks} break${breaks > 1 ? "s" : ""}`} />}
-        </span>
-      </div>
-      <div className="reconcile-pane-scroll" ref={scrollRef} onScroll={onScroll}>
-        <table className="reconcile-table" aria-label={ariaLabel}>
-          <thead>
-            <tr>
-              <th scope="col">{side === "statement" ? "Custodian / source" : "Ledger entry"}</th>
-              <th scope="col" className="num">{side === "statement" ? "Statement" : "Ledger"}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lines.length === 0 && (
-              <tr>
-                <td colSpan={2} className="reconcile-empty">No reconciliation items to display</td>
-              </tr>
-            )}
-            {lines.map((line) => {
-              const isSelected = selection?.matchKey === line.matchKey && selection.side === side;
-              const isCrossLit = selection?.matchKey === line.matchKey && selection.side !== side;
-              return (
-                <tr
-                  key={line.id}
-                  className={cn(
-                    reconciliationComparisonToneClass[line.statusTone],
-                    isSelected && "is-selected",
-                    isCrossLit && "is-cross-lit"
-                  )}
-                  tabIndex={0}
-                  aria-selected={isSelected}
-                  aria-label={`${line.title} · ${line.statusLabel}`}
-                  onClick={() => onSelect(line.matchKey, side)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onSelect(line.matchKey, side);
-                    }
-                  }}
-                >
-                  <td>
-                    <div className="reconcile-row-title">{line.title}</div>
-                    <div className="reconcile-row-meta">{line.meta}</div>
-                  </td>
-                  <td className="num">{line.amountLabel}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function ReconciliationComparisonPanel({ view }: { view: ReconciliationComparisonViewState }) {
-  const [selection, setSelection] = useState<ReconciliationComparisonSelection>(null);
-  const statementScrollRef = useRef<HTMLDivElement>(null);
-  const ledgerScrollRef = useRef<HTMLDivElement>(null);
-
-  const handleSelect = (matchKey: string, side: ReconciliationComparisonSide) => {
-    setSelection((previous) =>
-      previous && previous.matchKey === matchKey && previous.side === side ? null : { matchKey, side }
-    );
-  };
-
-  // Keep the two panes vertically aligned: mirror the scroll position of whichever side moves.
-  // The equality guard stops the mirrored scroll from echoing back into an infinite loop.
-  const syncScroll = (source: ReconciliationComparisonSide) => {
-    const from = (source === "statement" ? statementScrollRef : ledgerScrollRef).current;
-    const to = (source === "statement" ? ledgerScrollRef : statementScrollRef).current;
-    if (from && to && to.scrollTop !== from.scrollTop) {
-      to.scrollTop = from.scrollTop;
-    }
-  };
-
-  return (
-    <section className="accounting-reference-panel" data-appearance="light" aria-label={view.ariaLabel}>
-      <div className="accounting-reference-heading">
-        <div className="min-w-0">
-          <p className="accounting-reference-kicker">{view.title}</p>
-          <p className="accounting-reference-subtitle">{view.subtitle}</p>
-        </div>
-        <div className="accounting-reference-badges" aria-label="Reconciliation match status">
-          <span className="accounting-reference-badge accounting-reference-badge-success">{view.matchedBadgeLabel}</span>
-          <span className="accounting-reference-badge accounting-reference-badge-warning">{view.openBadgeLabel}</span>
-        </div>
-      </div>
-
-      <div className="accounting-reconciliation-split">
-        <ReconciliationComparisonPane
-          heading={view.statementHeading}
-          ariaLabel={`${view.statementHeading} reconciliation lines`}
-          side="statement"
-          lines={view.statementLines}
-          selection={selection}
-          onSelect={handleSelect}
-          scrollRef={statementScrollRef}
-          onScroll={() => syncScroll("statement")}
-        />
-        <ReconciliationComparisonPane
-          heading={view.ledgerHeading}
-          ariaLabel={`${view.ledgerHeading} reconciliation lines`}
-          side="ledger"
-          lines={view.ledgerLines}
-          selection={selection}
-          onSelect={handleSelect}
-          scrollRef={ledgerScrollRef}
-          onScroll={() => syncScroll("ledger")}
-        />
-      </div>
-
-      <div className="accounting-balance-strip">
-        <div>
-          <span>Statement balance</span>
-          <strong>{view.statementBalanceLabel}</strong>
-        </div>
-        <div>
-          <span>Ledger balance</span>
-          <strong>{view.ledgerBalanceLabel}</strong>
-        </div>
-        <div className={cn("accounting-reference-balance-badge", view.varianceTone === "success" ? "is-balanced" : "is-out")}>
-          <span aria-hidden="true" />
-          {view.varianceLabel}
-        </div>
-      </div>
-    </section>
-  );
-}
+const TRIAL_BALANCE_DESIGN_SYSTEM_TABLE_THRESHOLD = 40;
 
 function AccountingSystemReconciliationPanel({
   providers,
@@ -2817,19 +2636,28 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               </div>
               {reconciliation.trialBalanceView.hasRows ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-                  <DenseDataTable
-                    columns={trialBalanceColumns}
-                    rows={reconciliation.trialBalanceView.rows}
-                    getRowId={(line) => line.rowId}
-                    getRowAriaLabel={(line) => line.ariaLabel}
-                    getRowSelectAriaLabel={(line) => line.selectAriaLabel}
-                    getRowAriaControls={(line) => line.detailPanelId}
-                    getRowAriaExpanded={(line) => line.isExpanded}
-                    selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                    onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                    emptyText={reconciliation.trialBalanceView.emptyDetail}
-                    ariaLabel={reconciliation.trialBalanceView.tableLabel}
-                  />
+                  {reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_DESIGN_SYSTEM_TABLE_THRESHOLD ? (
+                    <DenseDataTable
+                      columns={trialBalanceColumns}
+                      rows={reconciliation.trialBalanceView.rows}
+                      getRowId={(line) => line.rowId}
+                      getRowAriaLabel={(line) => line.ariaLabel}
+                      getRowSelectAriaLabel={(line) => line.selectAriaLabel}
+                      getRowAriaControls={(line) => line.detailPanelId}
+                      getRowAriaExpanded={(line) => line.isExpanded}
+                      selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                      onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                      emptyText={reconciliation.trialBalanceView.emptyDetail}
+                      ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                    />
+                  ) : (
+                    <TrialBalanceTable
+                      rows={reconciliation.trialBalanceView.rows}
+                      selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                      caption={reconciliation.trialBalanceView.tableLabel}
+                      onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                    />
+                  )}
                   {reconciliation.trialBalanceView.selectedDetail ? (
                     <AccountingTrialBalanceSelectedDetailPanel
                       panelId={reconciliation.trialBalanceView.detailPanelId}

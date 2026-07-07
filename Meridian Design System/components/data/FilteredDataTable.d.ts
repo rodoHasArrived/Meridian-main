@@ -35,6 +35,14 @@ export interface FilteredDataTableProps {
   title?: string;
   onExport?: (state: TableState) => void;
   localStorageKey?: string | null;
+  /** Force windowed row rendering on/off. Omit to auto-decide from result count vs `virtualizeThreshold`. */
+  virtualize?: boolean;
+  /** Row count above which rendering auto-windows. @default 500 */
+  virtualizeThreshold?: number;
+  /** Must match the table's actual row height for correct scroll math when virtualized. @default 32 */
+  rowHeight?: number;
+  /** Scrolling viewport height once virtualized. @default 560 */
+  maxHeight?: number;
 }
 
 export function FilteredDataTable(

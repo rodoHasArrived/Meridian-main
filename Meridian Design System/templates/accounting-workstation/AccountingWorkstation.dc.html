@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,404 @@
 </head>
 <body>
 <x-dc>
-<!-- @template name="Accounting Workstation" description="Books workstation — general ledger, trial balance, reconciliation, statements, tax lots, and a balanced journal-entry drawer" -->
+<!-- @template name="Accounting Workstation" description="Books workstation — general ledger, chart of accounts, trial balance, reconciliation, FX revaluation, gated period close, statements, tax lots, and a prefilled journal-entry drawer" -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="accounting-workstation">
+<style>html,body{margin:0;padding:0;height:100%;}</style>
 </helmet>
-<x-import component-from-global-scope="AccountingWorkstationScreen" from="./screen.jsx" hint-size="100%,860px"></x-import>
+<div data-screen-label="Accounting workstation" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px;">
+  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.WorkstationTopbar" module-label="Accounting" environment="{{ envLabel }}" clock="14:32:08 UTC" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+  <sc-if value="{{ readOnly }}" hint-placeholder-val="{{ false }}">
+    <x-import component-from-global-scope="MeridianDesignSystem_4f61be.ReadOnlyBanner" message="{{ readOnlyMsg }}" hint-size="100%,32px"></x-import>
+  </sc-if>
+  <div style="display:flex;flex:1;min-height:0;">
+    <x-import component-from-global-scope="MeridianDesignSystem_4f61be.NavRail" active-id="{{ navActive }}" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+    <main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;">
+      <header style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);">Accounting</h1>
+        <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="56px,18px">{{ envLabel }}</x-import>
+        <span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);">{{ periodLine }}</span>
+        <div style="flex:1;"></div>
+        <span style="flex:none;white-space:nowrap;">
+          <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Button" variant="ghost" size="sm" on-click="{{ onRunClose }}" hint-size="92px,28px">Period close</x-import>
+        </span>
+        <span style="flex:none;white-space:nowrap;">
+          <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Button" variant="primary" size="sm" on-click="{{ onNewEntry }}" disabled="{{ readOnly }}" hint-size="132px,28px">New journal entry</x-import>
+        </span>
+      </header>
+
+      <sc-if value="{{ showGl }}" hint-placeholder-val="{{ true }}">
+        <x-import component="AcctLedgerView" from="./views/LedgerView.jsx"
+          rows="{{ glRows }}" last-ref="{{ glLastRef }}" openings="{{ glOpenings }}" initial-account="{{ glSeed }}"
+          hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showCoa }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctAccountsView" from="./views/AccountsView.jsx"
+          coa="{{ coaNodes }}" ledger="{{ glRows }}" locked="{{ readOnly }}" on-post-to="{{ onPostTo }}" on-view-ledger="{{ onViewLedger }}"
+          hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showTb }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctTrialBalanceView" from="./views/TrialBalanceView.jsx"
+          rows="{{ tbRows }}" as-of="2026-06-30"
+          hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showRecon }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctReconciliationView" from="./views/ReconciliationView.jsx"
+          left="{{ recLeft }}" right="{{ recRight }}" locked="{{ readOnly }}" on-post-accrual="{{ onPostAccrual }}"
+          hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showFx }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctFxRevalView" from="./views/FxRevaluationView.jsx"
+          rows="{{ fxRows }}" net-gl="{{ netGl }}" fx-posted="{{ fxPosted }}" fx-ref="{{ fxRef }}" locked="{{ readOnly }}" on-post-reval="{{ onPostReval }}"
+          hint-size="100%,480px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showClose }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctPeriodCloseView" from="./views/PeriodCloseView.jsx"
+          gates="{{ closeGates }}" issues="{{ closeIssues }}" locked="{{ locked }}" can-lock="{{ canLock }}" locked-at="{{ lockedAt }}"
+          postings="{{ postingsCount }}" rec-open="{{ recOpenCount }}" fx-posted="{{ fxPosted }}"
+          on-lock="{{ onLock }}" on-reopen="{{ onReopen }}" on-goto="{{ onNav }}"
+          hint-size="100%,480px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showStmt }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctStatementsView" from="./views/StatementsView.jsx"
+          sections="{{ stmtSections }}" total="{{ stmtTotal }}"
+          hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showLots }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctTaxLotsView" from="./views/TaxLotsView.jsx"
+          lots="{{ lotRows }}" as-of="2026-06-30"
+          hint-size="100%,480px"></x-import>
+      </sc-if>
+    </main>
+  </div>
+  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+
+  <x-import component="AcctJournalDrawer" from="./views/JournalDrawer.jsx"
+    open="{{ drawerOpen }}" on-close="{{ onDrawerClose }}" accounts="{{ acctOptions }}"
+    seed-header="{{ seedHeader }}" seed-lines="{{ seedLines }}" seed-key="{{ drawerSeq }}"
+    note="{{ drawerNote }}" note-title="{{ drawerNoteTitle }}" on-post="{{ onPostEntry }}"
+    hint-size="0px,0px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.CommandPalette" commands="{{ paletteCommands }}" hint-size="0px,0px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.HotkeysProvider" bindings="{{ hotkeyBindings }}" hint-size="0px,0px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.ToastProvider" hint-size="0px,0px"></x-import>
+</div>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;environment&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;PAPER&quot;, &quot;tsType&quot;: &quot;\&quot;PAPER\&quot; | \&quot;LIVE\&quot; | \&quot;FIXTURE\&quot;&quot;, &quot;options&quot;: [&quot;PAPER&quot;, &quot;LIVE&quot;, &quot;FIXTURE&quot;], &quot;section&quot;: &quot;Session&quot; },
+  &quot;role&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;operator&quot;, &quot;tsType&quot;: &quot;\&quot;operator\&quot; | \&quot;viewer\&quot;&quot;, &quot;options&quot;: [&quot;operator&quot;, &quot;viewer&quot;], &quot;section&quot;: &quot;Session&quot; },
+  &quot;density&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;default&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;default&quot;, &quot;compact&quot;, &quot;terminal&quot;, &quot;spacious&quot;], &quot;section&quot;: &quot;Display&quot; }
+}">
+class Component extends DCLogic {
+  // Shared store for the workstation: the DC template mounts the shell and one view module
+  // per nav id (views/*.jsx); this class owns cross-view state (ledger, reconciliation,
+  // period lock, journal drawer) and passes it down as x-import props.
+  state = {
+    ready: false,
+    view: "gl",
+    ledger: [],
+    recLeft: [],
+    recRight: [],
+    netGl: 0,
+    drawerOpen: false,
+    drawerKind: "blank",
+    drawerSeedAccount: null,
+    drawerSeq: 0,
+    lastRef: "JE-1080",
+    nextRef: 1081,
+    locked: false,
+    lockedAt: null,
+    fxPosted: false,
+    fxRef: null,
+    glSeed: "all",
+  };
+
+  componentDidMount() {
+    const waitBundle = new Promise((res) => {
+      const tick = () => (window.MeridianDesignSystem_4f61be ? res() : setTimeout(tick, 40));
+      tick();
+    });
+    Promise.all([import("./data.js"), waitBundle]).then(([m]) => {
+      this.DATA = m;
+      const M = window.MeridianDesignSystem_4f61be.Money;
+      const netGl = M.roundMoney(
+        M.sumAmounts(m.FX_ROWS.map((r) => M.fxRevalue(r.local, r.bookedRate, r.currentRate).gainLoss)), 2);
+      this.setState({
+        ready: true,
+        netGl,
+        ledger: m.SEED_LEDGER.map((x) => ({ ...x })),
+        recLeft: m.REC_LEFT.map((x) => ({ ...x })),
+        recRight: m.REC_RIGHT.map((x) => ({ ...x })),
+      });
+    });
+    this.applyDensity();
+  }
+  componentDidUpdate() { this.applyDensity(); }
+  applyDensity() {
+    const d = this.props.density ?? "default";
+    if (d === "default") delete document.body.dataset.themeDensity;
+    else document.body.dataset.themeDensity = d;
+  }
+
+  M() { return (window.MeridianDesignSystem_4f61be || {}).Money; }
+  fmt(v) { const M = this.M(); return M ? M.formatMoney(v, { currency: "USD" }) : String(v); }
+  toast(kind, title, detail) {
+    const t = window.MeridianToast;
+    if (t && t[kind]) t[kind](title, detail);
+  }
+  isReadOnly() { return this.state.locked || (this.props.role ?? "operator") === "viewer"; }
+
+  go = (view) => this.setState((s) => ({ view, glSeed: view === "gl" ? "all" : s.glSeed }));
+
+  viewLedgerFor = (code) => {
+    const row = this.state.ledger.find((r) => r.account.slice(0, 4) === code);
+    this.setState({ glSeed: row ? row.account : "all", view: "gl" });
+  };
+
+  openDrawer = (kind, seedAccount) => {
+    if (this.isReadOnly()) {
+      this.toast("error", "Posting disabled", this.state.locked
+        ? "Period 2026-Q2 is locked." : "Viewer role is read-only.");
+      return;
+    }
+    this.setState((s) => ({
+      drawerOpen: true,
+      drawerKind: kind || "blank",
+      drawerSeedAccount: seedAccount || null,
+      drawerSeq: s.drawerSeq + 1,
+    }));
+  };
+  closeDrawer = () => this.setState({ drawerOpen: false });
+
+  buildSeed() {
+    const { drawerKind: kind, drawerSeedAccount, nextRef, netGl } = this.state;
+    const header = { date: "2026-06-30", ref: "JE-" + nextRef, memo: "" };
+    const blank = { account: "", debit: "", credit: "" };
+    let lines = [{ ...blank }, { ...blank }];
+    let note = null, noteTitle = null;
+    if (kind === "accrual") {
+      header.memo = "Interest accrual — statement INT-0210";
+      header.date = "2026-06-06";
+      lines = [
+        { account: "1100 · Cash", debit: 142.18, credit: "" },
+        { account: "4200 · Dividend & interest income", debit: "", credit: 142.18 },
+      ];
+      noteTitle = "Prefilled from reconciliation";
+      note = "Clears statement break INT-0210 — an interest accrual of $142.18 with no ledger counterpart.";
+    } else if (kind === "reval") {
+      header.memo = "FX revaluation — 2026-06 close";
+      const amt = Math.abs(netGl);
+      lines = netGl >= 0
+        ? [{ account: "1400 · FX translation adjustment", debit: amt, credit: "" },
+           { account: "4300 · Unrealized FX gain/loss", debit: "", credit: amt }]
+        : [{ account: "4300 · Unrealized FX gain/loss", debit: amt, credit: "" },
+           { account: "1400 · FX translation adjustment", debit: "", credit: amt }];
+      noteTitle = "Prefilled from FX revaluation";
+      note = "Books the net unrealized FX gain/loss of " + this.fmt(netGl) + " at 2026-06-30 rates.";
+    } else if (kind === "account" && drawerSeedAccount) {
+      lines = [{ account: drawerSeedAccount, debit: "", credit: "" }, { ...blank }];
+      noteTitle = "Prefilled account";
+      note = "First line seeded with " + drawerSeedAccount + " — add the balancing side.";
+    }
+    return { header, lines, note, noteTitle };
+  }
+
+  postEntry = ({ header, lines }) => {
+    const M = this.M();
+    const clean = (lines || [])
+      .filter((l) => l.account && (M.toNumber(l.debit) > 0 || M.toNumber(l.credit) > 0))
+      .map((l) => ({
+        date: (header.date || "2026-06-30").slice(5),
+        ref: header.ref || "JE-" + this.state.nextRef,
+        account: l.account,
+        memo: header.memo || "Manual entry",
+        debit: M.toNumber(l.debit) || "",
+        credit: M.toNumber(l.credit) || "",
+      }));
+    if (!clean.length) return;
+    const ref = clean[0].ref;
+    const total = M.sumAmounts(clean.map((r) => r.debit));
+    const kind = this.state.drawerKind;
+    this.setState((s) => {
+      const next = {
+        ledger: [...s.ledger, ...clean],
+        lastRef: ref,
+        nextRef: s.nextRef + 1,
+        drawerOpen: false,
+        view: "gl",
+        glSeed: "all",
+      };
+      if (kind === "accrual") {
+        const cash = clean.find((r) => r.account.slice(0, 4) === "1100");
+        next.recLeft = s.recLeft.map((i) => (i.ref === "INT-0210" ? { ...i, matched: true } : i));
+        next.recRight = [...s.recRight, {
+          id: 90 + s.drawerSeq, date: "06-06", ref,
+          memo: "Interest accrual", amount: (cash && cash.debit) || 142.18, matched: true,
+        }];
+        next.view = "recon";
+      } else if (kind === "reval") {
+        next.fxPosted = true;
+        next.fxRef = ref;
+        next.view = "fx";
+      }
+      return next;
+    });
+    this.toast("success", "Posted " + ref, clean.length + " lines · " + this.fmt(total));
+  };
+
+  lockPeriod = () => {
+    this.setState({ locked: true, lockedAt: "2026-06-30 21:14:02Z" });
+    this.toast("success", "Period locked", "2026-Q2 · books are read-only");
+  };
+  reopenPeriod = () => {
+    this.setState({ locked: false, lockedAt: null });
+    this.toast("success", "Period reopened", "2026-Q2 · postings enabled");
+  };
+
+  renderVals() {
+    const s = this.state;
+    const D = this.DATA;
+    const env = String(this.props.environment ?? "PAPER").toUpperCase();
+    const readOnly = this.isReadOnly();
+    const recOpen = s.recLeft.filter((i) => !i.matched).length;
+    const canLock = s.ready && !recOpen && s.fxPosted && !s.locked;
+    const seed = this.buildSeed();
+
+    const icon = (n) => "../../assets/icons/" + n + ".svg";
+    const navSections = [
+      { label: "Books", items: [
+        { id: "gl", label: "General Ledger", icon: icon("run-ledger"), shortcut: "G L" },
+        { id: "coa", label: "Chart of Accounts", icon: icon("aggregate-portfolio"), shortcut: "G C" },
+        { id: "tb", label: "Trial Balance", icon: icon("data-quality"), shortcut: "G T" },
+      ]},
+      { label: "Close", items: [
+        { id: "recon", label: "Reconciliation", icon: icon("archive-health"), shortcut: "G R" },
+        { id: "fx", label: "FX Revaluation", icon: icon("data-sources"), shortcut: "G F" },
+        { id: "close", label: "Period Close", icon: icon("retention-assurance"), shortcut: "G P" },
+      ]},
+      { label: "Reporting", items: [
+        { id: "stmt", label: "Statements", icon: icon("governance"), shortcut: "G S" },
+        { id: "lots", label: "Tax Lots", icon: icon("account-portfolio"), shortcut: "G X" },
+      ]},
+    ];
+
+    const closeGates = [
+      { key: "post", label: "Journal postings", status: "Passed" },
+      { key: "recon", label: "Cash reconciliation", status: recOpen ? "ReviewRequired" : "Passed" },
+      { key: "fx", label: "FX revaluation", status: s.fxPosted ? "Passed" : "InProgress" },
+      { key: "tb", label: "Trial balance proof", status: "Passed" },
+      { key: "lock", label: "Period lock", status: s.locked ? "Passed" : canLock ? "InProgress" : "NotStarted" },
+    ];
+    const closeIssues = [];
+    if (recOpen) closeIssues.push({ code: "RECON-1100", severity: "Warning", gate: "Reconciliation",
+      message: recOpen + " statement line unmatched — INT-0210 interest accrual · $142.18." });
+    if (!s.fxPosted) closeIssues.push({ code: "FX-0630", severity: "Warning", gate: "FX revaluation",
+      message: "FX revaluation entry not posted — net unrealized G/L " + this.fmt(s.netGl) + "." });
+    if (s.locked) closeIssues.push({ code: "CLOSE-LOCKED", severity: "Info",
+      message: "Locked " + s.lockedAt + " — postings disabled." });
+    else if (canLock) closeIssues.push({ code: "CLOSE-READY", severity: "Info",
+      message: "All gates passed — period is ready to lock." });
+
+    const goCmd = (id, label, k) => ({
+      id: "go-" + id, group: "Go to", label, shortcut: ["G", k], run: () => this.go(id),
+    });
+    const paletteCommands = [
+      goCmd("gl", "General ledger", "L"), goCmd("coa", "Chart of accounts", "C"),
+      goCmd("tb", "Trial balance", "T"), goCmd("recon", "Reconciliation", "R"),
+      goCmd("fx", "FX revaluation", "F"), goCmd("close", "Period close", "P"),
+      goCmd("stmt", "Statements", "S"), goCmd("lots", "Tax lots", "X"),
+      { id: "act-new", group: "Actions", label: "New journal entry", shortcut: ["N"],
+        keywords: ["post", "je"], run: () => this.openDrawer("blank") },
+      { id: "act-close", group: "Actions", label: "Run period close",
+        keywords: ["lock", "quarter"], run: () => this.go("close") },
+    ];
+    const bind = (keys, label, group, action) => ({ keys, label, group, action });
+    const hotkeyBindings = [
+      bind("g l", "Go to general ledger", "Navigate", () => this.go("gl")),
+      bind("g c", "Go to chart of accounts", "Navigate", () => this.go("coa")),
+      bind("g t", "Go to trial balance", "Navigate", () => this.go("tb")),
+      bind("g r", "Go to reconciliation", "Navigate", () => this.go("recon")),
+      bind("g f", "Go to FX revaluation", "Navigate", () => this.go("fx")),
+      bind("g p", "Go to period close", "Navigate", () => this.go("close")),
+      bind("g s", "Go to statements", "Navigate", () => this.go("stmt")),
+      bind("g x", "Go to tax lots", "Navigate", () => this.go("lots")),
+      bind("n", "New journal entry", "Actions", () => this.openDrawer("blank")),
+    ];
+
+    const statusItems = [
+      { status: "ok", label: "Ledger", value: "balanced" },
+      { label: "Last post", value: s.lastRef },
+      { label: "Postings", value: s.ledger.length + " lines" },
+      { status: recOpen ? "warn" : "ok", label: "Recon", value: recOpen ? recOpen + " unmatched" : "reconciled" },
+      { status: s.fxPosted ? "ok" : "warn", label: "FX reval", value: s.fxPosted ? "posted" : "pending" },
+      { status: s.locked ? "ok" : void 0, label: "Period", value: "2026-Q2 " + (s.locked ? "locked" : "open"), push: true },
+      { label: "Books", value: "USD · accrual" },
+    ];
+
+    return {
+      envLabel: env,
+      envVariant: env.toLowerCase(),
+      periodLine: "Fiscal 2026-Q2 · " + (s.locked ? "locked" : "open") + " · USD · accrual",
+      readOnly,
+      readOnlyMsg: s.locked
+        ? "Period 2026-Q2 is locked — books are read-only. Reopen from Period Close."
+        : "Signed in as viewer — posting and close actions are disabled.",
+      navActive: s.view,
+      navSections,
+      onNav: this.go,
+      onRunClose: () => this.go("close"),
+      onNewEntry: () => this.openDrawer("blank"),
+      showGl: s.ready && s.view === "gl",
+      showCoa: s.ready && s.view === "coa",
+      showTb: s.ready && s.view === "tb",
+      showRecon: s.ready && s.view === "recon",
+      showFx: s.ready && s.view === "fx",
+      showClose: s.ready && s.view === "close",
+      showStmt: s.ready && s.view === "stmt",
+      showLots: s.ready && s.view === "lots",
+      glRows: s.ledger,
+      glLastRef: s.lastRef,
+      glOpenings: D ? D.OPENINGS : {},
+      glSeed: s.glSeed,
+      coaNodes: D ? D.COA : [],
+      onPostTo: (acct) => this.openDrawer("account", acct),
+      onViewLedger: this.viewLedgerFor,
+      tbRows: D ? D.TB_ROWS : [],
+      recLeft: s.recLeft,
+      recRight: s.recRight,
+      onPostAccrual: () => this.openDrawer("accrual"),
+      fxRows: D ? D.FX_ROWS : [],
+      netGl: s.netGl,
+      fxPosted: s.fxPosted,
+      fxRef: s.fxRef,
+      onPostReval: () => this.openDrawer("reval"),
+      closeGates,
+      closeIssues,
+      locked: s.locked,
+      canLock,
+      lockedAt: s.lockedAt,
+      postingsCount: s.ledger.length,
+      recOpenCount: recOpen,
+      onLock: this.lockPeriod,
+      onReopen: this.reopenPeriod,
+      stmtSections: D ? D.STMT_SECTIONS : [],
+      stmtTotal: D ? D.STMT_TOTAL : { label: "Net income", values: { q2: 0, q1: 1 } },
+      lotRows: D ? D.LOTS : [],
+      drawerOpen: s.drawerOpen,
+      onDrawerClose: this.closeDrawer,
+      acctOptions: D ? D.ACCOUNT_OPTIONS : [],
+      seedHeader: seed.header,
+      seedLines: seed.lines,
+      drawerSeq: s.drawerSeq,
+      drawerNote: seed.note,
+      drawerNoteTitle: seed.noteTitle,
+      onPostEntry: this.postEntry,
+      statusItems,
+      paletteCommands,
+      hotkeyBindings,
+    };
+  }
+}
+</script>
 </body>
 </html>

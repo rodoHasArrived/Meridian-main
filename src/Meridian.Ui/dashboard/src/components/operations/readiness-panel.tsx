@@ -4,7 +4,7 @@
 // title, a detail line, optional body content, and a right-aligned action footer. The
 // left rail and border tint track `state`. The workhorse for "this lane is
 // ReviewRequired because…" panels across Operations, Accounting, and Data.
-import type { ReactNode } from "react";
+import type { AriaRole, ReactNode } from "react";
 import { injectStyle } from "./inject-style";
 import { SeverityBadge } from "./severity-badge";
 import { normalizeSeverity } from "./status";
@@ -42,6 +42,15 @@ export interface ReadinessPanelProps {
   actions?: ReactNode;
   /** Extra body content between the detail line and the footer. */
   children?: ReactNode;
+  /** Optional id applied to the detail line for aria-describedby wiring. */
+  detailId?: string;
+  /** Optional accessible role for route-owned live use. */
+  role?: AriaRole;
+  /** Accessible label when the panel has an explicit role. */
+  ariaLabel?: string;
+  /** Existing description ids to reference from the panel root. */
+  ariaDescribedBy?: string;
+  className?: string;
 }
 
 /**
@@ -64,17 +73,28 @@ export function ReadinessPanel({
   score,
   actions,
   children,
+  detailId,
+  role,
+  ariaLabel,
+  ariaDescribedBy,
+  className,
 }: ReadinessPanelProps) {
   injectStyle("readiness-panel", CSS);
   const sev = normalizeSeverity(state);
+  const describedBy = ariaDescribedBy ?? detailId;
   return (
-    <div className={`mds-rpanel mds-rpanel--${sev}`}>
+    <div
+      className={`mds-rpanel mds-rpanel--${sev}${className ? " " + className : ""}`}
+      role={role}
+      aria-label={ariaLabel}
+      aria-describedby={describedBy}
+    >
       <div className="mds-rpanel__head">
         <SeverityBadge status={state} label={statusLabel} />
         {score != null && <span className="mds-rpanel__score">{score}</span>}
       </div>
       {title && <p className="mds-rpanel__title">{title}</p>}
-      {detail && <p className="mds-rpanel__detail">{detail}</p>}
+      {detail && <p id={detailId} className="mds-rpanel__detail">{detail}</p>}
       {children}
       {actions && <div className="mds-rpanel__foot">{actions}</div>}
     </div>

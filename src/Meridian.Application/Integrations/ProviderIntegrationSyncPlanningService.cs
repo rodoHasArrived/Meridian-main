@@ -39,7 +39,12 @@ public sealed class ProviderIntegrationSyncPlanningService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ConnectionId: request?.ConnectionId),
-            async () =>
+            () => PlanCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationSyncPlanDto> PlanCoreAsync(
+        string? tenantId,
+        ProviderIntegrationSyncPlanRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
@@ -69,7 +74,7 @@ public sealed class ProviderIntegrationSyncPlanningService
             items,
             DueCount: items.Count(item => item.IsDue),
             BlockedCount: items.Count(item => item.IsBlocked));
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

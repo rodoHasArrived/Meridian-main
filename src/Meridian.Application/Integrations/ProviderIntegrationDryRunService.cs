@@ -13,8 +13,8 @@ public sealed class ProviderIntegrationDryRunService
 {
     private const string ManualCsvEndpointKey = "manual-csv-upload";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private readonly ILogger<ProviderIntegrationDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationDryRunService> logger;
 
     public ProviderIntegrationDryRunService(
         IProviderIntegrationManifestStore store,
@@ -43,7 +43,12 @@ public sealed class ProviderIntegrationDryRunService
                 Capability: request is null ? null : request.Capability.ToString(),
                 EndpointKey: ManualCsvEndpointKey,
                 SyncRunId: request?.SyncRunId),
-            async () =>
+            () => RunManualCsvDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunCoreAsync(
+        string? tenantId,
+        ManualCsvProviderIntegrationDryRunRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SyncRunId);
@@ -227,7 +232,7 @@ public sealed class ProviderIntegrationDryRunService
             allIssues);
         await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, result, ct).ConfigureAwait(false);
         return result;
-    }).ConfigureAwait(false);
+    }
 
     private Task SaveSyncRunAsync(
         IProviderIntegrationManifestStore scopedStore,

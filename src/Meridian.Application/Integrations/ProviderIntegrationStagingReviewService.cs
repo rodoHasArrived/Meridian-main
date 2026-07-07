@@ -35,7 +35,13 @@ public sealed class ProviderIntegrationStagingReviewService
             logger,
             "staging-review",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
+            () => GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationStagingReviewDto> GetReviewCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
@@ -96,7 +102,7 @@ public sealed class ProviderIntegrationStagingReviewService
             records.Count,
             records.Count(record => record.ValidationWarnings.Count == 0),
             records.Count(record => record.ValidationWarnings.Count > 0));
-    }).ConfigureAwait(false);
+    }
 
     private static int NormalizeLimit(int recentRunLimit)
     {

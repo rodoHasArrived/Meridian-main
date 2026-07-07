@@ -2,18 +2,15 @@ import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, 
 import {
   ArrowRight,
   AlertTriangle,
-  LoaderCircle,
-  Menu,
-  Search
+  LoaderCircle
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import "@/styles/app-shell.css";
-import meridianMarkUrl from "@/assets/brand/meridian-mark-light.svg";
+import { meridianBrandAssets } from "@/design-system/assets";
 import {
   buildAppShellViewState,
   isAppShellEditableShortcutTarget,
   resolveAppShellCommandPaletteShortcut,
-  type AppShellTrustStripState,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
 import {
@@ -38,7 +35,6 @@ import { applyDensity, writeStoredDensity } from "@/lib/density";
 import type { LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
-import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
@@ -63,6 +59,11 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
+import { DesignSystemMasthead } from "@/design-system/primitives";
+import {
+  WorkstationStatusBar,
+  buildWorkstationStatusItems
+} from "@/components/meridian/workstation-status-bar";
 import { ActivityLogProvider } from "@/lib/activity-log/store";
 import {
   OnboardingCoachMark,
@@ -442,65 +443,23 @@ function AppShell() {
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {routeAnnouncement}
       </div>
-      <header className="workstation-masthead">
-        <div className="workstation-brand-group">
-          <button
-            type="button"
-            className="workstation-nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            aria-label="Open workspace navigation"
-            aria-expanded={navOpen}
-            aria-haspopup="dialog"
-            onClick={() => setNavOpen(true)}
-          >
-            <Menu className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <div className="workstation-brand">
-            <img src={meridianMarkUrl} alt="" aria-hidden="true" />
-            <div className="workstation-brand-copy min-w-0">
-              <div className="name">Meridian</div>
-              <div className="sub" aria-hidden="true">
-                <span className="workstation-brand-sep">/</span>
-                {headerWorkspace.label}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          onClick={() => setCommandOpen(true)}
-          aria-label={shell.commandPaletteTrigger.label}
-          aria-controls={shell.commandPaletteTrigger.controlsId}
-          aria-expanded={shell.commandPaletteTrigger.expanded}
-          aria-haspopup={shell.commandPaletteTrigger.hasPopup}
-        >
-          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="workstation-search-placeholder">{shell.commandPaletteTrigger.placeholder}</span>
-          <span className="workstation-search-kbd" aria-hidden="true">{shell.commandPaletteTrigger.shortcutLabel}</span>
-        </button>
-
-        <WorkstationTrustStrip viewModel={shell.trustStrip} />
-
-        <div className="workstation-actions">
-          <OnboardingHeaderProgress controller={onboardingTour} />
-          <ActivityCenter />
-          <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
-          {session ? (
-            <div
-              className="workstation-session-card"
-              role="group"
-              aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
-            >
-              <Badge variant={session.environment} dot>{session.environment}</Badge>
-              <span className="workstation-session-name">{session.displayName}</span>
-              <span className="workstation-session-role text-muted-foreground">{session.role}</span>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">Loading session…</span>
-          )}
-        </div>
-      </header>
+      <DesignSystemMasthead
+        brandMarkSrc={meridianBrandAssets.markLight}
+        workspaceLabel={headerWorkspace.label}
+        navOpen={navOpen}
+        onOpenNavigation={() => setNavOpen(true)}
+        commandTrigger={shell.commandPaletteTrigger}
+        onOpenCommandPalette={() => setCommandOpen(true)}
+        trustStrip={shell.trustStrip}
+        session={session}
+        actions={(
+          <>
+            <OnboardingHeaderProgress controller={onboardingTour} />
+            <ActivityCenter />
+            <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
+          </>
+        )}
+      />
 
       <div className="workstation-shell">
         <WorkspaceNav
@@ -673,8 +632,8 @@ function AppShell() {
         </main>
       </div>
 
-      <StatusBar
-        items={buildShellStatusItems({
+      <WorkstationStatusBar
+        items={buildWorkstationStatusItems({
           session,
           workspaceLabel: headerWorkspace.label,
           usingDevelopmentFixtures,
@@ -1087,124 +1046,6 @@ function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShell
   const compactLeft = compactOperatingScope(left);
   const compactRight = compactOperatingScope(right);
   return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
-}
-
-function WorkstationTrustStrip({
-  viewModel
-}: {
-  viewModel: AppShellTrustStripState;
-}) {
-  return (
-    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
-      {viewModel.items.map((item) => {
-        const content = (
-          <>
-            <span className="workstation-trust-label">{item.label}</span>
-            <span className="workstation-trust-value">{item.value}</span>
-            <span className="sr-only">
-              {item.detail}
-              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
-            </span>
-          </>
-        );
-
-        return item.href ? (
-          <Link
-            key={item.id}
-            to={item.href}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
-          >
-            {content}
-          </Link>
-        ) : (
-          <span
-            key={item.id}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
-            aria-label={item.ariaLabel}
-          >
-            {content}
-          </span>
-        );
-      })}
-    </section>
-  );
-}
-
-interface ShellStatusBarItem {
-  key: string;
-  label?: string;
-  value: string;
-  status?: "ok" | "warn" | "err";
-  push?: boolean;
-}
-
-/**
- * Concrete workstation status bar — the near-black 28px telemetry footer that mirrors the
- * WPF StatusBar palette. Renders a row of label/value fields; items flagged `push` float to
- * the right edge. Purely presentational; all copy is derived by the caller.
- */
-function StatusBar({ items }: { items: ShellStatusBarItem[] }) {
-  return (
-    <footer className="workstation-statusbar" aria-label="Workstation status">
-      {items.map((item) => (
-        <span
-          key={item.key}
-          className={cn("workstation-statusbar-item", item.push && "workstation-statusbar-item-push")}
-        >
-          {item.status ? (
-            <span className={`workstation-statusbar-dot workstation-statusbar-dot-${item.status}`} aria-hidden="true" />
-          ) : null}
-          {item.label ? <span className="workstation-statusbar-label">{item.label}</span> : null}
-          <span className="workstation-statusbar-value">{item.value}</span>
-        </span>
-      ))}
-    </footer>
-  );
-}
-
-function buildShellStatusItems({
-  session,
-  workspaceLabel,
-  usingDevelopmentFixtures,
-  refreshing,
-  hasError
-}: {
-  session: { environment?: string } | null;
-  workspaceLabel: string;
-  usingDevelopmentFixtures: boolean;
-  refreshing: boolean;
-  hasError: boolean;
-}): ShellStatusBarItem[] {
-  const environment = session?.environment ?? "loading";
-  const connectionStatus: ShellStatusBarItem["status"] = hasError ? "err" : session ? "ok" : "warn";
-  const dataStatus: ShellStatusBarItem["status"] = usingDevelopmentFixtures ? "warn" : "ok";
-
-  return [
-    {
-      key: "session",
-      status: connectionStatus,
-      label: "Session",
-      value: session ? environment : "connecting"
-    },
-    {
-      key: "data",
-      status: dataStatus,
-      label: "Data",
-      value: usingDevelopmentFixtures ? "demo fixtures" : "live source"
-    },
-    {
-      key: "sync",
-      label: "Sync",
-      value: refreshing ? "refreshing…" : "up to date"
-    },
-    {
-      key: "workspace",
-      label: "Workspace",
-      value: workspaceLabel,
-      push: true
-    }
-  ];
 }
 
 function LegacyWorkspaceRedirect() {

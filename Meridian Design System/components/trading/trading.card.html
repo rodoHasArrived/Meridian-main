@@ -1,0 +1,58 @@
+<!-- @dsCard group="Trading" viewport="920x980" name="Trading" subtitle="OrderTicket · Blotter · FillsFeed — order entry with the live-mode confirm gate" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Order Ticket</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { OrderTicket, Blotter, FillsFeed, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const NOW = Date.UTC(2026, 6, 2, 14, 32, 8);
+const ORDERS = [
+  { id: "ORD-1207", time: NOW - 64000, symbol: "AAPL", side: "Buy", qty: "400", type: "Limit", limit: "201.0000", filled: "400", status: "Filled" },
+  { id: "ORD-1206", time: NOW - 312000, symbol: "SPY", side: "Sell", qty: "200", type: "Market", filled: "120", status: "Partially filled" },
+  { id: "ORD-1205", time: NOW - 741000, symbol: "NVDA", side: "Buy", qty: "80", type: "Limit", limit: "130.5000", filled: "0", status: "Working" },
+  { id: "ORD-1204", time: NOW - 1420000, symbol: "TLT", side: "Buy", qty: "320", type: "Limit", limit: "90.2500", filled: "0", status: "Rejected" },
+];
+const FILLS = [
+  { id: "F-91", time: NOW - 64000, symbol: "AAPL", side: "Buy", qty: "400", price: "201.0000" },
+  { id: "F-90", time: NOW - 298000, symbol: "SPY", side: "Sell", qty: "120", price: "601.4400" },
+  { id: "F-89", time: NOW - 305000, symbol: "SPY", side: "Sell", qty: "80", price: "601.4100" },
+];
+function App() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 880 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <Eyebrow>Paper — no gate</Eyebrow>
+          <OrderTicket symbol="AAPL" lastPrice={201.12} environment="paper"
+            onSubmit={(o) => window.MeridianToast && window.MeridianToast.success("Order accepted", `${o.side} ${o.qty} ${o.symbol} · ${o.type}`)} />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <Eyebrow>Live — confirm gate</Eyebrow>
+          <OrderTicket symbol="NVDA" lastPrice={131.07} environment="live" defaultSide="sell"
+            onSubmit={() => {}} />
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <Eyebrow>Blotter — orders preset</Eyebrow>
+        <Blotter orders={ORDERS} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 460 }}>
+        <Eyebrow>FillsFeed — execution tape</Eyebrow>
+        <FillsFeed fills={FILLS} />
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
