@@ -709,6 +709,11 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 {
                     VaultIdentity = reviewedIdentity
                 };
+                reviewedIdentity = RefreshVaultIdentityContentHash(reviewedIdentity, reviewedManifest);
+                reviewedManifest = reviewedManifest with
+                {
+                    VaultIdentity = reviewedIdentity
+                };
                 await AtomicFileWriter
                     .WriteAsync(manifestPath, JsonSerializer.Serialize(reviewedManifest, _jsonOptions), ct)
                     .ConfigureAwait(false);
@@ -844,6 +849,38 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         };
     }
 
+    private EvidenceVaultIdentityDto RefreshVaultIdentityContentHash(
+        EvidenceVaultIdentityDto identity,
+        RetainedEvidenceManifestDto manifest)
+    {
+        var contentHash = ComputeManifestContentHash(manifest with
+        {
+            VaultIdentity = NormalizeVaultIdentityForContentHash(identity)
+        });
+        return identity with
+        {
+            ContentHashSha256 = contentHash,
+            ManifestSnapshot = identity.ManifestSnapshot is null
+                ? null
+                : identity.ManifestSnapshot with { ContentHashSha256 = contentHash }
+        };
+    }
+
+    private string ComputeManifestContentHash(RetainedEvidenceManifestDto manifest)
+    {
+        var json = JsonSerializer.Serialize(manifest, _jsonOptions);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+    }
+
+    private static EvidenceVaultIdentityDto NormalizeVaultIdentityForContentHash(EvidenceVaultIdentityDto identity)
+        => identity with
+        {
+            ContentHashSha256 = string.Empty,
+            ManifestSnapshot = identity.ManifestSnapshot is null
+                ? null
+                : identity.ManifestSnapshot with { ContentHashSha256 = string.Empty }
+        };
+
     private static EvidenceManifestDto ReplaceManifestDocument(
         EvidenceManifestDto manifest,
         EvidenceDocumentDto reviewedDocument)
@@ -947,14 +984,11 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             return false;
         }
 
-        if (query.LinkKind.HasValue &&
-            !document.ObjectLinks.Any(link => link.LinkKind == query.LinkKind.Value))
-        {
-            return false;
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.ObjectId) &&
-            !document.ObjectLinks.Any(link => string.Equals(link.ObjectId, query.ObjectId, StringComparison.OrdinalIgnoreCase)))
+        if ((query.LinkKind.HasValue || !string.IsNullOrWhiteSpace(query.ObjectId)) &&
+            !document.ObjectLinks.Any(link =>
+                (!query.LinkKind.HasValue || link.LinkKind == query.LinkKind.Value) &&
+                (string.IsNullOrWhiteSpace(query.ObjectId) ||
+                 string.Equals(link.ObjectId, query.ObjectId, StringComparison.OrdinalIgnoreCase))))
         {
             return false;
         }
@@ -1844,6 +1878,11 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private static EvidenceStatusDto ResolveIntakeStatus(
         IReadOnlyCollection<EvidenceArtifactExtractionFieldDto> extractedFields)
     {
+        if (extractedFields.Count == 0)
+        {
+            return EvidenceStatusDto.ReviewRequired;
+        }
+
         if (extractedFields.Any(static field =>
                 field.ValidationStatus is EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing))
         {
@@ -2073,7 +2112,23 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string artifactId,
         IReadOnlyCollection<EvidenceArtifactExtractionFieldDto> extractedFields,
         string sourceSystem)
-        => extractedFields
+    {
+        if (extractedFields.Count == 0)
+        {
+            return
+            [
+                new EvidenceValidationIssueDto(
+                    Code: "intake-extraction-required",
+                    Severity: EvidenceValidationSeverityDto.Warning,
+                    Message: "Evidence Vault intake has no extracted fields and requires review before it can support close evidence.",
+                    EvidenceId: artifactId,
+                    EvidenceKind: "vault-intake",
+                    SourceSystem: sourceSystem,
+                    RelatedWorkItemId: null)
+            ];
+        }
+
+        return extractedFields
             .Where(static field => field.ValidationStatus != EvidenceStatusDto.Ready)
             .Select(field => new EvidenceValidationIssueDto(
                 Code: $"intake-extraction-field-{SanitizePathSegment(field.FieldName)}",
@@ -2084,6 +2139,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 SourceSystem: sourceSystem,
                 RelatedWorkItemId: null))
             .ToArray();
+    }
 
     private static EvidenceValidationSeverityDto MapIntakeValidationSeverity(EvidenceStatusDto status)
         => status is EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing
