@@ -336,6 +336,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
         services.TryAddSingleton(sp =>
             new GovernedReportingTemplateCatalog(
                 sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
@@ -355,13 +356,22 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
                 new DeterministicReportingSectionRenderer(),
                 () => DateTimeOffset.UtcNow,
-                sp.GetRequiredService<IReportingRunStore>()));
+                sp.GetRequiredService<IReportingRunStore>(),
+                // Null until the report-run stream broadcaster is registered (D1d); the null-object
+                // default keeps run execution unaffected in the meantime.
+                sp.GetService<IReportingRunNotifier>()));
         services.TryAddSingleton<ReportingScheduleStoreOptions>(sp =>
             new ReportingScheduleStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-schedules.json")));
         services.TryAddSingleton<IReportingScheduleStore>(sp =>
             new FileReportingScheduleStore(
                 sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
+        services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
+            new ReportingStarterKitStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-starter-kit.json")));
+        services.TryAddSingleton<IReportingStarterKitStore>(sp =>
+            new FileReportingStarterKitStore(
+                sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
         services.TryAddSingleton<ReportingRunCommandService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
@@ -370,6 +380,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ReportPackDeliveryService>(),
                 sp.GetService<GovernedReportingTemplateCatalog>(),
                 sp.GetService<ReportWriterDatasetSourceService>()));
+        services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
@@ -546,6 +557,16 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<QuoteStreamOptions>()));
         services.TryAddSingleton<IQuoteStreamBroadcaster>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
         services.TryAddSingleton<IQuoteUpdateNotifier>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
+
+        // Report-run status stream (shadow until the SSE endpoint lands in D2). Shares the quote
+        // stream's registry cap and options. Registered as IReportingRunNotifier so run persistence
+        // wakes it (ReportingOrchestrationService resolves the notifier). No endpoint => no
+        // subscribers => no observable behaviour change yet.
+        services.TryAddSingleton(sp => new ReportRunStreamBroadcaster(
+            sp,
+            sp.GetRequiredService<StreamConnectionRegistry>(),
+            sp.GetRequiredService<QuoteStreamOptions>()));
+        services.TryAddSingleton<IReportingRunNotifier>(sp => sp.GetRequiredService<ReportRunStreamBroadcaster>());
 
         return services;
     }

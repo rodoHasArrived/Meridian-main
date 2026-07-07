@@ -190,6 +190,7 @@ public static class UiEndpoints
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapReportingRunStreamEndpoints(jsonOptions);
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);

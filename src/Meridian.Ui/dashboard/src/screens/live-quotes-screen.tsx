@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
@@ -28,6 +29,7 @@ import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DepthChart } from "@/components/charts";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
@@ -76,18 +78,17 @@ export function LiveQuotesScreen() {
   const session = marketVm.sessionStats;
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <LineChart className="h-5 w-5 text-primary" />
+          {workspaceVm.title}
+        </span>
+      }
+      scope="Data Lane"
+      description={`${workspaceVm.description} Refreshes every ${vm.pollIntervalSecondsLabel}s unless paused.`}
+    >
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Data Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <LineChart className="h-5 w-5 text-primary" />
-            {workspaceVm.title}
-          </CardTitle>
-          <CardDescription>
-            {workspaceVm.description} Refreshes every {vm.pollIntervalSecondsLabel}s unless paused.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <form
             onSubmit={vm.submitLookup}
@@ -383,7 +384,7 @@ export function LiveQuotesScreen() {
         </div>
         </>
       ) : null}
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -1040,6 +1041,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
         emptyText={market.tradesDetailEmptyText}
         ariaLabel={market.tradesTableLabel}
         caption={market.tradesTableCaption}
+        virtualization={denseTableVirtualization(market.tradeDisplayRows.length)}
       />
       <div id={market.tradesDetailPanelId} aria-live="polite">
         {market.selectedTradeDetail ? (

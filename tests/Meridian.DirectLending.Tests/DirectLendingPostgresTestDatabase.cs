@@ -5,8 +5,8 @@ using Meridian.Contracts.DirectLending;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
+using Meridian.TestSupport;
 using Npgsql;
-using Testcontainers.PostgreSql;
 
 namespace Meridian.DirectLending.Tests;
 
@@ -23,16 +23,16 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
     private const string DisableDockerEnvVar = "MERIDIAN_DISABLE_DOCKER_TESTS";
     private static readonly ILedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
 
-    private readonly PostgreSqlContainer? _container;
+    private readonly PostgresTestServer _server;
 
-    private DirectLendingPostgresTestDatabase(string connectionString, string schema, PostgreSqlContainer? container)
+    private DirectLendingPostgresTestDatabase(PostgresTestServer server, string schema)
     {
-        _container = container;
-        ConnectionString = connectionString;
+        _server = server;
+        ConnectionString = server.ConnectionString;
         Schema = schema;
         Options = new DirectLendingOptions
         {
-            ConnectionString = connectionString,
+            ConnectionString = server.ConnectionString,
             Schema = schema,
             SnapshotIntervalVersions = 2,
             CurrentEventSchemaVersion = 1
@@ -83,32 +83,16 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             return null;
         }
 
-        var schema = $"dl_test_{Guid.NewGuid():N}";
+        var schema = PostgresTestSchema.NewSchemaName("dl");
+        var server = await PostgresTestServer.CreateAsync(
+                EnvVar,
+                new PostgresTestContainerOptions { Database = "meridian_dl_test" })
+            .ConfigureAwait(false);
 
-        var externalConnectionString = Environment.GetEnvironmentVariable(EnvVar);
-        if (!string.IsNullOrWhiteSpace(externalConnectionString))
-        {
-            var database = new DirectLendingPostgresTestDatabase(externalConnectionString, schema, container: null);
-            var runner = new DirectLendingMigrationRunner(database.Options);
-            await runner.EnsureMigratedAsync().ConfigureAwait(false);
-            return database;
-        }
-
-        // No external connection string — spin up a container.
-        var container = new PostgreSqlBuilder("postgres:16-alpine")
-            .WithDatabase("meridian_dl_test")
-            .WithUsername("testuser")
-            .WithPassword("testpass")
-            .Build();
-
-        await container.StartAsync().ConfigureAwait(false);
-
-        var containerDatabase = new DirectLendingPostgresTestDatabase(
-            container.GetConnectionString(), schema, container);
-
-        var migrationRunner = new DirectLendingMigrationRunner(containerDatabase.Options);
-        await migrationRunner.EnsureMigratedAsync().ConfigureAwait(false);
-        return containerDatabase;
+        var database = new DirectLendingPostgresTestDatabase(server, schema);
+        var runner = new DirectLendingMigrationRunner(database.Options);
+        await runner.EnsureMigratedAsync().ConfigureAwait(false);
+        return database;
     }
 
     public async Task<long> CountSnapshotsAsync(Guid loanId)
@@ -133,11 +117,9 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_container is not null)
-        {
-            await _container.DisposeAsync().ConfigureAwait(false);
-        }
-        else
+        // External databases persist across runs, so the run-scoped schema must be dropped;
+        // containers are discarded whole by the shared server.
+        if (_server.UsesExternalConnection)
         {
             await using var connection = new NpgsqlConnection(ConnectionString);
             await connection.OpenAsync().ConfigureAwait(false);
@@ -145,6 +127,8 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             command.CommandText = $"drop schema if exists {Schema} cascade;";
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
+
+        await _server.DisposeAsync().ConfigureAwait(false);
     }
 
     private sealed class InMemoryNoOpLedgerJournalStore : ILedgerJournalStore

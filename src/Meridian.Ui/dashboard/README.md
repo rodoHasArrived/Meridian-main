@@ -649,6 +649,11 @@ The Reporting workspace also renders the shared `AccessAudit` summary from `Work
 showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
 packs, schedules, deliveries, and structured exports. React displays the service-owned denial
 reasons without probing or naming hidden report objects.
+On the daily Reporting landing, React renders `starterKits` and `starterKitState` from the shared
+Reporting payload as the "Set up your reporting desk" chooser. Selecting a kit posts to the shared
+starter-kit provisioning endpoint, then shows the server-returned enabled template ids, layout id,
+default period, and draft schedule ids; the browser does not locally decide which templates or
+schedules belong to an archetype.
 Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
 Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
 delivery evidence packets or audit graph state locally. Publication review and delivery package

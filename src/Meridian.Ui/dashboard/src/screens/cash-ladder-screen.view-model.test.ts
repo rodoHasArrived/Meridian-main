@@ -183,6 +183,18 @@ describe("cash-ladder view model", () => {
     expect(cards[3].detail).toContain("1 bucket below minimum balance");
   });
 
+  it("renders amounts in the ladder's base currency, not a hard-coded dollar", () => {
+    const eurLadder = buildLadder({ baseCurrency: "EUR" });
+
+    const cards = selectSummaryCards(eurLadder);
+    expect(cards[0].value).toContain("€");
+    expect(cards[0].value).not.toContain("$");
+
+    const chart = buildCashLadderChart(eurLadder);
+    expect(chart!.bars[0].cumulativeLabel).toContain("€");
+    expect(chart!.bars[0].cumulativeLabel).not.toContain("$");
+  });
+
   it("falls back to a base scenario option when the ladder has not loaded", () => {
     expect(selectScenarioOptions(null)).toEqual([{ scenarioId: "base", displayName: "Base projection" }]);
     expect(selectActiveScenario(null)).toBeNull();

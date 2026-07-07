@@ -2813,7 +2813,9 @@ public sealed class FundOperationsWorkspaceReadService
             ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
             ReportWriterDatasetSources: reportWriterDatasetSources,
             AccessAudit: scopedReportingPayload?.AccessAudit,
-            DailyWork: dailyWorkPayload?.DailyWork);
+            DailyWork: dailyWorkPayload?.DailyWork,
+            StarterKits: dailyWorkPayload?.StarterKits,
+            StarterKitState: dailyWorkPayload?.StarterKitState);
     }
 
     private static IReadOnlyList<WorkstationReportWriterDatasetSourcePayload> BuildReportWriterDatasetSources(

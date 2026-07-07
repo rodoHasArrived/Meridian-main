@@ -671,7 +671,9 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
     IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
     WorkstationReportAccessAuditSummaryDto? AccessAudit = null,
-    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null);
+    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null,
+    IReadOnlyList<ReportingStarterKitDto>? StarterKits = null,
+    ReportingStarterKitStateDto? StarterKitState = null);
 
 /// <summary>
 /// Accounting run-card governance details linked to strategy evidence.

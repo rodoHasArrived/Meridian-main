@@ -1,9 +1,11 @@
+import { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
@@ -17,6 +19,7 @@ import {
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useActivityLog } from "@/lib/activity-log/store";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import {
   useWatchlistScreenViewModel,
@@ -28,35 +31,87 @@ import {
 } from "@/screens/watchlist-screen.view-model";
 
 export function WatchlistScreen() {
+  const { record: recordActivity } = useActivityLog();
+  // Decorate the mutating endpoints so each add/remove drops into the activity
+  // ledger with a real compensating action for one-tap undo.
+  const recordedApi = useMemo(
+    () => ({
+      addSymbol: async (symbol: string) => {
+        const result = await addSymbolApi(symbol);
+        if (result.success) {
+          recordActivity({
+            kind: "symbol.add",
+            title: `Added ${symbol} to the watchlist`,
+            detail: "Subscribed to the live data pipeline.",
+            tone: "success",
+            route: "/data/watchlist",
+            routeLabel: "Watchlist",
+            undo: {
+              run: async () => {
+                // `removeSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await removeSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not remove ${symbol}.`);
+                }
+              }
+            }
+          });
+        }
+        return result;
+      },
+      removeSymbol: async (symbol: string) => {
+        const result = await removeSymbolApi(symbol);
+        if (result.success) {
+          recordActivity({
+            kind: "symbol.remove",
+            title: `Removed ${symbol} from the watchlist`,
+            detail: "Unsubscribed from the live data pipeline.",
+            tone: "warning",
+            route: "/data/watchlist",
+            routeLabel: "Watchlist",
+            undo: {
+              run: async () => {
+                // `addSymbol` reports failure via `success: false` rather than throwing,
+                // so surface that as an error to keep the undo in a retryable failed state.
+                const undoResult = await addSymbolApi(symbol);
+                if (!undoResult.success) {
+                  throw new Error(`Could not add ${symbol} back.`);
+                }
+              }
+            }
+          });
+        }
+        return result;
+      }
+    }),
+    [recordActivity]
+  );
+
   const vm = useWatchlistScreenViewModel({
     getSymbols,
     getSymbolsStatistics,
     getLiveQuotesSnapshot,
-    addSymbol: addSymbolApi,
+    addSymbol: recordedApi.addSymbol,
     bulkAddSymbols,
-    removeSymbol: removeSymbolApi
+    removeSymbol: recordedApi.removeSymbol
   });
   const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
   const inCompanionPane = isCompanionPaneRoute(useLocation().pathname);
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-primary" />
+          Symbol watchlist
+        </span>
+      }
+      scope="Data Lane"
+      description="Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes."
+      actions={inCompanionPane ? undefined : <PopOutPaneButton paneId="watchlist" />}
+    >
       <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="eyebrow-label">Data Lane</div>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Symbol watchlist
-              </CardTitle>
-              <CardDescription>
-                Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
-              </CardDescription>
-            </div>
-            {inCompanionPane ? null : <PopOutPaneButton paneId="watchlist" />}
-          </div>
-        </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
@@ -320,7 +375,7 @@ export function WatchlistScreen() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ScreenLayout>
   );
 }
 

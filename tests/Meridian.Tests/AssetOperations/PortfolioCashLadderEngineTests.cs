@@ -178,6 +178,24 @@ public sealed class PortfolioCashLadderEngineTests
     }
 
     [Fact]
+    public void Build_EarlyCallScenario_ReadsTermsBoundToSelectedRunNotNewestTerms()
+    {
+        // The completed run (with the maturity flow) is tied to terms carrying a call date. A newer
+        // terms version (no call date) was retained after a later run failed. The scenario must read
+        // the call date from the completed run's terms, not the newest terms.
+        var callDate = AsOf.AddDays(30);
+        var position = BuildCallablePositionWithSupersededTerms(callDate, maturityDay: 60, maturityAmount: 100_000m);
+
+        var ladder = PortfolioCashLadderEngine.Build(
+            BuildInputs(positions: [position]),
+            PortfolioCashLadderEngine.EarlyCallScenarioId);
+
+        var call = ladder.Contributions.Should().ContainSingle(static row => row.FlowType == "CallRedemption").Subject;
+        call.DueDate.Should().Be(callDate);
+        call.Amount.Should().Be(100_000m);
+    }
+
+    [Fact]
     public void Build_EarlyCallScenario_AggregatesPrincipalAcrossDuplicatePositionLots()
     {
         var callDate = AsOf.AddDays(30);
@@ -514,6 +532,61 @@ public sealed class PortfolioCashLadderEngineTests
             readiness,
             []);
         return new PortfolioCashLadderPositionDto(detail, quantity);
+    }
+
+    private static PortfolioCashLadderPositionDto BuildCallablePositionWithSupersededTerms(
+        DateOnly callDate,
+        int maturityDay,
+        decimal maturityAmount)
+    {
+        var securityId = Guid.NewGuid();
+        var subject = new AssetOperationSubjectDto(
+            securityId, "Bond", "Superseded Terms Bond", $"CUSIP:{securityId:N}",
+            ["Identity", "TermsHistory", "ProjectedCashFlows"]);
+
+        // Derive every timestamp from a single clock reading. The engine binds terms to a run by
+        // requiring terms.RecordedAt <= run.GeneratedAt, so the completed run's GeneratedAt and the
+        // run-bound terms' RecordedAt must be ordered deterministically. Two separate
+        // DateTimeOffset.UtcNow.AddDays(-2) readings are evaluated microseconds apart and would leave
+        // the terms recorded *after* the run, silently excluding them.
+        var now = DateTimeOffset.UtcNow;
+        var completedRunGeneratedAt = now.AddDays(-2);
+
+        var completedRunId = Guid.NewGuid();
+        var completedRun = new AssetCashFlowProjectionRunDto(
+            completedRunId, securityId, AsOf.AddDays(-2), "asset-obligation-projection-v1", "Completed",
+            completedRunGeneratedAt, "SecurityMaster", securityId.ToString("D"));
+        // Newer run failed and produced no flows; must not pull in its newer terms.
+        var failedRun = new AssetCashFlowProjectionRunDto(
+            Guid.NewGuid(), securityId, AsOf, "asset-obligation-projection-v1", "Failed",
+            now, "SecurityMaster", securityId.ToString("D"));
+
+        // Terms tied to the completed run: effective and recorded on/before it, and carrying the call date.
+        var runTerms = new AssetTermsVersionDto(
+            Guid.NewGuid(), securityId, 1, $"security-master:{securityId:N}:1", AsOf.AddDays(-10),
+            completedRunGeneratedAt, "SecurityMaster", securityId.ToString("D"),
+            "Superseded Terms Bond terms v1",
+            JsonSerializer.SerializeToElement(new { callDate = callDate.ToString("yyyy-MM-dd") }));
+        // Newer terms retained after the completed run, with no call date.
+        var newerTerms = new AssetTermsVersionDto(
+            Guid.NewGuid(), securityId, 2, $"security-master:{securityId:N}:2", AsOf.AddDays(-1),
+            now, "SecurityMaster", securityId.ToString("D"),
+            "Superseded Terms Bond terms v2",
+            JsonSerializer.SerializeToElement(new { note = "no call date" }));
+
+        var flows = new[]
+        {
+            new AssetProjectedCashFlowDto(
+                Guid.NewGuid(), completedRunId, securityId, 1, "Maturity", AsOf.AddDays(maturityDay), maturityAmount,
+                "USD", "Projected", SourceDomain: "SecurityMaster", SourceEntityId: securityId.ToString("D"))
+        };
+        var readiness = new AssetOperationsReadinessDto(
+            securityId, "Ready", subject.OperationalProfile, subject.OperationalProfile, [], [],
+            DateTimeOffset.UtcNow, "SecurityMaster", securityId.ToString("D"));
+
+        var detail = new AssetOperationsDetailDto(
+            subject, [runTerms, newerTerms], [], [completedRun, failedRun], flows, [], [], [], [], readiness, []);
+        return new PortfolioCashLadderPositionDto(detail);
     }
 
     private static PortfolioCashLadderPositionDto BuildPositionWithLaterFailedRun(

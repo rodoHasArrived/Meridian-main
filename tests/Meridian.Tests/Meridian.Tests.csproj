@@ -62,6 +62,7 @@
     <ProjectReference Include="..\..\src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Workflow\Meridian.Workflow.csproj" />
+    <ProjectReference Include="..\Meridian.TestSupport\Meridian.TestSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>

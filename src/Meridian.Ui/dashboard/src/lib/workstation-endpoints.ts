@@ -119,6 +119,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingRuns: UI_API_ROUTES.ReportingRuns,
   reportingRunAuditTrail: UI_API_ROUTES.ReportingRunAuditTrail,
   reportingRunReportWriterGrid: UI_API_ROUTES.ReportingRunReportWriterGrid,
+  reportingStarterKits: UI_API_ROUTES.ReportingStarterKits,
+  reportingStarterKitProvision: UI_API_ROUTES.ReportingStarterKitProvision,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
@@ -1217,6 +1219,10 @@ export function reportingScheduleResumeEndpoint(scheduleId: string): string {
 
 export function reportingScheduleRunNowEndpoint(scheduleId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunNow, "scheduleId", scheduleId);
+}
+
+export function reportingStarterKitProvisionEndpoint(kitId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingStarterKitProvision, "kitId", kitId);
 }
 
 export function strategyEndpoint(strategyId: string): string {

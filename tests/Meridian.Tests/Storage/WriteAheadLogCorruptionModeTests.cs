@@ -1,59 +1,19 @@
 using FluentAssertions;
 using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
 /// <summary>
 /// Tests for WAL corruption response modes introduced in fix 4.3 of the
-/// March-2026 high-impact improvement brainstorm document.
+/// March-2026 high-impact improvement brainstorm document. Scope is limited to how the WAL
+/// <em>reacts</em> to detected corruption under each configured mode; well-formed-log behavior
+/// lives in <see cref="WriteAheadLogTests"/> and raw byte-level damage generation lives in
+/// <see cref="WriteAheadLogFuzzTests"/>.
 /// </summary>
-public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
+public sealed class WriteAheadLogCorruptionModeTests : TempDirectoryAsyncTestBase
 {
-    private readonly string _walDir;
-
-    public WriteAheadLogCorruptionModeTests()
-    {
-        _walDir = Path.Combine(Path.GetTempPath(), $"mdc_wal_corrupt_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_walDir);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        Exception? lastException = null;
-
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_walDir))
-                {
-                    Directory.Delete(_walDir, recursive: true);
-                }
-
-                // If delete succeeded or directory no longer exists, cleanup is done.
-                if (!Directory.Exists(_walDir))
-                {
-                    return;
-                }
-            }
-            catch (IOException ex) when (attempt < 4)
-            {
-                lastException = ex;
-                await Task.Delay(20);
-            }
-            catch (UnauthorizedAccessException ex) when (attempt < 4)
-            {
-                lastException = ex;
-                await Task.Delay(20);
-            }
-        }
-
-        if (Directory.Exists(_walDir))
-        {
-            throw lastException ?? new IOException($"Failed to delete WAL temp directory '{_walDir}' after 5 attempts.");
-        }
-    }
 
     // ── WalCorruptionMode.Skip (default / legacy) ─────────────────────────
 
@@ -64,7 +24,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         await WriteSeedWalAsync(seedRecords: 2, corruptLines: 1);
 
         // Act — use default Skip mode; must not throw even though corruption is present.
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -87,7 +47,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         await WriteSeedWalAsync(seedRecords: 1, corruptLines: 1);
 
         var eventFired = false;
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -109,7 +69,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         // Arrange
         await WriteSeedWalAsync(seedRecords: 3, corruptLines: 2);
 
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Alert
@@ -128,7 +88,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         await WriteSeedWalAsync(seedRecords: 2, corruptLines: 3);
 
         long? reportedCount = null;
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Alert
@@ -151,7 +111,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         await WriteSeedWalAsync(seedRecords: 5, corruptLines: 0);
 
         var eventFired = false;
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Alert
@@ -173,7 +133,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         // Arrange
         await WriteSeedWalAsync(seedRecords: 2, corruptLines: 1);
 
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Halt
@@ -193,7 +153,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         // Arrange — clean WAL, no corruption.
         await WriteSeedWalAsync(seedRecords: 3, corruptLines: 0);
 
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Halt
@@ -228,7 +188,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         // Write valid records using a WAL instance, then explicitly dispose it before
         // touching the file directly. The WAL holds the file open for writing, so
         // File.AppendAllLinesAsync would fail on Windows if we inject while it is alive.
-        await using (var seed = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        await using (var seed = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync }))
         {
             await seed.InitializeAsync();
             for (int i = 0; i < seedRecords; i++)
@@ -241,7 +201,7 @@ public sealed class WriteAheadLogCorruptionModeTests : IAsyncDisposable
         if (corruptLines > 0)
         {
             // Find the file that was just created.
-            var walFiles = Directory.GetFiles(_walDir, "*.wal").OrderBy(f => f).ToArray();
+            var walFiles = Directory.GetFiles(TestDataRoot, "*.wal").OrderBy(f => f).ToArray();
             walFiles.Should().NotBeEmpty("seed must have created at least one .wal file");
             var walFile = walFiles[^1];
 

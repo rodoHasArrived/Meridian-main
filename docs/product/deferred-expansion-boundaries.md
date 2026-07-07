@@ -46,7 +46,8 @@ No-code workflow design remains deferred until policy-safe configuration boundar
 Evidence Vault productization has moved into active scope through `W5X-EVIDENCE-001` with the
 browser-first statement reconciliation onboarding wedge in `W5X-STMT-ONBOARD-001`. That v1 slice
 uses existing request-list, immutable-manifest, extracted-field review, document-to-object link,
-retention, access-control, and audit-evidence primitives, and intentionally omits WPF UI parity.
+retention, access-control, and audit-evidence primitives; its WPF UI parity is now tracked as
+`W8-WPF-PARITY-001` (the Evidence Workbench is a Wave P1 parity item).
 Broader document-portal, collaboration, and self-service document management expansion remains
 deferred until a later roadmap row defines entitlement, assignment, request history, and audit
 retention gates.

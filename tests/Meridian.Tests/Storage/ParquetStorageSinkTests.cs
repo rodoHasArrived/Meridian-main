@@ -6,6 +6,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Meridian.Storage.Sinks;
+using Meridian.Tests.Infrastructure;
 using Parquet;
 using Parquet.Data;
 using Parquet.Schema;
@@ -17,33 +18,16 @@ namespace Meridian.Tests.Storage;
 /// Tests for <see cref="ParquetStorageSink"/> covering the atomic temp-write-then-rename
 /// pattern, flush success, final flush on disposal, and dispose guard.
 /// </summary>
-public sealed class ParquetStorageSinkTests : IAsyncDisposable
+public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 {
-    private readonly string _testRoot;
     private ParquetStorageSink? _sink;
 
-    public ParquetStorageSinkTests()
-    {
-        _testRoot = Path.Combine(Path.GetTempPath(), $"meridian_parquet_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testRoot);
-    }
-
-    public async ValueTask DisposeAsync()
+    public override async Task DisposeAsync()
     {
         if (_sink is not null)
             await _sink.DisposeAsync();
 
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_testRoot))
-                    Directory.Delete(_testRoot, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4) { await Task.Delay(20); }
-            catch (UnauthorizedAccessException) when (attempt < 4) { await Task.Delay(20); }
-        }
+        await base.DisposeAsync();
     }
 
     [Fact]
@@ -58,11 +42,11 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         await _sink.FlushAsync();
 
         // Assert – at least one .parquet file was created under testRoot
-        var parquetFiles = Directory.GetFiles(_testRoot, "*.parquet", SearchOption.AllDirectories);
+        var parquetFiles = Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories);
         parquetFiles.Should().NotBeEmpty("a Parquet file must be written after FlushAsync");
 
         // No stray .tmp files should remain (atomic write pattern)
-        var tmpFiles = Directory.GetFiles(_testRoot, "*.tmp", SearchOption.AllDirectories);
+        var tmpFiles = Directory.GetFiles(TestDataRoot, "*.tmp", SearchOption.AllDirectories);
         tmpFiles.Should().BeEmpty("temp files must be cleaned up after a successful atomic write");
     }
 
@@ -78,7 +62,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         _sink = null; // already disposed; prevent double-dispose in DisposeAsync()
 
         // Assert – file must exist after disposal flush
-        var parquetFiles = Directory.GetFiles(_testRoot, "*.parquet", SearchOption.AllDirectories);
+        var parquetFiles = Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories);
         parquetFiles.Should().NotBeEmpty("DisposeAsync must flush buffered events to disk");
     }
 
@@ -90,7 +74,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
 
         await _sink.FlushAsync();
 
-        var parquetFile = Directory.GetFiles(_testRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+        var parquetFile = Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
             .Should().ContainSingle("an L2 snapshot flush should create a dedicated Parquet file")
             .Subject;
 
@@ -102,7 +86,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         asksJson.Should().ContainSingle().Which.Should().Contain("\"price\":500.15");
         asksJson.Should().ContainSingle().Which.Should().Contain("\"marketMaker\":\"MM2\"");
 
-        Directory.GetFiles(_testRoot, "*.tmp", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*.tmp", SearchOption.AllDirectories)
             .Should().BeEmpty("successful L2 flushes should leave no temp files behind");
     }
 
@@ -115,7 +99,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         await _sink.DisposeAsync();
         _sink = null;
 
-        Directory.GetFiles(_testRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
             .Should().ContainSingle("DisposeAsync must flush buffered L2 snapshots as part of the final Wave 1 storage proof");
     }
 
@@ -139,13 +123,13 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         var failedFlush = () => _sink.FlushAsync();
         await failedFlush.Should().ThrowAsync<IOException>();
 
-        Directory.GetFiles(_testRoot, "*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories)
             .Should().BeEmpty("a failed L2 flush must not commit a partial file");
 
         await _sink.FlushAsync();
 
         writeAttempts.Should().Be(2, "the retry should perform a second atomic-write attempt");
-        Directory.GetFiles(_testRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
             .Should().ContainSingle("the buffered L2 snapshot should still be available for retry after a failed flush");
     }
 
@@ -169,13 +153,13 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         var cancelledFlush = () => _sink.FlushAsync();
         await cancelledFlush.Should().ThrowAsync<OperationCanceledException>();
 
-        Directory.GetFiles(_testRoot, "*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories)
             .Should().BeEmpty("a cancelled L2 flush must not commit a file before retry");
 
         await _sink.FlushAsync();
 
         writeAttempts.Should().Be(2, "retry should still be possible after cancellation");
-        Directory.GetFiles(_testRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
             .Should().ContainSingle("cancelled L2 snapshots should remain buffered for a later retry");
     }
 
@@ -196,7 +180,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
     [Fact]
     public async Task WriteAtomicallyAsync_WhenWriteDelegateThrows_DeletesTempFile()
     {
-        var destination = Path.Combine(_testRoot, "atomic", "failure.parquet");
+        var destination = Path.Combine(TestDataRoot, "atomic", "failure.parquet");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
         var act = () => InvokeWriteAtomicallyAsync(
@@ -218,7 +202,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
     [Fact]
     public async Task WriteAtomicallyAsync_WhenCancelledAfterTempWrite_DeletesTempFile()
     {
-        var destination = Path.Combine(_testRoot, "atomic", "cancelled.parquet");
+        var destination = Path.Combine(TestDataRoot, "atomic", "cancelled.parquet");
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         using var cts = new CancellationTokenSource();
 
@@ -247,7 +231,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
         Func<string, Func<Stream, Task>, CancellationToken, Task>? writeAtomicallyAsync = null) =>
         writeAtomicallyAsync is null
             ? new ParquetStorageSink(
-                new StorageOptions { RootPath = _testRoot },
+                new StorageOptions { RootPath = TestDataRoot },
                 new ParquetStorageOptions
                 {
                     BufferSize = bufferSize,
@@ -255,7 +239,7 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
                     FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
                 })
             : new ParquetStorageSink(
-                new StorageOptions { RootPath = _testRoot },
+                new StorageOptions { RootPath = TestDataRoot },
                 new ParquetStorageOptions
                 {
                     BufferSize = bufferSize,

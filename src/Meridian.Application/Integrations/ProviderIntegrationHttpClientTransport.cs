@@ -1,19 +1,61 @@
 using System.Net.Http.Headers;
 using System.Text;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegrationHttpTransport
 {
     private readonly HttpClient httpClient;
+    private readonly ILogger<ProviderIntegrationHttpClientTransport> logger;
 
-    public ProviderIntegrationHttpClientTransport(HttpClient httpClient)
+    public ProviderIntegrationHttpClientTransport(
+        HttpClient httpClient,
+        ILogger<ProviderIntegrationHttpClientTransport>? logger = null)
     {
         this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        this.logger = logger ?? NullLogger<ProviderIntegrationHttpClientTransport>.Instance;
     }
 
     public async Task<ProviderIntegrationHttpResponse> SendAsync(
+        ProviderIntegrationHttpRequest request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "http-transport-send",
+            new ProviderIntegrationBoundaryContext(
+                EndpointKey: request?.Path,
+                Capability: request is null ? null : request.Method.ToString()),
+            async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for {Method} {Path}.",
+            nameof(SendAsync),
+            request?.Method,
+            request?.Path);
+        try
+        {
+            return await SendCoreAsync(request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for {Method} {Path}.",
+                nameof(SendAsync),
+                request?.Method,
+                request?.Path);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationHttpResponse> SendCoreAsync(
         ProviderIntegrationHttpRequest request,
         CancellationToken ct = default)
     {
@@ -43,11 +85,11 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                 .Concat(response.Content.Headers)
                 .GroupBy(header => header.Key, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
-                    group => group.Key,
-                    group => string.Join(",", group.SelectMany(header => header.Value)),
-                    StringComparer.OrdinalIgnoreCase),
+                group => group.Key,
+                group => string.Join(",", group.SelectMany(header => header.Value)),
+                StringComparer.OrdinalIgnoreCase),
             body);
-    }
+    }).ConfigureAwait(false);
 
     private static string BuildRequestUri(ProviderIntegrationHttpRequest request)
     {

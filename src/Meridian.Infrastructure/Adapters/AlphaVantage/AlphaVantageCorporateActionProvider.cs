@@ -127,7 +127,7 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         AlphaVantageDailyPrice price,
         Guid securityId)
     {
-        if (!DateOnly.TryParse(sessionDateText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+        if (!ProviderDateParsing.TryParseProviderDate(sessionDateText, out var sessionDate))
         {
             yield break;
         }

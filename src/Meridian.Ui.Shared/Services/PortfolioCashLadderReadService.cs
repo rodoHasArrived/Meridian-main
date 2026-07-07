@@ -124,11 +124,21 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
             return ([], notices);
         }
 
+        // Request one extra row so the search itself reveals when more than the cap exist; the
+        // server-side Take would otherwise hide the overflow from ProjectAsync's truncation notice.
         var summaries = await _securityMasterQueryService
-            .SearchAsync(new SecuritySearchRequest(string.Empty, Take: MaxSecurities, ActiveOnly: true), ct)
+            .SearchAsync(new SecuritySearchRequest(string.Empty, Take: MaxSecurities + 1, ActiveOnly: true), ct)
             .ConfigureAwait(false);
+        var activeIds = summaries.Select(static summary => summary.SecurityId).Distinct().ToArray();
+        if (activeIds.Length > MaxSecurities)
+        {
+            notices.Add(
+                $"More than {MaxSecurities} active Security Master subjects exist; only the first {MaxSecurities} are projected, "
+                + "so later active instruments and their coupons/principal and any resulting liquidity breaches are not shown.");
+        }
+
         var fallbackPositions = await ProjectAsync(
-            summaries.Select(static summary => summary.SecurityId).ToArray(),
+            activeIds.Take(MaxSecurities).ToArray(),
             heldQuantities: null,
             notices,
             "active Security Master subjects",
@@ -136,7 +146,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         if (fallbackPositions.Count > 0)
         {
             notices.Add(
-                "No holdings source is wired: the ladder forecasts every active Security Master subject at unit quantity, "
+                "No holdings source is wired: the ladder forecasts active Security Master subjects at unit quantity, "
                 + "not the portfolio's actual holdings, so projected inflows and minimum-balance breaches may be overstated.");
         }
 
