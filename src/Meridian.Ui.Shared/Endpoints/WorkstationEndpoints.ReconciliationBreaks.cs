@@ -102,6 +102,23 @@ public static partial class WorkstationEndpoints
             NormalizeMetadata(statementBreak.Description));
     }
 
+    /// <summary>
+    /// Computes the pre-migration statement-break fingerprint that used a null-<c>Delta</c> fallback
+    /// of <c>0</c>, superseded by <see cref="ComputeStatementBreakFingerprint"/>'s
+    /// <c>StatementAmount - BookAmount</c> fallback. Retained so the queue seeder can locate cases
+    /// originally seeded under the old <c>BreakId</c> and re-key them in place instead of creating
+    /// duplicates that orphan existing assignments, resolution state, and audit history.
+    /// </summary>
+    private static string ComputeStatementBreakLegacyFingerprint(StatementBreakDto statementBreak)
+        => ComputeReconciliationSourceFingerprint(
+            "statement",
+            NormalizeStatementReference(statementBreak.StatementReference),
+            statementBreak.BreakType?.ToString(),
+            statementBreak.Currency,
+            (statementBreak.Delta ?? 0m).ToString(CultureInfo.InvariantCulture),
+            (statementBreak.Tolerance ?? 0m).ToString(CultureInfo.InvariantCulture),
+            NormalizeMetadata(statementBreak.Description));
+
     private static string? ExtractStatementImportId(string? value)
     {
         var normalized = NormalizeMetadata(value);

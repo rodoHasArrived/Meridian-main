@@ -5407,7 +5407,10 @@ public static partial class WorkstationEndpoints
         foreach (var statementBreak in statementBreaks.Where(static item => IsOpenStatementBreak(item.Status)))
         {
             var item = MapStatementBreakToQueueItem(statementBreak);
-            await repository.CreateIfMissingAsync(item, ct).ConfigureAwait(false);
+            // Re-key any case seeded under the pre-migration fingerprint id onto the current id so a
+            // fingerprint-input change does not duplicate cases or orphan their casework history.
+            var previousBreakId = $"statement:{ComputeStatementBreakLegacyFingerprint(statementBreak)}";
+            await repository.CreateOrMigrateAsync(item, previousBreakId, ct).ConfigureAwait(false);
         }
     }
 

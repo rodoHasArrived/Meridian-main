@@ -152,6 +152,69 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         }
     }
 
+    public async Task<bool> CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        if (!string.IsNullOrWhiteSpace(previousBreakId)
+            && !string.Equals(previousBreakId, item.BreakId, StringComparison.OrdinalIgnoreCase))
+        {
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await EnsureLoadedAsync(ct).ConfigureAwait(false);
+
+                // Re-key an existing case only when it still lives under the superseded id and no
+                // case has already been created under the current id (which would win by dedupe).
+                if (!_items!.ContainsKey(item.BreakId) && _items.TryGetValue(previousBreakId!, out var existing))
+                {
+                    var migrated = existing with
+                    {
+                        BreakId = item.BreakId,
+                        SourceFingerprint = item.SourceFingerprint
+                    };
+                    _items.Remove(previousBreakId!);
+                    _items[item.BreakId] = migrated;
+                    await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                    await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+                        EventId: Guid.NewGuid().ToString("N"),
+                        BreakId: migrated.BreakId,
+                        EventType: "BreakIdMigrated",
+                        PreviousStatus: existing.Status,
+                        NewStatus: migrated.Status,
+                        PreviousLifecycleState: existing.LifecycleState,
+                        NewLifecycleState: migrated.LifecycleState,
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        AssignedTo: migrated.AssignedTo,
+                        ReviewedBy: migrated.ReviewedBy,
+                        ResolvedBy: migrated.ResolvedBy,
+                        Note: $"Re-keyed reconciliation case from superseded break id '{previousBreakId}' to '{migrated.BreakId}' after a statement fingerprint-input change.",
+                        ExceptionRoute: migrated.ExceptionRoute,
+                        ToleranceBand: migrated.ToleranceBand,
+                        RequiredSignoffRole: migrated.RequiredSignoffRole,
+                        SignoffStatus: migrated.SignoffStatus,
+                        ExternalAccountId: migrated.ExternalAccountId,
+                        CustodianId: migrated.CustodianId,
+                        UpstreamSyncCursor: migrated.UpstreamSyncCursor,
+                        Actor: migrated.AssignedTo ?? migrated.ReviewedBy ?? migrated.ResolvedBy,
+                        BeforePayload: JsonSerializer.Serialize(existing, _jsonOptions),
+                        AfterPayload: JsonSerializer.Serialize(migrated, _jsonOptions),
+                        Source: migrated.SourceType,
+                        Reason: migrated.SourceReference), ct).ConfigureAwait(false);
+                    return false;
+                }
+            }
+            finally
+            {
+                _gate.Release();
+            }
+        }
+
+        // No case to migrate → standard create-if-missing semantics (also a no-op when the current
+        // BreakId already exists).
+        return await CreateIfMissingAsync(item, ct).ConfigureAwait(false);
+    }
+
     public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(item);
