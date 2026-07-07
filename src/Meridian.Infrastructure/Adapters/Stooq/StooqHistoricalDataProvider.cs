@@ -92,7 +92,7 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
             if (parts.Length < 6)
                 continue;
 
-            if (!DateOnly.TryParse(parts[0], out var date))
+            if (!ProviderDateParsing.TryParseProviderDate(parts[0], out var date))
                 continue;
 
             // Apply date filter

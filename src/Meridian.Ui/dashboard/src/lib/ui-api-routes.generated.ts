@@ -745,6 +745,8 @@ export const UI_API_ROUTES = {
   ReportingRunAuditTrail: "/api/fund-structure/reporting/runs/{runId}/audit",
   ReportingRunStream: "/api/fund-structure/reporting/runs/{runId}/stream",
   ReportingRunReportWriterGrid: "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}",
+  ReportingStarterKits: "/api/fund-structure/reporting/starter-kits",
+  ReportingStarterKitProvision: "/api/fund-structure/reporting/starter-kits/{kitId}/provision",
   ReportingSchedules: "/api/fund-structure/reporting/schedules",
   ReportingScheduleRunDue: "/api/fund-structure/reporting/schedules/run-due",
   ReportingSchedulePause: "/api/fund-structure/reporting/schedules/{scheduleId}/pause",

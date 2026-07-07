@@ -222,7 +222,9 @@ public sealed class AutomatedJournalDraftIntakeService
                     SecurityDisplayName: line.account.Symbol,
                     Description: line.account.ToString(),
                     EvidenceLink: firstEvidenceLink,
-                    Dimensions: LedgerDimensionMapper.ToDto(line.dimensions));
+                    Dimensions: LedgerDimensionMapper.ToDto(line.dimensions),
+                    LedgerAccountSymbol: line.account.Symbol,
+                    LedgerAccountFinancialAccountId: line.account.FinancialAccountId);
             })
             .ToArray();
 

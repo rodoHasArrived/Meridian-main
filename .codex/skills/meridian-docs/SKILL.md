@@ -41,7 +41,7 @@ Non-trigger examples:
 ## Current Product Direction
 
 - Treat `src/Meridian.Ui/dashboard/` and `src/Meridian.Ui/wwwroot/workstation/` as active browser workstation surfaces.
-- Treat `src/Meridian.Wpf/` product/UI work as deferred until explicitly reactivated; retain existing WPF compatibility, validation, and maintenance guidance.
+- Treat `src/Meridian.Wpf/` as an active co-equal UI lane whose current focus is web-UI parity; keep WPF docs aligned with shared contracts alongside compatibility, validation, and maintenance guidance.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the browser workstation and retained WPF compatibility.
 - Keep mobile development out of scope unless the user or roadmap explicitly reopens it.
 

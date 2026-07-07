@@ -794,6 +794,57 @@ function withReportTemplate(template: ReportingTemplateMetadata): AccountingWork
   };
 }
 
+function withReportingStarterKit(): AccountingWorkspaceResponse {
+  return {
+    ...accounting,
+    reporting: {
+      ...accounting.reporting,
+      starterKits: [
+        {
+          kitId: "emerging-manager",
+          archetype: "Emerging Manager",
+          displayName: "Emerging Manager",
+          description: "Investor-ready monthly statements, capital accounts, and shadow NAV packs.",
+          templateIds: [
+            "investor-monthly-statement",
+            "capital-account-statement",
+            "shadow-nav-daily-pack"
+          ],
+          defaultLayoutId: "reporting-hub.emerging-manager.v1",
+          defaultPeriod: "CurrentMonth",
+          seedSchedules: [
+            {
+              scheduleId: "starter-emerging-manager-investor-monthly",
+              templateId: "investor-monthly-statement",
+              cronExpression: "0 9 5 * *",
+              cadence: "Monthly",
+              description: "Draft monthly investor statement schedule.",
+              state: "Draft",
+              deliveryTargets: [
+                {
+                  distributionId: "investor-relations",
+                  formats: ["Pdf", "Xlsx"],
+                  deliveryMode: "SecurePortal",
+                  note: "Starter target"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      starterKitState: {
+        isProvisioned: false,
+        selectedKitId: null,
+        archetype: null,
+        enabledTemplateIds: [],
+        defaultLayoutId: null,
+        defaultPeriod: null,
+        seedScheduleIds: []
+      }
+    }
+  };
+}
+
 function withPrivateCapitalReportReview(): AccountingWorkspaceResponse {
   const evidenceCategories = [
     {
@@ -1392,6 +1443,63 @@ describe("ReportingScreen", () => {
     const loading = screen.getByRole("status", { name: "Loading Reporting" });
     expect(loading).toHaveAttribute("aria-busy", "true");
     expect(screen.getByLabelText("Route Delivery Evidence")).toBeInTheDocument();
+  });
+
+  it("provisions a reporting starter kit from the first-visit chooser", async () => {
+    const user = userEvent.setup();
+    const provisioned: ReportingStarterKitProvisionResult = {
+      kit: withReportingStarterKit().reporting.starterKits![0],
+      state: {
+        isProvisioned: true,
+        selectedKitId: "emerging-manager",
+        archetype: "Emerging Manager",
+        enabledTemplateIds: [
+          "investor-monthly-statement",
+          "capital-account-statement",
+          "shadow-nav-daily-pack"
+        ],
+        defaultLayoutId: "reporting-hub.emerging-manager.v1",
+        defaultPeriod: "CurrentMonth",
+        seedScheduleIds: ["starter-emerging-manager-investor-monthly"],
+        provisionedAtUtc: "2026-07-06T16:00:00Z",
+        provisionedBy: "controller.admin"
+      },
+      seededSchedules: [
+        {
+          scheduleId: "starter-emerging-manager-investor-monthly",
+          templateId: "investor-monthly-statement",
+          cronExpression: "0 9 5 * *",
+          nextAsOfDate: "2026-07-31",
+          dueAtUtc: "2026-08-05T14:00:00Z",
+          maxRetries: 1,
+          requestedBy: "controller.admin",
+          state: "Draft",
+          createdAtUtc: "2026-07-06T16:00:00Z",
+          updatedAtUtc: "2026-07-06T16:00:00Z",
+          lastRunAtUtc: null,
+          lastRunId: null,
+          runCount: 0,
+          description: "Draft monthly investor statement schedule."
+        }
+      ]
+    };
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(provisioned)
+    });
+
+    renderWithRouter(<ReportingScreen data={withReportingStarterKit()} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Set up your reporting desk" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Use Emerging Manager starter kit" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/starter-kits/emerging-manager/provision",
+      expect.objectContaining({ method: "POST" })
+    ));
+    expect(await screen.findByText("Emerging Manager reporting desk provisioned.")).toBeInTheDocument();
+    expect(screen.getByText("Templates enabled: investor-monthly-statement, capital-account-statement, shadow-nav-daily-pack")).toBeInTheDocument();
+    expect(screen.getByText("Draft schedules: starter-emerging-manager-investor-monthly (Draft)")).toBeInTheDocument();
   });
 
   it("renders private-capital fund event report readiness from the shared workbench projection", () => {

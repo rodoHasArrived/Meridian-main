@@ -23,8 +23,9 @@
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 238 | 238 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
-| `fsharp` | 53 | 0 | 0 | 53 |
+| `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 60 | 60 | 0 | 0 |
+| `jsonc` | 1 | 1 | 0 | 0 |
 | `jsonl` | 1 | 0 | 0 | 1 |
 | `makefile` | 1 | 0 | 0 | 1 |
 | `markdown` | 16 | 0 | 0 | 16 |
@@ -97,11 +98,13 @@ No invalid code examples found.
 | `docs/development/synthetic-provider-test-harness.md` | 1 |
 | `docs/development/ui-fixture-mode-guide.md` | 20 |
 | `docs/development/wpf-implementation-notes.md` | 2 |
+| `docs/development/wpf-web-ui-alignment-plan.md` | 1 |
 | `docs/diagrams/README.md` | 7 |
 | `docs/diagrams/ui/README.md` | 1 |
 | `docs/diagrams/uml/README.md` | 2 |
 | `docs/docfx/README.md` | 2 |
 | `docs/docfx/api/index.md` | 1 |
+| `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |
 | `docs/generated/README.md` | 1 |
 | `docs/integrations/fsharp-integration.md` | 7 |

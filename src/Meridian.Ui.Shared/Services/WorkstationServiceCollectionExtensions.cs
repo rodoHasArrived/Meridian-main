@@ -336,6 +336,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
         services.TryAddSingleton(sp =>
             new GovernedReportingTemplateCatalog(
                 sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
@@ -365,6 +366,12 @@ public static class WorkstationServiceCollectionExtensions
             new FileReportingScheduleStore(
                 sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
+        services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
+            new ReportingStarterKitStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-starter-kit.json")));
+        services.TryAddSingleton<IReportingStarterKitStore>(sp =>
+            new FileReportingStarterKitStore(
+                sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
         services.TryAddSingleton<ReportingRunCommandService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
@@ -373,6 +380,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ReportPackDeliveryService>(),
                 sp.GetService<GovernedReportingTemplateCatalog>(),
                 sp.GetService<ReportWriterDatasetSourceService>()));
+        services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>

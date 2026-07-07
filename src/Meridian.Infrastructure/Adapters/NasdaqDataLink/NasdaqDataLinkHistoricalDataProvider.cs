@@ -222,7 +222,7 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
         try
         {
             // Standard WIKI columns: Date, Open, High, Low, Close, Volume, Ex-Dividend, Split Ratio, Adj. Open, Adj. High, Adj. Low, Adj. Close, Adj. Volume
-            if (!TryGetValue(row, columns, "Date", out string? dateStr) || !DateOnly.TryParse(dateStr, out var date))
+            if (!TryGetValue(row, columns, "Date", out string? dateStr) || !ProviderDateParsing.TryParseProviderDate(dateStr, out var date))
                 return null;
 
             var open = GetDecimalValue(row, columns, "Open") ?? GetDecimalValue(row, columns, "Adj. Open");

@@ -6,49 +6,21 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
+using Meridian.Tests.Infrastructure;
 using Meridian.Tools;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class DataValidatorTests : IDisposable
+public sealed class DataValidatorTests : TempDirectoryTestBase
 {
-    private readonly string _testRoot;
-    private readonly DataValidator _validator;
-
-    public DataValidatorTests()
-    {
-        _testRoot = Path.Combine(Path.GetTempPath(), $"mdc_validator_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testRoot);
-        _validator = new DataValidator();
-    }
-
-    public void Dispose()
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_testRoot))
-                    Directory.Delete(_testRoot, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4)
-            {
-                Thread.Sleep(10);
-            }
-            catch (UnauthorizedAccessException) when (attempt < 4)
-            {
-                Thread.Sleep(10);
-            }
-        }
-    }
+    private readonly DataValidator _validator = new();
 
     [Fact]
     public async Task ValidateFileAsync_WithValidEvents_ReturnsValid()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "valid_trades.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "valid_trades.jsonl");
         var events = CreateTradeEvents("SPY", 5);
         await WriteJsonlFileAsync(filePath, events);
 
@@ -69,7 +41,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithMissingFile_ReturnsInvalid()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "nonexistent.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "nonexistent.jsonl");
 
         // Act
         var result = await _validator.ValidateFileAsync(filePath);
@@ -84,7 +56,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithInvalidJson_CountsParseErrors()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "bad_json.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "bad_json.jsonl");
         await File.WriteAllLinesAsync(filePath, new[]
         {
             "this is not json",
@@ -105,7 +77,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithMissingTypeField_CountsInvalidEvents()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "missing_type.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "missing_type.jsonl");
         var json = JsonSerializer.Serialize(new
         {
             symbol = "SPY",
@@ -126,7 +98,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithMissingSymbolField_CountsInvalidEvents()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "missing_symbol.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "missing_symbol.jsonl");
         var json = JsonSerializer.Serialize(new
         {
             type = "Trade",
@@ -147,7 +119,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithMissingTimestampField_CountsInvalidEvents()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "missing_timestamp.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "missing_timestamp.jsonl");
         var json = JsonSerializer.Serialize(new
         {
             type = "Trade",
@@ -168,7 +140,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithInvalidTimestamp_CountsInvalidEvents()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "bad_timestamp.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "bad_timestamp.jsonl");
         var json = JsonSerializer.Serialize(new
         {
             type = "Trade",
@@ -190,7 +162,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithUnknownEventType_CountsInvalidEvents()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "unknown_type.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "unknown_type.jsonl");
         var json = JsonSerializer.Serialize(new
         {
             type = "NonExistentEventType",
@@ -212,7 +184,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithGaps_DetectsGaps()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "gaps.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "gaps.jsonl");
         var baseTime = new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
         var lines = new[]
         {
@@ -236,7 +208,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithNoGaps_ReturnsEmptyGapList()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "no_gaps.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "no_gaps.jsonl");
         var baseTime = new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
         var lines = new[]
         {
@@ -257,7 +229,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_TracksTimestampRange()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "timestamps.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "timestamps.jsonl");
         var firstTs = new DateTimeOffset(2025, 1, 15, 9, 30, 0, TimeSpan.Zero);
         var lastTs = new DateTimeOffset(2025, 1, 15, 16, 0, 0, TimeSpan.Zero);
         var lines = new[]
@@ -280,7 +252,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithEmptyLines_SkipsBlankLines()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "empty_lines.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "empty_lines.jsonl");
         var lines = new[]
         {
             CreateValidEventJson("SPY", DateTimeOffset.UtcNow),
@@ -303,7 +275,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithGzipCompression_ReadsCompressedFile()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "compressed.jsonl.gz");
+        var filePath = Path.Combine(TestDataRoot, "compressed.jsonl.gz");
         var lines = new[]
         {
             CreateValidEventJson("AAPL", DateTimeOffset.UtcNow),
@@ -330,7 +302,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithMultipleSymbols_TracksGapsPerSymbol()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "multi_symbol.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "multi_symbol.jsonl");
         var baseTime = new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero);
         var lines = new[]
         {
@@ -353,7 +325,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithActualSerializedEvents_ValidatesCorrectly()
     {
         // Arrange - use the same serializer as the storage system
-        var filePath = Path.Combine(_testRoot, "real_events.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "real_events.jsonl");
         var events = CreateTradeEvents("MSFT", 3);
         await WriteJsonlFileAsync(filePath, events);
 
@@ -371,7 +343,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_SupportsCancellation()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "cancel_test.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "cancel_test.jsonl");
         var lines = Enumerable.Range(0, 100)
             .Select(i => CreateValidEventJson("SPY", DateTimeOffset.UtcNow.AddSeconds(i)));
         await File.WriteAllLinesAsync(filePath, lines);
@@ -388,18 +360,18 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateDirectoryAsync_FindsAllJsonlFiles()
     {
         // Arrange
-        var subDir = Path.Combine(_testRoot, "sub");
+        var subDir = Path.Combine(TestDataRoot, "sub");
         Directory.CreateDirectory(subDir);
 
         await File.WriteAllLinesAsync(
-            Path.Combine(_testRoot, "file1.jsonl"),
+            Path.Combine(TestDataRoot, "file1.jsonl"),
             new[] { CreateValidEventJson("SPY", DateTimeOffset.UtcNow) });
         await File.WriteAllLinesAsync(
             Path.Combine(subDir, "file2.jsonl"),
             new[] { CreateValidEventJson("AAPL", DateTimeOffset.UtcNow) });
 
         // Act
-        var results = await _validator.ValidateDirectoryAsync(_testRoot);
+        var results = await _validator.ValidateDirectoryAsync(TestDataRoot);
 
         // Assert
         results.Should().HaveCount(2);
@@ -410,18 +382,18 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateDirectoryAsync_WithNonRecursive_SkipsSubdirectories()
     {
         // Arrange
-        var subDir = Path.Combine(_testRoot, "sub");
+        var subDir = Path.Combine(TestDataRoot, "sub");
         Directory.CreateDirectory(subDir);
 
         await File.WriteAllLinesAsync(
-            Path.Combine(_testRoot, "file1.jsonl"),
+            Path.Combine(TestDataRoot, "file1.jsonl"),
             new[] { CreateValidEventJson("SPY", DateTimeOffset.UtcNow) });
         await File.WriteAllLinesAsync(
             Path.Combine(subDir, "file2.jsonl"),
             new[] { CreateValidEventJson("AAPL", DateTimeOffset.UtcNow) });
 
         // Act
-        var results = await _validator.ValidateDirectoryAsync(_testRoot, recursive: false);
+        var results = await _validator.ValidateDirectoryAsync(TestDataRoot, recursive: false);
 
         // Assert
         results.Should().HaveCount(1);
@@ -431,7 +403,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateDirectoryAsync_WithNonexistentDirectory_ReturnsEmpty()
     {
         // Arrange
-        var badPath = Path.Combine(_testRoot, "nonexistent");
+        var badPath = Path.Combine(TestDataRoot, "nonexistent");
 
         // Act
         var results = await _validator.ValidateDirectoryAsync(badPath);
@@ -444,7 +416,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateDirectoryAsync_FindsGzipFiles()
     {
         // Arrange
-        var gzPath = Path.Combine(_testRoot, "data.jsonl.gz");
+        var gzPath = Path.Combine(TestDataRoot, "data.jsonl.gz");
         await using (var fs = new FileStream(gzPath, FileMode.Create))
         await using (var gz = new GZipStream(fs, CompressionMode.Compress))
         await using (var writer = new StreamWriter(gz))
@@ -453,7 +425,7 @@ public sealed class DataValidatorTests : IDisposable
         }
 
         // Act
-        var results = await _validator.ValidateDirectoryAsync(_testRoot);
+        var results = await _validator.ValidateDirectoryAsync(TestDataRoot);
 
         // Assert
         results.Should().HaveCount(1);
@@ -512,7 +484,7 @@ public sealed class DataValidatorTests : IDisposable
     public async Task ValidateFileAsync_WithMixedValidAndInvalidLines_ReportsCorrectCounts()
     {
         // Arrange
-        var filePath = Path.Combine(_testRoot, "mixed.jsonl");
+        var filePath = Path.Combine(TestDataRoot, "mixed.jsonl");
         var lines = new[]
         {
             CreateValidEventJson("SPY", DateTimeOffset.UtcNow),

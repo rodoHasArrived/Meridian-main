@@ -2490,6 +2490,49 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void Scenario_NewFundWorkspace_EmergingManagerStarterKitSeedsEditableReportingDesk()
+    {
+        var templateCatalog = new DefaultReportingTemplateCatalog();
+        var orchestration = new ReportingOrchestrationService(
+            templateCatalog,
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 7, 6, 16, 0, 0, TimeSpan.Zero));
+        var schedules = new ReportingScheduleService(orchestration, new InMemoryReportingScheduleStore([]));
+        var starterKits = new ReportingStarterKitService(
+            new DefaultReportingStarterKitCatalog(),
+            templateCatalog,
+            schedules,
+            clock: () => new DateTimeOffset(2026, 7, 6, 16, 0, 0, TimeSpan.Zero));
+
+        var result = starterKits.Provision(
+            "emerging-manager",
+            "fund-controller",
+            new ReportAccessQueryContext("fund-controller"));
+        var reporting = new ReportPackRunReadService(
+                templateCatalog,
+                scheduleService: schedules,
+                starterKitService: starterKits)
+            .BuildPayload();
+
+        result.State.IsProvisioned.Should().BeTrue();
+        result.State.SelectedKitId.Should().Be("emerging-manager");
+        result.State.EnabledTemplateIds.Should().BeEquivalentTo(
+            "investor-monthly-statement",
+            "capital-account-statement",
+            "shadow-nav-daily-pack");
+        result.SeededSchedules.Should().HaveCount(2);
+        result.SeededSchedules.Should().OnlyContain(schedule => schedule.State == ReportingScheduleStateDto.Draft);
+        result.SeededSchedules.Should().Contain(schedule =>
+            schedule.ScheduleId == "starter-emerging-manager-investor-monthly" &&
+            schedule.TemplateId == "investor-monthly-statement" &&
+            schedule.RequestedBy == "fund-controller");
+        schedules.ListSchedules().Select(static schedule => schedule.ScheduleId).Should().BeEquivalentTo(result.State.SeedScheduleIds);
+        reporting.StarterKitState.Should().NotBeNull();
+        reporting.StarterKitState!.SelectedKitId.Should().Be("emerging-manager");
+        reporting.Templates.Select(static template => template.TemplateId).Should().BeEquivalentTo(result.State.EnabledTemplateIds);
+    }
+
+    [Fact]
     public async Task ReportingScheduleService_DeliversConfiguredReportPackTargetsAfterScheduledRun()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
@@ -4667,6 +4710,37 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Endpoint_ProvisionReportingStarterKit_WhenAnalystSelectsEmergingManager_ReturnsSeededDraftSchedules()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "controller.admin");
+        var client = app.GetTestClient();
+
+        var catalogResponse = await client.GetAsync("/api/fund-structure/reporting/starter-kits");
+        var provisionResponse = await client.PostAsync("/api/fund-structure/reporting/starter-kits/emerging-manager/provision", null);
+
+        catalogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var kits = await catalogResponse.Content.ReadFromJsonAsync<IReadOnlyList<ReportingStarterKitDto>>(ServerJsonOptions);
+        kits.Should().NotBeNull();
+        kits!.Select(static kit => kit.KitId).Should().Contain("emerging-manager");
+        provisionResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var result = await provisionResponse.Content.ReadFromJsonAsync<ReportingStarterKitProvisionResultDto>(ServerJsonOptions);
+        result.Should().NotBeNull();
+        result!.Kit.KitId.Should().Be("emerging-manager");
+        result.State.ProvisionedBy.Should().Be("controller.admin");
+        result.State.EnabledTemplateIds.Should().BeEquivalentTo(
+            "investor-monthly-statement",
+            "capital-account-statement",
+            "shadow-nav-daily-pack");
+        result.SeededSchedules.Should().HaveCount(2);
+        result.SeededSchedules.Should().OnlyContain(static schedule => schedule.State == ReportingScheduleStateDto.Draft);
+        var scheduleService = app.Services.GetRequiredService<ReportingScheduleService>();
+        scheduleService.ListSchedules()
+            .Select(static schedule => schedule.ScheduleId)
+            .Should()
+            .BeEquivalentTo(result.State.SeedScheduleIds);
+    }
+
+    [Fact]
     public async Task Endpoint_SchedulePrivateTemplate_WhenCallerIsNotOwner_ReturnsForbiddenForCreateAndRun()
     {
         await using var app = await CreateFundStructureAppAsync(UserRole.ReportingAnalyst, "viewer.user");
@@ -5331,6 +5405,7 @@ public sealed class ReportPackWorkflowServiceTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton<ReportTemplateRegistryService>();
         builder.Services.AddSingleton<DefaultReportingTemplateCatalog>();
+        builder.Services.AddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
         builder.Services.AddSingleton(sp =>
             new GovernedReportingTemplateCatalog(
                 sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
@@ -5350,6 +5425,7 @@ public sealed class ReportPackWorkflowServiceTests
                 sp.GetRequiredService<IReportingOrchestrationService>(),
                 datasetSourceService: sp.GetRequiredService<ReportWriterDatasetSourceService>(),
                 governedTemplateCatalog: sp.GetRequiredService<GovernedReportingTemplateCatalog>()));
+        builder.Services.AddSingleton<ReportingStarterKitService>();
         builder.Services.AddSingleton<ReportPackWorkflowService>();
         builder.Services.AddSingleton<ReportPackDeliveryService>();
         if (workspaceService is not null)

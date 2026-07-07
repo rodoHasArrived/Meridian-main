@@ -955,15 +955,16 @@ modules:
     path: src/Meridian.Wpf
     name: WPF workstation
     layer: UI Surface
-    status: deferred
+    status: active
     owner_lane: Workstation Shell and UX
-    purpose: Deferred Windows desktop operator workstation retained for existing shell compatibility, validation, and maintenance. New product/UI work should target the browser workstation and shared services unless WPF is explicitly reactivated.
+    purpose: Active Windows desktop operator workstation and co-equal UI lane alongside the browser workstation. Projects the seven canonical workspaces over shared contracts and read models; current lane focus is closing web-UI parity gaps (W8-WPF-PARITY-001) without forking product state.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
       - W5-MASSET-001
+      - W8-WPF-PARITY-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -974,4 +975,4 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-06

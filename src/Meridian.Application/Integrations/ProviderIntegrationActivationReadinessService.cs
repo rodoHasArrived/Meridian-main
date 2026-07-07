@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -12,10 +14,14 @@ public sealed class ProviderIntegrationActivationReadinessService
     ];
 
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationActivationReadinessService> logger;
 
-    public ProviderIntegrationActivationReadinessService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationActivationReadinessService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationActivationReadinessService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationActivationReadinessService>.Instance;
     }
 
     public async Task<ProviderIntegrationActivationReadinessDto> EvaluateAsync(
@@ -25,6 +31,37 @@ public sealed class ProviderIntegrationActivationReadinessService
         => await EvaluateAsync(null, manifestId, connectionId, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationActivationReadinessDto> EvaluateAsync(
+        string? tenantId,
+        string manifestId,
+        string? connectionId = null,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
+            nameof(EvaluateAsync),
+            manifestId,
+            connectionId);
+        try
+        {
+            return await EvaluateCoreAsync(tenantId, manifestId, connectionId, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
+                nameof(EvaluateAsync),
+                manifestId,
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationActivationReadinessDto> EvaluateCoreAsync(
         string? tenantId,
         string manifestId,
         string? connectionId = null,

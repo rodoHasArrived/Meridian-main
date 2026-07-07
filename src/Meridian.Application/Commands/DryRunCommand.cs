@@ -22,10 +22,9 @@ internal sealed class DryRunCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return CliArguments.HasFlag(args, "--dry-run");
-    }
+    public IReadOnlyList<string> Triggers { get; } = ["--dry-run"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

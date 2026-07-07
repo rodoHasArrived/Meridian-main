@@ -4,18 +4,19 @@ doc_schema: meridian.source-readme
 doc_schema_version: "1.0.0"
 module_id: SRC-WPF
 path: src/Meridian.Wpf
-status: deferred
+status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-06
 ---
 
 # src/Meridian.Wpf
 
 ## Purpose
 
-WPF workstation is a deferred Windows desktop operator workstation retained for existing shell
-compatibility, validation, and maintenance. New product/UI work should target the browser
-workstation and shared services unless WPF is explicitly reactivated.
+WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
+the browser workstation. It projects the seven canonical workspaces over shared contracts and read
+models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
+`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 
@@ -638,6 +639,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W8-WPF-PARITY-001` | WPF desktop workstation reactivation and web-UI parity |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

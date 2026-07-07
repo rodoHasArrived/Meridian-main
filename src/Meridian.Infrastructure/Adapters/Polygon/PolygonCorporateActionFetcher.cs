@@ -36,7 +36,7 @@ public interface IPolygonCorporateActionFetcher
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetcher, IHostedService
 {
-    private const string BaseUrl = "https://api.polygon.io";
+    private const string BaseUrl = PolygonEndpoints.RestBase;
     private const int MaxResultsPerRequest = 100;
 
     private readonly IHttpClientFactory _httpClientFactory;

@@ -4,6 +4,7 @@ import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getManualJournalEntryWorkbench, getRunLedgerJournal } from "@/lib/api";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -109,15 +110,12 @@ export function JournalEntryDetailScreen() {
   }));
 
   return (
-    <div className="space-y-4">
+    <ScreenLayout
+      title={view.title}
+      scope={`Journal entry ${view.journalEntryId}`}
+      actions={<Badge variant={view.statusTone} dot>{view.statusLabel}</Badge>}
+    >
       <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>{view.title}</CardTitle>
-            <CardDescription>Journal entry {view.journalEntryId}</CardDescription>
-          </div>
-          <Badge variant={view.statusTone} dot>{view.statusLabel}</Badge>
-        </CardHeader>
         <CardContent>
           {view.notFoundText ? (
             <StatusBanner role="alert" tone="warning" title="Journal entry not found" detail={view.notFoundText} />
@@ -281,7 +279,7 @@ export function JournalEntryDetailScreen() {
           <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Open Journal Entries workbench</Link>
         </Button>
       </div>
-    </div>
+    </ScreenLayout>
   );
 }
 

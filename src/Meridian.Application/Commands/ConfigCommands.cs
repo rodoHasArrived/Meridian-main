@@ -21,17 +21,10 @@ internal sealed class ConfigCommands : ICliCommand
         _log = log;
     }
 
+    public IReadOnlyList<string> Triggers { get; } = ["--wizard", "--auto-config", "--detect-providers", "--generate-config", "--generate-config-schema", "--preset", "--list-presets"];
+
     public bool CanHandle(string[] args)
-    {
-        return CliArguments.HasFlag(args, "--wizard") ||
-            CliArguments.HasFlag(args, "--auto-config") ||
-            IsQuickstartAlias(args) ||
-            CliArguments.HasFlag(args, "--detect-providers") ||
-            CliArguments.HasFlag(args, "--generate-config") ||
-            CliArguments.HasFlag(args, "--generate-config-schema") ||
-            CliArguments.HasFlag(args, "--preset") ||
-            CliArguments.HasFlag(args, "--list-presets");
-    }
+        => CliArguments.MatchesAnyFlag(args, Triggers) || IsQuickstartAlias(args);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -8,11 +10,14 @@ public sealed class ProviderIntegrationPromotionReadinessService
     private const int DefaultRecentRunLimit = 10;
 
     private readonly ProviderIntegrationIdentityResolutionPreviewService identityResolution;
+    private readonly ILogger<ProviderIntegrationPromotionReadinessService> logger;
 
     public ProviderIntegrationPromotionReadinessService(
-        ProviderIntegrationIdentityResolutionPreviewService identityResolution)
+        ProviderIntegrationIdentityResolutionPreviewService identityResolution,
+        ILogger<ProviderIntegrationPromotionReadinessService>? logger = null)
     {
         this.identityResolution = identityResolution ?? throw new ArgumentNullException(nameof(identityResolution));
+        this.logger = logger ?? NullLogger<ProviderIntegrationPromotionReadinessService>.Instance;
     }
 
     public async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewAsync(
@@ -22,6 +27,35 @@ public sealed class ProviderIntegrationPromotionReadinessService
         => await PreviewAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(PreviewAsync),
+            connectionId);
+        try
+        {
+            return await PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(PreviewAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewCoreAsync(
         string? tenantId,
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,

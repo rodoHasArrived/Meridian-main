@@ -61,7 +61,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
-- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/CanonicalReconciliationEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation.
+- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/ReconciliationMatchingEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation. The canonical daily pipeline is split across `ReconciliationIngestionContracts.cs`, `ReconciliationNormalizationService.cs`, `MatchingTolerances.cs`, `ReconciliationMatchingEngine.cs`, `DefaultReconciliationIngestionScheduler.cs`, and `ReconciliationRunOrchestrator.cs` (one type per file).
 - `Reconciliation/StatementBreakClassifier.cs`, `StatementMappingProfiles.cs`, and `StatementToleranceProfiles.cs` - canonical break taxonomy, broker mapping profiles, and tolerance governance.
 - `Reconciliation/ReconciliationEngineService.cs` - Security Master-enriched portfolio-vs-ledger
   reconciliation engine that joins positions, ledger balances, and the F# ledger reconciliation

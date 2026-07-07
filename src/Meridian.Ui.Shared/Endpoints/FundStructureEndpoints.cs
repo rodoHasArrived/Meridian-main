@@ -1761,6 +1761,65 @@ public static partial class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet("/reporting/starter-kits", (HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingStarterKitService>();
+            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.ListKits(), jsonOptions);
+        })
+        .WithName("ListReportingStarterKits")
+        .Produces<IReadOnlyList<ReportingStarterKitDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost("/reporting/starter-kits/{kitId}/provision", (string kitId, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingStarterKitService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(
+                    svc.Provision(kitId, actor, BuildReportAccessQueryContext(context)),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status201Created);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("ProvisionReportingStarterKit")
+        .Produces<ReportingStarterKitProvisionResultDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/reporting/schedules", (HttpContext context) =>
         {
             if (!HasReportingReadPermission(context))

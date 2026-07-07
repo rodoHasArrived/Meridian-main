@@ -1,14 +1,20 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSetupService
 {
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationSetupService> logger;
 
-    public ProviderIntegrationSetupService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSetupService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSetupService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSetupService>.Instance;
     }
 
     public async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftAsync(
@@ -17,6 +23,36 @@ public sealed class ProviderIntegrationSetupService
         => await SaveDraftAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftAsync(
+        string? tenantId,
+        ProviderIntegrationSetupSaveRequestDto request,
+        CancellationToken ct = default)
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
+            nameof(SaveDraftAsync),
+            request?.Manifest?.ManifestId,
+            request?.Connection?.ConnectionId);
+        try
+        {
+            return await SaveDraftCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
+                nameof(SaveDraftAsync),
+                request?.Manifest?.ManifestId,
+                request?.Connection?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftCoreAsync(
         string? tenantId,
         ProviderIntegrationSetupSaveRequestDto request,
         CancellationToken ct = default)
