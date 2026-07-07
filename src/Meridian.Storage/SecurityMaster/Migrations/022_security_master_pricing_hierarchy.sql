@@ -1,4 +1,4 @@
--- Migration 017: Security Master Pricing Hierarchy & Raw Prices
+-- Migration 022: Security Master Pricing Hierarchy & Raw Prices
 -- Implements the Clearwater pricing hierarchy model: per-security/account priority chain
 -- of pricing sources, max-days-stale configuration, and raw price records for golden copy selection.
 

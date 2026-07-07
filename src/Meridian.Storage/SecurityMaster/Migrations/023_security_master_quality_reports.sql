@@ -1,4 +1,4 @@
--- Migration 020: Security Master Data Quality Reports
+-- Migration 023: Security Master Data Quality Reports
 -- Persists the latest data quality run results including all rule violations
 -- across the 8 Clearwater control categories (completeness, format, minimum-attribute,
 -- taxonomy, consistency, refresh, staleness, external-comparison).

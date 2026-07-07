@@ -5148,12 +5148,14 @@ Meridian-main
 │   │   │   │   ├── 015_security_master_certificate_of_deposit_projection.sql
 │   │   │   │   ├── 016_security_master_normalized_identifier_lookup.sql
 │   │   │   │   ├── 017_security_master_bond_clearwater_lifecycle_fields.sql
-│   │   │   │   ├── 017_security_master_pricing_hierarchy.sql
 │   │   │   │   ├── 018_security_master_cashflow_sources.sql
 │   │   │   │   ├── 019_data_vendor_entitlements.sql
 │   │   │   │   ├── 020_data_vendor_entitlement_scope_metadata.sql
-│   │   │   │   ├── 020_security_master_quality_reports.sql
-│   │   │   │   └── 021_security_master_corp_action_lifecycle.sql
+│   │   │   │   ├── 021_security_master_corp_action_lifecycle.sql
+│   │   │   │   ├── 022_security_master_pricing_hierarchy.sql
+│   │   │   │   ├── 023_security_master_quality_reports.sql
+│   │   │   │   ├── 024_security_master_schema_version_column.sql
+│   │   │   │   └── 025_security_master_audit_stores.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
