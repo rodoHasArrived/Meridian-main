@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Blank Workstation" description="Shell-only template: masthead, nav rail, status bar with an empty content canvas. Start here for a custom layout." -->
+<helmet>
+  <script src="./ds-base.js"></script>
+</helmet>
+
+<div style="display: flex; flex-direction: column; height: 100vh; background: var(--bg-canvas, #ECEFF3); font-family: var(--font-body, 'Segoe UI Variable Text', system-ui, sans-serif); color: var(--text-primary, #22272E);">
+  <!-- Masthead -->
+  <div style="
+    min-height: 48px;
+    background: var(--topbar-bg, #171A1F);
+    border-bottom: 1px solid var(--topbar-border, #262B31);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  ">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--topbar-text, #F4F6F8);">
+      <span style="letter-spacing: 0.02em;">Meridian</span>
+      <span style="opacity: 0.4;">/</span>
+      <span style="opacity: 0.85;">Untitled Workstation</span>
+    </div>
+
+    <div style="flex: 1;"></div>
+
+    <div style="
+      font-family: var(--font-data, 'Cascadia Mono', monospace);
+      font-size: 11px;
+      color: var(--statusbar-text, #D7DCE2);
+      opacity: 0.8;
+      letter-spacing: 0.04em;
+    " id="utcClock">00:00:00Z</div>
+
+    <div style="
+      padding: 3px 10px;
+      background: var(--mode-live, #BA3F55);
+      border: 1px solid var(--mode-live, #BA3F55);
+      border-radius: var(--radius-chip, 2px);
+      font-family: var(--font-data, 'Cascadia Mono', monospace);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-on-accent, #FFFFFF);
+      letter-spacing: 0.08em;
+    ">Live</div>
+  </div>
+
+  <!-- Body -->
+  <div style="display: flex; flex: 1; overflow: hidden;">
+    <!-- Nav rail -->
+    <div style="
+      width: 224px;
+      background: var(--sidebar-bg, #F4F6F8);
+      border-right: 1px solid var(--border, #D7DCE2);
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 4px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    ">
+      <div style="
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted, #59636F);
+        padding: 8px 10px 4px;
+      ">Workspaces</div>
+
+      <div style="
+        padding: 9px 10px;
+        border-radius: var(--radius-button, 6px);
+        background: var(--sidebar-active, #E1EAF2);
+        box-shadow: inset 3px 0 0 var(--accent, #2F6F8F);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary, #22272E);
+      ">Trading</div>
+
+      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4D5967); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F1F4F7)'" onmouseout="this.style.background='transparent'">Portfolio</div>
+      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4D5967); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F1F4F7)'" onmouseout="this.style.background='transparent'">Accounting</div>
+      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4D5967); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F1F4F7)'" onmouseout="this.style.background='transparent'">Reporting</div>
+      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4D5967); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F1F4F7)'" onmouseout="this.style.background='transparent'">Data</div>
+
+      <div style="flex: 1;"></div>
+
+      <div style="padding-top: 8px; border-top: 1px solid var(--border, #D7DCE2);">
+        <button style="
+          width: 100%;
+          padding: 7px 12px;
+          border: 1px solid var(--border, #D7DCE2);
+          border-radius: var(--radius-button, 6px);
+          background: transparent;
+          font-family: var(--font-body, system-ui);
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          cursor: pointer;
+          color: var(--text-secondary, #4D5967);
+          transition: background-color 120ms ease;
+        " onmouseover="this.style.background='var(--bg-hover, #F1F4F7)'" onmouseout="this.style.background='transparent'">Compact density</button>
+      </div>
+    </div>
+
+    <!-- Content canvas -->
+    <main style="flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-canvas, #ECEFF3);">
+      <h1 style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;">Untitled Workstation</h1>
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px;">
+        <div style="
+          max-width: 420px;
+          text-align: center;
+          border: 1px dashed var(--border-strong, #AAB4BF);
+          border-radius: var(--radius-card, 2px);
+          background: var(--bg-light, #FFFFFF);
+          padding: 28px 32px;
+        ">
+          <div style="font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #59636F); margin-bottom: 10px;">Content canvas</div>
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary, #22272E);">Build your layout here</div>
+          <div style="font-size: 13px; line-height: 1.5; color: var(--text-secondary, #4D5967);">Compose with Grid / Flex / Stack and drop in DenseDataTable, MetricCard, ChartCard, and the rest of the Meridian library.</div>
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div style="
+        height: 28px;
+        background: var(--statusbar-bg, #171A1F);
+        border-top: 1px solid var(--statusbar-border, #262B31);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 24px;
+        font-family: var(--font-data, 'Cascadia Mono', monospace);
+        font-size: 10px;
+        color: var(--statusbar-text, #D7DCE2);
+        flex-shrink: 0;
+      ">
+        <div style="opacity: 0.7;">Connection: <span style="color: var(--green, #16885F); opacity: 1;">live</span></div>
+        <div style="opacity: 0.7;">Sync: <span style="opacity: 1;">0ms</span></div>
+        <div style="opacity: 0.7;">Records: <span style="opacity: 1;">—</span></div>
+        <div style="flex: 1;"></div>
+        <div style="opacity: 0.7;">PAPER</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  function updateClock() {
+    const el = document.getElementById('utcClock');
+    if (el) el.textContent = new Date().toISOString().substring(11, 19) + 'Z';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1920, &quot;height&quot;: 1080}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+
+</script>
+</body>
+</html>

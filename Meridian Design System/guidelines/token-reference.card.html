@@ -1,0 +1,171 @@
+<!-- @dsCard group="Documentation" viewport="940x640" name="Token reference" subtitle="3-tier architecture — override Tier 1, author Tier 2, never hardcode Tier 3" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px 22px; background: var(--bg); font-family: var(--font-body);
+    color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    border-bottom: 1px solid var(--border-strong); padding-bottom: 10px; margin-bottom: 16px; }
+  h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  .rule { font-family: var(--font-data); font-size: 11px; color: var(--text-secondary);
+    border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 3px 9px; }
+  .rule b { color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .lbl { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .05em;
+    color: var(--text-muted); margin: 0 0 9px; }
+
+  .tier { display: grid; grid-template-columns: 64px 1fr; border: 1px solid var(--border);
+    background: var(--bg-light); margin-bottom: 9px; }
+  .tier + .tier { position: relative; }
+  .tier-n { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-right: 1px solid var(--border); padding: 9px 4px; text-align: center; }
+  .tier-n b { font-family: var(--font-data); font-size: 16px; font-weight: 700; line-height: 1; }
+  .tier-n span { font-size: 8px; font-variant: all-small-caps; letter-spacing: .04em;
+    color: var(--text-muted); margin-top: 3px; }
+  .tier-body { padding: 9px 11px; }
+  .tier-body h3 { font-size: 11.5px; font-weight: 600; margin: 0 0 3px; }
+  .tier-body p { font-size: 10.5px; line-height: 1.5; color: var(--text-muted); margin: 0; }
+  .tier-body .toks { font-family: var(--font-data); font-size: 10px; color: var(--text-secondary);
+    margin-top: 5px; display: block; }
+  .t1 { border-left: 3px solid var(--purple); }
+  .t2 { border-left: 3px solid var(--accent); }
+  .t3 { border-left: 3px solid var(--green); }
+  .arrow { text-align: center; color: var(--text-muted); font-size: 11px; line-height: 1;
+    margin: -4px 0 5px; }
+  .badge { display: inline-block; font-family: var(--font-data); font-size: 8px; font-weight: 700;
+    font-variant: all-small-caps; letter-spacing: .04em; padding: 1px 5px; margin-left: 6px;
+    vertical-align: 1px; }
+  .b-over { color: var(--purple-dim); border: 1px solid var(--purple); background: var(--purple-a10); }
+  .b-auth { color: var(--accent); border: 1px solid var(--accent); background: var(--blue-a10); }
+  .b-never{ color: var(--text-muted); border: 1px solid var(--border-strong); background: var(--bg-medium); }
+
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: left; padding: 6px; border-bottom: 1px solid var(--border-divider);
+    vertical-align: top; }
+  thead th { font-size: 9px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em;
+    color: var(--text-muted); border-bottom: 1px solid var(--border-strong); }
+  .tk { font-family: var(--font-data); font-size: 10.5px; color: var(--text-secondary);
+    white-space: nowrap; }
+  .swatch { display: inline-block; width: 11px; height: 11px; border: 1px solid var(--border-strong);
+    vertical-align: -1px; margin-right: 6px; }
+  .use { font-size: 10.5px; line-height: 1.45; color: var(--text-muted); }
+  .use b { color: var(--text-primary); font-weight: 600; }
+  .sample-sec { color: #4D5967; }
+  .sample-mut { color: #59636F; }
+
+  .mini { border: 1px solid var(--border); background: var(--bg-light); padding: 10px 12px;
+    margin-top: 11px; }
+  .mini h2 { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .05em;
+    color: var(--text-muted); margin: 0 0 7px; }
+  .pair { display: flex; align-items: baseline; gap: 8px; font-size: 11px; line-height: 1.7;
+    color: var(--text-secondary); }
+  .pair .tk { min-width: 118px; }
+  .pair em { font-style: normal; color: var(--text-primary); font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>Token reference — the three tiers</h1>
+    <span class="rule"><b>override</b> Tier 1 · <b>author</b> Tier 2 · never hardcode Tier 3</span>
+  </div>
+
+  <div class="grid">
+    <div>
+      <p class="lbl">Architecture — re-brands flow top → down</p>
+
+      <div class="tier t1">
+        <div class="tier-n"><b>1</b><span>Theme</span></div>
+        <div class="tier-body">
+          <h3>White-label control<span class="badge b-over">override</span></h3>
+          <p>The only layer a consumer touches to re-skin.</p>
+          <span class="toks">--theme-accent · data-brand=… · data-theme-density=…</span>
+        </div>
+      </div>
+      <div class="arrow">▼&nbsp; aliased by</div>
+
+      <div class="tier t2">
+        <div class="tier-n"><b>2</b><span>Semantic</span></div>
+        <div class="tier-body">
+          <h3>Public API — author here<span class="badge b-auth">author</span></h3>
+          <p>What components and cards are written against.</p>
+          <span class="toks">--accent · --green · --text-primary · --bg-light · --border</span>
+        </div>
+      </div>
+      <div class="arrow">▼&nbsp; derived from</div>
+
+      <div class="tier t3">
+        <div class="tier-n"><b>3</b><span>Derived</span></div>
+        <div class="tier-body">
+          <h3>Computed — never hand-typed<span class="badge b-never">auto</span></h3>
+          <p>color-mix() off Tier 2 → inherits brand + dark for free.</p>
+          <span class="toks">--green-dim · --green-a10 · --severity-* · --state-*</span>
+        </div>
+      </div>
+
+      <div class="mini">
+        <h2>Concrete constraints</h2>
+        <div class="pair"><span class="tk">--radius-*</span> <span>max <em>6px</em> — structure is borders, not rounding</span></div>
+        <div class="pair"><span class="tk">--shadow-*</span> <span>flat — only <em>--shadow-menu</em> floats</span></div>
+        <div class="pair"><span class="tk">--motion-*</span> <span><em>100 / 150ms</em>, one ease curve</span></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="lbl">"Sound the same" — pick by role</p>
+      <table>
+        <thead>
+          <tr><th>Token</th><th>On panel</th><th>Use for</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#4D5967"></span>text-secondary</td>
+            <td class="tk">7.1:1</td>
+            <td class="use"><b class="sample-sec">Read it to work</b> — field labels, row labels, side-panel copy.</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#59636F"></span>text-muted</td>
+            <td class="tk">6.1:1</td>
+            <td class="use"><b class="sample-mut">Annotates content</b> — captions, units, timestamps, "last synced".</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#3B82A6"></span>accent-hover</td>
+            <td class="tk">—</td>
+            <td class="use"><b>Lighter</b> — pointer hover.</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#255B75"></span>accent-dim</td>
+            <td class="tk">—</td>
+            <td class="use"><b>Darker</b> — pressed / active.</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#EAEEF3"></span>bg-hover</td>
+            <td class="tk">—</td>
+            <td class="use">Transient hover — flat neutral shift.</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#D7E5F1"></span>bg-active</td>
+            <td class="tk">—</td>
+            <td class="use">Persisting <b>selected</b> state — cool wash.</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#CBD3DC"></span>border</td>
+            <td class="tk">—</td>
+            <td class="use">Default hairline.</td>
+          </tr>
+          <tr>
+            <td class="tk"><span class="swatch" style="background:#99A5B2"></span>border-strong</td>
+            <td class="tk">—</td>
+            <td class="use">Emphasis — totals, headers, section frames.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="use" style="margin-top:10px; padding:0 2px;">Rule of thumb: if the user reads it to
+        <b>do the task</b> → secondary; if it <b>annotates</b> what they read → muted. Full matrix
+        in <span class="tk">guidelines/TOKEN_REFERENCE.md</span>.</p>
+    </div>
+  </div>
+</body>
+</html>

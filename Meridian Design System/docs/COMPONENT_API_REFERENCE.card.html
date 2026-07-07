@@ -1,0 +1,1656 @@
+<!-- @dsCard group="Documentation" viewport="1920x1080" name="Component API Reference" subtitle="Interactive, searchable reference for the exported component API" -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meridian — Component API Reference</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-canvas, #ECEFF3);
+      font-family: var(--font-body, 'Segoe UI', sans-serif);
+      font-size: 13px;
+      color: var(--text-primary, #22272E);
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    header {
+      margin-bottom: 48px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      color: var(--text-primary);
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-secondary, #4D5967);
+      margin: 0;
+    }
+    .controls {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      padding: 8px 12px;
+      border: 1px solid var(--border, #D7DCE2);
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      min-width: 250px;
+    }
+    .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--border, #D7DCE2);
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: var(--bg-light, #fff);
+      cursor: pointer;
+    }
+    .results-count {
+      font-size: 12px;
+      color: var(--text-muted, #59636F);
+    }
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .component-card {
+      background: var(--bg-light, #fff);
+      border: 1px solid var(--border, #D7DCE2);
+      border-radius: 2px;
+      padding: 20px;
+      cursor: pointer;
+      transition: background-color 150ms ease, border-color 150ms ease;
+    }
+    .component-card:hover {
+      background: var(--bg-hover, #F1F4F7);
+      border-color: var(--border-hover, #B8C2CC);
+    }
+    .component-card.active {
+      background: var(--bg-active, #E1EAF2);
+      border-color: var(--accent, #2F6F8F);
+      box-shadow: inset 3px 0 0 var(--accent, #2F6F8F);
+      padding-left: 17px;
+    }
+    .component-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+    }
+    .component-category {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted, #59636F);
+      margin: 0 0 12px 0;
+    }
+    .component-description {
+      font-size: 12px;
+      color: var(--text-secondary, #4D5967);
+      margin: 0;
+      line-height: 1.4;
+    }
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 480px;
+      height: 100vh;
+      background: var(--bg-light, #fff);
+      border-left: 1px solid var(--border, #D7DCE2);
+      overflow-y: auto;
+      padding: 32px;
+      z-index: 100;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
+    }
+    .detail-panel.hidden {
+      display: none;
+    }
+    .detail-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .detail-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+    }
+    .detail-category {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted, #59636F);
+      margin-bottom: 24px;
+    }
+    .detail-section {
+      margin-bottom: 32px;
+    }
+    .detail-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-secondary, #4D5967);
+      margin: 0 0 12px 0;
+    }
+    .prop-item {
+      background: var(--bg-hover, #F1F4F7);
+      border: 1px solid var(--border, #D7DCE2);
+      border-radius: 2px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 11px;
+    }
+    .prop-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .prop-type {
+      color: var(--text-muted, #59636F);
+    }
+    .prop-default {
+      color: var(--green, #16885F);
+    }
+    .no-results {
+      text-align: center;
+      padding: 64px 32px;
+      color: var(--text-muted, #59636F);
+    }
+    .grid-wrapper {
+      margin-right: 0;
+      transition: margin-right 300ms ease;
+    }
+    .grid-wrapper.with-panel {
+      margin-right: 480px;
+    }
+    @media (max-width: 1200px) {
+      .detail-panel {
+        width: 100%;
+        position: fixed;
+        inset: 0;
+      }
+      .grid-wrapper.with-panel {
+        margin-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Component API Reference</h1>
+      <p class="subtitle">All 106 Meridian components with props, types, and defaults. Click any component to view details.</p>
+    </header>
+
+    <div class="controls">
+      <input
+        type="text"
+        class="search-input"
+        id="searchInput"
+        placeholder="Search components by name..."
+        autocomplete="off"
+      />
+      <select class="filter-select" id="categoryFilter">
+        <option value="">All categories</option>
+        <option value="core">Core UI</option>
+        <option value="data">Data & Tables</option>
+        <option value="accounting">Accounting</option>
+        <option value="charts">Charts</option>
+        <option value="shell">Shell</option>
+        <option value="operations">Operations</option>
+      </select>
+      <span class="results-count"><span id="resultCount">0</span> components</span>
+    </div>
+
+    <div class="grid-wrapper" id="gridWrapper">
+      <div class="component-grid" id="componentGrid"></div>
+      <div class="no-results" id="noResults" style="display: none;">
+        No components found. Try a different search or filter.
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-panel hidden" id="detailPanel">
+    <button class="detail-close" id="detailClose">&times;</button>
+    <div id="detailContent"></div>
+  </div>
+
+  <script>
+    // Component database — hand-curated API reference; the shown count is the array length
+    const components = [
+      // Core UI — Buttons & actions
+      {
+        name: 'Button',
+        category: 'core',
+        description: 'Primary, ghost, danger, or link button with optional icon and loading state.',
+        props: [
+          { name: 'variant', type: '"primary" | "ghost" | "danger" | "link"', default: '"primary"' },
+          { name: 'size', type: '"sm" | "default" | "lg" | "icon"', default: '"default"' },
+          { name: 'disabled', type: 'boolean', default: 'false' },
+          { name: 'busy', type: 'boolean', default: 'false' },
+          { name: 'busyLabel', type: 'string', default: 'null' },
+          { name: 'icon', type: 'React.ReactNode', default: 'undefined' },
+        ],
+        example: '<Button variant="primary" onClick={submit}>Post</Button>',
+      },
+      {
+        name: 'Badge',
+        category: 'core',
+        description: 'Square chip with semantic tone (info, success, warning, danger, neutral). Never rounded.',
+        props: [
+          { name: 'tone', type: '"neutral" | "info" | "success" | "warning" | "danger"', default: '"neutral"' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Badge tone="success">LIVE</Badge>',
+      },
+      {
+        name: 'Eyebrow',
+        category: 'core',
+        description: 'Small-caps label for card titles, metric labels, and headers. Always uppercase.',
+        props: [
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+          { name: 'tone', type: '"muted" | "default"', default: '"muted"' },
+        ],
+        example: '<Eyebrow>Net liquidation</Eyebrow>',
+      },
+      {
+        name: 'Kbd',
+        category: 'core',
+        description: 'Keyboard shortcut label (e.g., "Ctrl K", "Shift+Enter").',
+        props: [
+          { name: 'keys', type: 'string', default: 'required' },
+          { name: 'variant', type: '"default" | "minimal"', default: '"default"' },
+        ],
+        example: '<Kbd keys="Ctrl K">Search</Kbd>',
+      },
+
+      // Core UI — Inputs
+      {
+        name: 'Input',
+        category: 'core',
+        description: 'Text input with optional label, error state, and validation.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'error', type: 'string', default: 'undefined' },
+          { name: 'placeholder', type: 'string', default: 'undefined' },
+          { name: 'disabled', type: 'boolean', default: 'false' },
+          { name: 'value', type: 'string', default: 'undefined' },
+          { name: 'onChange', type: '(e: ChangeEvent) => void', default: 'undefined' },
+        ],
+        example: '<Input label="Symbol" placeholder="AAPL" value={symbol} onChange={setSym} />',
+      },
+      {
+        name: 'NumberInput',
+        category: 'core',
+        description: 'Numeric input with optional min, max, step, and formatting.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'value', type: 'number | string', default: 'undefined' },
+          { name: 'onChange', type: '(value: number) => void', default: 'undefined' },
+          { name: 'min', type: 'number', default: 'undefined' },
+          { name: 'max', type: 'number', default: 'undefined' },
+          { name: 'step', type: 'number', default: '1' },
+        ],
+        example: '<NumberInput label="Quantity" min={1} max={10000} value={qty} onChange={setQty} />',
+      },
+      {
+        name: 'TextArea',
+        category: 'core',
+        description: 'Multi-line text input for long-form content.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'rows', type: 'number', default: '4' },
+          { name: 'error', type: 'string', default: 'undefined' },
+          { name: 'placeholder', type: 'string', default: 'undefined' },
+          { name: 'value', type: 'string', default: 'undefined' },
+          { name: 'onChange', type: '(e: ChangeEvent) => void', default: 'undefined' },
+        ],
+        example: '<TextArea label="Notes" rows={6} value={notes} onChange={setNotes} />',
+      },
+      {
+        name: 'Select',
+        category: 'core',
+        description: 'Dropdown selector for a list of options. Use for 3–8 items.',
+        props: [
+          { name: 'options', type: 'Array<string | {value, label}>', default: 'required' },
+          { name: 'value', type: 'string', default: 'undefined' },
+          { name: 'onChange', type: '(value: string) => void', default: 'undefined' },
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'placeholder', type: 'string', default: '"Select..."' },
+          { name: 'disabled', type: 'boolean', default: 'false' },
+        ],
+        example: '<Select label="Environment" options={["Live", "Paper", "Fixture"]} value={env} onChange={setEnv} />',
+      },
+      {
+        name: 'MultiSelect',
+        category: 'core',
+        description: 'Dropdown multi-selector for several choices. Use for many options.',
+        props: [
+          { name: 'options', type: 'Array<string | {value, label}>', default: 'required' },
+          { name: 'value', type: 'Array<string>', default: '[]' },
+          { name: 'onChange', type: '(values: string[]) => void', default: 'undefined' },
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'placeholder', type: 'string', default: '"Select..."' },
+        ],
+        example: '<MultiSelect label="Symbols" options={symbols} value={selected} onChange={setSelected} />',
+      },
+      {
+        name: 'Combobox',
+        category: 'core',
+        description: 'Type-to-search selector for long option lists.',
+        props: [
+          { name: 'options', type: 'Array<string | {value, label}>', default: 'required' },
+          { name: 'value', type: 'string', default: 'undefined' },
+          { name: 'onChange', type: '(value: string) => void', default: 'undefined' },
+          { name: 'placeholder', type: 'string', default: '"Search..."' },
+          { name: 'filterFn', type: '(query, option) => boolean', default: 'substring match' },
+        ],
+        example: '<Combobox options={accounts} value={account} onChange={setAccount} placeholder="Find account..." />',
+      },
+      {
+        name: 'Checkbox',
+        category: 'core',
+        description: 'Binary toggle for form fields and list selections.',
+        props: [
+          { name: 'checked', type: 'boolean', default: 'false' },
+          { name: 'onChange', type: '(checked: boolean) => void', default: 'undefined' },
+          { name: 'label', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'disabled', type: 'boolean', default: 'false' },
+        ],
+        example: '<Checkbox label="I agree" checked={agree} onChange={setAgree} />',
+      },
+      {
+        name: 'Toggle',
+        category: 'core',
+        description: 'On/off switch for settings and preferences.',
+        props: [
+          { name: 'checked', type: 'boolean', default: 'false' },
+          { name: 'onChange', type: '(checked: boolean) => void', default: 'undefined' },
+          { name: 'label', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'disabled', type: 'boolean', default: 'false' },
+        ],
+        example: '<Toggle label="Dark mode" checked={dark} onChange={setDark} />',
+      },
+      {
+        name: 'RadioGroup',
+        category: 'core',
+        description: 'Mutually exclusive option group. Use for 2–8 items.',
+        props: [
+          { name: 'options', type: 'Array<string | {value, label, hint?, disabled?}>', default: 'required' },
+          { name: 'value', type: 'string', default: 'undefined' },
+          { name: 'onChange', type: '(value: string) => void', default: 'undefined' },
+          { name: 'label', type: 'string', default: 'undefined' },
+        ],
+        example: '<RadioGroup label="Mode" options={["Live", "Paper"]} value={mode} onChange={setMode} />',
+      },
+      {
+        name: 'SegmentedControl',
+        category: 'core',
+        description: 'Button-like toggle group for 2–3 short options.',
+        props: [
+          { name: 'options', type: 'Array<string | {value, label}>', default: 'required' },
+          { name: 'value', type: 'string', default: 'undefined' },
+          { name: 'onChange', type: '(value: string) => void', default: 'undefined' },
+        ],
+        example: '<SegmentedControl options={["1D", "1W", "1M"]} value={period} onChange={setPeriod} />',
+      },
+
+      // Core UI — Feedback & Status
+      {
+        name: 'Spinner',
+        category: 'core',
+        description: 'Loading indicator — animated circle.',
+        props: [
+          { name: 'size', type: '"sm" | "md" | "lg"', default: '"md"' },
+          { name: 'label', type: 'React.ReactNode', default: 'undefined' },
+        ],
+        example: '<Spinner label="Loading..." />',
+      },
+      {
+        name: 'ProgressBar',
+        category: 'core',
+        description: 'Linear progress indicator with optional label and value display.',
+        props: [
+          { name: 'value', type: 'number | null', default: 'null' },
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'showValue', type: 'boolean', default: 'false' },
+          { name: 'variant', type: '"accent" | "success" | "warning" | "danger"', default: '"accent"' },
+          { name: 'size', type: '"sm" | "md" | "lg"', default: '"md"' },
+        ],
+        example: '<ProgressBar value={65} label="Processing..." showValue />',
+      },
+      {
+        name: 'Gauge',
+        category: 'core',
+        description: 'Circular gauge (0–100 or custom max) with label and optional color.',
+        props: [
+          { name: 'value', type: 'number', default: '0' },
+          { name: 'max', type: 'number', default: '100' },
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'color', type: 'string (CSS color)', default: 'var(--accent)' },
+        ],
+        example: '<Gauge value={78} max={100} label="Fill" color="var(--green)" />',
+      },
+      {
+        name: 'LinearGauge',
+        category: 'core',
+        description: 'Flat bar gauge for space-constrained layouts.',
+        props: [
+          { name: 'value', type: 'number', default: '0' },
+          { name: 'max', type: 'number', default: '100' },
+          { name: 'label', type: 'string', default: 'undefined' },
+        ],
+        example: '<LinearGauge value={45} max={100} label="CPU" />',
+      },
+      {
+        name: 'StatusBanner',
+        category: 'core',
+        description: 'Inline status message (success, warning, danger, info).',
+        props: [
+          { name: 'tone', type: '"success" | "warning" | "danger" | "info"', default: '"success"' },
+          { name: 'title', type: 'string', default: 'required' },
+          { name: 'detail', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'action', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'onClose', type: '() => void', default: 'undefined' },
+        ],
+        example: '<StatusBanner tone="danger" title="Error" detail="Backfill failed at 14:02Z" />',
+      },
+      {
+        name: 'Callout',
+        category: 'core',
+        description: 'Inline prose guidance block with optional icon and tone.',
+        props: [
+          { name: 'title', type: 'string', default: 'undefined' },
+          { name: 'tone', type: '"info" | "warning" | "danger"', default: '"info"' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Callout tone="warning" title="Caution">Orders execute against real capital.</Callout>',
+      },
+      {
+        name: 'Toast',
+        category: 'core',
+        description: 'Transient notification. Use with <ToastProvider> and useToast() hook.',
+        props: [
+          { name: 'message', type: 'string', default: 'required' },
+          { name: 'tone', type: '"success" | "warning" | "danger" | "info"', default: '"info"' },
+          { name: 'duration', type: 'number (ms)', default: '3000' },
+        ],
+        example: 'const { showToast } = useToast(); showToast("Saved!", "success");',
+      },
+      {
+        name: 'FreshnessIndicator',
+        category: 'core',
+        description: 'Live-data staleness badge. Shows status, source, and last-seen time.',
+        props: [
+          { name: 'status', type: '"live" | "fresh" | "stale" | "offline" | "delayed" | "connecting"', default: '"live"' },
+          { name: 'source', type: 'string', default: 'undefined' },
+          { name: 'lastSeen', type: 'string (ISO or timestamp)', default: 'undefined' },
+        ],
+        example: '<FreshnessIndicator status="stale" source="Polygon" lastSeen="14:02:11Z" />',
+      },
+      {
+        name: 'ConnectionDot',
+        category: 'core',
+        description: 'Bare 8px liveness dot for inline use beside live numbers.',
+        props: [
+          { name: 'status', type: '"live" | "stale" | "offline" | "delayed"', default: '"live"' },
+          { name: 'size', type: 'number', default: '8' },
+          { name: 'title', type: 'string', default: 'undefined' },
+        ],
+        example: '<span>Price: <ConnectionDot status="live" /> $42.50</span>',
+      },
+
+      // Core UI — Overlays
+      {
+        name: 'Modal',
+        category: 'core',
+        description: 'Full-screen blocking overlay. Pair with ModalHeader, ModalBody, ModalFooter.',
+        props: [
+          { name: 'open', type: 'boolean', default: 'false' },
+          { name: 'onClose', type: '() => void', default: 'undefined' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Modal open={open} onClose={close}><ModalBody>...</ModalBody></Modal>',
+      },
+      {
+        name: 'ModalForm',
+        category: 'core',
+        description: 'Modal with form wiring (onSubmit gate, footer buttons).',
+        props: [
+          { name: 'open', type: 'boolean', default: 'false' },
+          { name: 'onClose', type: '() => void', default: 'required' },
+          { name: 'title', type: 'string', default: 'required' },
+          { name: 'onSubmit', type: '(e) => void', default: 'required' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<ModalForm open={open} title="Create" onClose={close} onSubmit={save}><ModalBody>...</ModalBody></ModalForm>',
+      },
+      {
+        name: 'Dialog',
+        category: 'core',
+        description: 'Small, centered blocking overlay for confirms and alerts.',
+        props: [
+          { name: 'open', type: 'boolean', default: 'false' },
+          { name: 'onClose', type: '() => void', default: 'undefined' },
+          { name: 'title', type: 'string', default: 'required' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Dialog open={confirm} onClose={cancel}><DialogBody>Delete this record?</DialogBody></Dialog>',
+      },
+      {
+        name: 'Drawer',
+        category: 'core',
+        description: 'Side panel that slides in from the edge (non-blocking).',
+        props: [
+          { name: 'open', type: 'boolean', default: 'false' },
+          { name: 'onClose', type: '() => void', default: 'undefined' },
+          { name: 'side', type: '"left" | "right"', default: '"right"' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Drawer open={open} onClose={close}><DrawerBody>...</DrawerBody></Drawer>',
+      },
+      {
+        name: 'Popover',
+        category: 'core',
+        description: 'Floating panel anchored to a trigger element (no backdrop).',
+        props: [
+          { name: 'open', type: 'boolean', default: 'false' },
+          { name: 'onClose', type: '() => void', default: 'undefined' },
+          { name: 'anchor', type: 'HTMLElement | React.RefObject', default: 'required' },
+          { name: 'placement', type: '"top" | "bottom" | "left" | "right"', default: '"bottom"' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Popover open={open} onClose={close} anchor={ref}><p>Content</p></Popover>',
+      },
+      {
+        name: 'ContextMenu',
+        category: 'core',
+        description: 'Right-click menu with dividers and keyboard navigation.',
+        props: [
+          { name: 'items', type: 'Array<{label?, icon?, onClick?, disabled?, dangerous?, type?}>', default: '[]' },
+          { name: 'x', type: 'number', default: '0' },
+          { name: 'y', type: 'number', default: '0' },
+          { name: 'onClose', type: '() => void', default: 'undefined' },
+        ],
+        example: 'const [menu, setMenu] = useState(null); {menu && <ContextMenu items={items} x={menu.x} y={menu.y} onClose={() => setMenu(null)} />}',
+      },
+      {
+        name: 'Tooltip',
+        category: 'core',
+        description: 'Hover-delayed tooltip label.',
+        props: [
+          { name: 'content', type: 'string', default: 'required' },
+          { name: 'placement', type: '"above" | "below" | "left" | "right"', default: '"above"' },
+          { name: 'delay', type: 'number (ms)', default: '300' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Tooltip content="Delete forever"><button>🗑</button></Tooltip>',
+      },
+
+      // Core UI — Navigation & hierarchy
+      {
+        name: 'Tabs',
+        category: 'core',
+        description: 'Tab group with panels. Pair with TabPanel.',
+        props: [
+          { name: 'activeKey', type: 'string', default: '0' },
+          { name: 'onChange', type: '(key: string) => void', default: 'undefined' },
+          { name: 'children', type: 'React.ReactNode (TabPanel)', default: 'required' },
+        ],
+        example: '<Tabs activeKey={tab} onChange={setTab}><TabPanel key="1" label="Tab 1">...</TabPanel></Tabs>',
+      },
+      {
+        name: 'Accordion',
+        category: 'core',
+        description: 'Collapsible section group.',
+        props: [
+          { name: 'items', type: 'Array<{key, label, content}>', default: 'required' },
+          { name: 'defaultExpanded', type: 'Array<string>', default: '[]' },
+          { name: 'allowMultiple', type: 'boolean', default: 'true' },
+        ],
+        example: '<Accordion items={sections} defaultExpanded={["1"]} />',
+      },
+      {
+        name: 'TreeView',
+        category: 'core',
+        description: 'Hierarchical tree with expand/collapse and selection.',
+        props: [
+          { name: 'items', type: 'Array<TreeNode>', default: 'required' },
+          { name: 'defaultExpanded', type: 'Array<string>', default: '[]' },
+          { name: 'onSelect', type: '(id: string) => void', default: 'undefined' },
+          { name: 'renderNode', type: '(node: TreeNode) => React.ReactNode', default: 'default' },
+        ],
+        example: '<TreeView items={accounts} defaultExpanded={["1000"]} onSelect={navigate} />',
+      },
+      {
+        name: 'Breadcrumb',
+        category: 'core',
+        description: 'Navigation path — slash-separated links.',
+        props: [
+          { name: 'items', type: 'Array<{label, href?, onClick?}>', default: 'required' },
+        ],
+        example: '<Breadcrumb items={[{label: "Home"}, {label: "Accounts"}, {label: "4000"}]} />',
+      },
+      {
+        name: 'Stepper',
+        category: 'core',
+        description: 'Step indicator for multi-step flows.',
+        props: [
+          { name: 'steps', type: 'Array<{label, status?}>', default: 'required' },
+          { name: 'activeIndex', type: 'number', default: '0' },
+        ],
+        example: '<Stepper steps={steps} activeIndex={2} />',
+      },
+
+      // Core UI — Forms & layout
+      {
+        name: 'FormField',
+        category: 'core',
+        description: 'Wrapper for label, control, hint, and error (use instead of raw labels).',
+        props: [
+          { name: 'label', type: 'string', default: 'required' },
+          { name: 'hint', type: 'string', default: 'undefined' },
+          { name: 'error', type: 'string', default: 'undefined' },
+          { name: 'required', type: 'boolean', default: 'false' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<FormField label="Account" error={err}><Combobox ... /></FormField>',
+      },
+      {
+        name: 'Form',
+        category: 'core',
+        description: 'Grid layout for multi-field forms (alias for FormGrid).',
+        props: [
+          { name: 'cols', type: 'number', default: '2' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Form cols={2}><FormField ...>...</FormField></Form>',
+      },
+      {
+        name: 'Grid',
+        category: 'core',
+        description: 'CSS grid layout with automatic gap from token scale.',
+        props: [
+          { name: 'cols', type: 'number', default: '2' },
+          { name: 'gap', type: '"xs" | "sm" | "md" | "lg" | "xl" | "2xl"', default: '"md"' },
+          { name: 'rows', type: 'string (CSS grid-template-rows)', default: 'auto' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Grid cols={3} gap="lg"><Card>1</Card><Card>2</Card></Grid>',
+      },
+      {
+        name: 'Flex',
+        category: 'core',
+        description: 'Flex layout with gap, alignment, and direction.',
+        props: [
+          { name: 'gap', type: '"xs" | "sm" | "md" | "lg" | "xl" | "2xl"', default: '"md"' },
+          { name: 'align', type: '"start" | "center" | "end" | "stretch"', default: 'undefined' },
+          { name: 'justify', type: '"start" | "center" | "end" | "between"', default: 'undefined' },
+          { name: 'vertical', type: 'boolean', default: 'false' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Flex gap="md" justify="between"><span>Left</span><span>Right</span></Flex>',
+      },
+      {
+        name: 'Stack',
+        category: 'core',
+        description: 'Semantic flex for vertical (or horizontal) stacks with spacing.',
+        props: [
+          { name: 'spacing', type: '"xs" | "sm" | "md" | "lg" | "xl" | "2xl"', default: '"md"' },
+          { name: 'direction', type: '"vertical" | "horizontal"', default: '"vertical"' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Stack spacing="lg"><Card>...</Card><Card>...</Card></Stack>',
+      },
+      {
+        name: 'PanelSurface',
+        category: 'core',
+        description: 'Card/panel container with optional raised elevation.',
+        props: [
+          { name: 'raised', type: 'boolean', default: 'false' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<PanelSurface raised><Eyebrow>Title</Eyebrow>Content</PanelSurface>',
+      },
+
+      // Core UI — Command palette
+      {
+        name: 'CommandPalette',
+        category: 'core',
+        description: 'Ctrl-K keyboard-driven command search and execution.',
+        props: [
+          { name: 'open', type: 'boolean', default: 'undefined (uncontrolled)' },
+          { name: 'commands', type: 'Array<Command>', default: 'required' },
+          { name: 'onSelect', type: '(cmd: Command) => void', default: 'required' },
+          { name: 'hotkey', type: 'string', default: '"mod+k"' },
+        ],
+        example: 'const { open, setOpen } = useCommandPalette(); <CommandPalette open={open} commands={cmds} onSelect={run} />',
+      },
+
+      // Core UI — Density
+      {
+        name: 'DensityToggle',
+        category: 'core',
+        description: 'User control to switch between compact and spacious density modes.',
+        props: [
+          { name: 'default', type: '"compact" | "spacious"', default: '"spacious"' },
+          { name: 'persist', type: 'boolean', default: 'true' },
+        ],
+        example: '<DensityToggle default="spacious" persist />',
+      },
+
+      // Data — Tables
+      {
+        name: 'DenseDataTable',
+        category: 'data',
+        description: 'The workhorse — mono, tabular, zebra-striped, sortable, selectable data grid.',
+        props: [
+          { name: 'columns', type: 'Array<Column>', default: 'required' },
+          { name: 'rows', type: 'Array<object>', default: 'required' },
+          { name: 'sortKey', type: 'string', default: 'undefined' },
+          { name: 'sortDir', type: '"asc" | "desc"', default: '"asc"' },
+          { name: 'onSort', type: '(key: string) => void', default: 'undefined' },
+          { name: 'selectedIndex', type: 'number', default: '-1' },
+          { name: 'onRowClick', type: '(row, idx) => void', default: 'undefined' },
+          { name: 'selectable', type: 'boolean', default: 'false' },
+          { name: 'selectedRows', type: 'Array<number>', default: '[]' },
+          { name: 'onSelectRow', type: '(row, idx, selected) => void', default: 'undefined' },
+        ],
+        example: '<DenseDataTable columns={cols} rows={data} sortKey={key} sortDir={dir} onSort={setSort} />',
+      },
+      {
+        name: 'FilteredDataTable',
+        category: 'data',
+        description: 'Data table with integrated search, sort, filter toolbar.',
+        props: [
+          { name: 'data', type: 'Array<object>', default: '[]' },
+          { name: 'columns', type: 'Array<Column>', default: '[]' },
+          { name: 'onDataChange', type: '(state: TableState) => void', default: 'undefined' },
+          { name: 'rowsPerPage', type: 'number', default: '20' },
+        ],
+        example: '<FilteredDataTable data={records} columns={cols} />',
+      },
+      {
+        name: 'ExpandableDataTable',
+        category: 'data',
+        description: 'Table where rows can expand to show detail content.',
+        props: [
+          { name: 'columns', type: 'Array<Column>', default: 'required' },
+          { name: 'rows', type: 'Array<object>', default: 'required' },
+          { name: 'expandedRow', type: '(row) => React.ReactNode', default: 'undefined' },
+          { name: 'onExpandChange', type: '(idx, expanded) => void', default: 'undefined' },
+        ],
+        example: '<ExpandableDataTable columns={cols} rows={rows} expandedRow={(r) => <AccountDetail acc={r} />} />',
+      },
+      {
+        name: 'VirtualizedList',
+        category: 'data',
+        description: 'Renders only visible rows in a large list (1k–100k rows).',
+        props: [
+          { name: 'items', type: 'Array<T>', default: 'required' },
+          { name: 'rowHeight', type: 'number', default: 'required' },
+          { name: 'renderRow', type: '(item, idx) => React.ReactNode', default: 'required' },
+          { name: 'height', type: 'number | string', default: '"100%"' },
+        ],
+        example: '<VirtualizedList items={1M rows} rowHeight={34} renderRow={(r) => <Row {...r} />} height="100%" />',
+      },
+      {
+        name: 'EditableCell',
+        category: 'data',
+        description: 'Inline-editable table cell (click to edit, blur to save).',
+        props: [
+          { name: 'value', type: 'any', default: 'required' },
+          { name: 'onChange', type: '(value) => void', default: 'required' },
+          { name: 'type', type: '"text" | "number" | "select"', default: '"text"' },
+          { name: 'options', type: 'Array<string>', default: 'undefined (for select)' },
+        ],
+        example: '<td><EditableCell value={qty} onChange={setQty} type="number" /></td>',
+      },
+      {
+        name: 'Pagination',
+        category: 'data',
+        description: 'Page navigator for large result sets.',
+        props: [
+          { name: 'currentPage', type: 'number', default: '1' },
+          { name: 'totalPages', type: 'number', default: '1' },
+          { name: 'onPageChange', type: '(page: number) => void', default: 'undefined' },
+          { name: 'pageSize', type: 'number', default: '20' },
+        ],
+        example: '<Pagination currentPage={page} totalPages={100} onPageChange={setPage} />',
+      },
+      {
+        name: 'ColumnChooser',
+        category: 'data',
+        description: 'Checkbox menu to show/hide columns.',
+        props: [
+          { name: 'columns', type: 'Array<{key, label}>', default: 'required' },
+          { name: 'visible', type: 'Set<string> | Array<string>', default: 'all' },
+          { name: 'onChange', type: '(visible: Set<string>) => void', default: 'required' },
+        ],
+        example: '<ColumnChooser columns={cols} visible={visibleCols} onChange={setVisible} />',
+      },
+      {
+        name: 'BulkActionBar',
+        category: 'data',
+        description: 'Toolbar for bulk operations on selected rows.',
+        props: [
+          { name: 'selectedCount', type: 'number', default: '0' },
+          { name: 'actions', type: 'Array<{label, onClick, tone?}>', default: 'required' },
+          { name: 'onClear', type: '() => void', default: 'undefined' },
+        ],
+        example: '<BulkActionBar selectedCount={n} actions={[{label: "Delete", onClick: delete}]} />',
+      },
+      {
+        name: 'SelectionToolbar',
+        category: 'data',
+        description: 'Toolbar with "X selected" counter and action buttons.',
+        props: [
+          { name: 'count', type: 'number', default: '0' },
+          { name: 'actions', type: 'Array<SelectionAction>', default: 'required' },
+        ],
+        example: '<SelectionToolbar count={5} actions={actions} />',
+      },
+      {
+        name: 'MetricCard',
+        category: 'data',
+        description: 'Single headline metric with 3px accent border, small-caps label, and signed delta.',
+        props: [
+          { name: 'label', type: 'string', default: 'required' },
+          { name: 'value', type: 'string', default: 'required' },
+          { name: 'delta', type: 'string', default: 'undefined' },
+          { name: 'tone', type: '"neutral" | "success" | "danger" | "warning"', default: '"neutral"' },
+          { name: 'trend', type: '"up" | "down" | "flat"', default: 'inferred from delta sign' },
+        ],
+        example: '<MetricCard label="Net liquidation" value="$2.4M" delta="+$142K" tone="success" />',
+      },
+      {
+        name: 'KeyValueGrid',
+        category: 'data',
+        description: 'Fact grid for entity summaries and inspector panels.',
+        props: [
+          { name: 'items', type: 'Array<{label, value}>', default: 'required' },
+          { name: 'columns', type: 'number', default: '2' },
+        ],
+        example: '<KeyValueGrid items={[{label: "Type", value: "Stock"}]} />',
+      },
+      {
+        name: 'EntitySummary',
+        category: 'data',
+        description: 'Identity fact band — label-over-value grid with per-item mono/color control.',
+        props: [
+          { name: 'items', type: 'Array<{label, value, mono?, color?}>', default: 'required' },
+          { name: 'columns', type: 'number', default: '3' },
+        ],
+        example: '<EntitySummary items={[{label: "ISIN", value: "US0378331005", mono: true}]} />',
+      },
+      {
+        name: 'EmptyState',
+        category: 'data',
+        description: 'Placeholder for empty result sets.',
+        props: [
+          { name: 'icon', type: '"table" | "search" | "chart" | "docs" | "inbox"', default: '"table"' },
+          { name: 'title', type: 'string', default: '"No data"' },
+          { name: 'detail', type: 'string', default: 'undefined' },
+          { name: 'action', type: 'string', default: 'undefined' },
+          { name: 'onAction', type: '() => void', default: 'undefined' },
+          { name: 'compact', type: 'boolean', default: 'false' },
+        ],
+        example: '<EmptyState icon="search" title="No results" detail="Try a different search." />',
+      },
+      {
+        name: 'Skeleton',
+        category: 'data',
+        description: 'Placeholder shimmer for loading states.',
+        props: [
+          { name: 'variant', type: '"block" | "text" | "circle"', default: '"block"' },
+          { name: 'width', type: 'string | number', default: '100%' },
+          { name: 'height', type: 'string | number', default: '16px' },
+          { name: 'lines', type: 'number', default: '3' },
+        ],
+        example: '<Skeleton variant="text" width="200px" height="16px" lines={4} />',
+      },
+      {
+        name: 'SkeletonTable',
+        category: 'data',
+        description: 'Table skeleton for data-loading states.',
+        props: [
+          { name: 'rows', type: 'number', default: '5' },
+          { name: 'columns', type: 'number', default: '4' },
+        ],
+        example: '<SkeletonTable rows={10} columns={6} />',
+      },
+
+      // Accounting
+      {
+        name: 'LedgerTable',
+        category: 'accounting',
+        description: 'GL table with entries, balances, running total, and imbalance detection.',
+        props: [
+          { name: 'entries', type: 'Array<{date, account, debit, credit, memo}>', default: 'required' },
+          { name: 'currency', type: 'string', default: '"USD"' },
+          { name: 'highlightImbalance', type: 'boolean', default: 'true' },
+        ],
+        example: '<LedgerTable entries={transactions} currency="USD" />',
+      },
+      {
+        name: 'StatementTable',
+        category: 'accounting',
+        description: 'Income statement / balance sheet with sections, subtotals, double-ruled total.',
+        props: [
+          { name: 'sections', type: 'Array<StatementSection>', default: 'required' },
+          { name: 'columns', type: 'Array<{key, label}>', default: '[{key: "actual", label: "Actual"}]' },
+          { name: 'currency', type: 'string', default: '"USD"' },
+          { name: 'total', type: 'StatementValue', default: 'required' },
+        ],
+        example: '<StatementTable sections={sections} total={total} currency="USD" />',
+      },
+      {
+        name: 'AccountTree',
+        category: 'accounting',
+        description: 'GL chart with hierarchical nesting, expand/collapse, and rolled balances.',
+        props: [
+          { name: 'nodes', type: 'Array<AccountNode>', default: 'required' },
+          { name: 'currency', type: 'string', default: '"USD"' },
+          { name: 'onSelect', type: '(code: string) => void', default: 'undefined' },
+        ],
+        example: '<AccountTree nodes={accounts} currency="USD" onSelect={navigate} />',
+      },
+      {
+        name: 'JournalEntryForm',
+        category: 'accounting',
+        description: 'Double-entry form with automatic balancing, validation, and posting gate.',
+        props: [
+          { name: 'initialLines', type: 'Array<{account, debit, credit}>', default: '[]' },
+          { name: 'initialHeader', type: '{date, reference, memo}', default: 'undefined' },
+          { name: 'accounts', type: 'Array<string>', default: 'required' },
+          { name: 'onPost', type: '(header, lines) => void', default: 'required' },
+        ],
+        example: '<JournalEntryForm accounts={accts} onPost={save} />',
+      },
+      {
+        name: 'TaxLotTable',
+        category: 'accounting',
+        description: 'Position tax lots with acquisition date, holding period badge, and P&L.',
+        props: [
+          { name: 'lots', type: 'Array<TaxLot>', default: 'required' },
+          { name: 'currency', type: 'string', default: '"USD"' },
+          { name: 'onSelect', type: '(lot: TaxLot) => void', default: 'undefined' },
+        ],
+        example: '<TaxLotTable lots={positions} currency="USD" onSelect={inspect} />',
+      },
+      {
+        name: 'ReconciliationPanel',
+        category: 'accounting',
+        description: 'Two-panel diff for reconciling statements or ledgers.',
+        props: [
+          { name: 'left', type: 'Array<{id, amount, matched?}>', default: 'required' },
+          { name: 'right', type: 'Array<{id, amount, matched?}>', default: 'required' },
+          { name: 'onMatch', type: '(leftId, rightId) => void', default: 'required' },
+          { name: 'currency', type: 'string', default: '"USD"' },
+        ],
+        example: '<ReconciliationPanel left={statement} right={ledger} onMatch={match} currency="USD" />',
+      },
+      {
+        name: 'AmountCell',
+        category: 'accounting',
+        description: 'Mono tabular currency cell with fixed decimals and accounting parentheses.',
+        props: [
+          { name: 'value', type: 'number', default: 'required' },
+          { name: 'currency', type: 'string', default: '"USD"' },
+          { name: 'decimals', type: 'number', default: '2' },
+          { name: 'tone', type: '"neutral" | "success" | "danger"', default: '"neutral"' },
+        ],
+        example: '<AmountCell value={-14221} currency="USD" tone="danger" />',
+      },
+
+      // Charts
+      {
+        name: 'CandleChart',
+        category: 'charts',
+        description: 'OHLC candlestick chart with optional overlays (MAs), legend, and crosshair.',
+        props: [
+          { name: 'bars', type: 'Array<Candle>', default: 'required' },
+          { name: 'overlays', type: 'Array<{label, color, data}>', default: '[MA20, MA50]' },
+          { name: 'height', type: 'number', default: '400' },
+          { name: 'onCrosshair', type: '(candle, overlay) => void', default: 'undefined' },
+        ],
+        example: '<CandleChart bars={data} overlays={[{label: "MA20", color: "var(--accent)"}]} />',
+      },
+      {
+        name: 'EquityCurve',
+        category: 'charts',
+        description: 'Cumulative return line chart (portfolio value over time) with benchmark overlay.',
+        props: [
+          { name: 'series', type: 'Array<{t: string, v: number}>', default: 'required' },
+          { name: 'benchmark', type: 'Array<{t: string, v: number}>', default: 'undefined' },
+          { name: 'height', type: 'number', default: '300' },
+        ],
+        example: '<EquityCurve series={equity} benchmark={sp500} height={350} />',
+      },
+      {
+        name: 'DrawdownChart',
+        category: 'charts',
+        description: 'Peak-to-trough underwater plot (drawdown % over time).',
+        props: [
+          { name: 'series', type: 'Array<number>', default: 'required' },
+          { name: 'height', type: 'number', default: '250' },
+          { name: 'maxDrawdown', type: 'number', default: 'auto' },
+        ],
+        example: '<DrawdownChart series={drawdowns} maxDrawdown={-0.35} />',
+      },
+      {
+        name: 'Histogram',
+        category: 'charts',
+        description: 'Distribution plot (returns frequency, sample histogram).',
+        props: [
+          { name: 'data', type: 'Array<number>', default: 'required' },
+          { name: 'bins', type: 'number', default: '20' },
+          { name: 'height', type: 'number', default: '300' },
+        ],
+        example: '<Histogram data={returns} bins={25} height={350} />',
+      },
+      {
+        name: 'DepthChart',
+        category: 'charts',
+        description: 'Order-book depth profile (cumulative size vs. price).',
+        props: [
+          { name: 'bids', type: 'Array<{price, size}>', default: 'required' },
+          { name: 'asks', type: 'Array<{price, size}>', default: 'required' },
+          { name: 'mid', type: 'number', default: 'auto' },
+          { name: 'height', type: 'number', default: '300' },
+        ],
+        example: '<DepthChart bids={bids} asks={asks} mid={42.5} />',
+      },
+      {
+        name: 'CorrelationHeatmap',
+        category: 'charts',
+        description: 'Pairwise correlation matrix (returns distribution).',
+        props: [
+          { name: 'series', type: 'Map<string, Array<number>>', default: 'required' },
+          { name: 'height', type: 'number', default: '400' },
+        ],
+        example: '<CorrelationHeatmap series={tickers} height={450} />',
+      },
+      {
+        name: 'Sparkline',
+        category: 'charts',
+        description: 'Inline trend chart (no axes, legend, or labels).',
+        props: [
+          { name: 'data', type: 'Array<number>', default: 'required' },
+          { name: 'height', type: 'number', default: '24' },
+          { name: 'color', type: 'string (CSS color)', default: 'var(--accent)' },
+        ],
+        example: '<Sparkline data={series} color="var(--green)" />',
+      },
+      {
+        name: 'ChartCard',
+        category: 'charts',
+        description: 'Titled frame for any chart with optional toolbar and legend.',
+        props: [
+          { name: 'title', type: 'string', default: 'required' },
+          { name: 'children', type: 'React.ReactNode (chart component)', default: 'required' },
+          { name: 'toolbar', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'height', type: 'number', default: '400' },
+        ],
+        example: '<ChartCard title="P&L" height={300}><EquityCurve series={data} /></ChartCard>',
+      },
+
+      // Shell
+      {
+        name: 'WorkstationTopbar',
+        category: 'shell',
+        description: 'Header with brand, module label, breadcrumb, command search, clock, environment badge.',
+        props: [
+          { name: 'moduleLabel', type: 'string', default: 'undefined' },
+          { name: 'breadcrumb', type: 'Array<{label, href?, onClick?}>', default: 'undefined' },
+          { name: 'environment', type: '"live" | "paper" | "fixture"', default: '"live"' },
+          { name: 'onCommandSearch', type: '(query) => Array<Command>', default: 'undefined' },
+        ],
+        example: '<WorkstationTopbar moduleLabel="Security Master" environment="paper" />',
+      },
+      {
+        name: 'NavRail',
+        category: 'shell',
+        description: '224px vertical nav with icon + label items, active indicator, density toggle.',
+        props: [
+          { name: 'items', type: 'Array<{key, icon, label, badge?}>', default: 'required' },
+          { name: 'activeKey', type: 'string', default: 'undefined' },
+          { name: 'onSelect', type: '(key: string) => void', default: 'required' },
+          { name: 'footer', type: 'React.ReactNode', default: 'undefined' },
+        ],
+        example: '<NavRail items={modules} activeKey={active} onSelect={navigate} footer={<DensityToggle />} />',
+      },
+      {
+        name: 'StatusBar',
+        category: 'shell',
+        description: 'Footer telemetry bar — mono fields (connection, sync, counts, latency).',
+        props: [
+          { name: 'items', type: 'Array<StatusBarItem>', default: 'required' },
+        ],
+        example: '<StatusBar items={[{label: "Connection", value: "live"}, {label: "Sync", value: "0ms"}]} />',
+      },
+
+      // ════════ Specialized inputs, validation & compound sub-components (complete the 99) ════════
+
+      // Core UI — Date & file inputs
+      {
+        name: 'DatePicker',
+        category: 'core',
+        description: 'Single-date field with a calendar popover. Read-only input; click to open.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'value', type: 'string (YYYY-MM-DD)', default: 'undefined' },
+          { name: 'onChange', type: '(date: string) => void', default: 'undefined' },
+        ],
+        example: '<DatePicker label="Trade date" value={date} onChange={setDate} />',
+      },
+      {
+        name: 'DateRangePicker',
+        category: 'core',
+        description: 'Start/end range field with a calendar popover.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'start', type: 'string (YYYY-MM-DD)', default: 'undefined' },
+          { name: 'end', type: 'string (YYYY-MM-DD)', default: 'undefined' },
+          { name: 'onChange', type: '(range: {start, end}) => void', default: 'undefined' },
+        ],
+        example: '<DateRangePicker label="Period" start={from} end={to} onChange={setRange} />',
+      },
+      {
+        name: 'FileUpload',
+        category: 'core',
+        description: 'Drag-and-drop file dropzone with a selected-file list.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'onFilesSelected', type: '(files: File[]) => void', default: 'required' },
+          { name: 'multiple', type: 'boolean', default: 'true' },
+          { name: 'accept', type: 'string (MIME / ext glob)', default: '"*"' },
+        ],
+        example: '<FileUpload label="Import CSV" accept=".csv" onFilesSelected={handle} />',
+      },
+
+      // Core UI — Form validation
+      {
+        name: 'FormValidation',
+        category: 'core',
+        description: 'Validation toolkit object: a Validators set plus validateField / validateForm helpers.',
+        props: [
+          { name: 'Validators', type: '{required, email, number, minLength, maxLength, pattern, custom}', default: 'provided' },
+          { name: 'validateField', type: '(value, validators[]) => string | null', default: 'provided' },
+          { name: 'validateForm', type: '(state, schema) => Record<string,string>', default: 'provided' },
+        ],
+        example: 'const errs = FormValidation.validateForm(state, { email: [Validators.required, Validators.email] });',
+      },
+      {
+        name: 'Validators',
+        category: 'core',
+        description: 'Reusable validator functions: required, email, number, minLength(n), maxLength(n), pattern(re,msg), custom(fn).',
+        props: [
+          { name: 'required', type: 'ValidatorFn', default: '—' },
+          { name: 'email', type: 'ValidatorFn', default: '—' },
+          { name: 'minLength', type: '(min: number) => ValidatorFn', default: '—' },
+          { name: 'pattern', type: '(re: RegExp, msg: string) => ValidatorFn', default: '—' },
+        ],
+        example: 'validators={[Validators.required, Validators.minLength(3)]}',
+      },
+      {
+        name: 'FieldInput',
+        category: 'core',
+        description: 'Self-validating text input — runs its validators on blur and shows its own error.',
+        props: [
+          { name: 'label', type: 'string', default: 'undefined' },
+          { name: 'value', type: 'any', default: 'required' },
+          { name: 'onChange', type: '(e: ChangeEvent) => void', default: 'undefined' },
+          { name: 'onBlur', type: '(e: FocusEvent) => void', default: 'undefined' },
+          { name: 'validators', type: 'ValidatorFn[]', default: '[]' },
+          { name: 'hint', type: 'string', default: 'undefined' },
+          { name: 'type', type: 'string', default: '"text"' },
+        ],
+        example: '<FieldInput label="Email" value={email} validators={[Validators.required, Validators.email]} />',
+      },
+      {
+        name: 'FormErrorSummary',
+        category: 'core',
+        description: 'Aggregated error list — maps field errors to labels at the top of a form.',
+        props: [
+          { name: 'errors', type: 'Record<string, string | null>', default: 'required' },
+          { name: 'fields', type: 'Record<string, {label: string}>', default: 'required' },
+        ],
+        example: '<FormErrorSummary errors={errors} fields={{email: {label: "Email"}}} />',
+      },
+
+      // Core UI — Compound form layout parts
+      {
+        name: 'FormGrid',
+        category: 'core',
+        description: 'Multi-column field grid behind <Form> (Form is the friendly alias).',
+        props: [
+          { name: 'cols', type: 'number', default: '2' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<FormGrid cols={2}><FormField ...>...</FormField></FormGrid>',
+      },
+      {
+        name: 'FormRow',
+        category: 'core',
+        description: 'Horizontal row of fields inside a form (spans grid columns).',
+        props: [
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<FormRow><FormField .../><FormField .../></FormRow>',
+      },
+      {
+        name: 'FormDivider',
+        category: 'core',
+        description: 'Hairline divider between form sections.',
+        props: [],
+        example: '<FormDivider />',
+      },
+      {
+        name: 'FormSectionLabel',
+        category: 'core',
+        description: 'Small-caps section heading inside a form.',
+        props: [
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<FormSectionLabel>Counterparty</FormSectionLabel>',
+      },
+
+      // Core UI — Compound overlay parts (Modal / Dialog / Drawer)
+      {
+        name: 'ModalHeader',
+        category: 'core',
+        description: 'Title region of a <Modal> (heading + optional close).',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<ModalHeader>New account</ModalHeader>',
+      },
+      {
+        name: 'ModalBody',
+        category: 'core',
+        description: 'Scrollable content region of a <Modal>.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<ModalBody><FormField ...>...</FormField></ModalBody>',
+      },
+      {
+        name: 'ModalFooter',
+        category: 'core',
+        description: 'Action bar of a <Modal> — right-aligned buttons.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<ModalFooter><Button>Cancel</Button><Button variant="primary">Save</Button></ModalFooter>',
+      },
+      {
+        name: 'DialogHeader',
+        category: 'core',
+        description: 'Title region of a <Dialog>.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<DialogHeader>Confirm delete</DialogHeader>',
+      },
+      {
+        name: 'DialogBody',
+        category: 'core',
+        description: 'Content region of a <Dialog>.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<DialogBody>This cannot be undone.</DialogBody>',
+      },
+      {
+        name: 'DialogFooter',
+        category: 'core',
+        description: 'Action bar of a <Dialog>.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<DialogFooter><Button>Cancel</Button><Button variant="danger">Delete</Button></DialogFooter>',
+      },
+      {
+        name: 'DrawerHeader',
+        category: 'core',
+        description: 'Title region of a <Drawer>.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<DrawerHeader>Inspector</DrawerHeader>',
+      },
+      {
+        name: 'DrawerBody',
+        category: 'core',
+        description: 'Scrollable content region of a <Drawer>.',
+        props: [{ name: 'children', type: 'React.ReactNode', default: 'required' }],
+        example: '<DrawerBody><EntitySummary .../></DrawerBody>',
+      },
+
+      // Core UI — Other compound parts
+      {
+        name: 'TabPanel',
+        category: 'core',
+        description: 'A single tab + its panel content inside <Tabs>.',
+        props: [
+          { name: 'label', type: 'string', default: 'required' },
+          { name: 'tabKey', type: 'string', default: 'index' },
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+        ],
+        example: '<Tabs><TabPanel label="Overview">...</TabPanel></Tabs>',
+      },
+      {
+        name: 'ToastProvider',
+        category: 'core',
+        description: 'Context provider for toasts — wrap your app, then call useToast().showToast().',
+        props: [
+          { name: 'children', type: 'React.ReactNode', default: 'required' },
+          { name: 'position', type: '"top-right" | "bottom-right" | …', default: '"bottom-right"' },
+        ],
+        example: '<ToastProvider><App /></ToastProvider>',
+      },
+      {
+        name: 'SelectCheckbox',
+        category: 'core',
+        description: 'Checkbox option row rendered inside <MultiSelect> dropdowns.',
+        props: [
+          { name: 'checked', type: 'boolean', default: 'false' },
+          { name: 'label', type: 'React.ReactNode', default: 'required' },
+          { name: 'onChange', type: '(checked: boolean) => void', default: 'undefined' },
+        ],
+        example: '// rendered internally by <MultiSelect>',
+      },
+
+      // Data — selection part
+      {
+        name: 'BulkSelectCheckbox',
+        category: 'data',
+        description: 'Header/row select-all checkbox paired with <BulkActionBar> and selectable tables.',
+        props: [
+          { name: 'checked', type: 'boolean', default: 'false' },
+          { name: 'indeterminate', type: 'boolean', default: 'false' },
+          { name: 'onChange', type: '(checked: boolean) => void', default: 'required' },
+        ],
+        example: '<BulkSelectCheckbox checked={all} indeterminate={some} onChange={toggleAll} />',
+      },
+
+      // ════════ Operations — the operator readiness / severity domain layer ════════
+      {
+        name: 'SeverityBadge',
+        category: 'operations',
+        description: 'Operator status chip. Collapses any readiness/gate/validation status onto 5 canonical severities (ready/review/action/blocked/info).',
+        props: [
+          { name: 'status', type: 'string (Ready, ReviewRequired, Blocked, Critical, Stale, …)', default: '"info"' },
+          { name: 'label', type: 'React.ReactNode', default: 'auto (severity name)' },
+          { name: 'dot', type: 'boolean', default: 'true' },
+        ],
+        example: '<SeverityBadge status="ReviewRequired" />',
+      },
+      {
+        name: 'ReadinessPanel',
+        category: 'operations',
+        description: 'Gate/readiness summary block — SeverityBadge + score, title, detail, and an action footer. Left rail tints by state.',
+        props: [
+          { name: 'state', type: 'string (readiness status)', default: '"info"' },
+          { name: 'title', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'detail', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'score', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'actions', type: 'React.ReactNode', default: 'undefined' },
+        ],
+        example: '<ReadinessPanel state="ReviewRequired" score="86 / 100" title="Reconciliation" detail="3 open exceptions." />',
+      },
+      {
+        name: 'GateRail',
+        category: 'operations',
+        description: 'The operations pipeline as a connected stepper (BrokerIngest→SecurityMaster→LedgerPosting→Reconciliation→Approval). Nodes tint by gate status.',
+        props: [
+          { name: 'gates', type: 'Array<{key?, label, status, statusLabel?}>', default: 'required' },
+        ],
+        example: '<GateRail gates={[{label:"Ingest",status:"Passed"},{label:"Recon",status:"ReviewRequired"}]} />',
+      },
+      {
+        name: 'ValidationIssueList',
+        category: 'operations',
+        description: 'The recurring {code, severity, message} validation pattern as compact rows. Info/Warning/Critical map to info/action/blocked.',
+        props: [
+          { name: 'issues', type: 'Array<{code?, severity, message, gate?}>', default: 'required' },
+          { name: 'dense', type: 'boolean', default: 'false' },
+          { name: 'emptyLabel', type: 'React.ReactNode', default: '"No issues"' },
+        ],
+        example: '<ValidationIssueList issues={[{code:"RECON-204",severity:"Critical",message:"Break exceeds tolerance."}]} />',
+      },
+      {
+        name: 'EvidenceLink',
+        category: 'operations',
+        description: 'Reference to an evidence artifact — status dot, label, mono route, open arrow. Renders <a> with href, else <button>.',
+        props: [
+          { name: 'label', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'status', type: 'string (Ready, ReviewRequired, Blocked, Stale, Missing)', default: '"info"' },
+          { name: 'route', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'href', type: 'string', default: 'undefined' },
+          { name: 'onOpen', type: '() => void', default: 'undefined' },
+        ],
+        example: '<EvidenceLink label="Recon pack" status="Ready" route="evidence://recon/2026-06" href="#" />',
+      },
+      {
+        name: 'TrustStrip',
+        category: 'operations',
+        description: 'Masthead readiness band — label/value items tinted by state (ready/review/blocked/pending). Operator evidence posture at a glance.',
+        props: [
+          { name: 'items', type: 'Array<{label, value, state}>', default: 'required' },
+        ],
+        example: '<TrustStrip items={[{label:"Readiness",value:"86/100",state:"review"}]} />',
+      },
+      {
+        name: 'WorkspaceSection',
+        category: 'operations',
+        description: 'Sticky section band — pinned header (title + summary + jump) over a content body. Bands an operator workspace into jump-to-able regions.',
+        props: [
+          { name: 'title', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'summary', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'jump', type: 'React.ReactNode', default: 'undefined' },
+          { name: 'jumpHref', type: 'string', default: 'undefined' },
+          { name: 'id', type: 'string', default: 'undefined' },
+        ],
+        example: '<WorkspaceSection title="Reconciliation" summary="3 open exceptions" jump="Open lane">…</WorkspaceSection>',
+      },
+      {
+        name: 'InstrumentChip',
+        category: 'core',
+        description: 'Identity micro-chip for a tradable instrument — mono symbol, small-caps venue, asset-class block letter on a washed tint.',
+        props: [
+          { name: 'symbol', type: 'string', default: 'required' },
+          { name: 'venue', type: 'string', default: '—' },
+          { name: 'assetClass', type: '"eq"|"etf"|"fut"|"opt"|"fx"|"crypto"|"bond"', default: '"eq"' },
+          { name: 'size', type: '"sm" | "md"', default: '"md"' },
+          { name: 'selected', type: 'boolean', default: 'false' },
+          { name: 'onClick', type: '() => void', default: '—' },
+        ],
+        example: '<InstrumentChip symbol="AAPL" venue="XNAS" assetClass="eq" />',
+      },
+      {
+        name: 'FilterBuilder',
+        category: 'data',
+        description: 'Structured field/operator/value query rows, AND-combined; compiles a predicate for registry surfaces.',
+        props: [
+          { name: 'fields', type: 'FilterField[]', default: 'required' },
+          { name: 'value / defaultValue', type: 'FilterRow[]', default: 'one blank row' },
+          { name: 'onApply', type: '(rows, predicate) => void', default: '—' },
+          { name: 'onChange', type: '(rows) => void', default: '—' },
+          { name: 'summary', type: 'ReactNode', default: '—' },
+        ],
+        example: '<FilterBuilder fields={FIELDS} onApply={(rows, pred) => setVisible(all.filter(pred))} />',
+      },
+      {
+        name: 'CoverageMatrix',
+        category: 'charts',
+        description: 'Symbol × session data-availability heat grid — full/partial/gap/pending washes with a mono hover readout.',
+        props: [
+          { name: 'rows', type: '(string | {id,label})[]', default: 'required' },
+          { name: 'cols', type: '(string | {id,label})[]', default: 'required' },
+          { name: 'data', type: 'Record<string, Record<string, Cell|string>>', default: '—' },
+          { name: 'cellSize', type: 'number', default: '16' },
+          { name: 'onCellClick', type: '(row, col, cell) => void', default: '—' },
+        ],
+        example: '<CoverageMatrix rows={SYMS} cols={DAYS} data={COV} onCellClick={openScan} />',
+      },
+      {
+        name: 'TimeframeSwitcher',
+        category: 'charts',
+        description: 'Mono segmented resolution picker for chart toolbars (1m · 5m · 15m · 1h · 1D · 1W).',
+        props: [
+          { name: 'options', type: '(string | {value,label})[]', default: '["1m",…,"1W"]' },
+          { name: 'value / defaultValue', type: 'string', default: 'first option' },
+          { name: 'onChange', type: '(value) => void', default: '—' },
+          { name: 'size', type: '"sm" | "md"', default: '"sm"' },
+        ],
+        example: '<TimeframeSwitcher value={tf} onChange={setTf} />',
+      },
+      {
+        name: 'AsOfControl',
+        category: 'charts',
+        description: 'Session clock — Live (ticking UTC) ⇄ as-of (frozen datetime, amber AS-OF chip). Emits { mode, asOf }.',
+        props: [
+          { name: 'mode / defaultMode', type: '"live" | "asof"', default: '"live"' },
+          { name: 'asOf', type: 'Date | number | string', default: '—' },
+          { name: 'onChange', type: '({ mode, asOf }) => void', default: '—' },
+          { name: 'withDate', type: 'boolean', default: 'true' },
+        ],
+        example: '<AsOfControl onChange={({ mode, asOf }) => reprice(mode === "live" ? null : asOf)} />',
+      },
+      {
+        name: 'DepthLadder',
+        category: 'trading',
+        description: 'Classic DOM price ladder — bidSize | price | askSize with washed depth bars, spread bps row, last-price marker.',
+        props: [
+          { name: 'bids', type: '{price,size}[]', default: 'required (best-first)' },
+          { name: 'asks', type: '{price,size}[]', default: 'required (best-first)' },
+          { name: 'lastPrice', type: 'number', default: '—' },
+          { name: 'levels', type: 'number', default: '8' },
+          { name: 'onPriceClick', type: '(price, side) => void', default: '—' },
+        ],
+        example: '<DepthLadder bids={bids} asks={asks} lastPrice={201.11} onPriceClick={ticket.setLimit} />',
+      },
+      {
+        name: 'LogTail',
+        category: 'operations',
+        description: 'Mono evidence stream for raw process output — level-count filter chips, follow-tail that pauses on scroll.',
+        props: [
+          { name: 'entries', type: '{ts,level,source,text}[]', default: '[]' },
+          { name: 'title', type: 'string', default: '"Log"' },
+          { name: 'height', type: 'number | string', default: '240' },
+          { name: 'follow', type: 'boolean', default: 'true' },
+          { name: 'levelFilter', type: 'boolean', default: 'true' },
+        ],
+        example: '<LogTail title="backfill-7742" height={260} entries={LOG} />',
+      },
+      {
+        name: 'EventTimeline',
+        category: 'operations',
+        description: 'Vertical audit trail — severity-dotted rail, mono UTC time, optional day grouping, evidence links.',
+        props: [
+          { name: 'events', type: '{ts,action,actor,detail,severity,evidence}[]', default: '[]' },
+          { name: 'groupByDay', type: 'boolean', default: 'true' },
+          { name: 'dense', type: 'boolean', default: 'false' },
+        ],
+        example: '<EventTimeline events={HISTORY} />',
+      },
+    ];
+
+    // Filter and search logic
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const gridWrapper = document.getElementById('gridWrapper');
+    const grid = document.getElementById('componentGrid');
+    const noResults = document.getElementById('noResults');
+    const resultCount = document.getElementById('resultCount');
+    const detailPanel = document.getElementById('detailPanel');
+    const detailClose = document.getElementById('detailClose');
+
+    // Escape any value before injecting via innerHTML — prop types/examples contain
+    // literal < > (JSX tags, Array<T>, Record<…>) that would otherwise parse as HTML.
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    function renderComponents(filtered) {
+      grid.innerHTML = '';
+      resultCount.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        noResults.style.display = 'block';
+        return;
+      }
+      noResults.style.display = 'none';
+
+      filtered.forEach((comp) => {
+        const card = document.createElement('div');
+        card.className = 'component-card';
+        card.innerHTML = `
+          <div class="component-category">${esc(comp.category)}</div>
+          <div class="component-name">${esc(comp.name)}</div>
+          <div class="component-description">${esc(comp.description)}</div>
+        `;
+        card.addEventListener('click', () => showDetail(comp));
+        grid.appendChild(card);
+      });
+    }
+
+    function showDetail(comp) {
+      const propsHTML = comp.props
+        .map((p) => `<div class="prop-item"><span class="prop-name">${esc(p.name)}</span>: <span class="prop-type">${esc(p.type)}</span> <span class="prop-default">= ${esc(p.default)}</span></div>`)
+        .join('');
+
+      detailPanel.querySelector('#detailContent').innerHTML = `
+        <div class="detail-title">${esc(comp.name)}</div>
+        <div class="detail-category">${esc(comp.category)}</div>
+        <div class="detail-section">
+          <div class="detail-section-title">Description</div>
+          <p style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">${esc(comp.description)}</p>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">Props</div>
+          <div>${propsHTML || '<p style="color: var(--text-muted); font-size: 12px;">No props</p>'}</div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">Example</div>
+          <pre style="background: var(--bg-hover); border: 1px solid var(--border); border-radius: 2px; padding: 12px; overflow-x: auto; font-size: 11px; line-height: 1.4;">${comp.example ? esc(comp.example) : 'N/A'}</pre>
+        </div>
+      `;
+
+      detailPanel.classList.remove('hidden');
+      gridWrapper.classList.add('with-panel');
+    }
+
+    detailClose.addEventListener('click', () => {
+      detailPanel.classList.add('hidden');
+      gridWrapper.classList.remove('with-panel');
+    });
+
+    function filterComponents() {
+      const search = searchInput.value.toLowerCase();
+      const category = categoryFilter.value;
+
+      const filtered = components.filter((c) => {
+        const matchesSearch = c.name.toLowerCase().includes(search) || c.description.toLowerCase().includes(search);
+        const matchesCategory = !category || c.category === category;
+        return matchesSearch && matchesCategory;
+      });
+
+      renderComponents(filtered);
+    }
+
+    searchInput.addEventListener('input', filterComponents);
+    categoryFilter.addEventListener('change', filterComponents);
+
+    // Initial render
+    renderComponents(components);
+  </script>
+</body>
+</html>

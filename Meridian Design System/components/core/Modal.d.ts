@@ -3,6 +3,8 @@ import React from "react";
 export interface ModalProps {
   open?: boolean;
   onClose?: () => void;
+  /** Close on Escape keypress. The dialog also exposes role="dialog" + aria-modal. @default true */
+  closeOnEsc?: boolean;
   children: React.ReactNode;
 }
 

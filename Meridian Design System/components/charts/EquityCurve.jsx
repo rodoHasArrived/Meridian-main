@@ -18,6 +18,7 @@ function niceTicks(min, max, count) {
 export function EquityCurve({
   series, labels = [], drawdown = null, valueFmt = (v) => v.toFixed(0),
   crosshairIndex = null, valueTicks = 6, timeTicks = 7, showLegend = true, fill = true,
+  baseline = null, baselineLabel = null, showLast = true,
 }) {
   // series: [{ label, color, points:number[], dashed?, area? }]
   const W = 960, H = 460;
@@ -39,8 +40,8 @@ export function EquityCurve({
 
   const vTicks = niceTicks(min, max, valueTicks);
   const tStep = Math.max(1, Math.round(n / timeTicks));
-  const axFont = { fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 500 };
-  const labelFont = { fontFamily: "var(--font-data)", fontSize: 11 };
+  const axFont = { fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 500, fontVariantNumeric: "slashed-zero tabular-nums" };
+  const labelFont = { fontFamily: "var(--font-data)", fontSize: 11, fontVariantNumeric: "slashed-zero tabular-nums" };
 
   // drawdown subpane scale (drawdown values are <= 0)
   const ddMin = drawdown ? Math.min(...drawdown, 0) : 0;
@@ -84,6 +85,14 @@ export function EquityCurve({
         <line x1={plotL - 1} x2={plotR} y1={eqB} y2={eqB} stroke="var(--chart-border)" strokeWidth="1.2" />
         <line x1={plotL - 1} x2={plotL - 1} y1={eqT} y2={eqB} stroke="var(--chart-border)" strokeWidth="1" opacity="0.4" />
 
+        {/* baseline / cost-basis reference */}
+        {baseline != null && baseline >= min && baseline <= max && (
+          <g>
+            <line x1={plotL} x2={plotR} y1={y(baseline)} y2={y(baseline)} stroke="var(--chart-axis)" strokeWidth="1" strokeDasharray="3 3" opacity="0.6" />
+            <text x={plotL + 4} y={y(baseline) - 5} fill="var(--chart-axis)" style={labelFont}>{baselineLabel || valueFmt(baseline)}</text>
+          </g>
+        )}
+
         {/* area fill for the first (primary) series */}
         {fill && series[0].area !== false && (
           <path d={area(series[0].points)} fill={series[0].color} opacity="0.10" />
@@ -93,6 +102,16 @@ export function EquityCurve({
           <path key={k} d={line(s.points)} fill="none" stroke={s.color} strokeWidth={k === 0 ? 2 : 1.5}
             strokeDasharray={s.dashed ? "5 4" : undefined} />
         ))}
+
+        {/* persistent last-value marker + right-axis chip (anchors the curve like the candle chart) */}
+        {showLast && series[0].points[n - 1] != null && (
+          <g>
+            <line x1={plotL} x2={x(n - 1)} y1={y(series[0].points[n - 1])} y2={y(series[0].points[n - 1])} stroke={series[0].color} strokeWidth="0.8" strokeDasharray="2 3" opacity="0.45" />
+            <circle cx={x(n - 1)} cy={y(series[0].points[n - 1])} r="3.5" fill={series[0].color} />
+            <rect x={plotR + 2} y={y(series[0].points[n - 1]) - 10} width={axisR - 4} height="20" fill={series[0].color} />
+            <text x={plotR + axisR / 2} y={y(series[0].points[n - 1]) + 5} fill="#fff" textAnchor="middle" style={{ ...axFont, fontWeight: 600, fontSize: 13 }}>{valueFmt(series[0].points[n - 1])}</text>
+          </g>
+        )}
 
         {/* drawdown subpane */}
         {drawdown && (

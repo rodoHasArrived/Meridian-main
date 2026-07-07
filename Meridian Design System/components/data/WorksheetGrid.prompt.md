@@ -1,0 +1,1 @@
+A worksheet cell. Addressed by `"<column key><row number>"` (e.g. `"E2"`), row numbers 1-based. `type` drives presentation: `label`/`text` render in the body font (left-aligned by default); everything else renders mono + right-aligned. `formula` cells get an accent corner mark and surface their `formula` in the formula bar; `error` cells tint with the red wash.

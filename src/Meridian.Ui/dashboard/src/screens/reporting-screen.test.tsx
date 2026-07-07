@@ -14,6 +14,7 @@ import type {
   AccountingWorkspaceResponse,
   FinancialRecordExplorerDto,
   ReportingRunStatusProjection,
+  ReportingStarterKitProvisionResult,
   ReportingTemplateMetadata
 } from "@/types";
 

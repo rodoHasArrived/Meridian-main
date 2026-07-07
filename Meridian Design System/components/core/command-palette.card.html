@@ -1,0 +1,61 @@
+<!-- @dsCard group="Core" viewport="1100x760" name="CommandPalette" subtitle="Ctrl-K operator command surface — grouped, keyboard-first, left-inset selection" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CommandPalette</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:0;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { CommandPalette } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+const ICON = {
+  route: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
+  run:   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><polygon points="6 4 20 12 6 20 6 4"/></svg>,
+  sym:   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 17l6-6 4 4 8-8"/></svg>,
+  cog:   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>,
+};
+
+function Demo() {
+  const [open, setOpen] = useState(true);
+  const [last, setLast] = useState("Trading workstation");
+
+  const commands = [
+    { id:"w-trade",   group:"Workstations", label:"Trading workstation",   icon:ICON.sym,   hint:"→", keywords:["positions","orders"], run:()=>setLast("Trading workstation") },
+    { id:"w-acct",    group:"Workstations", label:"Accounting · general ledger", icon:ICON.route, hint:"→", keywords:["books","gl"], run:()=>setLast("Accounting · general ledger") },
+    { id:"w-plot",    group:"Workstations", label:"PlotTool · charting",    icon:ICON.route, hint:"→", keywords:["ohlc","chart"], run:()=>setLast("PlotTool · charting") },
+    { id:"w-secm",    group:"Workstations", label:"Security master registry", icon:ICON.route, hint:"→", keywords:["symbols","identifiers"], run:()=>setLast("Security master registry") },
+    { id:"r-back",    group:"Runs",         label:"Run backtest — momentum.v4", icon:ICON.run, shortcut:"R", keywords:["strategy"], run:()=>setLast("Backtest queued") },
+    { id:"r-scan",    group:"Runs",         label:"Quality scan — all providers", icon:ICON.run, keywords:["gaps","health"], run:()=>setLast("Scan started") },
+    { id:"r-back2",   group:"Runs",         label:"Backfill — AAPL 1m · 5y",  icon:ICON.run, keywords:["polygon"], run:()=>setLast("Backfill started") },
+    { id:"s-theme",   group:"Settings",     label:"Toggle dark mode",         icon:ICON.cog, shortcut:["Ctrl","D"], run:()=>setLast("Theme toggled") },
+    { id:"s-density", group:"Settings",     label:"Display density",          icon:ICON.cog, run:()=>setLast("Density opened") },
+    { id:"s-kill",    group:"Settings",     label:"Halt live trading",        icon:ICON.cog, danger:true, hint:"confirm", run:()=>setLast("Halt requested") },
+  ];
+
+  return (
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:18, padding:24 }}>
+      <div style={{ textAlign:"center", maxWidth:440 }}>
+        <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".06em", color:"var(--text-muted)", marginBottom:6 }}>Command palette</div>
+        <div style={{ fontFamily:"var(--font-data)", fontSize:13, color:"var(--text-secondary)" }}>
+          Last action: <strong style={{ color:"var(--text-primary)" }}>{last}</strong>
+        </div>
+        <button onClick={() => setOpen(true)} style={{ marginTop:14, display:"inline-flex", alignItems:"center", gap:10, padding:"8px 12px", background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, fontFamily:"var(--font-data)", fontSize:13, color:"var(--text-secondary)", cursor:"pointer" }}>
+          <span style={{ color:"var(--text-muted)" }}>⌕</span> Search…
+          <span style={{ fontSize:10, fontWeight:600, border:"1px solid var(--border)", padding:"1px 6px", borderRadius:2 }}>Ctrl K</span>
+        </button>
+        <div style={{ marginTop:10, fontSize:11, color:"var(--text-muted)" }}>Press <strong>Ctrl/⌘ K</strong> to toggle · type to filter · ↑↓ then ↵</div>
+      </div>
+      <CommandPalette open={open} onOpenChange={setOpen} commands={commands} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+DepthChart — order-book market depth (volume profile). Cumulative bid size rises as a green step area toward the mid from the left; cumulative ask size rises red to the right. The mid price marks the spread. Reads a live order book at a glance.

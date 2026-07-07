@@ -1,0 +1,173 @@
+<!-- @dsCard group="Documentation" viewport="1200x900" name="Component API: Button" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Button — API Reference</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    body { margin: 0; padding: 20px; font-family: var(--font-body, system-ui); background: var(--bg); color: var(--text-primary); }
+    .api-doc { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-top: 0; }
+    h2 { font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 32px; }
+    .props-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    .props-table th { background: var(--bg-medium); padding: 10px 12px; text-align: left; border: 1px solid var(--border); font-weight: 600; }
+    .props-table td { padding: 10px 12px; border: 1px solid var(--border); }
+    .props-table .prop-name { font-family: var(--font-data); color: var(--accent); font-weight: 600; }
+    .props-table .prop-type { font-family: var(--font-data); color: var(--text-muted); font-size: 11px; }
+    .props-table .prop-default { font-family: var(--font-data); color: var(--text-muted); }
+    .example { background: var(--bg-light); border: 1px solid var(--border); padding: 16px; margin: 16px 0; }
+    .example-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-preview { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .example-code { background: #E4E7EA; border: 1px solid var(--border); padding: 12px; font-family: var(--font-data); font-size: 11px; overflow-x: auto; border-radius: 2px; }
+    .note { background: #D2D8DE; border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; }
+    button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; font-family: inherit; font-size: 13px; }
+    button:hover { background: var(--bg-hover); }
+    button.primary { background: var(--accent); color: white; border-color: var(--accent); font-weight: 600; }
+    button.ghost { background: transparent; border-color: var(--border); }
+    button.danger { background: var(--bg-light); border-color: var(--border); color: var(--red); font-weight: 600; }
+    button.link { background: transparent; border: none; padding: 0; color: var(--accent); font-weight: 600; font-size: 12px; }
+    button.link:hover { text-decoration: underline; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="api-doc">
+    <h1>Button</h1>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">Primary, ghost, danger, and link button variants. Use for all user actions: submit, cancel, navigation, and more.</p>
+
+    <h2>Props</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Prop</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="prop-name">variant</span></td>
+          <td><span class="prop-type">"primary" | "ghost" | "danger" | "link"</span></td>
+          <td><span class="prop-default">"primary"</span></td>
+          <td>Visual style. Primary is the one solid action per screen; ghost is the paper secondary (most buttons); danger resolves to red on hover; link is text-only.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">size</span></td>
+          <td><span class="prop-type">"sm" | "default" | "lg" | "icon"</span></td>
+          <td><span class="prop-default">"default"</span></td>
+          <td>Button size. Small for compact toolbars, large for prominent CTAs, icon for a 32×32 icon-only button.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">disabled</span></td>
+          <td><span class="prop-type">boolean</span></td>
+          <td><span class="prop-default">false</span></td>
+          <td>Disable the button and prevent interaction.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">onClick</span></td>
+          <td><span class="prop-type">function</span></td>
+          <td><span class="prop-default">—</span></td>
+          <td>Click event handler.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">children</span></td>
+          <td><span class="prop-type">ReactNode</span></td>
+          <td><span class="prop-default">—</span></td>
+          <td>Button label or content.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">className</span></td>
+          <td><span class="prop-type">string</span></td>
+          <td><span class="prop-default">""</span></td>
+          <td>Additional CSS classes.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Examples</h2>
+
+    <div class="example">
+      <div class="example-title">1. Basic Usage</div>
+      <div class="example-preview">
+        <button class="primary">Save</button>
+        <button class="ghost">Cancel</button>
+        <button class="danger">Delete</button>
+        <button class="link">Learn more</button>
+      </div>
+      <div class="example-code">&lt;Button variant="primary"&gt;Save&lt;/Button&gt;
+&lt;Button variant="ghost"&gt;Cancel&lt;/Button&gt;
+&lt;Button variant="danger"&gt;Delete&lt;/Button&gt;
+&lt;Button variant="link"&gt;Learn more&lt;/Button&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">2. Sizes</div>
+      <div class="example-preview">
+        <button class="primary" style="padding: 4px 10px; font-size: 12px;">Small</button>
+        <button class="primary">Medium</button>
+        <button class="primary" style="padding: 12px 24px; font-size: 14px;">Large</button>
+      </div>
+      <div class="example-code">&lt;Button size="sm"&gt;Small&lt;/Button&gt;
+&lt;Button size="md"&gt;Medium&lt;/Button&gt;
+&lt;Button size="lg"&gt;Large&lt;/Button&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">3. Disabled State</div>
+      <div class="example-preview">
+        <button class="primary" disabled>Disabled primary</button>
+        <button class="ghost" disabled>Disabled ghost</button>
+        <button class="danger" disabled>Disabled danger</button>
+      </div>
+      <div class="example-code">&lt;Button disabled&gt;Disabled&lt;/Button&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">4. Form Submission</div>
+      <div class="example-code">&lt;form onSubmit={handleSubmit}&gt;
+  &lt;Input label="Name" /&gt;
+  &lt;Button variant="primary" type="submit"&gt;
+    Submit
+  &lt;/Button&gt;
+&lt;/form&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">5. Modal Actions</div>
+      <div class="example-code">&lt;Modal open={open}&gt;
+  &lt;ModalBody&gt;Are you sure?&lt;/ModalBody&gt;
+  &lt;div style={{display: 'flex', gap: 8}}&gt;
+    &lt;Button variant="primary" onClick={handleConfirm}&gt;
+      Confirm
+    &lt;/Button&gt;
+    &lt;Button variant="ghost" onClick={handleCancel}&gt;
+      Cancel
+    &lt;/Button&gt;
+  &lt;/div&gt;
+&lt;/Modal&gt;</div>
+    </div>
+
+    <h2>Accessibility</h2>
+    <div class="note">
+      ✓ <strong>Keyboard accessible:</strong> Buttons are focusable and respond to Enter/Space keys.
+      <br>✓ <strong>ARIA attributes:</strong> Set <code>aria-disabled="true"</code> on disabled buttons.
+      <br>✓ <strong>Focus visible:</strong> Clear focus outline on keyboard navigation.
+      <br>✓ <strong>Color contrast:</strong> All variants meet WCAG AA+ standards.
+    </div>
+
+    <h2>Usage Guidelines</h2>
+    <ul style="line-height: 1.8;">
+      <li><strong>Primary:</strong> Use for the main action on a screen (submit, save, confirm). Only one per screen.</li>
+      <li><strong>Ghost:</strong> The paper secondary — use for alternative and tertiary actions (apply filters, export, cancel, close). Multiple allowed; this is what most buttons on a screen should be.</li>
+      <li><strong>Danger:</strong> Destructive actions (delete, revoke, close position). Ghost styling with red text; resolves to a red wash on hover.</li>
+      <li><strong>Link:</strong> Text-only, for the lowest-emphasis actions (learn more, view details) inline with content.</li>
+      <li><strong>Size:</strong> <code>sm</code> for toolbars/inline actions, <code>lg</code> for prominent CTAs, <code>icon</code> for a 32×32 icon-only button. <code>default</code> is the base size.</li>
+      <li><strong>Disabled:</strong> Always provide context for why a button is disabled (e.g., "Fill in all required fields first").</li>
+    </ul>
+
+  </div>
+</body>
+</html>
