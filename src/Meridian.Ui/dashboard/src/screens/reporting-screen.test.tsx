@@ -9,7 +9,44 @@ import {
 } from "@/components/meridian/command-palette.actions";
 import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import { renderWithRouter } from "@/test/render";
-import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingStarterKitProvisionResult, ReportingTemplateMetadata } from "@/types";
+import { useReportRunStream } from "@/hooks/use-report-run-stream";
+import type {
+  AccountingWorkspaceResponse,
+  FinancialRecordExplorerDto,
+  ReportingRunStatusProjection,
+  ReportingTemplateMetadata
+} from "@/types";
+
+// The report-run live indicator is additive over the SSE hook; mock it so the default (unhealthy,
+// matching jsdom where EventSource is undefined) leaves every existing test untouched, and the tests
+// below can drive the healthy/pushed-status and run-selection paths.
+vi.mock("@/hooks/use-report-run-stream", () => ({
+  useReportRunStream: vi.fn(() => ({ status: null, healthy: false }))
+}));
+
+function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
+  return {
+    runId: "investor-monthly-statement-20260501",
+    templateId: "investor-monthly-statement",
+    family: "InvestorStatement",
+    status: "InReview",
+    trigger: "Scheduled",
+    asOfDate: "2026-05-01",
+    attemptCount: 1,
+    sectionCount: 2,
+    lineageLinkedSections: 2,
+    artifacts: ["manifest.json"],
+    generatedReportWriterGrids: [],
+    reportWriterDatasetSourceId: "portfolio-reporting-cuts",
+    reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
+    reportWriterDatasetRowCount: 2,
+    auditActions: ["RunGenerated", "ApprovalTransition"],
+    failureReason: null,
+    drilldownLinks: [],
+    nextActions: [],
+    ...overrides
+  };
+}
 
 function LocationSearchProbe() {
   const { search } = useLocation();
@@ -1385,6 +1422,8 @@ describe("ReportingScreen", () => {
       })
     });
     vi.stubGlobal("fetch", fetchMock);
+    vi.mocked(useReportRunStream).mockClear();
+    vi.mocked(useReportRunStream).mockReturnValue({ status: null, healthy: false });
   });
 
   it("renders loading copy when reporting data is unavailable", () => {
@@ -1449,7 +1488,7 @@ describe("ReportingScreen", () => {
       text: async () => JSON.stringify(provisioned)
     });
 
-    renderWithRouter(<ReportingScreen data={withReportingStarterKit()} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={withReportingStarterKit()} />, { initialEntries: ["/reporting/report-builder"] });
 
     expect(screen.getByRole("region", { name: "Set up your reporting desk" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Use Emerging Manager starter kit" }));
@@ -1492,13 +1531,14 @@ describe("ReportingScreen", () => {
   });
 
   it("renders report-pack distribution recipients with accessible row labels", () => {
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-packs"] });
 
-    expect(screen.getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();
-    expect(screen.getByLabelText(
+    const recipients = screen.getByRole("list", { name: "Report-pack distribution route recipients" });
+    expect(recipients).toBeInTheDocument();
+    expect(within(recipients).getByLabelText(
       "Board reporting committee report-pack distribution: 1 report pack still needs approval before Board reporting committee delivery."
     )).toHaveTextContent("State: Pending approval");
-    const boardRow = screen.getByLabelText(
+    const boardRow = within(recipients).getByLabelText(
       "Board reporting committee report-pack distribution: 1 report pack still needs approval before Board reporting committee delivery."
     );
     expect(boardRow).toHaveTextContent("Last sent: Not sent");
@@ -1506,7 +1546,7 @@ describe("ReportingScreen", () => {
       "href",
       "/reporting/report-packs?recipient=board"
     );
-    const complianceRow = screen.getByLabelText(
+    const complianceRow = within(recipients).getByLabelText(
       "Compliance archive report-pack distribution: No governed report pack is queued for Compliance archive."
     );
     expect(complianceRow).toHaveTextContent("State: No package queued");
@@ -1567,8 +1607,51 @@ describe("ReportingScreen", () => {
     expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
   });
 
+  it("keeps focused reporting task routes scoped to their owning intent", () => {
+    const builderRender = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: ["/reporting/report-builder"]
+    });
+    expect(screen.getByRole("region", { name: "No-code report writer" })).toBeInTheDocument();
+    expect(screen.getByText("Governed report templates")).toBeInTheDocument();
+    expect(screen.queryByText("Report run audit and lineage")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Report-pack approval task" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Structured reporting exports" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
+
+    builderRender.unmount();
+    const runStatusRender = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: ["/reporting/run-status"]
+    });
+    expect(screen.getByText("Report run audit and lineage")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "No-code report writer" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Report-pack approval task" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Structured reporting exports" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
+
+    runStatusRender.unmount();
+    const exportsRender = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: ["/reporting/exports"]
+    });
+    expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
+    expect(screen.getByText("Governed export queue")).toBeInTheDocument();
+    expect(screen.queryByText("Report run audit and lineage")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Report-pack approval task" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
+
+    exportsRender.unmount();
+    renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: ["/reporting/governance"]
+    });
+    expect(screen.getByRole("region", { name: "Reporting access audit" })).toBeInTheDocument();
+    expect(screen.getByText("Governed report templates")).toBeInTheDocument();
+    expect(screen.queryByText("Report run audit and lineage")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "No-code report writer" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Report-pack approval task" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Structured reporting exports" })).not.toBeInTheDocument();
+  });
+
   it("renders report-line provenance explorer drill-through from the shared reporting payload", () => {
-    renderWithRouter(<ReportingScreen data={withReportLineProvenanceExplorer()} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={withReportLineProvenanceExplorer()} />, { initialEntries: ["/reporting/report-packs"] });
 
     const explorer = screen.getByRole("region", { name: "Report-Line Provenance Explorer" });
     expect(within(explorer).getByText("Report-line provenance")).toBeInTheDocument();
@@ -1807,7 +1890,7 @@ describe("ReportingScreen", () => {
     })!;
 
     renderWithRouter(<ReportingScreen data={accounting} />, {
-      initialEntries: [`/reporting/report-builder?view=${token}`]
+      initialEntries: [`/reporting/exports?view=${token}`]
     });
 
     expect(screen.getByLabelText("Exports report as-of date")).toHaveValue("2026-06-30");
@@ -1822,7 +1905,7 @@ describe("ReportingScreen", () => {
     })!;
 
     const { unmount } = renderWithRouter(<ReportingScreen data={accounting} />, {
-      initialEntries: [`/reporting/report-builder?view=${unknownTemplate}`]
+      initialEntries: [`/reporting/exports?view=${unknownTemplate}`]
     });
     expect(screen.getByLabelText("Exports report as-of date")).not.toHaveValue("2026-06-30");
     unmount();
@@ -1834,7 +1917,7 @@ describe("ReportingScreen", () => {
     })!;
 
     renderWithRouter(<ReportingScreen data={accounting} />, {
-      initialEntries: [`/reporting/report-builder?view=${foreignScreen}`]
+      initialEntries: [`/reporting/exports?view=${foreignScreen}`]
     });
     expect(screen.getByLabelText("Exports report as-of date")).not.toHaveValue("2026-06-30");
   });
@@ -1875,7 +1958,7 @@ describe("ReportingScreen", () => {
 
   it("registers the exports-run palette action while mounted and unregisters on unmount", () => {
     const { unmount } = renderWithRouter(<ReportingScreen data={accounting} />, {
-      initialEntries: ["/reporting/report-builder"]
+      initialEntries: ["/reporting/exports"]
     });
 
     const registered = getCommandPaletteActionsSnapshot().find((item) => item.id === "reporting-run-exports");
@@ -1897,7 +1980,7 @@ describe("ReportingScreen", () => {
           <CommandPaletteActionsSubscriber />
           <ReportingScreen data={accounting} />
         </>,
-        { initialEntries: ["/reporting/report-builder"] }
+        { initialEntries: ["/reporting/exports"] }
       );
 
       expect(getCommandPaletteActionsSnapshot().some((item) => item.id === "reporting-run-exports")).toBe(true);
@@ -1910,7 +1993,7 @@ describe("ReportingScreen", () => {
   });
 
   it("renders structured exports from the shared reporting payload", () => {
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
     expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
     const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
@@ -2041,7 +2124,7 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={blockedAccounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={blockedAccounting} />, { initialEntries: ["/reporting/exports"] });
 
     const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
     expect(within(regulatoryRow).getByText("Blocked")).toBeInTheDocument();
@@ -3819,7 +3902,7 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={accountingWithRunLinks} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accountingWithRunLinks} />, { initialEntries: ["/reporting/run-status"] });
 
     expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
       "Run IDinvestor-monthly-statement-20260501"
@@ -4944,7 +5027,7 @@ describe("ReportingScreen", () => {
       })
     });
 
-    renderWithRouter(<ReportingScreen data={deliveryAccounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={deliveryAccounting} />, { initialEntries: ["/reporting/report-packs"] });
 
     const attempt = screen.getByLabelText("Board reporting committee delivery attempt Delivered");
     await user.click(within(attempt).getByRole("button", { name: "Record delivery failure" }));
@@ -5206,7 +5289,7 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={missingTargets} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={missingTargets} />, { initialEntries: ["/reporting/report-packs"] });
 
     const emptyState = screen.getByRole("status", { name: "No report-pack recipients loaded" });
     expect(emptyState).toHaveTextContent(
@@ -5454,8 +5537,9 @@ describe("ReportingScreen", () => {
     );
   });
 
-  it("keeps report-pack task and inspector action descriptions uniquely identified", () => {
-    const { container } = renderWithRouter(<ReportingScreen data={accounting} />, {
+  it("keeps report-pack task and inspector action descriptions uniquely identified", async () => {
+    const user = userEvent.setup();
+    const { container, unmount } = renderWithRouter(<ReportingScreen data={accounting} />, {
       initialEntries: ["/reporting/report-packs"]
     });
 
@@ -5465,14 +5549,27 @@ describe("ReportingScreen", () => {
       "reporting-action-excel-preview-report-pack-task-status"
     );
     expect(screen.getByRole("link", { name: "Open Excel report-pack evidence" })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Excel export actions" }))
-      .toHaveTextContent("Opens the current export preview in a new browser tab.");
+    expect(screen.queryByRole("list", { name: "Excel export actions" })).not.toBeInTheDocument();
 
     const ids = Array.from(container.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
     const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
     expect(duplicateIds).toEqual([]);
-    expect(container.querySelector("#reporting-action-excel-preview-profile-detail-status")).toBeInTheDocument();
+    expect(container.querySelector("#reporting-action-excel-preview-profile-detail-status")).not.toBeInTheDocument();
     expect(container.querySelector("#reporting-action-excel-preview-report-pack-task-status")).toBeInTheDocument();
+
+    unmount();
+    const exportsRender = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: ["/reporting/exports"]
+    });
+    await user.click(screen.getByRole("row", { name: "Select Excel export profile" }));
+    expect(screen.getByRole("list", { name: "Excel export actions" }))
+      .toHaveTextContent("Opens the current export preview in a new browser tab.");
+
+    const exportIds = Array.from(exportsRender.container.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
+    const duplicateExportIds = exportIds.filter((id, index) => exportIds.indexOf(id) !== index);
+    expect(duplicateExportIds).toEqual([]);
+    expect(exportsRender.container.querySelector("#reporting-action-excel-preview-profile-detail-status")).toBeInTheDocument();
+    expect(exportsRender.container.querySelector("#reporting-action-excel-preview-report-pack-task-status")).not.toBeInTheDocument();
   });
 
   it("surfaces VM-owned running export feedback in the report-pack task", async () => {
@@ -5528,7 +5625,7 @@ describe("ReportingScreen", () => {
 
   it("updates selected profile detail and profile-scoped actions", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
     const profileTable = screen.getByRole("treegrid", { name: "Export profiles" });
     const auditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
@@ -5555,7 +5652,7 @@ describe("ReportingScreen", () => {
   });
 
   it("renders report access audit scope and hidden object counts", () => {
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/governance"] });
 
     const audit = screen.getByRole("region", { name: "Reporting access audit" });
     expect(within(audit).getByText("User, group, and company scope")).toBeInTheDocument();
@@ -5597,7 +5694,7 @@ describe("ReportingScreen", () => {
         })
     );
 
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
     await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     const inspector = screen.getByRole("region", { name: /audit pack selected/i });
@@ -5621,7 +5718,7 @@ describe("ReportingScreen", () => {
 
   it("posts selected profile when running export analysis", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
     await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
@@ -5664,7 +5761,7 @@ describe("ReportingScreen", () => {
       })
     });
 
-    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
     await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
@@ -5689,9 +5786,11 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={emptyAccounting} />, { initialEntries: ["/reporting/report-builder"] });
+    const { unmount } = renderWithRouter(<ReportingScreen data={emptyAccounting} />, { initialEntries: ["/reporting/exports"] });
 
     expect(screen.getByText(/no export profiles are configured/i)).toBeInTheDocument();
+    unmount();
+    renderWithRouter(<ReportingScreen data={emptyAccounting} />, { initialEntries: ["/reporting/report-packs"] });
     expect(screen.getByRole("status", { name: "No report-pack recipients loaded" })).toHaveTextContent(
       "No report-pack recipients loaded. Configure distribution records before approving this packet."
     );
@@ -5719,5 +5818,70 @@ describe("ReportingScreen", () => {
       "No export profiles are configured. Add a governed profile before report-pack approval."
     );
     expect(within(task).queryByRole("list", { name: "Report-pack export profiles" })).not.toBeInTheDocument();
+  });
+
+  it("surfaces the watched run's pushed status additively when the report-run stream is healthy", () => {
+    const accountingWithRecentRun: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        recentRuns: [recentRun({})]
+      }
+    };
+
+    // Healthy stream pushing a newer approval state than the polled "InReview" row.
+    vi.mocked(useReportRunStream).mockReturnValue({
+      status: {
+        runId: "investor-monthly-statement-20260501",
+        templateId: "investor-monthly-statement",
+        asOfDate: "2026-05-01",
+        status: "Approved",
+        trigger: "Scheduled",
+        attemptCount: 2,
+        entries: []
+      },
+      healthy: true
+    });
+
+    renderWithRouter(<ReportingScreen data={accountingWithRecentRun} />, { initialEntries: ["/reporting/report-builder"] });
+
+    expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
+    const liveStatus = screen.getByTestId("report-run-live-status");
+    expect(liveStatus).toHaveTextContent("Live · attempt 2");
+    expect(screen.getByLabelText("Run investor-monthly-statement-20260501 status is streaming live.")).toBeInTheDocument();
+
+    // The prominent badge must use the streamed "Approved" status, not the stale polled "InReview",
+    // so the row never shows two contradictory states before the next poll.
+    const runRow = liveStatus.closest(".rounded-md") as HTMLElement;
+    expect(runRow).not.toBeNull();
+    expect(within(runRow).getByText("Approved")).toBeInTheDocument();
+    expect(within(runRow).queryByText("InReview")).not.toBeInTheDocument();
+  });
+
+  it("skips report-pack workflow rows when choosing the streamed run", () => {
+    const accountingWithWorkflowFirst: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        recentRuns: [
+          // Newest row is a governed report-pack workflow item (report-pack:{guid}) — not resolvable
+          // by the run-stream endpoint, which only knows orchestration run ids.
+          recentRun({
+            runId: "report-pack:11111111-1111-1111-1111-111111111111",
+            templateId: "board-pack",
+            family: "ReportPack",
+            status: "PendingApproval"
+          }),
+          recentRun({ runId: "investor-monthly-statement-20260501" })
+        ]
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={accountingWithWorkflowFirst} />, { initialEntries: ["/reporting/report-builder"] });
+
+    // Selection falls through the non-streamable workflow row to the first generic run, so the SSE
+    // channel attaches to a run the endpoint can resolve instead of 404-looping.
+    expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
+    expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
   });
 });

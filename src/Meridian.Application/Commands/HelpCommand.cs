@@ -23,12 +23,9 @@ internal sealed class HelpCommand : ICliCommand
         ["ledger"] = ShowLedgerHelp,
     };
 
-    public bool CanHandle(string[] args)
-    {
-        return args.Any(a =>
-            a.Equals("--help", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("-h", StringComparison.OrdinalIgnoreCase));
-    }
+    public IReadOnlyList<string> Triggers { get; } = ["--help", "-h"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

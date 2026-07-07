@@ -38,6 +38,26 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
     public UserPermission? CurrentPermissions => CurrentUser?.Permissions;
 
+    /// <summary>
+    /// Client-side defense-in-depth permission check for the desktop shell. Fails closed: unless
+    /// the environment explicitly permits continuing without credentials (unconfigured local
+    /// development), a resolved operator profile that grants <paramref name="permission"/> is
+    /// required. This prevents an unauthenticated Production session from being treated as fully
+    /// privileged. Server-side authorization remains authoritative in all cases.
+    /// </summary>
+    public bool HasPermission(UserPermission permission)
+    {
+        if (CanContinueWithoutCredentials)
+        {
+            // Unconfigured local development: gating defers to the authentication gates so the
+            // local shell is not blocked.
+            return true;
+        }
+
+        var current = CurrentPermissions;
+        return current is not null && (current.Value & permission) == permission;
+    }
+
     public DesktopSignInResult SignIn(string username, string password)
     {
         if (!IsConfigured)

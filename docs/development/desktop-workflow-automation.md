@@ -1,6 +1,6 @@
 # Desktop Workflow Automation
 
-This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable retained WPF compatibility flows, capture screenshots, and generate manual-ready markdown. WPF product/UI work is deferred unless explicitly reactivated.
+This guide covers the scripted desktop workflows that launch `Meridian.Desktop`, walk repeatable WPF workflow flows, capture screenshots, and generate manual-ready markdown. WPF is an active co-equal operator UI lane; its current focus is web-UI parity (`W8-WPF-PARITY-001`).
 
 ## What the Automation Covers
 

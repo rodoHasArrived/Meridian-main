@@ -342,6 +342,76 @@ public sealed class ReportingOrchestrationServiceTests
         reloaded.GetAudit(manifest.RunId).Select(static entry => entry.Action).Should().ContainInOrder("RunGenerated", "ApprovalTransition", "ApprovalTransition");
     }
 
+    [Fact]
+    public async Task ExecuteAsync_NotifiesRunChangedWithRunId()
+    {
+        var notifier = new RecordingRunNotifier();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, runStore: null, runNotifier: notifier);
+        var contract = new ReportingJobContract("job-notify", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        notifier.RunIds.Should().Contain(manifest.RunId);
+    }
+
+    [Fact]
+    public async Task TransitionApprovalAsync_NotifiesRunChangedOnEachTransition()
+    {
+        var notifier = new RecordingRunNotifier();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, runStore: null, runNotifier: notifier);
+        var contract = new ReportingJobContract("job-notify-2", "sec-13f-packet", new DateOnly(2026, 5, 2), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+        notifier.RunIds.Clear();
+
+        (await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.InReview, "bob", "Reviewer", "review", CancellationToken.None)).Should().BeTrue();
+        (await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Approved, "cora", "ComplianceOfficer", "approved", CancellationToken.None)).Should().BeTrue();
+
+        notifier.RunIds.Should().HaveCount(2).And.OnlyContain(id => id == manifest.RunId);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithThrowingNotifier_StillPersistsAndDoesNotThrow()
+    {
+        // The notifier is best-effort — a throwing implementation must never surface on the
+        // run-execution path. Reaching the assertions at all proves ExecuteAsync did not rethrow.
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, runStore: null, runNotifier: new ThrowingRunNotifier());
+        var contract = new ReportingJobContract("job-throw", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        manifest.RunId.Should().Be("job-throw-20260501");
+        sut.GetManifest(manifest.RunId).Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotifiesEvenWhenTheRunFails()
+    {
+        var notifier = new RecordingRunNotifier();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new AlwaysFailingRenderer(), () => FixedNow, runStore: null, runNotifier: notifier);
+        var contract = new ReportingJobContract("job-fail-notify", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        await sut.Awaiting(s => s.ExecuteAsync(contract, CancellationToken.None)).Should().ThrowAsync<InvalidOperationException>();
+
+        // The failed manifest is persisted (and therefore notified) before the throw propagates.
+        notifier.RunIds.Should().Contain("job-fail-notify-20260501");
+    }
+
+    private sealed class RecordingRunNotifier : IReportingRunNotifier
+    {
+        public List<string> RunIds { get; } = new();
+
+        public void NotifyRunChanged(string runId) => RunIds.Add(runId);
+    }
+
+    private sealed class ThrowingRunNotifier : IReportingRunNotifier
+    {
+        public void NotifyRunChanged(string runId) => throw new InvalidOperationException("notifier boom");
+    }
+
     private sealed class FailingOnceRenderer : IReportingSectionRenderer
     {
         private readonly DeterministicReportingSectionRenderer inner = new();

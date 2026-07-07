@@ -54,6 +54,69 @@ public sealed class DesktopAuthenticationSessionTests
     }
 
     [Fact]
+    public void HasPermission_WhenAdminSignedIn_EnforcesGrantedPermissions()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+
+        session.HasPermission(UserPermission.ManageProviders).Should().BeTrue();
+        session.HasPermission(UserPermission.ManageUsers).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasPermission_WhenReadOnlySignedIn_DeniesPrivilegedPermission()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = CreateSession("Production");
+        session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+
+        session.HasPermission(UserPermission.ManageProviders).Should().BeFalse();
+        session.HasPermission(UserPermission.ViewMarketData).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasPermission_WhenProductionUnauthenticated_FailsClosed()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", "required");
+
+        var session = CreateSession("Production");
+
+        // No signed-in profile and credentials are required: gating must fail closed.
+        session.HasPermission(UserPermission.ManageProviders).Should().BeFalse();
+        session.HasPermission(UserPermission.ViewMarketData).Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasPermission_WhenNoResolvedProfile_DefersToAuthenticationGates()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", "optional");
+
+        var session = CreateSession("Development");
+
+        // No signed-in operator profile: gating defers (returns true) so local development is not blocked.
+        session.HasPermission(UserPermission.ManageProviders).Should().BeTrue();
+    }
+
+    [Fact]
     public void ContinueWithoutCredentials_WhenDevelopmentAndUnconfigured_ShouldCreateAnonymousDevelopmentSession()
     {
         using var env = new EnvironmentVariableScope()
@@ -99,6 +162,9 @@ public sealed class DesktopAuthenticationSessionTests
 
     internal static string HashedDesktopAdminUsersJson()
         => $$"""[{"username":"desktop-admin","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"Admin"}]""";
+
+    internal static string HashedDesktopReadOnlyUsersJson()
+        => $$"""[{"username":"desktop-viewer","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"ReadOnly"}]""";
 
     internal sealed class EnvironmentVariableScope : IDisposable
     {

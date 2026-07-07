@@ -40,6 +40,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private readonly IReportingSectionRenderer renderer;
     private readonly Func<DateTimeOffset> utcNow;
     private readonly IReportingRunStore? runStore;
+    private readonly IReportingRunNotifier runNotifier;
     private readonly ConcurrentDictionary<string, ReportingOutputManifest> manifests = new();
     private readonly ConcurrentDictionary<string, object> auditLocks = new();
     private readonly ConcurrentDictionary<string, List<ReportingRunAuditEntry>> audits = new();
@@ -50,16 +51,30 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     {
     }
 
+    // Existing 4-parameter ctor retained for binary compatibility — now delegates to the 5-parameter
+    // overload. Adding an optional parameter to this signature instead would be source- but not
+    // binary-compatible (already-compiled callers would hit MissingMethodException at runtime).
     public ReportingOrchestrationService(
         IReportingTemplateCatalog catalog,
         IReportingSectionRenderer renderer,
         Func<DateTimeOffset> utcNow,
         IReportingRunStore? runStore = null)
+        : this(catalog, renderer, utcNow, runStore, runNotifier: null)
+    {
+    }
+
+    public ReportingOrchestrationService(
+        IReportingTemplateCatalog catalog,
+        IReportingSectionRenderer renderer,
+        Func<DateTimeOffset> utcNow,
+        IReportingRunStore? runStore,
+        IReportingRunNotifier? runNotifier)
     {
         this.catalog = catalog;
         this.renderer = renderer;
         this.utcNow = utcNow;
         this.runStore = runStore;
+        this.runNotifier = runNotifier ?? NullReportingRunNotifier.Instance;
     }
 
     public async Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken)
@@ -324,10 +339,25 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         }
     }
 
-    private Task PersistAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken)
-        => runStore is null
-            ? Task.CompletedTask
-            : runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken);
+    private async Task PersistAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken)
+    {
+        if (runStore is not null)
+        {
+            await runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken).ConfigureAwait(false);
+        }
+
+        // Best-effort wake AFTER the durable write, so a UI stream sees the change without a poll.
+        // A buggy/throwing notifier must never surface on the run-execution path (belt-and-suspenders
+        // with the null-object default).
+        try
+        {
+            runNotifier.NotifyRunChanged(manifest.RunId);
+        }
+        catch
+        {
+            // Swallow — run execution must never fail on a UI-streaming concern.
+        }
+    }
 
     private static string[] BuildReportWriterGridArtifacts(string runId, ReportingTemplateMetadata template) =>
         (template.ReportWriterGrids ?? [])

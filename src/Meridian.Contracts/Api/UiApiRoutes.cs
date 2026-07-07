@@ -872,6 +872,7 @@ public static class UiApiRoutes
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
     public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
+    public const string ReportingRunStream = "/api/fund-structure/reporting/runs/{runId}/stream";
     public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
     public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
     public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";

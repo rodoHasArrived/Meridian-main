@@ -63,6 +63,7 @@ using Meridian.Workflow.EnvironmentDesign;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.Composition.Features;
@@ -103,8 +104,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             new FileProviderIntegrationManifestStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<ProviderIntegrationTemplateCatalog>();
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
-        services.TryAddSingleton<IProviderIntegrationHttpTransport>(_ =>
-            new ProviderIntegrationHttpClientTransport(new HttpClient()));
+        services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
+            new ProviderIntegrationHttpClientTransport(
+                new HttpClient(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
         services.TryAddSingleton<ProviderIntegrationSetupService>();
@@ -139,7 +142,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
-                return new FileScopedAccessAssignmentStore(persistencePath);
+                return new FileScopedAccessAssignmentStore(
+                    persistencePath,
+                    sp.GetService<ILogger<FileScopedAccessAssignmentStore>>());
             });
         }
         services.TryAddSingleton<IAccessScopeLineageProvider, FundStructureAccessScopeLineageProvider>();

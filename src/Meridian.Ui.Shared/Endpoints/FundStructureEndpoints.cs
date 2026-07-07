@@ -17,7 +17,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
-public static class FundStructureEndpoints
+public static partial class FundStructureEndpoints
 {
     public static void MapFundStructureEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {

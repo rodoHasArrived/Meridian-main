@@ -21,18 +21,9 @@ internal sealed class SymbolCommands : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return args.Any(a =>
-            a.Equals("--symbols", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbols-monitored", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbols-archived", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbols-add", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbols-remove", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbol-status", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbols-import", StringComparison.OrdinalIgnoreCase) ||
-            a.Equals("--symbols-export", StringComparison.OrdinalIgnoreCase));
-    }
+    public IReadOnlyList<string> Triggers { get; } = ["--symbols", "--symbols-monitored", "--symbols-archived", "--symbols-add", "--symbols-remove", "--symbol-status", "--symbols-import", "--symbols-export"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

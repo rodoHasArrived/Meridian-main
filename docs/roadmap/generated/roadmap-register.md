@@ -461,3 +461,33 @@ Closed 2026-07-05 as bounded live-readiness governance. Paper-to-live promotion 
 - `SRC-EXECUTION`
 - `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`
+
+## W8-WPF-PARITY-001 - WPF desktop workstation reactivation and web-UI parity
+| Field | Value |
+| --- | --- |
+| Wave | W8 |
+| Status | in_progress |
+| Health | on_track |
+| Priority | high |
+| Owner lane | Desktop Workstation |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-06 |
+
+### Current Summary
+
+Reactivated 2026-07-06. The WPF desktop workstation returns to the active product/UI lane as a co-equal surface alongside the browser workstation. The desktop shell already projects the seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings) over shared contracts and read models. Remaining work closes the parity gap with browser-first screens that shipped while WPF was deferred, tracked in `docs/development/wpf-web-ui-alignment-plan.md`. Both surfaces continue to consume shared `Meridian.Ui.Services`, `Meridian.Ui.Shared`, and `Meridian.Contracts` seams so neither client forks product state.
+
+### Exit Criteria
+
+- The WPF lane is documented as active and co-equal with the browser workstation across the design charter, product README, CLAUDE.md, and desktop policy.
+- Every browser workstation screen has a WPF equivalent page/view-model or an explicitly sequenced parity item, recorded in the WPF web-UI alignment plan.
+- New WPF parity surfaces consume shared contracts, read models, and workstation endpoints rather than inventing desktop-local product state.
+- Desktop parity work preserves existing WPF behavior, MVVM boundaries, cancellation flow, and shared-contract usage, validated through the desktop build and desktop-focused service tests.
+
+### Source Modules
+
+- `SRC-WPF`
+- `SRC-UI-SERVICES`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-CONTRACTS`
