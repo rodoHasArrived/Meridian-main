@@ -511,7 +511,8 @@ public sealed class ProviderFactory
         if (!enabled)
             return null;
 
-        var credential = CreateCredentialContext<TCredentialSource>((credentialName, configuredValue)).Get(credentialName);
+        // Null-conditional guards against a custom/test-double resolver returning a null context.
+        var credential = CreateCredentialContext<TCredentialSource>((credentialName, configuredValue))?.Get(credentialName);
         return string.IsNullOrWhiteSpace(credential) ? null : factory(credential);
     }
 

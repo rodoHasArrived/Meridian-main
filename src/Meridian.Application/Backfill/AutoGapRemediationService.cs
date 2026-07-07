@@ -288,11 +288,14 @@ public sealed class AutoGapRemediationService : IDisposable
     private readonly DataQualityMonitoringService? _qualityMonitoringService;
 
     // Graceful-shutdown tracking for background (event-driven) remediation tasks. New work observes
-    // _shutdownCts, and Dispose drains in-flight tasks before releasing resources.
+    // _shutdownCts, and Dispose drains in-flight tasks before releasing resources. _lifecycleLock
+    // serializes the _disposed transition against background-task spawning so a task can never be
+    // registered (and left undrained, or touch a disposed _shutdownCts) after Dispose has begun.
+    private readonly object _lifecycleLock = new();
     private readonly CancellationTokenSource _shutdownCts = new();
     private readonly ConcurrentDictionary<Task, byte> _inFlight = new();
     private static readonly TimeSpan ShutdownDrainTimeout = TimeSpan.FromSeconds(10);
-    private volatile bool _disposed;
+    private bool _disposed;
 
     public AutoGapRemediationService(
         IBackfillExecutionGateway backfillGateway,
@@ -320,11 +323,16 @@ public sealed class AutoGapRemediationService : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
+        // Flip _disposed under the lifecycle lock so any concurrent OnQualityGapDetected either
+        // registered its task before this point (and is therefore in _inFlight for draining) or
+        // observes _disposed and bails out — no task can slip in after this transition.
+        lock (_lifecycleLock)
+        {
+            if (_disposed)
+                return;
 
-        // Stop new event-driven work first, then signal cancellation to in-flight tasks.
-        _disposed = true;
+            _disposed = true;
+        }
 
         if (_qualityMonitoringService is not null)
         {
@@ -455,14 +463,19 @@ public sealed class AutoGapRemediationService : IDisposable
 
     private void OnQualityGapDetected(QualityDataGap gap)
     {
-        if (_disposed)
-        {
-            return;
-        }
-
         // Event-driven remediation runs in the background: attach it to the shutdown cancellation
-        // token and track the task so Dispose can drain in-flight work instead of losing it.
-        TrackBackgroundRemediation(HandleDataQualityGapAsync(gap, ct: _shutdownCts.Token));
+        // token and track the task so Dispose can drain in-flight work instead of losing it. The
+        // lifecycle lock guarantees registration is atomic with the _disposed check, so a task is
+        // never spawned (nor _shutdownCts touched) once Dispose has started.
+        lock (_lifecycleLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            TrackBackgroundRemediation(HandleDataQualityGapAsync(gap, ct: _shutdownCts.Token));
+        }
     }
 
     private void TrackBackgroundRemediation(Task task)
