@@ -164,6 +164,16 @@ public sealed class StatementImportService(
         }
 
         await catalog.RecordAcceptedFingerprintAsync(parse.ProfileId, parse.Fingerprint, ct).ConfigureAwait(false);
+        var breakIds = result.Breaks
+            .Select(static item => item.BreakId)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var caseLinks = BuildReconciliationCaseLinks(result.Import.ImportId, result.Cases);
+        var caseIds = caseLinks
+            .Select(static item => item.CaseId)
+            .ToArray();
 
         return new StatementImportCommitResultDto(
             RunId: result.Import.ImportId,
@@ -177,7 +187,15 @@ public sealed class StatementImportService(
             Status: "Imported",
             NextAction: result.Cases.Count > 0
                 ? $"{result.Cases.Count} reconciliation case(s) entered the queue; review and disposition them in the reconciliation workspace."
-                : "All rows matched within tolerance; no reconciliation cases were opened.");
+                : "All rows matched within tolerance; no reconciliation cases were opened.")
+        {
+            BreakIds = breakIds,
+            CaseIds = caseIds,
+            ReconciliationCaseRoutes = caseLinks
+                .Select(static item => item.Route)
+                .ToArray(),
+            ReconciliationCaseLinks = caseLinks
+        };
     }
 
     /// <summary>Fetches a remote statement document through a fetch-capable connector.</summary>
@@ -381,4 +399,64 @@ public sealed class StatementImportService(
 
     private static string ToRelativeRetainedPath(string uploadId, string fileName)
         => string.Join('/', "reconciliation", "statement-connector-imports", uploadId, fileName);
+
+    private static IReadOnlyList<StatementImportReconciliationCaseLinkDto> BuildReconciliationCaseLinks(
+        string runId,
+        IReadOnlyList<ReconciliationCase> cases)
+        => cases
+            .Where(static item => !string.IsNullOrWhiteSpace(item.CaseId))
+            .GroupBy(static item => item.CaseId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static item => item.CaseId, StringComparer.OrdinalIgnoreCase)
+            .Select(reconciliationCase =>
+            {
+                var caseId = reconciliationCase.CaseId.Trim();
+                var breakId = ResolveBreakIdFromCaseId(caseId);
+                return new StatementImportReconciliationCaseLinkDto(
+                    CaseId: caseId,
+                    BreakId: breakId,
+                    Route: BuildReconciliationCaseRoute(runId, caseId, breakId),
+                    Label: breakId is null
+                        ? $"Reconciliation case {caseId}"
+                        : $"Reconciliation case {caseId} for break {breakId}",
+                    Status: NormalizeCaseText(reconciliationCase.Status, "Open"),
+                    Priority: NormalizeCaseText(reconciliationCase.Priority, "Normal"),
+                    Reason: NormalizeCaseText(reconciliationCase.Reason, "Statement import created a reconciliation case."),
+                    SuggestedNextAction: NormalizeCaseText(
+                        reconciliationCase.BreakExplanation?.SuggestedNextAction,
+                        "Assign the case, compare retained statement evidence to Meridian records, then attach support before disposition."));
+            })
+            .ToArray();
+
+    private static string BuildReconciliationCaseRoute(string runId, string caseId, string? breakId = null)
+    {
+        var route = "/accounting/reconciliation/match"
+            + $"?runId={Uri.EscapeDataString(runId)}"
+            + $"&caseId={Uri.EscapeDataString(caseId)}";
+
+        var resolvedBreakId = string.IsNullOrWhiteSpace(breakId)
+            ? ResolveBreakIdFromCaseId(caseId)
+            : breakId.Trim();
+        if (!string.IsNullOrWhiteSpace(resolvedBreakId))
+        {
+            route += $"&breakId={Uri.EscapeDataString(resolvedBreakId)}";
+        }
+
+        return route;
+    }
+
+    private static string? ResolveBreakIdFromCaseId(string caseId)
+    {
+        const string casePrefix = "case:";
+        if (!caseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var breakId = caseId[casePrefix.Length..].Trim();
+        return string.IsNullOrWhiteSpace(breakId) ? null : breakId;
+    }
+
+    private static string NormalizeCaseText(string? value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 }

@@ -1,39 +1,80 @@
-/* ───────────────────────────────────────────────────────────────────────────
-   Meridian — Elevation, radii, spacing
-   From ThemeSurfaces.xaml + the Workspace*Gap / *Padding rhythm tokens.
-   Depth is a hairline shadow at most; structure comes from borders.
-─────────────────────────────────────────────────────────────────────────── */
-
+/* Meridian — Elevation, Radius & Spacing
+   ───────────────────────────────────────
+   Institutional-ops surfaces: shallow. ONE subtle card shadow, a small fixed
+   radius scale (chip → button → card). No heavy/material elevation, no
+   decorative blur. These are the exact tokens components consume.
+*/
 :root {
-  /* Radii — tight, institutional */
-  --radius-chip:   4px;   /* badges, chips, filter tags, table panels */
-  --radius-button: 6px;   /* buttons, icon buttons, small action surfaces */
-  --radius-card:   8px;   /* cards, panels, metric tiles, dialogs */
+  /* Motion — unified timing & easing across all components */
+  --motion-fast:    100ms; /* @kind other */
+  --motion-base:    150ms; /* @kind other */
+  --ease-standard:  cubic-bezier(0.4, 0, 0.2, 1); /* @kind other */
+  --space-xs:    3px;   /* micro spacing */
+  --space-sm:    6px;   /* tight */
+  --space-md:   12px;   /* standard */
+  --space-lg:   16px;   /* generous */
+  --space-xl:   24px;   /* section */
+  --space-2xl:  32px;   /* major break */
 
-  /* Borders */
-  --border-width:  1px;
-  --accent-bar:    3px;   /* metric-card left accent (3,1,1,1) */
-  --accent-bar-lg: 4px;   /* tone inspector / queue card left accent */
+  /* Border radius — concrete & UNIFIED: one tight 2px corner across chips,
+     controls, and surfaces. Structure comes from borders, not rounding; the
+     system never exceeds a 6px corner (lg/xl, large sheets only). */
+  --radius-none:   0px;
+  --radius-chip:   2px;    /* pills, badges, tags — unified 2px with controls */
+  --radius-button: 2px;    /* buttons, inputs, controls — crisp */
+  --radius-card:   2px;    /* panels, metric cards, surfaces — crisp */
+  --radius:        var(--radius-button);
+  /* Full named scale (for consumers/templates). Tight by design — the Concrete
+     system never exceeds a 6px corner. xs/sm map to the chip/control hair. */
+  --radius-xs:     2px;
+  --radius-sm:     2px;
+  --radius-md:     3px;
+  --radius-lg:     4px;
+  --radius-xl:     6px;
 
-  /* Shadows — the only elevation. Card = whisper; elevated = shallow. */
-  --shadow-card:     0 1px 1px rgba(0,0,0,0.08);   /* DropShadow blur1 depth0 op.08 */
-  --shadow-elevated: 0 1px 2px rgba(0,0,0,0.10);   /* ElevatedSurfaceCard blur2 op.10 */
-  --shadow-none:     none;
+  /* Focus ring — concrete: tight, hard, square. 1px offset reads utilitarian. */
+  --focus-ring:        2px solid var(--border-focus, #2F6F8F);
+  --focus-ring-offset: 1px;
 
-  /* Spacing rhythm (WorkspaceSectionGap … WorkspaceTightGap) */
-  --gap-section: 24px;  /* between page sections */
-  --gap-card:    16px;  /* inside a card, header→body */
-  --gap-compact: 12px;  /* compact grouping */
-  --gap-tight:   8px;   /* chips, inline runs */
+  /* Elevation — concrete: surfaces are FLAT. Structure is carried by visible
+     borders, not soft shadows or glows. The only shadow is on detached
+     overlays (menus/popovers) that genuinely float above the plane, and it's
+     tight and hard-edged, not a diffuse cloud. */
+  --shadow-card:   none;
+  --shadow-menu:   0 2px 6px rgba(0, 0, 0, 0.18);
+  --shadow-inset:  none;
+  /* App-compat shadow aliases. The workstation plane is FLAT — borders carry
+     structure — so these map the dashboard's shadow names onto `none`, keeping
+     operations/section surfaces on-system. Only detached overlays float. */
+  --shadow-soft:        none;
+  --shadow-panel:       none;
+  --shadow-workstation: none;
+  --shadow-float:       var(--shadow-menu);
 
-  /* Padding */
-  --pad-card:        20px;  /* CardStyle */
-  --pad-card-compact:16px;  /* CompactCard */
-  --pad-metric:      18px;  /* MetricCard */
+  /* Chrome heights — fixed */
+  --topbar-height:    44px;
+  --statusbar-height: 28px;
+  --row-height:       40px;
 
-  /* Chrome heights */
-  --topbar-h:    48px;
-  --statusbar-h: 28px;
-  --sidebar-w:   224px;     /* 14rem */
-  --row-h:       34px;      /* dense table row */
+  /* Z-index ladder — the single source of stacking order. Never hand-pick a z-index in a
+     component; reach for a token so overlays can't collide. Gaps of 100/50 leave room for
+     app layers between tiers. Ordered: raised chrome < sticky < dropdown/popover < drawer <
+     modal < toast < hotkey sheet < tooltip (tooltips win, they explain everything). */
+  --z-base:        0;   /* @kind spacing */
+  --z-raised:      10;  /* @kind spacing */ /* sticky table headers, pinned columns */
+  --z-sticky:      20;  /* @kind spacing */ /* sticky toolbars, section headers */
+  --z-nav:         50;  /* @kind spacing */ /* topbar, nav rail, status bar chrome */
+  --z-dropdown:    100; /* @kind spacing */ /* popovers, menus, select lists, notification panel */
+  --z-drawer:      150; /* @kind spacing */ /* side drawers */
+  --z-modal:       200; /* @kind spacing */ /* dialogs, modals + their backdrop */
+  --z-toast:       300; /* @kind spacing */ /* toast stack */
+  --z-hotkey:      400; /* @kind spacing */ /* keyboard cheat sheet */
+  --z-tooltip:     500; /* @kind spacing */ /* tooltips, chart crosshair readouts */
+
+  /* Panel padding — density-aware. Unlike --space-* (fixed), these track
+     data-theme-density so compact mode compresses panel interiors, not just row height.
+     Cozy defaults here; density overrides live in theme.css alongside --theme-spacing-*. */
+  --pad-panel:       var(--theme-spacing-lg, 16px); /* standard panel/card interior */
+  --pad-panel-tight: var(--theme-spacing-md, 12px); /* dense panels, inspector rails */
+  --gap-panel:       var(--theme-spacing-md, 12px); /* gap between stacked panel children */
 }

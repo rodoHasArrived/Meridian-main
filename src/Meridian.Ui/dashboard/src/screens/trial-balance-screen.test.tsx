@@ -146,8 +146,8 @@ describe("TrialBalanceScreen", () => {
     expect(screen.getByRole("button", { name: "Compare prior period" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Jump to report preview" })).toHaveAttribute("href", "/reporting/preview");
-    expect(await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Primary trial balance lines for run-42" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
   });
 
   it("switches basis and narrows rows with the account filter", async () => {
@@ -160,7 +160,7 @@ describe("TrialBalanceScreen", () => {
     const filterInput = screen.getByPlaceholderText(/Account name, account id, type, symbol, or security/);
     await user.type(filterInput, "Apple");
 
-    const table = await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    const table = await screen.findByRole("region", { name: "Primary trial balance lines for run-42" });
     expect(table).toHaveTextContent("Apple Inc.");
     expect(table).not.toHaveTextContent("Financing payable");
   });
@@ -171,7 +171,7 @@ describe("TrialBalanceScreen", () => {
     const user = userEvent.setup();
 
     await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
-    await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    await screen.findByRole("region", { name: "Primary trial balance lines for run-42" });
 
     await user.click(screen.getByRole("button", { name: "Hierarchy" }));
 
@@ -212,6 +212,6 @@ describe("TrialBalanceScreen", () => {
     await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
   });
 });

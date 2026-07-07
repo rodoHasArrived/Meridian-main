@@ -496,6 +496,11 @@ retained sources server-side when callers do not embed explicit `datasetRows`. G
 run payloads and manifests retain the resolved report-writer dataset source id, label, and row
 count so audit cards, delivery packages, and downstream evidence consumers can prove which governed
 dataset powered a no-code report-writer output.
+`ReportingStarterKitDto`, `ReportingStarterKitStateDto`, and
+`ReportingStarterKitProvisionResultDto` describe editable Reporting desk presets in the shared
+contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
+selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
+seeded for review but should not run until an operator activates them.
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
@@ -877,6 +882,13 @@ templates while upload preview results remain retained source
 evidence, validation issues, and bounded sample rows only. Bank-statement import responses identify
 the retained source path, imported batch, target bank account, statement date, and line count after
 the shared endpoint applies evidence through the fund-account service.
+Custodian/broker statement connector commit results live in `Workstation/StatementConnectorDtos.cs`
+and stay additive: successful imports return retained break ids, reconciliation case ids, legacy
+case-route arrays, and `StatementImportReconciliationCaseLinkDto` structured reconciliation case
+links with break id, route, status, priority, reason, and suggested next action alongside Evidence
+Vault identity, Evidence Workbench route, reconciliation route, and operator next actions so browser
+and WPF clients can deep-link into the exact casework opened by the statement run without relying on
+parallel arrays.
 Direct Lending servicer statement intake contracts live under
 `DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
 result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained

@@ -1,0 +1,62 @@
+<!-- @dsCard group="Data" viewport="900x460" name="WorksheetGrid" subtitle="Editable spreadsheet grid — formula bar, formula/error cells, click / arrow-key / double-click to edit" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WorksheetGrid</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #ECEFF3); font-family: var(--font-body);">
+  <div style="max-width: 852px; margin: 0 auto;">
+    <h2 style="margin: 0 0 4px 0; font-size: 22px; color: var(--text-primary, #22272E);">WorksheetGrid</h2>
+    <p style="margin: 0 0 20px 0; font-size: 13px; color: var(--text-muted, #59636F);">Click a cell or arrow-key to select; double-click or just start typing to edit — Enter / Tab commits and advances, Escape cancels.</p>
+    <div id="demo"></div>
+  </div>
+
+  <script type="text/babel">
+    const { WorksheetGrid } = window.MeridianDesignSystem_4f61be;
+
+    const columns = [
+      { key: "A", label: "Security", width: 168, align: "left" },
+      { key: "B", label: "CUSIP", width: 120, align: "left" },
+      { key: "C", label: "Price", width: 88 },
+      { key: "D", label: "YTM", width: 80 },
+      { key: "E", label: "Dur", width: 72 },
+      { key: "F", label: "Signal", width: 92 },
+    ];
+
+    const cells = {
+      A1: { type: "label", value: "Security" }, B1: { type: "label", value: "CUSIP" }, C1: { type: "label", value: "Price" },
+      D1: { type: "label", value: "YTM" }, E1: { type: "label", value: "Dur" }, F1: { type: "label", value: "Signal" },
+
+      A2: { type: "text", value: "UST 4.25 '30" }, B2: { type: "text", value: "912828YK0" }, C2: { type: "num", value: "98.7500" },
+      D2: { type: "formula", formula: "=YTM(B2)", value: "4.61%" }, E2: { type: "formula", formula: "=DURATION(B2)", value: "4.25" },
+      F2: { type: "formula", formula: '=IF(D2>0.045,"BUY","HOLD")', value: "BUY" },
+
+      A3: { type: "text", value: "AAPL 3.85 '43" }, B3: { type: "text", value: "037833DK6" }, C3: { type: "num", value: "91.2200" },
+      D3: { type: "formula", formula: "=YTM(B3)", value: "4.92%" }, E3: { type: "formula", formula: "=DURATION(B3)", value: "11.80" },
+      F3: { type: "formula", formula: '=IF(D3>0.045,"BUY","HOLD")', value: "BUY" },
+
+      A4: { type: "text", value: "T 1.50 '30" }, B4: { type: "text", value: "91282CGT0" }, C4: { type: "num", value: "84.0600" },
+      D4: { type: "error", formula: "=YTM(B4) / 0", value: "#DIV/0" }, E4: { type: "formula", formula: "=DURATION(B4)", value: "5.62" },
+      F4: { type: "formula", formula: '=IF(D4>0.045,"BUY","HOLD")', value: "#REF" },
+
+      A6: { type: "label", value: "Portfolio YTM" }, D6: { type: "formula", formula: "=SUMPRODUCT(D2:D3,wt)", value: "4.77%" },
+    };
+
+    function Demo() {
+      const [data, setData] = React.useState(cells);
+      const onCommit = (ref, val) => setData((prev) => {
+        const isF = val.trim().startsWith("=");
+        const prevType = prev[ref] && prev[ref].type;
+        const type = isF ? "formula" : prevType === "label" ? "label" : isNaN(parseFloat(val)) ? "text" : "num";
+        return { ...prev, [ref]: { value: val, formula: isF ? val : undefined, type } };
+      });
+      return <WorksheetGrid columns={columns} rows={7} cells={data} defaultActiveCell="D2" editable onCellCommit={onCommit} />;
+    }
+    ReactDOM.render(<Demo />, document.getElementById("demo"));
+  </script>
+</body>
+</html>

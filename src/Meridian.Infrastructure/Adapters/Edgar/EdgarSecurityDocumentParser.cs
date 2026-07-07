@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Utilities;
 
 namespace Meridian.Infrastructure.Adapters.Edgar;
 
@@ -298,7 +299,7 @@ internal static class EdgarSecurityDocumentParser
         {
             var pattern = Regex.Escape(label) + @"[^A-Za-z0-9]{0,60}(?<date>[A-Za-z]+\s+\d{1,2},\s+\d{4}|\d{4}-\d{2}-\d{2})";
             var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
-            if (match.Success && DateOnly.TryParse(match.Groups["date"].Value, CultureInfo.InvariantCulture, out var date))
+            if (match.Success && ProviderDateParsing.TryParseProviderDate(match.Groups["date"].Value, out var date))
                 return date;
         }
 
@@ -432,7 +433,7 @@ internal static class EdgarSecurityDocumentParser
         => decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
 
     private static DateOnly? Date(string? value)
-        => DateOnly.TryParse(value, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
+        => ProviderDateParsing.ParseProviderDateOrNull(value);
 
     private static bool? Bool(string? value)
         => bool.TryParse(value, out var parsed) ? parsed : null;

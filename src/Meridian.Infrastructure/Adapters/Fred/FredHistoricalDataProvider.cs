@@ -8,6 +8,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Fred;
@@ -152,7 +153,7 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
 
     private HistoricalBar? TryMapObservation(string seriesId, FredObservation observation, DateOnly? from, DateOnly? to)
     {
-        if (!DateOnly.TryParseExact(observation.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+        if (!ProviderDateParsing.TryParseProviderDate(observation.Date, "yyyy-MM-dd", out var sessionDate))
             return null;
 
         if (from.HasValue && sessionDate < from.Value)

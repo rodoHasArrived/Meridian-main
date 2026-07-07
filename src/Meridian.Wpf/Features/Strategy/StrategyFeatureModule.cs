@@ -134,7 +134,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             services.AddSingleton<Meridian.Backtesting.CorporateActionAdjustmentService>();
             services.AddSingleton<Meridian.Backtesting.ICorporateActionAdjustmentService>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
-            services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
+            services.AddSingleton<Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
         }

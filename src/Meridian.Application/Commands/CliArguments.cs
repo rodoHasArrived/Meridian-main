@@ -136,6 +136,14 @@ public sealed record CliArguments
         => args.Any(a => a.Equals(flag, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
+    /// Returns true if any of the supplied flags is present in <paramref name="args"/>
+    /// (case-insensitive). Used to derive <see cref="ICliCommand.CanHandle"/> from a
+    /// command's declared <see cref="ICliCommand.Triggers"/> so the two cannot drift apart.
+    /// </summary>
+    internal static bool MatchesAnyFlag(string[] args, IReadOnlyList<string> flags)
+        => flags.Any(flag => HasFlag(args, flag));
+
+    /// <summary>
     /// Gets the value following a named argument.
     /// Returns null if the flag is missing or has no subsequent value.
     /// </summary>

@@ -1,0 +1,34 @@
+<!-- @dsCard group="Depth & Motion" viewport="760x430" name="Stacking order" subtitle="--z-base 0 → --z-tooltip 500 — one ladder, never hand-pick a z-index" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
+  .ladder { display: flex; flex-direction: column; gap: 4px; }
+  .tier { display: grid; grid-template-columns: 130px 44px 1fr; align-items: center; gap: 10px; }
+  .chip { background: var(--card-surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 5px 10px; font-family: var(--font-data); font-size: 10px; color: var(--text-primary); justify-self: start; }
+  .chip.float { border-color: var(--border-hover); box-shadow: var(--shadow-menu); }
+  .val { font-family: var(--font-data); font-size: 10px; color: var(--text-muted); text-align: right; }
+  .use { font-size: 11px; color: var(--text-secondary); }
+  .rule { margin-top: 12px; font-size: 11px; color: var(--text-secondary); }
+  .rule code { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); }
+</style>
+</head>
+<body>
+  <div class="ladder">
+    <div class="tier"><span class="chip float" style="margin-left: 90px;">--z-tooltip</span><span class="val">500</span><span class="use">tooltips, chart crosshair readouts — they explain everything, they win</span></div>
+    <div class="tier"><span class="chip float" style="margin-left: 80px;">--z-hotkey</span><span class="val">400</span><span class="use">keyboard cheat sheet</span></div>
+    <div class="tier"><span class="chip float" style="margin-left: 70px;">--z-toast</span><span class="val">300</span><span class="use">toast stack</span></div>
+    <div class="tier"><span class="chip float" style="margin-left: 60px;">--z-modal</span><span class="val">200</span><span class="use">dialogs, modals + backdrop</span></div>
+    <div class="tier"><span class="chip float" style="margin-left: 50px;">--z-drawer</span><span class="val">150</span><span class="use">side drawers</span></div>
+    <div class="tier"><span class="chip float" style="margin-left: 40px;">--z-dropdown</span><span class="val">100</span><span class="use">menus, popovers, select lists, notification panel</span></div>
+    <div class="tier"><span class="chip" style="margin-left: 30px;">--z-nav</span><span class="val">50</span><span class="use">topbar, nav rail, status bar chrome</span></div>
+    <div class="tier"><span class="chip" style="margin-left: 20px;">--z-sticky</span><span class="val">20</span><span class="use">sticky toolbars, section headers</span></div>
+    <div class="tier"><span class="chip" style="margin-left: 10px;">--z-raised</span><span class="val">10</span><span class="use">sticky table headers, pinned columns</span></div>
+    <div class="tier"><span class="chip">--z-base</span><span class="val">0</span><span class="use">canvas content</span></div>
+  </div>
+  <p class="rule">Tiers from <code>--z-dropdown</code> up are detached overlays — they carry <code>--shadow-menu</code>. Everything below stays flat. Gaps of 50/100 leave room for app layers between tiers.</p>
+</body>
+</html>

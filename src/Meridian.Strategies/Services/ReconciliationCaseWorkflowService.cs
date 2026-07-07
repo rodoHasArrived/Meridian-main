@@ -17,9 +17,9 @@ public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkf
     {
         var decision = ReconciliationCaseWorkflowInterop.Apply(new ReconciliationCaseTransitionInput
         {
-            LifecycleState = item.LifecycleState.ToString(),
-            QueueStatus = item.Status.ToString(),
-            Action = command.Action.ToString(),
+            LifecycleState = ReconciliationCaseWorkflowVocabulary.ToToken(item.LifecycleState),
+            QueueStatus = ReconciliationCaseWorkflowVocabulary.ToToken(item.Status),
+            Action = ReconciliationCaseWorkflowVocabulary.ToToken(command.Action),
             Actor = command.Actor,
             Reason = command.Reason,
             EvidenceReferenceCount = command.EvidenceReferences?.Count ?? 0,
@@ -28,19 +28,17 @@ public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkf
 
         if (!decision.IsValid)
         {
-            if (string.Equals(decision.ErrorCode, nameof(ReconciliationBreakQueueTransitionErrorCode.IllegalTransition), StringComparison.Ordinal))
+            var errorCode = ReconciliationCaseWorkflowVocabulary.ParseErrorCode(decision.ErrorCode);
+            if (errorCode == ReconciliationBreakQueueTransitionErrorCode.IllegalTransition)
             {
                 throw new InvalidOperationException("illegal");
             }
 
-            return Fail(
-                decision.Error,
-                Enum.Parse<ReconciliationBreakQueueTransitionErrorCode>(decision.ErrorCode),
-                item);
+            return Fail(decision.Error, errorCode, item);
         }
 
-        var next = Enum.Parse<ReconciliationCaseLifecycleState>(decision.NextLifecycleState);
-        var status = Enum.Parse<ReconciliationBreakQueueStatus>(decision.NextQueueStatus);
+        var next = ReconciliationCaseWorkflowVocabulary.ParseLifecycleState(decision.NextLifecycleState);
+        var status = ReconciliationCaseWorkflowVocabulary.ParseQueueStatus(decision.NextQueueStatus);
 
         var previousHash = item.StateTransitions?.LastOrDefault()?.EntryHash;
         var transition = new ReconciliationCaseStateTransition(Guid.NewGuid().ToString("N"), item.LifecycleState, next, command.Actor, command.Reason, now, command.EvidenceReferences, previousHash, ComputeHash(item.BreakId, item.LifecycleState, next, command, now, previousHash));

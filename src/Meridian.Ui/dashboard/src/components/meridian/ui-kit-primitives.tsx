@@ -28,6 +28,13 @@ const DEFAULT_VIRTUALIZATION_OVERSCAN = 6;
 const DEFAULT_VIRTUALIZATION_VIEWPORT_ROWS = 12;
 const TYPEAHEAD_RESET_MS = 500;
 
+// Default DOM-row guard for non-virtualized tables. Fixed-height tables should
+// pass `virtualization` for true windowing; everything else renders at most this
+// many rows and surfaces a "Show all N rows" control, so a large data set can
+// never dump thousands of nodes into the DOM by omission. Pass `maxVisibleRows={null}`
+// to opt a table out of the cap explicitly.
+export const DEFAULT_DENSE_TABLE_ROW_CAP = 100;
+
 export interface ToolbarStripItem {
   id: string;
   label: string;
@@ -105,6 +112,13 @@ export interface DenseDataTableProps<T> {
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
+  /**
+   * Soft cap on rows mounted into the DOM for non-virtualized tables; excess
+   * rows collapse behind a "Show all N rows" control. Defaults to
+   * {@link DEFAULT_DENSE_TABLE_ROW_CAP}. Pass an explicit number to tune it, or
+   * `null` to render every row (only safe for bounded data sets). Ignored while
+   * `virtualization` is active, which windows the full set instead.
+   */
   maxVisibleRows?: number | null;
   /**
    * Enable row windowing for large data sets. When set, only a window of rows is
@@ -133,7 +147,7 @@ function DenseDataTableComponent<T>({
   caption,
   sort = null,
   onToggleSort,
-  maxVisibleRows = null,
+  maxVisibleRows = DEFAULT_DENSE_TABLE_ROW_CAP,
   virtualization = null,
   getRowTypeaheadText
 }: DenseDataTableProps<T>) {

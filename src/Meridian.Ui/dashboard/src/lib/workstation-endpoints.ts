@@ -119,6 +119,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingRuns: UI_API_ROUTES.ReportingRuns,
   reportingRunAuditTrail: UI_API_ROUTES.ReportingRunAuditTrail,
   reportingRunReportWriterGrid: UI_API_ROUTES.ReportingRunReportWriterGrid,
+  reportingStarterKits: UI_API_ROUTES.ReportingStarterKits,
+  reportingStarterKitProvision: UI_API_ROUTES.ReportingStarterKitProvision,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
@@ -169,7 +171,9 @@ export const PROMOTION_API_ENDPOINTS = {
 export const PORTFOLIO_API_ENDPOINTS = {
   aggregate: UI_API_ROUTES.PortfolioAggregate,
   exposure: UI_API_ROUTES.PortfolioExposure,
-  household: "/api/portfolio/household"
+  household: "/api/portfolio/household",
+  cashLadder: UI_API_ROUTES.PortfolioCashLadder,
+  cashLadderScenarios: UI_API_ROUTES.PortfolioCashLadderScenarios
 } as const;
 
 export const EXPORT_API_ENDPOINTS = {
@@ -1154,6 +1158,22 @@ export function portfolioSymbolExposureEndpoint(symbol: string): string {
   return `${PORTFOLIO_API_ENDPOINTS.exposure.replace(/\/exposure$/, "/symbols")}/${pathSegment(symbol, "symbol")}/exposure`;
 }
 
+export function portfolioCashLadderEndpoint(options: {
+  scenario?: string;
+  horizonDays?: number;
+  minimumCash?: number;
+  bucketDays?: number;
+  fundAccountId?: string;
+} = {}): string {
+  return `${PORTFOLIO_API_ENDPOINTS.cashLadder}${queryString({
+    scenario: options.scenario,
+    horizonDays: options.horizonDays,
+    minimumCash: options.minimumCash,
+    bucketDays: options.bucketDays,
+    fundAccountId: options.fundAccountId
+  })}`;
+}
+
 export function exportPreviewEndpoint(profile?: string): string {
   return `${EXPORT_API_ENDPOINTS.preview}${queryString({ profile })}`;
 }
@@ -1199,6 +1219,10 @@ export function reportingScheduleResumeEndpoint(scheduleId: string): string {
 
 export function reportingScheduleRunNowEndpoint(scheduleId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunNow, "scheduleId", scheduleId);
+}
+
+export function reportingStarterKitProvisionEndpoint(kitId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingStarterKitProvision, "kitId", kitId);
 }
 
 export function strategyEndpoint(strategyId: string): string {

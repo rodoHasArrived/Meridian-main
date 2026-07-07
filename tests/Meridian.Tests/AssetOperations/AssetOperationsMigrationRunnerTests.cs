@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Storage.AssetOperations;
+using Meridian.TestSupport;
 using Npgsql;
-using Testcontainers.PostgreSql;
 
 namespace Meridian.Tests.AssetOperations;
 
@@ -10,41 +10,24 @@ namespace Meridian.Tests.AssetOperations;
 public sealed class AssetOperationsMigrationRunnerTests : IAsyncLifetime
 {
     private const string ConnectionStringVariable = "MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING";
-    private PostgreSqlContainer? _container;
+    private PostgresTestServer? _server;
     private AssetOperationsOptions _options = new();
 
     public async Task InitializeAsync()
     {
-        var externalConnectionString = Environment.GetEnvironmentVariable(ConnectionStringVariable);
-        if (!string.IsNullOrWhiteSpace(externalConnectionString))
-        {
-            _options = new AssetOperationsOptions
-            {
-                ConnectionString = externalConnectionString,
-                Schema = $"asset_ops_test_{Guid.NewGuid():N}"
-            };
-            return;
-        }
-
-        _container = new PostgreSqlBuilder("postgres:16-alpine")
-            .WithDatabase("meridian_test")
-            .WithUsername("testuser")
-            .WithPassword("testpass")
-            .Build();
-        await _container.StartAsync().ConfigureAwait(false);
-
+        _server = await PostgresTestServer.CreateAsync(ConnectionStringVariable).ConfigureAwait(false);
         _options = new AssetOperationsOptions
         {
-            ConnectionString = _container.GetConnectionString(),
-            Schema = $"asset_ops_test_{Guid.NewGuid():N}"
+            ConnectionString = _server.ConnectionString,
+            Schema = PostgresTestSchema.NewSchemaName("asset_ops")
         };
     }
 
     public async Task DisposeAsync()
     {
-        if (_container is not null)
+        if (_server is not null)
         {
-            await _container.DisposeAsync().ConfigureAwait(false);
+            await _server.DisposeAsync().ConfigureAwait(false);
         }
     }
 

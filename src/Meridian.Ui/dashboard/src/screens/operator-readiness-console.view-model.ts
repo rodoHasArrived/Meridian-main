@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -1543,7 +1543,7 @@ function timestampPriority(value: string): number {
 }
 
 function formatCount(count: number, singular: string): string {
-  return `${count} ${count === 1 ? singular : `${singular}s`}`;
+  return pluralizeCount(count, singular);
 }
 
 function buildMetrics({

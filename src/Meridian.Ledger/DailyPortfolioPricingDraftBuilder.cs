@@ -69,6 +69,9 @@ public static class DailyPortfolioPricingDraftBuilder
             Tags: tags,
             EvidenceReferences: evidence);
 
-        return new AutomatedJournalDraft(journalEvent, description, projection.JournalLines, metadata);
+        var lines = projection.JournalLines
+            .Select(static line => (line.account, line.debit, line.credit, (LedgerLineDimensionSet?)null))
+            .ToArray();
+        return new AutomatedJournalDraft(journalEvent, description, lines, metadata);
     }
 }

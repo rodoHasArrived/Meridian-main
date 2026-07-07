@@ -2,6 +2,9 @@ using FluentAssertions;
 using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
 using Meridian.Storage.Integrations;
+using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace Meridian.Tests.Application.Integrations;
 
@@ -69,6 +72,29 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
 
         await act.Should().ThrowAsync<OperationCanceledException>();
         (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_WhenStoreFails_LogsBoundaryContextAndRethrows()
+    {
+        var store = Substitute.For<IProviderIntegrationManifestStore>();
+        var logger = new RecordingLogger<ProviderIntegrationSetupService>();
+        var service = new ProviderIntegrationSetupService(store, logger);
+        var request = CreateRequest();
+        store.SaveManifestAsync(Arg.Any<ProviderIntegrationManifestDto>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new InvalidOperationException("storage unavailable")));
+
+        var act = () => service.SaveDraftAsync("tenant-alpha", request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("storage unavailable");
+        logger.Entries.Should().Contain(entry =>
+            entry.LogLevel == LogLevel.Warning &&
+            entry.Exception is InvalidOperationException &&
+            entry.Message.Contains("setup-save-draft", StringComparison.Ordinal) &&
+            entry.Message.Contains("tenant-alpha", StringComparison.Ordinal) &&
+            entry.Message.Contains(request.Manifest.ManifestId, StringComparison.Ordinal) &&
+            entry.Message.Contains(request.Connection.ConnectionId, StringComparison.Ordinal));
     }
 
     private static ProviderIntegrationSetupSaveRequestDto CreateRequest(

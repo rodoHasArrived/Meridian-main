@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { pluralizeCount } from "@/lib/format";
 import {
   connectAlpacaConnection,
   revokeAlpacaConnection,
@@ -2455,7 +2456,7 @@ function formatProviderRoutingScore(score: number): string {
 }
 
 function formatCount(value: number, singular: string): string {
-  return `${value} ${singular}${value === 1 ? "" : "s"}`;
+  return pluralizeCount(value, singular);
 }
 
 function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): string {

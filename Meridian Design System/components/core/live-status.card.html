@@ -1,0 +1,81 @@
+<!-- @dsCard group="Core" viewport="1100x680" name="FreshnessIndicator · DensityToggle" subtitle="Live-data status primitive + operator density control for the token scopes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live status & density</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { FreshnessIndicator, ConnectionDot, DensityToggle, MetricCard } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Section({ title, children, span }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
+      padding:16, gridColumn: span ? `span ${span}` : undefined }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const now = Date.now();
+
+function Demo() {
+  const [density, setDensity] = useState("default");
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1040 }}>
+
+      <Section title="FreshnessIndicator · provider links">
+        <div style={{ display:"flex", flexDirection:"column", gap:11 }}>
+          <FreshnessIndicator status="live"    source="Polygon"   lastSeen={now - 2000}  timeFormat="relative" />
+          <FreshnessIndicator status="stale"   source="IBKR"      lastSeen={now - 47000} timeFormat="relative" />
+          <FreshnessIndicator status="delayed" source="Databento" lastSeen={now - 900000} timeFormat="utc" />
+          <FreshnessIndicator status="offline" source="Polygon"   lastSeen={now - 360000} timeFormat="utc" />
+          <FreshnessIndicator status="connecting" source="IBKR"   timeFormat="none" />
+        </div>
+      </Section>
+
+      <Section title="As badges + inline dots">
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
+          <FreshnessIndicator badge status="live"    source="NBBO" timeFormat="none" />
+          <FreshnessIndicator badge status="stale"   source="FX"   timeFormat="none" />
+          <FreshnessIndicator badge status="offline" source="News" timeFormat="none" />
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:9, fontFamily:"var(--font-data)", fontSize:13 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}><ConnectionDot status="live" /> AAPL <span style={{ marginLeft:"auto", color:"var(--text-primary)", fontWeight:600 }}>214.0600</span></div>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}><ConnectionDot status="stale" /> MSFT <span style={{ marginLeft:"auto", color:"var(--text-primary)", fontWeight:600 }}>491.20</span></div>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}><ConnectionDot status="offline" /> NVDA <span style={{ marginLeft:"auto", color:"var(--text-muted)", fontWeight:600 }}>—</span></div>
+        </div>
+      </Section>
+
+      <Section title="DensityToggle · drives data-theme-density" span={2}>
+        <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap", marginBottom:14 }}>
+          <DensityToggle value={density} onChange={setDensity} target="body" />
+          <span style={{ fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-secondary)" }}>
+            body[data-theme-density] = <strong style={{ color:"var(--text-primary)" }}>{density === "default" ? "(none)" : density}</strong>
+          </span>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"var(--space-md)" }}>
+          <MetricCard label="Net liquidation" value="$4.21M" delta="+1.8%" trend="up" />
+          <MetricCard label="Open P&L"        value="$38,402" delta="+0.4%" trend="up" />
+          <MetricCard label="Buying power"    value="$1.10M" delta="-2.1%" trend="down" />
+        </div>
+        <div style={{ marginTop:10, fontSize:11, color:"var(--text-muted)" }}>
+          Compact / spacious switch the density token scope on <code>&lt;body&gt;</code> — padding and row metrics track live.
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

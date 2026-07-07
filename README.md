@@ -191,7 +191,7 @@ dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
 
 ### Windows WPF desktop app - `src/Meridian.Wpf`
 
-The WPF desktop shell is an active Windows operator workstation. It shares contracts, read models, and API seams with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility unless the full WPF build flag is enabled on Windows.
+The WPF desktop shell is deferred for new product/UI work and retained for existing compatibility, validation, and maintenance. It shares contracts, read models, and API seams with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility unless the full WPF build flag is enabled on Windows.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1

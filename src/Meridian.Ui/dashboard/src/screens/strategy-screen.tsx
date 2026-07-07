@@ -551,7 +551,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   <Button
                     size="sm"
                     aria-label={vm.promotionPanel.sessionCreated.actionAriaLabel}
-                    onClick={() => { navigate(vm.promotionPanel.sessionCreated.actionHref); }}
+                    onClick={() => {
+                      if (vm.promotionPanel.sessionCreated) {
+                        navigate(vm.promotionPanel.sessionCreated.actionHref);
+                      }
+                    }}
                   >
                     {vm.promotionPanel.sessionCreated.actionLabel}
                   </Button>

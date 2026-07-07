@@ -1,11 +1,12 @@
 import {
   formatCurrency as formatCurrencyAmount,
   formatPrefixedCurrency,
-  formatSignedCurrency as formatSignedCurrencyAmount
+  formatSignedCurrency as formatSignedCurrencyAmount,
+  pluralizeCount
 } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+  return pluralizeCount(count, singular);
 }
 
 export function formatBytes(value: number): string {
