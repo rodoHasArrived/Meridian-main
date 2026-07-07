@@ -15,7 +15,6 @@ public sealed class ProviderIntegrationActivationReadinessService
 
     private readonly ILogger<ProviderIntegrationActivationReadinessService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationActivationReadinessService> logger;
 
     public ProviderIntegrationActivationReadinessService(
         IProviderIntegrationManifestStore store,
@@ -44,37 +43,6 @@ public sealed class ProviderIntegrationActivationReadinessService
                 ManifestId: manifestId,
                 ConnectionId: connectionId),
             async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(EvaluateAsync),
-            manifestId,
-            connectionId);
-        try
-        {
-            return await EvaluateCoreAsync(tenantId, manifestId, connectionId, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(EvaluateAsync),
-                manifestId,
-                connectionId);
-            throw;
-        }
-    }
-
-    private async Task<ProviderIntegrationActivationReadinessDto> EvaluateCoreAsync(
-        string? tenantId,
-        string manifestId,
-        string? connectionId = null,
-        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
         if (connectionId is not null)

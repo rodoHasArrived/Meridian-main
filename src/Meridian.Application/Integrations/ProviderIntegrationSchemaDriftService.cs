@@ -9,7 +9,6 @@ public sealed class ProviderIntegrationSchemaDriftService
 {
     private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
 
     public ProviderIntegrationSchemaDriftService(
         IProviderIntegrationManifestStore store,
@@ -39,36 +38,6 @@ public sealed class ProviderIntegrationSchemaDriftService
                 EndpointKey: request?.EndpointKey,
                 SyncRunId: request?.SyncRunId),
             async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(CheckAsync),
-            request?.ManifestId,
-            request?.ConnectionId);
-        try
-        {
-            return await CheckCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(CheckAsync),
-                request?.ManifestId,
-                request?.ConnectionId);
-            throw;
-        }
-    }
-
-    private async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckCoreAsync(
-        string? tenantId,
-        ProviderIntegrationSchemaDriftCheckRequestDto request,
-        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
