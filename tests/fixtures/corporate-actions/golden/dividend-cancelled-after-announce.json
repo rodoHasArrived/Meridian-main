@@ -1,0 +1,62 @@
+{
+  "scenarioId": "dividend-cancelled-after-announce",
+  "description": "Announced $0.60 dividend cancelled via a superseding Cancelled event. The effective-state projector must drop the chain entirely: no adjustment factor, no ledger posting. If the original had already been posted, the bridge warns and defers to the governed restatement path.",
+  "ticker": "CANX",
+  "securityId": "a1000000-aaaa-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "a1000000-aaaa-4000-8000-0000000000c1",
+      "securityId": "a1000000-aaaa-4000-8000-000000000001",
+      "eventType": "Dividend",
+      "exDate": "2026-04-15",
+      "payDate": "2026-04-29",
+      "dividendPerShare": 0.60,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-04-14",
+      "lifecycleState": "Announced",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    },
+    {
+      "corpActId": "a1000000-aaaa-4000-8000-0000000000c2",
+      "securityId": "a1000000-aaaa-4000-8000-000000000001",
+      "eventType": "Dividend",
+      "exDate": "2026-04-15",
+      "payDate": "2026-04-29",
+      "dividendPerShare": 0.60,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-04-14",
+      "lifecycleState": "Cancelled",
+      "supersedesCorpActId": "a1000000-aaaa-4000-8000-0000000000c1",
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2026-04-13", "open": 24.80, "high": 25.10, "low": 24.60, "close": 25.00, "volume": 1500000 },
+    { "sessionDate": "2026-04-14", "open": 25.00, "high": 25.30, "low": 24.80, "close": 25.10, "volume": 1400000 },
+    { "sessionDate": "2026-04-15", "open": 25.10, "high": 25.40, "low": 24.90, "close": 25.20, "volume": 1600000 },
+    { "sessionDate": "2026-04-16", "open": 25.20, "high": 25.50, "low": 25.00, "close": 25.35, "volume": 1300000 }
+  ],
+  "postingContext": { "positionQuantity": 1000, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [
+    "supersede-fold",
+    "series-continuity",
+    "factor-monotonicity",
+    "journal-balanced"
+  ],
+  "knownDefectIds": []
+}

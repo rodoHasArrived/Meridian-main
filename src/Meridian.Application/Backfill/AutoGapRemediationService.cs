@@ -57,6 +57,19 @@ public sealed record BackfillRemediationSlaDecision(
     string DownstreamWorkflow,
     string ReasonCode);
 
+/// <summary>
+/// Typed SLA metadata attached to auto-remediation executions.
+/// Replaces the legacy key=value strings previously stored in execution warnings.
+/// </summary>
+public sealed record BackfillRemediationSlaMetadata(
+    BackfillRemediationSlaTier Tier,
+    DateTimeOffset DueAtUtc,
+    bool RequiresOwnerAssignment,
+    string DownstreamWorkflow,
+    string ReasonCode,
+    string Provider,
+    AutoRemediationTriggerSource TriggerSource);
+
 public enum BackfillRemediationSlaStatus
 {
     Open,
@@ -541,6 +554,22 @@ public sealed class AutoGapRemediationService : IDisposable
         DateTimeOffset evaluatedAt,
         TimeSpan dueSoonThreshold)
     {
+        if (execution.AutoRemediationSla is { } sla)
+        {
+            return BuildSlaStatusItem(
+                execution,
+                sla.Tier,
+                sla.DueAtUtc,
+                sla.RequiresOwnerAssignment,
+                sla.DownstreamWorkflow,
+                sla.ReasonCode,
+                sla.Provider,
+                evaluatedAt,
+                dueSoonThreshold);
+        }
+
+        // Legacy fallback: executions recorded before typed SLA metadata carried
+        // key=value pairs in Warnings.
         var metadata = ParseWarningMetadata(execution.Warnings);
         if (!metadata.TryGetValue("sla-due-utc", out var dueText) ||
             !DateTimeOffset.TryParse(
@@ -570,6 +599,30 @@ public sealed class AutoGapRemediationService : IDisposable
         var requiresOwnerAssignment = metadata.TryGetValue("sla-requires-owner", out var requiresOwnerText) &&
             bool.TryParse(requiresOwnerText, out var requiresOwner) &&
             requiresOwner;
+
+        return BuildSlaStatusItem(
+            execution,
+            tier,
+            dueAt,
+            requiresOwnerAssignment,
+            downstreamWorkflow,
+            reasonCode,
+            provider,
+            evaluatedAt,
+            dueSoonThreshold);
+    }
+
+    private static BackfillRemediationSlaStatusItem BuildSlaStatusItem(
+        BackfillExecutionLog execution,
+        BackfillRemediationSlaTier tier,
+        DateTimeOffset dueAt,
+        bool requiresOwnerAssignment,
+        string downstreamWorkflow,
+        string reasonCode,
+        string provider,
+        DateTimeOffset evaluatedAt,
+        TimeSpan dueSoonThreshold)
+    {
         var idempotencyKey = execution.AutoRemediationIdempotencyKey ??
             BuildIdempotencyKey(execution.Symbols, provider, execution.FromDate, execution.ToDate);
         var status = ResolveSlaStatus(execution, dueAt, evaluatedAt, dueSoonThreshold);
@@ -700,16 +753,14 @@ public sealed class AutoGapRemediationService : IDisposable
             AutoRemediationAttemptCount = attempt,
             AutoRemediationLastOutcome = AutoRemediationOutcome.None.ToString(),
             AutoRemediationIdempotencyKey = idempotencyKey,
-            Warnings =
-            {
-                $"source={source}",
-                $"provider={provider}",
-                $"sla-tier={slaDecision.Tier}",
-                $"sla-due-utc={slaDecision.DueAtUtc:O}",
-                $"sla-requires-owner={slaDecision.RequiresOwnerAssignment.ToString().ToLowerInvariant()}",
-                $"downstream-workflow={slaDecision.DownstreamWorkflow}",
-                $"sla-reason={slaDecision.ReasonCode}"
-            }
+            AutoRemediationSla = new BackfillRemediationSlaMetadata(
+                slaDecision.Tier,
+                slaDecision.DueAtUtc,
+                slaDecision.RequiresOwnerAssignment,
+                slaDecision.DownstreamWorkflow,
+                slaDecision.ReasonCode,
+                provider,
+                source)
         };
     }
 

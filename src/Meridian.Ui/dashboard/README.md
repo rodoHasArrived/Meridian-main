@@ -37,6 +37,8 @@ instead of introducing one-off screen styling.
 - `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
+- `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
+- `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
 
@@ -70,7 +72,7 @@ Security Master lots.
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
 
-This is the active operator UI lane; keep shared contract parity with the WPF desktop. Security
+This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
 review.
@@ -176,6 +178,27 @@ resolve locally. Execution-control and promotion-review items carrying the share
 session replay panel hash target so replay verification remains directly actionable. This is the
 browser PaperSession route handoff covered by `DIA-BROWSER-WORKSTATION` and
 `DIA-PAPER-SESSION-REPLAY`; keep route changes aligned with those diagram records.
+Broker execution reconciliation readiness from the shared Trading payload is rendered as a
+broker-order checkpoint in the readiness console and a Trading summary row when present; critical
+broker/OMS parity work items route back to the Trading readiness surface instead of being treated as
+anonymous inbox rows. The browser also renders shared live-operation readiness as its own Trading
+summary row and Operator Readiness Console checkpoint, using `LiveOperationBlockers` instead of
+promoting paper-ready posture into live readiness. When the shared payload carries
+`LiveOperationRequirements`, Trading summary rows also show each W7 requirement from the
+service-owned matrix so browser copy names the exact trusted-data, reconciliation, governance,
+rollback, retention, or broker-parity evidence gap. Eligible live promotion evaluations also
+project the full W7 checklist instead of the paper baseline alone, including broker execution
+reconciliation evidence before the approval request can carry a live-ready checklist. The browser
+promotion form keeps retained evidence references as an explicit operator-entered field and
+validates live approvals against the checklist tokens instead of fabricating evidence from the
+checklist alone. Live evidence references must include retained evidence after each `TOKEN:` prefix,
+and the live-override reference must name the active override id before the form can submit.
+The Trading order ticket also carries the active normalized `fundAccountId` into order-submit
+mutations so the execution-layer live-readiness gate evaluates broker sync and broker/OMS
+reconciliation against the same account scope shown in the browser readiness payload.
+Close-position confirmations use the same normalized `fundAccountId` for keyed position action
+mutations, while non-GUID broker labels are omitted so account scope is not inferred from display
+text.
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, priority, SLA badge label/tone, age band, root cause, resolution code, last
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
@@ -545,6 +568,10 @@ The bootstrap hook also fetches the shared workflow-summary endpoint and passes 
 `fundAccountId` from route or stored shell scope when that account scope is present, allowing the
 Accounting Closeout strip to project source-backed Operations Continuity exceptions, approval
 history, close readiness, and evidence package posture instead of overloading profile identifiers.
+For Trading, the hook and screen refresh paths pass the active account scope to the shared trading
+workspace, trading-readiness, and operator-inbox endpoints only when it is a GUID, preserving
+account-scoped brokerage sync and broker-execution reconciliation evidence without sending display
+account labels into GUID-bound API parameters.
 The app shell consumes the shared Financial Operations `Reviewed automation` evidence badge as an
 operator-focus item only when the badge requires review. React may route the operator back to the
 source-backed workflow step, but it must not approve, post, publish, release payments, erase
@@ -627,6 +654,11 @@ The Reporting workspace also renders the shared `AccessAudit` summary from `Work
 showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
 packs, schedules, deliveries, and structured exports. React displays the service-owned denial
 reasons without probing or naming hidden report objects.
+On the daily Reporting landing, React renders `starterKits` and `starterKitState` from the shared
+Reporting payload as the "Set up your reporting desk" chooser. Selecting a kit posts to the shared
+starter-kit provisioning endpoint, then shows the server-returned enabled template ids, layout id,
+default period, and draft schedule ids; the browser does not locally decide which templates or
+schedules belong to an archetype.
 Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
 Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
 delivery evidence packets or audit graph state locally. Publication review and delivery package
@@ -1169,6 +1201,9 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-EVIDENCE-001` | Evidence Vault productization |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

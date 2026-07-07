@@ -10,6 +10,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -443,12 +444,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
     private static DateOnly ParseBarDate(string ibDate)
     {
         // IB returns dates in format: "yyyyMMdd" for daily bars
-        if (ibDate.Length >= 8 && DateOnly.TryParseExact(
-            ibDate.Substring(0, 8),
-            "yyyyMMdd",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out var date))
+        if (ibDate.Length >= 8 &&
+            ProviderDateParsing.TryParseProviderDate(ibDate.Substring(0, 8), "yyyyMMdd", out var date))
         {
             return date;
         }

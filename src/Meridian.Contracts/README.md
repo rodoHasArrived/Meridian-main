@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Contracts
@@ -32,7 +32,14 @@ or provider implementations.
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
   contract-owned `InstrumentTypeDescriptorCatalog` carries additive provider-routing,
   validation, lifecycle, ledger, and risk hints for existing `InstrumentType` values without
-  changing enum wire values.
+  changing enum wire values. Its sibling `CorporateActionTypeDescriptorCatalog` does the same
+  for the canonical corporate-action vocabulary in `CorporateActionEventTypes`: per-type ISO
+  15022 CAEV alignment, provider aliases (alias-tolerant `TryNormalize`), required fields,
+  asset-class validity, and adjustment/ledger-posting behavior. Lifecycle support rides
+  `CorporateActionLifecycleStates` (write-side Announced/Confirmed/Cancelled; Ex/Paid derived
+  from dates) plus `CorporateActionEffectiveStateProjector`, which folds append-only
+  supersede chains (`CorporateActionDto.SupersedesCorpActId`) into effective actions with
+  amendment timelines.
   Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
   operator metadata scope so the shared Instrument Passport operating model can identify the
   most-specific applicable vendor/data-type control without browser-only or WPF-only rules.
@@ -489,6 +496,11 @@ retained sources server-side when callers do not embed explicit `datasetRows`. G
 run payloads and manifests retain the resolved report-writer dataset source id, label, and row
 count so audit cards, delivery packages, and downstream evidence consumers can prove which governed
 dataset powered a no-code report-writer output.
+`ReportingStarterKitDto`, `ReportingStarterKitStateDto`, and
+`ReportingStarterKitProvisionResultDto` describe editable Reporting desk presets in the shared
+contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
+selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
+seeded for review but should not run until an operator activates them.
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
@@ -844,6 +856,17 @@ compare strategy versions and engines without endpoint-local DTOs.
 Strategy promotion readiness contracts also carry retained approval checklist and evidence
 references so paper-to-live promotion gates remain contract-owned and browser/WPF clients can show
 the same human-approved evidence requirements without local promotion-state rules.
+Trading readiness contracts also expose broker execution reconciliation evidence when a broker-backed
+gateway is active: the shared payload carries broker/OMS open-order match counts, break details, and
+a stable broker execution reconciliation work-item kind so clients do not infer live-readiness parity
+from order rows. The same readiness payload now separates paper operation readiness from live
+operation readiness: `ReadyForLiveOperation` fails closed until the live promotion trace,
+account-scoped brokerage sync, and broker execution reconciliation evidence all clear, and
+`LiveOperationBlockers` names the remaining shared blocker codes. `LiveOperationRequirements`
+also exposes the approved live-promotion trace plus each W7 checklist/evidence item as typed rows
+so clients can show trusted data, paper validation, reconciliation, accounting records, governed
+reporting, governance sign-off, exception handling, rollback/kill-switch, audit retention, and
+broker parity without duplicating checklist-token rules.
 Strategy briefing contracts live in `Workstation/StrategyBriefingDtos.cs` and provide the
 canonical Strategy-named payloads for run drill-ins, saved comparisons, alerts, "what changed"
 items, workspace summary, and the full briefing DTO. Older `ResearchBriefing*` contracts are
@@ -885,6 +908,12 @@ targets. `CustomAsset` rows remain available for profile-lineage, servicer/trust
 and obligation close-readiness compatibility coverage. Browser, WPF, and shared endpoint clients
 should render those rows as supplied instead of recalculating asset-class readiness, ledger
 coverage, reconciliation status, or close blockers locally.
+
+Asset Operations terms/obligations timeline contracts carry the shared projection view for
+expected cash flows, projected obligations, retained evidence posture, variances, ledger support,
+formula trace, and next action. Browser and WPF clients should render `AssetTermsObligationsTimelineDto`
+and its event/variance rows as supplied instead of rebuilding projection math or source-support
+rules in UI-specific DTOs.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
@@ -1308,6 +1337,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-EVIDENCE-001` | Evidence Vault productization |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1321,6 +1353,13 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## API and contract notes
 
 `IPartnerFileParser.ParseAsync` accepts an optional partner schema id so ETL orchestrators can route CSV and Excel workbook rows through the persisted mapping schema while retaining checkpoint-aware streaming envelopes.
+`ExecutionPositionActionRequest` carries an optional `FundAccountId` so browser and WPF close/upsize
+position actions can keep account-scoped live-readiness evidence aligned with the selected
+operating fund account before the execution layer routes a broker order.
+`TradingExecutionReconciliationReadinessDto`, `TradingExecutionReconciliationBreakDto`, and
+`TradingLiveOperationRequirementDto` extend the trading operator readiness contract with broker
+open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
+W7 live-readiness gate.
 
 ## Validation
 

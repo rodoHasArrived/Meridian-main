@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
@@ -12,15 +13,18 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     private readonly IAssetOperationsProjectionStore? _projectionStore;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IBondReferenceService? _bondReferenceService;
+    private readonly AssetObligationProjectionService _obligationProjectionService;
 
     public AssetOperationsReadService(
         IAssetOperationsProjectionStore? projectionStore = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
-        IBondReferenceService? bondReferenceService = null)
+        IBondReferenceService? bondReferenceService = null,
+        AssetObligationProjectionService? obligationProjectionService = null)
     {
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
+        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService();
     }
 
     public async Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
@@ -32,7 +36,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             : await _projectionStore.GetAsync(securityId, ct).ConfigureAwait(false);
         if (published is not null)
         {
-            return published;
+            return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published);
         }
 
         var security = _securityMasterQueryService is null
@@ -45,7 +49,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
 
         return string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
             ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
-            : BuildIdentityOnlyOperations(security);
+            : _obligationProjectionService.ProjectFromSecurityMaster(security);
     }
 
     public async Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)
@@ -61,7 +65,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             : await _bondReferenceService.GetReferenceAsync(security.SecurityId, ct).ConfigureAwait(false);
         if (bond is null)
         {
-            return BuildIdentityOnlyOperations(security);
+            return _obligationProjectionService.ProjectFromSecurityMaster(security);
         }
 
         return AssetOperationsProjectionBuilder.FromBondReference(bond, BuildSubject(security));
@@ -81,7 +85,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             "SecurityMaster",
             subject.SecurityId.ToString("D"));
 
-        return new AssetOperationsDetailDto(
+        var detail = new AssetOperationsDetailDto(
             subject,
             [],
             [],
@@ -93,6 +97,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             [],
             readiness,
             []);
+        return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(detail);
     }
 
     private static AssetOperationSubjectDto BuildSubject(SecurityDetailDto security)
@@ -133,6 +138,10 @@ public sealed class AssetOperationsProjectionCommandService : IAssetOperationsCo
 
 public static class AssetOperationsProjectionBuilder
 {
+    private const string TimelineEngineVersion = "asset-terms-obligations-timeline-v1";
+    private const string FixedIncomeCashFlowEngineVersion = "fixed-income-cash-flow-projection-v1";
+    private const decimal DefaultPrincipalBasis = 100m;
+
     public static AssetOperationsProjectionDto FromDirectLending(
         LoanContractDetailDto contract,
         IReadOnlyList<ProjectionRunDto> projectionRuns,
@@ -162,7 +171,8 @@ public static class AssetOperationsProjectionBuilder
             version.RecordedAt,
             "DirectLending",
             contract.LoanId.ToString("D"),
-            $"{contract.FacilityName} terms version {version.VersionNumber}")).ToArray();
+            $"{contract.FacilityName} terms version {version.VersionNumber}",
+            BuildDirectLendingTermsPayload(contract, version.Terms))).ToArray();
         var lifecycle = new[]
         {
             new AssetLifecycleEventDto(
@@ -259,7 +269,7 @@ public static class AssetOperationsProjectionBuilder
         var readyCapabilities = ReadyCapabilities(subject.OperationalProfile, terms, lifecycle, flows, activity, reconciliations, reconciliationResults, ledger);
         var readiness = BuildReadiness(subject, readyCapabilities, "DirectLending", contract.LoanId.ToString("D"));
 
-        return new AssetOperationsProjectionDto(
+        var projection = new AssetOperationsProjectionDto(
             subject,
             terms,
             lifecycle,
@@ -271,6 +281,7 @@ public static class AssetOperationsProjectionBuilder
             ledger,
             readiness,
             lifecycle);
+        return WithTermsObligationsTimeline(projection);
     }
 
     public static AssetOperationsDetailDto FromBondReference(BondReferenceDto bond, AssetOperationSubjectDto subject)
@@ -284,9 +295,10 @@ public static class AssetOperationsProjectionBuilder
                 $"bond-reference:{bond.Version}",
                 bond.Lifecycle?.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date),
                 DateTimeOffset.UtcNow,
-                "SecurityMaster",
-                subject.SecurityId.ToString("D"),
-                $"{bond.DisplayName} maturity/coupon reference terms")
+            "SecurityMaster",
+            subject.SecurityId.ToString("D"),
+            $"{bond.DisplayName} maturity/coupon reference terms",
+            BuildBondTermsPayload(bond))
         };
         IReadOnlyList<AssetLifecycleEventDto> lifecycle = bond.Lifecycle is null
             ? []
@@ -308,12 +320,12 @@ public static class AssetOperationsProjectionBuilder
             projectionRunId,
             subject.SecurityId,
             DateOnly.FromDateTime(DateTime.UtcNow.Date),
-            "fixed-income-reference-v1",
+            FixedIncomeCashFlowEngineVersion,
             "Completed",
             DateTimeOffset.UtcNow,
             "SecurityMaster",
             subject.SecurityId.ToString("D"));
-        var flows = BuildBondProjectedCashFlows(bond, projectionRunId).ToArray();
+        var flows = ProjectFixedIncomeCashFlows(bond, projectionRunId).ToArray();
         var ledger = new[]
         {
             new AssetLedgerProjectionDto(
@@ -333,7 +345,7 @@ public static class AssetOperationsProjectionBuilder
         var readyCapabilities = ReadyCapabilities(subject.OperationalProfile, terms, lifecycle, flows, [], [], [], ledger);
         var readiness = BuildReadiness(subject, readyCapabilities, "SecurityMaster", subject.SecurityId.ToString("D"));
 
-        return new AssetOperationsDetailDto(
+        var detail = new AssetOperationsDetailDto(
             subject,
             terms,
             lifecycle,
@@ -345,7 +357,13 @@ public static class AssetOperationsProjectionBuilder
             ledger,
             readiness,
             lifecycle);
+        return WithTermsObligationsTimeline(detail);
     }
+
+    internal static IReadOnlyList<AssetProjectedCashFlowDto> ProjectFixedIncomeCashFlows(
+        BondReferenceDto bond,
+        Guid projectionRunId)
+        => BuildBondProjectedCashFlows(bond, projectionRunId).ToArray();
 
     private static IEnumerable<AssetProjectedCashFlowDto> BuildBondProjectedCashFlows(BondReferenceDto bond, Guid projectionRunId)
     {
@@ -355,45 +373,708 @@ public static class AssetOperationsProjectionBuilder
             yield break;
         }
 
-        if (bond.AccrualConvention?.FixedCouponRate is decimal coupon && coupon > 0m)
+        var issueDate = bond.Lifecycle?.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var paymentFrequency = ResolvePaymentFrequencyPerYear(bond.Lifecycle?.PaymentFrequency);
+        var periodMonths = Math.Max(1, 12 / paymentFrequency);
+        var principalBasis = ResolveBondPrincipalBasis(bond);
+        var outstandingPrincipal = principalBasis;
+        var normalizedDayCountConvention = NormalizeDayCountConvention(bond.AccrualConvention?.DayCountConvention);
+        var sinkingFundEntries = bond.SinkingFund?.Schedule
+            .Where(static entry => entry.Amount > 0m)
+            .OrderBy(static entry => entry.SinkDate)
+            .ToArray() ?? [];
+        var sinkingFundIndex = 0;
+        var sequenceNumber = 1;
+        var accrualStart = issueDate;
+
+        while (accrualStart < maturity.Value)
+        {
+            var accrualEnd = accrualStart.AddMonths(periodMonths);
+            if (accrualEnd > maturity.Value)
+            {
+                accrualEnd = maturity.Value;
+            }
+
+            if (bond.AccrualConvention?.FixedCouponRate is decimal coupon && coupon > 0m && outstandingPrincipal > 0m)
+            {
+                var couponAmount = CalculateBondCouponAmount(
+                    outstandingPrincipal,
+                    coupon,
+                    normalizedDayCountConvention,
+                    accrualStart,
+                    accrualEnd,
+                    paymentFrequency);
+
+                if (couponAmount > 0m)
+                {
+                    yield return new AssetProjectedCashFlowDto(
+                        Guid.NewGuid(),
+                        projectionRunId,
+                        bond.SecurityId,
+                        sequenceNumber++,
+                        "Coupon",
+                        accrualEnd,
+                        couponAmount,
+                        bond.Currency,
+                        "Projected",
+                        accrualStart,
+                        accrualEnd,
+                        outstandingPrincipal,
+                        decimal.Round(coupon / 100m, 8, MidpointRounding.AwayFromZero),
+                        "SecurityMaster",
+                        bond.SecurityId.ToString("D"),
+                        BuildBondFlowPayload(
+                            "fixed-coupon",
+                            bond,
+                            paymentFrequency,
+                            principalBasis,
+                            outstandingPrincipal,
+                            coupon,
+                            accrualStart,
+                            accrualEnd));
+                }
+            }
+
+            while (sinkingFundIndex < sinkingFundEntries.Length &&
+                   sinkingFundEntries[sinkingFundIndex].SinkDate <= accrualEnd &&
+                   sinkingFundEntries[sinkingFundIndex].SinkDate < maturity.Value &&
+                   outstandingPrincipal > 0m)
+            {
+                var entry = sinkingFundEntries[sinkingFundIndex++];
+                var principalRepayment = decimal.Min(outstandingPrincipal, RoundCash(entry.Amount));
+                if (principalRepayment <= 0m)
+                {
+                    continue;
+                }
+
+                outstandingPrincipal = RoundCash(outstandingPrincipal - principalRepayment);
+                yield return new AssetProjectedCashFlowDto(
+                    Guid.NewGuid(),
+                    projectionRunId,
+                    bond.SecurityId,
+                    sequenceNumber++,
+                    "PrincipalRepayment",
+                    entry.SinkDate,
+                    principalRepayment,
+                    bond.Currency,
+                    "Projected",
+                    null,
+                    entry.SinkDate,
+                    RoundCash(outstandingPrincipal + principalRepayment),
+                    null,
+                    "SecurityMaster",
+                    bond.SecurityId.ToString("D"),
+                    BuildBondFlowPayload(
+                        "sinking-fund-principal",
+                        bond,
+                        paymentFrequency,
+                        principalBasis,
+                        RoundCash(outstandingPrincipal + principalRepayment),
+                        null,
+                        null,
+                        entry.SinkDate));
+            }
+
+            if (accrualEnd == maturity.Value)
+            {
+                break;
+            }
+
+            accrualStart = accrualEnd;
+        }
+
+        if (outstandingPrincipal > 0m)
         {
             yield return new AssetProjectedCashFlowDto(
                 Guid.NewGuid(),
                 projectionRunId,
                 bond.SecurityId,
-                1,
-                "Coupon",
+                sequenceNumber,
+                "Maturity",
                 maturity.Value,
-                decimal.Round(coupon, 4, MidpointRounding.AwayFromZero),
+                RoundCash(outstandingPrincipal),
                 bond.Currency,
                 "Projected",
                 null,
                 maturity,
+                RoundCash(outstandingPrincipal),
                 null,
-                coupon,
                 "SecurityMaster",
-                bond.SecurityId.ToString("D"));
+                bond.SecurityId.ToString("D"),
+                BuildBondFlowPayload(
+                    "maturity-principal",
+                    bond,
+                    paymentFrequency,
+                    principalBasis,
+                    outstandingPrincipal,
+                    null,
+                    null,
+                    maturity.Value));
         }
-
-        yield return new AssetProjectedCashFlowDto(
-            Guid.NewGuid(),
-            projectionRunId,
-            bond.SecurityId,
-            2,
-            "Maturity",
-            maturity.Value,
-            100m,
-            bond.Currency,
-            "Projected",
-            null,
-            maturity,
-            100m,
-            null,
-            "SecurityMaster",
-            bond.SecurityId.ToString("D"));
     }
 
-    private static IReadOnlyList<string> ReadyCapabilities(
+    public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail)
+    {
+        ArgumentNullException.ThrowIfNull(detail);
+        if (detail.TermsObligationsTimeline is not null)
+        {
+            return detail;
+        }
+
+        return detail with
+        {
+            TermsObligationsTimeline = BuildTermsObligationsTimeline(
+                detail.Subject,
+                detail.TermsHistory,
+                detail.LifecycleEvents,
+                detail.CashFlowProjectionRuns,
+                detail.ProjectedCashFlows,
+                detail.ActualActivity,
+                detail.ReconciliationResults,
+                detail.LedgerProjections)
+        };
+    }
+
+    private static AssetOperationsProjectionDto WithTermsObligationsTimeline(AssetOperationsProjectionDto projection)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        if (projection.TermsObligationsTimeline is not null)
+        {
+            return projection;
+        }
+
+        return projection with
+        {
+            TermsObligationsTimeline = BuildTermsObligationsTimeline(
+                projection.Subject,
+                projection.TermsHistory,
+                projection.LifecycleEvents,
+                projection.CashFlowProjectionRuns,
+                projection.ProjectedCashFlows,
+                projection.ActualActivity,
+                projection.ReconciliationResults,
+                projection.LedgerProjections)
+        };
+    }
+
+    private static AssetTermsObligationsTimelineDto BuildTermsObligationsTimeline(
+        AssetOperationSubjectDto subject,
+        IReadOnlyList<AssetTermsVersionDto> terms,
+        IReadOnlyList<AssetLifecycleEventDto> lifecycleEvents,
+        IReadOnlyList<AssetCashFlowProjectionRunDto> projectionRuns,
+        IReadOnlyList<AssetProjectedCashFlowDto> projectedCashFlows,
+        IReadOnlyList<AssetActualActivityDto> actualActivity,
+        IReadOnlyList<AssetReconciliationResultDto> reconciliationResults,
+        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
+    {
+        var latestRun = projectionRuns.MaxBy(static run => run.GeneratedAt);
+        var projectionAsOf = latestRun?.ProjectionAsOf
+            ?? projectedCashFlows.MinBy(static flow => flow.DueDate)?.DueDate
+            ?? terms.MaxBy(static row => row.EffectiveDate)?.EffectiveDate
+            ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var generatedAt = latestRun?.GeneratedAt ?? DateTimeOffset.UtcNow;
+        var events = new List<AssetTermsObligationTimelineEventDto>();
+
+        foreach (var flow in projectedCashFlows.OrderBy(static flow => flow.DueDate).ThenBy(static flow => flow.SequenceNumber))
+        {
+            var reconciliation = FindReconciliation(flow, reconciliationResults);
+            var activity = FindActivity(flow, reconciliation, actualActivity);
+            var ledgerProjection = FindLedgerProjection(flow, ledgerProjections);
+            var status = ResolveTimelineStatus(flow, reconciliation, projectionAsOf);
+            var actualAmount = reconciliation?.ActualAmount ?? activity?.Amount;
+            var actualDate = reconciliation?.ActualDate ?? activity?.EffectiveDate;
+            var variance = reconciliation?.VarianceAmount
+                ?? (actualAmount.HasValue ? actualAmount.Value - flow.Amount : null);
+
+            events.Add(new AssetTermsObligationTimelineEventDto(
+                Guid.NewGuid(),
+                subject.SecurityId,
+                NormalizeTimelineEventKind(flow.FlowType),
+                ResolveTimelineLane(flow.FlowType),
+                flow.DueDate,
+                actualDate,
+                flow.AccrualStartDate,
+                flow.AccrualEndDate,
+                flow.Amount,
+                actualAmount,
+                variance,
+                flow.Currency,
+                status,
+                flow.SourceDomain ?? "AssetOperations",
+                flow.SourceEntityId,
+                reconciliation?.EvidenceLink ?? activity?.EvidenceLink,
+                ledgerProjection?.LedgerReferenceId,
+                BuildCashFlowTimelineSummary(flow, status),
+                BuildTimelineFlowPayload(flow, reconciliation, activity, ledgerProjection))
+            {
+                FormulaTrace = BuildCashFlowFormulaTrace(flow),
+                LedgerReference = ledgerProjection?.LedgerReferenceId,
+                NextAction = ResolveTimelineNextAction(status, ledgerProjection)
+            });
+        }
+
+        events.AddRange(AssetObligationProjectionService.BuildProjectedObligationEvents(
+            subject,
+            terms,
+            projectionAsOf,
+            ledgerProjections));
+
+        foreach (var lifecycle in lifecycleEvents.OrderBy(static row => row.EffectiveDate))
+        {
+            events.Add(new AssetTermsObligationTimelineEventDto(
+                Guid.NewGuid(),
+                subject.SecurityId,
+                lifecycle.EventType,
+                "Lifecycle",
+                lifecycle.EffectiveDate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                string.Empty,
+                lifecycle.LifecycleState,
+                lifecycle.SourceDomain,
+                lifecycle.SourceEntityId,
+                null,
+                null,
+                lifecycle.Summary,
+                lifecycle.ExtensionPayload)
+            {
+                FormulaTrace = "Lifecycle event retained from source domain.",
+                NextAction = lifecycle.LifecycleState.Contains("Inactive", StringComparison.OrdinalIgnoreCase)
+                    ? "Review inactive subject before downstream support consumes it."
+                    : "No action required unless source evidence changes."
+            });
+        }
+
+        var warnings = new List<string>();
+        if (terms.Count == 0)
+        {
+            warnings.Add("No retained terms version is available for the timeline.");
+        }
+
+        if (projectedCashFlows.Count == 0)
+        {
+            warnings.Add("No projected cash-flow obligations are available for the timeline.");
+        }
+
+        var variances = AssetObligationProjectionService.BuildTimelineVariances(
+            subject,
+            projectedCashFlows,
+            actualActivity,
+            reconciliationResults,
+            projectionAsOf);
+
+        return new AssetTermsObligationsTimelineDto(
+            subject.SecurityId,
+            projectionAsOf,
+            latestRun is null ? TimelineEngineVersion : $"{latestRun.EngineVersion}+{TimelineEngineVersion}",
+            warnings.Count == 0 ? "Ready" : "ReviewRequired",
+            events.OrderBy(static row => row.EffectiveDate).ThenBy(static row => row.EventKind).ToArray(),
+            warnings,
+            generatedAt,
+            latestRun?.SourceDomain ?? "AssetOperations",
+            latestRun?.SourceEntityId ?? subject.SecurityId.ToString("D"))
+        {
+            AssetClass = subject.AssetClass,
+            Variances = variances
+        };
+    }
+
+    private static decimal ResolveBondPrincipalBasis(BondReferenceDto bond)
+    {
+        var par = bond.Lifecycle?.Par is decimal parValue && parValue > 0m
+            ? parValue
+            : DefaultPrincipalBasis;
+        var factor = bond.InflationLinked?.CurrentFactor is decimal currentFactor && currentFactor > 0m
+            ? currentFactor
+            : 1m;
+        return RoundCash(par * factor);
+    }
+
+    private static int ResolvePaymentFrequencyPerYear(string? paymentFrequency)
+    {
+        if (string.IsNullOrWhiteSpace(paymentFrequency))
+        {
+            return 1;
+        }
+
+        var normalized = paymentFrequency
+            .Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Trim()
+            .ToUpperInvariant();
+        if (int.TryParse(normalized, out var parsed) && parsed > 0)
+        {
+            return Math.Clamp(parsed, 1, 12);
+        }
+
+        return normalized switch
+        {
+            "MONTHLY" => 12,
+            "QUARTERLY" => 4,
+            "SEMIANNUAL" or "SEMIANNUALLY" or "SEMIYEARLY" or "HALFYEARLY" => 2,
+            "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
+            _ => 1
+        };
+    }
+
+    private static decimal CalculateBondCouponAmount(
+        decimal principalBasis,
+        decimal couponRatePercent,
+        string? normalizedDayCountConvention,
+        DateOnly accrualStart,
+        DateOnly accrualEnd,
+        int paymentFrequency)
+    {
+        var yearFraction = CalculateYearFraction(normalizedDayCountConvention, accrualStart, accrualEnd, paymentFrequency);
+        return RoundCash(principalBasis * (couponRatePercent / 100m) * yearFraction);
+    }
+
+    private static string? NormalizeDayCountConvention(string? dayCountConvention)
+        => string.IsNullOrWhiteSpace(dayCountConvention)
+            ? null
+            : dayCountConvention
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("-", string.Empty, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .ToUpperInvariant();
+
+    private static decimal CalculateYearFraction(
+        string? normalizedDayCountConvention,
+        DateOnly accrualStart,
+        DateOnly accrualEnd,
+        int paymentFrequency)
+    {
+        if (accrualEnd <= accrualStart)
+        {
+            return 0m;
+        }
+
+        if (normalizedDayCountConvention is not null &&
+            normalizedDayCountConvention.Contains("30/360", StringComparison.Ordinal))
+        {
+            return Days360(accrualStart, accrualEnd) / 360m;
+        }
+
+        var actualDays = accrualEnd.DayNumber - accrualStart.DayNumber;
+        if (IsActual360(normalizedDayCountConvention))
+        {
+            return actualDays / 360m;
+        }
+
+        if (IsActual365(normalizedDayCountConvention))
+        {
+            return actualDays / 365m;
+        }
+
+        return 1m / Math.Max(1, paymentFrequency);
+    }
+
+    private static bool IsActual360(string? normalizedDayCountConvention)
+        => normalizedDayCountConvention is not null &&
+           (normalizedDayCountConvention.Contains("ACT/360", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACT360", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL/360", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL360", StringComparison.Ordinal));
+
+    private static bool IsActual365(string? normalizedDayCountConvention)
+        => normalizedDayCountConvention is not null &&
+           (normalizedDayCountConvention.Contains("ACT/365", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACT365", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL/365", StringComparison.Ordinal) ||
+            normalizedDayCountConvention.Contains("ACTUAL365", StringComparison.Ordinal));
+
+    private static decimal Days360(DateOnly start, DateOnly end)
+    {
+        var startDay = start.Day == 31 ? 30 : start.Day;
+        var endDay = end.Day == 31 && startDay >= 30 ? 30 : end.Day;
+        return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
+    }
+
+    private static decimal RoundCash(decimal amount)
+        => decimal.Round(amount, 4, MidpointRounding.AwayFromZero);
+
+    private static JsonElement BuildBondFlowPayload(
+        string formula,
+        BondReferenceDto bond,
+        int paymentFrequency,
+        decimal principalBasis,
+        decimal outstandingPrincipal,
+        decimal? couponRatePercent,
+        DateOnly? accrualStart,
+        DateOnly accrualEnd)
+        => JsonSerializer.SerializeToElement(new
+        {
+            formula,
+            engineVersion = FixedIncomeCashFlowEngineVersion,
+            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
+            paymentFrequencyPerYear = paymentFrequency,
+            principalBasis,
+            outstandingPrincipal,
+            couponRatePercent,
+            accrualStart,
+            accrualEnd,
+            inflationFactor = bond.InflationLinked?.CurrentFactor
+        });
+
+    private static AssetReconciliationResultDto? FindReconciliation(
+        AssetProjectedCashFlowDto flow,
+        IReadOnlyList<AssetReconciliationResultDto> reconciliationResults)
+    {
+        AssetReconciliationResultDto? firstDateMatch = null;
+        foreach (var result in reconciliationResults)
+        {
+            if (result.ExpectedDate != flow.DueDate)
+            {
+                continue;
+            }
+
+            firstDateMatch ??= result;
+            if (AmountMatches(result.ExpectedAmount, flow.Amount))
+            {
+                return result;
+            }
+        }
+
+        return firstDateMatch;
+    }
+
+    private static bool AmountMatches(decimal? expectedAmount, decimal actualAmount)
+        => expectedAmount.HasValue && RoundCash(expectedAmount.Value) == RoundCash(actualAmount);
+
+    private static AssetActualActivityDto? FindActivity(
+        AssetProjectedCashFlowDto flow,
+        AssetReconciliationResultDto? reconciliation,
+        IReadOnlyList<AssetActualActivityDto> actualActivity)
+    {
+        if (reconciliation?.ActualDate is DateOnly actualDate)
+        {
+            var matched = actualActivity.FirstOrDefault(activity =>
+                activity.EffectiveDate == actualDate &&
+                (!reconciliation.ActualAmount.HasValue || activity.Amount == reconciliation.ActualAmount.Value));
+            if (matched is not null)
+            {
+                return matched;
+            }
+        }
+
+        return actualActivity.FirstOrDefault(activity =>
+            activity.EffectiveDate == flow.DueDate &&
+            activity.Amount == flow.Amount);
+    }
+
+    private static AssetLedgerProjectionDto? FindLedgerProjection(
+        AssetProjectedCashFlowDto flow,
+        IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections)
+        => ledgerProjections
+            .Where(row => string.Equals(row.Currency, flow.Currency, StringComparison.OrdinalIgnoreCase))
+            .MinBy(row => Math.Abs(row.AccountingDate.DayNumber - flow.DueDate.DayNumber));
+
+    private static string ResolveTimelineStatus(
+        AssetProjectedCashFlowDto flow,
+        AssetReconciliationResultDto? reconciliation,
+        DateOnly projectionAsOf)
+    {
+        if (reconciliation is not null)
+        {
+            return reconciliation.MatchStatus;
+        }
+
+        return flow.DueDate < projectionAsOf
+            ? "MissingEvidence"
+            : flow.Status;
+    }
+
+    private static string NormalizeTimelineEventKind(string flowType)
+        => flowType switch
+        {
+            "Maturity" => "PrincipalMaturity",
+            "Principal" => "PrincipalRepayment",
+            _ => flowType
+        };
+
+    private static string ResolveTimelineLane(string flowType)
+    {
+        if (flowType.Contains("Coupon", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Coupon";
+        }
+
+        if (flowType.Contains("Interest", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Interest";
+        }
+
+        if (flowType.Contains("Principal", StringComparison.OrdinalIgnoreCase) ||
+            flowType.Contains("Maturity", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Principal";
+        }
+
+        if (flowType.Contains("Capital", StringComparison.OrdinalIgnoreCase) ||
+            flowType.Contains("Distribution", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Capital";
+        }
+
+        return "CashFlow";
+    }
+
+    private static string BuildCashFlowTimelineSummary(AssetProjectedCashFlowDto flow, string status)
+        => $"{flow.FlowType} obligation due {flow.DueDate:yyyy-MM-dd} for {flow.Amount} {flow.Currency}; status {status}.";
+
+    private static string BuildCashFlowFormulaTrace(AssetProjectedCashFlowDto flow)
+    {
+        if (flow.ExtensionPayload is { } payload && payload.ValueKind == JsonValueKind.Object)
+        {
+            if (TryReadPayloadString(payload, "formula", out var formula))
+            {
+                return formula;
+            }
+
+            if (TryReadPayloadString(payload, "type", out var type))
+            {
+                return $"{flow.FlowType}: {type}";
+            }
+        }
+
+        if (flow.PrincipalBasis.HasValue && flow.AnnualRate.HasValue && flow.AccrualStartDate.HasValue && flow.AccrualEndDate.HasValue)
+        {
+            return $"{flow.FlowType}: principal {flow.PrincipalBasis.Value} x rate {flow.AnnualRate.Value:P4} over {flow.AccrualStartDate:yyyy-MM-dd} to {flow.AccrualEndDate:yyyy-MM-dd}.";
+        }
+
+        return $"{flow.FlowType}: amount retained from {flow.SourceDomain ?? "AssetOperations"} projection.";
+    }
+
+    private static string ResolveTimelineNextAction(string status, AssetLedgerProjectionDto? ledgerProjection)
+    {
+        if (string.Equals(status, "Matched", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(status, "Reconciled", StringComparison.OrdinalIgnoreCase))
+        {
+            return ledgerProjection is null
+                ? "Review ledger support before close."
+                : "No action required unless evidence changes.";
+        }
+
+        if (string.Equals(status, "MissingEvidence", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Attach actual activity evidence or open a reconciliation case.";
+        }
+
+        return ledgerProjection is null
+            ? "Review ledger classification before posting support."
+            : "Monitor due date and retain actual evidence when it arrives.";
+    }
+
+    private static bool TryReadPayloadString(JsonElement payload, string propertyName, out string value)
+    {
+        foreach (var property in payload.EnumerateObject())
+        {
+            if (!string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            value = property.Value.ValueKind == JsonValueKind.String
+                ? property.Value.GetString() ?? string.Empty
+                : property.Value.ToString();
+            return !string.IsNullOrWhiteSpace(value);
+        }
+
+        value = string.Empty;
+        return false;
+    }
+
+    private static JsonElement BuildTimelineFlowPayload(
+        AssetProjectedCashFlowDto flow,
+        AssetReconciliationResultDto? reconciliation,
+        AssetActualActivityDto? activity,
+        AssetLedgerProjectionDto? ledgerProjection)
+        => JsonSerializer.SerializeToElement(new
+        {
+            projectionRunId = flow.ProjectionRunId,
+            projectedCashFlowId = flow.ProjectedCashFlowId,
+            flow.SequenceNumber,
+            flow.PrincipalBasis,
+            flow.AnnualRate,
+            reconciliationResultId = reconciliation?.ReconciliationResultId,
+            actualActivityId = activity?.ActivityId,
+            ledgerProjectionId = ledgerProjection?.LedgerProjectionId
+        });
+
+    private static JsonElement BuildDirectLendingTermsPayload(LoanContractDetailDto contract, DirectLendingTermsDto terms)
+        => JsonSerializer.SerializeToElement(new
+        {
+            engineVersion = AssetObligationProjectionService.EngineVersion,
+            assetClass = "DirectLoan",
+            currency = terms.BaseCurrency.ToString(),
+            baseCurrency = terms.BaseCurrency.ToString(),
+            contract.LoanId,
+            contract.FacilityName,
+            borrowerName = contract.Borrower.BorrowerName,
+            terms.OriginationDate,
+            terms.MaturityDate,
+            terms.CommitmentAmount,
+            terms.RateTypeKind,
+            rateType = terms.RateTypeKind.ToString(),
+            terms.FixedAnnualRate,
+            terms.InterestIndexName,
+            terms.SpreadBps,
+            terms.FloorRate,
+            terms.CapRate,
+            terms.DayCountBasis,
+            dayCountBasis = terms.DayCountBasis.ToString(),
+            terms.PaymentFrequency,
+            paymentFrequency = terms.PaymentFrequency.ToString(),
+            terms.AmortizationType,
+            amortizationType = terms.AmortizationType.ToString(),
+            terms.CommitmentFeeRate,
+            terms.DefaultRateSpreadBps,
+            terms.PrepaymentAllowed,
+            terms.CovenantsJson,
+            terms.InterestOnlyMonths,
+            terms.GracePeriodDays,
+            terms.EffectiveRateFloor,
+            terms.EffectiveRateCap,
+            terms.PrepaymentPenaltyRate,
+            securityMasterReference = terms.SecurityMasterReference
+        });
+
+    private static JsonElement BuildBondTermsPayload(BondReferenceDto bond)
+        => JsonSerializer.SerializeToElement(new
+        {
+            engineVersion = AssetObligationProjectionService.EngineVersion,
+            assetClass = "Bond",
+            currency = bond.Currency,
+            bond.DisplayName,
+            bond.IssuerName,
+            bond.PrimaryIdentifier,
+            issueDate = bond.Lifecycle?.IssueDate,
+            callDate = bond.Lifecycle?.CallDate,
+            maturityDate = bond.Lifecycle?.MaturityDate,
+            legalFinalMaturity = bond.Lifecycle?.LegalFinalMaturity,
+            preRefundDate = bond.Lifecycle?.PreRefundDate,
+            mandatoryPutDate = bond.Lifecycle?.MandatoryPutDate,
+            par = bond.Lifecycle?.Par,
+            paymentFrequency = bond.Lifecycle?.PaymentFrequency,
+            dayCountConvention = bond.AccrualConvention?.DayCountConvention,
+            couponKind = bond.AccrualConvention?.CouponKind,
+            fixedCouponRate = bond.AccrualConvention?.FixedCouponRate,
+            floatingRateIndex = bond.AccrualConvention?.FloatingRateIndex,
+            floatingSpreadBps = bond.AccrualConvention?.FloatingSpreadBps,
+            sinkingFundSchedule = bond.SinkingFund?.Schedule,
+            factorSchedule = bond.SinkingFund is null ? null : "sinking-fund",
+            inflationIndex = bond.InflationLinked?.InflationIndex,
+            currentFactor = bond.InflationLinked?.CurrentFactor,
+            factorDate = bond.InflationLinked?.FactorDate,
+            cashFlowSource = bond.AccountingElections?.CashFlowSource
+        });
+
+    internal static IReadOnlyList<string> ReadyCapabilities(
         IReadOnlyList<string> capabilities,
         IReadOnlyList<AssetTermsVersionDto> terms,
         IReadOnlyList<AssetLifecycleEventDto> lifecycle,
@@ -437,7 +1118,7 @@ public static class AssetOperationsProjectionBuilder
             .ToArray();
     }
 
-    private static AssetOperationsReadinessDto BuildReadiness(
+    internal static AssetOperationsReadinessDto BuildReadiness(
         AssetOperationSubjectDto subject,
         IReadOnlyList<string> readyCapabilities,
         string sourceDomain,

@@ -35,6 +35,11 @@ Canonical ownership rule:
 - Keep shared UI read-model/service contracts in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 - Never create duplicate business behavior per surface unless a surface-specific constraint exists.
 
+## Blueprints
+
+Code-ready technical designs for prioritized features live under
+[`blueprints/`](blueprints/README.md).
+
 ## Build/Test/Run
 
 Prefer the narrowest proof lane for the files you change.

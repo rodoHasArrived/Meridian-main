@@ -173,6 +173,21 @@ public static class ProviderModuleEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        // GET /api/providers/capability-matrix — provider × instrument-type capability grid
+        group.MapGet(UiApiRoutes.ProviderCapabilityMatrix, (
+            HttpContext context,
+            [FromServices] IProviderInstrumentCapabilityMatrixService matrixService) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
+                return EndpointHelpers.Forbidden();
+
+            return Results.Json(matrixService.GetMatrix(), jsonOptions);
+        })
+        .WithName("GetProviderCapabilityMatrix")
+        .WithDescription("Returns the provider × instrument-type capability matrix with data-source discovery failures.")
+        .Produces<ProviderInstrumentCapabilityMatrixDto>(200)
+        .Produces(StatusCodes.Status403Forbidden);
+
         // POST /api/providers/restart — graceful restart to apply config changes
         group.MapPost(UiApiRoutes.ProviderRestart, (
             HttpContext context,

@@ -8,6 +8,8 @@ using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Domain.Collectors;
+using Meridian.Ui.Shared.Streaming;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
@@ -21,6 +23,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -68,9 +71,18 @@ public static class WorkstationServiceCollectionExtensions
             return new ConfigStore(core.ConfigPath);
         });
 
-        // The UI coordinator wraps the core coordinator and adds preview support for workstation flows.
+        // The UI coordinator is a read-model façade over the core coordinator. Reuse the
+        // composition-root core singleton when it is registered so UI endpoints and non-UI
+        // callers (execution gateway, governance summaries) share one run gate; otherwise
+        // build a façade-owned core from the shared UI config store.
         services.AddSingleton<BackfillCoordinator>(sp =>
         {
+            var core = sp.GetService<Meridian.Application.Backfill.BackfillCoordinator>();
+            if (core is not null)
+            {
+                return new BackfillCoordinator(core);
+            }
+
             var configStore = sp.GetRequiredService<ConfigStore>();
             var registry = sp.GetService<ProviderRegistry>();
             var factory = sp.GetService<ProviderFactory>();
@@ -122,7 +134,9 @@ public static class WorkstationServiceCollectionExtensions
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
-                return new FileScopedAccessAssignmentStore(persistencePath);
+                return new FileScopedAccessAssignmentStore(
+                    persistencePath,
+                    sp.GetService<ILogger<FileScopedAccessAssignmentStore>>());
             });
         }
         services.TryAddSingleton<ScopedAccessService>();
@@ -159,6 +173,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
+        services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
         services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -237,6 +252,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
         services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
+            sp.GetRequiredService<TradingOperatorReadinessService>());
+        services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
@@ -320,6 +338,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
         services.TryAddSingleton(sp =>
             new GovernedReportingTemplateCatalog(
                 sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
@@ -339,13 +358,22 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
                 new DeterministicReportingSectionRenderer(),
                 () => DateTimeOffset.UtcNow,
-                sp.GetRequiredService<IReportingRunStore>()));
+                sp.GetRequiredService<IReportingRunStore>(),
+                // Null until the report-run stream broadcaster is registered (D1d); the null-object
+                // default keeps run execution unaffected in the meantime.
+                sp.GetService<IReportingRunNotifier>()));
         services.TryAddSingleton<ReportingScheduleStoreOptions>(sp =>
             new ReportingScheduleStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-schedules.json")));
         services.TryAddSingleton<IReportingScheduleStore>(sp =>
             new FileReportingScheduleStore(
                 sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
+        services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
+            new ReportingStarterKitStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-starter-kit.json")));
+        services.TryAddSingleton<IReportingStarterKitStore>(sp =>
+            new FileReportingStarterKitStore(
+                sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
         services.TryAddSingleton<ReportingRunCommandService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
@@ -354,6 +382,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ReportPackDeliveryService>(),
                 sp.GetService<GovernedReportingTemplateCatalog>(),
                 sp.GetService<ReportWriterDatasetSourceService>()));
+        services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
@@ -441,6 +470,20 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton(sp =>
+            new AutomatedJournalDraftIntakeService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                sp.GetRequiredService<IAccountingConfigurationService>()));
+        services.TryAddSingleton(sp =>
+        {
+            var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
+            return new AutomatedJournalIntakeRunner(
+                sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
+                new FeeScheduleAccrualEventProducer(),
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>());
+        });
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -502,6 +545,30 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
         services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Integrations.IOmsIntegrationApiHandler, OmsIntegrationService>();
         services.AddCoveredCallBacktestServices();
+
+        // Quote-stream fan-out. The broadcaster is registered as the IQuoteUpdateNotifier so the
+        // QuoteCollector wakes it on quote changes; SSE connections subscribe via
+        // IQuoteStreamBroadcaster. The endpoint still polls until the endpoint-switch increment, so
+        // wiring this in changes no observable behaviour (no subscribers = no fan-out output).
+        services.TryAddSingleton(new QuoteStreamOptions());
+        services.TryAddSingleton(sp => new StreamConnectionRegistry(
+            sp.GetRequiredService<QuoteStreamOptions>().MaxConcurrentStreamsPerSession));
+        services.TryAddSingleton(sp => new QuoteStreamBroadcaster(
+            sp,
+            sp.GetRequiredService<StreamConnectionRegistry>(),
+            sp.GetRequiredService<QuoteStreamOptions>()));
+        services.TryAddSingleton<IQuoteStreamBroadcaster>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
+        services.TryAddSingleton<IQuoteUpdateNotifier>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
+
+        // Report-run status stream (shadow until the SSE endpoint lands in D2). Shares the quote
+        // stream's registry cap and options. Registered as IReportingRunNotifier so run persistence
+        // wakes it (ReportingOrchestrationService resolves the notifier). No endpoint => no
+        // subscribers => no observable behaviour change yet.
+        services.TryAddSingleton(sp => new ReportRunStreamBroadcaster(
+            sp,
+            sp.GetRequiredService<StreamConnectionRegistry>(),
+            sp.GetRequiredService<QuoteStreamOptions>()));
+        services.TryAddSingleton<IReportingRunNotifier>(sp => sp.GetRequiredService<ReportRunStreamBroadcaster>());
 
         return services;
     }

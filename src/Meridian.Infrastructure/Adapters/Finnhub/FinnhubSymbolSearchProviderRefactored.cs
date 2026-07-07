@@ -5,6 +5,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Finnhub;
@@ -173,12 +174,7 @@ public sealed class FinnhubSymbolSearchProviderRefactored : BaseSymbolSearchProv
     }
 
     private static DateOnly? ParseIpoDate(string? ipoDate)
-    {
-        if (string.IsNullOrEmpty(ipoDate))
-            return null;
-
-        return DateOnly.TryParse(ipoDate, out var date) ? date : null;
-    }
+        => ProviderDateParsing.ParseProviderDateOrNull(ipoDate);
 
 
     private sealed class FinnhubSearchResponse

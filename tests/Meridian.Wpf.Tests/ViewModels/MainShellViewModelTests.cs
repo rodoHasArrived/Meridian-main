@@ -599,6 +599,61 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void CollectorCommands_WhenAdminSignedIn_AreEnabled()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel(session);
+
+            vm.StartCollectorCommand.CanExecute(null).Should().BeTrue();
+            vm.StopCollectorCommand.CanExecute(null).Should().BeTrue();
+        });
+    }
+
+    [Fact]
+    public void CollectorCommands_WhenSignedInWithoutManageProviders_AreDisabled()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopReadOnlyUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-viewer", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel(session);
+
+            vm.StartCollectorCommand.CanExecute(null).Should().BeFalse();
+            vm.StopCollectorCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void CollectorCommands_WhenUnauthenticatedDevelopmentSession_RemainEnabled()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel();
+
+            // No resolved operator profile: client-side gating defers so local development is not blocked.
+            vm.StartCollectorCommand.CanExecute(null).Should().BeTrue();
+            vm.StopCollectorCommand.CanExecute(null).Should().BeTrue();
+        });
+    }
+
+    [Fact]
     public void LogoutCommand_WhenSignedIn_ShouldClearSessionAndRaiseLogoutRequest()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()

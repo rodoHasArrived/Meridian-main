@@ -1,12 +1,92 @@
 # Meridian
 
-Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery. It brings market and account data, research, paper validation, books, reconciliation, approvals, and governed reports into one evidence-backed investment-operations workflow.
+Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery. It is built for financial operations teams that need to import data, validate it, reconcile it, approve decisions, retain evidence, and publish governed reports without losing the chain of proof.
 
-Meridian is intended to be the system a fund team can use to run operations with confidence: fewer disconnected tools, fewer manual handoffs, retained source evidence, and a clear chain from data intake to decisions, accounting records, reconciliation, and reports.
+The core product promise is simple:
 
-> **Active operator UI lanes:** Both the Windows desktop shell (`src/Meridian.Wpf/`) and the browser workstation (`src/Meridian.Ui/dashboard/`) are first-class operator surfaces. New behavior should land behind shared contracts, local/web API endpoints, or shared read models before either client grows UI-specific logic.
+> Meridian does not just show the number. Meridian proves the number.
+
+For an end user, Meridian is intended to reduce disconnected spreadsheets, inbox handoffs, opaque reconciliations, and hard-to-audit report preparation. The system keeps source evidence, workflow state, approvals, ledger impact, reconciliation history, report provenance, and audit trails connected so an operator can answer:
+
+- What happened?
+- Can it be trusted?
+- What still needs review, approval, reconciliation, evidence, or reporting?
+- Which report, ledger entry, close blocker, or operational decision depends on it?
 
 Current local project path for this workspace: `D:\Meridian-main`.
+
+## Current Product Status
+
+Meridian's current baseline is the closed W1-W5 operational record plus completed W5X shared explorer, Financial Operations, statement connector, and bounded W7 live-readiness governance milestones.
+
+That means the repository contains accepted evidence for:
+
+| Capability | Current status |
+| --- | --- |
+| Data confidence and provider validation | Complete baseline. Provider trust gates, source evidence, validation packets, setup orchestration, and data-quality checks are part of the W1 evidence record. |
+| Paper trading and research continuity | Complete baseline. Research-to-paper handoff, paper-session readiness, promotion evidence, and operator acceptance are supported before live promotion is allowed. |
+| Portfolio, accounting, and reconciliation workflows | Complete baseline. Portfolio ledger reconciliation, accounting record summaries, retained source evidence, reconciliation cases, ledger evidence, approvals, and report-pack lineage are connected through shared contracts and read models. |
+| Governed reporting | Complete baseline. Report-pack lifecycle, approval evidence, export provenance, restatement posture, report-line provenance, and evidence retention are represented in shared services and workstation surfaces. |
+| Multi-asset operational coverage | Complete baseline. Security Master and asset operations cover public and private/structured asset classes through provider evidence, identifier confidence, terms, obligations, ledger classification, reconciliation signals, and close blockers. |
+| Shared Financial Record Explorers | Complete W5X milestone. Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers share contracts, saved views, dense grids, proof ribbons, record drawers, evidence links, approval state, reconciliation state, report usage, and audit timelines. |
+| Financial Operations control center | Complete W5X milestone. Operations Continuity and Fund Ledger surfaces expose reconciliation queues, exception casework, close readiness, workflow controls, approval policy, audit evidence, checklist state, and governed reopen posture. |
+| Statement connector library | Complete W5X milestone. Declarative CSV and OFX mapping profiles, IB Flex XML, OFX bank/investment files, and Alpaca activity/portfolio statements normalize into canonical statement records with preview, confidence, drift warning, and reconciliation handoff support. |
+| Evidence Vault and statement onboarding | In progress. Evidence Vault primitives exist for retained source documents, manifests, review state, object links, and audit trails; the first acceptance path is browser-first statement reconciliation onboarding. |
+| Live-readiness governance | Complete bounded W7 milestone. Paper-to-live promotion requires trusted-data review, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback/kill-switch evidence, audit retention, live brokerage enablement, and an active manual override. This is governance, not full live execution productization. |
+
+Active operator UI work spans both:
+
+- Windows desktop workstation: `src/Meridian.Wpf/`
+- Browser workstation: `src/Meridian.Ui/dashboard/`, built into `src/Meridian.Ui/wwwroot/workstation/`
+
+Both clients should stay thin over shared contracts, shared API endpoints, and shared read models in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
+
+Visible root operator navigation remains limited to:
+
+```text
+Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings
+```
+
+## End-User Value
+
+Meridian is valuable when a financial operations user needs to move from fragmented records to a governed operational answer.
+
+It helps the user:
+
+- import provider, broker, custodian, statement, or file evidence while retaining the original source;
+- validate mappings, freshness, provider confidence, and data quality before downstream use;
+- reconcile positions, transactions, balances, capital activity, and accounting records;
+- investigate exceptions with owner, SLA, materiality, blocked-output, evidence, and approval context;
+- keep ledger, capital-account, close, and report impacts tied to the same proof trail;
+- approve, reopen, restate, publish, or block workflows based on explicit policy and retained evidence;
+- produce report packs and exports that can be traced back to source records, approvals, and audit history;
+- use browser or WPF workstations without duplicating business rules in each client.
+
+The near-term product wedge is a Close, Data, and Evidence Control Tower: a finance operations layer that sits above spreadsheets, custodians, brokers, administrators, portfolio systems, general ledgers, banks, and document stores so users can close faster and verify every reported number.
+
+## Future Plans
+
+The roadmap remains evidence-led. A future capability is treated as complete only when the roadmap registry, generated roadmap evidence, source/test artifacts, and operator documentation agree.
+
+Near-term work:
+
+| Plan | Direction |
+| --- | --- |
+| Evidence Vault productization | Turn retained documents, source manifests, request lists, extracted-field review, object links, and audit primitives into a reusable evidence layer for Accounting, Reporting, and Data workflows. |
+| Statement reconciliation onboarding | Make statement import the first browser-first onboarding path: import, preview, commit, retain Evidence Vault proof, route reconciliation breaks, and guide the operator to next actions. |
+| Backtesting Studio evidence loop | Keep W6 focused on linking backtest and strategy evidence to lineage, acceptance criteria, approvals, paper validation, accounting records, or governed reporting before broad research-workbench expansion. |
+
+Longer-term or explicitly deferred lanes:
+
+- broader live execution productization and live portfolio operations beyond bounded W7 governance;
+- full treasury payment execution and bank-release automation;
+- full alternative asset operations beyond the current multi-asset proof lane;
+- forecasting and scenario engines;
+- enterprise risk platform;
+- client portal and stakeholder self-service workflows;
+- no-code workflow designer and policy compiler;
+- broad reporting/analytics platform expansion beyond the governed report-pack baseline;
+- mobile applications, which remain out of scope unless the roadmap explicitly reopens that lane.
 
 ## Start Here
 
@@ -16,34 +96,15 @@ Use the documentation front door and audience paths for current guidance:
 - [Start Here](docs/start/README.md)
 - [Product Direction](docs/product/README.md)
 - [Design Charter](docs/product/meridian-design-document.md)
+- [Implementation TODO List](docs/product/implementation-todo-list.md)
 - [Engineering Guide](docs/engineering/README.md)
 - [Operator Guide](docs/operators/README.md)
 - [Reference Lookup](docs/reference/README.md)
 - [Roadmap Registry](docs/roadmap/README.md)
+- [Generated Roadmap Summary](docs/roadmap/generated/ROADMAP_SUMMARY.md)
 - [Source Documentation Mesh](docs/source/README.md)
 - [AI Guide](docs/ai/README.md)
 - [Documentation Ownership Contract](docs/documentation-ownership.md)
-- [Developer setup](docs/start/README.md)
-- [Build/test/run](docs/engineering/README.md)
-- [Standalone publish](archive/docs/developer/publish-standalone-exe.md)
-- [Cleanup and maintenance](docs/operations/cleanup-and-maintenance.md)
-- [Design system usage](archive/docs/design/design-system-usage.md)
-
-## Current Product Direction
-
-The closed W1-W5 operational record baseline remains the delivery foundation:
-
-- trusted data confidence and retained source evidence,
-- research and paper-first validation,
-- account, portfolio, cash, and ledger workflows,
-- reconciliation between Meridian records and external statements,
-- approvals, period governance, and audit trails,
-- governed report packs and export evidence,
-- visible operator navigation limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-
-Current productization targets are `W5X-FREX-001` shared Financial Record Explorers and `W5X-FINOPS-001` Financial Operations control center. They use the closed W1-W5 evidence baseline without claiming the complete explorer suite or control center is already shipped.
-
-Deferred unless the roadmap explicitly reopens them: broad Backtesting Studio expansion, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting and scenario engines, enterprise risk, client portal, no-code workflow design, mobile applications, and other lanes that do not directly strengthen the operational-record workflow.
 
 ## Repository Map
 
@@ -54,8 +115,8 @@ Major solution areas include:
 | Host, application, domain, contracts, infrastructure, and storage | `src/Meridian`, `src/Meridian.Application`, `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts`, `src/Meridian.Infrastructure`, `src/Meridian.Storage` |
 | Providers, execution, risk, and strategies | `src/Meridian.ProviderSdk`, `src/Meridian.Execution`, `src/Meridian.Execution.Sdk`, `src/Meridian.Risk`, `src/Meridian.Strategies` |
 | Backtesting and replay | `src/Meridian.Backtesting`, `src/Meridian.Backtesting.Sdk` |
-| Accounting and F# domain work | `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, `src/Meridian.FSharp.DirectLending.Aggregates` |
-| Quant tooling | `src/Meridian.QuantScript` |
+| Accounting, financial operations, audit, and F# domain work | `src/Meridian.Ledger`, `src/Meridian.FinancialOperations`, `src/Meridian.Audit`, `src/Meridian.FSharp.Ledger`, `src/Meridian.FSharp.DirectLending.Aggregates` |
+| Reporting and analytics support | `src/Meridian.Reporting`, `src/Meridian.QuantScript` |
 | MCP tooling | `src/Meridian.Mcp` |
 | Browser workstation and shared UI/API read models | `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` |
 | Windows desktop workstation | `src/Meridian.Wpf` |
@@ -65,7 +126,23 @@ For maintained ownership and dependency boundaries, use [Project Structure](docs
 
 ## Quick Commands
 
-Start with the maintained command references when in doubt: [Start Here](docs/start/README.md), [Engineering Guide](docs/engineering/README.md), [Operator Guide](docs/operators/README.md), and [docs/HELP.md](docs/HELP.md).
+Start with the maintained command references when in doubt:
+
+- [Start Here](docs/start/README.md)
+- [Engineering Guide](docs/engineering/README.md)
+- [Operator Guide](docs/operators/README.md)
+- [docs/HELP.md](docs/HELP.md)
+
+Direct commands:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
+python build/python/cli/buildctl.py --help
+```
+
+GNU Make targets are optional convenience wrappers when `make` is installed:
 
 ```bash
 make help
@@ -77,21 +154,19 @@ make verify-desktop
 make verify-release
 ```
 
-### Main CLI host — `src/Meridian`
+### Main CLI host - `src/Meridian`
 
 The primary runnable project supports collector, desktop-local API host, setup, self-test, backfill, provider recommendation, symbol-management, and ledger-reporting modes.
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
-dotnet run --project src/Meridian/Meridian.csproj -- --setup
-dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
 dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
 ```
 
-When launched from the repository root, the desktop-local API host binds to `http://localhost:8080` by default. Config path resolution is `--config <path>` → `MDC_CONFIG_PATH` → `config/appsettings.json`.
+When launched from the repository root, the desktop-local API host binds to `http://localhost:8080` by default. Config path resolution is `--config <path>` -> `MDC_CONFIG_PATH` -> `config/appsettings.json`.
 
-### Browser workstation — `src/Meridian.Ui/dashboard`
+### Browser workstation - `src/Meridian.Ui/dashboard`
 
 The browser workstation builds static assets served from `src/Meridian.Ui/wwwroot/workstation/`.
 
@@ -106,17 +181,17 @@ npm run build
 
 `npm run dev` serves `/workstation/`; `npm run preview` serves the built workstation assets. Both commands proxy `/api` to `MERIDIAN_API_BASE_URL` when set, or `http://localhost:8080` by default.
 
-### MCP server — `src/Meridian.Mcp`
+### MCP server
 
-A lightweight Model Context Protocol server for repo-navigation and code-review AI tooling. Diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
+Meridian includes a lightweight Model Context Protocol host for repo-navigation and code-review AI tooling. Diagnostic output goes to stderr; stdout is reserved for the MCP protocol.
 
 ```bash
 dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
 ```
 
-### Windows WPF desktop app — `src/Meridian.Wpf`
+### Windows WPF desktop app - `src/Meridian.Wpf`
 
-The WPF desktop shell is an active Windows operator workstation. It shares contracts, read models, and API seams with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility unless the full WPF build flag is enabled on Windows.
+The WPF desktop shell is deferred for new product/UI work and retained for existing compatibility, validation, and maintenance. It shares contracts, read models, and API seams with the browser workstation. On non-Windows, the project builds as a stub for CI compatibility unless the full WPF build flag is enabled on Windows.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1
@@ -142,17 +217,18 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 Build safety notes:
 
 - Prefer one solution or project build at a time when multiple entrypoints share referenced projects.
-- Use `python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` for a restore-once, single-node solution build.
+- Use `python build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` for a restore-once, single-node solution build.
 - For automation or concurrent local runs, pass `--isolation-key <name>` to `buildctl.py` so outputs write under isolated `artifacts/bin/<name>/` and `artifacts/obj/<name>/` roots.
 - Keep the F# test project's transitive `xunit.v3` runtime pin aligned with `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
 
-## Planning Source of Truth
+## Planning Source Of Truth
 
 Use these documents together when planning or implementing new work:
 
 - [Roadmap Registry](docs/roadmap/README.md) and `docs/roadmap/data/*.yml` for active wave and gate records.
 - [Generated Roadmap Summary](docs/roadmap/generated/ROADMAP_SUMMARY.md) for rendered roadmap state.
 - [Design Charter](docs/product/meridian-design-document.md) for the canonical product framing and evidence-backed operations model.
+- [Implementation TODO List](docs/product/implementation-todo-list.md) for current complete, in-progress, and deferred product slices.
 - [Provider Capability Matrix](docs/reference/provider-capability-matrix.md) and [Provider Validation Matrix](docs/reference/provider-validation-matrix.md) for provider-confidence scope.
 - [Engineering Guide](docs/engineering/README.md) for execution architecture and shared-model guidance.
 - [Operator Guide](docs/operators/README.md) for governance and support posture.

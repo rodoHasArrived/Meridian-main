@@ -26,6 +26,13 @@ internal sealed class SymbolManagementFeatureRegistration : IServiceFeatureRegis
         services.AddSingleton<Contracts.Catalog.ICanonicalSymbolRegistry>(sp =>
             sp.GetRequiredService<CanonicalSymbolRegistry>());
 
+        // Canonical resolution spine: registry-first symbol resolver that learns
+        // OpenFIGI resolutions back into the registry so all consumers converge.
+        services.AddSingleton<Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>(sp =>
+            new Infrastructure.Adapters.Core.SymbolResolution.CanonicalRegistrySymbolResolver(
+                sp.GetRequiredService<Contracts.Catalog.ICanonicalSymbolRegistry>(),
+                new OpenFigiSymbolResolver(log: LoggingSetup.ForContext<OpenFigiSymbolResolver>())));
+
         // Symbol import/export
         services.AddSingleton<SymbolImportExportService>();
         services.AddSingleton<TemplateService>();

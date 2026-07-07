@@ -31,4 +31,13 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Withholding tax obligation incurred but not yet remitted.</summary>
     WithholdingTaxAccrued,
+
+    /// <summary>Daily fair-value mark-to-market adjustment for portfolio positions.</summary>
+    FairValueMarkAdjustment,
+
+    /// <summary>Period-close closing entries rolling net income into retained earnings.</summary>
+    PeriodCloseClosingEntries,
+
+    /// <summary>Periodic fixed-asset depreciation charge (debit expense, credit accumulated depreciation).</summary>
+    DepreciationPosted,
 }

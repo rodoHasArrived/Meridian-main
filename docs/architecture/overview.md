@@ -28,7 +28,7 @@ This is an expansion of the existing architecture, not a replacement of it.
 ### Presentation layer
 
 - browser workstation dashboard
-- WPF desktop application — active desktop shell for operator workflows
+- WPF desktop application — active desktop workstation (co-equal UI lane); current focus is web-UI parity
 - desktop-local API host and workstation API surfaces
 - CLI and operator tooling
 
@@ -113,4 +113,3 @@ separate visible root workspace.
 - [Project Roadmap](../roadmap/README.md)
 - [Layer Boundaries](layer-boundaries.md)
 - [Desktop Layers](desktop-layers.md)
-

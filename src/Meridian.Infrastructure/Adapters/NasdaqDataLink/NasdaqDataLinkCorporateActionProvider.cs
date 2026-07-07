@@ -121,7 +121,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
         Guid securityId)
     {
         if (!TryGetString(row, columnIndex, "Date", out var sessionDateText) ||
-            !DateOnly.TryParse(sessionDateText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+            !ProviderDateParsing.TryParseProviderDate(sessionDateText, out var sessionDate))
         {
             yield break;
         }
@@ -147,7 +147,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
         {
             yield return new CorporateActionCommand(
                 SecurityId: securityId,
-                ActionType: "Split",
+                ActionType: splitRatio < 1m ? "ReverseStockSplit" : "StockSplit",
                 ExDate: sessionDate,
                 RecordDate: null,
                 PayableDate: null,

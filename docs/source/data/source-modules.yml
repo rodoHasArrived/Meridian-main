@@ -67,6 +67,9 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5X-CONNECT-001
+      - W5X-EVIDENCE-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -90,7 +93,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-02
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -298,10 +301,12 @@ modules:
       - W2-PROMO-001
       - W3-CONT-001
       - W6-BTSTUDIO-001
+      - W7-LIVE-001
     stage_gates:
       - PromotionReview
       - ResearchContinuity
       - BacktestingEvidence
+      - LiveReadiness
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
@@ -700,6 +705,8 @@ modules:
       - W4-RECON-001
       - W5-ACCT-001
       - W5X-FINOPS-001
+      - W5X-CONNECT-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -719,7 +726,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-10
+    last_reviewed: 2026-07-02
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -891,6 +898,9 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5X-CONNECT-001
+      - W5X-EVIDENCE-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -903,7 +913,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-02
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -920,6 +930,9 @@ modules:
       - W4-RPT-001
       - W5-ACCT-001
       - W5-MASSET-001
+      - W5X-CONNECT-001
+      - W5X-EVIDENCE-001
+      - W5X-STMT-ONBOARD-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -936,7 +949,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-02
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -944,13 +957,14 @@ modules:
     layer: UI Surface
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation, including accounting configuration, private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views.
+    purpose: Active Windows desktop operator workstation and co-equal UI lane alongside the browser workstation. Projects the seven canonical workspaces over shared contracts and read models; current lane focus is closing web-UI parity gaps (W8-WPF-PARITY-001) without forking product state.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
       - W5-MASSET-001
+      - W8-WPF-PARITY-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -961,4 +975,4 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-06

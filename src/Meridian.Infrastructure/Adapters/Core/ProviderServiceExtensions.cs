@@ -52,7 +52,8 @@ public static class ProviderServiceExtensions
         // Register data source registry and module-driven provider registration
         services.AddSingleton(sp =>
         {
-            var registry = new DataSourceRegistry();
+            var registry = new DataSourceRegistry(
+                sp.GetService<Microsoft.Extensions.Logging.ILogger<DataSourceRegistry>>());
 
             // Pre-configure modules from ProviderModules config before discovery so
             // each module receives resolved credentials before Register() is called.

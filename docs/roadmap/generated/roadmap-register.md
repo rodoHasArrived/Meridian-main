@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-06-24
+Snapshot date: 2026-07-05
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -435,27 +435,59 @@ Backtesting Studio remains planned. Strategy work should link research or backte
 | Field | Value |
 | --- | --- |
 | Wave | W7 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-04 |
+| Evidence posture | complete |
+| Last reviewed | 2026-07-05 |
 
 ### Current Summary
 
-Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
+Closed 2026-07-05 as bounded live-readiness governance. Paper-to-live promotion now requires the paper baseline, trusted-data review, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback or kill-switch evidence, audit-retention evidence, an active AllowLivePromotion manual override, brokerage live-enablement checks, and clear execution controls before a live run can be created. This closes the governance gate only; broader live execution productization and live portfolio operations remain separate follow-on work.
 
 ### Exit Criteria
 
-- Live action surfaces remain paper-first until acceptance gates are green.
-- Credential and provider checks stay secret-safe and read-only by default.
-- Governance sign-off is linked before any live-readiness claim.
-- Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
+- Live action surfaces remain paper-first unless the live approval checklist, evidence references, manual override, and execution-control checks are all green.
+- Credential and provider checks stay secret-safe and read-only by default; live promotion is blocked when brokerage configuration is not live-enabled.
+- Governance sign-off, rollback or kill-switch posture, exception-handling evidence, and audit-retention evidence are linked before any live-readiness claim.
+- The completed slice strengthens operational evidence and approval posture without productizing broader live execution or live portfolio operations.
 
 ### Source Modules
 
 - `SRC-HOST`
 - `SRC-APP`
 - `SRC-CONTRACTS`
+- `SRC-EXECUTION`
+- `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`
+
+## W8-WPF-PARITY-001 - WPF desktop workstation reactivation and web-UI parity
+| Field | Value |
+| --- | --- |
+| Wave | W8 |
+| Status | in_progress |
+| Health | on_track |
+| Priority | high |
+| Owner lane | Desktop Workstation |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-06 |
+
+### Current Summary
+
+Reactivated 2026-07-06. The WPF desktop workstation returns to the active product/UI lane as a co-equal surface alongside the browser workstation. The desktop shell already projects the seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings) over shared contracts and read models. Remaining work closes the parity gap with browser-first screens that shipped while WPF was deferred, tracked in `docs/development/wpf-web-ui-alignment-plan.md`. Both surfaces continue to consume shared `Meridian.Ui.Services`, `Meridian.Ui.Shared`, and `Meridian.Contracts` seams so neither client forks product state.
+
+### Exit Criteria
+
+- The WPF lane is documented as active and co-equal with the browser workstation across the design charter, product README, CLAUDE.md, and desktop policy.
+- Every browser workstation screen has a WPF equivalent page/view-model or an explicitly sequenced parity item, recorded in the WPF web-UI alignment plan.
+- New WPF parity surfaces consume shared contracts, read models, and workstation endpoints rather than inventing desktop-local product state.
+- Desktop parity work preserves existing WPF behavior, MVVM boundaries, cancellation flow, and shared-contract usage, validated through the desktop build and desktop-focused service tests.
+
+### Source Modules
+
+- `SRC-WPF`
+- `SRC-UI-SERVICES`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-CONTRACTS`

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
+import { formatCurrency, pluralizeCount } from "@/lib/format";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -191,6 +193,7 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
   reporting?: ReportingWorkspaceResponse | null;
+  fundAccountId?: string | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
@@ -225,7 +228,8 @@ export function useOperatorReadinessConsoleViewModel(
   const refreshRevisionRef = useRef(0);
   const inboxAbortRef = useRef<AbortController | null>(null);
 
-  const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
+  const activeFundAccountId = normalizeFundAccountGuid(payload.fundAccountId)
+    ?? payload.trading?.readiness?.brokerageSync?.fundAccountId;
   const selectWorkItem = useCallback((id: string) => {
     setSelectedWorkItemId(id);
   }, []);
@@ -856,12 +860,15 @@ function buildCockpitGateRows({
   const controls = readiness?.controls ?? null;
   const promotion = readiness?.promotion ?? null;
   const brokerage = readiness?.brokerageSync ?? null;
+  const liveBlockers = readiness?.liveOperationBlockers ?? [];
+  const executionReconciliation = readiness?.executionReconciliation ?? null;
+  const executionReconciliationGate = gateById.get("broker-execution-reconciliation");
   const brokerageRow = providerTrustRows.find((row) => row.id === "brokerage-sync") ?? null;
   const reportPackReviewCount = reportPackFacts.filter((row) => row.level !== "ready").length;
   const criticalWorkItemCount = workItems.filter((item) => item.tone === "Critical").length;
   const warningWorkItemCount = workItems.filter((item) => item.tone === "Warning").length;
 
-  return [
+  const rows: ReadinessConsoleRowBase[] = [
     buildCheckpointGateRow({
       id: "session-active",
       label: "Session active",
@@ -933,6 +940,28 @@ function buildCockpitGateRows({
       }
     }),
     buildCheckpointGateRow({
+      id: "live-operation-ready",
+      label: "Live operation gate",
+      fallbackValue: readiness?.readyForLiveOperation
+        ? "Ready"
+        : liveBlockers.length > 0
+          ? `${liveBlockers.length} blocker${liveBlockers.length === 1 ? "" : "s"}`
+          : "Review required",
+      fallbackDetail: readiness?.readyForLiveOperation
+        ? "Live operation readiness has current promotion, brokerage, reconciliation, and evidence controls."
+        : liveBlockers.length > 0
+          ? `Live operation remains blocked by ${liveBlockers.join(", ")}.`
+          : "Live operation readiness has not been evaluated.",
+      fallbackMeta: liveBlockers.length > 0 ? liveBlockers[0] : "Live readiness",
+      fallbackLevel: readiness?.readyForLiveOperation ? "ready" : liveBlockers.length > 0 ? "blocked" : "review",
+      action: {
+        label: "Open live readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        ariaLabel: "Open live operation readiness evidence",
+        variant: readiness?.readyForLiveOperation ? "outline" : "secondary"
+      }
+    }),
+    buildCheckpointGateRow({
       id: "brokerage-sync",
       label: "Brokerage sync healthy",
       fallbackValue: brokerage?.health ?? "Unavailable",
@@ -948,6 +977,33 @@ function buildCockpitGateRows({
         variant: brokerageRow?.level === "blocked" ? "secondary" : "outline"
       }
     }),
+  ];
+
+  if (executionReconciliation || executionReconciliationGate) {
+    rows.push(buildCheckpointGateRow({
+      id: "broker-execution-reconciliation",
+      label: "Broker execution reconciliation",
+      fallbackValue: executionReconciliation
+        ? formatReadinessStatusValue(executionReconciliation.status)
+        : "Review required",
+      fallbackDetail: executionReconciliation?.detail ?? "Broker/OMS open-order reconciliation evidence is not attached to readiness.",
+      fallbackMeta: executionReconciliation
+        ? `${executionReconciliation.brokerDisplayName} · ${executionReconciliation.matchedOpenOrderCount} matched · ${executionReconciliation.breakCount} breaks`
+        : "No broker execution reconciliation payload",
+      fallbackLevel: executionReconciliation ? levelFromReadiness(executionReconciliation.status) : "review",
+      gate: executionReconciliationGate,
+      action: {
+        label: "Review broker orders",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        ariaLabel: "Open broker execution reconciliation evidence",
+        variant: executionReconciliation?.status === "Blocked" || executionReconciliationGate?.status === "Blocked"
+          ? "secondary"
+          : "outline"
+      }
+    }));
+  }
+
+  rows.push(
     buildCheckpointGateRow({
       id: "reconciliation-clear",
       label: "Reconciliation clear",
@@ -1000,7 +1056,9 @@ function buildCockpitGateRows({
             variant: "outline"
           }
     }
-  ];
+  );
+
+  return rows;
 }
 
 function buildCheckpointGateRow({
@@ -1147,6 +1205,7 @@ function fallbackRouteForWorkItemKind(kind: string): string {
     case "PaperReplay":
     case "PromotionReview":
     case "ExecutionControl":
+    case "BrokerExecutionReconciliation":
       return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
     case "BrokerageSync":
       return PROVIDER_SETUP_ROUTE;
@@ -1185,6 +1244,8 @@ function actionLabelForWorkItemKind(kind: string): string {
       return "Open provider trust";
     case "ExecutionControl":
       return "Open execution controls";
+    case "BrokerExecutionReconciliation":
+      return "Review broker orders";
     default:
       return "Open operator item";
   }
@@ -1482,7 +1543,7 @@ function timestampPriority(value: string): number {
 }
 
 function formatCount(count: number, singular: string): string {
-  return `${count} ${count === 1 ? singular : `${singular}s`}`;
+  return pluralizeCount(count, singular);
 }
 
 function buildMetrics({
@@ -1850,14 +1911,6 @@ function levelFromTone(tone: string): ReadinessConsoleLevel {
   }
 
   return "neutral";
-}
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2
-  });
 }
 
 function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {

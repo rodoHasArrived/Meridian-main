@@ -157,6 +157,40 @@ desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book
 for a single source event while keeping ledger posting behind explicit approval. The generated
 candidate append endpoint is separate from preview/projection, requires `AdminMaintenance`, stamps
 the trusted tenant/company/actor context, and delegates durable append to Financial Operations.
+Trading operator readiness treats retained Live promotion evidence as a fail-closed shared control:
+the promotion gate requires the full live approval checklist plus evidence-reference keys for each
+W7 live-readiness item, including broker execution reconciliation, before a live promotion trace can
+be reported ready. The shared payload also emits `ReadyForLiveOperation` and
+`LiveOperationBlockers`, which stay separate from `ReadyForPaperOperation` so browser and WPF
+clients cannot show a live desk as ready from paper-only evidence. It also emits
+`LiveOperationRequirements`, a requirement-by-requirement W7 matrix derived from the same promotion
+checklist and evidence-reference keys, so trusted data, paper validation, reconciliation, approvals,
+accounting records, governed reporting, governance sign-off, exception handling,
+rollback/kill-switch, audit retention, and broker parity share one service-owned projection. When
+retained live-promotion evidence is incomplete, the blocker list preserves the exact missing
+checklist or evidence-reference keys, such as governance sign-off or audit-retention evidence, so
+operator clients can route review to the failing W7 item instead of showing only a generic
+promotion blocker. Evidence references must also retain a value after `TOKEN:` before the shared
+readiness surface marks a W7 item ready, and `LIVE_OVERRIDE_REVIEWED` must name the active
+`AllowLivePromotion` override as an exact retained-evidence segment rather than a substring match.
+The shared workstation trading endpoint accepts the same optional GUID `fundAccountId` query as the
+standalone trading-readiness and operator-inbox endpoints. When present, the embedded readiness
+payload resolves account-scoped brokerage-sync and broker-execution reconciliation evidence so
+initial browser payloads and refresh-only calls evaluate the same W7 live-readiness account.
+`TradingOperatorLiveOrderReadinessGate` adapts that service-owned W7 projection into
+`Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
+approved live promotion target, retained audit reference, ready live-operation requirements, and a
+retained snapshot version before the execution layer can attach live-readiness evidence to an order.
+The gate also verifies that the readiness matrix covers every canonical Live checklist token and
+rejects partial or malformed W7 payloads with the missing checklist item names. Each canonical Live
+requirement must also be checklist-satisfied, evidence-satisfied, and backed by a nonblank retained
+evidence reference before live broker order evidence can be attached.
+Accounting-record and governed-reporting requirements must retain evidence references that identify
+the linked ledger journal/run and report output, so live-order approval cannot rely on readiness
+flags without an accounting/reporting evidence chain.
+Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
+their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
+readiness projection as the workstation payload.
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
@@ -581,7 +615,26 @@ fund-event rows, ordered capital-account subledger entries, ledger-impact rows, 
 aggregates, published report-output state, signed net activity, and incomplete-context warnings
 Financial Operations-owned for both browser and WPF consumers. Posted
 capital-account subledger rows and ledger-impact account scopes are reconstructed from the
-shared ledger journal evidence. Close-management endpoints under `/api/ledger/close-management/*`
+shared ledger journal evidence.
+`AutomatedJournalDraftIntakeService` admits automated economic events (dividends declared or
+received, cash interest, corporate-action cash, management/performance fee, commission, and
+withholding-tax accruals) into the same workbench queue: each event is projected through the
+ledger-owned `AutomatedJournalDraftProjector`, ledger accounts are resolved onto the fund's chart
+of accounts (name+symbol+account identity first, then account name, else the raw name so chart
+validation flags it NeedsFix), and the balanced result is saved through
+`IManualJournalEntryWorkbenchService.SaveDraftAsync` so it inherits validation, audit, and the
+human submit/approve lifecycle. Intake is idempotent per event id — draft ids derive from the
+event idempotency key and existing drafts are skipped, never overwritten — and skips are always
+reported back to the caller. Two producers feed it: `CorporateActionDividendEventProducer` turns
+effective (non-cancelled, amendment-collapsed) Security Master dividend actions with an in-window
+ex-date into dividend-declared events priced by held quantity, and
+`FeeScheduleAccrualEventProducer` accrues management/performance fees using the same conventions
+as `PartnershipInvestorAccountingProjector`. `AutomatedJournalIntakeRunner` chains producer →
+intake and is exposed at `/api/ledger/journal-automation/dividend-intake` and
+`/api/ledger/journal-automation/fee-accrual-intake` (ledger-mutation permission, fund-scoped
+write tenant, mutation rate limit); the dividend lane returns a conflict when the Security Master
+query service is not configured rather than silently producing nothing.
+Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
   lock posture, and validation issues from Operations Continuity, the period-plan configuration route
@@ -981,6 +1034,13 @@ fund workspace view, also filter schedule rows, `scheduleDeliveryPlans`, and `De
 through the visible template/workflow set for the current `ReportAccessQueryContext`, so
 unauthorized users cannot infer locked schedule recipients, delivery modes, due dates, package
 links, or delivery status from the read model.
+`ReportingStarterKitService` resolves the Reporting module starter-kit catalog, persists the
+selected editable starter state, and provisions seed schedules through `ReportingScheduleService`
+with `Draft` state instead of bypassing schedule governance. The
+`/api/fund-structure/reporting/starter-kits` and
+`/api/fund-structure/reporting/starter-kits/{kitId}/provision` endpoints require the same reporting
+read/workflow permissions as the surrounding Reporting API, and `ReportPackRunReadService` carries
+both the starter kit catalog and selected kit state in `WorkstationReportingPayload`.
 Approved custom report-writer templates carry their saved grid definitions into the reporting
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain
@@ -1320,6 +1380,10 @@ attention through Accounting. Report-pack readiness and evidence warnings use ne
 wording instead of exposing the retained Governance repository type name to operators; repository
 validation errors and Evidence Workbench node source labels follow the same wording while retaining
 the contract-owned type names.
+Trading readiness now projects broker execution reconciliation when the active execution gateway is
+broker backed: `TradingOperatorReadinessService` compares broker open orders with the OMS ledger,
+emits the shared broker execution reconciliation gate, and raises a Trading work item before live
+operators rely on divergent broker/order-manager evidence.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. Copied vault
@@ -1392,6 +1456,13 @@ close-ready, and report-ready posture server-owned for browser and WPF clients.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
+The trust snapshot additionally carries `corporateActionDescriptors`: a canonical-taxonomy
+projection of each effective corporate action (catalog display name, ISO 15022 CAEV alignment,
+lifecycle state resolved at the snapshot's as-of time via the contract-owned effective-state
+projector, cancellation flag, and the supersede-chain timeline with amendment markers), keyed by
+`corpActId` back to the raw `corporateActions` rows. Clients should render event-type chips and
+lifecycle timelines from those descriptors instead of re-deriving taxonomy or amendment chains
+from raw event rows.
 The shared Security Master endpoints also expose the ReferenceData-owned approved starter custom
 asset profile catalog at `/api/security-master/asset-profiles` and allow `/api/security-master/search`
 requests to filter profile-backed securities by custom profile id, pinned profile version, profile
@@ -1809,6 +1880,9 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-EVIDENCE-001` | Evidence Vault productization |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

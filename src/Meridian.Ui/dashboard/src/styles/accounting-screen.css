@@ -509,3 +509,21 @@
     border-top: 1px solid var(--ws-border, #cbd3dc);
   }
 }
+
+/* Configure panel: transient highlight when a section is reached via nav/search/rail. */
+.configure-anchor {
+  scroll-margin-top: 5rem;
+}
+
+.configure-anchor-flash {
+  animation: configure-anchor-flash 1.2s ease-out;
+}
+
+@keyframes configure-anchor-flash {
+  0% {
+    box-shadow: 0 0 0 2px var(--ws-accent, #2f6df6);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}

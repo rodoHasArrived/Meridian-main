@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,14 @@ import {
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard, type MetricCardTone, EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
-import { EquityCurve, ChartCard } from "@/components/charts";
+import {
+  EquityCurve,
+  ChartCard,
+  ChartSyncProvider,
+  useChartSync,
+  useChartCrosshairSync,
+  nearestTimestampIndex
+} from "@/components/charts";
 import {
   getFinancialRecordExplorer,
   getRunAttribution,
@@ -28,7 +35,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { workstationRouteWithQuery } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
@@ -512,6 +519,15 @@ export function PortfolioScreen({
           {vm.headerChips.map((chip) => (
             <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
           ))}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
+              aria-label="Open the portfolio cash ladder: projected inflows and outflows with liquidity scenarios"
+            >
+              <Wallet className="size-4" aria-hidden />
+              Cash Ladder
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -1365,9 +1381,21 @@ const metricSnapshotToneClass: Record<MetricSnapshot["tone"], MetricCardTone> = 
   danger: "danger"
 };
 
+const drillInCurrency = (value: number) => `$${Math.round(value).toLocaleString("en-US")}`;
+
 /** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
- * evidence only — rendered when the selected run has a fetched equity/drawdown series. */
-function PortfolioDrillInChart({
+ * evidence only — rendered when the selected run has a fetched equity/drawdown series. The
+ * chart is scoped in its own ChartSyncProvider so crosshair and point activation stay local to
+ * this drill-in (never global) and can drive a per-point evidence readout. */
+function PortfolioDrillInChart(props: { profile: EquityCurveSummary; runTitle: string }) {
+  return (
+    <ChartSyncProvider>
+      <PortfolioDrillInChartInner {...props} />
+    </ChartSyncProvider>
+  );
+}
+
+function PortfolioDrillInChartInner({
   profile,
   runTitle
 }: {
@@ -1378,15 +1406,15 @@ function PortfolioDrillInChart({
   const equity = points.map((point) => point.totalEquity);
   const drawdown = points.map((point) => -Math.abs(point.drawdownFromPeakPercent * 100));
   const labels = points.map((point) => point.date);
-  const currency = (value: number) =>
-    `$${Math.round(value).toLocaleString("en-US")}`;
+  const timestamps = useMemo(() => points.map((point) => Date.parse(point.date)), [points]);
+  const sync = useChartCrosshairSync(timestamps);
 
   return (
     <ChartCard
       title="Run equity and drawdown"
       subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
       readout={[
-        { label: "Final equity", value: currency(profile.finalEquity) },
+        { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
         {
           label: "Max drawdown",
           value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
@@ -1401,9 +1429,48 @@ function PortfolioDrillInChart({
         series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
         drawdown={drawdown}
         labels={labels}
-        valueFmt={currency}
+        valueFmt={drillInCurrency}
+        crosshairIndex={sync.crosshairIndex}
+        onCrosshairChange={sync.onCrosshairChange}
+        onPointActivate={sync.onPointActivate}
       />
+      <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
     </ChartCard>
+  );
+}
+
+/** Evidence drill: when a chart point is activated, surface that point's source-backed
+ * detail. Reads the selected timestamp from the shared chart-sync context so it stays in
+ * step with the equity curve (and any future linked chart in the same provider). */
+function PortfolioDrillInPointEvidence({
+  profile,
+  timestamps
+}: {
+  profile: EquityCurveSummary;
+  timestamps: number[];
+}) {
+  const { selectedTimestamp } = useChartSync();
+  const selectedIndex = nearestTimestampIndex(timestamps, selectedTimestamp);
+  if (selectedIndex == null) {
+    return null;
+  }
+  const point = profile.points[selectedIndex];
+  if (!point) {
+    return null;
+  }
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-xs"
+    >
+      <span className="font-semibold text-foreground">Selected point — {point.date}</span>
+      <span className="ml-2 text-muted-foreground">
+        Equity {drillInCurrency(point.totalEquity)} · drawdown{" "}
+        {(-Math.abs(point.drawdownFromPeakPercent * 100)).toFixed(2)}%
+      </span>
+    </div>
   );
 }
 

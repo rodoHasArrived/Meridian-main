@@ -32,6 +32,7 @@ interface OperatorReadinessConsoleProps {
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
   reporting: ReportingWorkspaceResponse | null;
+  fundAccountId?: string | null;
 }
 
 // Concrete severity vocabulary. The console's readiness levels collapse onto the design
@@ -134,14 +135,16 @@ export function OperatorReadinessConsole({
   trading,
   data,
   accounting,
-  reporting
+  reporting,
+  fundAccountId
 }: OperatorReadinessConsoleProps) {
   const vm = useOperatorReadinessConsoleViewModel({
     strategy,
     trading,
     data,
     accounting,
-    reporting
+    reporting,
+    fundAccountId
   });
 
   return (

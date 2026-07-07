@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { KeyValueGrid, MetricCard, type MetricCardTone } from "@/components/data/concrete";
 import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
@@ -33,33 +35,27 @@ const badgeVariantToStatus: Record<"outline" | "success" | "warning" | "danger",
 
 export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
-  const selectedQueueRow = model.queueRows[0] ?? null;
+  // Triage-in-place: the operator can inspect any queue row's evidence without
+  // leaving the tower. Falls back to the top-ranked row until one is chosen
+  // (or when the chosen row leaves the queue on refresh).
+  const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
+  const selectedQueueRow =
+    model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
 
   return (
-    <section
-      className="space-y-5"
-      aria-labelledby="daily-control-tower-heading"
-      aria-describedby="daily-control-tower-summary"
-    >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-4xl space-y-2">
-          <p className="eyebrow-label">Daily control tower</p>
-          <h2 id="daily-control-tower-heading" className="font-display text-2xl font-semibold text-foreground">
-            What needs an operator decision now
-          </h2>
-          <p id="daily-control-tower-summary" className="text-sm leading-6 text-muted-foreground">
-            Ranked from shell workflow continuity, trust posture, linked context, and timestamped evidence.
-          </p>
-        </div>
-
+    <ScreenLayout
+      title="What needs an operator decision now"
+      scope="Daily control tower"
+      description="Ranked from shell workflow continuity, trust posture, linked context, and timestamped evidence."
+      actions={
         <Button asChild variant="default" size="sm" className="self-start">
           <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
             <span>{model.nextActionLabel}</span>
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         </Button>
-      </div>
-
+      }
+    >
       <ReadinessPanel
         state={severityStatusForTone[model.statusTone]}
         statusLabel={model.statusLabel}
@@ -140,16 +136,26 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {model.queueRows.map((row, index) => (
+                  {model.queueRows.map((row) => {
+                    const isSelected = row.item.id === selectedQueueRow?.item.id;
+                    return (
                     <tr
                       key={row.item.id}
-                      className={index === 0 ? "align-top bg-primary/5" : "align-top"}
-                      aria-current={index === 0 ? "true" : undefined}
+                      className={isSelected ? "align-top bg-primary/5" : "align-top"}
+                      aria-current={isSelected ? "true" : undefined}
                     >
                       <td className="max-w-sm px-4 py-4">
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium text-foreground">{row.item.label}</span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedQueueItemId(row.item.id)}
+                              aria-pressed={isSelected}
+                              aria-label={`Show evidence for ${row.item.label}`}
+                              className="text-left font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                            >
+                              {row.item.label}
+                            </button>
                             <SeverityBadge
                               status={badgeVariantToStatus[row.badgeVariant]}
                               label={row.statusLabel}
@@ -174,7 +180,8 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                         {row.proof?.label ?? row.proofPassportItems.find((item) => item.id === "freshness")?.value ?? "No evidence linked"}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -237,7 +244,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
           }))}
         />
       </div>
-    </section>
+    </ScreenLayout>
   );
 }
 

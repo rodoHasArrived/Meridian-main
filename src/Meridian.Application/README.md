@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-01
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Application
@@ -271,7 +271,23 @@ and UI presentation concerns in their owning layers.
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action
   appends are routed through `SecurityMasterCorporateActionCommandService` so HTTP endpoints,
   imports, provider backfills, and future UI commands share the same validation, append, and
-  structured audit path before the event store is touched.
+  structured audit path before the event store is touched. That shared validation is driven by
+  the contract-owned `CorporateActionTypeDescriptorCatalog`: unknown event types are rejected
+  with the accepted vocabulary, per-type required fields are enforced, and — when the security
+  projection is available — asset-class validity is checked (fail-open on lookup faults, so a
+  projection-store outage never blocks an otherwise valid append). Amendments and cancellations
+  are superseding events validated by `CorporateActionValidation.ValidateSupersede` (chain-tip
+  only, same event type, no lifecycle regression); an accepted supersede flows through
+  `ICorporateActionRestatementTrigger` into the existing period-aware restatement resolver so a
+  provider correction landing in a closed ledger period yields a governed restatement proposal
+  on the append result rather than a silent mutation. Stored legacy event-type aliases stay
+  readable through the projector's normalization; the one-time
+  `--security-master-normalize-corporate-actions` CLI sweep (dry-run by default, `--apply` to
+  rewrite) cleans the stored strings themselves.
+  `SecurityMasterCashFlowService` now generates deterministic calculated bullet and sinker
+  schedules from retained Security Master economic terms when provider-backed schedules are not
+  selected, so downstream Asset Operations views can present expected coupon/principal dates with
+  source-governed scenario posture instead of an empty calculated schedule.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured credit, private fund interests, private
@@ -382,15 +398,19 @@ and UI presentation concerns in their owning layers.
   definitions, and alert-runbook registries live in `Meridian.Platform.Monitoring`; shared alert and health-check contracts live
   in `Meridian.Core.Monitoring`; runtime error ring-buffer diagnostics and system-health snapshots
   live in `Meridian.Platform.Diagnostics`.
-- `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
-  status response generation. ASP.NET endpoint adapter extensions for packaging, archive
-  maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
+- `Http/` - core host-facing runtime services such as `ConfigStore` and status response
+  generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
+  data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
+  in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
   startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
   `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
   persistence-backed services. Local/dev launcher flows may set
   `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
+  `ProviderFeatureRegistration` supplies a non-secret empty `IConfiguration` fallback before
+  registering provider adapters, preserving host-provided configuration when present while keeping
+  credential-gated data providers resolvable in composition slices.
 
 ## Important workflows
 

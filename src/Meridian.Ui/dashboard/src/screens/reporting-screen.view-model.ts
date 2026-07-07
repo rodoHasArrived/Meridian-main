@@ -15,7 +15,7 @@ import {
   isReportPackRoute,
   type ReportingTaskModeViewModel
 } from "@/screens/reporting-screen.task-mode-view-model";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -285,6 +285,10 @@ export interface ReportingRunStatusRow {
   isLatestApproved: boolean;
   templateLabel: string;
   asOfDateLabel: string;
+  // Raw identity used to target this run's series when authorizing a restatement.
+  restatementJobId: string;
+  restatementAsOfDate: string;
+  restatementDatasetSourceId: string;
   attemptLabel: string;
   runAttemptLabel: string;
   latestGeneratedLabel: string;
@@ -556,6 +560,43 @@ export interface ReportingLoadingState {
   routeLabel: string;
 }
 
+export interface ReportingStarterSeedScheduleViewModel {
+  id: string;
+  templateId: string;
+  cadence: string;
+  stateLabel: string;
+  description: string;
+  deliveryTargetSummary: string;
+}
+
+export interface ReportingStarterKitCardViewModel {
+  id: string;
+  title: string;
+  archetype: string;
+  description: string;
+  templateNames: string[];
+  templateSummary: string;
+  defaultPeriodLabel: string;
+  layoutLabel: string;
+  seedScheduleSummary: string;
+  seedSchedules: ReportingStarterSeedScheduleViewModel[];
+  actionLabel: string;
+  actionAriaLabel: string;
+  isSelected: boolean;
+}
+
+export interface ReportingStarterKitPanelViewModel {
+  showChooser: boolean;
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ReportingBadgeVariant;
+  hasCards: boolean;
+  cards: ReportingStarterKitCardViewModel[];
+  selectedSummary: string;
+  enabledTemplateSummary: string;
+}
+
 export {
   buildReportingTaskMode,
   isReportPackRoute
@@ -582,6 +623,7 @@ export interface ReportingScreenViewModel {
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
   accessAudit: ReportingAccessAuditViewModel;
+  starterKitPanel: ReportingStarterKitPanelViewModel;
   templateRows: ReportingTemplateRow[];
   runStatusRows: ReportingRunStatusRow[];
   hasRunStatusRows: boolean;
@@ -724,6 +766,7 @@ export function useReportingScreenViewModel(
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
       accessAudit: buildReportingAccessAudit(null),
+      starterKitPanel: buildReportingStarterKitPanel(null),
       templateRows: [],
       runStatusRows: [],
       hasRunStatusRows: false,
@@ -854,6 +897,7 @@ export function useReportingScreenViewModel(
   const scheduleRows = buildScheduleRows(reporting.schedules ?? [], reporting.reportWriterDatasetSources ?? []);
   const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
   const accessAudit = buildReportingAccessAudit(reporting);
+  const starterKitPanel = buildReportingStarterKitPanel(reporting);
 
   return {
     title: "Report packs",
@@ -873,6 +917,7 @@ export function useReportingScreenViewModel(
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
     accessAudit,
+    starterKitPanel,
     templateRows,
     runStatusRows,
     hasRunStatusRows: runStatusRows.length > 0,
@@ -1077,6 +1122,71 @@ function countRestatementEvidence(selected: ReportingWorkflowRecord | null, chan
   }
 
   return changedLines.reduce((total, line) => total + (line.evidenceLinks?.length ?? 0), 0);
+}
+
+function buildReportingStarterKitPanel(
+  reporting: GovernanceReportingSummary | null
+): ReportingStarterKitPanelViewModel {
+  const kits = reporting?.starterKits ?? [];
+  const state = reporting?.starterKitState ?? null;
+  const templateNames = new Map(
+    (reporting?.templates ?? []).map((template) => [template.templateId, template.name])
+  );
+  const cards = kits.map((kit) => buildReportingStarterKitCard(kit, templateNames, state?.selectedKitId ?? null));
+  const isProvisioned = state?.isProvisioned === true;
+  const selected = cards.find((card) => card.isSelected) ?? null;
+  const enabledCount = state?.enabledTemplateIds?.length ?? 0;
+
+  return {
+    showChooser: kits.length > 0 && !isProvisioned,
+    title: "Set up your reporting desk",
+    description: "Choose an editable starter kit to enable the first report templates, lay out the hub, and create draft schedules.",
+    statusLabel: isProvisioned ? `${state?.archetype ?? "Starter kit"} provisioned` : "Starter kit not selected",
+    statusVariant: isProvisioned ? "success" : "outline",
+    hasCards: cards.length > 0,
+    cards,
+    selectedSummary: selected
+      ? `${selected.title} uses ${selected.templateSummary.toLowerCase()} and ${selected.seedScheduleSummary.toLowerCase()}.`
+      : "No reporting starter kit has been provisioned.",
+    enabledTemplateSummary: enabledCount > 0
+      ? `${enabledCount} starter template${enabledCount === 1 ? "" : "s"} enabled.`
+      : "No starter templates enabled yet."
+  };
+}
+
+function buildReportingStarterKitCard(
+  kit: ReportingStarterKit,
+  templateNames: Map<string, string>,
+  selectedKitId: string | null
+): ReportingStarterKitCardViewModel {
+  const names = kit.templateIds.map((templateId) => templateNames.get(templateId) ?? formatStarterTemplateId(templateId));
+  const seedSchedules = kit.seedSchedules.map((schedule) => buildStarterSeedSchedule(schedule));
+  return {
+    id: kit.kitId,
+    title: kit.displayName,
+    archetype: kit.archetype,
+    description: kit.description,
+    templateNames: names,
+    templateSummary: `${names.length} template${names.length === 1 ? "" : "s"}`,
+    defaultPeriodLabel: formatStarterPeriod(kit.defaultPeriod),
+    layoutLabel: kit.defaultLayoutId,
+    seedScheduleSummary: `${seedSchedules.length} draft schedule${seedSchedules.length === 1 ? "" : "s"}`,
+    seedSchedules,
+    actionLabel: `Use ${kit.displayName}`,
+    actionAriaLabel: `Use ${kit.displayName} starter kit`,
+    isSelected: selectedKitId === kit.kitId
+  };
+}
+
+function buildStarterSeedSchedule(schedule: ReportingStarterSeedSchedule): ReportingStarterSeedScheduleViewModel {
+  return {
+    id: schedule.scheduleId,
+    templateId: schedule.templateId,
+    cadence: schedule.cadence,
+    stateLabel: schedule.state ?? "Draft",
+    description: schedule.description,
+    deliveryTargetSummary: formatStarterDeliveryTargets(schedule.deliveryTargets)
+  };
 }
 
 export function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
@@ -1604,6 +1714,50 @@ function templateStatusVariant(status?: string): Exclude<ReportingBadgeVariant, 
   return "outline";
 }
 
+/**
+ * Recovers the job id that identifies a run's series from its `runSeriesId`
+ * (formatted `{jobId}-{yyyyMMdd}`). Restating a released run must reuse this job id
+ * together with the run's as-of date so the regenerated run versions into the same
+ * series (`-v2`) and the orchestration guard records it as an auditable restatement.
+ */
+export function deriveRestatementSeriesJobId(
+  runSeriesId: string | null | undefined,
+  runId: string,
+  asOfDate: string | null | undefined
+): string {
+  const series = runSeriesId?.trim() || runId;
+  const iso = asOfDate?.trim();
+  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const suffix = `-${iso.replace(/-/g, "")}`;
+    if (series.endsWith(suffix)) {
+      return series.slice(0, -suffix.length);
+    }
+  }
+
+  return series;
+}
+
+/**
+ * Reduces run rows to the latest released run per series (highest attempt ordinal). Restatement
+ * always supersedes a series' released head, so only that head is a valid restatement target —
+ * offering an older released version would misrepresent which run the operator is superseding.
+ */
+export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): ReportingRunStatusRow[] {
+  const latest = new Map<string, ReportingRunStatusRow>();
+  for (const run of rows) {
+    if (run.status !== "Released") {
+      continue;
+    }
+
+    const existing = latest.get(run.runSeriesLabel);
+    if (!existing || run.runAttemptOrdinal > existing.runAttemptOrdinal) {
+      latest.set(run.runSeriesLabel, run);
+    }
+  }
+
+  return Array.from(latest.values());
+}
+
 export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
   return runs.map((run) => {
     const drilldownLinks = buildRunLinkRows(run);
@@ -1622,6 +1776,9 @@ export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): Report
       isLatestApproved: Boolean(run.isLatestApproved),
       templateLabel: run.templateId,
       asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
+      restatementJobId: deriveRestatementSeriesJobId(run.runSeriesId, run.runId, run.asOfDate),
+      restatementAsOfDate: run.asOfDate?.trim() ?? "",
+      restatementDatasetSourceId: run.reportWriterDatasetSourceId?.trim() ?? "",
       attemptLabel: `${run.attemptCount} attempt${run.attemptCount === 1 ? "" : "s"}`,
       runAttemptLabel: buildRunAttemptLabel(run),
       latestGeneratedLabel: buildLatestGeneratedLabel(run),
@@ -1958,6 +2115,43 @@ function formatScheduleDeliveryTarget(target: ReportingScheduleDeliveryTarget): 
     : "Pdf/Xlsx/Csv";
   const mode = target.deliveryMode ?? "Policy";
   return `${target.distributionId} via ${mode} (${formats})`;
+}
+
+function formatStarterDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
+  if (!targets || targets.length === 0) {
+    return "Delivery targets need review";
+  }
+
+  return targets.map(formatScheduleDeliveryTarget).join("; ");
+}
+
+function formatStarterPeriod(period: string | null | undefined): string {
+  if (!period) {
+    return "Default period";
+  }
+
+  const normalized = period.trim();
+  if (normalized === "CurrentMonth") {
+    return "Current month";
+  }
+
+  if (normalized === "CurrentQuarter") {
+    return "Current quarter";
+  }
+
+  if (normalized === "CurrentBusinessDay") {
+    return "Current business day";
+  }
+
+  return normalized.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function formatStarterTemplateId(templateId: string): string {
+  return templateId
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function formatTimestamp(value: string): string {

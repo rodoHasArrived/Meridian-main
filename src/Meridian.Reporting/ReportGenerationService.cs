@@ -63,28 +63,14 @@ public sealed class ReportGenerationService
         {
             ct.ThrowIfCancellationRequested();
 
-            SecurityDetailDto? detail = null;
-            SecurityEconomicDefinitionRecord? economicDefinition = null;
-            if (!string.IsNullOrWhiteSpace(account.Symbol))
-            {
-                try
-                {
-                    detail = await _securityMaster
-                        .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, account.Symbol, null, ct)
-                        .ConfigureAwait(false);
-
-                    if (detail is not null)
-                    {
-                        economicDefinition = await _securityMaster
-                            .GetEconomicDefinitionByIdAsync(detail.SecurityId, ct)
-                            .ConfigureAwait(false);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _log.LogDebug(ex, "Could not enrich ledger account {Symbol} from Security Master", account.Symbol);
-                }
-            }
+            var detail = await SecurityMasterReportingLookup
+                .TryGetByTickerAsync(_securityMaster, _log, account.Symbol, ct)
+                .ConfigureAwait(false);
+            var economicDefinition = detail is null
+                ? null
+                : await SecurityMasterReportingLookup
+                    .TryGetEconomicDefinitionAsync(_securityMaster, _log, detail.SecurityId, account.Symbol, ct)
+                    .ConfigureAwait(false);
 
             var primaryIdentifier = economicDefinition?.Identifiers
                 .FirstOrDefault(static identifier => identifier.IsPrimary);

@@ -23,13 +23,21 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
-        // BackfillCoordinator - uses ProviderRegistry for unified provider discovery
+        // BackfillCoordinator - uses ProviderRegistry for unified provider discovery and
+        // the canonical-registry symbol resolution spine when registered.
         services.AddSingleton<BackfillCoordinator>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var registry = sp.GetService<ProviderRegistry>();
             var factory = sp.GetService<ProviderFactory>();
-            return new BackfillCoordinator(configStore, registry, factory);
+            var symbolResolver = sp.GetService<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
+            var symbolTimelineResolver = sp.GetService<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver>();
+            return new BackfillCoordinator(
+                configStore,
+                registry,
+                factory,
+                symbolResolver: symbolResolver,
+                symbolTimelineResolver: symbolTimelineResolver);
         });
         services.AddSingleton<IBackfillExecutionGateway, BackfillCoordinatorExecutionGateway>();
 

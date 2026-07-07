@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -26,6 +27,9 @@ interface TrialBalanceScreenProps {
 }
 
 type TrialBalanceViewMode = "table" | "hierarchy";
+
+/** Above this row count the trial-balance grid windows rows instead of rendering all of them. */
+const TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD = 40;
 
 export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -150,30 +154,61 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>Trial Balance</CardTitle>
-            <CardDescription>Pick a ledger run to review basis-aware account balances.</CardDescription>
-          </div>
-          <FormRow label="Run" labelFor="trial-balance-run-select" className="w-full max-w-xs sm:w-64">
-            <Select
-              id="trial-balance-run-select"
-              value={selectedReconciliation?.runId ?? ""}
-              onChange={(event) => selectRun(event.target.value)}
-            >
-              {reconciliationQueue.map((item) => (
-                <option key={item.runId} value={item.runId}>
-                  {item.strategyName} ({item.runId})
-                </option>
-              ))}
-            </Select>
-          </FormRow>
-        </CardHeader>
-      </Card>
+  const selectedBasisLabel =
+    reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "—";
 
+  // Focus zone — ≤4 signals of "what needs my attention on this run right now".
+  const focusSignals: FocusSignal[] = [
+    {
+      id: "run",
+      label: "Selected run",
+      value: selectedReconciliation?.strategyName ?? "—",
+      hint: selectedReconciliation?.runId
+    },
+    { id: "basis", label: "Accounting basis", value: selectedBasisLabel },
+    { id: "accounts", label: "Accounts in view", value: reconciliation.trialBalanceView.filteredRowCountLabel },
+    {
+      id: "journal",
+      label: "Journal entries",
+      value: journalLoading ? "…" : String(journalEvidence.rows.length)
+    }
+  ];
+
+  const trialBalanceScope = `${entityScope} · ${ledgerBook} · ${period}`;
+
+  return (
+    <ScreenLayout
+      title="Trial Balance"
+      scope={trialBalanceScope}
+      description="Pick a ledger run to review basis-aware account balances."
+      actions={
+        <FormRow label="Run" labelFor="trial-balance-run-select" className="w-full max-w-xs sm:w-64">
+          <Select
+            id="trial-balance-run-select"
+            value={selectedReconciliation?.runId ?? ""}
+            onChange={(event) => selectRun(event.target.value)}
+          >
+            {reconciliationQueue.map((item) => (
+              <option key={item.runId} value={item.runId}>
+                {item.strategyName} ({item.runId})
+              </option>
+            ))}
+          </Select>
+        </FormRow>
+      }
+      focus={focusSignals}
+      context={
+        reconciliation.trialBalanceView.selectedDetail ? (
+          <AccountingTrialBalanceSelectedDetailPanel
+            panelId={reconciliation.trialBalanceView.detailPanelId}
+            detail={reconciliation.trialBalanceView.selectedDetail}
+          />
+        ) : null
+      }
+      contextOpen={Boolean(reconciliation.trialBalanceView.selectedDetail)}
+      contextLabel="Trial-balance detail"
+      onContextClose={() => reconciliation.selectTrialBalanceRow(null)}
+    >
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Trial balance scope</CardTitle>
@@ -276,38 +311,25 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
           </div>
           {reconciliation.trialBalanceView.hasRows ? (
             viewMode === "table" ? (
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-                <DenseDataTable
-                  columns={trialBalanceColumns}
-                  rows={reconciliation.trialBalanceView.rows}
-                  getRowId={(line) => line.rowId}
-                  getRowAriaLabel={(line) => line.ariaLabel}
-                  getRowSelectAriaLabel={(line) => line.selectAriaLabel}
-                  getRowAriaControls={(line) => line.detailPanelId}
-                  getRowAriaExpanded={(line) => line.isExpanded}
-                  selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                  onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                  emptyText={reconciliation.trialBalanceView.emptyDetail}
-                  ariaLabel={reconciliation.trialBalanceView.tableLabel}
-                />
-                {reconciliation.trialBalanceView.selectedDetail ? (
-                  <AccountingTrialBalanceSelectedDetailPanel
-                    panelId={reconciliation.trialBalanceView.detailPanelId}
-                    detail={reconciliation.trialBalanceView.selectedDetail}
-                  />
-                ) : (
-                  <aside
-                    id={reconciliation.trialBalanceView.detailPanelId}
-                    role="region"
-                    aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
-                    className="row-detail-panel h-fit min-w-0"
-                  >
-                    <div className="eyebrow-label">Trial-balance detail</div>
-                    <h3 className="mt-1 text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.detailEmptyTitle}</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{reconciliation.trialBalanceView.detailEmptyText}</p>
-                  </aside>
-                )}
-              </div>
+              <DenseDataTable
+                columns={trialBalanceColumns}
+                rows={reconciliation.trialBalanceView.rows}
+                getRowId={(line) => line.rowId}
+                getRowAriaLabel={(line) => line.ariaLabel}
+                getRowSelectAriaLabel={(line) => line.selectAriaLabel}
+                getRowAriaControls={(line) => line.detailPanelId}
+                getRowAriaExpanded={(line) => line.isExpanded}
+                getRowTypeaheadText={(line) => line.accountLabel}
+                selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                emptyText={reconciliation.trialBalanceView.emptyDetail}
+                ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                virtualization={
+                  reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD
+                    ? { rowHeight: 36, viewportRowCount: 15 }
+                    : null
+                }
+              />
             ) : (
               <AccountTree
                 nodes={treeNodes}
@@ -400,6 +422,6 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
       <p className="text-xs text-muted-foreground">
         Looking for the full ledger explorer? <Link className="text-primary underline-offset-2 hover:underline" to={WORKSTATION_ROUTE_CATALOG.accountingLedger}>Open Ledger Explorer</Link>.
       </p>
-    </div>
+    </ScreenLayout>
   );
 }

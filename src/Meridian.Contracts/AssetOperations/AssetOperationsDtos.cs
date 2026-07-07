@@ -124,6 +124,67 @@ public sealed record AssetLedgerProjectionDto(
     string? LedgerReferenceId,
     JsonElement? ExtensionPayload = null);
 
+public sealed record AssetTermsObligationTimelineEventDto(
+    Guid TimelineEventId,
+    Guid SecurityId,
+    string EventKind,
+    string EventLane,
+    DateOnly EffectiveDate,
+    DateOnly? PayDate,
+    DateOnly? AccrualStartDate,
+    DateOnly? AccrualEndDate,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? VarianceAmount,
+    string Currency,
+    string Status,
+    string SourceDomain,
+    string? SourceEntityId,
+    string? EvidenceLink,
+    string? LedgerReferenceId,
+    string Summary,
+    JsonElement? ExtensionPayload = null)
+{
+    public string? FormulaTrace { get; init; }
+
+    public string? LedgerReference { get; init; }
+
+    public string? NextAction { get; init; }
+}
+
+public sealed record AssetTimelineVarianceDto(
+    Guid VarianceId,
+    Guid SecurityId,
+    string EventKind,
+    DateOnly ExpectedDate,
+    DateOnly? ActualDate,
+    decimal? ExpectedAmount,
+    decimal? ActualAmount,
+    decimal? VarianceAmount,
+    string Currency,
+    string Status,
+    string SourceDomain,
+    string? SourceEntityId,
+    string Summary,
+    string? EvidenceLink = null);
+
+public sealed record AssetTermsObligationsTimelineDto(
+    Guid SecurityId,
+    DateOnly ProjectionAsOf,
+    string EngineVersion,
+    string Status,
+    IReadOnlyList<AssetTermsObligationTimelineEventDto> Events,
+    IReadOnlyList<string> Warnings,
+    DateTimeOffset GeneratedAt,
+    string SourceDomain,
+    string? SourceEntityId,
+    JsonElement? ExtensionPayload = null)
+{
+    public string? AssetClass { get; init; }
+
+    public IReadOnlyList<AssetTimelineVarianceDto> Variances { get; init; } = [];
+}
+
 public sealed record AssetOperationsReadinessDto(
     Guid SecurityId,
     string Status,
@@ -147,7 +208,10 @@ public sealed record AssetOperationsDetailDto(
     IReadOnlyList<AssetReconciliationResultDto> ReconciliationResults,
     IReadOnlyList<AssetLedgerProjectionDto> LedgerProjections,
     AssetOperationsReadinessDto Readiness,
-    IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit);
+    IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
+{
+    public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }
+}
 
 public sealed record AssetOperationsProjectionDto(
     AssetOperationSubjectDto Subject,
@@ -160,7 +224,10 @@ public sealed record AssetOperationsProjectionDto(
     IReadOnlyList<AssetReconciliationResultDto> ReconciliationResults,
     IReadOnlyList<AssetLedgerProjectionDto> LedgerProjections,
     AssetOperationsReadinessDto Readiness,
-    IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit);
+    IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
+{
+    public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }
+}
 
 public sealed record AssetOperationsWriteApprovalDto(
     string Actor,

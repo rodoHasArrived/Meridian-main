@@ -18,6 +18,7 @@ using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -50,7 +51,12 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
 {
 
     private readonly NYSEOptions _options;
-    private readonly IHttpClientFactory _httpClientFactory;
+
+    // Shared OAuth token acquisition/caching and authenticated REST client creation.
+    private readonly NyseAccessTokenProvider _auth;
+
+    // Historical / corporate-action fetch + parse logic (wrapped here by the resilience policies).
+    private readonly NyseHistoricalDataProvider _historical;
 
     // WebSocket lifecycle managed by WebSocketConnectionManager (replaces _webSocket, _connectionCts, _receiveTask)
     private readonly WebSocketConnectionManager _wsManager;
@@ -65,10 +71,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
     private readonly ConcurrentDictionary<int, SubscriptionInfo> _subscriptions = new();
     private readonly ConcurrentDictionary<string, int> _symbolToSubId = new();
     private int _nextSubscriptionId = 1;
-
-    private string? _accessToken;
-    private DateTimeOffset _tokenExpiry = DateTimeOffset.MinValue;
-    private readonly SemaphoreSlim _authLock = new(1, 1);
 
     private static readonly HashSet<string> SupportedMarketsSet = new(StringComparer.OrdinalIgnoreCase) { "US" };
     private static readonly HashSet<AssetClass> SupportedAssetClassesSet = new()
@@ -141,7 +143,17 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         : base(sourceOptions ?? DataSourceOptions.Default, logger)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+
+        _auth = new NyseAccessTokenProvider(
+            _options,
+            httpClientFactory,
+            logger ?? LoggingSetup.ForContext<NYSEDataSource>());
+
+        _historical = new NyseHistoricalDataProvider(
+            _auth,
+            sourceId: "nyse",
+            logger ?? LoggingSetup.ForContext<NYSEDataSource>());
 
         _wsManager = new WebSocketConnectionManager(
             providerName: "NYSE",
@@ -167,8 +179,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         try
         {
             // Try to obtain an access token to validate credentials
-            await EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
-            return !string.IsNullOrEmpty(_accessToken);
+            await _auth.EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
+            return !string.IsNullOrEmpty(_auth.AccessToken);
         }
         catch (Exception ex)
         {
@@ -181,13 +193,13 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
     {
         try
         {
-            await EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
+            await _auth.EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
 
             // Test REST API connectivity
             using var request = new HttpRequestMessage(HttpMethod.Get, "/markets/status");
-            AddAuthHeader(request);
+            _auth.AddAuthHeader(request);
 
-            using var httpClient = CreateNyseHttpClient();
+            using var httpClient = _auth.CreateHttpClient();
             using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
@@ -212,13 +224,28 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         _depthUpdates.OnCompleted();
         _depthUpdates.Dispose();
 
-        _authLock.Dispose();
+        _auth.Dispose();
         _reconnectCts.Dispose();
     }
 
 
 
     public bool IsConnected => _wsManager.IsConnected;
+
+    /// <summary>
+    /// Raised when the underlying WebSocket connection diagnostics change.
+    /// </summary>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
+    {
+        add => _wsManager.DiagnosticsChanged += value;
+        remove => _wsManager.DiagnosticsChanged -= value;
+    }
+
+    /// <summary>
+    /// Returns the live connection diagnostics snapshot from the shared connection manager.
+    /// </summary>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+        => _wsManager.GetDiagnosticsSnapshot();
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
@@ -228,7 +255,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             return;
         }
 
-        await EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
+        await _auth.EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
 
         if (_reconnectCts.IsCancellationRequested)
         {
@@ -242,7 +269,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         {
             await _wsManager.ConnectAsync(
                 new Uri(_options.EffectiveWebSocketUrl),
-                ws => ws.Options.SetRequestHeader("Authorization", $"Bearer {_accessToken}"),
+                ws => ws.Options.SetRequestHeader("Authorization", $"Bearer {_auth.AccessToken}"),
                 ct).ConfigureAwait(false);
 
             Status = DataSourceStatus.Connected;
@@ -427,292 +454,46 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         return adjusted.Select(b => b.ToHistoricalBar(preferAdjusted: false)).ToList();
     }
 
-    public async Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(
+    public Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(
         string symbol,
         DateOnly? from = null,
         DateOnly? to = null,
         CancellationToken ct = default)
-    {
-        return await ExecuteWithPoliciesAsync(async token =>
-        {
-            await EnsureAuthenticatedAsync(token).ConfigureAwait(false);
+        => ExecuteWithPoliciesAsync(
+            token => _historical.FetchAdjustedDailyBarsAsync(symbol, from, to, token),
+            "GetAdjustedDailyBars",
+            ct);
 
-            var fromDate = from ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-1));
-            var toDate = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
-
-            var url = $"/historical/bars/{symbol}?from={fromDate:yyyy-MM-dd}&to={toDate:yyyy-MM-dd}&adjusted=true";
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            AddAuthHeader(request);
-
-            using var httpClient = CreateNyseHttpClient();
-            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<NYSEHistoricalBarsResponse>(json);
-
-            if (data?.Bars == null || data.Bars.Count == 0)
-            {
-                Log.Information("No historical bars returned from NYSE for {Symbol}", symbol);
-                return Array.Empty<AdjustedHistoricalBar>();
-            }
-
-            var bars = new List<AdjustedHistoricalBar>();
-
-            foreach (var bar in data.Bars)
-            {
-                try
-                {
-                    bars.Add(new AdjustedHistoricalBar(
-                        Symbol: symbol.ToUpperInvariant(),
-                        SessionDate: DateOnly.Parse(bar.Date),
-                        Open: bar.Open,
-                        High: bar.High,
-                        Low: bar.Low,
-                        Close: bar.Close,
-                        Volume: bar.Volume,
-                        Source: Id,
-                        SequenceNumber: bar.SequenceNumber ?? 0,
-                        AdjustedOpen: bar.AdjustedOpen,
-                        AdjustedHigh: bar.AdjustedHigh,
-                        AdjustedLow: bar.AdjustedLow,
-                        AdjustedClose: bar.AdjustedClose,
-                        AdjustedVolume: bar.AdjustedVolume,
-                        SplitFactor: bar.SplitFactor,
-                        DividendAmount: bar.DividendAmount
-                    ));
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "Failed to parse NYSE bar for {Symbol} on {Date}", symbol, bar.Date);
-                }
-            }
-
-            Log.Information("Fetched {Count} historical bars from NYSE for {Symbol}", bars.Count, symbol);
-            return bars.OrderBy(b => b.SessionDate).ToArray();
-        }, "GetAdjustedDailyBars", ct).ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyList<IntradayBar>> GetIntradayBarsAsync(
+    public Task<IReadOnlyList<IntradayBar>> GetIntradayBarsAsync(
         string symbol,
         string interval,
         DateTimeOffset? from = null,
         DateTimeOffset? to = null,
         CancellationToken ct = default)
-    {
-        return await ExecuteWithPoliciesAsync(async token =>
-        {
-            await EnsureAuthenticatedAsync(token).ConfigureAwait(false);
+        => ExecuteWithPoliciesAsync(
+            token => _historical.FetchIntradayBarsAsync(symbol, interval, from, to, token),
+            "GetIntradayBars",
+            ct);
 
-            var fromTime = from ?? DateTimeOffset.UtcNow.AddDays(-5);
-            var toTime = to ?? DateTimeOffset.UtcNow;
-
-            var url = $"/historical/intraday/{symbol}?from={fromTime:O}&to={toTime:O}&interval={interval}";
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            AddAuthHeader(request);
-
-            using var httpClient = CreateNyseHttpClient();
-            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<NYSEIntradayBarsResponse>(json);
-
-            if (data?.Bars == null || data.Bars.Count == 0)
-            {
-                return Array.Empty<IntradayBar>();
-            }
-
-            return data.Bars.Select(bar => new IntradayBar(
-                Symbol: symbol.ToUpperInvariant(),
-                Timestamp: DateTimeOffset.Parse(bar.Timestamp),
-                Interval: interval,
-                Open: bar.Open,
-                High: bar.High,
-                Low: bar.Low,
-                Close: bar.Close,
-                Volume: bar.Volume,
-                Source: Id,
-                TradeCount: bar.TradeCount,
-                VWAP: bar.Vwap
-            )).OrderBy(b => b.Timestamp).ToArray();
-        }, "GetIntradayBars", ct).ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyList<DividendInfo>> GetDividendsAsync(
+    public Task<IReadOnlyList<DividendInfo>> GetDividendsAsync(
         string symbol,
         DateOnly? from = null,
         DateOnly? to = null,
         CancellationToken ct = default)
-    {
-        return await ExecuteWithPoliciesAsync(async token =>
-        {
-            await EnsureAuthenticatedAsync(token).ConfigureAwait(false);
+        => ExecuteWithPoliciesAsync(
+            token => _historical.FetchDividendsAsync(symbol, from, to, token),
+            "GetDividends",
+            ct);
 
-            var fromDate = from ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-5));
-            var toDate = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
-
-            var url = $"/corporate-actions/dividends/{symbol}?from={fromDate:yyyy-MM-dd}&to={toDate:yyyy-MM-dd}";
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            AddAuthHeader(request);
-
-            using var httpClient = CreateNyseHttpClient();
-            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.Warning("NYSE returned {Status} for dividends request for {Symbol}", response.StatusCode, symbol);
-                return Array.Empty<DividendInfo>();
-            }
-
-            var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<NYSEDividendsResponse>(json);
-
-            if (data?.Dividends == null || data.Dividends.Count == 0)
-            {
-                return Array.Empty<DividendInfo>();
-            }
-
-            return data.Dividends.Select(div => new DividendInfo(
-                Symbol: symbol.ToUpperInvariant(),
-                ExDate: DateOnly.Parse(div.ExDate),
-                PaymentDate: !string.IsNullOrEmpty(div.PaymentDate) ? DateOnly.Parse(div.PaymentDate) : null,
-                RecordDate: !string.IsNullOrEmpty(div.RecordDate) ? DateOnly.Parse(div.RecordDate) : null,
-                Amount: div.Amount,
-                Currency: div.Currency ?? "USD",
-                Type: ParseDividendType(div.Type),
-                Source: Id
-            )).OrderBy(d => d.ExDate).ToArray();
-        }, "GetDividends", ct).ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyList<SplitInfo>> GetSplitsAsync(
+    public Task<IReadOnlyList<SplitInfo>> GetSplitsAsync(
         string symbol,
         DateOnly? from = null,
         DateOnly? to = null,
         CancellationToken ct = default)
-    {
-        return await ExecuteWithPoliciesAsync(async token =>
-        {
-            await EnsureAuthenticatedAsync(token).ConfigureAwait(false);
-
-            var fromDate = from ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-10));
-            var toDate = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
-
-            var url = $"/corporate-actions/splits/{symbol}?from={fromDate:yyyy-MM-dd}&to={toDate:yyyy-MM-dd}";
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            AddAuthHeader(request);
-
-            using var httpClient = CreateNyseHttpClient();
-            using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.Warning("NYSE returned {Status} for splits request for {Symbol}", response.StatusCode, symbol);
-                return Array.Empty<SplitInfo>();
-            }
-
-            var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<NYSESplitsResponse>(json);
-
-            if (data?.Splits == null || data.Splits.Count == 0)
-            {
-                return Array.Empty<SplitInfo>();
-            }
-
-            return data.Splits.Select(split => new SplitInfo(
-                Symbol: symbol.ToUpperInvariant(),
-                ExDate: DateOnly.Parse(split.ExDate),
-                SplitFrom: split.SplitFrom,
-                SplitTo: split.SplitTo,
-                Source: Id
-            )).OrderBy(s => s.ExDate).ToArray();
-        }, "GetSplits", ct).ConfigureAwait(false);
-    }
-
-
-
-    private async Task EnsureAuthenticatedAsync(CancellationToken ct)
-    {
-        if (!string.IsNullOrEmpty(_accessToken) && DateTimeOffset.UtcNow < _tokenExpiry.AddMinutes(-5))
-        {
-            return;
-        }
-
-        await _authLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            if (!string.IsNullOrEmpty(_accessToken) && DateTimeOffset.UtcNow < _tokenExpiry.AddMinutes(-5))
-            {
-                return;
-            }
-
-            var apiKey = _options.ResolveApiKey();
-            var apiSecret = _options.ResolveApiSecret();
-
-            if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
-            {
-                throw new InvalidOperationException("NYSE API credentials not configured");
-            }
-
-            // OAuth2 client credentials flow
-            var authContent = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["grant_type"] = "client_credentials",
-                ["client_id"] = _options.ResolveClientId() ?? apiKey,
-                ["client_secret"] = apiSecret
-            });
-
-            using var authRequest = new HttpRequestMessage(HttpMethod.Post, "/oauth/token")
-            {
-                Content = authContent
-            };
-
-            using var httpClient = CreateNyseHttpClient();
-            using var response = await httpClient.SendAsync(authRequest, ct).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var tokenResponse = JsonSerializer.Deserialize<NYSETokenResponse>(json);
-
-            _accessToken = tokenResponse?.AccessToken
-                ?? throw new InvalidOperationException("Failed to obtain NYSE access token");
-            _tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
-
-            Log.Debug("Obtained NYSE access token, expires at {Expiry}", _tokenExpiry);
-        }
-        finally
-        {
-            _authLock.Release();
-        }
-    }
-
-    private void AddAuthHeader(HttpRequestMessage request)
-    {
-        if (!string.IsNullOrEmpty(_accessToken))
-        {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-        }
-    }
-
-    /// <summary>
-    /// Creates a named <see cref="HttpClient"/> via <see cref="IHttpClientFactory"/>, setting the
-    /// dynamic <see cref="NYSEOptions.EffectiveBaseUrl"/> as the base address.  The shared handler
-    /// pool (connection lifetime, retry pipeline) is managed entirely by the factory.
-    /// </summary>
-    private HttpClient CreateNyseHttpClient()
-    {
-        var client = _httpClientFactory.CreateClient(HttpClientNames.NYSE);
-        // BaseAddress is dynamic per NYSEOptions; it must be applied to the lightweight
-        // HttpClient wrapper.  The underlying HttpMessageHandler/connection pool is
-        // owned by IHttpClientFactory and survives beyond any single HttpClient instance.
-        client.BaseAddress = new Uri(_options.EffectiveBaseUrl);
-        return client;
-    }
+        => ExecuteWithPoliciesAsync(
+            token => _historical.FetchSplitsAsync(symbol, from, to, token),
+            "GetSplits",
+            ct);
 
 
 
@@ -962,16 +743,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         "delete" or "remove" => DepthOperation.Delete,
         _ => DepthOperation.Insert // Default to Insert for unrecognized operations
     };
-
-    private static DividendType ParseDividendType(string? type) => type?.ToLowerInvariant() switch
-    {
-        "special" => DividendType.Special,
-        "return" => DividendType.Return,
-        "liquidation" => DividendType.Liquidation,
-        _ => DividendType.Regular
-    };
-
-
 
     private enum SubscriptionType { Trades, Quotes, Depth }
 

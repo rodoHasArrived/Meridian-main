@@ -87,20 +87,9 @@ public sealed class NavAttributionService
         {
             ct.ThrowIfCancellationRequested();
 
-            SecurityDetailDto? security = null;
-            if (!string.IsNullOrWhiteSpace(account.Symbol))
-            {
-                try
-                {
-                    security = await _securityMaster
-                        .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, account.Symbol, null, ct)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _log.LogDebug(ex, "Security Master lookup failed for symbol {Symbol}", account.Symbol);
-                }
-            }
+            var security = await SecurityMasterReportingLookup
+                .TryGetByTickerAsync(_securityMaster, _log, account.Symbol, ct)
+                .ConfigureAwait(false);
 
             components.Add(new NavComponent(
                 AccountName: account.Name,
@@ -111,10 +100,28 @@ public sealed class NavAttributionService
                 Balance: balance));
         }
 
-        var totalNav = components.Sum(c => c.Balance);
-        var byAssetClass = components
-            .GroupBy(c => c.AssetClass ?? "Unclassified", StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.Sum(c => c.Balance));
+        // NAV is assets net of liabilities. Equity, revenue, and expense balances are the
+        // financing/earnings view of the same value (Assets − Liabilities = Equity + Net Income),
+        // so summing them alongside the assets would double-count the fund's value.
+        var totalNav = 0m;
+        var byAssetClass = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        foreach (var component in components)
+        {
+            var signedContribution = component.AccountType switch
+            {
+                nameof(LedgerAccountType.Asset) => component.Balance,
+                nameof(LedgerAccountType.Liability) => -component.Balance,
+                _ => 0m
+            };
+            if (signedContribution == 0m)
+            {
+                continue;
+            }
+
+            totalNav += signedContribution;
+            var assetClass = component.AssetClass ?? "Unclassified";
+            byAssetClass[assetClass] = byAssetClass.GetValueOrDefault(assetClass) + signedContribution;
+        }
 
         return new NavBreakdown(totalNav, components, byAssetClass);
     }

@@ -53,7 +53,7 @@ public sealed class TiingoCorporateActionProviderTests
         var results = await provider.FetchAsync("brk.b", securityId, CancellationToken.None);
 
         results.Should().HaveCount(2);
-        results.Select(result => result.ActionType).Should().Equal("Dividend", "Split");
+        results.Select(result => result.ActionType).Should().Equal("Dividend", "StockSplit");
         results.Select(result => result.SecurityId).Should().OnlyContain(id => id == securityId);
         results.Select(result => result.SourceProvider).Should().OnlyContain(source => source == "tiingo");
         results.Select(result => result.ExDate).Should().OnlyContain(date => date == new DateOnly(2024, 1, 3));

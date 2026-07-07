@@ -1,0 +1,44 @@
+{
+  "scenarioId": "ge-reverse-split-1for8-2021",
+  "description": "GE 1-for-8 reverse split, ex 2021-08-02 (SplitRatio 0.125, strictly between 0 and 1). Prices are plausible synthetic approximations. Locks the reverse-split branch where the implied factor exceeds 1 and volume shrinks.",
+  "ticker": "GE",
+  "securityId": "b0000000-bbbb-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "b0000000-bbbb-4000-8000-0000000000c1",
+      "securityId": "b0000000-bbbb-4000-8000-000000000001",
+      "eventType": "ReverseStockSplit",
+      "exDate": "2021-08-02",
+      "payDate": null,
+      "dividendPerShare": null,
+      "currency": null,
+      "splitRatio": 0.125,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2021-07-30",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2021-07-28", "open": 12.88, "high": 13.00, "low": 12.80, "close": 12.96, "volume": 64000000 },
+    { "sessionDate": "2021-07-29", "open": 12.95, "high": 13.05, "low": 12.85, "close": 12.97, "volume": 56000000 },
+    { "sessionDate": "2021-07-30", "open": 12.90, "high": 12.99, "low": 12.62, "close": 12.69, "volume": 80000000 },
+    { "sessionDate": "2021-08-02", "open": 104.00, "high": 106.00, "low": 103.00, "close": 104.47, "volume": 8000000 },
+    { "sessionDate": "2021-08-03", "open": 104.50, "high": 105.80, "low": 103.90, "close": 105.32, "volume": 7200000 }
+  ],
+  "postingContext": { "positionQuantity": 800, "withholdingTaxRate": 0, "financialAccountId": null },
+  "invariantTags": [
+    "series-continuity",
+    "factor-monotonicity",
+    "notional-conservation",
+    "journal-balanced",
+    "position-basis-conserved"
+  ],
+  "knownDefectIds": []
+}

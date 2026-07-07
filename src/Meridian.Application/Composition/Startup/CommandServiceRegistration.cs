@@ -117,8 +117,12 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand>(sp => new SecurityMasterCommands(
             importService: null,
+            sp.GetRequiredService<ILogger>(),
+            corporateActionIngestOrchestrator: sp.GetService<Meridian.Application.SecurityMaster.CorporateActionIngestOrchestrator>(),
+            securityMasterEventStore: sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterEventStore>()));
+        services.TryAddSingleton(sp => new CommandDispatcher(
+            sp.GetServices<ICliCommand>(),
             sp.GetRequiredService<ILogger>()));
-        services.TryAddSingleton(sp => new CommandDispatcher(sp.GetServices<ICliCommand>().ToArray()));
         return services;
     }
 }

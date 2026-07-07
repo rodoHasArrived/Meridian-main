@@ -586,18 +586,20 @@ function buildManualJournalPrivateCapitalActivityView(
   }
 
   const currency = activity.currency || "USD";
+  const fundEvents = activity.fundEvents ?? [];
+  const capitalAccounts = activity.capitalAccounts ?? [];
   const capitalAccountSubledgers = activity.capitalAccountSubledgers ?? [];
-  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries;
-  const ledgerImpacts = activity.ledgerImpacts;
-  const reportOutputs = activity.reportOutputs;
-  const fundEventLedgerRecords = activity.fundEventRecords;
+  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries ?? [];
+  const ledgerImpacts = activity.ledgerImpacts ?? [];
+  const reportOutputs = activity.reportOutputs ?? [];
+  const fundEventLedgerRecords = activity.fundEventRecords ?? [];
   const paymentIntents = activity.paymentIntents ?? [];
   const fundEventLedgerRecordCount = fundEventLedgerRecords.length;
   const deferredPaymentIntentCount = paymentIntents.filter((item) => item.status === "ExecutionDeferred").length;
   const blockedPaymentIntentCount = paymentIntents.filter((item) => item.status === "Blocked" || item.status === "BankReturned").length;
   const postedFundEventCount = activity.postedFundEventCount ?? 0;
   const publishedReportOutputCount = activity.publishedReportOutputCount ?? 0;
-  const validationIssues = activity.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+  const validationIssues = (activity.validationIssues ?? []).map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${index}`,
     label: issue.code,
     message: issue.message,
@@ -689,8 +691,8 @@ function buildManualJournalPrivateCapitalActivityView(
         tone: validationIssues.length > 0 ? "warning" : "success"
       }
     ],
-    fundEvents: activity.fundEvents.map(buildManualJournalPrivateCapitalFundEventRow),
-    capitalAccounts: activity.capitalAccounts.map(buildManualJournalPrivateCapitalAccountRow),
+    fundEvents: fundEvents.map(buildManualJournalPrivateCapitalFundEventRow),
+    capitalAccounts: capitalAccounts.map(buildManualJournalPrivateCapitalAccountRow),
     capitalAccountSubledgers: capitalAccountSubledgers.map(buildManualJournalPrivateCapitalCapitalAccountSubledgerRow),
     capitalAccountSubledgerEntries: capitalAccountSubledgerEntries.map(buildManualJournalPrivateCapitalSubledgerEntryRow),
     ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),

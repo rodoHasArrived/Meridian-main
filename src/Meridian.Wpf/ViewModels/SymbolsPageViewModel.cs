@@ -424,8 +424,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
     public void CancelActivation()
     {
-        CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null));
         CancelWithoutDisposing(Interlocked.Exchange(ref _activationCts, null));
+        CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null));
     }
 
     public void Deactivate()

@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace Meridian.Application.Commands;
 
 /// <summary>
@@ -7,10 +9,17 @@ namespace Meridian.Application.Commands;
 internal sealed class CommandDispatcher
 {
     private readonly ICliCommand[] _commands;
+    private readonly ILogger _logger;
 
     public CommandDispatcher(params ICliCommand[] commands)
+        : this(commands.AsEnumerable())
     {
-        _commands = commands;
+    }
+
+    public CommandDispatcher(IEnumerable<ICliCommand> commands, ILogger? logger = null)
+    {
+        _commands = commands?.ToArray() ?? throw new ArgumentNullException(nameof(commands));
+        _logger = logger ?? Serilog.Core.Logger.None;
     }
 
     /// <summary>
@@ -24,8 +33,19 @@ internal sealed class CommandDispatcher
         {
             if (command.CanHandle(args))
             {
-                var result = await command.ExecuteAsync(args, ct);
-                return (true, result);
+                try
+                {
+                    var result = await command.ExecuteAsync(args, ct);
+                    return (true, result);
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+                {
+                    _logger.Warning(
+                        ex,
+                        "CLI command {CommandType} failed during dispatch.",
+                        command.GetType().FullName);
+                    throw;
+                }
             }
         }
 

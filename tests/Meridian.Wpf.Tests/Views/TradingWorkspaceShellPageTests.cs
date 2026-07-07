@@ -600,7 +600,8 @@ public sealed class TradingWorkspaceShellPageTests
                     Detail: "Trust gate is signed.")
             ],
             OverallStatus = TradingAcceptanceGateStatusDto.Ready,
-            ReadyForPaperOperation = true
+            ReadyForPaperOperation = true,
+            ReadyForLiveOperation = true
         };
 
         var hero = TradingWorkspaceShellPage.BuildDeskHeroState(

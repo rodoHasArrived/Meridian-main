@@ -325,6 +325,35 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_SoftClosedPeriod_AllowsClosingEntry()
+    {
+        var period = BuildAccountingPeriod("SoftClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow("closing entries finalize the period being closed");
+    }
+
+    [Fact]
+    public void PostingGuard_HardClosedPeriod_AllowsClosingEntry()
+    {
+        var period = BuildAccountingPeriod("HardClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow(
+            "closing entries are the sanctioned exception to the closed-period posting bar");
+    }
+
+    [Fact]
     public void PostingGuard_UnknownStatus_RejectsEntry()
     {
         var period = BuildAccountingPeriod("Archived");
@@ -758,6 +787,19 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("add column if not exists dimensions jsonb null");
         sql.Should().Contain("ix_journal_legs_dimensions_gin");
         sql.Should().Contain("using gin (dimensions)");
+    }
+
+    [Fact]
+    public void LedgerJournalAsOfIndexMigration_DefinesHydrationIndexes()
+    {
+        var sql = ReadMigration("V_ledger_023__journal_as_of_indexes.sql");
+
+        sql.Should().Contain("ix_accounting_periods_ledger_book_period");
+        sql.Should().Contain("on __SCHEMA__.accounting_periods (ledger_book_id, period_id)");
+        sql.Should().Contain("ix_journal_entries_period_as_of");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (period_id, occurred_at, global_sequence, journal_entry_id)");
+        sql.Should().Contain("ix_journal_entries_as_of");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (occurred_at, global_sequence, journal_entry_id)");
     }
 
 

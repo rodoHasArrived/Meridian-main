@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Identity;
 
@@ -57,12 +58,14 @@ public sealed class FileUserAccountStore : IUserAccountStore
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string _path;
     private readonly string _auditPath;
+    private readonly ILogger<FileUserAccountStore>? _logger;
 
-    public FileUserAccountStore(StorageOptions storageOptions)
+    public FileUserAccountStore(StorageOptions storageOptions, ILogger<FileUserAccountStore>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _path = Path.Combine(storageOptions.RootPath, "governance", "user-accounts.json");
         _auditPath = Path.Combine(storageOptions.RootPath, "governance", "user-account-audit.jsonl");
+        _logger = logger;
     }
 
     public bool HasAccounts => ReadSnapshot().Accounts.Count > 0;
@@ -119,13 +122,15 @@ public sealed class FileUserAccountStore : IUserAccountStore
                     events.Add(auditEvent);
                 }
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
                 // Keep the account surface available even if one historical audit line is corrupt.
+                _logger?.LogWarning(ex, "Skipping corrupt user-account audit line in {Path}.", _auditPath);
             }
-            catch (NotSupportedException)
+            catch (NotSupportedException ex)
             {
                 // Keep the account surface available even if one historical audit line is corrupt.
+                _logger?.LogWarning(ex, "Skipping unreadable user-account audit line in {Path}.", _auditPath);
             }
         }
 
@@ -165,8 +170,8 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 throw new ArgumentException("A new account requires NewPassword or PasswordHash.", nameof(request));
             }
 
-            var auditId = NewAuditId("user-account");
-            var correlationId = NormalizeCorrelationId(request.CorrelationId, "user-account-upsert");
+            var auditId = IdentityGovernanceNormalization.NewAuditId("user-account", now);
+            var correlationId = IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, "user-account-upsert");
             var persisted = new PersistedUserAccount(
                 Username: validated.Username,
                 PasswordHash: passwordHash,
@@ -230,10 +235,10 @@ public sealed class FileUserAccountStore : IUserAccountStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var username = NormalizeRequired(request.Username, nameof(request.Username));
+        var username = IdentityGovernanceNormalization.NormalizeRequired(request.Username, nameof(request.Username));
         var accountKey = AccountKey(username);
-        var resolvedActor = ResolveActor(actor, request.RequestedBy);
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var resolvedActor = IdentityGovernanceNormalization.ResolveActor(actor, request.RequestedBy);
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
         var passwordHash = ResolvePasswordHash(request.NewPassword, request.PasswordHash, existingHash: null)
             ?? throw new ArgumentException("Password reset requires NewPassword or PasswordHash.", nameof(request));
         var now = DateTimeOffset.UtcNow;
@@ -250,7 +255,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
             }
 
             var existing = accounts[index];
-            var auditId = NewAuditId("user-password-reset");
+            var auditId = IdentityGovernanceNormalization.NewAuditId("user-password-reset", now);
             var updated = existing with
             {
                 PasswordHash = passwordHash,
@@ -271,7 +276,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 resolvedActor,
                 dto,
                 rationale,
-                NormalizeCorrelationId(request.CorrelationId, "user-password-reset"),
+                IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, "user-password-reset"),
                 revokedSessionCount);
             await AppendAuditAsync(auditEvent, ct).ConfigureAwait(false);
             return new UserAccountMutationResultDto(dto, auditEvent, revokedSessionCount);
@@ -289,10 +294,10 @@ public sealed class FileUserAccountStore : IUserAccountStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var username = NormalizeRequired(request.Username, nameof(request.Username));
+        var username = IdentityGovernanceNormalization.NormalizeRequired(request.Username, nameof(request.Username));
         var accountKey = AccountKey(username);
-        var resolvedActor = ResolveActor(actor, request.RequestedBy);
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var resolvedActor = IdentityGovernanceNormalization.ResolveActor(actor, request.RequestedBy);
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
         var now = DateTimeOffset.UtcNow;
 
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
@@ -307,7 +312,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
             }
 
             var existing = accounts[index];
-            var auditId = NewAuditId(request.IsDisabled ? "user-account-disabled" : "user-account-enabled");
+            var auditId = IdentityGovernanceNormalization.NewAuditId(request.IsDisabled ? "user-account-disabled" : "user-account-enabled", now);
             var updated = existing with
             {
                 IsDisabled = request.IsDisabled,
@@ -328,7 +333,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 resolvedActor,
                 dto,
                 rationale,
-                NormalizeCorrelationId(request.CorrelationId, request.IsDisabled ? "user-account-disabled" : "user-account-enabled"),
+                IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, request.IsDisabled ? "user-account-disabled" : "user-account-enabled"),
                 revokedSessionCount);
             await AppendAuditAsync(auditEvent, ct).ConfigureAwait(false);
             return new UserAccountMutationResultDto(dto, auditEvent, revokedSessionCount);
@@ -346,11 +351,11 @@ public sealed class FileUserAccountStore : IUserAccountStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var resolvedActor = ResolveActor(actor, request.RequestedBy);
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var resolvedActor = IdentityGovernanceNormalization.ResolveActor(actor, request.RequestedBy);
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
         var now = DateTimeOffset.UtcNow;
-        var auditId = NewAuditId("user-session-revoked");
-        var correlationId = NormalizeCorrelationId(request.CorrelationId, "user-session-revoke");
+        var auditId = IdentityGovernanceNormalization.NewAuditId("user-session-revoked", now);
+        var correlationId = IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, "user-session-revoke");
         var username = string.IsNullOrWhiteSpace(request.Username) ? "*" : request.Username.Trim();
 
         var auditEvent = new UserAccountAuditEventDto(
@@ -396,8 +401,15 @@ public sealed class FileUserAccountStore : IUserAccountStore
                     JsonOptions);
                 return snapshot ?? new UserAccountSnapshot([]);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
+                // Fail safe (no accounts) so the surface stays available, but surface the
+                // data-integrity problem instead of silently masking a corrupt governance file
+                // as "no accounts exist".
+                _logger?.LogError(
+                    ex,
+                    "Corrupt user-account governance file at {Path}; treating as no accounts. Manual data-integrity review required.",
+                    _path);
                 return new UserAccountSnapshot([]);
             }
         }
@@ -431,7 +443,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         string rationale,
         string actor)
     {
-        var normalizedUsername = NormalizeRequired(username, nameof(username));
+        var normalizedUsername = IdentityGovernanceNormalization.NormalizeRequired(username, nameof(username));
         if (!Enum.TryParse<UserRole>(role?.Trim(), ignoreCase: true, out var parsedRole))
         {
             throw new ArgumentException($"Unknown role '{role}'.", nameof(role));
@@ -462,8 +474,8 @@ public sealed class FileUserAccountStore : IUserAccountStore
             string.IsNullOrWhiteSpace(companyId) ? null : companyId.Trim(),
             resolvedPermissionNames,
             permissions,
-            ResolveActor(actor, requestedBy),
-            NormalizeRequired(rationale, nameof(rationale)));
+            IdentityGovernanceNormalization.ResolveActor(actor, requestedBy),
+            IdentityGovernanceNormalization.NormalizeRequired(rationale, nameof(rationale)));
     }
 
     private static string? ResolvePasswordHash(string? newPassword, string? passwordHash, string? existingHash)
@@ -540,35 +552,6 @@ public sealed class FileUserAccountStore : IUserAccountStore
 
     private static UserRole ParseRole(string role)
         => Enum.TryParse<UserRole>(role, ignoreCase: true, out var parsed) ? parsed : UserRole.ReadOnly;
-
-    private static string NormalizeRequired(string? value, string parameterName)
-    {
-        var trimmed = value?.Trim();
-        if (string.IsNullOrWhiteSpace(trimmed))
-        {
-            throw new ArgumentException($"{parameterName} is required.", parameterName);
-        }
-
-        return trimmed;
-    }
-
-    private static string ResolveActor(string? actor, string? requestedBy)
-    {
-        if (!string.IsNullOrWhiteSpace(actor))
-        {
-            return actor.Trim();
-        }
-
-        return NormalizeRequired(requestedBy, nameof(requestedBy));
-    }
-
-    private static string NormalizeCorrelationId(string? correlationId, string prefix)
-        => string.IsNullOrWhiteSpace(correlationId)
-            ? $"{prefix}-{Guid.NewGuid():N}"
-            : correlationId.Trim();
-
-    private static string NewAuditId(string prefix)
-        => $"{prefix}-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}"[..Math.Min(64, prefix.Length + 1 + 17 + 1 + 32)];
 
     private static string AccountKey(string username)
         => username.Trim().ToLowerInvariant();

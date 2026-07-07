@@ -10,30 +10,47 @@ internal sealed class EtlCommands : ICliCommand
 {
     private readonly string _configPath;
     private readonly ILogger _log;
+    private readonly CliCommandRouteTable _routes;
 
     public EtlCommands(string configPath, ILogger log)
     {
         _configPath = configPath;
         _log = log;
+        _routes = new CliCommandRouteTable(
+            CliCommandRoute.Flag("--etl-resume", RunResumeAsync),
+            CliCommandRoute.Flags(
+                [
+                    "--etl-import",
+                    "--etl-export",
+                    "--etl-roundtrip",
+                    "--etl-preview",
+                    "--etl-list-files",
+                    "--etl-test-connection"
+                ],
+                RunJobAsync));
     }
 
-    public bool CanHandle(string[] args)
-        => CliArguments.HasFlag(args, "--etl-import") || CliArguments.HasFlag(args, "--etl-export") || CliArguments.HasFlag(args, "--etl-roundtrip") || CliArguments.HasFlag(args, "--etl-resume") || CliArguments.HasFlag(args, "--etl-preview") || CliArguments.HasFlag(args, "--etl-list-files") || CliArguments.HasFlag(args, "--etl-test-connection");
+    public bool CanHandle(string[] args) => _routes.CanHandle(args);
 
-    public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+    public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+        => _routes.ExecuteAsync(args, ct);
+
+    private async Task<CliResult> RunResumeAsync(string[] args, CancellationToken ct)
     {
         await using var startup = HostStartup.CreateDefault(_configPath);
         var svc = startup.GetRequiredService<IEtlJobService>();
 
-        if (CliArguments.HasFlag(args, "--etl-resume"))
-        {
-            var jobId = CliArguments.RequireValue(args, "--etl-resume", "--etl-resume <job-id>");
-            if (jobId is null)
-                return CliResult.Fail(ErrorCode.RequiredFieldMissing);
-            var result = await svc.RunAsync(jobId, ct).ConfigureAwait(false);
-            return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.Unknown);
-        }
+        var jobId = CliArguments.RequireValue(args, "--etl-resume", "--etl-resume <job-id>");
+        if (jobId is null)
+            return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+        var result = await svc.RunAsync(jobId, ct).ConfigureAwait(false);
+        return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.Unknown);
+    }
 
+    private async Task<CliResult> RunJobAsync(string[] args, CancellationToken ct)
+    {
+        await using var startup = HostStartup.CreateDefault(_configPath);
+        var svc = startup.GetRequiredService<IEtlJobService>();
         if (!TryBuildDefinition(args, out var definition))
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
 

@@ -147,7 +147,7 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
         {
             yield return new CorporateActionCommand(
                 SecurityId: securityId,
-                ActionType: "Split",
+                ActionType: price.SplitFactor.Value < 1m ? "ReverseStockSplit" : "StockSplit",
                 ExDate: sessionDate,
                 RecordDate: null,
                 PayableDate: null,
@@ -195,12 +195,7 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
             return false;
         }
 
-        return DateOnly.TryParseExact(
-            value[..10],
-            "yyyy-MM-dd",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out sessionDate);
+        return ProviderDateParsing.TryParseProviderDate(value[..10], "yyyy-MM-dd", out sessionDate);
     }
 
     private sealed class TiingoCorporateActionPrice
