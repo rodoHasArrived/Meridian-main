@@ -576,6 +576,13 @@ public static partial class AtomicFileWriter
 
     private static void SyncDirectory(string directory)
     {
+        // A bare relative path (e.g. "file.txt") yields an empty directory; treat it as the
+        // current directory rather than faulting.
+        if (string.IsNullOrEmpty(directory))
+        {
+            directory = ".";
+        }
+
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);

@@ -315,7 +315,7 @@ public sealed class TierMigrationService : ITierMigrationService
         {
             // The migrated file's data blocks were already fsynced by CopyFileAsync. Persist the
             // target directory metadata (the newly created file entry) so it survives a crash.
-            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(targetPath)!, ct);
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(targetPath), ct);
 
             // Validate the migrated file actually landed on disk before removing the source of
             // truth. A missing or empty target (for a non-empty source) means the copy did not
@@ -330,7 +330,7 @@ public sealed class TierMigrationService : ITierMigrationService
             File.Delete(sourcePath);
 
             // Make the deletion durable so the source cannot reappear after a crash.
-            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(sourcePath)!, ct);
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(sourcePath), ct);
         }
 
         return new FileMigrationResult(
@@ -339,6 +339,15 @@ public sealed class TierMigrationService : ITierMigrationService
             OriginalSize: originalSize,
             NewSize: targetInfo.Length
         );
+    }
+
+    // Returns the file's directory, falling back to the current directory for relative paths
+    // that have no directory component (e.g. "session.jsonl"), which would otherwise yield an
+    // empty string and fault the directory fsync.
+    private static string DirectoryOfOrCurrent(string path)
+    {
+        var directory = Path.GetDirectoryName(path);
+        return string.IsNullOrEmpty(directory) ? "." : directory;
     }
 
     private async Task CopyFileAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
