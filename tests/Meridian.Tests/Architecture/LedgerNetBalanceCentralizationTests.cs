@@ -12,6 +12,13 @@ namespace Meridian.Tests.Architecture;
 /// </summary>
 public sealed class LedgerNetBalanceCentralizationTests
 {
+    private static readonly HashSet<string> ExcludedDirectoryNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "bin",
+        "obj",
+        "node_modules",
+    };
+
     // Matches the tell-tale reimplementation shape, whitespace/newline insensitive:
     //   ... Asset or LedgerAccountType.Expense ? a - b : b - a
     private static readonly Regex ReimplementationSignature = new(
@@ -24,8 +31,7 @@ public sealed class LedgerNetBalanceCentralizationTests
         var repoRoot = FindRepositoryRoot();
         var sourceRoot = Path.Combine(repoRoot, "src");
 
-        var offenders = Directory
-            .EnumerateFiles(sourceRoot, "*.cs", SearchOption.AllDirectories)
+        var offenders = EnumerateCSharpFiles(sourceRoot)
             .Where(file => ReimplementationSignature.IsMatch(File.ReadAllText(file)))
             .Select(file => Path.GetRelativePath(repoRoot, file))
             .Order(StringComparer.OrdinalIgnoreCase)
@@ -37,6 +43,34 @@ public sealed class LedgerNetBalanceCentralizationTests
             "(backed by the F# posting kernel) instead of being reimplemented inline:" +
             Environment.NewLine +
             string.Join(Environment.NewLine, offenders));
+    }
+
+    private static IEnumerable<string> EnumerateCSharpFiles(string root)
+    {
+        var pending = new Stack<string>();
+        pending.Push(root);
+
+        while (pending.Count > 0)
+        {
+            var directory = pending.Pop();
+
+            foreach (var file in Directory.EnumerateFiles(directory, "*.cs", SearchOption.TopDirectoryOnly))
+            {
+                yield return file;
+            }
+
+            foreach (var child in Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly))
+            {
+                var childInfo = new DirectoryInfo(child);
+                if (ExcludedDirectoryNames.Contains(childInfo.Name) ||
+                    childInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                {
+                    continue;
+                }
+
+                pending.Push(child);
+            }
+        }
     }
 
     private static string FindRepositoryRoot()
