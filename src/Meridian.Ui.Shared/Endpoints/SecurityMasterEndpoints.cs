@@ -708,7 +708,7 @@ public static class SecurityMasterEndpoints
                 var result = await commandService.AppendAsync(
                     new SecurityMasterCorporateActionAppendRequestDto(
                         SecurityId: proposal.SecurityId,
-                        CorporateAction: AppSecurityMaster.CorporateActionProposalMapper.ToCorporateAction(proposal),
+                        CorporateAction: AppSecurityMaster.CorporateActions.CorporateActionProposalMapper.ToCorporateAction(proposal),
                         SourceSystem: proposal.WinningSource,
                         Actor: actor,
                         SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
