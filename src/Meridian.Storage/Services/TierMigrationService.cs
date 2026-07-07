@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Threading;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 
 namespace Meridian.Storage.Services;
@@ -312,7 +313,26 @@ public sealed class TierMigrationService : ITierMigrationService
         // Delete source if requested
         if (options.DeleteSource)
         {
+            // The migrated file's data blocks were already fsynced by CopyFileAsync. Persist the
+            // target directory metadata (the newly created file entry) so it survives a crash.
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(targetPath), ct);
+
+            // Validate the migrated file actually landed on disk before removing the source of
+            // truth. A missing or empty target (for a non-empty source) means the copy did not
+            // complete, so deleting the source would lose data irrecoverably.
+            targetInfo.Refresh();
+            if (!targetInfo.Exists || (originalSize > 0 && targetInfo.Length == 0))
+            {
+                throw new IOException(
+                    $"Refusing to delete source '{sourcePath}': migrated file '{targetPath}' is missing or empty.");
+            }
+
             File.Delete(sourcePath);
+
+            // Make the deletion durable so the source cannot reappear after a crash. This runs
+            // post-commit (the source is already gone), so it must not observe caller cancellation
+            // and report an already-completed migration as failed.
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(sourcePath), CancellationToken.None);
         }
 
         return new FileMigrationResult(
@@ -323,6 +343,15 @@ public sealed class TierMigrationService : ITierMigrationService
         );
     }
 
+    // Returns the file's directory, falling back to the current directory for relative paths
+    // that have no directory component (e.g. "session.jsonl"), which would otherwise yield an
+    // empty string and fault the directory fsync.
+    private static string DirectoryOfOrCurrent(string path)
+    {
+        var directory = Path.GetDirectoryName(path);
+        return string.IsNullOrEmpty(directory) ? "." : directory;
+    }
+
     private async Task CopyFileAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
     {
         await using var sourceStream = File.OpenRead(source);
@@ -330,13 +359,22 @@ public sealed class TierMigrationService : ITierMigrationService
 
         if (tierConfig.Compression == CompressionCodec.Gzip)
         {
-            await using var gzip = new GZipStream(targetStream, CompressionLevel.Optimal);
-            await sourceStream.CopyToAsync(gzip, ct);
+            // leaveOpen so the GZipStream trailer is flushed on dispose without closing
+            // targetStream before we fsync it below.
+            await using (var gzip = new GZipStream(targetStream, CompressionLevel.Optimal, leaveOpen: true))
+            {
+                await sourceStream.CopyToAsync(gzip, ct);
+            }
         }
         else
         {
             await sourceStream.CopyToAsync(targetStream, ct);
         }
+
+        // Force the migrated data blocks to physical disk so callers that delete the source
+        // afterwards cannot lose data on a crash. Uses the existing write handle.
+        await targetStream.FlushAsync(ct);
+        targetStream.Flush(flushToDisk: true);
     }
 
     private async Task CopyWithVerificationAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
