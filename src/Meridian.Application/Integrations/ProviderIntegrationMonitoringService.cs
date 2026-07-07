@@ -9,7 +9,6 @@ public sealed class ProviderIntegrationMonitoringService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
-    private readonly ILogger<ProviderIntegrationMonitoringService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationMonitoringService> logger;
 
@@ -36,30 +35,7 @@ public sealed class ProviderIntegrationMonitoringService
             logger,
             "monitor-connection",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(GetConnectionMonitorAsync),
-            connectionId);
-        try
-        {
-            return await GetConnectionMonitorCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(GetConnectionMonitorAsync),
-                connectionId);
-            throw;
-        }
-    }
+            () => GetConnectionMonitorCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorCoreAsync(
         string? tenantId,
@@ -90,7 +66,7 @@ public sealed class ProviderIntegrationMonitoringService
             evidence.RunEvidence.Sum(run => run.DurableStagingRecordCount),
             evidence.RunEvidence.Sum(run => run.DurableQuarantinedRecordCount),
             evidence.RunEvidence.Any(run => run.CriticalIssueCount > 0));
-    }).ConfigureAwait(false);
+    }
 
     public async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsAsync(
         string connectionId,
@@ -107,30 +83,7 @@ public sealed class ProviderIntegrationMonitoringService
             logger,
             "monitor-sync-runs",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(GetConnectionSyncRunsAsync),
-            connectionId);
-        try
-        {
-            return await GetConnectionSyncRunsCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(GetConnectionSyncRunsAsync),
-                connectionId);
-            throw;
-        }
-    }
+            () => GetConnectionSyncRunsCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsCoreAsync(
         string? tenantId,
@@ -150,7 +103,7 @@ public sealed class ProviderIntegrationMonitoringService
             evidence.TotalSyncRuns,
             evidence.RunEvidence.Count,
             evidence.RunEvidence.FirstOrDefault()?.StartedAt);
-    }).ConfigureAwait(false);
+    }
 
     private async Task<ConnectionSyncRunEvidence> BuildConnectionSyncRunEvidenceAsync(
         string? tenantId,
