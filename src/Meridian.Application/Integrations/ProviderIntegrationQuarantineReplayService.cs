@@ -14,7 +14,6 @@ public sealed class ProviderIntegrationQuarantineReplayService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
 
     public ProviderIntegrationQuarantineReplayService(
         IProviderIntegrationManifestStore store,
@@ -43,36 +42,6 @@ public sealed class ProviderIntegrationQuarantineReplayService
                 Capability: request is null ? null : request.Capability.ToString(),
                 SyncRunId: request?.ReplaySyncRunId),
             async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(ReplayAsync),
-            request?.ManifestId,
-            request?.ConnectionId);
-        try
-        {
-            return await ReplayCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(ReplayAsync),
-                request?.ManifestId,
-                request?.ConnectionId);
-            throw;
-        }
-    }
-
-    private async Task<ProviderIntegrationQuarantineReplayResultDto> ReplayCoreAsync(
-        string? tenantId,
-        ProviderIntegrationQuarantineReplayRequestDto request,
-        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ReplaySyncRunId);

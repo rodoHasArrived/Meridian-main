@@ -11,7 +11,6 @@ public sealed class CompositePublisher : IMarketEventPublisher
 {
     private readonly ILogger<CompositePublisher> _logger;
     private readonly IMarketEventPublisher[] _publishers;
-    private readonly ILogger<CompositePublisher> _logger;
 
     public CompositePublisher(params IMarketEventPublisher[] publishers)
         : this(null, publishers)

@@ -15,7 +15,6 @@ public sealed class ProviderIntegrationDryRunService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ILogger<ProviderIntegrationDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationDryRunService> logger;
 
     public ProviderIntegrationDryRunService(
         IProviderIntegrationManifestStore store,
@@ -45,36 +44,6 @@ public sealed class ProviderIntegrationDryRunService
                 EndpointKey: ManualCsvEndpointKey,
                 SyncRunId: request?.SyncRunId),
             async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(RunManualCsvDryRunAsync),
-            request?.ManifestId,
-            request?.ConnectionId);
-        try
-        {
-            return await RunManualCsvDryRunCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(RunManualCsvDryRunAsync),
-                request?.ManifestId,
-                request?.ConnectionId);
-            throw;
-        }
-    }
-
-    private async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunCoreAsync(
-        string? tenantId,
-        ManualCsvProviderIntegrationDryRunRequestDto request,
-        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SyncRunId);
