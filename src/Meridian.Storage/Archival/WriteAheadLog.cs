@@ -424,7 +424,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     }
 
                     File.Delete(walFile);
-                    await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, ct);
+                    // post-commit (the WAL file is already gone): must not observe cancellation.
+                    await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None);
                     _log.Information("Truncated WAL file {File}", walFile);
                 }
             }
@@ -863,8 +864,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 File.Move(tempPath, walFile);
 
                 // Make the rename durable so the repaired file survives a crash or power loss.
+                // post-commit (the repaired file is already in place): must not observe cancellation.
                 await AtomicFileWriter.SyncDirectoryAsync(
-                    Path.GetDirectoryName(walFile) ?? _walDirectory, ct);
+                    Path.GetDirectoryName(walFile) ?? _walDirectory, CancellationToken.None);
 
                 repairedFiles++;
 

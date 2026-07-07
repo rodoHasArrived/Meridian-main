@@ -97,8 +97,8 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync the directory to ensure rename is persisted
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync the directory to ensure rename is persisted (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
                 Encoding.UTF8.GetByteCount(content), destinationPath);
@@ -145,8 +145,8 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync the directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync the directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             Log.Debug("Atomically wrote {Bytes} bytes to {Path}", content.Length, destinationPath);
         }
@@ -201,8 +201,8 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
         }
         catch
         {
@@ -258,8 +258,8 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Sync the directory to ensure the rename is persisted.
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync the directory to ensure the rename is persisted (post-commit: non-cancellable).
+            await SyncCommittedDirectoryAsync(directory!);
         }
         catch
         {
@@ -314,7 +314,8 @@ public static partial class AtomicFileWriter
 
             await SyncFileAsync(tempPath, ct);
             File.Move(tempPath, destinationPath, overwrite: true);
-            await SyncDirectoryAsync(directory!, ct);
+            // post-commit: non-cancellable
+            await SyncCommittedDirectoryAsync(directory!);
         }
         catch
         {
@@ -393,12 +394,14 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Write checksum sidecar file
+            // Write checksum sidecar file (post-commit: non-cancellable so a cancelled token
+            // cannot report the already-renamed payload as a failed write).
             var checksumPath = destinationPath + ".sha256";
-            await File.WriteAllTextAsync(checksumPath, $"{checksum}  {Path.GetFileName(destinationPath)}", ct);
+            await File.WriteAllTextAsync(
+                checksumPath, $"{checksum}  {Path.GetFileName(destinationPath)}", CancellationToken.None);
 
-            // Sync directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             Log.Debug("Wrote {Bytes} bytes with checksum {Checksum} to {Path}",
                 content.Length, checksum[..16], destinationPath);
@@ -486,8 +489,8 @@ public static partial class AtomicFileWriter
             // Move temp to destination
             File.Move(tempPath, destinationPath);
 
-            // Sync directory
-            await SyncDirectoryAsync(directory!, ct);
+            // Sync directory (post-commit: non-cancellable)
+            await SyncCommittedDirectoryAsync(directory!);
 
             // Optionally remove backup
             if (!keepBackup && File.Exists(backupPath))
@@ -573,6 +576,15 @@ public static partial class AtomicFileWriter
         SyncDirectory(directory);
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Fsyncs a directory after the operation it belongs to has already committed (the rename or
+    /// delete has succeeded). This durability step must not observe caller cancellation: throwing
+    /// here would report an already-committed operation as failed, leading callers to retry or
+    /// restore against state that no longer exists.
+    /// </summary>
+    private static Task SyncCommittedDirectoryAsync(string directory)
+        => SyncDirectoryAsync(directory, CancellationToken.None);
 
     private static void SyncDirectory(string directory)
     {

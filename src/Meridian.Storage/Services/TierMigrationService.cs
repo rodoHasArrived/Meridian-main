@@ -329,8 +329,10 @@ public sealed class TierMigrationService : ITierMigrationService
 
             File.Delete(sourcePath);
 
-            // Make the deletion durable so the source cannot reappear after a crash.
-            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(sourcePath), ct);
+            // Make the deletion durable so the source cannot reappear after a crash. This runs
+            // post-commit (the source is already gone), so it must not observe caller cancellation
+            // and report an already-completed migration as failed.
+            await AtomicFileWriter.SyncDirectoryAsync(DirectoryOfOrCurrent(sourcePath), CancellationToken.None);
         }
 
         return new FileMigrationResult(
