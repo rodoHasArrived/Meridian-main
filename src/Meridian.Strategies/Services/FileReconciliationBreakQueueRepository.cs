@@ -164,9 +164,14 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             {
                 await EnsureLoadedAsync(ct).ConfigureAwait(false);
 
-                // Re-key an existing case only when it still lives under the superseded id and no
-                // case has already been created under the current id (which would win by dedupe).
-                if (!_items!.ContainsKey(item.BreakId) && _items.TryGetValue(previousBreakId!, out var existing))
+                // Re-key an existing case only when it still lives under the superseded id, no case
+                // has already been created under the current id (which would win by dedupe), and the
+                // stored case demonstrably identifies the SAME upstream break as the incoming item.
+                // The latter guards Delta==null legacy-fingerprint collisions, where several distinct
+                // breaks share one previousBreakId, from attaching one break's casework to another.
+                if (!_items!.ContainsKey(item.BreakId)
+                    && _items.TryGetValue(previousBreakId!, out var existing)
+                    && LegacyCaseMatchesSource(existing, item))
                 {
                     var migrated = existing with
                     {
@@ -213,6 +218,24 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         // No case to migrate → standard create-if-missing semantics (also a no-op when the current
         // BreakId already exists).
         return await CreateIfMissingAsync(item, ct).ConfigureAwait(false);
+    }
+
+    private static bool LegacyCaseMatchesSource(ReconciliationBreakQueueItem existing, ReconciliationBreakQueueItem incoming)
+    {
+        // Prefer the upstream source break id; fall back to the source reference. Only confirm a match
+        // when both sides carry the identity, so a legacy case whose stored identity differs from (or
+        // cannot be compared to) the incoming break is never re-keyed onto the wrong case.
+        if (!string.IsNullOrWhiteSpace(existing.SourceBreakId) && !string.IsNullOrWhiteSpace(incoming.SourceBreakId))
+        {
+            return string.Equals(existing.SourceBreakId, incoming.SourceBreakId, StringComparison.Ordinal);
+        }
+
+        if (!string.IsNullOrWhiteSpace(existing.SourceReference) && !string.IsNullOrWhiteSpace(incoming.SourceReference))
+        {
+            return string.Equals(existing.SourceReference, incoming.SourceReference, StringComparison.Ordinal);
+        }
+
+        return false;
     }
 
     public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default)

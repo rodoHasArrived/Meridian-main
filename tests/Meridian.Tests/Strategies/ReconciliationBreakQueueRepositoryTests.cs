@@ -119,6 +119,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         {
             BreakId = "statement:old-fingerprint",
             SourceType = "statement",
+            SourceBreakId = "upstream-break-1",
             SourceFingerprint = "old-fingerprint",
             AssignedTo = "controller-a"
         };
@@ -166,6 +167,45 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         // The already-present current case wins; the legacy case is left untouched (no destructive merge).
         (await repo.GetByIdAsync("statement:old")).Should().NotBeNull();
         (await repo.GetByIdAsync("statement:new")).Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_does_not_rekey_a_legacy_case_owned_by_a_different_source_break()
+    {
+        var repo = CreateRepository(out _);
+        // A legacy Delta==null case seeded under a shared fingerprint id, owned by upstream break B.
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:shared-legacy",
+            SourceType = "statement",
+            SourceBreakId = "upstream-break-B",
+            SourceFingerprint = "shared-legacy",
+            AssignedTo = "controller-b"
+        };
+        await repo.CreateIfMissingAsync(legacy);
+
+        // A different upstream break A that collides on the same legacy fingerprint id.
+        var breakA = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:new-A",
+            SourceType = "statement",
+            SourceBreakId = "upstream-break-A",
+            SourceFingerprint = "new-A"
+        };
+
+        var createdA = await repo.CreateOrMigrateAsync(breakA, previousBreakId: "statement:shared-legacy");
+
+        // Break A must not steal break B's case: it is created fresh, and the legacy case is untouched.
+        createdA.Should().BeTrue();
+        (await repo.GetByIdAsync("statement:shared-legacy")).Should().NotBeNull();
+        (await repo.GetByIdAsync("statement:new-A"))!.AssignedTo.Should().BeNull();
+
+        // Break B, sharing the legacy source identity, correctly re-keys its own case.
+        var breakB = legacy with { BreakId = "statement:new-B", SourceFingerprint = "new-B" };
+        var migratedB = await repo.CreateOrMigrateAsync(breakB, previousBreakId: "statement:shared-legacy");
+        migratedB.Should().BeFalse();
+        (await repo.GetByIdAsync("statement:shared-legacy")).Should().BeNull();
+        (await repo.GetByIdAsync("statement:new-B"))!.AssignedTo.Should().Be("controller-b");
     }
 
     [Fact]
