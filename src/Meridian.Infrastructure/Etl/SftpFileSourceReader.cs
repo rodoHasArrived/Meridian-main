@@ -142,7 +142,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     private static void EnsureRemoteDirectory(ISftpClient client, string normalizedDirectory)
     {
         var segments = normalizedDirectory.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var current = normalizedDirectory.StartsWith('/', StringComparison.Ordinal) ? "/" : string.Empty;
+        var current = normalizedDirectory.StartsWith("/", StringComparison.Ordinal) ? "/" : string.Empty;
         foreach (var segment in segments)
         {
             current = current == "/"
