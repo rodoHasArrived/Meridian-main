@@ -9,7 +9,7 @@ posture without forking behavior.
 - New operator UI work belongs in `src/Meridian.Ui/dashboard/`.
 - Shared workstation endpoint and read-model support belongs in
   `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
-- `src/Meridian.Wpf/` product/UI work is deferred until explicitly reactivated; use this guidance only for retained WPF compatibility, validation, and maintenance.
+- `src/Meridian.Wpf/` is an active co-equal operator UI lane whose current focus is web-UI parity (`W8-WPF-PARITY-001`); use this guidance for all WPF work, including new parity surfaces as well as compatibility, validation, and maintenance.
 
 ## View-Model Ownership
 

@@ -54,4 +54,42 @@ public sealed class StreamTopicTests
         default(StreamTopic).Key.Should().Be(StreamTopic.AllQuotesKey);
         default(StreamTopic).SymbolFilter.Should().BeEmpty();
     }
+
+    [Fact]
+    public void Quotes_ArgumentAliasesSymbolFilter()
+    {
+        var topic = StreamTopic.Quotes("aapl,msft");
+
+        topic.Argument.Should().Be("AAPL,MSFT");
+        topic.SymbolFilter.Should().Be(topic.Argument);
+    }
+
+    [Fact]
+    public void ReportRun_KeyedAndTrimmedByRunId()
+    {
+        var topic = StreamTopic.ReportRun("  job-1-20260501  ");
+
+        topic.Key.Should().Be("report-run:job-1-20260501");
+        topic.Argument.Should().Be("job-1-20260501");
+    }
+
+    [Fact]
+    public void ReportRun_SameRunId_AreEqual()
+    {
+        var a = StreamTopic.ReportRun("run-1");
+        var b = StreamTopic.ReportRun("run-1");
+
+        a.Should().Be(b);
+        a.GetHashCode().Should().Be(b.GetHashCode());
+    }
+
+    [Fact]
+    public void ReportRun_IsCaseSensitive_AndDistinctFromQuotes()
+    {
+        // Run ids are opaque — unlike symbols they are not case-folded.
+        StreamTopic.ReportRun("Run-A").Should().NotBe(StreamTopic.ReportRun("run-a"));
+        // A report-run topic never collides with a quotes topic of the same argument.
+        StreamTopic.ReportRun("AAPL").Should().NotBe(StreamTopic.Quotes("AAPL"));
+        (StreamTopic.ReportRun("run-1") != StreamTopic.ReportRun("run-2")).Should().BeTrue();
+    }
 }

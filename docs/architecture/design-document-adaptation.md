@@ -29,7 +29,7 @@ Meridian adapts the design document through these enforceable surfaces:
 | Bounded contexts | MVP and later contexts map to physical design modules as current source, roadmap, and user direction support them. |
 | MVP screen inventory | The design-doc screen inventory maps to current browser evidence paths and retained WPF compatibility evidence. |
 | Module facets | Each design module declares the required `Domain model`, `Application services`, `Contracts / APIs`, `Infrastructure`, `UI components`, and `Tests` facets. |
-| Shared UI direction | Browser, `Ui.Shared`, and `Ui.Services` remain the active shared-first operator surface lanes; WPF product/UI work is deferred and retained for compatibility. |
+| Shared UI direction | Browser and WPF are two active co-equal shared-first operator surface lanes over `Ui.Shared` and `Ui.Services`; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`). |
 | No mobile lane | Mobile applications and mobile-first workflows remain out of scope. |
 
 ## Relationship To Module Conformance

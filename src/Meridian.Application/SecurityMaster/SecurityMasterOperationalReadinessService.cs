@@ -509,6 +509,80 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         return targets;
     }
 
+    private enum DepthTargetEvidenceKind
+    {
+        Provider,
+        Ledger,
+        Governance,
+        Close
+    }
+
+    private sealed record AssetClassDepthTarget(
+        string IdSuffix,
+        string TargetType,
+        string Label,
+        DepthTargetEvidenceKind EvidenceKind,
+        string Source);
+
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTarget>> DepthTargetsByAssetClass =
+        new Dictionary<string, IReadOnlyList<AssetClassDepthTarget>>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Bond"] =
+            [
+                new("factor-corporate-action-evidence", "FactorCorporateActionEvidence", "Factor and corporate-action evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["DirectLoan"] =
+            [
+                new("loan-schedule-evidence", "LoanScheduleEvidence", "Loan schedule and borrower notices", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("commitment-covenant-evidence", "CommitmentCovenantEvidence", "Commitment, unfunded commitment, and covenant evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("paydown-obligation-ledger", "PaydownObligationLedger", "Paydown and obligation ledger support", DepthTargetEvidenceKind.Ledger, "LoanAccountingProjector"),
+                new("direct-lending-rule-kernel", "DirectLendingRuleKernel", "Direct-lending F# rule kernel evidence", DepthTargetEvidenceKind.Ledger, "Meridian.FSharp.DirectLending.Aggregates"),
+            ],
+            ["StructuredCredit"] =
+            [
+                new("trustee-servicer-remittance", "StructuredCreditTrusteeEvidence", "Trustee, servicer, and cash remittance evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("factor-schedule", "FactorScheduleEvidence", "Factor schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("collateral-tape", "StructuredCollateralTape", "Collateral tape evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("valuation-source", "StructuredValuationEvidence", "Dealer or valuation-source evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["PrivateFundInterest"] =
+            [
+                new("administrator-gp-statement", "FundAdministratorStatement", "Administrator or GP statement", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("capital-call-distribution", "CapitalCallDistributionEvidence", "Capital call and distribution notice evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("nav-statement", "PrivateFundNavEvidence", "NAV statement evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("capital-account-schedule", "CapitalAccountScheduleEvidence", "Capital account schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["PrivateCompanyEquity"] =
+            [
+                new("cap-table", "CapTableEvidence", "Cap table or transfer-agent evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("financing-share-class", "FinancingShareClassEvidence", "Financing and share-class documents", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("valuation", "PrivateCompanyValuationEvidence", "Valuation memo or 409A evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("transaction-exit-dividend", "TransactionExitDividendEvidence", "Transaction, exit, and dividend evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["RealEstateHolding"] =
+            [
+                new("property-manager", "PropertyManagerEvidence", "Property manager statement evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("rent-roll-lease", "RentRollLeaseEvidence", "Rent roll and lease schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("appraisal", "RealEstateAppraisalEvidence", "Appraisal evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("debt-service-ownership", "DebtServiceOwnershipEvidence", "Debt-service and ownership/SPV evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["CommitmentGuarantee"] =
+            [
+                new("agreement", "CommitmentAgreementEvidence", "Commitment or guarantee agreement", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("draw-usage", "DrawUsageNoticeEvidence", "Draw or usage notice evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("fee-accrual", "FeeAccrualScheduleEvidence", "Fee and accrual schedule evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("collateral-covenant", "CollateralCovenantEvidence", "Collateral and covenant evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("release-expiry", "ReleaseExpiryEvidence", "Release or expiry evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+            ],
+            ["CustomAsset"] =
+            [
+                new("profile-lineage", "AssetProfileLineage", "Approved profile lineage", DepthTargetEvidenceKind.Governance, "SecurityAssetProfileGovernanceService"),
+                new("servicer-trustee-evidence", "ServicerTrusteeEvidence", "Servicer, trustee, warehouse, and factor evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("valuation-nav-evidence", "StructuredValuationEvidence", "NAV, dealer pricing, capital call, and distribution evidence", DepthTargetEvidenceKind.Provider, "ProviderLedgerReconciliation"),
+                new("obligation-close-evidence", "ObligationCloseEvidence", "Obligation schedule and close-readiness evidence", DepthTargetEvidenceKind.Close, "FundAccountCloseReadinessService"),
+            ],
+        };
+
     private static void AddAssetClassDepthTargets(
         List<MultiAssetDrillThroughTargetDto> targets,
         MultiAssetCoverageSpecification spec,
@@ -550,6 +624,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         {
             evidenceLink ??= BestEvidenceLink(evidence, "ProviderEvidence");
         }
+    }
 
         var status = targetSpec.UseCloseEvidenceStatus
             ? EvaluateTargetStatus(evidence, "CloseReadiness") ?? RequirementStatus(requirements, "ProviderEvidence")

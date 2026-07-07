@@ -11,6 +11,7 @@ public sealed class ProviderIntegrationStagingReviewService
 
     private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
 
     public ProviderIntegrationStagingReviewService(
         IProviderIntegrationManifestStore store,
@@ -36,6 +37,35 @@ public sealed class ProviderIntegrationStagingReviewService
             "staging-review",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
             async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetReviewAsync),
+            connectionId);
+        try
+        {
+            return await GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetReviewAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationStagingReviewDto> GetReviewCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();

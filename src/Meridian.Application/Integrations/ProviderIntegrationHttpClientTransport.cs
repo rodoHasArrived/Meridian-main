@@ -30,6 +30,35 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                 Capability: request is null ? null : request.Method.ToString()),
             async () =>
     {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for {Method} {Path}.",
+            nameof(SendAsync),
+            request?.Method,
+            request?.Path);
+        try
+        {
+            return await SendCoreAsync(request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for {Method} {Path}.",
+                nameof(SendAsync),
+                request?.Method,
+                request?.Path);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationHttpResponse> SendCoreAsync(
+        ProviderIntegrationHttpRequest request,
+        CancellationToken ct = default)
+    {
         ArgumentNullException.ThrowIfNull(request);
 
         using var message = new HttpRequestMessage(ToHttpMethod(request.Method), BuildRequestUri(request));

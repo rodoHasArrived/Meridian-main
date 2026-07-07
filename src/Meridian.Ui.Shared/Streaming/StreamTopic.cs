@@ -4,10 +4,11 @@ using System.Linq;
 namespace Meridian.Ui.Shared.Streaming;
 
 /// <summary>
-/// Identifies a quote-stream fan-out topic: the canonical, order- and case-independent
-/// set of symbols a subscriber wants, or the "all tracked symbols" sentinel. Topic
-/// equality is by <see cref="Key"/>, so subscribers requesting the same symbols — in any
-/// order or case — share one topic (and therefore one snapshot build per fan-out tick).
+/// Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing.
+/// The <see cref="Key"/> encodes the topic kind and its argument: <c>quotes:&lt;symbols&gt;</c> for a
+/// canonical, order- and case-independent symbol set (or the "all tracked symbols" sentinel), and
+/// <c>report-run:&lt;runId&gt;</c> for a single reporting run. Topic equality is by <see cref="Key"/>, so
+/// equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
 /// </summary>
 public readonly struct StreamTopic : IEquatable<StreamTopic>
 {
@@ -15,12 +16,12 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
     public const string AllQuotesKey = "quotes:*";
 
     private readonly string? _key;
-    private readonly string? _symbolFilter;
+    private readonly string? _argument;
 
-    private StreamTopic(string key, string symbolFilter)
+    private StreamTopic(string key, string argument)
     {
         _key = key;
-        _symbolFilter = symbolFilter;
+        _argument = argument;
     }
 
     /// <summary>
@@ -30,10 +31,13 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
     public string Key => _key ?? AllQuotesKey;
 
     /// <summary>
-    /// The comma-joined symbol filter to pass to the snapshot builder, or empty string
-    /// for "all tracked symbols".
+    /// The argument passed to this topic's snapshot builder: the comma-joined symbol filter for
+    /// quote topics (empty string = "all tracked symbols"), or the run id for report-run topics.
     /// </summary>
-    public string SymbolFilter => _symbolFilter ?? string.Empty;
+    public string Argument => _argument ?? string.Empty;
+
+    /// <summary>Back-compat alias for quote consumers: the symbol filter for a quotes topic.</summary>
+    public string SymbolFilter => Argument;
 
     /// <summary>Topic covering every tracked symbol.</summary>
     public static StreamTopic AllQuotes { get; } = new(AllQuotesKey, string.Empty);
@@ -65,6 +69,17 @@ public readonly struct StreamTopic : IEquatable<StreamTopic>
 
         var canonical = string.Join(',', symbols);
         return new StreamTopic($"quotes:{canonical}", canonical);
+    }
+
+    /// <summary>
+    /// Build a report-run topic keyed by the exact run id (trimmed). Run ids are opaque
+    /// identifiers, so — unlike symbols — they are not case- or order-canonicalized. One run id
+    /// maps to exactly one topic.
+    /// </summary>
+    public static StreamTopic ReportRun(string runId)
+    {
+        var trimmed = (runId ?? string.Empty).Trim();
+        return new StreamTopic($"report-run:{trimmed}", trimmed);
     }
 
     public bool Equals(StreamTopic other) => string.Equals(Key, other.Key, StringComparison.Ordinal);

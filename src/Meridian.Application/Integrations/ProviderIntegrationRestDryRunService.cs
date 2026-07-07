@@ -34,6 +34,7 @@ public sealed class ProviderIntegrationRestDryRunService
     private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly IProviderIntegrationHttpTransport transport;
+    private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
 
     public ProviderIntegrationRestDryRunService(
         IProviderIntegrationManifestStore store,
@@ -65,6 +66,36 @@ public sealed class ProviderIntegrationRestDryRunService
                 EndpointKey: request?.EndpointKey,
                 SyncRunId: request?.SyncRunId),
             async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
+            nameof(RunRestDryRunAsync),
+            request?.ManifestId,
+            request?.ConnectionId);
+        try
+        {
+            return await RunRestDryRunCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
+                nameof(RunRestDryRunAsync),
+                request?.ManifestId,
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunCoreAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SyncRunId);

@@ -46,6 +46,6 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-The browser workstation is the active operator UI lane. WPF product/UI work is deferred until
-explicitly reactivated; keep retained WPF compatibility behind shared contracts, local/web API
-endpoints, or shared read models.
+The browser workstation and the reactivated WPF desktop workstation are two active co-equal operator
+UI lanes. Keep both behind shared contracts, local/web API endpoints, or shared read models so
+neither client forks product state.

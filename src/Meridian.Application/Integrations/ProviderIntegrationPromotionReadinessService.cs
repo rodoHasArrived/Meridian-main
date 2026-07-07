@@ -37,6 +37,35 @@ public sealed class ProviderIntegrationPromotionReadinessService
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
             async () =>
     {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(PreviewAsync),
+            connectionId);
+        try
+        {
+            return await PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(PreviewAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
         ct.ThrowIfCancellationRequested();
         var identityPreview = await identityResolution
             .PreviewAsync(tenantId, connectionId, recentRunLimit, ct)

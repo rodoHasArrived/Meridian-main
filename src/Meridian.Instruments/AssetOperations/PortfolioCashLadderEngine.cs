@@ -264,10 +264,7 @@ public static class PortfolioCashLadderEngine
 
         var latestRun = SelectProjectionRun(operations);
         var flows = LatestRunFlows(operations);
-        var latestTerms = operations.TermsHistory
-            .OrderByDescending(static row => row.EffectiveDate)
-            .ThenByDescending(static row => row.RecordedAt)
-            .FirstOrDefault();
+        var latestTerms = SelectTermsForRun(operations, latestRun);
 
         var rows = new List<PortfolioCashLadderContributionDto>();
         foreach (var flow in flows)
@@ -368,7 +365,7 @@ public static class PortfolioCashLadderEngine
         decimal rateShift)
     {
         var floatingSecurityIds = inputs.Positions
-            .Where(static position => LatestTermsIndicateFloatingRate(position.Operations))
+            .Where(static position => TermsIndicateFloatingRate(position.Operations, SelectProjectionRun(position.Operations)))
             .Select(static position => position.Operations.Subject.SecurityId)
             .ToHashSet();
         var flowRates = BuildFlowRateIndex(inputs.Positions);
@@ -412,7 +409,10 @@ public static class PortfolioCashLadderEngine
         var callDateBySecurity = new Dictionary<Guid, DateOnly>();
         foreach (var position in inputs.Positions)
         {
-            var callDate = ReadLatestTermsDate(position.Operations, "callDate", "mandatoryPutDate", "preRefundDate");
+            var callDate = ReadTermsDateForRun(
+                position.Operations,
+                SelectProjectionRun(position.Operations),
+                "callDate", "mandatoryPutDate", "preRefundDate");
             if (callDate is { } date && date >= windowStart && date < windowEnd)
             {
                 callDateBySecurity[position.Operations.Subject.SecurityId] = date;
@@ -483,10 +483,7 @@ public static class PortfolioCashLadderEngine
         string currency)
     {
         var latestRun = SelectProjectionRun(operations);
-        var latestTerms = operations.TermsHistory
-            .OrderByDescending(static row => row.EffectiveDate)
-            .ThenByDescending(static row => row.RecordedAt)
-            .FirstOrDefault();
+        var latestTerms = SelectTermsForRun(operations, latestRun);
         return new PortfolioCashLadderContributionDto(
             operations.Subject.SecurityId,
             operations.Subject.DisplayName,
@@ -744,9 +741,9 @@ public static class PortfolioCashLadderEngine
             ? ExpenseLane
             : CapitalLane;
 
-    private static bool LatestTermsIndicateFloatingRate(AssetOperationsDetailDto operations)
+    private static bool TermsIndicateFloatingRate(AssetOperationsDetailDto operations, AssetCashFlowProjectionRunDto? run)
     {
-        var payload = LatestTermsPayload(operations);
+        var payload = TermsPayloadForRun(operations, run);
         if (payload is not { } terms)
         {
             return false;
@@ -785,9 +782,12 @@ public static class PortfolioCashLadderEngine
         return index;
     }
 
-    private static DateOnly? ReadLatestTermsDate(AssetOperationsDetailDto operations, params string[] propertyNames)
+    private static DateOnly? ReadTermsDateForRun(
+        AssetOperationsDetailDto operations,
+        AssetCashFlowProjectionRunDto? run,
+        params string[] propertyNames)
     {
-        var payload = LatestTermsPayload(operations);
+        var payload = TermsPayloadForRun(operations, run);
         if (payload is not { } terms)
         {
             return null;
@@ -814,13 +814,46 @@ public static class PortfolioCashLadderEngine
         return null;
     }
 
-    private static JsonElement? LatestTermsPayload(AssetOperationsDetailDto operations)
+    /// <summary>
+    /// Selects the terms version that produced the chosen run's cash flows: the latest terms
+    /// effective on/before the run's as-of and recorded on/before it ran. This keeps the early-call
+    /// and rate scenarios reading the same terms the selected flows came from — important when
+    /// <see cref="SelectProjectionRun"/> falls back to an earlier completed run because a newer run
+    /// (with newer terms) failed — and keeps the reported projection/terms lineage consistent.
+    /// </summary>
+    private static AssetTermsVersionDto? SelectTermsForRun(
+        AssetOperationsDetailDto operations,
+        AssetCashFlowProjectionRunDto? run)
     {
-        var latestTerms = operations.TermsHistory
-            .OrderByDescending(static row => row.EffectiveDate)
-            .ThenByDescending(static row => row.RecordedAt)
-            .FirstOrDefault();
-        return latestTerms?.ExtensionPayload is { } payload && payload.ValueKind == JsonValueKind.Object
+        var terms = operations.TermsHistory;
+        if (run is null)
+        {
+            return terms
+                .OrderByDescending(static row => row.EffectiveDate)
+                .ThenByDescending(static row => row.RecordedAt)
+                .FirstOrDefault();
+        }
+
+        return terms
+                   .Where(row => row.EffectiveDate <= run.ProjectionAsOf && row.RecordedAt <= run.GeneratedAt)
+                   .OrderByDescending(static row => row.EffectiveDate)
+                   .ThenByDescending(static row => row.RecordedAt)
+                   .FirstOrDefault()
+               ?? terms
+                   .Where(row => row.RecordedAt <= run.GeneratedAt)
+                   .OrderByDescending(static row => row.EffectiveDate)
+                   .ThenByDescending(static row => row.RecordedAt)
+                   .FirstOrDefault()
+               ?? terms
+                   .OrderByDescending(static row => row.EffectiveDate)
+                   .ThenByDescending(static row => row.RecordedAt)
+                   .FirstOrDefault();
+    }
+
+    private static JsonElement? TermsPayloadForRun(AssetOperationsDetailDto operations, AssetCashFlowProjectionRunDto? run)
+    {
+        var terms = SelectTermsForRun(operations, run);
+        return terms?.ExtensionPayload is { } payload && payload.ValueKind == JsonValueKind.Object
             ? payload
             : null;
     }

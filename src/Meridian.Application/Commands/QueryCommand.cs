@@ -19,10 +19,9 @@ internal sealed class QueryCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return args.Any(a => a.Equals("--query", StringComparison.OrdinalIgnoreCase));
-    }
+    public IReadOnlyList<string> Triggers { get; } = ["--query"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

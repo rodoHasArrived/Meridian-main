@@ -68,7 +68,7 @@ The best ideas for Meridian aren't isolated features. They're extensions that **
 ## Project Context
 
 **What Meridian is:**
-A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. The browser workstation under `src/Meridian.Ui/dashboard/` is the active operator UI lane; WPF product/UI work is deferred until explicitly reactivated.
+A provider-agnostic .NET 10 platform for evidence-backed investment operations: trusted data, research, paper validation, execution, books, reconciliation, approvals, and governed reporting. The browser workstation under `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation under `src/Meridian.Wpf/` are two active co-equal operator UI lanes over shared contracts.
 
 **Tech stack:** .NET 10, C# infrastructure, F# domain models, browser workstation UI, WPF desktop shell, Docker, Prometheus/Grafana, OpenTelemetry, Bounded Channels, WAL storage, JSONL + Parquet, GitHub Actions CI/CD.
 

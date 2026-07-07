@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
+import { useReportRunStream } from "@/hooks/use-report-run-stream";
 import { Select } from "@/components/ui/select";
 import { SeverityBadge } from "@/components/operations";
 import { registerCommandPaletteActions } from "@/components/meridian/command-palette.actions";
@@ -257,6 +258,17 @@ function ReportingStarterKitChooser({
 
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
+// The report-run live chip renders in the "Live" state whenever the SSE channel is healthy,
+// so this budget only governs its internal age tick; a modest interval keeps the dot lively.
+export const REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS = 15_000;
+
+// Governed report-pack workflow rows carry a `report-pack:{id}` run id (server ProjectWorkflowRun)
+// that the run-stream endpoint cannot resolve — it only knows IReportingOrchestrationService run
+// ids and 404s on the workflow scheme. Only generic reporting runs are streamable, so selection
+// skips workflow rows instead of opening an SSE channel that would just 404-loop.
+function isStreamableReportingRun(run: ReportingRunStatusRow): boolean {
+  return !run.id.startsWith("report-pack:");
+}
 const defaultExportsReportRunRequester = "browser-workstation";
 const EXPORTS_VIEW_STATE_SCREEN = "reporting-exports";
 const exportsViewReflectDebounceMs = 300;
@@ -311,6 +323,19 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
     [data?.reporting?.dailyWork, vm.runStatusRows, vm.templateRows]
   );
+  // Watch the most recent run over the report-run SSE stream. This is additive — the 30s
+  // reporting poll is unchanged and remains the source of truth for the rendered rows. When the
+  // channel is healthy it surfaces that run's approval/status transitions instantly; while it is
+  // unhealthy (or where EventSource is unavailable, e.g. in tests) nothing extra renders.
+  const watchedRunId = vm.runStatusRows.find(isStreamableReportingRun)?.id ?? null;
+  const { status: watchedRunStreamStatus, healthy: watchedRunStreamHealthy } = useReportRunStream(watchedRunId);
+  // When the watched run's stream is healthy, its pushed status supersedes the stale polled status
+  // for that row, so the prominent badge reflects the live approval state instead of contradicting
+  // the live line beneath it until the next 30s poll catches up.
+  const isWatchedRunLive = (run: ReportingRunStatusRow): boolean =>
+    run.id === watchedRunId && watchedRunStreamHealthy && watchedRunStreamStatus !== null;
+  const resolveRowStatus = (run: ReportingRunStatusRow): string =>
+    isWatchedRunLive(run) && watchedRunStreamStatus ? watchedRunStreamStatus.status : run.status;
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
   const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
@@ -2103,11 +2128,26 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono text-sm text-foreground">{run.id}</span>
-                  <SeverityBadge status={run.status} label={run.status} />
+                  <div className="flex items-center gap-2">
+                    {isWatchedRunLive(run) ? (
+                      <FreshnessChip
+                        live
+                        label={`Run ${run.id} status`}
+                        timestamp={null}
+                        staleBudgetMs={REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS}
+                      />
+                    ) : null}
+                    <SeverityBadge status={resolveRowStatus(run)} label={resolveRowStatus(run)} />
+                  </div>
                 </div>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
                 </p>
+                {isWatchedRunLive(run) && watchedRunStreamStatus ? (
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="report-run-live-status">
+                    Live · attempt {watchedRunStreamStatus.attemptCount} · streamed ahead of the 30s poll
+                  </p>
+                ) : null}
                 <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${run.id} audit metadata`}>
                     <div>
                       <dt className="text-[11px] uppercase text-muted-foreground">Run ID</dt>

@@ -40,6 +40,34 @@ public sealed class ProviderIntegrationReconciliationHandoffService
                 ConnectionId: request?.ConnectionId),
             async () =>
     {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(HandoffAsync),
+            request?.ConnectionId);
+        try
+        {
+            return await HandoffCoreAsync(tenantId, request, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(HandoffAsync),
+                request?.ConnectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffCoreAsync(
+        string? tenantId,
+        ProviderIntegrationReconciliationHandoffRequestDto request,
+        CancellationToken ct = default)
+    {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.RequestedBy);
@@ -181,6 +209,34 @@ public sealed class ProviderIntegrationReconciliationHandoffService
             "reconciliation-handoff-history",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
             async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetHistoryAsync),
+            connectionId);
+        try
+        {
+            return await GetHistoryCoreAsync(tenantId, connectionId, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetHistoryAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationReconciliationHandoffHistoryDto> GetHistoryCoreAsync(
+        string? tenantId,
+        string connectionId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();

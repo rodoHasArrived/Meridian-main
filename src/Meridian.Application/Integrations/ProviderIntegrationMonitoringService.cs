@@ -11,6 +11,7 @@ public sealed class ProviderIntegrationMonitoringService
 
     private readonly ILogger<ProviderIntegrationMonitoringService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationMonitoringService> logger;
 
     public ProviderIntegrationMonitoringService(
         IProviderIntegrationManifestStore store,
@@ -36,6 +37,35 @@ public sealed class ProviderIntegrationMonitoringService
             "monitor-connection",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
             async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetConnectionMonitorAsync),
+            connectionId);
+        try
+        {
+            return await GetConnectionMonitorCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetConnectionMonitorAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         var evidence = await BuildConnectionSyncRunEvidenceAsync(
             tenantId,
@@ -78,6 +108,35 @@ public sealed class ProviderIntegrationMonitoringService
             "monitor-sync-runs",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
             async () =>
+    {
+        logger.LogDebug(
+            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
+            nameof(GetConnectionSyncRunsAsync),
+            connectionId);
+        try
+        {
+            return await GetConnectionSyncRunsCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
+                nameof(GetConnectionSyncRunsAsync),
+                connectionId);
+            throw;
+        }
+    }
+
+    private async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsCoreAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         var evidence = await BuildConnectionSyncRunEvidenceAsync(
             tenantId,

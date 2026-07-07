@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
@@ -99,23 +100,18 @@ export function WatchlistScreen() {
   const inCompanionPane = isCompanionPaneRoute(useLocation().pathname);
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-primary" />
+          Symbol watchlist
+        </span>
+      }
+      scope="Data Lane"
+      description="Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes."
+      actions={inCompanionPane ? undefined : <PopOutPaneButton paneId="watchlist" />}
+    >
       <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="eyebrow-label">Data Lane</div>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Symbol watchlist
-              </CardTitle>
-              <CardDescription>
-                Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
-              </CardDescription>
-            </div>
-            {inCompanionPane ? null : <PopOutPaneButton paneId="watchlist" />}
-          </div>
-        </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
@@ -379,7 +375,7 @@ export function WatchlistScreen() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ScreenLayout>
   );
 }
 
