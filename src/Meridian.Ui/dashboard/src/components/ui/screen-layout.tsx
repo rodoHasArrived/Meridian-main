@@ -9,11 +9,21 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * `ScreenLayout` — the one canonical screen skeleton every operator route inherits.
+ * `ScreenLayout` — the canonical skeleton for secondary and detail routes.
  *
- * The problem it solves: before this, every screen invented its own layout, so an
- * operator's eyes had to re-learn where things were on every route. `ScreenLayout`
- * fixes a four-zone skeleton so the same kind of thing is always in the same place:
+ * Scope in practice: the seven top-level workspace screens (Trading, Portfolio,
+ * Accounting, Reporting, Strategy, Data, Settings) render a richer, bespoke header —
+ * a `*WorkbenchContext` band and/or a metric-snapshot grid — that carries ambient
+ * operating scope and cross-workspace continuity, so they do not adopt this skeleton.
+ * `ScreenLayout` is the shared skeleton for the layer below them: secondary and detail
+ * routes (trial balance, asset/journal detail, price alerts, watchlist, covered call,
+ * live quotes, quant lab, family office, daily control tower, formula workbench…),
+ * which is where a consistent four-zone layout earns its keep.
+ *
+ * The problem it solves: absent a shared skeleton, every secondary route invents its
+ * own layout, so an operator's eyes have to re-learn where things are on each one.
+ * `ScreenLayout` fixes a four-zone skeleton so the same kind of thing is always in the
+ * same place:
  *
  *  1. **Header zone** — screen title, ambient scope, and the 1–3 primary actions
  *     (always top-right, always the same place).
@@ -160,8 +170,10 @@ function FocusSignalRow({ signals }: { signals: FocusSignal[] }) {
 }
 
 /**
- * The canonical four-zone screen skeleton. See {@link ScreenLayoutProps} for the
- * named slots. Migrate screens onto this so every route reads the same way.
+ * The canonical four-zone screen skeleton for secondary/detail routes. See
+ * {@link ScreenLayoutProps} for the named slots. Migrate secondary routes onto this so
+ * they all read the same way; top-level workspace screens keep their WorkbenchContext
+ * header (see the module doc comment above).
  */
 export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(function ScreenLayout(
   {

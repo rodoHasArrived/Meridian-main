@@ -4,6 +4,7 @@ import {
   type AppShellLinkedContextItem
 } from "@/app-shell.linked-context";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { pluralizeCount } from "@/lib/format";
 import type { AccountingWorkspaceResponse } from "@/types";
 
 export function buildAccountingLinkedContextItem(
@@ -40,5 +41,5 @@ export function buildAccountingLinkedContextItem(
 }
 
 function formatAccountingLinkedContextCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }

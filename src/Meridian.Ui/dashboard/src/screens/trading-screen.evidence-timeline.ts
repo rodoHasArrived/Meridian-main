@@ -1,4 +1,5 @@
 import { pushEvidenceTimelineCandidate, type EvidenceTimelineCandidate } from "@/app-shell.evidence-timeline";
+import { pluralizeCount } from "@/lib/format";
 import type { OperatorFocusCandidateTone } from "@/app-shell.operator-focus";
 import { routeForOperatorWorkItem, workspaceLabelForRoute } from "@/app-shell.workflow-routing";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -129,5 +130,5 @@ function toneFromTimelineWorkItem(tone: OperatorWorkItem["tone"]): OperatorFocus
 }
 
 function formatTradingEvidenceCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }
