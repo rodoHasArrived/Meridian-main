@@ -9,7 +9,6 @@ public sealed class ProviderIntegrationSchemaDriftService
 {
     private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
 
     public ProviderIntegrationSchemaDriftService(
         IProviderIntegrationManifestStore store,
@@ -38,32 +37,7 @@ public sealed class ProviderIntegrationSchemaDriftService
                 Capability: request is null ? null : request.Capability.ToString(),
                 EndpointKey: request?.EndpointKey,
                 SyncRunId: request?.SyncRunId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(CheckAsync),
-            request?.ManifestId,
-            request?.ConnectionId);
-        try
-        {
-            return await CheckCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(CheckAsync),
-                request?.ManifestId,
-                request?.ConnectionId);
-            throw;
-        }
-    }
+            () => CheckCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckCoreAsync(
         string? tenantId,
@@ -153,7 +127,7 @@ public sealed class ProviderIntegrationSchemaDriftService
             ShouldPauseCapability: critical,
             RecordsInspected: records.Count,
             Issues: issues);
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

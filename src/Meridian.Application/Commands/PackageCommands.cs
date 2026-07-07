@@ -26,6 +26,9 @@ internal sealed class PackageCommands : ICliCommand
             CliCommandRoute.Flag("--validate-package", RunValidateCommandAsync));
     }
 
+    public IReadOnlyList<string> Triggers { get; } =
+        ["--package", "--import-package", "--list-package", "--validate-package"];
+
     public bool CanHandle(string[] args) => _routes.CanHandle(args);
 
     public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)

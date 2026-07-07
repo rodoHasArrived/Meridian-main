@@ -13,7 +13,6 @@ public sealed class ProviderIntegrationDryRunService
 {
     private const string ManualCsvEndpointKey = "manual-csv-upload";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-    private readonly ILogger<ProviderIntegrationDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationDryRunService> logger;
 
@@ -44,32 +43,7 @@ public sealed class ProviderIntegrationDryRunService
                 Capability: request is null ? null : request.Capability.ToString(),
                 EndpointKey: ManualCsvEndpointKey,
                 SyncRunId: request?.SyncRunId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(RunManualCsvDryRunAsync),
-            request?.ManifestId,
-            request?.ConnectionId);
-        try
-        {
-            return await RunManualCsvDryRunCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(RunManualCsvDryRunAsync),
-                request?.ManifestId,
-                request?.ConnectionId);
-            throw;
-        }
-    }
+            () => RunManualCsvDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationDryRunResultDto> RunManualCsvDryRunCoreAsync(
         string? tenantId,
@@ -258,7 +232,7 @@ public sealed class ProviderIntegrationDryRunService
             allIssues);
         await SaveSyncRunAsync(scopedStore, request, manifest, connection, payloadId, result, ct).ConfigureAwait(false);
         return result;
-    }).ConfigureAwait(false);
+    }
 
     private Task SaveSyncRunAsync(
         IProviderIntegrationManifestStore scopedStore,

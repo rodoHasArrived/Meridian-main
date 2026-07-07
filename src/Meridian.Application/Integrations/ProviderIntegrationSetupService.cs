@@ -8,7 +8,6 @@ public sealed class ProviderIntegrationSetupService
 {
     private readonly ILogger<ProviderIntegrationSetupService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationSetupService> logger;
 
     public ProviderIntegrationSetupService(
         IProviderIntegrationManifestStore store,
@@ -34,32 +33,7 @@ public sealed class ProviderIntegrationSetupService
                 TenantId: tenantId,
                 ManifestId: request?.Manifest?.ManifestId,
                 ConnectionId: request?.Connection?.ConnectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(SaveDraftAsync),
-            request?.Manifest?.ManifestId,
-            request?.Connection?.ConnectionId);
-        try
-        {
-            return await SaveDraftCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(SaveDraftAsync),
-                request?.Manifest?.ManifestId,
-                request?.Connection?.ConnectionId);
-            throw;
-        }
-    }
+            () => SaveDraftCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftCoreAsync(
         string? tenantId,
@@ -106,7 +80,7 @@ public sealed class ProviderIntegrationSetupService
             savedConnection.State,
             readiness,
             "Provider integration setup draft saved.");
-    }).ConfigureAwait(false);
+    }
 
     private static void ValidateSetupScope(
         ProviderIntegrationManifestDto manifest,

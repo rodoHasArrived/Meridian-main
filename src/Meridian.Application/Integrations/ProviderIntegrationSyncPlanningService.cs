@@ -15,7 +15,6 @@ public sealed class ProviderIntegrationSyncPlanningService
 
     private readonly ILogger<ProviderIntegrationSyncPlanningService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationSyncPlanningService> logger;
 
     public ProviderIntegrationSyncPlanningService(
         IProviderIntegrationManifestStore store,
@@ -40,30 +39,7 @@ public sealed class ProviderIntegrationSyncPlanningService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ConnectionId: request?.ConnectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(PlanAsync),
-            request?.ConnectionId);
-        try
-        {
-            return await PlanCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(PlanAsync),
-                request?.ConnectionId);
-            throw;
-        }
-    }
+            () => PlanCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationSyncPlanDto> PlanCoreAsync(
         string? tenantId,
@@ -98,7 +74,7 @@ public sealed class ProviderIntegrationSyncPlanningService
             items,
             DueCount: items.Count(item => item.IsDue),
             BlockedCount: items.Count(item => item.IsBlocked));
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

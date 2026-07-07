@@ -14,7 +14,6 @@ public sealed class ProviderIntegrationSyncOrchestrationService
     private readonly ProviderIntegrationSyncPlanningService planner;
     private readonly ProviderIntegrationRestDryRunService restDryRun;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationSyncOrchestrationService> logger;
 
     public ProviderIntegrationSyncOrchestrationService(
         ProviderIntegrationSyncPlanningService planner,
@@ -43,30 +42,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ConnectionId: request?.ConnectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(RunDueAsync),
-            request?.ConnectionId);
-        try
-        {
-            return await RunDueCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(RunDueAsync),
-                request?.ConnectionId);
-            throw;
-        }
-    }
+            () => RunDueCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationRunDueSyncResultDto> RunDueCoreAsync(
         string? tenantId,
@@ -113,7 +89,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             StartedCount: items.Count(item => item.Started),
             SkippedCount: items.Count(item => item.Skipped),
             items);
-    }).ConfigureAwait(false);
+    }
 
     private async Task<ProviderIntegrationRunDueSyncItemResultDto> RunPlanItemAsync(
         string? tenantId,

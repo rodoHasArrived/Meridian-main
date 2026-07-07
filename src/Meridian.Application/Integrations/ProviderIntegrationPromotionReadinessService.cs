@@ -35,30 +35,7 @@ public sealed class ProviderIntegrationPromotionReadinessService
             logger,
             "promotion-readiness-preview",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(PreviewAsync),
-            connectionId);
-        try
-        {
-            return await PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(PreviewAsync),
-                connectionId);
-            throw;
-        }
-    }
+            () => PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationPromotionReadinessPreviewDto> PreviewCoreAsync(
         string? tenantId,
@@ -86,7 +63,7 @@ public sealed class ProviderIntegrationPromotionReadinessService
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReadyForReconciliation),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.ReviewRequired),
             rows.Count(row => row.Status == ProviderIntegrationPromotionReadinessStatusDto.Blocked));
-    }).ConfigureAwait(false);
+    }
 
     private static ProviderIntegrationPromotionReadinessRowDto BuildReadinessRow(
         ProviderIntegrationStagingIdentityResolutionRowDto row)

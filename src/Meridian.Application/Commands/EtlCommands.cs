@@ -31,6 +31,9 @@ internal sealed class EtlCommands : ICliCommand
                 RunJobAsync));
     }
 
+    public IReadOnlyList<string> Triggers { get; } =
+        ["--etl-import", "--etl-export", "--etl-roundtrip", "--etl-resume", "--etl-preview", "--etl-list-files", "--etl-test-connection"];
+
     public bool CanHandle(string[] args) => _routes.CanHandle(args);
 
     public Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
@@ -215,7 +218,7 @@ internal sealed class EtlCommands : ICliCommand
         };
 }
 
-internal enum EtlInspectionMode
+public enum EtlInspectionMode
 {
     None,
     Preview,
