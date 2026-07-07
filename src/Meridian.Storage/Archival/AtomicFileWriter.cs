@@ -84,13 +84,15 @@ public static partial class AtomicFileWriter
         {
             // Write to temp file
             await File.WriteAllTextAsync(tempPath, content, Encoding.UTF8, ct);
+
+            // Sync the temp file to disk while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
-
-            // Sync the temp file to disk
-            await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
@@ -130,13 +132,15 @@ public static partial class AtomicFileWriter
         {
             // Write to temp file
             await File.WriteAllBytesAsync(tempPath, content, ct);
+
+            // Sync the temp file to disk while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
-
-            // Sync the temp file to disk
-            await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
@@ -184,13 +188,15 @@ public static partial class AtomicFileWriter
                 await writeAction(writer);
                 await writer.FlushAsync();
             }
+
+            // Sync the temp file while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
-
-            // Sync the temp file
-            await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
@@ -240,13 +246,14 @@ public static partial class AtomicFileWriter
                 await tempStream.FlushAsync(ct);
             }
 
+            // Sync the temp file to disk while it is still writable, before copying any
+            // (possibly read-only) security metadata from the destination onto it.
+            await SyncFileAsync(tempPath, ct);
+
             if (destinationExists)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
-
-            // Sync the temp file to disk before publishing it.
-            await SyncFileAsync(tempPath, ct);
 
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);

@@ -313,16 +313,8 @@ public sealed class TierMigrationService : ITierMigrationService
         // Delete source if requested
         if (options.DeleteSource)
         {
-            // Force the migrated file's data blocks to physical disk. The copy above writes only
-            // through the OS cache, so a crash immediately after deleting the source could lose
-            // the data irrecoverably.
-            await using (var fs = new FileStream(
-                targetPath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
-            {
-                fs.Flush(flushToDisk: true);
-            }
-
-            // Persist the target directory metadata (the newly created file entry).
+            // The migrated file's data blocks were already fsynced by CopyFileAsync. Persist the
+            // target directory metadata (the newly created file entry) so it survives a crash.
             await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(targetPath)!, ct);
 
             // Validate the migrated file actually landed on disk before removing the source of
@@ -356,13 +348,22 @@ public sealed class TierMigrationService : ITierMigrationService
 
         if (tierConfig.Compression == CompressionCodec.Gzip)
         {
-            await using var gzip = new GZipStream(targetStream, CompressionLevel.Optimal);
-            await sourceStream.CopyToAsync(gzip, ct);
+            // leaveOpen so the GZipStream trailer is flushed on dispose without closing
+            // targetStream before we fsync it below.
+            await using (var gzip = new GZipStream(targetStream, CompressionLevel.Optimal, leaveOpen: true))
+            {
+                await sourceStream.CopyToAsync(gzip, ct);
+            }
         }
         else
         {
             await sourceStream.CopyToAsync(targetStream, ct);
         }
+
+        // Force the migrated data blocks to physical disk so callers that delete the source
+        // afterwards cannot lose data on a crash. Uses the existing write handle.
+        await targetStream.FlushAsync(ct);
+        targetStream.Flush(flushToDisk: true);
     }
 
     private async Task CopyWithVerificationAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
