@@ -97,13 +97,10 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             return 0;
 
         // Straight-line premium/discount over the posted periods; positive = premium (write-down),
-        // negative = discount (write-up). Distributed evenly with the remainder on the last period.
+        // negative = discount (write-up).
         var premiumDiscountTotal = postingContext.PositionFace > 0m
             ? RoundCash(postingContext.PositionFace * (postingContext.PurchasePricePercentOfPar - 100m) / 100m)
             : 0m;
-        var perPeriodPremiumDiscount = premiumDiscountTotal == 0m
-            ? 0m
-            : RoundCash(premiumDiscountTotal / schedule.Count);
 
         var allocatedPremiumDiscount = 0m;
         var posted = 0;
@@ -114,11 +111,12 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             var effectiveDate = DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date);
             var timestamp = ToUtcStartOfDay(effectiveDate);
 
-            var isLast = i == schedule.Count - 1;
-            var premiumDiscountShare = isLast
-                ? premiumDiscountTotal - allocatedPremiumDiscount
-                : perPeriodPremiumDiscount;
-            allocatedPremiumDiscount += premiumDiscountShare;
+            // Cumulative-target distribution: each period's share is the rounded cumulative total
+            // to date minus what has already been allocated. This keeps shares monotonic toward the
+            // target so accumulated per-period rounding can never flip the final period's sign.
+            var cumulativeTarget = RoundCash(premiumDiscountTotal * (i + 1) / schedule.Count);
+            var premiumDiscountShare = cumulativeTarget - allocatedPremiumDiscount;
+            allocatedPremiumDiscount = cumulativeTarget;
 
             var couponAccrual = Math.Max(0m, RoundCash(entry.InterestAmount));
             var premiumAmortization = premiumDiscountShare > 0m ? premiumDiscountShare : 0m;

@@ -131,6 +131,35 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     }
 
     [Fact]
+    public async Task PostProjectedCashFlowsAsync_SmallPremiumOverManyPeriods_NeverBooksReversedSign()
+    {
+        // 1 face at 102% -> 0.02 total premium spread over 4 periods. Naive per-period rounding
+        // would over-allocate the first periods and flip the last period into a discount accretion;
+        // the cumulative-target distribution keeps every share a premium write-down.
+        var projection = Projection(
+            Period(2026, 3, 31, interest: 5m),
+            Period(2026, 6, 30, interest: 5m),
+            Period(2026, 9, 30, interest: 5m),
+            Period(2026, 12, 31, interest: 5m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var ledger = new DomainLedger();
+
+        var context = new AmortizationLedgerPostingContext(PositionFace: 1m, PurchasePricePercentOfPar: 102m);
+        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
+
+        posted.Should().Be(4);
+        ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+
+        // A premium position must only ever credit (write down) the carrying account; a debit would
+        // mean an erroneous discount accretion on a premium bond.
+        var securities = LedgerAccounts.Securities(Ticker);
+        ledger.Journal.SelectMany(entry => entry.Lines)
+            .Where(line => line.Account == securities)
+            .Should().OnlyContain(line => line.Debit == 0m);
+        ledger.GetBalance(securities).Should().Be(-0.02m);
+    }
+
+    [Fact]
     public async Task PostProjectedCashFlowsAsync_RespectsMaxPeriods()
     {
         var projection = Projection(

@@ -187,6 +187,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             return;
 
         _ = TryReadString(security, out var dayCount, "dayCountConvention", "dayCount", "dayCountBasis");
+        var normalizedDayCount = NormalizeDayCount(dayCount);
 
         // Fixed-income lots are recorded as a price per 100 of par (bond quotation convention);
         // premium/discount amortizes straight-line toward par, weighted by the day-count year
@@ -196,7 +197,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
         foreach (var lot in openLots)
         {
-            if (lot.SecurityId is { } lotSecurityId && lotSecurityId != securityId)
+            // Reference-data amortization only applies to lots explicitly linked to this security;
+            // unlinked lots (no SecurityId) relieve at their recorded basis.
+            if (lot.SecurityId != securityId)
                 continue;
             if (lot.AcquiredDate >= amortizeTo || lot.AcquiredDate >= maturity)
                 continue;
@@ -205,8 +208,8 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             if (premiumOrDiscount == 0m)
                 continue;
 
-            var elapsed = YearFraction(dayCount, lot.AcquiredDate, amortizeTo);
-            var life = YearFraction(dayCount, lot.AcquiredDate, maturity);
+            var elapsed = YearFraction(normalizedDayCount, lot.AcquiredDate, amortizeTo);
+            var life = YearFraction(normalizedDayCount, lot.AcquiredDate, maturity);
             if (life <= 0m)
                 continue;
 
@@ -247,17 +250,19 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
     // ── Day-count year fraction (mirrors SecurityMasterCashFlowService tokens) ─────────────────
 
-    private static decimal YearFraction(string? dayCountConvention, DateOnly start, DateOnly end)
+    private static string? NormalizeDayCount(string? dayCountConvention)
+        => dayCountConvention?.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
+
+    private static decimal YearFraction(string? normalizedDayCount, DateOnly start, DateOnly end)
     {
         if (end <= start)
             return 0m;
 
-        var normalized = dayCountConvention?.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
-        if (normalized is not null && normalized.Contains("30/360", StringComparison.Ordinal))
+        if (normalizedDayCount is not null && normalizedDayCount.Contains("30/360", StringComparison.Ordinal))
             return Days360(start, end) / 360m;
 
         var actualDays = end.DayNumber - start.DayNumber;
-        if (normalized is not null && (normalized.Contains("ACT/360", StringComparison.Ordinal) || normalized.Contains("ACTUAL/360", StringComparison.Ordinal)))
+        if (normalizedDayCount is not null && (normalizedDayCount.Contains("ACT/360", StringComparison.Ordinal) || normalizedDayCount.Contains("ACTUAL/360", StringComparison.Ordinal)))
             return actualDays / 360m;
 
         // Default (including ACT/365 and unrecognized conventions): actual days over 365.
@@ -266,8 +271,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
     private static decimal Days360(DateOnly start, DateOnly end)
     {
+        // US 30/360 (NASD): D1 of 31 becomes 30; D2 of 31 becomes 30 only when D1 is 30 or 31.
         var startDay = Math.Min(start.Day, 30);
-        var endDay = end.Day == 31 && startDay == 30 ? 30 : Math.Min(end.Day, 30);
+        var endDay = end.Day == 31 && start.Day >= 30 ? 30 : end.Day;
         return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
     }
 
