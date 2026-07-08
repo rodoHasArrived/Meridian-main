@@ -41,6 +41,11 @@ public sealed class StructuredCashFlowLedgerBridge : IStructuredCashFlowLedgerBr
         ArgumentNullException.ThrowIfNull(projection);
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
 
+        var normalizedSymbol = symbol.Trim().ToUpperInvariant();
+        var normalizedFinancialAccountId = string.IsNullOrWhiteSpace(financialAccountId)
+            ? null
+            : financialAccountId.Trim();
+
         // Staleness is a hard gate here, not the advisory log line the projection path used to emit.
         if (projection.Staleness == StructuredCashFlowStaleness.Stale)
         {
@@ -57,7 +62,7 @@ public sealed class StructuredCashFlowLedgerBridge : IStructuredCashFlowLedgerBr
                 $"Only base-scenario projections are postable; '{projection.Scenario}' is a what-if scenario.");
         }
 
-        var carryingValueAccount = LedgerAccounts.Securities(symbol, financialAccountId);
+        var carryingValueAccount = LedgerAccounts.Securities(normalizedSymbol, normalizedFinancialAccountId);
         var postings = new List<StructuredCashFlowLedgerPosting>();
         foreach (var entry in projection.Schedule)
         {
@@ -66,19 +71,19 @@ public sealed class StructuredCashFlowLedgerBridge : IStructuredCashFlowLedgerBr
                 continue;
             }
 
-            if (through is DateOnly bound && DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date) > bound)
+            if (through is DateOnly bound && DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime) > bound)
             {
                 continue;
             }
 
             var input = new FixedIncomeAmortizationInput(
-                symbol,
+                normalizedSymbol,
                 carryingValueAccount,
                 CouponAccrual: entry.InterestAmount,
                 DiscountAccretion: 0m,
                 PremiumAmortization: 0m,
-                FinancialAccountId: financialAccountId,
-                Description: $"Coupon accrual for {symbol} period {entry.PeriodDate:yyyy-MM-dd}");
+                FinancialAccountId: normalizedFinancialAccountId,
+                Description: $"Coupon accrual for {normalizedSymbol} period {entry.PeriodDate:yyyy-MM-dd}");
 
             var projected = FixedIncomeAmortizationProjector.Project(input);
             postings.Add(new StructuredCashFlowLedgerPosting(

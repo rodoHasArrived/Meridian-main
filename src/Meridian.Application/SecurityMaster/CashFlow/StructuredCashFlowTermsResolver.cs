@@ -63,9 +63,8 @@ public static class StructuredCashFlowTermsResolver
                         continue;
                     }
 
-                    var row = new[] { item };
-                    var asOf = ReadDate(row, FactorScheduleDateAliases);
-                    var factor = ReadDecimal(row, FactorScheduleFactorAliases);
+                    var asOf = ReadDate(item, FactorScheduleDateAliases);
+                    var factor = ReadDecimal(item, FactorScheduleFactorAliases);
                     if (asOf is null || factor is null)
                     {
                         continue;
@@ -125,23 +124,34 @@ public static class StructuredCashFlowTermsResolver
     {
         foreach (var source in sources)
         {
-            foreach (var propertyName in propertyNames)
+            var result = ReadDecimal(source, propertyNames);
+            if (result is not null)
             {
-                if (!TryGetProperty(source, propertyName, out var property))
-                {
-                    continue;
-                }
+                return result;
+            }
+        }
 
-                if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
-                {
-                    return number;
-                }
+        return null;
+    }
 
-                if (property.ValueKind == JsonValueKind.String &&
-                    decimal.TryParse(property.GetString(), out var parsed))
-                {
-                    return parsed;
-                }
+    private static decimal? ReadDecimal(JsonElement source, string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (!TryGetProperty(source, propertyName, out var property))
+            {
+                continue;
+            }
+
+            if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
+            {
+                return number;
+            }
+
+            if (property.ValueKind == JsonValueKind.String &&
+                decimal.TryParse(property.GetString(), out var parsed))
+            {
+                return parsed;
             }
         }
 
@@ -152,24 +162,35 @@ public static class StructuredCashFlowTermsResolver
     {
         foreach (var source in sources)
         {
-            foreach (var propertyName in propertyNames)
+            var result = ReadDate(source, propertyNames);
+            if (result is not null)
             {
-                if (!TryGetProperty(source, propertyName, out var property) ||
-                    property.ValueKind != JsonValueKind.String)
-                {
-                    continue;
-                }
+                return result;
+            }
+        }
 
-                var raw = property.GetString();
-                if (DateOnly.TryParse(raw, out var date))
-                {
-                    return date;
-                }
+        return null;
+    }
 
-                if (DateTimeOffset.TryParse(raw, out var timestamp))
-                {
-                    return DateOnly.FromDateTime(timestamp.UtcDateTime.Date);
-                }
+    private static DateOnly? ReadDate(JsonElement source, string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (!TryGetProperty(source, propertyName, out var property) ||
+                property.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var raw = property.GetString();
+            if (DateOnly.TryParse(raw, out var date))
+            {
+                return date;
+            }
+
+            if (DateTimeOffset.TryParse(raw, out var timestamp))
+            {
+                return DateOnly.FromDateTime(timestamp.UtcDateTime.Date);
             }
         }
 

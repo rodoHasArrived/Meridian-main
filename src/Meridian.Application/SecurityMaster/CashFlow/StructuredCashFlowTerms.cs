@@ -40,22 +40,15 @@ public sealed record StructuredCashFlowTerms(
     /// </summary>
     public decimal? FactorAsOf(DateOnly asOf)
     {
-        decimal? resolved = null;
-        DateOnly? resolvedDate = null;
-        foreach (var entry in FactorSchedule)
+        for (var i = FactorSchedule.Count - 1; i >= 0; i--)
         {
-            if (entry.AsOfDate > asOf)
+            var entry = FactorSchedule[i];
+            if (entry.AsOfDate <= asOf)
             {
-                continue;
-            }
-
-            if (resolvedDate is null || entry.AsOfDate > resolvedDate.Value)
-            {
-                resolved = entry.Factor;
-                resolvedDate = entry.AsOfDate;
+                return entry.Factor;
             }
         }
 
-        return resolved ?? CurrentFactor;
+        return CurrentFactor;
     }
 }
