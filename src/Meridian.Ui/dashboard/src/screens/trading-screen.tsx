@@ -26,9 +26,10 @@ import {
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { MetricCard } from "@/components/data/concrete";
 import { SeverityBadge } from "@/components/operations";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -132,14 +133,6 @@ const acceptanceStatus: Record<AcceptanceLevel, string> = {
   ready: "ready",
   review: "review",
   atRisk: "blocked"
-};
-
-// `MetricSnapshot` tone → Concrete MetricCard left-accent tone.
-const metricCardTone: Record<TradingWorkspaceResponse["metrics"][number]["tone"], MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
 };
 
 const workItemTone: Record<string, string> = {
@@ -556,7 +549,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             label={metric.label}
             value={metric.value}
             delta={metric.delta}
-            tone={metricCardTone[metric.tone]}
+            tone={semanticToneToMetricCardTone(metric.tone)}
           />
         ))}
       </section>

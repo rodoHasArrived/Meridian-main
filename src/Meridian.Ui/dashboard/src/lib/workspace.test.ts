@@ -5,6 +5,7 @@ import {
   legacyWorkspaceRedirect,
   normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
+  resolveWorkstationRouteBreadcrumbLabel,
   settingsProviderConnectionRoute,
   WORKSPACES,
   WORKSTATION_PAGE_TAG_ROUTES,
@@ -94,6 +95,18 @@ describe("workspace metadata", () => {
       label: "Reporting",
       status: "Review"
     });
+  });
+
+  it("resolves route breadcrumb labels from the centralized workstation route registry", () => {
+    expect(resolveWorkstationRouteBreadcrumbLabel("/reporting/operations-record", workspaceForKey("reporting"))).toBe(
+      "Operations Record"
+    );
+    expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/journal-entries/detail", workspaceForKey("accounting")))
+      .toBe("Journal Entry / Detail");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/workstation/data/quotes", workspaceForKey("data"))).toBe("Quotes");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/portfolio/custom-beta-route", workspaceForKey("portfolio"))).toBe(
+      "Custom Beta Route"
+    );
   });
 
   it("builds encoded Evidence Workbench subject routes", () => {

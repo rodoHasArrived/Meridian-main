@@ -14,8 +14,9 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { MetricCard } from "@/components/data/concrete";
 import { SeverityBadge } from "@/components/operations";
+import { badgeVariantToOperatorSeverity, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   activateProviderIntegration,
   approveSecurityAssetProfile,
@@ -396,29 +397,7 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
-// Concrete severity vocabulary: the settings screen's `default | success | warning | danger`
-// (and Badge `outline`) tones collapse onto the design system's canonical operator
-// severities consumed by SeverityBadge (ready · review · action · blocked · info). Used for
-// connection / diagnostic / capability / readiness health — never for environment or mode
-// chips, which stay on the categorical Badge component.
-type SettingsBadgeVariant = "default" | "outline" | "success" | "warning" | "danger";
-
-function toneToSeverity(tone: SettingsBadgeVariant): string {
-  if (tone === "success") return "ready";
-  if (tone === "warning") return "action";
-  if (tone === "danger") return "blocked";
-  return "info";
-}
-
-// Headline operator counts on the overview → Concrete MetricCard left-accent tone.
-const settingsMetricTone: Record<"default" | "success" | "warning" | "danger", MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
+// Storage-health headline metric tone - mirrors the view-model's storage tone mapping so the
 // MetricCard accent matches the "Storage health" system item.
 function settingsStorageHealthTone(
   health: SystemOverviewResponse["storageHealth"] | undefined
@@ -2702,24 +2681,24 @@ export function SettingsScreen({
           value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"}
           tone={
             overview
-              ? settingsMetricTone[overview.providersOnline === overview.providersTotal ? "success" : "warning"]
+              ? semanticToneToMetricCardTone(overview.providersOnline === overview.providersTotal ? "success" : "warning")
               : "neutral"
           }
         />
         <MetricCard
           label="Active runs"
           value={overview ? String(overview.activeRuns) : "—"}
-          tone={settingsMetricTone.default}
+          tone={semanticToneToMetricCardTone("default")}
         />
         <MetricCard
           label="Open positions"
           value={overview ? String(overview.openPositions) : "—"}
-          tone={settingsMetricTone.default}
+          tone={semanticToneToMetricCardTone("default")}
         />
         <MetricCard
           label="Storage health"
           value={overview?.storageHealth ?? "—"}
-          tone={settingsMetricTone[settingsStorageHealthTone(overview?.storageHealth)]}
+          tone={semanticToneToMetricCardTone(settingsStorageHealthTone(overview?.storageHealth))}
         />
       </section>
 
@@ -2754,7 +2733,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.profileAuthenticationPanel.summary}</CardDescription>
               </div>
               <SeverityBadge
-                status={toneToSeverity(vm.profileAuthenticationPanel.statusTone)}
+                status={badgeVariantToOperatorSeverity(vm.profileAuthenticationPanel.statusTone)}
                 label={vm.profileAuthenticationPanel.statusLabel}
               />
             </div>
@@ -2837,7 +2816,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.systemSummary}</CardDescription>
               </div>
               <SeverityBadge
-                status={toneToSeverity(vm.systemTone)}
+                status={badgeVariantToOperatorSeverity(vm.systemTone)}
                 label={overview?.systemStatus ?? "Unavailable"}
               />
             </div>
@@ -3235,7 +3214,7 @@ export function SettingsScreen({
               <SettingsChip label="Loaded" value={vm.operationsControlCenter.loadedCountLabel} />
               <SettingsChip label="Review" value={vm.operationsControlCenter.reviewCountLabel} />
               <SeverityBadge
-                status={toneToSeverity(vm.operationsControlCenter.statusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.operationsControlCenter.statusVariant)}
                 label={vm.operationsControlCenter.statusLabel}
               />
             </div>
@@ -3258,7 +3237,7 @@ export function SettingsScreen({
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.description}</p>
                   </div>
                   <SeverityBadge
-                    status={toneToSeverity(card.statusVariant)}
+                    status={badgeVariantToOperatorSeverity(card.statusVariant)}
                     label={card.statusLabel}
                     className="shrink-0"
                   />
@@ -3778,7 +3757,7 @@ export function SettingsScreen({
               <SettingsChip label="Projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
               <SettingsChip label="Close IDs" value={vm.assetProfileGovernancePanel.closeIdentifierCountLabel} />
               <SeverityBadge
-                status={toneToSeverity(vm.assetProfileGovernancePanel.statusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.assetProfileGovernancePanel.statusVariant)}
                 label={vm.assetProfileGovernancePanel.statusLabel}
               />
             </div>
@@ -4084,7 +4063,7 @@ export function SettingsScreen({
                 </Button>
               ) : null}
               <SeverityBadge
-                status={toneToSeverity(vm.providerConnectionCenter.statusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.providerConnectionCenter.statusVariant)}
                 label={vm.providerConnectionCenter.statusLabel}
               />
             </div>
@@ -4185,12 +4164,12 @@ export function SettingsScreen({
                             <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
                             <Badge variant="outline">{row.capabilityLabel}</Badge>
                             <SeverityBadge
-                              status={toneToSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
+                              status={badgeVariantToOperatorSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
                               label={row.healthLabel}
                             />
                             {inlineProviderManagementEnabled ? (
                               <SeverityBadge
-                                status={toneToSeverity(providerDraftStatusVariant(providerInlineState[row.providerId], row))}
+                                status={badgeVariantToOperatorSeverity(providerDraftStatusVariant(providerInlineState[row.providerId], row))}
                                 label={providerDraftStatusLabel(providerInlineState[row.providerId], row)}
                               />
                             ) : null}
@@ -4276,7 +4255,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.alpacaConnectionPanel.statusDetail}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.alpacaConnectionPanel.statusTone)}
+              status={badgeVariantToOperatorSeverity(vm.alpacaConnectionPanel.statusTone)}
               label={vm.alpacaConnectionPanel.stateLabel}
             />
           </div>
@@ -4490,7 +4469,7 @@ export function SettingsScreen({
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
                     </div>
                     <SeverityBadge
-                      status={toneToSeverity(step.badgeVariant)}
+                      status={badgeVariantToOperatorSeverity(step.badgeVariant)}
                       label={step.statusLabel}
                       className="shrink-0"
                     />
@@ -4528,7 +4507,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.robinhoodConnectionPanel.statusDetail}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.robinhoodConnectionPanel.statusTone)}
+              status={badgeVariantToOperatorSeverity(vm.robinhoodConnectionPanel.statusTone)}
               label={vm.robinhoodConnectionPanel.stateLabel}
             />
           </div>
@@ -4706,7 +4685,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
               </div>
               <SeverityBadge
-                status={toneToSeverity(vm.diagnosticStatusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.diagnosticStatusVariant)}
                 label={vm.diagnosticStatusLabel}
               />
             </div>
@@ -4736,7 +4715,7 @@ export function SettingsScreen({
                       </span>
                       <span className="inline-flex items-center gap-2">
                         <SeverityBadge
-                          status={toneToSeverity(link.badgeVariant)}
+                          status={badgeVariantToOperatorSeverity(link.badgeVariant)}
                           label={link.statusLabel}
                           className="shrink-0"
                         />
@@ -4772,7 +4751,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.runtimeCapabilitySection.statusVariant)}
+              status={badgeVariantToOperatorSeverity(vm.runtimeCapabilitySection.statusVariant)}
               label={vm.runtimeCapabilitySection.statusLabel}
             />
           </div>
@@ -4795,7 +4774,7 @@ export function SettingsScreen({
                       <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
                     </div>
                     <SeverityBadge
-                      status={toneToSeverity(capability.statusVariant)}
+                      status={badgeVariantToOperatorSeverity(capability.statusVariant)}
                       label={capability.statusLabel}
                       className="shrink-0"
                     />
@@ -4839,7 +4818,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.backendCapabilitySummary}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.backendCapabilityStatusVariant)}
+              status={badgeVariantToOperatorSeverity(vm.backendCapabilityStatusVariant)}
               label={vm.backendCapabilityStatusLabel}
             />
           </div>
@@ -4859,7 +4838,7 @@ export function SettingsScreen({
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{group.description}</p>
                   </div>
                   <SeverityBadge
-                    status={toneToSeverity(group.statusVariant)}
+                    status={badgeVariantToOperatorSeverity(group.statusVariant)}
                     label={group.statusLabel}
                     className="shrink-0"
                   />
@@ -4937,7 +4916,7 @@ function ProfileAuthenticationStepRow({ step }: { step: SettingsProfileAuthentic
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
         </div>
         <SeverityBadge
-          status={toneToSeverity(step.badgeVariant)}
+          status={badgeVariantToOperatorSeverity(step.badgeVariant)}
           label={step.statusLabel}
           className="shrink-0"
         />
@@ -4988,7 +4967,7 @@ function RecentEventDetailPanel({
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
               <SeverityBadge
-                status={toneToSeverity(detail.statusVariant)}
+                status={badgeVariantToOperatorSeverity(detail.statusVariant)}
                 label={detail.statusLabel}
                 className="shrink-0"
               />
@@ -5782,7 +5761,7 @@ function ProviderIntegrationRuntimePanel({
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Runtime evidence</h5>
             <SeverityBadge
-              status={toneToSeverity(providerRuntimeStatusVariant(state))}
+              status={badgeVariantToOperatorSeverity(providerRuntimeStatusVariant(state))}
               label={providerRuntimeStatusLabel(state)}
             />
           </div>
@@ -5928,7 +5907,7 @@ function ProviderIntegrationRuntimePanel({
             <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
-                <SeverityBadge status={toneToSeverity(providerRuntimeRunVariant(run))} label={run.status} />
+                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeRunVariant(run))} label={run.status} />
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">
                 {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
@@ -5949,7 +5928,7 @@ function ProviderIntegrationRuntimePanel({
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <SeverityBadge status={toneToSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
+                      <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
                       <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
@@ -6033,7 +6012,7 @@ function ProviderIntegrationRuntimePanel({
           {issueGroups.slice(0, 3).map((group) => (
             <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge status={toneToSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
+                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
                 <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
                 <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
               </div>
@@ -6064,7 +6043,7 @@ function ProviderIntegrationRuntimePanel({
           {state.promotion.rows.slice(0, 3).map((promotionRow) => (
             <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge status={toneToSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
+                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
                 <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
                 <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
               </div>

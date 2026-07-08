@@ -24,6 +24,14 @@ import {
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts } from "@/lib/operating-scope/fund-accounts";
+import {
+  compactOperatingScope,
+  hasOperatingScopeValues,
+  mergeOperatingScopes,
+  operatingScopesEqual,
+  readStoredOperatingScope,
+  writeStoredOperatingScope
+} from "@/lib/operating-scope/persistence";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
@@ -71,9 +79,19 @@ import {
   useOnboardingTour
 } from "@/components/meridian/onboarding-tour";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
+import {
+  reportWorkstationRouteError,
+  type WorkstationRouteErrorContext
+} from "@/lib/route-error-telemetry";
 import { cn } from "@/lib/utils";
-import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
+import { legacyWorkspaceRedirect, resolveWorkstationRouteBreadcrumbLabel, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+
+// Lazy route modules and data-backed panels often mount hash targets after the
+// shell route change. Wait briefly before falling back to the workbench landmark,
+// then always disconnect the MutationObserver on a longer watchdog.
+const ROUTE_FOCUS_FALLBACK_DELAY_MS = 4_000;
+const ROUTE_FOCUS_WATCHDOG_DELAY_MS = 15_000;
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
 const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
@@ -393,6 +411,14 @@ function AppShell() {
     () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
     [pathname, shell.activeWorkspace]
   );
+  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => ({
+    routeKey: `${pathname}${search}${hash}`,
+    pathname,
+    search,
+    hash,
+    workspaceLabel: shell.activeWorkspace.label,
+    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace)
+  }), [hash, pathname, search, shell.activeWorkspace]);
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -508,7 +534,7 @@ function AppShell() {
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
-              <RouteErrorBoundary routeKey={`${pathname}${search}${hash}`}>
+              <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes>
                   <Route path="/" element={(
@@ -770,9 +796,9 @@ function focusRouteTargetWhenReady(
 
     focusElementById(fallbackElementId, root);
     fallbackTimeout = null;
-  }, 4000);
+  }, ROUTE_FOCUS_FALLBACK_DELAY_MS);
 
-  targetTimeout = window.setTimeout(cleanup, 15000);
+  targetTimeout = window.setTimeout(cleanup, ROUTE_FOCUS_WATCHDOG_DELAY_MS);
 
   return cleanup;
 }
@@ -786,7 +812,7 @@ function buildWorkspaceBreadcrumbItems(
     return [{ label: "Workstation", current: true }];
   }
 
-  const routeLabel = resolveRouteBreadcrumbLabel(pathname, workspace);
+  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [
@@ -803,59 +829,11 @@ function buildWorkspaceBreadcrumbItems(
   ];
 }
 
-function resolveRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
-  const segments = pathname.split("/").filter(Boolean);
-  const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
-  if (routeSegments.length === 0) {
-    return workspace.label;
-  }
-
-  return routeSegments.map(formatRouteSegmentLabel).join(" / ");
-}
-
-function formatRouteSegmentLabel(segment: string): string {
-  const knownLabels: Record<string, string> = {
-    alerts: "Alerts",
-    approvals: "Close Cockpit",
-    "asset-detail": "Asset Detail",
-    "capital-accounts": "Capital Accounts",
-    configure: "Governance",
-    "covered-call": "Covered Call",
-    designer: "Designer",
-    "entity-setup": "Entity Setup",
-    evidence: "Evidence",
-    exceptions: "Reconciliation Casework",
-    "family-office": "Family Office",
-    "formula-workbench": "Formula Workbench",
-    "journal-entries": "Journal Entry",
-    ledger: "Ledger Explorer",
-    "operations-continuity": "Operations Continuity",
-    "operations-record": "Operations Record",
-    exports: "Exports",
-    providers: "Providers",
-    "quant-lab": "Quant Lab",
-    quotes: "Quotes",
-    readiness: "Readiness",
-    reconciliation: "Reconciliation Casework",
-    "report-packs": "Delivery Evidence",
-    run: "Run Report",
-    "run-status": "Run Status",
-    scheduled: "Scheduled Reports",
-    "security-master": "Security Master",
-    "statement-import": "Import Statement",
-    watchlist: "Watchlist"
-  };
-
-  return knownLabels[segment] ?? segment.split("-").map((part) => (
-    part.length > 0 ? `${part[0].toUpperCase()}${part.slice(1)}` : part
-  )).join(" ");
-}
-
 class RouteErrorBoundary extends Component<
-  { children: ReactNode; routeKey: string },
+  { children: ReactNode; routeKey: string; context: WorkstationRouteErrorContext },
   { hasError: boolean; routeKey: string }
 > {
-  constructor(props: { children: ReactNode; routeKey: string }) {
+  constructor(props: { children: ReactNode; routeKey: string; context: WorkstationRouteErrorContext }) {
     super(props);
     this.state = { hasError: false, routeKey: props.routeKey };
   }
@@ -876,7 +854,7 @@ class RouteErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Meridian workstation route failed to render.", error, info.componentStack);
+    reportWorkstationRouteError(this.props.context, error, info);
   }
 
   render() {
@@ -884,7 +862,7 @@ class RouteErrorBoundary extends Component<
       return (
         <RouteRecoveryPanel
           title="Workbench route failed"
-          detail="Meridian could not render this route. Return to the Daily Control Tower or retry after refreshing live data."
+          detail={`Meridian could not render ${this.props.context.routeLabel} in ${this.props.context.workspaceLabel}. Return to the Daily Control Tower or retry after refreshing live data.`}
           actionLabel="Open Daily Control Tower"
           actionHref="/"
         />
@@ -938,114 +916,6 @@ function RouteRecoveryPanel({
       </Button>
     </PanelSurface>
   );
-}
-
-const OPERATING_CONTEXT_STORAGE_KEY = "meridian.workstation.operatingContext.v1";
-
-function readStoredOperatingScope(): AppShellOperatingScopeInput {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const raw = window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-
-    const parsed: unknown = raw.trim().startsWith("{") ? JSON.parse(raw) : raw;
-    if (typeof parsed === "string") {
-      return { symbol: parsed };
-    }
-
-    if (parsed && typeof parsed === "object") {
-      const record = parsed as Record<string, unknown>;
-      return {
-        symbol: readStoredScopeString(record.symbol),
-        fundAccountId: readStoredScopeString(record.fundAccountId),
-        runId: readStoredScopeString(record.runId),
-        provider: readStoredScopeString(record.provider),
-        from: readStoredScopeString(record.from),
-        to: readStoredScopeString(record.to),
-        date: readStoredScopeString(record.date),
-        asOf: readStoredScopeString(record.asOf)
-      };
-    }
-  } catch {
-    return {};
-  }
-
-  return {};
-}
-
-function writeStoredOperatingScope(scope: AppShellOperatingScopeInput) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    const nextScope = compactOperatingScope(scope);
-    if (!hasOperatingScopeValues(nextScope)) {
-      window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
-      return;
-    }
-
-    window.localStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify(nextScope));
-  } catch {
-    // Browser storage can be unavailable in private or locked-down contexts.
-  }
-}
-
-function readStoredScopeString(value: unknown): string | null {
-  return typeof value === "string" && value.trim().length > 0 ? value : null;
-}
-
-function mergeOperatingScopes(
-  storedScope: AppShellOperatingScopeInput,
-  routeScope: AppShellOperatingScopeInput
-): AppShellOperatingScopeInput {
-  return compactOperatingScope({
-    symbol: routeScope.symbol ?? storedScope.symbol ?? null,
-    fundAccountId: routeScope.fundAccountId ?? storedScope.fundAccountId ?? null,
-    runId: routeScope.runId ?? storedScope.runId ?? null,
-    provider: routeScope.provider ?? storedScope.provider ?? null,
-    from: routeScope.from ?? storedScope.from ?? null,
-    to: routeScope.to ?? storedScope.to ?? null,
-    date: routeScope.date ?? storedScope.date ?? null,
-    asOf: routeScope.asOf ?? storedScope.asOf ?? null
-  });
-}
-
-function compactOperatingScope(scope: AppShellOperatingScopeInput): AppShellOperatingScopeInput {
-  return {
-    ...(scope.symbol ? { symbol: scope.symbol } : {}),
-    ...(scope.fundAccountId ? { fundAccountId: scope.fundAccountId } : {}),
-    ...(scope.runId ? { runId: scope.runId } : {}),
-    ...(scope.provider ? { provider: scope.provider } : {}),
-    ...(scope.from ? { from: scope.from } : {}),
-    ...(scope.to ? { to: scope.to } : {}),
-    ...(scope.date ? { date: scope.date } : {}),
-    ...(scope.asOf ? { asOf: scope.asOf } : {})
-  };
-}
-
-function hasOperatingScopeValues(scope: AppShellOperatingScopeInput): boolean {
-  return Boolean(
-    scope.symbol
-    || scope.fundAccountId
-    || scope.runId
-    || scope.provider
-    || scope.from
-    || scope.to
-    || scope.date
-    || scope.asOf
-  );
-}
-
-function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShellOperatingScopeInput): boolean {
-  const compactLeft = compactOperatingScope(left);
-  const compactRight = compactOperatingScope(right);
-  return JSON.stringify(compactLeft) === JSON.stringify(compactRight);
 }
 
 function LegacyWorkspaceRedirect() {

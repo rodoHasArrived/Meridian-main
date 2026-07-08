@@ -85,11 +85,14 @@ function loadOverrides(securityId: string): Record<string, string> {
   try {
     const raw = ls.getItem(storageKey(STORAGE_PREFIX_OVERRIDES, securityId));
     if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+    return parseStoredOverrides(JSON.parse(raw) as unknown);
   } catch {
     return {};
   }
+}
+
+export function parseStoredOverrides(parsed: unknown): Record<string, string> {
+  return isRecord(parsed) ? sanitiseOverrideValues(parsed as Record<string, string>) : {};
 }
 
 function saveOverrides(securityId: string, overrides: Record<string, string>): void {
@@ -486,17 +489,27 @@ function loadLots(securityId: string): SecurityLot[] {
   try {
     const raw = ls.getItem(storageKey(STORAGE_PREFIX_LOTS, securityId));
     if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((l): l is SecurityLot =>
-      l && typeof l.lotId === "string"
-      && typeof l.tradeDate === "string"
-      && typeof l.quantity === "number"
-      && typeof l.price === "number"
-    ).map((l) => ({ ...l, fees: l.fees ?? 0, note: l.note ?? "" }));
+    return parseStoredLots(JSON.parse(raw) as unknown);
   } catch {
     return [];
   }
+}
+
+export function parseStoredLots(parsed: unknown): SecurityLot[] {
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter((l): l is SecurityLot =>
+    isRecord(l)
+    && typeof l.lotId === "string"
+    && typeof l.tradeDate === "string"
+    && typeof l.quantity === "number"
+    && typeof l.price === "number"
+    && (l.fees === undefined || typeof l.fees === "number")
+    && (l.note === undefined || typeof l.note === "string")
+  ).map((l) => ({ ...l, fees: l.fees ?? 0, note: l.note ?? "" }));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function saveLots(securityId: string, lots: SecurityLot[]): void {

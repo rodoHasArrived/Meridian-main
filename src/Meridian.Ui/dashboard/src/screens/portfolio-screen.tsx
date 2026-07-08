@@ -16,7 +16,7 @@ import {
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard, type MetricCardTone, EmptyState } from "@/components/data/concrete";
+import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import {
   EquityCurve,
@@ -35,6 +35,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
@@ -784,7 +785,7 @@ export function PortfolioScreen({
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
                   <SeverityBadge
-                    status={severityStatusFromTone(vm.brokerageTrustSnapshot.statusTone)}
+                    status={readinessToneToSeverityStatus(vm.brokerageTrustSnapshot.statusTone)}
                     label={vm.brokerageTrustSnapshot.statusLabel}
                   />
                 </div>
@@ -1372,15 +1373,6 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Concrete KPI tile fed from a read-model `MetricSnapshot`. The snapshot's `"default"`
- * tone maps to the Concrete `"neutral"` left-accent; other tones pass through 1:1. */
-const metricSnapshotToneClass: Record<MetricSnapshot["tone"], MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
 const drillInCurrency = (value: number) => `$${Math.round(value).toLocaleString("en-US")}`;
 
 /** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
@@ -1480,7 +1472,7 @@ function PortfolioMetricCard({ metric }: { metric: MetricSnapshot }) {
       label={metric.label}
       value={metric.value}
       delta={metric.delta ?? undefined}
-      tone={metricSnapshotToneClass[metric.tone]}
+      tone={semanticToneToMetricCardTone(metric.tone)}
     />
   );
 }
@@ -1505,20 +1497,6 @@ function workflowStatusVariant(statusTone: "default" | "success" | "warning" | "
 }
 
 type PortfolioTone = "default" | "success" | "warning" | "danger";
-
-/** Map a read-model status tone to a canonical severity string for {@link SeverityBadge}. */
-function severityStatusFromTone(tone: PortfolioTone): string {
-  switch (tone) {
-    case "success":
-      return "Ready";
-    case "warning":
-      return "ReviewRequired";
-    case "danger":
-      return "Blocked";
-    default:
-      return "Info";
-  }
-}
 
 /** Map a read-model status tone to a {@link TrustStrip} state token. */
 function trustStateFromTone(tone: PortfolioTone): TrustStripItem["state"] {
