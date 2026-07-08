@@ -43,6 +43,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
+// Preserve the original view-model export surface while route-specific Data state lives in a focused module.
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
