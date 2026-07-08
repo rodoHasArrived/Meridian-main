@@ -18,8 +18,7 @@ import {
   buildOperationsRecordReleaseViewModel,
   type OperationsRecordReleaseEvidenceRow,
   type OperationsRecordReleaseMetric,
-  type OperationsRecordReleasePanel,
-  type OperationsRecordReleaseTone
+  type OperationsRecordReleasePanel
 } from "@/screens/operations-record-release-screen.view-model";
 import type { AccountingWorkspaceResponse, DataWorkspaceResponse } from "@/types";
 

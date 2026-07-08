@@ -28,6 +28,7 @@ env:
 jobs:
   dotnet:
     name: verify-fast (restore/build/test)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -186,6 +187,7 @@ jobs:
 
   browser-workstation:
     name: verify-fast (browser workstation)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -234,6 +236,7 @@ jobs:
 
   source-doc-determinism:
     name: verify-docs (roadmap/source docs)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 

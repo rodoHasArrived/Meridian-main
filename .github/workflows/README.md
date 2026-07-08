@@ -28,19 +28,19 @@ scope.
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports one stable `quality-gate` aggregator result. `Meridian CI / quality-gate` is the required status check for protected `main` merges after repository rulesets are enabled. | Lane summaries, build logs, TRX summaries, docs outputs, and workflow-hygiene evidence |
-| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Restores `Meridian.sln`, verifies formatting and warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, runs every configured non-integration .NET test project through the aggregate `run-dotnet-ci-tests.py` runner so one failing project does not hide later failures, tests and builds the dashboard with lockfile-strict `npm ci`, scans secrets, validates source-doc determinism, and runs nightly/manual verify-full coverage on `main`. | .NET build logs, TRX summaries, browser bundle, and coverage artifacts |
+| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Keeps PR secret scanning separate from the required `Meridian CI / quality-gate`, while legacy dotnet/browser/docs evidence jobs are gated away from normal PR runs. Nightly/manual `main` runs keep verify-full coverage evidence current. | Secret scan SARIF/evidence, .NET build logs, TRX summaries, browser bundle, and coverage artifacts |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, validating the pilot readiness dashboard renderer, and uploading evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Runs the isolated WPF validation script on Windows, including build-once/test-without-rebuild behavior. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | WPF, WPF dependency, desktop workflow script, or manual changes | Runs `scripts/dev/validate-wpf-dev.ps1` with the desktop workflow script-test default or a manual filter override. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | WPF, shared route dependency, route script, or manual changes | Runs position-blotter and operator-inbox route validation scripts on Windows. | Route validation evidence |
-| Documentation Automation | `documentation.yml` | Documentation, Codex memory, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, validates AI inventory, Codex memory summary/receipt commands and focused memory-checker tests, regenerates tracked documentation outputs, refreshes Mermaid/UI diagrams using root `npm install`, renders UML artifacts through the PlantUML container, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
+| Documentation Automation | `documentation.yml` | Documentation, Codex memory, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, validates AI inventory, Codex memory summary/receipt commands and focused memory-checker tests, regenerates tracked documentation outputs, refreshes Mermaid/UI diagrams using root lockfile-backed `npm ci`, renders UML artifacts through the PlantUML container, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
 | Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes or manual | Enforces PR phase scope for roadmap/source-doc changes, validates roadmap and source registries, renders generated outputs, and checks for drift. | None |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks, validates tooling metadata, validates workflow syntax with `actionlint`, and checks AI contract/navigation drift. | None |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs the Wave 1 provider validation evidence bundle and DK1 sign-off packet generation. | Provider validation evidence |
-| Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
+| Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime, generates `release-evidence.json` with file hashes and validation lane metadata, and uploads the generated standalone output. | Publish output plus release evidence manifest |
 | Desktop Standalone Publish | `desktop-standalone-publish.yml` | Manual only | Publishes a desktop standalone `win-x64` executable and uploads the output. | Desktop standalone output |
-| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Runs a WPF release preflight build/test gate, builds signed MSIX installer packages for `win-x64` and `win-arm64`, uploads workflow artifacts, and attaches package assets to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) |
+| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Runs a WPF release preflight build/test gate, builds signed MSIX installer packages for `win-x64` and `win-arm64`, generates `release-evidence.json` for each runtime, uploads workflow artifacts, and attaches package assets plus evidence manifests to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) plus release evidence manifests |
 | Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. These workflows always upload artifacts; `desktop-screenshot-capture.yml` can additionally open a `peter-evans/create-pull-request` PR with the refreshed catalog when dispatched with `commit: true`. They never push commits directly. | Desktop workflow, screenshot, or manual artifacts; optional screenshot refresh PR |
 | Web Screenshot Capture | `web-screenshot-capture.yml` | Manual only | Captures browser workstation screenshots from the configured route list with `npm install --include=optional`, cached Playwright Chromium setup, uploads artifacts, and opens a `peter-evans/create-pull-request` PR (`automation/web-screenshot-capture`) with the refreshed catalog. Duplicate dispatches share one workflow concurrency lane so stale queued runs are canceled before they can reopen the same refresh PR. It never pushes commits directly. | Web screenshot artifacts; screenshot refresh PR |
 | Provider Smoke Checks | `ibapi-smoke.yml`, `robinhood-options-smoke.yml` | Path-filtered or manual | Runs provider smoke checks that are too specialized for the normal PR fast path. | Smoke evidence artifacts |
@@ -81,6 +81,13 @@ gh workflow run targeted-test.yml --ref <branch> `
   -f mode=wpf-route `
   -f runner=windows-latest `
   -f wpf_route=operator-inbox
+
+python build/scripts/ci/dispatch-targeted-test.py `
+  --ref <branch> `
+  --mode dotnet-filtered `
+  --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj `
+  --dotnet-filter "FullyQualifiedName~ReportPackWorkflowServiceTests" `
+  --wait
 ```
 
 ```powershell
@@ -152,7 +159,7 @@ python -m unittest build.scripts.docs.tests.test_check_codex_memory
 python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json
 python3 build/scripts/docs/render-roadmap-diagrams.py --summary
 python3 build/scripts/docs/render-source-diagrams.py --summary
-npm install --no-fund --no-audit
+npm ci --no-fund --no-audit
 npm run generate-diagrams
 python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md
 python3 build/scripts/docs/generate-workflow-manifest.py
