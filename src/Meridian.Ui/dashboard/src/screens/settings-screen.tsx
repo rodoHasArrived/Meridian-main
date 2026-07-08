@@ -519,8 +519,8 @@ interface SettingsTaskView {
 const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "overview",
-    label: "Profile",
-    href: "#settings-overview",
+    label: "Access",
+    href: "/settings/access",
     sectionId: "settings-overview"
   },
   {
@@ -532,7 +532,7 @@ const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "providers",
     label: "Provider Connections",
-    href: "#provider-connection-center",
+    href: "/settings/providers",
     sectionId: "provider-connection-center"
   },
   {
@@ -544,13 +544,13 @@ const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "diagnostics",
     label: "Diagnostics",
-    href: "#diagnostic-endpoints",
+    href: "/settings/diagnostics",
     sectionId: "diagnostic-endpoints"
   },
   {
     id: "runtime",
     label: "Feature Coverage",
-    href: "#runtime-feature-capabilities",
+    href: "/settings/feature-coverage",
     sectionId: "runtime-feature-capabilities"
   }
 ];
@@ -574,6 +574,18 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
 
 function resolveSettingsTaskViewIdFromPath(pathname: string): SettingsTaskViewId | null {
   const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase();
+  if (normalizedPath.endsWith("/settings/access")) {
+    return "overview";
+  }
+  if (normalizedPath.endsWith("/settings/providers")) {
+    return "providers";
+  }
+  if (normalizedPath.endsWith("/settings/diagnostics")) {
+    return "diagnostics";
+  }
+  if (normalizedPath.endsWith("/settings/feature-coverage")) {
+    return "runtime";
+  }
   if (normalizedPath.endsWith("/settings/preferences")) {
     return "providers";
   }
@@ -958,11 +970,11 @@ export function SettingsScreen({
   const showOperationsSection = activeTaskView === "operations";
   const showAssetProfileSection = activeTaskView === "operations";
   const showProviderSection = activeTaskView === "providers";
-  const showDataProviderModulesSection = activeTaskView === "data-providers";
+  const showDataProviderModulesSection = activeTaskView === "providers" || activeTaskView === "data-providers";
   const showBrokerageSection = activeTaskView === "providers";
   const showDiagnosticsSection = activeTaskView === "diagnostics";
   const showRuntimeSection = activeTaskView === "runtime";
-  const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
+  const showBackendCapabilitySection = activeTaskView === "runtime";
 
   useEffect(() => {
     setHashTaskView(routeHashTaskView);

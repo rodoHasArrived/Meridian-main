@@ -1,4 +1,10 @@
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import type { ViewStateEnvelope } from "@/lib/view-state-envelope";
+import {
+  WORKSTATION_SCREEN_VIEW_STATE_SCREENS,
+  buildWorkstationScreenViewStateEnvelope,
+  type ReportingOperationsRecordViewState
+} from "@/lib/workstation-screen-view-states";
 import type {
   OperationsContinuityScreenViewModel,
   OperationsContinuityTone
@@ -13,6 +19,8 @@ import type { DataWorkspaceResponse } from "@/types";
 
 export type OperationsRecordReleaseTone = "ready" | "review" | "blocked" | "neutral";
 export type OperationsRecordReleaseBadgeVariant = "success" | "warning" | "danger" | "outline";
+export const OPERATIONS_RECORD_RELEASE_VIEW_STATE_SCREEN = WORKSTATION_SCREEN_VIEW_STATE_SCREENS.reportingOperationsRecord;
+export type OperationsRecordReleaseViewState = ReportingOperationsRecordViewState;
 
 export interface OperationsRecordReleaseMetric {
   id: string;
@@ -90,6 +98,36 @@ export interface BuildOperationsRecordReleaseViewModelOptions {
   data: DataWorkspaceResponse | null;
   continuity: OperationsContinuityScreenViewModel;
   reporting: ReportingScreenViewModel;
+}
+
+export function buildOperationsRecordReleaseViewStateEnvelope(
+  state: OperationsRecordReleaseViewState
+): ViewStateEnvelope {
+  return buildWorkstationScreenViewStateEnvelope(OPERATIONS_RECORD_RELEASE_VIEW_STATE_SCREEN, state);
+}
+
+export function normalizeOperationsRecordReleaseViewState(
+  state: unknown,
+  stepIds: readonly string[]
+): OperationsRecordReleaseViewState | null {
+  const source = typeof state === "object" && state !== null ? state as Record<string, unknown> : {};
+  const selectedStepId = source.selectedStepId;
+  if (typeof selectedStepId !== "string" || !stepIds.includes(selectedStepId)) {
+    return null;
+  }
+
+  return { selectedStepId };
+}
+
+export function resolveOperationsRecordReleaseSelectedStepId(
+  steps: readonly OperationsRecordReleaseStep[],
+  requestedStepId: string | null | undefined
+): string {
+  if (requestedStepId && steps.some((step) => step.id === requestedStepId)) {
+    return requestedStepId;
+  }
+
+  return steps[0]?.id ?? "";
 }
 
 export function buildOperationsRecordReleaseViewModel({
@@ -247,8 +285,8 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
         detail: data.exports.length > 0
           ? "Export rows show whether source data has a publishable handoff."
           : "No data export rows are loaded for the release path.",
-        href: WORKSTATION_ROUTE_CATALOG.data,
-        routeLabel: "Data workspace",
+        href: WORKSTATION_ROUTE_CATALOG.dataExports,
+        routeLabel: "Data exports",
         tone: data.exports.length === 0 ? "review" : "ready",
         badgeVariant: toneToBadgeVariant(data.exports.length === 0 ? "review" : "ready"),
         ariaLabel: `${exportReadyCount} of ${data.exports.length} data exports ready`

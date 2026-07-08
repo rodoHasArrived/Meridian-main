@@ -14,7 +14,6 @@ import {
 import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
-  type ReadinessConsoleLevel,
   type ReadinessConsoleNextAction,
   type ReadinessConsoleRecoveryState,
   type ReadinessConsoleRowAction,

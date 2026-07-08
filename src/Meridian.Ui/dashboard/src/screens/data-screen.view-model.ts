@@ -172,6 +172,8 @@ export interface DataOperationsRouteFocusCardState {
   action: DataOperationsRouteFocusActionState | null;
 }
 
+export type DataOperationsWorkstream = "overview" | "providers" | "backfills" | "exports" | "query";
+
 export interface DataOperationsSectionState<T> {
   rows: T[];
   hasRows: boolean;
@@ -1836,24 +1838,70 @@ export function useDataViewModel(
   };
 }
 
-export function resolveDataWorkstream(pathname: string): "overview" | "backfills" {
-  return pathname.includes("/backfills") ? "backfills" : "overview";
+export interface DataWorkstationViewState {
+  workstream: DataOperationsWorkstream;
+  selectedId: string | null;
+}
+
+export function resolveDataWorkstream(pathname: string): DataOperationsWorkstream {
+  if (pathname.includes("/providers")) {
+    return "providers";
+  }
+
+  if (pathname.includes("/backfills")) {
+    return "backfills";
+  }
+
+  if (pathname.includes("/exports")) {
+    return "exports";
+  }
+
+  if (pathname.includes("/query")) {
+    return "query";
+  }
+
+  return "overview";
 }
 
 export function buildDataLoadingState(
-  workstream: "overview" | "backfills" = "overview"
+  workstream: DataOperationsWorkstream = "overview"
 ): DataOperationsLoadingState {
   const backfillFocus = workstream === "backfills";
+  const providersFocus = workstream === "providers";
+  const exportsFocus = workstream === "exports";
+  const queryFocus = workstream === "query";
+  const focusedTitle = backfillFocus
+    ? "Loading backfill queue"
+    : providersFocus
+      ? "Loading Data providers"
+      : exportsFocus
+        ? "Loading Data exports"
+        : queryFocus
+          ? "Loading SQL query workspace"
+          : "Loading Data workspace";
+  const focusedDescription = backfillFocus
+    ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
+    : providersFocus
+      ? "Waiting for provider status, credential posture, and setup evidence."
+      : exportsFocus
+        ? "Waiting for retained export records and handoff readiness."
+        : queryFocus
+          ? "Waiting for the read-only query workspace and catalog posture."
+          : "Waiting for provider posture, market data health, and export evidence.";
 
   return {
-    title: backfillFocus ? "Loading backfill queue" : "Loading Data workspace",
-    description: backfillFocus
-      ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
-      : "Waiting for provider posture, market data health, and export evidence.",
+    title: focusedTitle,
+    description: focusedDescription,
     statusLabel: "Workspace data pending",
     detail: backfillFocus
       ? "Queued and review-required jobs will appear here as soon as workspace data is available."
-      : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
+      : providersFocus
+        ? "Provider health, credential verification, and routing posture will appear when workspace data is available."
+        : exportsFocus
+          ? "Export packages and selected export details will appear when workspace data is available."
+          : queryFocus
+            ? "Saved query, recent query, and result controls will appear when the workspace is ready."
+            : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
     regionLabel: backfillFocus ? "Data backfill loading state" : "Data workspace loading state",
     role: "status",
     ariaLive: "polite",
@@ -1885,7 +1933,7 @@ export function buildDataLoadingState(
 export function buildDataPresentationState(
   data: DataWorkspaceResponse | null,
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview",
+  workstream: DataOperationsWorkstream = "overview",
   selectedProviderId: string | null = null,
   selectedExportId: string | null = null,
   providerEvidence: DataOperationsProviderEvidence = {},
@@ -2133,7 +2181,7 @@ export function buildRouteFocusCardState({
   selectedBackfillDetail,
   backfillDetailEmptyState
 }: {
-  workstream: "overview" | "backfills";
+  workstream: DataOperationsWorkstream;
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
 }): DataOperationsRouteFocusCardState {
@@ -2161,6 +2209,57 @@ export function buildRouteFocusCardState({
       title,
       description,
       rows: [],
+      action: null
+    };
+  }
+
+  if (workstream === "providers") {
+    return {
+      id: "data-route-focus-providers",
+      role: "region",
+      ariaLabel: "Provider route focus",
+      eyebrow: "Provider Setup",
+      title: "Provider status and setup",
+      description: "Credential posture, verification evidence, routing trust, and provider setup stay on the provider route.",
+      rows: [
+        { id: "provider-status", label: "Provider status", value: "Catalog and readiness" },
+        { id: "credentials", label: "Credentials", value: "Masked and auditable" },
+        { id: "routing", label: "Routing", value: "Backup and trust snapshots" }
+      ],
+      action: null
+    };
+  }
+
+  if (workstream === "exports") {
+    return {
+      id: "data-route-focus-exports",
+      role: "region",
+      ariaLabel: "Exports route focus",
+      eyebrow: "Export Records",
+      title: "Export package review",
+      description: "Retained export records and handoff readiness are isolated from provider setup and query work.",
+      rows: [
+        { id: "records", label: "Records", value: "Recent exports" },
+        { id: "handoff", label: "Handoff", value: "Reporting and package outputs" },
+        { id: "selected-export", label: "Inspector", value: "Selected export detail" }
+      ],
+      action: null
+    };
+  }
+
+  if (workstream === "query") {
+    return {
+      id: "data-route-focus-query",
+      role: "region",
+      ariaLabel: "Query route focus",
+      eyebrow: "SQL Query",
+      title: "Read-only query workspace",
+      description: "SQL querying is separated from monitoring and setup work while keeping local-store analysis in the Data workspace.",
+      rows: [
+        { id: "catalog", label: "Catalog", value: "meridian_files" },
+        { id: "history", label: "History", value: "Recent and saved queries" },
+        { id: "exports", label: "Results", value: "Copy or download CSV" }
+      ],
       action: null
     };
   }
@@ -3344,7 +3443,7 @@ function verificationToneFromLabel(value: string): DataOperationsProviderSummary
 export function buildBackfillSection(
   backfills: DataBackfillRecord[],
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview"
+  workstream: DataOperationsWorkstream = "overview"
 ): DataOperationsBackfillSectionState {
   return {
     rows: backfills.map((backfill) => {

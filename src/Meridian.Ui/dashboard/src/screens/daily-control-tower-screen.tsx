@@ -19,8 +19,6 @@ export interface DailyControlTowerScreenProps {
   trustStrip: AppShellTrustStripState;
 }
 
-type ControlTowerTone = "ready" | "review" | "blocked" | "pending";
-
 export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
   // Triage-in-place: the operator can inspect any queue row's evidence without

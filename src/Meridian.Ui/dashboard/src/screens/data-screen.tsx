@@ -282,6 +282,12 @@ export function DataScreen({
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
+  const activeWorkstream = vm.workstream;
+  const showHealthMonitoring = activeWorkstream === "overview";
+  const showProviderWorkstream = activeWorkstream === "providers";
+  const showBackfillWorkstream = activeWorkstream === "backfills";
+  const showExportWorkstream = activeWorkstream === "exports";
+  const showQueryWorkstream = activeWorkstream === "query";
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -293,10 +299,11 @@ export function DataScreen({
         label="Data workspace filters"
         searchValue={`Provider: ${vm.providerSection.selectedDetail?.title ?? "All providers"}`}
         options={[
-          { id: "uploads", label: "Uploads", count: String(vm.uploadPanelState.templateOptions.length) },
-          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: true },
-          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length) },
-          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length) }
+          { id: "health", label: "Health", count: String(data.metrics.length), active: showHealthMonitoring },
+          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: showProviderWorkstream },
+          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length), active: showBackfillWorkstream },
+          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length), active: showExportWorkstream },
+          { id: "query", label: "SQL", count: "Read only", active: showQueryWorkstream }
         ]}
         fields={[
           { id: "sync", label: "Sync", value: vm.providerSection.statusLabel },
@@ -330,31 +337,36 @@ export function DataScreen({
         )}
       />
 
-      <section className="workspace-metric-strip">
-        {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
-      </section>
+      {showHealthMonitoring ? (
+        <>
+          <section className="workspace-metric-strip">
+            {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
+          </section>
 
-      <DataQualityRegion panel={qualityPanel} />
+          <DataQualityRegion panel={qualityPanel} />
 
-      <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
+          <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
 
-      <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
+          <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
 
-      <CoverageGapsRegion panel={coverageGapsPanel} />
+          <CoverageGapsRegion panel={coverageGapsPanel} />
+        </>
+      ) : null}
 
       <section className="data-management-frame">
         <nav className="workspace-directory-rail" aria-label="Data folders">
           <div className="operator-rail-section">Data folders</div>
-          <a href="#data-upload-intake-title">Upload templates</a>
-          <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
-          <a href="#data-backfill-queue-title">Backfill queue</a>
-          <a href="#data-recent-exports-title">Export packages</a>
-          <a href="#data-query-title">SQL query</a>
+          <Link to="/data" aria-current={showHealthMonitoring ? "page" : undefined}>Health monitoring</Link>
+          <Link to="/data/providers" aria-current={showProviderWorkstream ? "page" : undefined}>Provider catalog</Link>
+          <Link to="/data/backfills" aria-current={showBackfillWorkstream ? "page" : undefined}>Backfill queue</Link>
+          <Link to="/data/exports" aria-current={showExportWorkstream ? "page" : undefined}>Export packages</Link>
+          <Link to="/data/query" aria-current={showQueryWorkstream ? "page" : undefined}>SQL query</Link>
           <Link to="/data/watchlist">Watchlist</Link>
           <Link to="/data/quotes">Live quotes</Link>
         </nav>
 
         <div className="data-management-main">
+        {showHealthMonitoring ? (
         <section className="workspace-region workspace-region-compact">
           <CardHeader>
             <div className="eyebrow-label">{workspace.label} Lane</div>
@@ -385,17 +397,21 @@ export function DataScreen({
             />
           </CardContent>
         </section>
+        ) : null}
 
         <RouteFocusCard
           state={vm.routeFocusCard}
         />
 
-        <DataUploadIntakePanel
-          state={vm.uploadPanelState}
-          onTemplateSelect={vm.selectUploadTemplate}
-          onFileSelect={vm.previewDataUpload}
-        />
+        {showProviderWorkstream ? (
+          <DataUploadIntakePanel
+            state={vm.uploadPanelState}
+            onTemplateSelect={vm.selectUploadTemplate}
+            onFileSelect={vm.previewDataUpload}
+          />
+        ) : null}
 
+        {showProviderWorkstream ? (
         <section aria-labelledby="data-provider-health-title" className="workspace-region data-provider-region">
           <CardHeader>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -510,7 +526,9 @@ export function DataScreen({
             )}
           </CardContent>
         </section>
+        ) : null}
 
+        {showBackfillWorkstream ? (
         <section aria-labelledby="data-backfill-queue-title" className="workspace-region">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
@@ -552,7 +570,9 @@ export function DataScreen({
             </div>
           </CardContent>
         </section>
+        ) : null}
 
+        {showExportWorkstream ? (
         <section aria-labelledby="data-recent-exports-title" className="workspace-region">
           <CardHeader>
             <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
@@ -587,7 +607,9 @@ export function DataScreen({
             </div>
           </CardContent>
         </section>
+        ) : null}
 
+        {showQueryWorkstream ? (
         <section aria-labelledby="data-query-title" className="workspace-region">
           <CardHeader>
             <CardTitle id="data-query-title">SQL query</CardTitle>
@@ -764,6 +786,7 @@ export function DataScreen({
             </div>
           </CardContent>
         </section>
+        ) : null}
         </div>
       </section>
 
