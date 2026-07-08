@@ -38,7 +38,6 @@ import {
   type OperationsContinuityReconciliationLaneRow,
   type OperationsReviewedAutomationArtifactRow,
   type OperationsContinuityTimelineRow,
-  type OperationsContinuityTone,
   type OperationsContinuityWorkflowApprovalRow,
   type OperationsContinuityWorkflowRow
 } from "@/screens/operations-continuity-screen.view-model";
