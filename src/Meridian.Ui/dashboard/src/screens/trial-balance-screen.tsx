@@ -15,6 +15,7 @@ import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { getRunLedgerJournal } from "@/lib/api";
+import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import {
   buildAccountingLedgerJournalEvidenceViewState,
   useAccountingReconciliationViewModel
@@ -28,9 +29,6 @@ interface TrialBalanceScreenProps {
 }
 
 type TrialBalanceViewMode = "table" | "hierarchy";
-
-/** Above this row count the trial-balance grid windows rows instead of rendering all of them. */
-const TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD = 40;
 
 export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -117,7 +115,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   }, [reconciliation.trialBalanceView.rows, reconciliation.trialBalanceView.selectedRowId]);
 
   const shouldVirtualizeTrialBalance =
-    reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_VIRTUALIZATION_THRESHOLD;
+    reconciliation.trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD;
 
   const relatedSecurities = useMemo(() => {
     const seen = new Map<string, string>();
