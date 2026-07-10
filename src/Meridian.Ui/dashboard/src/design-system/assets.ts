@@ -29,9 +29,20 @@ export const DESIGN_SYSTEM_TOKEN_FILES = [
 ] as const;
 
 export const DESIGN_SYSTEM_SHELL_COMPONENTS = [
+  "NavRail",
   "WorkstationTopbar",
   "StatusBar",
   "SessionControls"
+] as const;
+
+export const DESIGN_SYSTEM_CORE_COMPONENTS = [
+  "Button",
+  "Badge"
+] as const;
+
+export const DESIGN_SYSTEM_STATUS_COMPONENTS = [
+  "TrustStrip",
+  "StatusBar"
 ] as const;
 
 export const DESIGN_SYSTEM_ACCOUNTING_COMPONENTS = [
@@ -41,14 +52,20 @@ export const DESIGN_SYSTEM_ACCOUNTING_COMPONENTS = [
 ] as const;
 
 export const DESIGN_SYSTEM_LIVE_COMPONENTS = {
+  core: DESIGN_SYSTEM_CORE_COMPONENTS,
   shell: DESIGN_SYSTEM_SHELL_COMPONENTS,
+  status: DESIGN_SYSTEM_STATUS_COMPONENTS,
   accounting: DESIGN_SYSTEM_ACCOUNTING_COMPONENTS
 } as const;
 
+export type DesignSystemCoreComponentName = typeof DESIGN_SYSTEM_CORE_COMPONENTS[number];
 export type DesignSystemShellComponentName = typeof DESIGN_SYSTEM_SHELL_COMPONENTS[number];
+export type DesignSystemStatusComponentName = typeof DESIGN_SYSTEM_STATUS_COMPONENTS[number];
 export type DesignSystemAccountingComponentName = typeof DESIGN_SYSTEM_ACCOUNTING_COMPONENTS[number];
 export type DesignSystemLiveComponentName =
+  | DesignSystemCoreComponentName
   | DesignSystemShellComponentName
+  | DesignSystemStatusComponentName
   | DesignSystemAccountingComponentName;
 
 export const DESIGN_SYSTEM_SHELL_ASSET_MAPPINGS = {
@@ -74,6 +91,8 @@ export const meridianBrandAssets = {
   wordmarkStacked: meridianWordmarkStackedUrl
 } as const;
 
+export const meridianMastheadBrandMarkAsset = meridianBrandAssets.markLight;
+
 export const meridianWorkspaceIconAssets = {
   trading: tradingIconUrl,
   portfolio: portfolioIconUrl,
@@ -83,3 +102,8 @@ export const meridianWorkspaceIconAssets = {
   data: dataIconUrl,
   settings: settingsIconUrl
 } satisfies Record<WorkspaceKey, string>;
+
+export const meridianDesignSystemShellAssets = {
+  brandMark: meridianMastheadBrandMarkAsset,
+  workspaceIcons: meridianWorkspaceIconAssets
+} as const;

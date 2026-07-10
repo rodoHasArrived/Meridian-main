@@ -5,6 +5,26 @@ import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { renderWithRouter } from "@/test/render";
 
 describe("WorkspaceNav", () => {
+  it("renders the seven root workspaces through the design-system rail contract", () => {
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const rail = screen.getByLabelText("Meridian navigation");
+    expect(rail).toHaveAttribute("data-design-system-component", "NavRail");
+    expect(rail).toHaveClass("mds-nav-rail");
+    expect(rail).toHaveClass("op-rail");
+    expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    [
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ].forEach((label) => expect(screen.getByText(label)).toBeInTheDocument());
+    expect(screen.getByText("Review · Current")).toBeInTheDocument();
+  });
+
   it("announces the current workspace route", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/reconciliation"] });
 
