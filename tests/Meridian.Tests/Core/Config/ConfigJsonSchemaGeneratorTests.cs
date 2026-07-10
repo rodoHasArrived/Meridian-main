@@ -84,6 +84,25 @@ public sealed class ConfigJsonSchemaGeneratorTests
     }
 
     [Fact]
+    public void GenerateSchema_IncludesSecurityMasterWorkbenchOptions()
+    {
+        var workbenchSchema = GetRootProperty("SecurityMasterWorkbench");
+        var workbenchBranch = workbenchSchema["anyOf"]!.AsArray()
+            .Select(static node => node!.AsObject())
+            .First(static node => node["$ref"] is not null);
+
+        workbenchBranch["$ref"]?.GetValue<string>().Should().Be("#/$defs/SecurityMasterWorkbenchOptions");
+
+        var definition = _generator.GenerateSchema()["$defs"]!["SecurityMasterWorkbenchOptions"]!.AsObject();
+        var properties = definition["properties"]!.AsObject();
+        properties.Select(static property => property.Key).Should().Contain(
+            "SourcePrecedence",
+            "GoldenCopySource",
+            "RequireIndependentReviewer",
+            "MaxBulkResolveBatch");
+    }
+
+    [Fact]
     public void WriteSchema_WritesSchemaToDisk()
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"appsettings-schema-{Guid.NewGuid():N}.json");
