@@ -108,4 +108,4 @@ Keep backtesting deterministic and separate from live broker actions.
 ## Related docs
 
 - `docs/source/generated/source-roadmap-traceability.md`
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`

@@ -67,6 +67,7 @@ ci_summary_dir="artifacts/ci-summary/${selected_lane}"
 ci_steps_tsv="${ci_summary_dir}/steps.tsv"
 ci_summary_md="${ci_summary_dir}/summary.md"
 mkdir -p "$ci_summary_dir" artifacts/build-logs artifacts/test-results/dotnet
+rm -f artifacts/build-logs/*.log artifacts/test-results/dotnet/ci-dotnet-test-summary.json
 : > "$ci_steps_tsv"
 
 write_ci_summary() {
@@ -77,9 +78,13 @@ write_ci_summary() {
     --exit-code "$status"
     --steps-tsv "$ci_steps_tsv"
     --output "$ci_summary_md"
-    --build-log artifacts/build-logs/web-workstation-build.log
     --dotnet-summary-json artifacts/test-results/dotnet/ci-dotnet-test-summary.json
   )
+  for log_path in artifacts/build-logs/*.log; do
+    if [[ -f "$log_path" ]]; then
+      summary_args+=(--build-log "$log_path")
+    fi
+  done
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     summary_args+=(--github-step-summary "$GITHUB_STEP_SUMMARY")
   fi
@@ -133,6 +138,9 @@ verify_dotnet() {
   run_step "Validate warning suppression inventory" \
     "$python_cmd" build/scripts/ci/check-warning-suppressions.py
 
+  run_step "Enforce no-new-god-file ratchet" \
+    "$python_cmd" build/scripts/ci/check-file-size.py
+
   run_step "Build web workstation .NET lane" \
     bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
@@ -149,13 +157,22 @@ verify_browser() {
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
-    npm --prefix src/Meridian.Ui/dashboard ci --include=optional
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard ci --include=optional 2>&1 | tee artifacts/build-logs/dashboard-install.log'
+
+  run_step "Generated UI contract drift gate" \
+    bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py --check 2>&1 | tee artifacts/build-logs/ui-api-routes-check.log; "$0" build/scripts/generate-workspace-catalog-ts.py --check 2>&1 | tee artifacts/build-logs/workspace-catalog-check.log' "$python_cmd"
+
+  run_step "Lint dashboard source" \
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee artifacts/build-logs/dashboard-lint.log'
+
+  run_step "Enforce strictNullChecks on dashboard source" \
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee artifacts/build-logs/dashboard-typecheck-strict.log'
 
   run_step "Run dashboard tests" \
-    npm --prefix src/Meridian.Ui/dashboard run test
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test 2>&1 | tee artifacts/build-logs/dashboard-test.log'
 
   run_step "Build dashboard bundle" \
-    npm --prefix src/Meridian.Ui/dashboard run build
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee artifacts/build-logs/dashboard-build.log'
 }
 
 verify_docs() {
@@ -218,7 +235,7 @@ verify_docs() {
     "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
 
   run_step "Render roadmap/source docs and check drift" \
-    bash -c '"$0" build/scripts/docs/render-roadmap-docs.py --summary && "$0" build/scripts/docs/render-source-docs.py --summary && [ -z "$(git status --porcelain -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src)" ]' "$python_cmd"
+    bash -c 'set -euo pipefail; { "$0" build/scripts/docs/render-roadmap-docs.py --summary && "$0" build/scripts/docs/render-source-docs.py --summary && [ -z "$(git status --porcelain -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src)" ]; } 2>&1 | tee artifacts/build-logs/docs-render-drift.log' "$python_cmd"
 }
 
 verify_workflows() {
@@ -231,7 +248,7 @@ verify_workflows() {
     "$python_cmd" build/scripts/docs/check-known-lanes.py
 
   run_step "Validate workflow hygiene" \
-    "$python_cmd" build/scripts/ci/check-workflow-hygiene.py
+    bash -c 'set -euo pipefail; "$0" build/scripts/ci/check-workflow-hygiene.py 2>&1 | tee artifacts/build-logs/workflow-hygiene.log' "$python_cmd"
 }
 
 verify_fast() {

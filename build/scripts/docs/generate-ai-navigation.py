@@ -419,8 +419,8 @@ DOC_CATALOG: list[dict[str, Any]] = [
         "keywords": ["fsharp", "interop", "domain"],
     },
     {
-        "path": "docs/plans/trading-workstation-migration-blueprint.md",
-        "title": "Trading workstation migration blueprint",
+        "path": "docs/development/wpf-web-ui-alignment-plan.md",
+        "title": "WPF web-UI alignment plan",
         "area": "ui",
         "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
         "keywords": ["workstation", "wpf", "workspace", "migration"],
@@ -566,7 +566,7 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
         "startProjects": ["Meridian.Wpf", "Meridian.Ui.Services", "Meridian.Ui.Shared", "Meridian"],
         "startSymbols": ["MainWindow"],
         "docs": [
-            "docs/plans/trading-workstation-migration-blueprint.md",
+            "docs/development/wpf-web-ui-alignment-plan.md",
             "docs/ai/ai-known-errors.md",
         ],
         "recommendedSkill": "meridian-blueprint",
@@ -646,6 +646,11 @@ def parse_project_references(project_file: Path) -> list[str]:
         include = item.attrib.get("Include")
         if not include:
             continue
+        # .csproj ProjectReference Include paths use Windows-style backslash separators.
+        # Normalize to forward slashes so path resolution (and .stem) works cross-platform;
+        # otherwise on non-Windows hosts the backslashes are treated as literal filename
+        # characters and .stem yields the raw "..\Name\Name" string instead of the project name.
+        include = include.replace("\\", "/")
         target = (project_file.parent / include).resolve()
         refs.append(target.stem)
     return sorted(set(refs))

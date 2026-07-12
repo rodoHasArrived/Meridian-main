@@ -7,10 +7,10 @@ Use this file to decide which Meridian sources to read first and how to shape ro
 1. `docs/status/ROADMAP.md`
 2. `docs/status/FEATURE_INVENTORY.md`
 3. `docs/status/FULL_IMPLEMENTATION_TODO_*.md`
-4. `docs/plans/trading-workstation-migration-blueprint.md`
-5. `docs/plans/meridian-6-week-roadmap.md`
-6. `docs/status/IMPROVEMENTS.md`
-7. `docs/status/EVALUATIONS_AND_AUDITS.md`
+4. `archive/docs/plans/trading-workstation-migration-blueprint.md`
+5. `archive/docs/plans/meridian-6-week-roadmap.md`
+6. `archive/docs/status/IMPROVEMENTS.md`
+7. `archive/docs/status/EVALUATIONS_AND_AUDITS.md`
 8. directly relevant files in `src/` or `tests/` when a roadmap claim depends on current implementation
 
 ## Typical Tasks
