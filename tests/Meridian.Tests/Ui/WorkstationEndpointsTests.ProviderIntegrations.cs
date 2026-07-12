@@ -206,6 +206,43 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_ReturnsValidationProblemWithFieldErrors()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = CreateProviderIntegrationSetupSaveRequest() with { SavedBy = " " };
+            request = request with
+            {
+                Connection = request.Connection with { CredentialSecretRef = " " }
+            };
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSetupSave,
+                request,
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            problem.RootElement.GetProperty("title").GetString().Should()
+                .Be("Provider integration setup draft failed validation.");
+            var errors = problem.RootElement.GetProperty("errors");
+            errors.TryGetProperty("savedBy", out _).Should().BeTrue();
+            errors.TryGetProperty("connection.credentialSecretRef", out _).Should().BeTrue();
+            (await DefaultProviderIntegrationTenantStore(store).GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_RequiresConfigurePermission()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
