@@ -195,6 +195,10 @@ nul
 
 *.tmp
 *.temp
+*.bak
+*.backup-*
+*.pid
+*.exitcode
 *_wpftmp.csproj
 *.swp
 *~
@@ -270,6 +274,7 @@ __pycache__/
 /src/Meridian.Ui/dashboard/artifacts/*.log
 /src/Meridian.Ui/dashboard/artifacts/*.tmp
 /src/Meridian.Ui/dashboard/artifacts/ui-cleanup-*.png
+/src/Meridian.Ui/dashboard/.tmp/
 /wwwroot/workstation/assets/.vite-temp/
 /wwwroot/workstation/.vite-temp/
 

@@ -46,7 +46,7 @@ class GenerateStructureDocsTests(unittest.TestCase):
             (root / "build" / "scripts" / "__pycache__").mkdir(parents=True)
             (root / "build" / "scripts" / "__pycache__" / "tool.cpython-312.pyc").write_bytes(b"0")
             (root / "config").mkdir()
-            (root / "config" / "appsettings.json.backup-20260529-235335").write_text(
+            (root / "config" / "appsettings.json.backup-20260101-000000").write_text(
                 "{}\n",
                 encoding="utf-8",
             )
