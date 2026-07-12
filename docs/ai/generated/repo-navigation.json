@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-25T02:00:53Z",
+  "generatedAt": "2026-07-12T02:50:18Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -181,7 +181,6 @@
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
         "src/Meridian.Ui/dashboard/package.json",
-        "src/Meridian.Ui/dashboard/src/app.tsx",
         "src/Meridian.Ui/dashboard/src/main.tsx",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml",
@@ -191,7 +190,7 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/navigation/README.md",
-        "docs/plans/trading-workstation-migration-blueprint.md"
+        "docs/development/wpf-web-ui-alignment-plan.md"
       ],
       "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
@@ -1096,7 +1095,7 @@
         "Meridian.Workflow"
       ],
       "relatedDocs": [
-        "docs/plans/trading-workstation-migration-blueprint.md"
+        "docs/development/wpf-web-ui-alignment-plan.md"
       ]
     },
     {
@@ -1233,8 +1232,7 @@
       ],
       "entrypoints": [
         "src/Meridian.Ui/dashboard/package.json",
-        "src/Meridian.Ui/dashboard/src/main.tsx",
-        "src/Meridian.Ui/dashboard/src/app.tsx"
+        "src/Meridian.Ui/dashboard/src/main.tsx"
       ],
       "keyContracts": [
         "src/Meridian.Ui/dashboard/package.json",
@@ -1341,8 +1339,8 @@
       ]
     },
     {
-      "path": "docs/plans/trading-workstation-migration-blueprint.md",
-      "title": "Trading workstation migration blueprint",
+      "path": "docs/development/wpf-web-ui-alignment-plan.md",
+      "title": "WPF web-UI alignment plan",
       "area": "ui",
       "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
       "keywords": [
@@ -1608,7 +1606,7 @@
         }
       ],
       "authoritativeDocs": [
-        "docs/plans/trading-workstation-migration-blueprint.md",
+        "docs/development/wpf-web-ui-alignment-plan.md",
         "docs/ai/ai-known-errors.md"
       ],
       "recommendedSkill": "meridian-blueprint",
@@ -2188,324 +2186,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T16:15:05Z",
-      "lastCommit": "635d1167c",
-      "lastSummary": "Add conditional formatting and chart config UI to report designer",
-      "touches": 13
+      "lastModified": "2026-07-12T00:56:51+00:00",
+      "lastCommit": "80cd751e",
+      "lastSummary": "Fix inherited settings-screen.tsx breakage from main's WIP metric-tone refactor",
+      "touches": 18
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/report-writer-grid-diff-view.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:33:27Z",
-      "lastCommit": "a4d453a7e",
-      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-07-12T00:15:29+00:00",
+      "lastCommit": "086a1277",
+      "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-07-12T00:15:29+00:00",
+      "lastCommit": "086a1277",
+      "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:33:27Z",
-      "lastCommit": "a4d453a7e",
-      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-07-12T00:15:29+00:00",
+      "lastCommit": "086a1277",
+      "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:33:27Z",
-      "lastCommit": "a4d453a7e",
-      "lastSummary": "Add report-writer snapshot comparison to browser preview",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/report-writer-chart-preview.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:28:29Z",
-      "lastCommit": "d2ba8b1cf",
-      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:28:29Z",
-      "lastCommit": "d2ba8b1cf",
-      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:28:29Z",
-      "lastCommit": "d2ba8b1cf",
-      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:22:11Z",
-      "lastCommit": "fd1591527",
-      "lastSummary": "Add report hub overview to reporting workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-hub.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:22:11Z",
-      "lastCommit": "fd1591527",
-      "lastSummary": "Add report hub overview to reporting workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-hub.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:22:11Z",
-      "lastCommit": "fd1591527",
-      "lastSummary": "Add report hub overview to reporting workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:15:41Z",
-      "lastCommit": "a188e17bc",
-      "lastSummary": "Add reporting period switcher to browser workstation",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-periods.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:15:41Z",
-      "lastCommit": "a188e17bc",
-      "lastSummary": "Add reporting period switcher to browser workstation",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-periods.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:15:41Z",
-      "lastCommit": "a188e17bc",
-      "lastSummary": "Add reporting period switcher to browser workstation",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T15:08:16Z",
-      "lastCommit": "e4921294b",
-      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
-      "touches": 57
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-24T15:08:16Z",
-      "lastCommit": "e4921294b",
-      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
+      "path": "src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-07-11T17:19:54-07:00",
+      "lastCommit": "29839b47",
+      "lastSummary": "wip: preserve uncommitted ETL export post-processing fix from worktree consolidation",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Reporting/ReportWriterGridEngine.cs",
+      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-06-24T15:08:16Z",
-      "lastCommit": "e4921294b",
-      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
-      "touches": 4
+      "lastModified": "2026-07-11T17:19:54-07:00",
+      "lastCommit": "29839b47",
+      "lastSummary": "wip: preserve uncommitted ETL export post-processing fix from worktree consolidation",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Reporting/ReportSnapshotDiffEngine.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-24T15:08:16Z",
-      "lastCommit": "e4921294b",
-      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-07-08T19:44:56+00:00",
+      "lastCommit": "3d60c866",
+      "lastSummary": "Address review: fix amortization rounding sign-flip and day-count details",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-07-08T19:44:56+00:00",
+      "lastCommit": "3d60c866",
+      "lastSummary": "Address review: fix amortization rounding sign-flip and day-count details",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ledger/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLot.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotReliefInput.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs",
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 55
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 27
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 52
-    },
-    {
-      "path": "src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 51
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 24
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 35
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 12
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 26
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 12
     },
     {
-      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 3
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 10
     },
     {
-      "path": "src/Meridian.Backtesting/CorporateActionAdjustmentService.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/ModeRunners/DesktopModeRunner.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Backtesting/Engine/BacktestEngine.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 10
     },
     {
       "path": "src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.route-state.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.workstreams.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 11
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 10
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 7
     },
     {
-      "path": "src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ProviderSdk/DataSourceAttribute.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ProviderSdk/IDataSource.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.QuantScript/Compilation/RoslynScriptCompiler.cs",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-06-24T14:35:42-07:00",
-      "lastCommit": "795ae3db1",
-      "lastSummary": "154362",
-      "touches": 1
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 6
     }
   ],
   "recentChangesWindowDays": 14,

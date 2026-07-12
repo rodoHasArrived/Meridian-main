@@ -213,16 +213,21 @@ public sealed class EtlJobOrchestrator
             await _catalog.RebuildCatalogAsync(new CatalogRebuildOptions { Recursive = true }, ct: ct).ConfigureAwait(false);
 
             EtlExportResult? exportResult = null;
+            var exportSucceeded = true;
             if (definition.PublishPortablePackage || definition.PublishNormalizedExtract || definition.Destination.Kind != EtlDestinationKind.StorageCatalog)
             {
                 exportResult = await _exportService.ExportAsync(job, definition, ct).ConfigureAwait(false);
+                exportSucceeded = exportResult.Success;
                 if (!exportResult.Success && definition.FlowDirection == EtlFlowDirection.RoundTrip && definition.FailRoundTripOnExportError)
                     throw new InvalidOperationException(exportResult.Error ?? "ETL export failed.");
             }
 
-            foreach (var file in filesReadyForPostProcessing)
+            if (exportSucceeded)
             {
-                await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
+                foreach (var file in filesReadyForPostProcessing)
+                {
+                    await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
+                }
             }
 
             await _ingestionJobService.TransitionAsync(jobId, IngestionJobState.Completed, ct: ct).ConfigureAwait(false);

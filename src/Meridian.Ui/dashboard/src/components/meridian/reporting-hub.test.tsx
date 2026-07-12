@@ -37,5 +37,38 @@ describe("ReportingHub", () => {
     expect(within(facts).getByText("Board reporting committee")).toBeInTheDocument();
     expect(within(facts).getByText("Review delivery")).toBeInTheDocument();
     expect(within(facts).getByText("1 evidence gap")).toBeInTheDocument();
+    expect(within(cockpit).getByLabelText("Selected reporting work detail")).toHaveTextContent("Secure portal rejected the latest board package.");
+  });
+
+  it("renders report families as a health table instead of launch cards", () => {
+    const model = buildReportingHubModel(
+      [
+        {
+          templateId: "monthly",
+          family: "Investor statements",
+          status: "Released",
+          asOfDateLabel: "2026-06-30",
+          runIdLabel: "run-1",
+          drilldownLinks: [{ href: "/reporting/runs/run-1", label: "Run", isBrowserNavigable: true }]
+        }
+      ],
+      [
+        {
+          templateName: "investor-monthly",
+          name: "Investor Monthly Statement",
+          family: "Investor statements"
+        }
+      ]
+    );
+
+    render(<ReportingHub model={model} />);
+
+    const familyHealth = screen.getByRole("region", { name: "Report family health" });
+    expect(within(familyHealth).getByRole("columnheader", { name: "Family" })).toBeInTheDocument();
+    expect(within(familyHealth).getByText("Investor statements")).toBeInTheDocument();
+    expect(within(familyHealth).getByRole("link", { name: "Open latest output for Investor statements" })).toHaveAttribute(
+      "href",
+      "/reporting/runs/run-1"
+    );
   });
 });
