@@ -32,7 +32,7 @@ placeholder in each script.
 | --- | --- | --- | --- | --- |
 | Ledger + Operations Continuity | `ledger` | 17 | `src/Meridian.Storage/Ledger/Migrations/` (`V_ledger_001`–`V_ledger_023`) | `MERIDIAN_LEDGER_CONNECTION_STRING`, `MERIDIAN_LEDGER_SCHEMA`, `MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING` |
 | Security Master | `security_master` | 30 | `src/Meridian.Storage/SecurityMaster/Migrations/` (`001`–`021`) | `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`, `MERIDIAN_SECURITY_MASTER_SCHEMA` |
-| Direct Lending | `security_master` (co-located; override with `MERIDIAN_DIRECT_LENDING_SCHEMA`) | 32 | `src/Meridian.Storage/DirectLending/Migrations/` (`001`–`007`) | `MERIDIAN_DIRECT_LENDING_CONNECTION_STRING`, `MERIDIAN_DIRECT_LENDING_SCHEMA` |
+| Direct Lending | `security_master` (co-located; override with `MERIDIAN_DIRECT_LENDING_SCHEMA`) | 32 | `src/Meridian.Storage/DirectLending/Migrations/` (`001`–`007`) | Inherits `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING`/`_SCHEMA` by default; `MERIDIAN_DIRECT_LENDING_CONNECTION_STRING`/`_SCHEMA` override for isolated databases |
 | Fund Structure | `fund_structure` | 10 | `src/Meridian.Storage/FundStructure/Migrations/` | `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`, `MERIDIAN_FUND_STRUCTURE_SCHEMA` |
 | Fund Accounts | `fund_accounts` | 10 | `src/Meridian.Storage/FundAccounts/Migrations/` | `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING`, `MERIDIAN_FUND_ACCOUNTS_SCHEMA` |
 | Banking | `banking` | 2 | `src/Meridian.Storage/Banking/Migrations/` | `MERIDIAN_BANKING_CONNECTION_STRING`, `MERIDIAN_BANKING_SCHEMA` |
