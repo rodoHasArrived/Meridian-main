@@ -1,3 +1,14 @@
+import type {
+  AccountingBookContext,
+  AccountingRulePackReference,
+  BookPosition,
+  EconomicEventReference,
+  InstrumentRole,
+  PositionEconomicState,
+  ProjectionLineage,
+} from "./types/instrument-accounting";
+
+export * from "./types/instrument-accounting";
 export * from "./types/market-data";
 export * from "./types/workstation-1";
 export * from "./types/workstation-2";
@@ -2980,6 +2991,7 @@ export interface LedgerDimensionSet {
   investorId?: string | null;
   capitalAccountId?: string | null;
   instrumentId?: string | null;
+  positionId?: string | null;
   taxLotId?: string | null;
   costCenterId?: string | null;
   counterpartyId?: string | null;
@@ -4390,6 +4402,10 @@ export interface AssetOperationsDetail {
   ledgerProjections: AssetLedgerProjection[];
   readiness: AssetOperationsReadiness;
   workflowAudit: AssetLifecycleEvent[];
+  instrumentRoles?: InstrumentRole[];
+  bookPositions?: BookPosition[];
+  positionEconomicStates?: PositionEconomicState[];
+  projectionLineages?: ProjectionLineage[];
 }
 
 
@@ -7297,6 +7313,12 @@ export interface AccountingPostingCommand {
   operatorRationale?: string | null;
   evidence: AccountingPostingEvidenceReference[];
   actionOrigin: OperationsActionOrigin;
+  ledgerBookId?: string | null;
+  bookContext?: AccountingBookContext | null;
+  bookPositionId?: string | null;
+  economicEvent?: EconomicEventReference | null;
+  projectionLineage?: ProjectionLineage | null;
+  rulePackReference?: AccountingRulePackReference | null;
 }
 
 export interface PostingRuleJournalCandidateRequest {
@@ -7325,6 +7347,11 @@ export interface PostingRuleJournalCandidateRequest {
   evidenceLinks?: string[] | null;
   tenantId?: string | null;
   companyId?: string | null;
+  bookContext?: AccountingBookContext | null;
+  bookPositionId?: string | null;
+  economicEvent?: EconomicEventReference | null;
+  projectionLineage?: ProjectionLineage | null;
+  rulePackReference?: AccountingRulePackReference | null;
 }
 
 export interface PostingRuleJournalCandidateIssue {
@@ -7342,6 +7369,11 @@ export interface PostingRuleJournalCandidateResult {
   selectedRuleVersion?: string | null;
   generatedPostingLines: GeneratedPostingLine[];
   postingCommand?: AccountingPostingCommand | null;
+  bookContext?: AccountingBookContext | null;
+  bookPositionId?: string | null;
+  economicEvent?: EconomicEventReference | null;
+  projectionLineage?: ProjectionLineage | null;
+  rulePackReference?: AccountingRulePackReference | null;
   journalEntryId?: string | null;
   totalDebits: number;
   totalCredits: number;

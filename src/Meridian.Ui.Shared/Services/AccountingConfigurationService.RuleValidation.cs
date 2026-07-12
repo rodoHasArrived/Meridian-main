@@ -376,6 +376,7 @@ public sealed partial class AccountingConfigurationService
                MatchesScopeValue(ruleScope.InvestorId, eventScope?.InvestorId) &&
                MatchesScopeValue(ruleScope.CapitalAccountId, eventScope?.CapitalAccountId) &&
                (!ruleScope.InstrumentId.HasValue || ruleScope.InstrumentId == eventScope?.InstrumentId) &&
+               (!ruleScope.PositionId.HasValue || ruleScope.PositionId == eventScope?.PositionId) &&
                MatchesScopeValue(ruleScope.TaxLotId, eventScope?.TaxLotId) &&
                MatchesScopeValue(ruleScope.CostCenterId, eventScope?.CostCenterId) &&
                MatchesScopeValue(ruleScope.CounterpartyId, eventScope?.CounterpartyId ?? counterpartyId) &&
@@ -547,6 +548,7 @@ public sealed partial class AccountingConfigurationService
             "investor" or "investorid" or "investor_id" => dimensions?.InvestorId,
             "capitalaccount" or "capitalaccountid" or "capital_account_id" => dimensions?.CapitalAccountId,
             "instrument" or "instrumentid" or "instrument_id" => dimensions?.InstrumentId?.ToString("D"),
+            "position" or "positionid" or "position_id" => dimensions?.PositionId?.ToString("D"),
             "taxlot" or "taxlotid" or "tax_lot_id" => dimensions?.TaxLotId,
             "costcenter" or "costcenterid" or "cost_center_id" => dimensions?.CostCenterId,
             "instrumentsymbol" or "instrument_symbol" => request.InstrumentSymbol,
@@ -910,7 +912,10 @@ public sealed partial class AccountingConfigurationService
             AccountId: FirstText(overlay.AccountId, baseDimensions?.AccountId),
             CustomerId: FirstText(overlay.CustomerId, baseDimensions?.CustomerId),
             VendorId: FirstText(overlay.VendorId, baseDimensions?.VendorId),
-            ProjectId: FirstText(overlay.ProjectId, baseDimensions?.ProjectId));
+            ProjectId: FirstText(overlay.ProjectId, baseDimensions?.ProjectId))
+        {
+            PositionId = overlay.PositionId ?? baseDimensions?.PositionId
+        };
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> EvaluateRuleTestCaseAssertions(
@@ -1065,6 +1070,7 @@ public sealed partial class AccountingConfigurationService
                string.Equals(NormalizeOptional(expected.InvestorId), NormalizeOptional(actual.InvestorId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CapitalAccountId), NormalizeOptional(actual.CapitalAccountId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeDimensionValue(expected.InstrumentId), NormalizeDimensionValue(actual.InstrumentId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeDimensionValue(expected.PositionId), NormalizeDimensionValue(actual.PositionId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.TaxLotId), NormalizeOptional(actual.TaxLotId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CostCenterId), NormalizeOptional(actual.CostCenterId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CounterpartyId), NormalizeOptional(actual.CounterpartyId), StringComparison.OrdinalIgnoreCase) &&

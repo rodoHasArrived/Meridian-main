@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.FinancialOperations
@@ -54,6 +54,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
+- `Ledger/AccountingPostingCandidateService.cs` - non-posting Rules Studio candidate construction,
+  authoritative ledger-book and accounting-policy resolution, and fail-closed typed book,
+  economic-event, book-position, projection-lineage, and rule-pack assertion validation.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
@@ -426,6 +429,19 @@ The generated candidate path also preserves the neutral operational dimensions c
 `LedgerDimensionSetDto` - organization, portfolio, book, account, customer, vendor, and project -
 through generated posting lines, governed draft lines, and approved append writes so reporting and
 external-GL mapping do not lose non-fund dimension scope at the rule-to-ledger boundary.
+Typed instrument-to-journal fields are additive assertions on that same candidate path.
+`AccountingBookContextDto` is re-resolved through `ILedgerBookService`, including book owner,
+period, basis, policy/version, currency, fund, and dimension scope; the client snapshot never grants
+posting authority. Economic-event and projection references must agree with retained source-event
+identity, evidence, effective date, instrument identity, and `BookPositionId`, while candidate and
+generated-line `PositionId` dimensions must match. `AccountingRulePackReferenceDto` is validated
+against the existing accounting policy rule pack and selected Rules Studio rule/version rather than
+creating another rule authority. Any mismatch remains a blocking candidate issue before draft/write
+creation.
+Security Master remains the canonical source of instrument identity, Instruments/Asset Operations
+own economic projections, and this module owns the governed candidate/approval handoff. These
+optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
+posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target

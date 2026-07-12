@@ -848,7 +848,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
             CounterpartyId: NormalizeOptional(dimensions?.CounterpartyId) ?? NormalizeOptional(counterpartyId),
             ExternalGlDimensions: externalDimensions
                 .OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase));
+                .ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase))
+        {
+            PositionId = dimensions?.PositionId
+        };
 
         return HasAnyDimension(normalized) ? normalized : null;
     }
@@ -861,6 +864,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
            !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
            !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
            dimensions.InstrumentId.HasValue ||
+           dimensions.PositionId.HasValue ||
            !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
            !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
            !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||

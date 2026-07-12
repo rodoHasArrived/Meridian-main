@@ -875,6 +875,7 @@ public sealed partial class AccountingConfigurationService
                ScopeValuesOverlap(left.InvestorId, right.InvestorId) &&
                ScopeValuesOverlap(left.CapitalAccountId, right.CapitalAccountId) &&
                (!left.InstrumentId.HasValue || !right.InstrumentId.HasValue || left.InstrumentId == right.InstrumentId) &&
+               (!left.PositionId.HasValue || !right.PositionId.HasValue || left.PositionId == right.PositionId) &&
                ScopeValuesOverlap(left.TaxLotId, right.TaxLotId) &&
                ScopeValuesOverlap(left.CostCenterId, right.CostCenterId) &&
                ScopeValuesOverlap(left.CounterpartyId, right.CounterpartyId) &&

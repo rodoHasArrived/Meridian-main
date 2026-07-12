@@ -142,6 +142,13 @@ public static class PeriodCloseProjector
             builder.Append(pair.Key).Append('=').Append(pair.Value).Append(';');
         }
 
+        if (dimensions.PositionId.HasValue)
+        {
+            builder.Append('\u001e')
+                .Append("positionId=")
+                .Append(dimensions.PositionId.Value.ToString("D", CultureInfo.InvariantCulture));
+        }
+
         return builder.ToString();
     }
 }

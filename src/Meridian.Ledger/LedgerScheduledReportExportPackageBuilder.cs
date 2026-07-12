@@ -165,6 +165,8 @@ public static class LedgerScheduledReportExportPackageBuilder
             yield return ("CapitalAccountId", dimensions.CapitalAccountId!.Trim());
         if (dimensions.InstrumentId is not null)
             yield return ("InstrumentId", dimensions.InstrumentId.Value.ToString("D"));
+        if (dimensions.PositionId is not null)
+            yield return ("PositionId", dimensions.PositionId.Value.ToString("D"));
         if (HasValue(dimensions.TaxLotId))
             yield return ("TaxLotId", dimensions.TaxLotId!.Trim());
         if (HasValue(dimensions.CostCenterId))

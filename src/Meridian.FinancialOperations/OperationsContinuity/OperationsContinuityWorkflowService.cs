@@ -3616,7 +3616,10 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return HasLedgerLineDimension(result) ? result : null;
     }
@@ -3629,6 +3632,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
            || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
            || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
            || dimensions.InstrumentId.HasValue
+           || dimensions.PositionId.HasValue
            || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
            || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
            || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)

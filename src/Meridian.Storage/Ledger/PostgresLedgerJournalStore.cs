@@ -115,6 +115,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         if (!query.LedgerBookId.HasValue
             && !query.PeriodId.HasValue
             && !query.AggregateId.HasValue
+            && !query.SourceEventId.HasValue
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
             && !query.OccurredTo.HasValue
@@ -128,7 +129,13 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         command.CommandText += BuildJournalEntryQueryFilterSql(
             Qualified("journal_entries"),
             Qualified("journal_legs"),
-            Qualified("accounting_periods"));
+            Qualified("accounting_periods"),
+            query);
+
+        if (query.SourceEventId.HasValue)
+        {
+            command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);
+        }
 
         // SEC-005 slice 4c-ii: scope the entry filter to the caller's tenant via the period's stamped
         // tenant_id (p_filter aliases accounting_periods inside the filter subquery). Fail-open when the
@@ -1598,6 +1605,11 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             values["instrumentId"] = dimensions.InstrumentId.Value;
         }
 
+        if (dimensions.PositionId.HasValue)
+        {
+            values["positionId"] = dimensions.PositionId.Value;
+        }
+
         AddDimension(values, "taxLotId", dimensions.TaxLotId);
         AddDimension(values, "costCenterId", dimensions.CostCenterId);
         AddDimension(values, "counterpartyId", dimensions.CounterpartyId);
@@ -1620,8 +1632,10 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     internal static string BuildJournalEntryQueryFilterSql(
         string journalEntriesTable,
         string journalLegsTable,
-        string accountingPeriodsTable)
-        => $"""
+        string accountingPeriodsTable,
+        LedgerJournalEntryQuery? query = null)
+    {
+        var sql = $"""
 
             where je.journal_entry_id in (
                 select distinct je_filter.journal_entry_id
@@ -1630,6 +1644,11 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 join {accountingPeriodsTable} p_filter on p_filter.period_id = je_filter.period_id
                 where 1 = 1
             """;
+
+        return query?.SourceEventId.HasValue == true
+            ? sql + " and je_filter.source_event_id = @source_event_id"
+            : sql;
+    }
 
     private static void AddDimension(IDictionary<string, object> values, string name, string? value)
     {
@@ -1665,7 +1684,10 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return HasAnyLineDimension(canonical) ? canonical : null;
     }
@@ -1690,6 +1712,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
            !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
            !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
            dimensions.InstrumentId.HasValue ||
+           dimensions.PositionId.HasValue ||
            !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
            !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
            !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||

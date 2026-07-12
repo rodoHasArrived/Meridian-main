@@ -44,7 +44,13 @@ public partial class PositionBlotterPage : Page
         {
             await _viewModel.InitializeAsync();
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
+        }
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
