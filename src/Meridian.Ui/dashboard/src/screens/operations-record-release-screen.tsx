@@ -29,7 +29,6 @@ import {
   resolveOperationsRecordReleaseSelectedStepId,
   type OperationsRecordReleaseEvidenceRow,
   type OperationsRecordReleaseMetric,
-  type OperationsRecordReleasePanel
   type OperationsRecordReleasePanel,
   type OperationsRecordReleaseStep,
   type OperationsRecordReleaseViewModel
