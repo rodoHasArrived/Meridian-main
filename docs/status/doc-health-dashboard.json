@@ -1,11 +1,11 @@
 {
   "total_files": 674,
-  "total_lines": 96470,
+  "total_lines": 96489,
   "orphaned_count": 330,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 143.1,
+  "average_lines": 143.2,
   "health_score": 77,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2405,7 +2405,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8706,
+      "line_count": 8716,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5549,7 +5549,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 178,
+      "line_count": 187,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
