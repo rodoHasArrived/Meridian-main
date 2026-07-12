@@ -41,19 +41,17 @@ public sealed class ProviderIntegrationSetupService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(request.Manifest);
-        ArgumentNullException.ThrowIfNull(request.Connection);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.SavedBy);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Manifest.ManifestId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Manifest.ProviderId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Connection.ConnectionId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Connection.ProviderId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Connection.ManifestId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Connection.CredentialSecretRef);
 
         ct.ThrowIfCancellationRequested();
 
-        ValidateSetupScope(request.Manifest, request.Connection);
+        var validationIssues = ProviderIntegrationSetupValidator.Validate(request);
+        if (validationIssues.Count > 0)
+        {
+            throw new ProviderIntegrationSetupValidationException(validationIssues);
+        }
+
+        var manifestStateNormalized = IsNormalizedSetupState(request.Manifest.State);
+        var connectionStateNormalized = IsNormalizedSetupState(request.Connection.State);
         var savedManifest = request.Manifest with
         {
             State = NormalizeSetupState(request.Manifest.State),
@@ -72,6 +70,15 @@ public sealed class ProviderIntegrationSetupService
         var readiness = ProviderIntegrationActivationReadinessService.Evaluate(
             savedManifest,
             savedConnection);
+        logger.LogInformation(
+            "Provider integration setup draft saved for TenantId {TenantId}, ManifestId {ManifestId}, ConnectionId {ConnectionId}: ManifestState {ManifestState}, ConnectionState {ConnectionState}, ActivationReady {ActivationReady}, ReadinessIssueCount {ReadinessIssueCount}.",
+            string.IsNullOrWhiteSpace(tenantId) ? "(default)" : tenantId,
+            savedManifest.ManifestId,
+            savedConnection.ConnectionId,
+            savedManifest.State,
+            savedConnection.State,
+            readiness.IsReady,
+            readiness.Issues.Count);
         return new ProviderIntegrationSetupSaveResultDto(
             Saved: true,
             savedManifest.ManifestId,
@@ -79,44 +86,35 @@ public sealed class ProviderIntegrationSetupService
             savedManifest.State,
             savedConnection.State,
             readiness,
-            "Provider integration setup draft saved.");
+            BuildSaveMessage(request, manifestStateNormalized, connectionStateNormalized));
     }
 
-    private static void ValidateSetupScope(
-        ProviderIntegrationManifestDto manifest,
-        ProviderConnectionDto connection)
+    private static string BuildSaveMessage(
+        ProviderIntegrationSetupSaveRequestDto request,
+        bool manifestStateNormalized,
+        bool connectionStateNormalized)
     {
-        if (!StringComparer.Ordinal.Equals(connection.ManifestId, manifest.ManifestId))
+        if (!manifestStateNormalized && !connectionStateNormalized)
         {
-            throw new InvalidOperationException("Provider connection manifest id must match the manifest being saved.");
+            return "Provider integration setup draft saved.";
         }
 
-        if (!StringComparer.Ordinal.Equals(connection.ProviderId, manifest.ProviderId))
+        var normalized = (manifestStateNormalized, connectionStateNormalized) switch
         {
-            throw new InvalidOperationException("Provider connection provider id must match the manifest provider id.");
-        }
-
-        if (!StringComparer.OrdinalIgnoreCase.Equals(connection.Environment, manifest.Environment))
-        {
-            throw new InvalidOperationException("Provider connection environment must match the manifest environment.");
-        }
-
-        var declaredCapabilities = manifest.Capabilities
-            .Select(capability => capability.Capability)
-            .ToHashSet();
-        foreach (var capability in connection.EnabledCapabilities)
-        {
-            if (!declaredCapabilities.Contains(capability))
-            {
-                throw new InvalidOperationException(
-                    $"Provider connection enables {capability}, but the manifest does not declare it.");
-            }
-        }
+            (true, true) =>
+                $"Manifest state {request.Manifest.State} and connection state {request.Connection.State} were reset to Draft",
+            (true, false) => $"Manifest state {request.Manifest.State} was reset to Draft",
+            _ => $"Connection state {request.Connection.State} was reset to Draft"
+        };
+        return $"Provider integration setup draft saved. {normalized}; setup drafts re-enter the activation workflow from Draft.";
     }
+
+    private static bool IsNormalizedSetupState(ProviderIntegrationActivationStateDto state)
+        => state is ProviderIntegrationActivationStateDto.Active or ProviderIntegrationActivationStateDto.Retired;
 
     private static ProviderIntegrationActivationStateDto NormalizeSetupState(
         ProviderIntegrationActivationStateDto state)
-        => state is ProviderIntegrationActivationStateDto.Active or ProviderIntegrationActivationStateDto.Retired
+        => IsNormalizedSetupState(state)
             ? ProviderIntegrationActivationStateDto.Draft
             : state;
 

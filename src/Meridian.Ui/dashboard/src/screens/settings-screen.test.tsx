@@ -536,6 +536,14 @@ describe("SettingsScreen", () => {
     apiMocks.getProviderIntegrationQuarantineReview.mockReset();
     apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockReset();
     apiMocks.getProviderIntegrationStagingReview.mockReset();
+    apiMocks.getProviderIntegrationTemplates.mockReset();
+    apiMocks.getProviderIntegrationTemplate.mockReset();
+    apiMocks.saveProviderIntegrationSetup.mockReset();
+    apiMocks.getProviderIntegrationReadiness.mockReset();
+    apiMocks.runManualCsvProviderIntegrationDryRun.mockReset();
+    apiMocks.runRestProviderIntegrationDryRun.mockReset();
+    apiMocks.checkProviderIntegrationSchemaDrift.mockReset();
+    apiMocks.activateProviderIntegration.mockReset();
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -2005,6 +2013,104 @@ describe("SettingsScreen", () => {
       }));
     });
     expect(await within(workbench).findByText("Provider integration activated.")).toBeInTheDocument();
+  });
+  it("blocks provider integration setup drafts with field-level issues before calling the API", async () => {
+    const user = userEvent.setup();
+    const manifest = {
+      manifestId: "template-polygon-data-v1",
+      manifestVersion: 1,
+      providerId: "polygon",
+      displayName: "Polygon positions REST",
+      integrationType: "OpenApiRest" as const,
+      environment: "paper",
+      auth: { type: "ApiKey" as const, tokenUrl: null, scopes: [], metadata: {} },
+      capabilities: [
+        {
+          capability: "Positions" as const,
+          enabled: true,
+          requiresCertifiedAdapter: false,
+          requiredCanonicalFields: []
+        }
+      ],
+      endpoints: [],
+      fieldMappings: [],
+      sync: { mode: "incremental", frequency: "daily", time: null, timezone: "America/New_York", cursorType: "Timestamp" as const, cursorField: "updatedAt", fullRefreshFrequency: null },
+      validationRules: [],
+      activation: {
+        requiresAuthenticationTest: true,
+        requiresEndpointTest: true,
+        requiresDryRun: true,
+        requiresApproval: true,
+        productionWriteCapabilitiesAllowed: false,
+        requiredIssueCodes: []
+      },
+      state: "Draft" as const,
+      createdBy: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      approvedBy: null,
+      approvedAt: null,
+      changeReason: "Seed Polygon provider integration."
+    };
+    apiMocks.getProviderIntegrationTemplates.mockResolvedValue([
+      {
+        manifestId: manifest.manifestId,
+        providerId: "polygon",
+        displayName: "Polygon positions REST",
+        integrationType: "OpenApiRest",
+        capabilities: ["Positions"],
+        summary: "Read-only position import for reconciliation staging.",
+        requiresCredentials: true
+      }
+    ]);
+    apiMocks.getProviderIntegrationTemplate.mockResolvedValue(manifest);
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />
+    );
+
+    const workbench = screen.getByRole("region", { name: "Polygon.io guided provider integration workbench" });
+    await user.click(within(workbench).getByRole("button", { name: "Load provider integration templates for Polygon.io" }));
+    expect(await within(workbench).findByText("1 provider integration templates loaded.")).toBeInTheDocument();
+    await user.click(within(workbench).getByRole("button", { name: "Use selected provider integration template for Polygon.io" }));
+    expect(await within(workbench).findByText("Template template-polygon-data-v1 loaded into draft setup editor.")).toBeInTheDocument();
+
+    const invalidConnection = {
+      connectionId: "provider-reference",
+      providerId: "polygon",
+      manifestId: "manifest-other",
+      connectionName: "Polygon.io reference",
+      environment: "paper",
+      state: "Draft",
+      credentialSecretRef: "",
+      enabledCapabilities: ["Positions"],
+      ownerUserId: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      updatedAt: "2026-06-16T12:00:00Z",
+      approvalEvidenceId: null
+    };
+    fireEvent.change(within(workbench).getByLabelText("Polygon.io provider integration connection draft JSON"), {
+      target: { value: JSON.stringify(invalidConnection, null, 2) }
+    });
+
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+
+    expect(await within(workbench).findByText(
+      "Provider integration setup draft failed validation. Fix the reported fields and save again."
+    )).toBeInTheDocument();
+    expect(within(workbench).getByText(
+      "Connection credential secret reference: Connection credential secret reference is required."
+    )).toBeInTheDocument();
+    expect(within(workbench).getByText(
+      "Connection manifest id: Provider connection manifest id must match the manifest being saved."
+    )).toBeInTheDocument();
+    expect(apiMocks.saveProviderIntegrationSetup).not.toHaveBeenCalled();
   });
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {
     const user = userEvent.setup();
