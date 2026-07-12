@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 02 — Trading Workspace Overview</title>
+<style>
+  :root {
+    --canvas: #dee3ea; --panel: #ffffff; --panel-2: #f3f5f8;
+    --chrome: #171a1f; --chrome-text: #e6e9ee;
+    --accent: #2f6f8f; --accent-soft: #e4edf2;
+    --border: #c3cbd6; --border-strong: #9aa5b4;
+    --text: #1c222b; --muted: #5a6675;
+    --ready: #2e7d5b; --ready-wash: #e3efe9;
+    --review: #8a6d1f; --review-wash: #f4ecd9;
+    --blocked: #a93b3b; --blocked-wash: #f6e4e4;
+    --sans: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto;
+    background: var(--canvas); color: var(--text); font: 14px/1.45 var(--sans);
+  }
+  .pin {
+    display: inline-block; vertical-align: middle; margin-left: 6px;
+    font: 600 10px/1 var(--mono); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 2px;
+    padding: 2px 4px; background: var(--accent-soft); cursor: help;
+  }
+  .mock-note {
+    background: #fdf6dd; border-bottom: 1px solid #d8c98a;
+    padding: 6px 14px; font-size: 12px; color: #5c4d12;
+  }
+  .mock-note strong { font-family: var(--mono); }
+  .masthead {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--chrome); color: var(--chrome-text); padding: 8px 14px; font-size: 13px;
+  }
+  .brand { font-weight: 650; } .brand em { font-style: normal; color: #8fa8b8; font-weight: 400; }
+  .palette {
+    flex: 0 1 380px; display: flex; align-items: center; gap: 8px;
+    background: #23262d; border: 1px solid #3a3f49; border-radius: 2px;
+    padding: 5px 10px; color: #98a1ae; font-size: 12.5px;
+  }
+  .palette kbd { margin-left: auto; font: 11px var(--mono); border: 1px solid #3a3f49; border-radius: 2px; padding: 1px 5px; }
+  .masthead .grow { flex: 1; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid #6b4040; background: #2a2024; color: #e8b4b4;
+    border-radius: 2px; padding: 4px 10px; font: 500 12px var(--mono); cursor: pointer;
+  }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #d95f5f; }
+  .status-pill span.rev { color: #d9c27a; }
+  .mode-chip { border: 1px solid #3f5a3f; border-radius: 2px; padding: 4px 10px; color: #9fd0a5; font: 600 12px var(--mono); }
+  .session { color: #98a1ae; font-size: 12.5px; } .session b { color: var(--chrome-text); font-weight: 600; }
+  .frame { display: grid; grid-template-columns: 208px 1fr; min-height: 0; }
+  .sidebar {
+    background: var(--panel-2); border-right: 1px solid var(--border);
+    padding: 10px 0; overflow-y: auto; font-size: 13px;
+  }
+  .sidebar .group-label { padding: 2px 14px 6px; font: 600 10px var(--mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+  .sidebar a { display: block; padding: 6px 14px; color: var(--text); text-decoration: none; }
+  .sidebar a.ws { font-weight: 600; }
+  .sidebar a.sub { padding-left: 30px; color: var(--muted); }
+  .sidebar a.active { background: var(--panel); color: var(--accent); font-weight: 600; border-left: 2px solid var(--accent); padding-left: 28px; }
+  .sidebar a:hover { background: #e9edf2; }
+  .route { display: grid; grid-template-rows: auto 1fr; min-height: 0; min-width: 0; }
+  .route-header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel-2);
+  }
+  .route-header h1 { font-size: 17px; font-weight: 650; margin: 0; }
+  .crumb { font: 12px var(--mono); color: var(--muted); }
+  .scope-chip { font: 11.5px var(--mono); color: var(--muted); border: 1px solid var(--border); border-radius: 2px; padding: 2px 7px; background: var(--panel); }
+  .stats { display: flex; gap: 18px; margin-left: auto; }
+  .stat { display: flex; align-items: baseline; gap: 6px; }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .stat .v { font: 600 14px var(--mono); }
+  .stat .v.up { color: var(--ready); } .stat .v.watch { color: var(--review); }
+  /* overview body */
+  .overview {
+    padding: 12px 16px; min-height: 0; overflow-y: auto;
+    display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 12px;
+    align-content: start;
+  }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 2px; }
+  .panel-head { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .panel-head h2 { font-size: 13.5px; font-weight: 650; margin: 0; }
+  .panel-head .count { font: 12px var(--mono); color: var(--muted); }
+  .queue-item { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; padding: 10px 12px; border-bottom: 1px solid #e4e8ee; align-items: center; }
+  .queue-item:last-child { border-bottom: 0; }
+  .sev { font: 600 10.5px var(--mono); border-radius: 2px; padding: 2px 6px; align-self: start; justify-self: start; margin-top: 2px; grid-column: 1; grid-row: 1; }
+  .sev.review { color: var(--review); background: var(--review-wash); border: 1px solid #dcc98e; }
+  .sev.ready { color: var(--ready); background: var(--ready-wash); border: 1px solid #a9cdbc; }
+  .queue-item .what { font-weight: 600; font-size: 13px; grid-column: 2; grid-row: 1; }
+  .queue-item .why { grid-column: 2; grid-row: 2; color: var(--muted); font-size: 12.5px; }
+  .queue-item .go {
+    grid-column: 3; grid-row: 1 / span 2; align-self: center;
+    font: 600 12.5px var(--sans); color: var(--accent); text-decoration: none;
+    border: 1px solid var(--accent); border-radius: 2px; padding: 5px 10px; white-space: nowrap;
+  }
+  .gates { padding: 6px 12px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .gate { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--border); border-radius: 2px; padding: 7px 10px; font-size: 12.5px; background: var(--panel-2); }
+  .gate b { font-weight: 600; }
+  .gate .state { font: 600 11px var(--mono); }
+  .gate .state.ok { color: var(--ready); } .gate .state.review { color: var(--review); }
+  .activity { list-style: none; margin: 0; padding: 4px 0; }
+  .activity li { display: flex; gap: 10px; padding: 7px 12px; border-bottom: 1px solid #e4e8ee; font-size: 12.5px; }
+  .activity li:last-child { border-bottom: 0; }
+  .activity time { font: 11.5px var(--mono); color: var(--muted); white-space: nowrap; padding-top: 1px; }
+  .statusbar { display: flex; gap: 22px; align-items: center; background: var(--chrome); color: #98a1ae; font: 11.5px var(--mono); padding: 5px 14px; }
+  .statusbar b { color: var(--chrome-text); font-weight: 500; }
+  .statusbar .right { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="mock-note">
+  <strong>MOCKUP 02 · Trading workspace overview (/trading)</strong> — the landing route is a short summary that hands off to focused
+  sub-routes; no hero paragraphs, no cards-about-cards, no route-card grid. Demonstrates <strong>P2</strong> (overview = summary, tools live at
+  sub-routes) and <strong>P4</strong> (meta-UI removed). The Accounting break is <em>not</em> shown here — it lives in the masthead pill and in Accounting (<strong>P3</strong>).
+  Companion: <strong>docs/development/web-ui-structural-improvement-proposal.md</strong>
+</div>
+
+<header class="masthead">
+  <span class="brand">Meridian <em>/ Trading</em></span>
+  <div class="palette">Go to route, action, evidence&hellip; <kbd>Ctrl K</kbd></div>
+  <span class="grow"></span>
+  <button class="status-pill" title="P3 — cross-workspace posture stays in this pill; it opens the break queue"><span class="dot"></span> 1 blocked <span class="rev">&middot; 5 review</span></button>
+  <span class="mode-chip">PAPER</span>
+  <span class="session"><b>Ops Desk</b> &middot; Operator</span>
+</header>
+
+<div class="frame">
+  <nav class="sidebar">
+    <div class="group-label">Workspaces</div>
+    <a class="ws" href="#">Trading</a>
+    <a class="sub active" href="#" aria-current="page">Overview</a>
+    <a class="sub" href="#">Orders</a>
+    <a class="sub" href="#">Positions</a>
+    <a class="sub" href="#">Risk</a>
+    <a class="sub" href="#">Readiness</a>
+    <a class="ws" href="#">Portfolio</a>
+    <a class="ws" href="#">Accounting</a>
+    <a class="ws" href="#">Reporting</a>
+    <a class="ws" href="#">Strategy</a>
+    <a class="ws" href="#">Data</a>
+    <a class="ws" href="#">Settings</a>
+  </nav>
+
+  <main class="route">
+    <div class="route-header">
+      <span class="crumb">trading /</span>
+      <h1>Overview</h1>
+      <span class="pin" title="P2 — the workspace root is a compact summary; the tools it links to are full routes of their own">P2</span>
+      <span class="scope-chip">DU1009834</span>
+      <span class="scope-chip">PAPER</span>
+      <div class="stats">
+        <div class="stat"><span class="k">Net P&amp;L</span><span class="v up">+$3,100</span></div>
+        <div class="stat"><span class="k">Open</span><span class="v">4</span></div>
+        <div class="stat"><span class="k">Fills</span><span class="v">13</span></div>
+        <div class="stat"><span class="k">Risk</span><span class="v watch">Observe</span></div>
+      </div>
+    </div>
+
+    <div class="overview">
+      <section class="panel" style="grid-row: span 2;">
+        <div class="panel-head">
+          <h2>Needs a decision</h2>
+          <span class="pin" title="P4 — the queue replaces posture prose: each row is problem, cause, and one action. No cards describing other cards.">P4</span>
+          <span class="count">3 items &middot; trading-owned</span>
+        </div>
+        <div class="queue-item">
+          <span class="sev review">Review</span>
+          <span class="what">Replay verification required &middot; paper-dev-42</span>
+          <span class="why">Run replay verification before accepting cockpit readiness.</span>
+          <a class="go" href="#">Verify replay</a>
+        </div>
+        <div class="queue-item">
+          <span class="sev review">Review</span>
+          <span class="what">Session restore pending</span>
+          <span class="why">Restore the paper session before the cockpit is operator-ready.</span>
+          <a class="go" href="#">Restore</a>
+        </div>
+        <div class="queue-item">
+          <span class="sev ready">Ready</span>
+          <span class="what">Promotion review &middot; promo-dev-1</span>
+          <span class="why">Approved by fixture-operator; audit and risk controls available.</span>
+          <a class="go" href="#">Open review</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Readiness gates</h2><span class="count">3/4 ready</span></div>
+        <div class="gates">
+          <div class="gate"><b>Session</b><span class="state review">Review</span></div>
+          <div class="gate"><b>Replay</b><span class="state review">Review</span></div>
+          <div class="gate"><b>Audit + controls</b><span class="state ok">Ready</span></div>
+          <div class="gate"><b>Promotion</b><span class="state ok">Ready</span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Recent activity</h2></div>
+        <ul class="activity">
+          <li><time>09:42 ET</time><span>PO-1 submitted &middot; Buy 20 MSFT limit 414.20</span></li>
+          <li><time>09:40 ET</time><span>PO-2 filled &middot; 100 AAPL at 188.10</span></li>
+          <li><time>09:38 ET</time><span>FL-1 &middot; Sell 10 NVDA at 948.20 on NASDAQ</span></li>
+          <li><time>09:27 ET</time><span>PO-6 canceled by operator</span></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</div>
+
+<footer class="statusbar">
+  <span>SESSION <b>paper</b></span>
+  <span>DATA <b>demo fixtures</b></span>
+  <span>SYNC <b>up to date</b></span>
+  <span class="right">WORKSPACE <b>Trading</b></span>
+</footer>
+
+</body>
+</html>
