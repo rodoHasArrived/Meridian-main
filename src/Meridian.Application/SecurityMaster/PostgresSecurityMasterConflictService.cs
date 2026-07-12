@@ -128,9 +128,10 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         }
 
         var updated = MapConflict(reader);
+        // ResolvedBy is request-supplied text; flatten line endings so it cannot forge log entries.
         _logger.LogInformation(
             "Conflict {ConflictId} for security {SecurityId} {Status} by {ResolvedBy}",
-            updated.ConflictId, updated.SecurityId, newStatus, request.ResolvedBy);
+            updated.ConflictId, updated.SecurityId, newStatus, request.ResolvedBy?.ReplaceLineEndings(" "));
         return updated;
     }
 
