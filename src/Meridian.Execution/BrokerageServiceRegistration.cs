@@ -75,6 +75,7 @@ public static class BrokerageServiceRegistration
             var portfolioState = sp.GetService<Meridian.Execution.Models.IPortfolioState>();
             var brokerageConfiguration = sp.GetRequiredService<BrokerageConfiguration>();
             var liveOrderReadinessGate = sp.GetService<ILiveOrderReadinessGate>();
+            var orderManagementOptions = sp.GetService<OrderManagementSystemOptions>();
 
             return new OrderManagementSystem(
                 gateway,
@@ -85,7 +86,8 @@ public static class BrokerageServiceRegistration
                 auditTrail,
                 portfolioState,
                 brokerageConfiguration: brokerageConfiguration,
-                liveOrderReadinessGate: liveOrderReadinessGate);
+                liveOrderReadinessGate: liveOrderReadinessGate,
+                options: orderManagementOptions);
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();

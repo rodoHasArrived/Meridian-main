@@ -125,14 +125,16 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.dataEvidence },
-    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills }
+    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills },
+    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },
+    { label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery }
   ],
   settings: [
-    { label: "Profile", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
-    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
+    { label: "Access", route: WORKSTATION_ROUTE_CATALOG.settingsAccess },
+    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsProviders },
     { label: "Accounting Systems", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations },
-    { label: "Data Providers", route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup },
-    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints }
+    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics },
+    { label: "Feature Coverage", route: WORKSTATION_ROUTE_CATALOG.settingsFeatureCoverage }
   ]
 };
 

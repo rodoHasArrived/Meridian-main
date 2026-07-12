@@ -869,7 +869,8 @@
       ],
       "waitForTexts": [
         "Data command deck",
-        "Provider Management"
+        "Data Quality",
+        "Provider and export readiness"
       ]
     },
     {
@@ -905,13 +906,13 @@
       "name": "web-data-backfills",
       "path": "/data/backfills",
       "docLabel": "Data \u2014 Backfills",
-      "waitForText": "Data Lane",
+      "waitForText": "Backfill queue",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Data command deck",
-        "Provider Management"
+        "Backfill queue",
+        "Backfill Detail"
       ]
     },
     {
@@ -919,14 +920,41 @@
       "name": "web-data-providers",
       "path": "/data/providers",
       "docLabel": "Data \u2014 Providers",
-      "waitForText": "Data Workstation",
+      "waitForText": "Upload data template",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Uploads",
-        "Providers",
-        "Route"
+        "Upload data template",
+        "Provider Management"
+      ]
+    },
+    {
+      "id": "W06G",
+      "name": "web-data-exports",
+      "path": "/data/exports",
+      "docLabel": "Data \u2014 Exports",
+      "waitForText": "Recent exports",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Recent exports",
+        "Selected Export"
+      ]
+    },
+    {
+      "id": "W06H",
+      "name": "web-data-query",
+      "path": "/data/query",
+      "docLabel": "Data \u2014 SQL Query",
+      "waitForText": "SQL query",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "SQL query",
+        "Run query"
       ]
     },
     {
@@ -1107,6 +1135,107 @@
         "Diagnostic services",
         "Operator control posture",
         "All reachable"
+      ]
+    },
+    {
+      "id": "W07F",
+      "name": "web-settings-access",
+      "path": "/settings/access",
+      "docLabel": "Settings \u2014 Access",
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#settings-overview"
+      ],
+      "waitForTexts": [
+        "Operator control posture",
+        "Profile and access posture"
+      ]
+    },
+    {
+      "id": "W07G",
+      "name": "web-settings-providers",
+      "path": "/settings/providers",
+      "docLabel": "Settings \u2014 Providers",
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#provider-connection-center"
+      ],
+      "waitForTexts": [
+        "Provider Connection Center"
+      ]
+    },
+    {
+      "id": "W07H",
+      "name": "web-settings-diagnostics",
+      "path": "/settings/diagnostics",
+      "docLabel": "Settings \u2014 Diagnostics",
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#diagnostic-endpoints"
+      ],
+      "waitForTexts": [
+        "Operator control posture"
+      ]
+    },
+    {
+      "id": "W07I",
+      "name": "web-settings-feature-coverage",
+      "path": "/settings/feature-coverage",
+      "docLabel": "Settings \u2014 Feature Coverage",
+      "waitForText": "Settings lane",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#runtime-feature-capabilities"
+      ],
+      "waitForTexts": [
+        "Capability coverage"
       ]
     }
   ]

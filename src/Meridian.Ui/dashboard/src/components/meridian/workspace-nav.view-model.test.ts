@@ -261,7 +261,9 @@ describe("workspace nav view model", () => {
       "/data/quotes",
       "/data/alerts",
       "/data/evidence",
-      "/data/backfills"
+      "/data/backfills",
+      "/data/exports",
+      "/data/query"
     ]);
     expect(data?.subItems.find((item) => item.route === "/data/alerts")).toMatchObject({
       label: "Price alerts",

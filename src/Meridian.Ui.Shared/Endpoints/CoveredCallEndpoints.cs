@@ -12,7 +12,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// REST endpoints for the covered-call backtest UI (slice 1).
-/// Endpoints return 503 when <see cref="ICoveredCallBacktestService"/> is not registered.
+/// Endpoints return 501 when <see cref="ICoveredCallBacktestService"/> is not registered,
+/// matching the shared "service not registered" convention used across the UI endpoints.
 /// </summary>
 public static class CoveredCallEndpoints
 {
@@ -28,7 +29,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             try
@@ -45,7 +46,7 @@ public static class CoveredCallEndpoints
         .Accepts<CoveredCallBacktestRequest>("application/json")
         .Produces<CoveredCallRunHandle>(200)
         .Produces<CoveredCallProblemDetails>(400)
-        .Produces(503)
+        .Produces(501)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/strategies/covered-call/runs — list prior runs
@@ -56,7 +57,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             var runs = await service.ListRunsAsync(limit ?? 50, context.RequestAborted).ConfigureAwait(false);
@@ -64,7 +65,7 @@ public static class CoveredCallEndpoints
         })
         .WithName("ListCoveredCallRuns")
         .Produces<IReadOnlyList<CoveredCallRunSummary>>(200)
-        .Produces(503);
+        .Produces(501);
 
         // GET /api/strategies/covered-call/runs/{runId}/status
         group.MapGet(UiApiRoutes.CoveredCallRunStatus, async (
@@ -74,7 +75,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             var status = await service.GetStatusAsync(runId, context.RequestAborted).ConfigureAwait(false);
@@ -87,7 +88,7 @@ public static class CoveredCallEndpoints
         .WithName("GetCoveredCallRunStatus")
         .Produces<CoveredCallRunStatusDto>(200)
         .Produces<CoveredCallProblemDetails>(404)
-        .Produces(503);
+        .Produces(501);
 
         // GET /api/strategies/covered-call/runs/{runId}/result
         group.MapGet(UiApiRoutes.CoveredCallRunResult, async (
@@ -97,7 +98,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             // Try the persisted result first: GetResultAsync rehydrates from IStrategyRepository
@@ -129,7 +130,7 @@ public static class CoveredCallEndpoints
         .Produces<CoveredCallProblemDetails>(404)
         .Produces<CoveredCallProblemDetails>(409)
         .Produces<CoveredCallProblemDetails>(410)
-        .Produces(503);
+        .Produces(501);
 
         // POST /api/strategies/covered-call/runs/{runId}/cancel
         group.MapPost(UiApiRoutes.CoveredCallRunCancel, async (
@@ -139,7 +140,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             await service.CancelAsync(runId, context.RequestAborted).ConfigureAwait(false);
@@ -151,7 +152,7 @@ public static class CoveredCallEndpoints
         .WithName("CancelCoveredCallRun")
         .Produces<CoveredCallRunStatusDto>(200)
         .Produces<CoveredCallProblemDetails>(404)
-        .Produces(503)
+        .Produces(501)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // POST /api/strategies/covered-call/chain-preview
@@ -162,7 +163,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             try
@@ -183,6 +184,7 @@ public static class CoveredCallEndpoints
         .Accepts<CoveredCallChainPreviewRequest>("application/json")
         .Produces<CoveredCallChainPreview>(200)
         .Produces<CoveredCallProblemDetails>(400)
+        .Produces(501)
         .Produces<CoveredCallProblemDetails>(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

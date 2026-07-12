@@ -16,4 +16,13 @@ public sealed record LedgerTaxLotReliefProjection(
     public decimal TotalCredits => Lines.Sum(static line => line.credit);
 
     public bool IsBalanced => TotalDebits == TotalCredits;
+
+    /// <summary>
+    /// The reference-data basis adjustments that were applied to the open lots before relief.
+    /// Empty when the sale relieved lots at their recorded quantity and unit cost.
+    /// </summary>
+    public IReadOnlyList<LedgerTaxLotBasisAdjustment> AppliedAdjustments { get; init; } = [];
+
+    /// <summary>The effective open lots after applying <see cref="AppliedAdjustments"/>.</summary>
+    public IReadOnlyList<LedgerTaxLot> EffectiveLots { get; init; } = [];
 }

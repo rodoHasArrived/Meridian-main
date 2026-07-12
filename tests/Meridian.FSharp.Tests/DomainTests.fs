@@ -1104,3 +1104,107 @@ let ``EquityClassification.Convertible round-trips through asString`` () =
         ct.ConversionRatio |> should equal 4.25m
         ct.ConversionPrice |> should equal (Some 120.0m)
     | _ -> failwith "Expected Convertible case"
+
+// ---------------------------------------------------------------------------
+// AssetClassRegistry — single source of truth for asset-class dispatch
+// ---------------------------------------------------------------------------
+
+/// Minimal, representative SecurityKind values covering all five derivative
+/// kinds plus a spread of non-derivative kinds and the two kinds whose sub-type
+/// is refined from instrument data (Deposit, OtherSecurity).
+let private registrySampleKinds : (SecurityKind * string) list =
+    let secId () = SecurityId(Guid.NewGuid())
+    [ SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None }, "Equity"
+      SecurityKind.Option {
+          UnderlyingId = secId (); PutCall = "Call"; Strike = 100m; Expiry = DateOnly(2030, 1, 18)
+          Multiplier = 100m; OptChainId = None; ExerciseStyle = None; SettlementType = None
+          IsAdjusted = false; LastTradingDt = None }, "Option"
+      SecurityKind.Future {
+          RootSymbol = "ES"; ContractMonth = "2030-03"; Expiry = DateOnly(2030, 3, 20); Multiplier = 50m
+          LastTradingDt = None; FirstNoticeDt = None; DeliveryMonthDt = None; SettlementType = None
+          DeliveryLocationCode = None; IsRollTarget = false; RollWindowDays = None }, "Future"
+      SecurityKind.Bond (BondTerms.fixedRate (DateOnly(2032, 6, 1)) 4.5m None None), "Bond"
+      SecurityKind.TreasuryBill {
+          Maturity = DateOnly(2026, 6, 1); AuctionDate = None; CUSIP = None; DiscountRate = None }, "TreasuryBill"
+      SecurityKind.Swap { EffectiveDate = DateOnly(2026, 1, 1); MaturityDate = DateOnly(2031, 1, 1); Legs = [] }, "Swap"
+      SecurityKind.Cfd { UnderlyingAssetClass = "Equity"; UnderlyingDescription = None; Leverage = None }, "Cfd"
+      SecurityKind.Warrant {
+          UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
+      SecurityKind.InvestmentFund {
+          FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
+          IsStableNav = None; PricingSource = None }, "InvestmentFund" ]
+
+[<Fact>]
+let ``AssetClassRegistry exposes a distinct, non-empty asset-class taxonomy`` () =
+    let classes = AssetClassRegistry.assetClasses
+    classes |> List.isEmpty |> should equal false
+    classes |> List.distinct |> List.length |> should equal (List.length classes)
+
+[<Fact>]
+let ``AssetClassRegistry every asset class resolves to a matching descriptor`` () =
+    for assetClass in AssetClassRegistry.assetClasses do
+        match AssetClassRegistry.tryDescriptorByName assetClass with
+        | Some descriptor -> descriptor.AssetClassName |> should equal assetClass
+        | None -> failwithf "Expected a descriptor for asset class '%s'" assetClass
+
+[<Fact>]
+let ``AssetClassRegistry tryDescriptorByName returns None for an unknown asset class`` () =
+    AssetClassRegistry.tryDescriptorByName "NotARealAssetClass" |> should equal None
+
+[<Fact>]
+let ``AssetClassRegistry assetClassName agrees with SecurityKind.assetClass`` () =
+    for kind, expected in registrySampleKinds do
+        AssetClassRegistry.assetClassName kind |> should equal expected
+        SecurityKind.assetClass kind |> should equal expected
+
+[<Fact>]
+let ``AssetClassRegistry isDerivative agrees with SecurityKind.isDerivative`` () =
+    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant" ]
+    for kind, name in registrySampleKinds do
+        let expected = Set.contains name expectedDerivatives
+        AssetClassRegistry.isDerivative kind |> should equal expected
+        SecurityKind.isDerivative kind |> should equal expected
+
+[<Fact>]
+let ``AssetClassRegistry classification carries the expected fixed metadata`` () =
+    let equity = AssetClassRegistry.classification (SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None })
+    equity.AssetClass |> should equal AssetClass.Equity
+    equity.Family |> should equal (Some AssetFamily.CommonEquity)
+    equity.SubType |> should equal SecuritySubType.CommonShare
+    equity.TypeName |> should equal "Equity"
+
+    let tbill = AssetClassRegistry.classification (SecurityKind.TreasuryBill { Maturity = DateOnly(2026, 6, 1); AuctionDate = None; CUSIP = None; DiscountRate = None })
+    tbill.AssetClass |> should equal AssetClass.FixedIncome
+    tbill.Family |> should equal (Some AssetFamily.Sovereign)
+    tbill.SubType |> should equal SecuritySubType.TreasuryBill
+    tbill.IssuerType |> should equal (Some "Sovereign")
+    tbill.RiskCountry |> should equal (Some "US")
+
+let private economicDefinitionFor (kind: SecurityKind) =
+    let record = createSecurityRecord None
+    SecurityMasterLegacyUpgrade.toEconomicDefinition { record with Kind = kind }
+
+[<Fact>]
+let ``Legacy upgrade refines a demand deposit into the DemandDeposit sub-type`` () =
+    let demand =
+        economicDefinitionFor (SecurityKind.Deposit {
+            DepositType = "DemandDeposit"; InstitutionName = "First Bank"; Maturity = None
+            InterestRate = None; DayCount = None; IsCallable = false })
+    demand.Classification.AssetClass |> should equal AssetClass.CashEquivalent
+    demand.Classification.SubType |> should equal SecuritySubType.DemandDeposit
+
+[<Fact>]
+let ``Legacy upgrade defaults a non-demand deposit to the TimeDeposit sub-type`` () =
+    let time =
+        economicDefinitionFor (SecurityKind.Deposit {
+            DepositType = "TimeDeposit"; InstitutionName = "First Bank"; Maturity = None
+            InterestRate = None; DayCount = None; IsCallable = false })
+    time.Classification.SubType |> should equal SecuritySubType.TimeDeposit
+
+[<Fact>]
+let ``Legacy upgrade carries the OtherSecurity sub-type from instrument terms`` () =
+    let other =
+        economicDefinitionFor (SecurityKind.OtherSecurity {
+            Category = "Widget"; SubType = Some "Gizmo"; Maturity = None; IssuerName = None; SettlementType = None })
+    other.Classification.AssetClass |> should equal AssetClass.Other
+    other.Classification.SubType |> should equal (SecuritySubType.OtherSubType "Gizmo")

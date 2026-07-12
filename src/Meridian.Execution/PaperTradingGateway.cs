@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
@@ -10,11 +9,10 @@ namespace Meridian.Execution;
 /// Simulated execution gateway for paper trading. Fills all market orders immediately
 /// at the last known price, and queues limit orders for fill on price touch.
 /// </summary>
-public sealed class PaperTradingGateway : IExecutionGateway
+public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayModeProvider
 {
     private readonly ILogger<PaperTradingGateway> _logger;
-    private readonly ISecurityMasterQueryService? _securityMaster;
-    private readonly ConcurrentDictionary<string, TradingParametersDto?> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Adapters.PaperTradingGatewayTradingParameters _tradingParameters;
     private readonly decimal _scaffoldMarketFillPrice;
     private int _scaffoldPriceWarningIssued;
     private bool _connected;
@@ -26,14 +24,18 @@ public sealed class PaperTradingGateway : IExecutionGateway
         Adapters.PaperTradingGatewayOptions? options = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _securityMaster = securityMaster;
-        var scaffoldPrice = (options ?? new Adapters.PaperTradingGatewayOptions()).ScaffoldMarketFillPrice;
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(scaffoldPrice, nameof(options));
-        _scaffoldMarketFillPrice = scaffoldPrice;
+        _tradingParameters = new Adapters.PaperTradingGatewayTradingParameters(
+            _logger,
+            securityMaster,
+            LogLevel.Warning);
+        _scaffoldMarketFillPrice = Adapters.PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
     }
 
     /// <inheritdoc />
     public string GatewayId => "paper";
+
+    /// <inheritdoc />
+    public ExecutionMode ExecutionMode => ExecutionMode.Paper;
 
     /// <inheritdoc />
     public bool IsConnected => _connected;
@@ -59,7 +61,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
     {
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
-        var lotSizeError = await ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
+        var lotSizeError = await _tradingParameters.ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
         if (lotSizeError is not null)
         {
             throw new InvalidOperationException(lotSizeError);
@@ -162,74 +164,11 @@ public sealed class PaperTradingGateway : IExecutionGateway
     /// </summary>
     private void WarnScaffoldPriceUsed()
     {
-        if (Interlocked.Exchange(ref _scaffoldPriceWarningIssued, 1) != 0)
-        {
-            return;
-        }
-
-        _logger.LogWarning(
-            "Paper execution gateway is filling market orders at the scaffold notional price {ScaffoldPrice}. " +
-            "No live feed price source is wired in, so paper P&L computed from these fills is not meaningful. " +
-            "Tune via configuration section '{SectionKey}' or wire a live feed price source.",
-            _scaffoldMarketFillPrice, Adapters.PaperTradingGatewayOptions.SectionKey);
-    }
-
-    private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)
-    {
-        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
-        if (tradingParams?.LotSize is not { } lotSize || lotSize <= 0m)
-        {
-            return null;
-        }
-
-        var absQty = Math.Abs(request.Quantity);
-        return absQty % lotSize == 0m
-            ? null
-            : $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.";
-    }
-
-    private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
-    {
-        if (_securityMaster is null || string.IsNullOrWhiteSpace(symbol))
-        {
-            return null;
-        }
-
-        if (_tradingParamsCache.TryGetValue(symbol, out var cached))
-        {
-            return cached;
-        }
-
-        try
-        {
-            var security = await _securityMaster.GetByIdentifierAsync(
-                SecurityIdentifierKind.Ticker,
-                symbol,
-                provider: null,
-                ct).ConfigureAwait(false);
-
-            if (security is null)
-            {
-                _tradingParamsCache[symbol] = null;
-                return null;
-            }
-
-            var tradingParams = await _securityMaster.GetTradingParametersAsync(
-                security.SecurityId,
-                DateTimeOffset.UtcNow,
-                ct).ConfigureAwait(false);
-
-            _tradingParamsCache[symbol] = tradingParams;
-            return tradingParams;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex,
-                "PaperTradingGateway lot-size validation skipped for {Symbol} due to Security Master lookup failure.",
-                symbol);
-            _tradingParamsCache[symbol] = null;
-            return null;
-        }
+        Adapters.PaperTradingGatewayScaffoldPricing.WarnIfFirstUse(
+            ref _scaffoldPriceWarningIssued,
+            _logger,
+            _scaffoldMarketFillPrice,
+            "Paper execution gateway");
     }
 
 }

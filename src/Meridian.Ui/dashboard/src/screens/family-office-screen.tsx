@@ -8,12 +8,12 @@ import { EmptyState } from "@/components/data/empty-state";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   MetricCard,
-  type MetricCardTone,
   KeyValueGrid
 } from "@/components/data/concrete";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import { cn } from "@/lib/utils";
+import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   buildFamilyOfficeScreenViewModel,
   selectAdjacentFamilyOfficeNode,
@@ -271,7 +271,7 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
-                      <SeverityBadge status={severityStatusFromTone(vm.ownershipGraph.selectedNode.tone)} />
+                      <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
                   </div>
                   <h2 className="mt-2 text-lg font-semibold text-foreground">{vm.ownershipGraph.selectedNode.label}</h2>
@@ -301,33 +301,12 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
   );
 }
 
-const panelMetricTone: Record<FamilyOfficeTone, MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
-/** Map a family-office tone to a canonical severity string for {@link SeverityBadge}. */
-function severityStatusFromTone(tone: FamilyOfficeTone): string {
-  switch (tone) {
-    case "success":
-      return "Ready";
-    case "warning":
-      return "ReviewRequired";
-    case "danger":
-      return "Blocked";
-    default:
-      return "Info";
-  }
-}
-
 function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
   const Icon = panelIconMap[panel.id] ?? Landmark;
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={panelMetricTone[panel.tone]} />
+      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>

@@ -170,6 +170,12 @@ public sealed class UiServer : IAsyncDisposable
             builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                 .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
             ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
+        builder.Services.AddSingleton(
+            builder.Configuration.GetSection(OrderManagementSystemOptions.SectionKey)
+                .Get<OrderManagementSystemOptions>()
+            ?? new OrderManagementSystemOptions());
+        builder.Services.Configure<Meridian.Execution.Margin.RegTMarginOptions>(
+            builder.Configuration.GetSection(Meridian.Execution.Margin.RegTMarginOptions.SectionKey));
         builder.Services.AddSingleton<IOrderGateway>(sp =>
             new Meridian.Execution.Adapters.PaperTradingGateway(
                 sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
@@ -190,7 +196,8 @@ public sealed class UiServer : IAsyncDisposable
                 operatorControls: sp.GetService<ExecutionOperatorControlService>(),
                 auditTrail: sp.GetService<ExecutionAuditTrailService>(),
                 portfolioState: portfolio,
-                sessionPersistence: sp.GetService<PaperSessionPersistenceService>());
+                sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
+                options: sp.GetRequiredService<OrderManagementSystemOptions>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

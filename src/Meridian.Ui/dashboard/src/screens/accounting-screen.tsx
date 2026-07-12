@@ -36,9 +36,11 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
+import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import {
@@ -88,8 +90,6 @@ import type {
   ReconciliationDetailActionsViewModel,
   CloseCommandCenterViewState,
   OperationalExceptionWorkbenchViewState,
-  SecuritySchedulesViewState,
-  SecurityScheduleRowViewModel,
   SecurityOpenLotReadModelViewState,
   SecurityOpenLotRowViewModel,
   ReferenceDataEndpointRowViewModel,
@@ -300,43 +300,6 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
   { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
 ];
 
-const securityScheduleColumns: DenseDataTableColumn<SecurityScheduleRowViewModel>[] = [
-  {
-    id: "eventType",
-    label: "Event",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.eventId}</span>
-      </span>
-    )
-  },
-  { id: "paymentDate", label: "Payment date", render: (row) => <span className="font-mono text-muted-foreground">{row.paymentDateLabel}</span> },
-  { id: "expected", label: "Expected", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.expectedAmountLabel}</span> },
-  {
-    id: "actual",
-    label: "Actual",
-    align: "right",
-    render: (row) => (
-      <span className={cn("font-mono tabular-nums", row.actualAmount === null ? "text-muted-foreground" : "text-foreground")}>
-        {row.actualAmountLabel}
-      </span>
-    )
-  },
-  {
-    id: "variance",
-    label: "Variance",
-    align: "right",
-    render: (row) => (
-      <span className={cn("font-mono tabular-nums", row.postingStatus === "Variance" ? "text-danger" : "text-muted-foreground")}>
-        {row.varianceLabel}
-      </span>
-    )
-  },
-  { id: "factor", label: "Factor", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorLabel}</span> },
-  { id: "status", label: "Status", render: (row) => <Badge variant={row.postingStatusTone}>{row.postingStatusLabel}</Badge> }
-];
-
 const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[] = [
   {
     id: "lot",
@@ -397,8 +360,6 @@ const accountingSystemEvidencePackageVariant = {
   ReviewRequired: "warning",
   Missing: "danger"
 } as const;
-
-const TRIAL_BALANCE_DESIGN_SYSTEM_TABLE_THRESHOLD = 40;
 
 function AccountingSystemReconciliationPanel({
   providers,
@@ -500,9 +461,7 @@ function AccountingSystemReconciliationPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? (
-          <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-            {error}
-          </div>
+          <StatusBanner tone="danger" role="alert" title={error} />
         ) : null}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <AccountingValue label="Import state" value={importDetail?.summary.state ?? (loading ? "Loading" : "Not loaded")} />
@@ -1182,8 +1141,8 @@ function AccountingApprovalsWorkstream() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             {detailLoading ? <p role="status" className="text-muted-foreground">Loading selected approval detail...</p> : null}
-            {detailError ? <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-danger">{detailError}</div> : null}
-            {actionError ? <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-danger">{actionError}</div> : null}
+            {detailError ? <StatusBanner tone="danger" role="alert" title={detailError} /> : null}
+            {actionError ? <StatusBanner tone="danger" role="alert" title={actionError} /> : null}
             {selectedWorkflow ? (
               <>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1238,7 +1197,7 @@ function ApprovalStatusMessage({ loading, error, empty }: { loading: boolean; er
   }
 
   if (error) {
-    return <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{error}</div>;
+    return <StatusBanner tone="danger" role="alert" title={error} />;
   }
 
   if (empty) {
@@ -2636,7 +2595,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               </div>
               {reconciliation.trialBalanceView.hasRows ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-                  {reconciliation.trialBalanceView.rows.length > TRIAL_BALANCE_DESIGN_SYSTEM_TABLE_THRESHOLD ? (
+                  {reconciliation.trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD ? (
                     <DenseDataTable
                       columns={trialBalanceColumns}
                       rows={reconciliation.trialBalanceView.rows}
@@ -3878,86 +3837,6 @@ function ReferenceDataWorkbenchPanel({
                 </div>
               )}
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function SecuritySchedulesPanel({
-  view,
-  onSelect
-}: {
-  view: SecuritySchedulesViewState;
-  onSelect: (rowId: string) => void;
-}) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Table2 className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.title}
-            </CardTitle>
-            <CardDescription className="mt-2">{view.description}</CardDescription>
-          </div>
-          <div className="min-w-0 lg:max-w-[28rem]">
-            <ToolbarStrip ariaLabel={view.toolbarAriaLabel} items={view.toolbarItems} />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && (
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
-          <DenseDataTable
-            columns={securityScheduleColumns}
-            rows={view.rows}
-            getRowId={(row) => row.rowId}
-            getRowAriaLabel={(row) => row.ariaLabel}
-            getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-            getRowAriaControls={(row) => row.detailPanelId}
-            getRowAriaExpanded={(row) => row.isExpanded}
-            onRowSelect={(row) => onSelect(row.rowId)}
-            selectedRowId={view.selectedRowId}
-            emptyText={view.emptyText}
-            ariaLabel={view.tableLabel}
-            caption={view.tableCaption}
-          />
-          <div id={view.detailPanelId} data-selected-source="Selected from schedule events" className="row-detail-panel h-fit min-w-0">
-            {view.selectedDetail ? (
-              <EntitySummary
-                eyebrow={view.selectedDetail.eyebrow}
-                title={view.selectedDetail.title}
-                subtitle={view.selectedDetail.subtitle}
-                description={view.selectedDetail.description}
-                ariaLabel={view.selectedDetail.ariaLabel}
-                status={<Badge variant={view.selectedDetail.statusTone}>{view.selectedDetail.statusLabel}</Badge>}
-                fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
-              />
-            ) : (
-              <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                <div className="eyebrow-label">Schedule event detail</div>
-                <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
-              </div>
-            )}
-          </div>
           </div>
         )}
       </CardContent>

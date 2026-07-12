@@ -423,7 +423,7 @@ public sealed class ExecutionOperatorControlService
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
-                OverrideMatchesOrder(overrideEntry, request, runId));
+                OverrideMatchesTarget(overrideEntry, ManualOverrideTarget.ForOrder(request, runId)));
 
             if (forceBlock is not null)
             {
@@ -437,9 +437,7 @@ public sealed class ExecutionOperatorControlService
             var bypassOverride = TryResolveManualOverrideLocked(
                 requestedOverrideId,
                 ExecutionManualOverrideKinds.BypassOrderControls,
-                request.Symbol,
-                request.StrategyId,
-                runId);
+                ManualOverrideTarget.ForOrder(request, runId));
 
             if (_circuitBreaker.IsOpen && bypassOverride is null)
             {
@@ -502,9 +500,7 @@ public sealed class ExecutionOperatorControlService
             var livePromotionOverride = TryResolveManualOverrideLocked(
                 manualOverrideId,
                 ExecutionManualOverrideKinds.AllowLivePromotion,
-                symbol: null,
-                strategyId: strategyId,
-                runId: runId);
+                new ManualOverrideTarget(Symbol: null, StrategyId: strategyId, RunId: runId));
 
             return livePromotionOverride is null
                 ? LivePromotionControlDecision.Rejected(
@@ -607,9 +603,7 @@ public sealed class ExecutionOperatorControlService
     private ExecutionManualOverride? TryResolveManualOverrideLocked(
         string? overrideId,
         string requiredKind,
-        string? symbol,
-        string? strategyId,
-        string? runId)
+        ManualOverrideTarget target)
     {
         if (string.IsNullOrWhiteSpace(overrideId) ||
             !_manualOverrides.TryGetValue(overrideId, out var overrideEntry))
@@ -622,9 +616,7 @@ public sealed class ExecutionOperatorControlService
             return null;
         }
 
-        if (!MatchesOptionalTarget(overrideEntry.Symbol, symbol) ||
-            !MatchesOptionalTarget(overrideEntry.StrategyId, strategyId) ||
-            !MatchesOptionalTarget(overrideEntry.RunId, runId))
+        if (!OverrideMatchesTarget(overrideEntry, target))
         {
             return null;
         }
@@ -640,10 +632,10 @@ public sealed class ExecutionOperatorControlService
             : _defaultMaxPositionSize;
     }
 
-    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request, string? runId) =>
-        MatchesOptionalTarget(overrideEntry.Symbol, request.Symbol) &&
-        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId) &&
-        MatchesOptionalTarget(overrideEntry.RunId, runId);
+    private static bool OverrideMatchesTarget(ExecutionManualOverride overrideEntry, ManualOverrideTarget target) =>
+        MatchesOptionalTarget(overrideEntry.Symbol, target.Symbol) &&
+        MatchesOptionalTarget(overrideEntry.StrategyId, target.StrategyId) &&
+        MatchesOptionalTarget(overrideEntry.RunId, target.RunId);
 
     private static bool MatchesOptionalTarget(string? configuredTarget, string? actualTarget)
     {
@@ -663,4 +655,13 @@ public sealed class ExecutionOperatorControlService
 
     private static string? NormalizeOptionalToken(string? token) =>
         string.IsNullOrWhiteSpace(token) ? null : token.Trim();
+
+    private readonly record struct ManualOverrideTarget(
+        string? Symbol,
+        string? StrategyId,
+        string? RunId)
+    {
+        public static ManualOverrideTarget ForOrder(OrderRequest request, string? runId) =>
+            new(request.Symbol, request.StrategyId, runId);
+    }
 }
