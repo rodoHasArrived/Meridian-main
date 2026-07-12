@@ -1,4 +1,8 @@
-# Meridian Design System
+# Meridian Design System README - Dark Cockpit Legacy
+
+**Status:** archived historical reference  
+**Archived from:** `Meridian Design System/README.md.bak`  
+**Reason:** superseded by `Meridian Design System/README.md`
 
 An operator workstation design system for **Meridian** — a trading, portfolio, accounting,
 reporting, strategy, data, and settings platform. The visual language is a deep navy cockpit with

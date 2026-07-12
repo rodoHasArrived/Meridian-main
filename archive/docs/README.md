@@ -156,6 +156,7 @@ Reference archive:
 
 Design archive:
 
+- [design-system-readme-dark-cockpit-legacy](design/design-system-readme-dark-cockpit-legacy.md)
 - [design-system-usage](design/design-system-usage.md)
 - [meridian-design-document](design/meridian-design-document.md)
 - [design folder migration note](design/README.md)
