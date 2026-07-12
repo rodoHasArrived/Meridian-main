@@ -157,10 +157,27 @@ public static class ProviderIntegrationSetupValidator
                 "Provider connection environment must match the manifest environment."));
         }
 
-        var declaredCapabilities = manifest.Capabilities
+        // Drafts arrive as hand-edited JSON, so declared non-nullable collections can still be null.
+        if (manifest.Capabilities is null)
+        {
+            issues.Add(new ProviderIntegrationSetupValidationIssue(
+                "manifest.capabilities",
+                "provider-setup.manifest-capabilities-required",
+                "Manifest capabilities list is required (an empty list is allowed)."));
+        }
+
+        if (connection.EnabledCapabilities is null)
+        {
+            issues.Add(new ProviderIntegrationSetupValidationIssue(
+                "connection.enabledCapabilities",
+                "provider-setup.connection-capabilities-required",
+                "Connection enabled capabilities list is required (an empty list is allowed)."));
+        }
+
+        var declaredCapabilities = (manifest.Capabilities ?? [])
             .Select(capability => capability.Capability)
             .ToHashSet();
-        foreach (var capability in connection.EnabledCapabilities)
+        foreach (var capability in connection.EnabledCapabilities ?? [])
         {
             if (!declaredCapabilities.Contains(capability))
             {

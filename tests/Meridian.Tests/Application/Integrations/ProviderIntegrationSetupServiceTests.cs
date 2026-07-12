@@ -97,6 +97,29 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveDraftAsync_ReportsNullCapabilityCollectionsAsValidationIssues()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        request = request with
+        {
+            Manifest = request.Manifest with { Capabilities = null! },
+            Connection = request.Connection with { EnabledCapabilities = null! }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Select(issue => issue.Code).Should().BeEquivalentTo(
+        [
+            "provider-setup.manifest-capabilities-required",
+            "provider-setup.connection-capabilities-required"
+        ]);
+        (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
     public async Task SaveDraftAsync_NormalizesActiveAndRetiredStatesToDraft()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);

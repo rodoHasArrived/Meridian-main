@@ -75,6 +75,22 @@ export function validateProviderIntegrationSetupDraft(
     });
   }
 
+  if (!Array.isArray(manifest.capabilities)) {
+    issues.push({
+      field: "manifest.capabilities",
+      label: "Manifest capabilities",
+      message: "Manifest capabilities list is required (an empty list is allowed)."
+    });
+  }
+
+  if (!Array.isArray(connection.enabledCapabilities)) {
+    issues.push({
+      field: "connection.enabledCapabilities",
+      label: "Connection enabled capabilities",
+      message: "Connection enabled capabilities list is required (an empty list is allowed)."
+    });
+  }
+
   const declaredCapabilities = new Set(
     (Array.isArray(manifest.capabilities) ? manifest.capabilities : [])
       .map((capability) => capability?.capability)

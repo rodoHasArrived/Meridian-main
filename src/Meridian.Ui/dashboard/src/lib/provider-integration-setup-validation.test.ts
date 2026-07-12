@@ -124,7 +124,7 @@ describe("validateProviderIntegrationSetupDraft", () => {
     });
   });
 
-  it("survives drafts with missing collections from hand-edited JSON", () => {
+  it("reports missing capability collections from hand-edited JSON instead of crashing", () => {
     const manifest = {
       ...createManifest(),
       capabilities: undefined
@@ -134,7 +134,12 @@ describe("validateProviderIntegrationSetupDraft", () => {
       enabledCapabilities: undefined
     } as unknown as ProviderIntegrationConnection;
 
-    expect(() => validateProviderIntegrationSetupDraft(manifest, connection)).not.toThrow();
+    const issues = validateProviderIntegrationSetupDraft(manifest, connection);
+
+    expect(issues.map((issue) => issue.field)).toEqual([
+      "manifest.capabilities",
+      "connection.enabledCapabilities"
+    ]);
   });
 });
 

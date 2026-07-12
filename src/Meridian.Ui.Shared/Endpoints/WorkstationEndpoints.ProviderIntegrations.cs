@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -181,6 +182,16 @@ public static partial class WorkstationEndpoints
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                // Returning a ProblemDetails response bypasses the exception-handling middleware,
+                // so log here or the failure never reaches server logs.
+                context.RequestServices
+                    .GetService<ILoggerFactory>()
+                    ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                    .LogError(
+                        ex,
+                        "Provider integration setup save failed unexpectedly for ManifestId {ManifestId}, ConnectionId {ConnectionId}.",
+                        request?.Manifest?.ManifestId ?? "(default)",
+                        request?.Connection?.ConnectionId ?? "(default)");
                 return Results.Problem(
                     "Provider integration setup save failed unexpectedly. Check server logs for operation setup-save-draft.",
                     statusCode: StatusCodes.Status500InternalServerError);
