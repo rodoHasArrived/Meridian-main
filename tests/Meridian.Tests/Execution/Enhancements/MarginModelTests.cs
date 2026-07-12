@@ -99,6 +99,40 @@ public sealed class MarginModelTests
     }
 
     [Fact]
+    public void RegT_Portfolio_EquityIncludesShortMarketValue()
+    {
+        var model = new RegTMarginModel();
+        var positions = new Dictionary<string, ExecutionPosition>
+        {
+            ["AAPL"] = MakePosition("AAPL", 100, 150m),   // long  → +16,000 market value
+            ["TSLA"] = MakePosition("TSLA", -50, 600m),   // short → −30,000 market value
+        };
+        var prices = new Dictionary<string, decimal>
+        {
+            ["AAPL"] = 160m,
+            ["TSLA"] = 600m,
+        };
+
+        var req = model.CalculatePortfolioRequirement(positions, prices, cash: 50_000m);
+
+        // Signed net market value: long +16,000, short −30,000 → −14,000.
+        req.NotionalValue.Should().Be((100 * 160m) + (-50 * 600m));
+
+        // Maintenance: long 16,000 × 0.25 = 4,000; short |−30,000| × 1.30 = 39,000 → 43,000.
+        var expectedMaintenance = (100 * 160m * 0.25m) + (50 * 600m * 1.30m);
+        req.MaintenanceMargin.Should().Be(expectedMaintenance);
+
+        // Portfolio equity must fold in the short's negative market value:
+        //   equity = (16,000 − 30,000) + 50,000 cash = 36,000 → excess = 36,000 − 43,000 = −7,000.
+        // A longs-only equity would report 66,000 and hide the maintenance shortfall.
+        var expectedEquity = (100 * 160m) + (-50 * 600m) + 50_000m;
+        req.ExcessLiquidity.Should().Be(expectedEquity - expectedMaintenance);
+        req.ExcessLiquidity.Should().BeNegative(
+            "including short market value exposes a maintenance shortfall that longs-plus-cash equity masks");
+        req.IsMarginCall.Should().BeTrue();
+    }
+
+    [Fact]
     public void RegT_WithOptions_UsesConfiguredRates()
     {
         var model = new RegTMarginModel(Microsoft.Extensions.Options.Options.Create(new RegTMarginOptions

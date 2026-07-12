@@ -1,13 +1,19 @@
-# Architectural Decision Records (ADRs) — migration index
+# Architectural Decision Records (ADRs)
 
-This directory is now migration source-material. Active architectural decisions are now routed through:
+Active architectural decisions are routed through:
 
 - [engineering docs](../engineering/README.md)
 - [architecture references](../architecture/README.md)
 - [documentation ownership contract](../documentation-ownership.md)
 
-Full ADR content is preserved here for historical reference only:
+Historical ADRs 001–016 were migrated to the archive during the documentation rebuild, and the
+archive-migration stubs that previously mirrored them here have been removed. Full historical ADR
+content is preserved in:
 
 - [ADR archive index](../../archive/docs/adr/README.md)
 
-docs/adr/README.md remains a migration pointer, not canonical architecture truth.
+This folder keeps only current material:
+
+- [017-modular-operational-monolith.md](017-modular-operational-monolith.md)
+- [018-declarative-statement-mapping-profiles.md](018-declarative-statement-mapping-profiles.md)
+- [_template.md](_template.md) — template for authoring new ADRs

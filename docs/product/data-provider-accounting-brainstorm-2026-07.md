@@ -32,11 +32,11 @@ analysis of 2026-07-05, with dated update notes where the premise has changed. C
 | 2 | Canonical symbol spine | Core done | Resolver now wired into the backfill worker path and `ValidateBarsAsync` resolves per provider. Remaining: converging static `NormalizeSymbol`, `ISymbolResolver`, and the UI `SymbolMappingService` onto `CanonicalSymbolRegistry`. |
 | 3 | Unified data quality + browser dashboard | Partially done | The Data workspace now renders `DataQualityRegion` over `/api/quality/dashboard`. Remaining: unifying the three scoring subsystems behind one composite health model, and contextual gap actions (one-click backfill). |
 | 4 | Backfill feedback loop | Done | `OnProgressUpdate` is raised with subscriber-failure guards; SLA metadata is typed (`BackfillRemediationSlaDecision`/`Metadata`/`Status`); the remediation provider is an options default rather than hard-coded. |
-| 5 | Failure & rate-limit hardening | Partially done | `DataSourceRegistry` now records activation/registration failures via `RecordFailure`. Remaining: typed rate-limit detection (string matching on `"429"`/`"rate limit"` still present in the composite), streaming-side rate-limit tracking, and confirming registration failures surface in the provider catalog UI. |
+| 5 | Failure & rate-limit hardening | Partially done | `DataSourceRegistry` now records activation/registration failures via `RecordFailure`, and `CompositeHistoricalDataProvider` now classifies rate limits only from structured `RateLimitException` or HTTP 429 status metadata instead of message text. Remaining: streaming-side rate-limit tracking and confirming registration failures surface in the provider catalog UI. |
 | 6 | Mark-to-market wiring | Done (2026-07-06) | `DailyMarkToMarketService` runs `DailyPortfolioPricingProjector` into governed drafts, with tests. `NavAttributionService` now computes NAV as assets − liabilities (with `ByAssetClass` decomposing that total), covered by `NavAttributionServiceTests`. |
 | 7 | Automated journal drafts | Done (2026-07-06) | Corporate-action/dividend producers, management/performance-fee accrual (`FeeScheduleAccrualEventProducer` + `RunFeeAccrualIntakeAsync` + endpoint), and dividend withholding-tax accrual (`WithholdingTaxRate` on the dividend intake lane) all land governed drafts in the workbench queue. Operator/cockpit-triggered; recurring scheduling remains optional follow-on. |
 | 8 | Closing entries + retained-earnings roll | Done (2026-07-06) | `AutomatedJournalIntakeRunner.RunPeriodCloseIntakeAsync` projects closing entries from a closed period's trial balance and lands the governed draft in the workbench queue via `/api/ledger/journal-automation/period-close-intake`; open periods are rejected loudly. |
-| 9 | One ledger spine | Open | `DurableAutomatedJournalPoster` is the emerging draft-posting seam, but hydration of read surfaces from `ILedgerJournalStore`, as-of indexing, and the F#/C# enum-ordinal guard test have not started. |
+| 9 | One ledger spine | Done (2026-07-08) | `DurableAutomatedJournalPoster` posts approved drafts through `ILedgerJournalStore`; `LedgerJournalStoreHydrationExtensions` hydrates as-of and book/period projections from the durable journal store; `Ledger` keeps balance/posting snapshots for point-in-time reads; tests cover hydration, durable-first posting, as-of snapshots, and the F#/C# enum-ordinal contract. |
 | 10 | Fill-to-ledger durability | Done | `LedgerPostingConsumer.Publish` now blocks on channel capacity (`WaitToWriteAsync` loop) instead of dropping fills, with a regression test covering the full-channel case. |
 
 ## The Two Headline Findings
@@ -58,8 +58,10 @@ mark-to-market adjustments, and NAV is effectively NAV-at-cost.
 
 > **Update (2026-07-06):** both headline findings have narrowed — see the status table above.
 > `DailyMarkToMarketService` now drives the pricing projector into governed drafts, and the three
-> streaming providers named above emit connection diagnostics. The structural fractures (symbol
-> registry convergence, quality-model unification, ledger spine) remain the open work.
+> streaming providers named above emit connection diagnostics. The ledger-spine work is now closed;
+> remaining structural fractures are provider-side symbol-registry convergence, quality-model
+> unification, streaming-side rate-limit tracking, and reconnect/heartbeat/resubscribe
+> consolidation.
 
 ---
 
@@ -251,6 +253,13 @@ distinguish "assembly not present" (info) from "module threw during activation" 
 string-matching removal needs one pass over every adapter's error mapping to confirm each API's
 429 shape is already translated.
 
+> **Update (2026-07-08):** the composite string-matching gap is closed —
+> `CompositeHistoricalDataProvider` treats rate limits as structured failures only
+> (`RateLimitException`, including wrapped instances, or `HttpRequestException.StatusCode ==
+> TooManyRequests`). Plain exception messages that mention 429 now remain ordinary provider
+> failures, covered by regression tests. Remaining scope is streaming-side rate-limit tracking and
+> provider-catalog proof that registration failures are visible to operators.
+
 ---
 
 ## Accounting Ideas
@@ -377,6 +386,17 @@ FinancialOperations path. The discipline: FinancialOperations remains the mutati
 `Meridian.Ledger` becomes the computation/projection library over it. Sequence strictly after
 idea 6 proves the draft-mapping seam on one projector.
 
+> **Update (2026-07-08):** implemented. `IAutomatedJournalPostingTarget` and
+> `DurableAutomatedJournalPoster` provide the shared posting seam, with durable
+> `ILedgerJournalStore.AppendAsync` happening before any in-memory projection update.
+> `LedgerJournalStoreHydrationExtensions` rebuilds ledger projections through
+> `ILedgerJournalStore.QueryAsync`, including as-of and book/period helpers, and
+> `PostgresLedgerBookService` uses the book/period hydration path before period-close financial
+> summaries. `Ledger` now maintains account-balance and posting-count snapshots with binary-search
+> point-in-time lookups. The proof set includes `DurableAutomatedJournalPosterTests`,
+> `LedgerJournalStoreHydrationTests`, `LedgerIntegrationTests.Ledger_AsOfBalanceSnapshots_HandleOutOfOrderPostings`,
+> and `LedgerIntegrationTests.LedgerAccountTypeOrdinals_MatchFSharpPostingKernelContract`.
+
 ### 10. Fill-to-Ledger Durability Fix in `LedgerPostingConsumer`
 
 Small, sharp, and arguably a bug: `LedgerPostingConsumer`
@@ -419,16 +439,15 @@ correctness problem, and — uniquely in this set — connects the two subsystem
 asked about: the data-provider chain becomes the pricing source for the books. It also
 force-designs the projector-to-governed-drafts mapping seam that #7 and #9 reuse.
 
-**Platform bets:** #9 (one ledger spine) on the accounting side and #2 (canonical symbol spine)
-on the provider side. Both are the same shape: three-way fragmentation converging on an
-authority that already exists in the repo (`ILedgerJournalStore`, `CanonicalSymbolRegistry`).
-Neither should start until a concrete feature (#6 for the ledger, the cross-validation fix for
-symbols) has proven the seam.
+**Platform bets:** #9 (one ledger spine) is now the closed accounting-side foundation; #2
+(canonical symbol spine) remains the provider-side platform bet. Both follow the same pattern:
+three-way fragmentation converging on an authority that already exists in the repo
+(`ILedgerJournalStore`, `CanonicalSymbolRegistry`).
 
-**Quick wins to run in parallel lanes now:** #10 (fill durability — a correctness fix with a
-one-file blast radius), #4 (backfill progress + typed SLA), and the S-sized core of #2
-(resolver into `BackfillWorkerService`, resolved symbols in cross-validation) and #5
-(registration-failure surfacing). All are days-effort with immediate trust payoff.
+**Remaining quick wins to run in parallel lanes now:** #5 provider-catalog surfacing and
+streaming-side rate-limit tracking, plus #1 reconnect/heartbeat/resubscribe consolidation one
+provider at a time. The structural #2 symbol-registry convergence remains the highest-leverage
+provider cleanup once those visible failure modes are closed.
 
 **Cross-cutting theme: silent failure is the common enemy.** Swallowed module registrations,
 string-matched rate limits, dropped fills under backpressure, "enabled" rendered as "connected,"
@@ -438,14 +457,14 @@ expression of Meridian's evidence-led identity.
 
 **Sequencing recommendation:**
 
-1. **Now (parallel S lanes):** #10 fill durability · #4 backfill feedback · #2-core resolver fixes
-   · #5 registration surfacing.
-2. **Next:** #6 mark-to-market service (M, the marquee item) · #1 streaming unification one
-   provider per PR (NYSE first).
-3. **Then:** #7 automated drafts riding #6's mapping seam · #8 closing entries · #2-structural
-   symbol registry convergence.
-4. **Later:** #9 ledger spine unification once #6/#7 prove the draft seam · #3 quality
-   unification + browser dashboard (React view first, scoring convergence second).
+1. **Now (parallel S lanes):** #5 provider-catalog surfacing and streaming-side rate-limit
+   tracking · #1 streaming unification one provider per PR.
+2. **Next:** #2 structural symbol-registry convergence, retiring the remaining static
+   `NormalizeSymbol`, `ISymbolResolver`, and UI `SymbolMappingService` forks.
+3. **Then:** #3 quality unification and contextual gap actions, with the existing browser
+   `DataQualityRegion` as the visible landing surface.
+4. **Closed foundation:** #4 and #6-#10 are implemented; treat them as proof points and regression
+   surfaces, not future sequencing blockers.
 
 **Competitive signals:** the fund-ops incumbents (Enfusion/Clearwater, Arcesium, SS&C) sell
 mark-to-market books, automated accrual capture, and hard period-close discipline as the baseline

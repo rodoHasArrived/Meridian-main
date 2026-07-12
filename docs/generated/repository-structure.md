@@ -1062,6 +1062,8 @@ Meridian-main
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
+│       │   ├── dispatch-targeted-test.py
+│       │   ├── generate-release-evidence-manifest.py
 │       │   ├── run-dotnet-ci-tests.py
 │       │   └── summarize-ci-artifacts.py
 │       ├── docs
@@ -1206,23 +1208,6 @@ Meridian-main
 │       └── meridian.service
 ├── docs
 │   ├── adr
-│   │   ├── 001-provider-abstraction.md
-│   │   ├── 002-tiered-storage-architecture.md
-│   │   ├── 003-microservices-decomposition.md
-│   │   ├── 004-async-streaming-patterns.md
-│   │   ├── 005-attribute-based-discovery.md
-│   │   ├── 006-domain-events-polymorphic-payload.md
-│   │   ├── 007-write-ahead-log-durability.md
-│   │   ├── 008-multi-format-composite-storage.md
-│   │   ├── 009-fsharp-interop.md
-│   │   ├── 010-httpclient-factory.md
-│   │   ├── 011-centralized-configuration-and-credentials.md
-│   │   ├── 012-monitoring-and-alerting-pipeline.md
-│   │   ├── 013-bounded-channel-policy.md
-│   │   ├── 014-json-source-generators.md
-│   │   ├── 015-strategy-execution-contract.md
-│   │   ├── 016-custody-cash-reconciliation-break-typing.md
-│   │   ├── 016-platform-architecture-migration.md
 │   │   ├── 017-modular-operational-monolith.md
 │   │   ├── 018-declarative-statement-mapping-profiles.md
 │   │   ├── _template.md
@@ -1337,6 +1322,13 @@ Meridian-main
 │   │   ├── wpf-workstation-shell-ux.md
 │   │   └── write-path-invariants.md
 │   ├── development
+│   │   ├── mockups
+│   │   │   └── web-ui
+│   │   │       ├── 01-trading-cockpit.html
+│   │   │       ├── 02-workspace-overview.html
+│   │   │       ├── 03-settings-task-route.html
+│   │   │       ├── 04-degraded-states.html
+│   │   │       └── README.md
 │   │   ├── policies
 │   │   │   ├── desktop-support-policy.md
 │   │   │   └── promotion-policy-matrix.md
@@ -1372,6 +1364,7 @@ Meridian-main
 │   │   ├── tooling-architecture.md
 │   │   ├── tooling-workflow-backlog.md
 │   │   ├── ui-fixture-mode-guide.md
+│   │   ├── web-ui-structural-improvement-proposal.md
 │   │   ├── wpf-implementation-notes.md
 │   │   └── wpf-web-ui-alignment-plan.md
 │   ├── diagrams
@@ -1646,7 +1639,6 @@ Meridian-main
 │   │   │   ├── source-modules.normalized.yml
 │   │   │   ├── source-readme-coverage.json
 │   │   │   └── source-readme-coverage.normalized.yml
-│   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
 │   │   ├── documentation-coverage.md
 │   │   ├── interfaces.md
@@ -1664,35 +1656,11 @@ Meridian-main
 │   │   ├── README.md
 │   │   └── tastytrade-endpoint-coverage.md
 │   ├── operations
-│   │   ├── broker-order-routing-phased-runbook.md
-│   │   ├── canonical-buyer-workflow.md
 │   │   ├── cleanup-and-maintenance.md
-│   │   ├── deployment.md
-│   │   ├── disk-space-hygiene.md
-│   │   ├── environment-and-deployment-standard.md
-│   │   ├── error-budget-policy-runbook.md
-│   │   ├── failover-and-recovery-runbook.md
-│   │   ├── fund-ops-persistence-cutover-runbook.md
-│   │   ├── governance-operator-workflow.md
-│   │   ├── high-availability.md
-│   │   ├── ibkr-promotion-checklist.md
 │   │   ├── live-execution-controls.md
 │   │   ├── operator-runbook.md
-│   │   ├── orphaned-doc-triage-index.md
-│   │   ├── performance-tuning.md
-│   │   ├── portable-data-packager.md
-│   │   ├── preflight-checklist.md
-│   │   ├── provider-degradation-calibration.md
-│   │   ├── provider-degradation-policy.md
 │   │   ├── README.md
-│   │   ├── reconciliation-operations.md
-│   │   ├── reconciliation-policy-operations.md
-│   │   ├── reconciliation-resilience-runbook.md
-│   │   ├── reconciliation-runbook.md
-│   │   ├── service-level-objectives.md
-│   │   ├── slo-review-template.md
-│   │   ├── tradier-provider-endpoint-catalog.md
-│   │   └── workstation-governance-approval-runbook.md
+│   │   └── service-level-objectives.md
 │   ├── operators
 │   │   ├── browser-workstation-installer.md
 │   │   ├── deployment-packaging.md
@@ -1707,72 +1675,13 @@ Meridian-main
 │   │   ├── README.md
 │   │   └── reconciliation-operations.md
 │   ├── plans
-│   │   ├── adapters-completion-plan.md
-│   │   ├── approach-b-plus-v2-implementation-plan.md
-│   │   ├── assembly-performance-roadmap.md
-│   │   ├── backtest-studio-unification-blueprint.md
-│   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
-│   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
-│   │   ├── covered-call-writing-slice-1-blueprint.md
-│   │   ├── current-direction-and-status.md
-│   │   ├── desktop-shell-modularity-roadmap.md
-│   │   ├── desktop-ui-workflow-acceptance-matrix.md
 │   │   ├── desktop-workstation-screen-blueprint.checklist.json
 │   │   ├── desktop-workstation-screen-blueprint.md
-│   │   ├── entity-aware-workstation-capability-blueprint.md
-│   │   ├── evidence-backed-investment-operations-plan.md
-│   │   ├── fund-management-module-implementation-backlog.md
-│   │   ├── fund-management-pr-sequenced-roadmap.md
-│   │   ├── fund-management-product-vision-and-capability-matrix.md
-│   │   ├── governance-fund-ops-blueprint.md
-│   │   ├── kernel-parity-migration-blueprint.md
-│   │   ├── l3-inference-implementation-plan.md
-│   │   ├── ledger.md
-│   │   ├── meridian-6-week-roadmap.md
-│   │   ├── meridian-database-blueprint.md
-│   │   ├── meridian-pilot-workflow.md
-│   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
-│   │   ├── performance-todo-2026-05-21.md
-│   │   ├── portfolio-level-backtesting-composer-blueprint.md
-│   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
 │   │   ├── README.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
-│   │   ├── runbook-template-registry-modernization-plan.md
-│   │   ├── security-master-passport-workbench.md
-│   │   ├── sfo-mvp-implementation-design.md
-│   │   ├── trading-workstation-migration-blueprint.md
-│   │   ├── ufl-accounting-impact-model.md
-│   │   ├── ufl-asset-profile-template.md
-│   │   ├── ufl-bond-target-state-v2.md
-│   │   ├── ufl-capability-model.md
-│   │   ├── ufl-cash-sweep-target-state-v2.md
-│   │   ├── ufl-certificate-of-deposit-target-state-v2.md
-│   │   ├── ufl-cfd-target-state-v2.md
-│   │   ├── ufl-commercial-paper-target-state-v2.md
-│   │   ├── ufl-commodity-target-state-v2.md
-│   │   ├── ufl-conformance-matrix.md
-│   │   ├── ufl-crypto-target-state-v2.md
-│   │   ├── ufl-custom-asset-composability.md
-│   │   ├── ufl-deposit-target-state-v2.md
-│   │   ├── ufl-direct-lending-implementation-roadmap.md
-│   │   ├── ufl-direct-lending-target-state-v2.md
-│   │   ├── ufl-equity-target-state-v2.md
-│   │   ├── ufl-future-target-state-v2.md
-│   │   ├── ufl-fx-spot-target-state-v2.md
-│   │   ├── ufl-money-market-fund-target-state-v2.md
-│   │   ├── ufl-option-target-state-v2.md
-│   │   ├── ufl-other-security-target-state-v2.md
-│   │   ├── ufl-projection-and-evidence-kernel.md
-│   │   ├── ufl-repo-target-state-v2.md
-│   │   ├── ufl-supported-assets-index.md
-│   │   ├── ufl-swap-target-state-v2.md
-│   │   ├── ufl-treasury-bill-target-state-v2.md
-│   │   ├── ufl-warrant-target-state-v2.md
-│   │   ├── wave-implementation-checklists.md
-│   │   ├── waves-2-4-operator-readiness-addendum.md
-│   │   └── web-ui-development-pivot.md
+│   │   └── security-master-passport-workbench.md
 │   ├── product
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
@@ -2121,67 +2030,41 @@ Meridian-main
 │   │   ├── api-contract-coverage-dashboard.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
-│   │   ├── broker-phase-promotion-checklist-template.md
 │   │   ├── CHANGELOG.md
 │   │   ├── contract-compatibility-matrix.md
 │   │   ├── coverage-report.md
-│   │   ├── dead-code-inventory.md
-│   │   ├── desktop-application-screens.md
 │   │   ├── doc-health-dashboard.json
 │   │   ├── doc-health-dashboard.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
-│   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── evidence-continuity-dashboard.json
 │   │   ├── evidence-continuity-dashboard.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
-│   │   ├── FULL_IMPLEMENTATION_TODO.md
-│   │   ├── fund-ops-persistence-cutover-status.md
-│   │   ├── governance-handoff-evidence-bundle.md
 │   │   ├── governance-readiness-dashboard.json
 │   │   ├── governance-readiness-dashboard.md
-│   │   ├── ibkr-provider-inventory.md
-│   │   ├── IMPROVEMENTS.md
 │   │   ├── kernel-readiness-dashboard.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
-│   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── paper-replay-reliability-dashboard.json
 │   │   ├── paper-replay-reliability-dashboard.md
 │   │   ├── pilot-readiness-dashboard.json
 │   │   ├── pilot-readiness-dashboard.md
-│   │   ├── production-status.md
 │   │   ├── program-state-summary.json
 │   │   ├── program-state-summary.md
-│   │   ├── PROGRAM_STATE.md
 │   │   ├── prompt-route-lint-report.json
-│   │   ├── provider-adapters-closure-summary.md
-│   │   ├── provider-capability-inventory.md
-│   │   ├── provider-capability-matrix.md
-│   │   ├── provider-core-hardening-notes.md
-│   │   ├── provider-failover-hardening.md
-│   │   ├── provider-integration-status.md
-│   │   ├── provider-test-gap-baseline.md
-│   │   ├── provider-test-minimums.md
-│   │   ├── provider-validation-evidence-schema.md
 │   │   ├── provider-validation-matrix.md
-│   │   ├── readiness-claim-language-policy.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
-│   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
-│   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── todo-scan-results.json
 │   │   ├── TODO.md
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   ├── workflow-validation-summary.json
 │   │   ├── workstation-cockpit-acceptance-matrix.json
-│   │   ├── workstation-cockpit-acceptance-matrix.md
-│   │   ├── workstation-governance-state-model.md
 │   │   ├── wpf-screen-development-tracker.json
 │   │   └── wpf-screen-development-tracker.md
 │   ├── testing
@@ -3430,12 +3313,14 @@ Meridian-main
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
+│   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
+│   │   │   ├── SecurityMasterCostBasisAdjustmentService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterDataQualityService.cs
 │   │   │   ├── SecurityMasterDraftProposalService.cs
@@ -4244,6 +4129,8 @@ Meridian-main
 │   │   │   ├── OperationsContinuityRepositories.cs
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
+│   │   │   ├── OperationsContinuityWorkflowText.cs
+│   │   │   ├── OperationsLedgerPostingService.cs
 │   │   │   ├── OperationsStatusDerivationService.cs
 │   │   │   ├── OperationsWorkflowAuditHashing.cs
 │   │   │   └── PostgresOperationsContinuityStore.cs
@@ -4736,6 +4623,9 @@ Meridian-main
 │   │   ├── LedgerScheduledReportExportPackageBuilder.cs
 │   │   ├── LedgerSnapshot.cs
 │   │   ├── LedgerTaxLot.cs
+│   │   ├── LedgerTaxLotBasisAdjuster.cs
+│   │   ├── LedgerTaxLotBasisAdjustment.cs
+│   │   ├── LedgerTaxLotBasisAdjustmentKind.cs
 │   │   ├── LedgerTaxLotReliefInput.cs
 │   │   ├── LedgerTaxLotReliefMethod.cs
 │   │   ├── LedgerTaxLotReliefProjection.cs
@@ -7860,6 +7750,7 @@ Meridian-main
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
+│   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
 │   │   │   └── PeriodCloseProjectorTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
@@ -7979,10 +7870,12 @@ Meridian-main
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
+│   │   │   ├── SecurityMasterAmortizationLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandServiceTests.cs
+│   │   │   ├── SecurityMasterCostBasisAdjustmentServiceTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterDataQualityServiceCoverageTests.cs
@@ -8564,8 +8457,8 @@ Meridian-main
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_summary.py
+│   │   ├── test_ci_workflow_contract.py
 │   │   ├── test_cleanup_generated_script.py
-│   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
@@ -8590,6 +8483,8 @@ Meridian-main
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
+│   │   ├── test_release_evidence_manifest.py
+│   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_route_maintenance_classification.py
@@ -8601,6 +8496,7 @@ Meridian-main
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py
+│   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_screenshot_captures.py
 │   │   ├── test_validate_source_readmes.py

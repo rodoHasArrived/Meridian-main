@@ -116,17 +116,6 @@ public interface IOperationsContinuityWorkflowService
 
 public sealed class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
 {
-    private static readonly Regex SensitiveAssignmentPattern = new(
-        @"\b(?<key>api[_-]?key|secret|token|password|passphrase|client[_-]?secret|private[_-]?key|credential)\s*(?<separator>[:=])\s*(?<value>[^&;\s,]+)",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-    private static readonly Regex BearerTokenPattern = new(
-        @"\bbearer\s+[A-Za-z0-9._~+/=-]+",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-    private static readonly Regex BasicAuthUriPattern = new(
-        @"(?<scheme>https?://)(?<user>[^/@\s:]+):(?<password>[^/@\s]+)@",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     private static readonly JsonSerializerOptions WorkflowCloneJsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -172,9 +161,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private readonly IOperationsContinuityRepository _repository;
     private readonly IOperationsWorkflowAuditStore _auditStore;
     private readonly IOperationsStatusDerivationService _statusDerivation;
-    private readonly ILedgerJournalStore? _ledgerJournalStore;
-    private readonly IOperationsContinuityTransactionalCommitStore? _transactionalCommitStore;
-    private readonly ISecurityMasterQueryService? _securityMasterQueryService;
+    private readonly OperationsLedgerPostingService _ledgerPosting;
 
     public OperationsContinuityWorkflowService(
         IOperationsContinuityRepository repository,
@@ -187,9 +174,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
-        _ledgerJournalStore = ledgerJournalStore;
-        _transactionalCommitStore = transactionalCommitStore;
-        _securityMasterQueryService = securityMasterQueryService;
+        _ledgerPosting = new OperationsLedgerPostingService(ledgerJournalStore, transactionalCommitStore, securityMasterQueryService);
     }
 
     public async Task<OperationsTransitionResultDto> StartWorkflowAsync(
@@ -235,7 +220,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             now,
             request.LedgerBookId);
 
-        var evidence = NormalizeEvidence(request.EvidenceLinks);
+        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(request.EvidenceLinks);
         var auditDraft = new OperationsWorkflowAuditDraft(
             workflow.WorkflowId,
             workflow.FundAccountId,
@@ -247,8 +232,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             OperationsGateStatusDto.NotStarted,
             OperationsGateStatusDto.InProgress,
             request.Actor.Trim(),
-            RedactSensitiveText(request.Rationale),
-            RedactSensitiveText(request.CorrelationId),
+            OperationsContinuityWorkflowText.RedactSensitiveText(request.Rationale),
+            OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
             evidence);
 
         if (_auditStore is IOperationsContinuityWorkflowStartCommitStore startCommitStore)
@@ -331,7 +316,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
         var fromStatus = _statusDerivation.Derive(workflow);
         var fromGate = workflow.BrokerIngestGate.Status;
-        var evidence = NormalizeEvidence(request.EvidenceLinks);
+        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(request.EvidenceLinks);
         var workflowForCommit = CloneWorkflow(workflow);
         workflowForCommit.MarkBrokerImported(DateTimeOffset.UtcNow, evidence);
         var toStatus = _statusDerivation.Derive(workflowForCommit);
@@ -348,8 +333,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 fromGate,
                 workflowForCommit.BrokerIngestGate.Status,
                 request.Actor.Trim(),
-                RedactSensitiveText(request.Rationale),
-                RedactSensitiveText(request.CorrelationId),
+                OperationsContinuityWorkflowText.RedactSensitiveText(request.Rationale),
+                OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
                 evidence),
             ct: ct).ConfigureAwait(false);
 
@@ -571,14 +556,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             return Failure("INVALID_STATE_TRANSITION", preconditionBlocker.Message, [preconditionBlocker]);
         }
 
-        var evidence = NormalizeEvidence(request.EvidenceLinks);
-        var requestBlockers = ValidateLedgerPostRequest(request, evidence).ToList();
+        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(request.EvidenceLinks);
+        var requestBlockers = _ledgerPosting.ValidateLedgerPostRequest(request, evidence).ToList();
         var serviceBlockers = new List<OperationsWorkflowBlockerDto>();
         LedgerJournalEntryWrite? journalWrite = null;
         LedgerJournalEntryWrite builtJournalWrite = default!;
         if (requestBlockers.Count == 0)
         {
-            if (_transactionalCommitStore is null && _ledgerJournalStore is null)
+            if (!_ledgerPosting.IsLedgerStoreAvailable)
             {
                 var blocker = new OperationsWorkflowBlockerDto(
                     "LEDGER_JOURNAL_STORE_UNAVAILABLE",
@@ -591,11 +576,11 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             }
 
             var authoritativeSecurityStatuses = requestBlockers.Count == 0
-                ? await ResolveAuthoritativeSecurityStatusesAsync(request.JournalCandidate?.Lines, ct).ConfigureAwait(false)
+                ? await _ledgerPosting.ResolveAuthoritativeSecurityStatusesAsync(request.JournalCandidate?.Lines, ct).ConfigureAwait(false)
                 : new Dictionary<Guid, SecurityStatusDto>();
 
             if (requestBlockers.Count == 0 &&
-                !TryBuildJournalWrite(workflow, request, authoritativeSecurityStatuses, out builtJournalWrite, out var journalBlockers))
+                !_ledgerPosting.TryBuildJournalWrite(workflow, request, authoritativeSecurityStatuses, out builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
                     "VALIDATION_FAILED",
@@ -627,58 +612,25 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             fromGateStatus,
             toGateStatus,
             request.Actor.Trim(),
-            RedactSensitiveText(request.Rationale),
-            RedactSensitiveText(request.CorrelationId),
+            OperationsContinuityWorkflowText.RedactSensitiveText(request.Rationale),
+            OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
             evidence);
 
-        if (journalWrite is not null && _transactionalCommitStore is not null)
+        var commitOutcome = await _ledgerPosting
+            .CommitOrAppendAsync(workflowForCommit, auditDraft, journalWrite, evidence, ct)
+            .ConfigureAwait(false);
+        switch (commitOutcome.Disposition)
         {
-            OperationsContinuityTransactionalCommitResult commitResult;
-            try
-            {
-                commitResult = await _transactionalCommitStore
-                    .CommitLedgerPostingAsync(workflowForCommit, auditDraft, journalWrite, ct)
-                    .ConfigureAwait(false);
-            }
-            catch (LedgerValidationException ex)
-            {
+            case LedgerCommitOutcome.LedgerCommitDisposition.Rejected:
                 return Failure(
                     "LEDGER_JOURNAL_APPEND_REJECTED",
                     "Ledger journal store rejected the posting candidate.",
-                    [
-                        new OperationsWorkflowBlockerDto(
-                            "LEDGER_JOURNAL_APPEND_REJECTED",
-                            ex.Message,
-                            OperationsGateKeyDto.LedgerPosting,
-                            "Critical",
-                            evidence)
-                    ]);
-            }
-
-            var transactionalDto = await ToDtoAsync(commitResult.Workflow, ct).ConfigureAwait(false);
-            return Success(transactionalDto);
-        }
-
-        if (journalWrite is not null)
-        {
-            try
-            {
-                await _ledgerJournalStore!.AppendAsync(journalWrite, ct).ConfigureAwait(false);
-            }
-            catch (LedgerValidationException ex)
-            {
-                return Failure(
-                    "LEDGER_JOURNAL_APPEND_REJECTED",
-                    "Ledger journal store rejected the posting candidate.",
-                    [
-                        new OperationsWorkflowBlockerDto(
-                            "LEDGER_JOURNAL_APPEND_REJECTED",
-                            ex.Message,
-                            OperationsGateKeyDto.LedgerPosting,
-                            "Critical",
-                            evidence)
-                    ]);
-            }
+                    [commitOutcome.Blocker!]);
+            case LedgerCommitOutcome.LedgerCommitDisposition.Committed:
+                return Success(await ToDtoAsync(commitOutcome.Workflow!, ct).ConfigureAwait(false));
+            case LedgerCommitOutcome.LedgerCommitDisposition.Proceed:
+            default:
+                break;
         }
 
         var audit = await _auditStore.AppendAsync(auditDraft, ct).ConfigureAwait(false);
@@ -943,8 +895,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     existing.ApprovalGate.Status,
                     existing.ApprovalGate.Status,
                     request.Actor?.Trim() ?? string.Empty,
-                    RedactSensitiveText($"{request.Rationale} | close rejected: {string.Join("; ", readiness.Blockers.Select(static b => b.Code))}"),
-                    RedactSensitiveText(request.CorrelationId),
+                    OperationsContinuityWorkflowText.RedactSensitiveText($"{request.Rationale} | close rejected: {string.Join("; ", readiness.Blockers.Select(static b => b.Code))}"),
+                    OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
                     EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks)), ct).ConfigureAwait(false);
 
                 return new OperationsTransitionResultDto(false, "CLOSE_READINESS_FAILED", "Close was rejected by fail-closed readiness gating.", null,
@@ -1055,7 +1007,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
         var fromStatus = _statusDerivation.Derive(workflow);
         var fromGateStatus = gate.HasValue ? GetGate(workflow, gate.Value).Status : (OperationsGateStatusDto?)null;
-        var evidence = NormalizeEvidence(evidenceLinks);
+        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(evidenceLinks);
         var now = DateTimeOffset.UtcNow;
         var workflowForCommit = CloneWorkflow(workflow);
         if (command?.Invoke(workflowForCommit, evidence, now) is { } commandBlocker)
@@ -1077,8 +1029,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 fromGateStatus,
                 toGateStatus,
                 actor.Trim(),
-                RedactSensitiveText(rationale),
-                RedactSensitiveText(correlationId),
+                OperationsContinuityWorkflowText.RedactSensitiveText(rationale),
+                OperationsContinuityWorkflowText.RedactSensitiveText(correlationId),
                 evidence),
             ct).ConfigureAwait(false);
 
@@ -3707,7 +3659,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         string? reportPackId,
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
     {
-        var normalized = NormalizeEvidence(evidenceLinks).ToList();
+        var normalized = OperationsContinuityWorkflowText.NormalizeEvidence(evidenceLinks).ToList();
         if (!string.IsNullOrWhiteSpace(reportPackId) &&
             normalized.All(link => !string.Equals(link.EvidenceId, reportPackId, StringComparison.OrdinalIgnoreCase)))
         {
@@ -3744,7 +3696,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         OperationsReopenWorkflowRequestDto request,
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
     {
-        var normalized = NormalizeEvidence(evidenceLinks).ToList();
+        var normalized = OperationsContinuityWorkflowText.NormalizeEvidence(evidenceLinks).ToList();
         EnsureReopenGovernanceEvidenceLink(
             normalized,
             request.IncidentId,

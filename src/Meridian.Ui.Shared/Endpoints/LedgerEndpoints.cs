@@ -2820,7 +2820,7 @@ public static partial class LedgerEndpoints
             record.Entry.Description,
             lines.Sum(static line => line.Debit),
             lines.Sum(static line => line.Credit),
-            Math.Abs(lines.Sum(static line => line.Debit) - lines.Sum(static line => line.Credit)) <= 0.000001m,
+            Math.Abs(lines.Sum(static line => line.Debit) - lines.Sum(static line => line.Credit)) <= LedgerToleranceConstants.Balance,
             lines,
             record.AccountingBasis,
             record.AccountingPolicyId,

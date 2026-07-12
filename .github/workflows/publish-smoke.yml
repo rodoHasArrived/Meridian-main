@@ -53,12 +53,17 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-publish-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
@@ -77,6 +82,18 @@ jobs:
             -OutputDir artifacts/publish/publish-smoke `
             -OutputRetentionDays 0 `
             -OutputRetainLatest 0
+
+      - name: Generate release evidence manifest
+        shell: pwsh
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project '${{ inputs.project }}' `
+            --runtime '${{ inputs.runtime }}' `
+            --version '${{ inputs.version }}' `
+            --artifact-root artifacts/publish/publish-smoke `
+            --output artifacts/publish/publish-smoke/release-evidence.json `
+            --workflow-run-id '${{ github.run_id }}' `
+            --validation-lane publish-smoke
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v7.0.1

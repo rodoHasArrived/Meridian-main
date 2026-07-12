@@ -34,6 +34,15 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("artifacts/test-results/dotnet/", self.workflow)
         self.assertIn("src/Meridian.Ui/dashboard/dist/", self.workflow)
 
+    def test_browser_lane_runs_full_dashboard_contract_checks(self) -> None:
+        self.assertIn("bash scripts/ci.sh --lane verify-browser", self.workflow)
+
+        ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
+        self.assertIn("Generated UI contract drift gate", ci_script)
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run lint", ci_script)
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run typecheck:strict", ci_script)
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run test", ci_script)
+
 
 if __name__ == "__main__":
     unittest.main()

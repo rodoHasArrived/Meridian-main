@@ -60,4 +60,4 @@ Keep script execution evidence-linked and avoid unvalidated promotion from strat
 ## Related docs
 
 - `docs/source/generated/source-roadmap-traceability.md`
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`

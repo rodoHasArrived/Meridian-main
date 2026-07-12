@@ -495,16 +495,16 @@ def _check_adr_documentation(
     items: List[SourceItem],
     root: Path,
 ) -> CategoryResult:
-    """Check that each referenced ADR has a matching file in docs/adr/."""
-    adr_dir = root / "docs" / "adr"
+    """Check that each referenced ADR has a matching file in docs/adr/ or archive/docs/adr/."""
     existing_adrs: Set[str] = set()
 
-    if adr_dir.is_dir():
-        for f in adr_dir.iterdir():
-            m = ADR_FILE_RE.match(f.name)
-            if m:
-                num = int(m.group(1))
-                existing_adrs.add(f"ADR-{num:03d}")
+    for adr_dir in (root / "docs" / "adr", root / "archive" / "docs" / "adr"):
+        if adr_dir.is_dir():
+            for f in adr_dir.iterdir():
+                m = ADR_FILE_RE.match(f.name)
+                if m:
+                    num = int(m.group(1))
+                    existing_adrs.add(f"ADR-{num:03d}")
 
     for item in items:
         # Normalise to 3-digit form: ADR-1 -> ADR-001

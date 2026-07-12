@@ -397,7 +397,7 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
-// Storage-health headline metric tone - mirrors the view-model's storage tone mapping so the
+// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
 // MetricCard accent matches the "Storage health" system item.
 function settingsStorageHealthTone(
   health: SystemOverviewResponse["storageHealth"] | undefined
