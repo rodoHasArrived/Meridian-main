@@ -66,7 +66,7 @@ public sealed record AccountingJournalDraftResult(
 
 public sealed class AccountingJournalDraftService : IAccountingJournalDraftService
 {
-    private const decimal BalanceTolerance = 0.000001m;
+    private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
 
     private readonly IAccountingPolicyService _accountingPolicyService;
     private readonly IAccountingBasisProjectionService _projectionService;
