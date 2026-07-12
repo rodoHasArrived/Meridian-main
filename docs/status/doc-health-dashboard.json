@@ -1,6 +1,6 @@
 {
   "total_files": 576,
-  "total_lines": 95682,
+  "total_lines": 95686,
   "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2647,7 +2647,7 @@
     },
     {
       "path": "docs/reference/database-schema.md",
-      "line_count": 487,
+      "line_count": 491,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
