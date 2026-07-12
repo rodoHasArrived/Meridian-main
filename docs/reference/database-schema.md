@@ -20,11 +20,15 @@ here.
 | `src/Meridian.Mcp/` | Stdio MCP server for repository navigation | No database access |
 | Browser workstation (`src/Meridian.Ui/dashboard/`) | Operator UI served by the host | Indirect only, through host APIs and shared read models |
 
-Every store is optional at runtime: a store registers its PostgreSQL implementation only when its
+Most stores are optional at runtime: a store registers its PostgreSQL implementation only when its
 connection-string environment variable is set; otherwise the host falls back to in-memory or
-file-backed implementations. Migration runners create schemas and tables idempotently at startup
-(`create schema/table if not exists`), substituting the configured schema for the `__SCHEMA__`
-placeholder in each script.
+file-backed implementations. The exception is the governance pair — production-safe startup throws
+unless `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`
+are configured; `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` bypasses this for local/dev fixtures only
+and is rejected in Production
+(`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`). Migration runners create schemas
+and tables idempotently at startup (`create schema/table if not exists`), substituting the
+configured schema for the `__SCHEMA__` placeholder in each script.
 
 ## PostgreSQL Store Registry
 
