@@ -84,6 +84,73 @@ public sealed class SettingsViewModelAssetProfileTests
     }
 
     [Fact]
+    public void AssetProfileFieldInputs_ShouldExposeTypedGuidedFormSurfaces()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var profile = BuildApprovedProfile();
+            var client = new StubSecurityAssetProfileWorkflowClient
+            {
+                Profiles = [profile]
+            };
+            var viewModel = CreateViewModel(client);
+            await viewModel.RefreshAssetProfilesCommand.ExecuteAsync(null);
+
+            var commitment = viewModel.AssetProfileFieldInputs.Single(input => input.Key == "commitmentAmount");
+            commitment.IsTextEntryField.Should().BeTrue();
+            commitment.InputHint.Should().Be("Decimal (0 to any)");
+
+            var evergreen = viewModel.AssetProfileFieldInputs.Single(input => input.Key == "isEvergreen");
+            evergreen.IsBooleanField.Should().BeTrue();
+            evergreen.BoolValue.Should().BeFalse();
+            evergreen.BoolValue = true;
+            evergreen.Value.Should().Be("true");
+
+            var valuation = viewModel.AssetProfileFieldInputs.Single(input => input.Key == "valuationMethod");
+            valuation.IsEnumField.Should().BeTrue();
+            valuation.IsTextEntryField.Should().BeFalse();
+            valuation.AllowedValues.Should().Equal("NAV", "Cost");
+
+            var dateInput = new SettingsAssetProfileFieldInput(
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "navDate", "NAV date", SecurityAssetProfileFieldTypeDto.Date,
+                    true, [], null, null, null, true, false),
+                static () => { });
+            dateInput.IsDateField.Should().BeTrue();
+            dateInput.DateValue = new DateTime(2026, 4, 30);
+            dateInput.Value.Should().Be("2026-04-30");
+            dateInput.DateValue.Should().Be(new DateTime(2026, 4, 30));
+        });
+    }
+
+    [Fact]
+    public void CreateProfileBackedSecurityCommand_ShouldBlockValuesOutsideDeclaredFieldRange()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var profile = BuildApprovedProfile();
+            var client = new StubSecurityAssetProfileWorkflowClient
+            {
+                Profiles = [profile]
+            };
+            var viewModel = CreateViewModel(client);
+            await viewModel.RefreshAssetProfilesCommand.ExecuteAsync(null);
+
+            viewModel.ProfileBackedSecurityDisplayName = "Flagship LP Side Pocket";
+            viewModel.ProfileBackedSecurityInternalCode = "ALT-LP-001";
+            viewModel.ProfileBackedSecurityCurrency = "USD";
+            // commitmentAmount declares MinValue = 0; a negative entry must be rejected before post.
+            viewModel.AssetProfileFieldInputs.Single(input => input.Key == "commitmentAmount").Value = "-5";
+            viewModel.AssetProfileFieldInputs.Single(input => input.Key == "valuationMethod").Value = "NAV";
+
+            await viewModel.CreateProfileBackedSecurityCommand.ExecuteAsync(null);
+
+            client.CreateSecurityRequest.Should().BeNull();
+            viewModel.AssetProfileStatusText.Should().Contain("Commitment amount must be at least 0");
+        });
+    }
+
+    [Fact]
     public void GovernanceCommands_ShouldUseSharedDraftApproveRollbackAndLineageRequests()
     {
         WpfTestThread.Run(async () =>

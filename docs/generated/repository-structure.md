@@ -4844,8 +4844,11 @@ Meridian-main
 │   │   └── ScriptContext.cs
 │   ├── Meridian.ReferenceData
 │   │   ├── SecurityMaster
+│   │   │   ├── Data
+│   │   │   │   └── security-reference-taxonomies.json
 │   │   │   ├── SecurityAssetProfileCatalog.cs
-│   │   │   └── SecurityKindMapping.cs
+│   │   │   ├── SecurityKindMapping.cs
+│   │   │   └── SecurityReferenceTaxonomyCatalog.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.ReferenceData.csproj
 │   │   └── README.md
@@ -7920,6 +7923,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
+│   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   └── SecurityValidationServiceTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
