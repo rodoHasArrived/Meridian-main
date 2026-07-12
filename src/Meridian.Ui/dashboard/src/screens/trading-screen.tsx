@@ -182,15 +182,16 @@ const tradingRouteTabs: TradingRouteTab[] = [
 ];
 
 export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
-  if (pathname.includes("/positions")) {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.includes("positions")) {
     return "positions";
   }
 
-  if (pathname.includes("/risk")) {
+  if (segments.includes("risk")) {
     return "risk";
   }
 
-  if (pathname.includes("/orders")) {
+  if (segments.includes("orders")) {
     return "orders";
   }
 
@@ -479,7 +480,7 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
 }
 
 export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
@@ -581,7 +582,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           onSelect={(id) => {
             const tab = tradingRouteTabs.find((candidate) => candidate.id === id);
             if (tab) {
-              navigate(tab.route);
+              // Preserve the querystring: the operating scope (symbol, fund
+              // account) is threaded through search params across the shell.
+              navigate({ pathname: tab.route, search });
             }
           }}
         />

@@ -1,6 +1,6 @@
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TradingScreen } from "@/screens/trading-screen";
+import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
@@ -356,6 +356,27 @@ describe("TradingScreen", () => {
     await renderTradingScreen(data, "/trading/positions");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
     expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("resolves route views by exact path segment, not substring", () => {
+    expect(resolveTradingRouteView("/trading")).toBe("overview");
+    expect(resolveTradingRouteView("/trading/orders")).toBe("orders");
+    expect(resolveTradingRouteView("/trading/positions")).toBe("positions");
+    expect(resolveTradingRouteView("/trading/risk")).toBe("risk");
+    // Sibling segments must not substring-match a view.
+    expect(resolveTradingRouteView("/trading/positions-history")).toBe("overview");
+    expect(resolveTradingRouteView("/trading/risky-widgets")).toBe("overview");
+  });
+
+  it("navigates between route views from the tab strip", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading?symbol=MSFT");
+
+    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Orders" }));
+
+    expect(await screen.findByText("Open orders")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
   });
 
