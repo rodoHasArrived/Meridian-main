@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Contracts
@@ -26,7 +26,10 @@ or provider implementations.
 
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
-  terms/obligations timeline payloads, and query/command service contracts.
+  terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
+  and event references, projection lineage, and query/command service contracts.
+- `Ledger/` - shared accounting configuration, ledger-book, posting-intent, journal query, dimension,
+  authoritative book-context snapshot, and existing rule-pack reference contracts.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
@@ -1028,6 +1031,18 @@ distributions, subscriptions, redemptions, LP transfers, and management fees. `T
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary. `AccountingPostingCommandDto` is the shared event-accounting posting envelope for source-backed journal impact; it carries command, aggregate, period, ledger-book scope, source/correlation/causation, idempotency, reviewer state, treasury context, correction lineage, action origin, and typed evidence references so posting services and durable storage validate the same intent.
+`AccountingBookContextDto` adds the ledger-book, period, basis, policy, currency, owner-scope, and
+dimension snapshot used to validate that intent. It is an assertion for transport and evidence;
+posting services must resolve server-owned book state and reject mismatches rather than trusting a
+browser- or WPF-supplied snapshot. `AccountingRulePackReferenceDto` points to the existing
+`AccountingPolicyRulePackDto` and selected rule/version, preserving one Rules Studio authority
+instead of defining a second rule-pack model.
+Asset Operations publishes additive `InstrumentRoleDto`, `BookPositionDto`,
+`PositionEconomicStateDto`, `EconomicEventReferenceDto`, and `ProjectionLineageDto` records keyed by
+canonical Security Master identity. Posting-candidate and command contracts may carry these optional
+typed references alongside legacy source-event fields; populated representations must agree. The
+types remain transport-safe and default-empty where they extend existing detail/projection payloads,
+so older JSON and existing browser/WPF constructors remain compatible.
 Manual journal drafts, workbench reads, lifecycle requests, and evidence-attachment requests also
 carry optional tenant/company scope so shared endpoints can stamp the authenticated accounting
 context, resolve the tenant-scoped chart, and retain scoped lifecycle audit rows without trusting
@@ -1153,6 +1168,11 @@ fund/private-capital workflows. Manual journal normalization trims and retains h
 merges deterministic external GL dimension keys, and propagates fund/entity scope to line
 dimensions while allowing line-specific organization, entity, portfolio, account, instrument,
 tax-lot, cost-center, and external GL overrides.
+`PositionId` is an optional dimension beside `InstrumentId`; it scopes lineage to a book position
+without treating the position or a projected balance as an accounting fact. Candidate journals stay
+non-posting review artifacts, and Asset Operations economic-state, projection-event, and balance
+snapshot DTOs stay rebuildable read models. `JournalEntry` with child ledger entries remains the
+authoritative posted accounting aggregate.
 Generated posting candidates also carry those line dimensions into the governed draft request shape,
 where retained ledger entries receive first-class line dimensions while compatibility metadata tags
 remain available for downstream report and external-GL mapping recovery. This keeps dimensional
@@ -1351,6 +1371,13 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:end -->
 
 ## API and contract notes
+
+The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
+It does not replace Security Master identity, create an Instrument Master above Security Master,
+migrate direct-lending/portfolio/fund-account stores, or expose a route that accepts authoritative
+`JournalEntry` or ledger-line rows. The ownership direction remains Reference Data/Security Master
+to Instruments/Asset Operations to Financial Operations to Ledger/Storage, with shared read models
+consumed by the active browser and WPF workstations.
 
 `IPartnerFileParser.ParseAsync` accepts an optional partner schema id so ETL orchestrators can route CSV and Excel workbook rows through the persisted mapping schema while retaining checkpoint-aware streaming envelopes.
 `ExecutionPositionActionRequest` carries an optional `FundAccountId` so browser and WPF close/upsize

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-09
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Reporting
@@ -83,6 +83,9 @@ context. `ReportWriterGridEngine` renders governed template grid definitions wit
 execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
 metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
 against caller-supplied dataset rows with structured warnings for missing or non-numeric inputs.
+The canonical envelope now preserves optional `PositionId` alongside `InstrumentId`, keeping
+same-security book positions distinct in generated reporting evidence without treating a projected
+position or balance as an accounting fact. The immutable journal remains authoritative.
 Contribution grids generate `contributionPercent` and `contributionAbsPercent` after aggregation,
 using absolute metric exposure as the denominator so offsetting winners and laggards still produce a
 signed and absolute percentage-of-P&L breakdown. Report-writer formulas can reference those generated

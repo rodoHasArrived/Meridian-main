@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-08
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Ui.Shared
@@ -91,12 +91,15 @@ The Security & Instrument Explorer remains productized as a thin shared-read-mod
 `SecurityMasterWorkbenchQueryService`, `IAssetOperationsQueryService`, and report-line provenance
 from `FinancialRecordExplorerReadService` for instrument identity, provider evidence,
 AssetOperations readiness, ledger impact, and report usage instead of asking browser or WPF clients
-to rebuild those relationships locally. Corporate-action mutations posted through shared Security
-Master endpoints delegate validation and append auditing to the application-owned
+to rebuild those relationships locally. Security Master remains the canonical identity owner while
+the Asset Operations seam contributes downstream roles, positions, economic state, and projection
+lineage; the explorer composes those owners without creating a parent Instrument Master.
+Corporate-action mutations posted through shared Security Master endpoints delegate validation and
+append auditing to the application-owned
 `ISecurityMasterCorporateActionCommandService`.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
-portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,
+portfolio, book, account, investor, capital-account, instrument, position, tax-lot, cost-center,
 counterparty, and external-GL context without re-inferring accounting scope from display text. The
 shared ledger report endpoints also canonicalize dimension query filters, returned row dimensions,
 matching, and report signatures before browser or WPF clients render or certify scoped reports. The
@@ -104,6 +107,9 @@ shared Financial Record Explorer route also accepts server-applied `viewId`, `se
 `filter=<filterId>:<value>` query scope, so saved views and dimension chips can return a scoped
 payload with matching rows, selected record, summary counts, and proof graph before browser or WPF
 presentation code renders it.
+The existing explorer route now renders the retained `PositionId` dimension as a shared Position
+field when present. Browser and WPF clients consume the same server-built field and proof graph; no
+instrument-accounting-specific explorer route or client-side ledger query is added.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
@@ -729,6 +735,12 @@ non-posting governed journal draft candidate by delegating to Financial Operatio
 returns selected rule/version metadata, generated posting lines with dimensions, retained evidence
 links, blocking/non-blocking issues, and an approval-gated posting command when validation passes;
 browser and WPF clients must still route posting through the JE lifecycle.
+Candidate requests and results may carry additive book-context, economic-event, book-position,
+projection-lineage, and existing rule-pack references. UI Shared transports those assertions through
+the existing candidates route; Financial Operations re-resolves authoritative book/policy state and
+rejects typed/legacy mismatches before returning a candidate. Ledger report filters and mapped line
+dimensions also preserve optional `PositionId`. UI Shared does not trust the client snapshot, create
+a new route or lineage table, or accept `JournalEntry`/`LedgerEntry` rows as posting input.
 `/api/ledger/accounting-configuration/posting-rules/tests`
 executes ad-hoc or saved non-posting regression test cases through the same dry-run engine and returns
 per-case pass/fail assertion evidence for selected rule, selected rule version, balanced posting, expected generated posting lines,

@@ -211,6 +211,14 @@ public sealed record AssetOperationsDetailDto(
     IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
 {
     public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }
+
+    public IReadOnlyList<InstrumentRoleDto> InstrumentRoles { get; init; } = [];
+
+    public IReadOnlyList<BookPositionDto> BookPositions { get; init; } = [];
+
+    public IReadOnlyList<PositionEconomicStateDto> PositionEconomicStates { get; init; } = [];
+
+    public IReadOnlyList<ProjectionLineageDto> ProjectionLineages { get; init; } = [];
 }
 
 public sealed record AssetOperationsProjectionDto(
@@ -227,6 +235,14 @@ public sealed record AssetOperationsProjectionDto(
     IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
 {
     public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }
+
+    public IReadOnlyList<InstrumentRoleDto> InstrumentRoles { get; init; } = [];
+
+    public IReadOnlyList<BookPositionDto> BookPositions { get; init; } = [];
+
+    public IReadOnlyList<PositionEconomicStateDto> PositionEconomicStates { get; init; } = [];
+
+    public IReadOnlyList<ProjectionLineageDto> ProjectionLineages { get; init; } = [];
 }
 
 public sealed record AssetOperationsWriteApprovalDto(

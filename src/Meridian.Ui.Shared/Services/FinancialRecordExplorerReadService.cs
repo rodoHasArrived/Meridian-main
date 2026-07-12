@@ -1064,6 +1064,7 @@ public sealed class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Investor", dimensions.InvestorId);
         AddDimensionField(fields, "Capital Account", dimensions.CapitalAccountId);
         AddDimensionField(fields, "Instrument", dimensions.InstrumentId?.ToString("D"));
+        AddDimensionField(fields, "Position", dimensions.PositionId?.ToString("D"));
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);

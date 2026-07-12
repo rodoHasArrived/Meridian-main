@@ -151,9 +151,13 @@ public sealed class TradingHoursViewModel : BindableBase
                 return;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Backend offline – fall through to local calculation
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Trading hours backend unavailable; using local calculation.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         ApplyLocalMarketStatus();
@@ -270,9 +274,13 @@ public sealed class TradingHoursViewModel : BindableBase
                 return;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Fall through – show empty list
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Market holiday load failed; showing empty list.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         Holidays.Clear();

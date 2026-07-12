@@ -243,7 +243,7 @@ public sealed class AutomatedJournalIntakeRunner
                 .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                 .Select(static pair => FormattableString.Invariant($"{pair.Key}={pair.Value}")));
 
-        return string.Join(
+        var key = string.Join(
             "|",
             dimensions.FundId, dimensions.EntityId, dimensions.SleeveId, dimensions.StrategyId,
             dimensions.InvestorId, dimensions.CapitalAccountId, dimensions.InstrumentId?.ToString("D"),
@@ -251,6 +251,10 @@ public sealed class AutomatedJournalIntakeRunner
             dimensions.OrganizationId, dimensions.PortfolioId, dimensions.BookId,
             dimensions.AccountId, dimensions.CustomerId, dimensions.VendorId, dimensions.ProjectId,
             externalGl);
+
+        return dimensions.PositionId.HasValue
+            ? $"{key}|positionId={dimensions.PositionId.Value:D}"
+            : key;
     }
 
     public async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(

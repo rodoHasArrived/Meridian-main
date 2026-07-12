@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-07
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Ui/dashboard
@@ -1195,6 +1195,13 @@ review URLs portable without duplicating saved-view storage in React.
 FREX route-query parsing, filter restoration, share-link serialization, and accessible share-state
 summaries live in `financial-record-explorer.view-state.ts` so the React shell stays focused on DTO
 rendering and Number Passport proof presentation.
+
+The browser type mirrors include additive instrument-role, book-position, economic-state,
+economic-event, projection-lineage, authoritative book-context assertion, and existing rule-pack
+reference shapes. Candidate, posting-command, and Asset Operations payload fields remain optional
+for older JSON. The browser submits posting intent and assertions only; server services resolve
+authority, and the same shared contracts remain available to WPF without browser-owned accounting
+logic or a new route.
 
 ## Diagrams
 

@@ -108,7 +108,8 @@ public sealed record LedgerJournalEntryQuery(
     LedgerLineDimensionSet? LineDimensions = null,
     string? AccountName = null,
     DateTimeOffset? OccurredFrom = null,
-    DateTimeOffset? OccurredTo = null);
+    DateTimeOffset? OccurredTo = null,
+    Guid? SourceEventId = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,

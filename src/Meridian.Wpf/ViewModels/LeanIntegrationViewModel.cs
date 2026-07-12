@@ -369,7 +369,13 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             SymbolsSyncedText = status.SymbolsSynced.ToString();
             LastSyncText = status.LastSync?.ToString("g") ?? "Never";
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             StatusText = "Connection Error";
@@ -386,8 +392,21 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             DataPath = config.DataPath ?? string.Empty;
             AutoSync = config.AutoSync;
         }
-        catch (OperationCanceledException) { }
-        catch { /* Use defaults */ }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
+        catch (Exception ex)
+        {
+            // Use defaults
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Loading Lean configuration failed; using defaults.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
     }
 
     private async Task LoadAlgorithmsAsync(CancellationToken ct = default)
@@ -402,8 +421,21 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
                     Algorithms.Add(algo);
             }
         }
-        catch (OperationCanceledException) { }
-        catch { /* Algorithms not available */ }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
+        catch (Exception ex)
+        {
+            // Algorithms not available
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Loading Lean algorithms failed; none available.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
     }
 
     private async Task LoadBacktestHistoryAsync(CancellationToken ct = default)
@@ -427,7 +459,13 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             }
             IsNoBacktestsVisible = RecentBacktests.Count == 0;
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch { IsNoBacktestsVisible = true; }
     }
 
@@ -443,7 +481,13 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             AutoExportTotalFilesText = status.TotalFilesExported.ToString();
             AutoExportStatusText = status.Enabled ? "Auto-export is enabled" : "Auto-export is disabled";
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch { AutoExportStatusText = "Status unavailable"; }
     }
 
@@ -460,7 +504,13 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             var title = result.Success ? "Lean Installation Valid" : "Lean Installation Issues";
             DialogRequested?.Invoke(this, new LeanDialogRequestArgs(message, title, result.Success));
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             DialogRequested?.Invoke(this, new LeanDialogRequestArgs(ex.Message, "Verification Failed", false));
@@ -482,7 +532,13 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             await _leanService.UpdateConfigurationAsync(config, _cts.Token);
             await LoadStatusAsync();
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             DialogRequested?.Invoke(this, new LeanDialogRequestArgs($"Failed to save: {ex.Message}", "Configuration Error", false));
@@ -613,7 +669,14 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             }
         }
         catch (OperationCanceledException) { _backtestPollTimer.Stop(); }
-        catch { /* Ignore transient poll errors */ }
+        catch (Exception ex)
+        {
+            // Ignore transient poll errors
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Backtest status poll error; transient.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
     }
 
     private async Task ShowBacktestResultsAsync(string backtestId, CancellationToken ct = default)
@@ -632,8 +695,21 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             IsResultsVisible = true;
             await LoadBacktestHistoryAsync();
         }
-        catch (OperationCanceledException) { }
-        catch { /* Results may not be available */ }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Lean integration operation cancelled.",
+                ("view", GetType().Name));
+        }
+        catch (Exception ex)
+        {
+            // Results may not be available
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Loading backtest results failed; results may not be available.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
     }
 
     private void ResetBacktestState()

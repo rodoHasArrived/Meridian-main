@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 
@@ -267,6 +268,8 @@ public sealed record LedgerDimensionSetDto(
 {
     public IReadOnlyDictionary<string, string> ExternalGlDimensions { get; init; } =
         ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    public Guid? PositionId { get; init; }
 }
 
 public sealed record OperationalFinanceScopeDto(
@@ -870,6 +873,16 @@ public sealed record PostingRuleJournalCandidateRequestDto(
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+
+    public AccountingBookContextDto? BookContext { get; init; }
+
+    public Guid? BookPositionId { get; init; }
+
+    public EconomicEventReferenceDto? EconomicEvent { get; init; }
+
+    public ProjectionLineageDto? ProjectionLineage { get; init; }
+
+    public AccountingRulePackReferenceDto? RulePackReference { get; init; }
 }
 
 public sealed record PostingRuleJournalCandidateIssueDto(
@@ -905,6 +918,16 @@ public sealed record PostingRuleJournalCandidateResultDto(
 
     public IReadOnlyList<PostingRuleJournalCandidateIssueDto> Issues { get; init; } =
         Issues ?? [];
+
+    public AccountingBookContextDto? BookContext { get; init; }
+
+    public Guid? BookPositionId { get; init; }
+
+    public EconomicEventReferenceDto? EconomicEvent { get; init; }
+
+    public ProjectionLineageDto? ProjectionLineage { get; init; }
+
+    public AccountingRulePackReferenceDto? RulePackReference { get; init; }
 }
 
 public sealed record PostPostingRuleJournalCandidateRequestDto(

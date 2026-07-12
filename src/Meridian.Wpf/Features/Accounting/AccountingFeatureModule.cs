@@ -186,9 +186,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
                 return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
             }
-            catch
+            catch (Exception ex)
             {
                 // Fall through to the user-local path so accounting drafts remain durable even before config initialization.
+                global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                    "Accounting data directory resolution from config failed; using user-local path.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 

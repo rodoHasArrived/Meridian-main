@@ -26,7 +26,10 @@ internal static class LedgerLineDimensionSetNormalizer
             AccountId: Normalize(dimensions.AccountId),
             CustomerId: Normalize(dimensions.CustomerId),
             VendorId: Normalize(dimensions.VendorId),
-            ProjectId: Normalize(dimensions.ProjectId));
+            ProjectId: Normalize(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return HasAnyCanonical(canonical) ? canonical : null;
     }
@@ -42,6 +45,7 @@ internal static class LedgerLineDimensionSetNormalizer
             || dimensions.InvestorId is not null
             || dimensions.CapitalAccountId is not null
             || dimensions.InstrumentId is not null
+            || dimensions.PositionId is not null
             || dimensions.TaxLotId is not null
             || dimensions.CostCenterId is not null
             || dimensions.CounterpartyId is not null
@@ -71,6 +75,7 @@ internal static class LedgerLineDimensionSetNormalizer
             && Matches(actual.InvestorId, expected.InvestorId)
             && Matches(actual.CapitalAccountId, expected.CapitalAccountId)
             && Matches(actual.InstrumentId, expected.InstrumentId)
+            && Matches(actual.PositionId, expected.PositionId)
             && Matches(actual.TaxLotId, expected.TaxLotId)
             && Matches(actual.CostCenterId, expected.CostCenterId)
             && Matches(actual.CounterpartyId, expected.CounterpartyId)

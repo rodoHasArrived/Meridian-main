@@ -7,8 +7,10 @@ import type {
   AccountingSystemProviderState,
   AccountingSystemReconciliationStatus,
   BrokerageAccountKind,
+  BookPosition,
   DimensionMappingProfile,
   ExternalGlExportReconciliationSafeguardState,
+  InstrumentRole,
   LedgerDimensionSet,
   ManualJournalEntryStatus,
   MetricSnapshot,
@@ -16,6 +18,8 @@ import type {
   OperationsChecklistControlApproval,
   OperationsTransitionResult,
   OperatorWorkItem,
+  PositionEconomicState,
+  ProjectionLineage,
   ProviderConnectionRow,
   StrategyRunRecord,
   TradingAcceptanceGate,
@@ -1418,7 +1422,13 @@ export interface AssetOperationsDetail {
   ledgerProjections: AssetLedgerProjection[];
   readiness: AssetOperationsReadiness;
   workflowAudit: AssetLifecycleEvent[];
+  instrumentRoles?: InstrumentRole[];
+  bookPositions?: BookPosition[];
+  positionEconomicStates?: PositionEconomicState[];
+  projectionLineages?: ProjectionLineage[];
 }
+
+export interface AssetOperationsProjection extends AssetOperationsDetail {}
 
 
 export interface StatementRunSummary {

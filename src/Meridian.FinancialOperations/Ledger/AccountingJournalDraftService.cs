@@ -491,6 +491,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         AddTag(tags, prefix + "investorId", dimensions.InvestorId);
         AddTag(tags, prefix + "capitalAccountId", dimensions.CapitalAccountId);
         AddTag(tags, prefix + "instrumentId", dimensions.InstrumentId?.ToString("D"));
+        AddTag(tags, prefix + "positionId", dimensions.PositionId?.ToString("D"));
         AddTag(tags, prefix + "taxLotId", dimensions.TaxLotId);
         AddTag(tags, prefix + "costCenterId", dimensions.CostCenterId);
         AddTag(tags, prefix + "counterpartyId", dimensions.CounterpartyId);
@@ -550,7 +551,10 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
     }
 
     private static AccountingPostingCommandDto BuildPostingCommand(

@@ -34,7 +34,10 @@ internal static class LedgerDimensionMapper
             AccountId: dimensions.AccountId,
             CustomerId: dimensions.CustomerId,
             VendorId: dimensions.VendorId,
-            ProjectId: dimensions.ProjectId);
+            ProjectId: dimensions.ProjectId)
+        {
+            PositionId = dimensions.PositionId
+        };
     }
 
     public static LedgerLineDimensionSet? ToDomain(LedgerDimensionSetDto? dimensions)
@@ -60,6 +63,9 @@ internal static class LedgerDimensionMapper
             AccountId: dimensions.AccountId,
             CustomerId: dimensions.CustomerId,
             VendorId: dimensions.VendorId,
-            ProjectId: dimensions.ProjectId);
+            ProjectId: dimensions.ProjectId)
+        {
+            PositionId = dimensions.PositionId
+        };
     }
 }

@@ -149,8 +149,13 @@ public sealed class MessagingService
                     {
                         handler(payload);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        // One subscriber must not break delivery to the others; record and continue.
+                        LoggingService.Instance.LogDebug(
+                            "Message subscriber threw during dispatch.",
+                            ("exception", ex.GetType().Name),
+                            ("message", ex.Message));
                     }
                 }
                 else

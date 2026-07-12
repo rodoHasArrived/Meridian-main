@@ -548,9 +548,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                 });
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Fallback if API unavailable
+            _loggingService.LogDebug(
+                "Loading scheduled backfill jobs failed; API unavailable.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         HasNoScheduledJobs = ScheduledJobs.Count == 0;
@@ -578,9 +582,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                 });
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Checkpoint storage unavailable
+            _loggingService.LogDebug(
+                "Loading resumable backfill jobs failed; checkpoint storage unavailable.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         HasNoResumableJobs = ResumableJobs.Count == 0;
@@ -958,7 +966,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             await _backfillService.PollBackendStatusAsync();
             await RefreshStatusFromApiAsync();
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when polling is torn down; benign.
+            _loggingService.LogDebug(
+                "Backfill progress poll cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogWarning("Progress poll tick failed", ("Error", ex.Message));
@@ -1444,6 +1458,10 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(BackfillViewModel)));
         }
 
         cts.Dispose();
