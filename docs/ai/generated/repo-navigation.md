@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-07-12T00:22:01Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-07-12T02:50:18Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 |---|---|---|
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
 | Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
-| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/plans/trading-workstation-migration-blueprint.md`, `docs/ai/ai-known-errors.md` |
+| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/development/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
 
@@ -44,7 +44,7 @@ WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 - Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
-- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
+- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
 
 ### Backtesting and Strategy Analytics
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | `086a1277b` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs` | Unmapped | `086a1277b` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs` | Unmapped | `086a1277b` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `d4e50e013` (2026-07-07T20:26:20+00:00) | 22 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs` | Desktop and UI Workflows | `d4e50e013` (2026-07-07T20:26:20+00:00) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs` | Desktop and UI Workflows | `22a88178a` (2026-07-07T19:35:43+00:00) | 1 |
-| `src/Meridian.Storage/Services/LifecyclePolicyEngine.cs` | Providers and Storage | `f40ef04fe` (2026-07-07T19:25:14+00:00) | 3 |
-| `src/Meridian.Storage/Services/TierMigrationService.cs` | Providers and Storage | `8e8991e63` (2026-07-07T19:20:40+00:00) | 9 |
-| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `8e8991e63` (2026-07-07T19:20:40+00:00) | 5 |
-| `src/Meridian.Storage/Archival/WriteAheadLog.cs` | Providers and Storage | `8e8991e63` (2026-07-07T19:20:40+00:00) | 3 |
-| `src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs` | Providers and Storage | `e16ec867d` (2026-07-07T17:27:49+00:00) | 1 |
-| `src/Meridian.Storage/Sinks/ParquetStorageSink.cs` | Providers and Storage | `e16ec867d` (2026-07-07T17:27:49+00:00) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs` | Desktop and UI Workflows | `592c0174f` (2026-07-07T17:23:44+00:00) | 1 |
-| `src/Meridian.Application/Backfill/AutoGapRemediationService.cs` | Host and Composition | `3cdc4b287` (2026-07-07T17:18:10+00:00) | 9 |
-| `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | Providers and Storage | `e2c7d1d26` (2026-07-07T16:00:34+00:00) | 4 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `80cd751e` (2026-07-12T00:56:51+00:00) | 18 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 5 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 1 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 1 |
+| `src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs` | Providers and Storage | `29839b47` (2026-07-11T17:19:54-07:00) | 8 |
+| `src/Meridian.DataIntegration/Etl/EtlServices.cs` | Unmapped | `29839b47` (2026-07-11T17:19:54-07:00) | 6 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs` | Host and Composition | `3d60c866` (2026-07-08T19:44:56+00:00) | 2 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs` | Host and Composition | `3d60c866` (2026-07-08T19:44:56+00:00) | 2 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 9 |
+| `src/Meridian.Ledger/LedgerTaxLot.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
+| `src/Meridian.Ledger/LedgerTaxLotReliefInput.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
+| `src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
+| `src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
+| `src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 1 |
+| `src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 1 |
 

@@ -61,5 +61,5 @@ curl http://localhost:8080/api/workstation/reconciliation/queue
 
 ## Migration source
 
-- Legacy source: [docs/operations/reconciliation-operations.md](../operations/reconciliation-operations.md)  
+- Legacy source: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)  
 - Archive copy: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)

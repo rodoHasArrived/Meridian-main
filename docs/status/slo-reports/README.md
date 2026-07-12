@@ -3,7 +3,7 @@
 Store one report per month using:
 
 - Filename: `YYYY-MM-slo-review.md`
-- Template: [`docs/operations/slo-review-template.md`](../../operations/slo-review-template.md)
+- Template: [`archive/docs/operations/slo-review-template.md`](../../../archive/docs/operations/slo-review-template.md)
 
 ## Publication Workflow
 

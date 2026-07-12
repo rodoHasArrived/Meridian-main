@@ -419,8 +419,8 @@ DOC_CATALOG: list[dict[str, Any]] = [
         "keywords": ["fsharp", "interop", "domain"],
     },
     {
-        "path": "docs/plans/trading-workstation-migration-blueprint.md",
-        "title": "Trading workstation migration blueprint",
+        "path": "docs/development/wpf-web-ui-alignment-plan.md",
+        "title": "WPF web-UI alignment plan",
         "area": "ui",
         "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
         "keywords": ["workstation", "wpf", "workspace", "migration"],
@@ -566,7 +566,7 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
         "startProjects": ["Meridian.Wpf", "Meridian.Ui.Services", "Meridian.Ui.Shared", "Meridian"],
         "startSymbols": ["MainWindow"],
         "docs": [
-            "docs/plans/trading-workstation-migration-blueprint.md",
+            "docs/development/wpf-web-ui-alignment-plan.md",
             "docs/ai/ai-known-errors.md",
         ],
         "recommendedSkill": "meridian-blueprint",
