@@ -818,8 +818,13 @@ public partial class MainWindow : Window
                 DateTime.UtcNow);
             await _windowStateStore.SaveAsync(state, ct).ConfigureAwait(false);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Persisting window bounds is best-effort; failures must not disrupt shutdown.
+            WpfServices.LoggingService.Instance.LogDebug(
+                "Failed to persist window state.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -865,8 +870,13 @@ public partial class MainWindow : Window
                 WindowState = WindowState.Maximized;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Restoring saved bounds is best-effort; fall back to default placement on failure.
+            WpfServices.LoggingService.Instance.LogDebug(
+                "Failed to restore window state.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -1129,8 +1139,13 @@ public partial class MainWindow : Window
         {
             _fileDropRouter.RouteFile(filePath);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // A malformed or unsupported drop must not crash the shell; surface it at debug level.
+            WpfServices.LoggingService.Instance.LogDebug(
+                "Failed to route dropped file.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

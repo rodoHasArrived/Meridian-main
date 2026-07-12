@@ -54,7 +54,9 @@
       "Bash(git -C \"D:/Meridian-pr2112-connectivity-docs\" diff --stat -- '*ConfigurationService.cs')",
       "Bash(git -C \"D:/Meridian-cashladder-datajoin\" remote -v)",
       "Bash(git -C \"D:/Meridian-cashladder-datajoin\" status --short)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(git log *)",
+      "Bash(git status *)"
     ]
   }
 }

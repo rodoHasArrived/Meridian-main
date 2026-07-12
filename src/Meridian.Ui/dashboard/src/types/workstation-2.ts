@@ -1491,6 +1491,7 @@ export interface LedgerDimensionSet {
   investorId?: string | null;
   capitalAccountId?: string | null;
   instrumentId?: string | null;
+  positionId?: string | null;
   taxLotId?: string | null;
   costCenterId?: string | null;
   counterpartyId?: string | null;

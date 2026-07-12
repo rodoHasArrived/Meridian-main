@@ -325,7 +325,13 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
                 AvailableSymbols.AddRange(nextSymbols);
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-load; benign.
+            _loggingService.LogDebug(
+                "Live data symbol load cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load symbols from backend", ex);
@@ -621,6 +627,10 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(LiveDataViewerViewModel)));
         }
 
         cts.Dispose();

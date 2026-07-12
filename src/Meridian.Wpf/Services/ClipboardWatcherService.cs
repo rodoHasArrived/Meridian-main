@@ -137,8 +137,13 @@ public sealed class ClipboardWatcherService : IDisposable
                 SourceText = text.Length > 200 ? text[..200] : text,
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Clipboard contents can be malformed or briefly locked by another process; ignore but record.
+            LoggingService.Instance.LogDebug(
+                "Clipboard symbol detection failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -188,8 +193,13 @@ public sealed class ClipboardWatcherService : IDisposable
                 RemoveClipboardFormatListener(_hwndSource.Handle);
                 _hwndSource.RemoveHook(WndProc);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Best-effort teardown of the clipboard listener; the window may already be gone.
+                LoggingService.Instance.LogDebug(
+                    "Failed to remove clipboard format listener during teardown.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
             _hwndSource = null;
         }

@@ -156,7 +156,10 @@ public sealed class ReportGenerationService
             AccountId: SingleString(dimensions, static item => item.AccountId),
             CustomerId: SingleString(dimensions, static item => item.CustomerId),
             VendorId: SingleString(dimensions, static item => item.VendorId),
-            ProjectId: SingleString(dimensions, static item => item.ProjectId));
+            ProjectId: SingleString(dimensions, static item => item.ProjectId))
+        {
+            PositionId = SingleGuid(dimensions, static item => item.PositionId)
+        };
 
         return HasAnyDimension(merged) ? merged : null;
     }
@@ -216,6 +219,7 @@ public sealed class ReportGenerationService
         dimensions.InvestorId is not null ||
         dimensions.CapitalAccountId is not null ||
         dimensions.InstrumentId is not null ||
+        dimensions.PositionId is not null ||
         dimensions.TaxLotId is not null ||
         dimensions.CostCenterId is not null ||
         dimensions.CounterpartyId is not null ||

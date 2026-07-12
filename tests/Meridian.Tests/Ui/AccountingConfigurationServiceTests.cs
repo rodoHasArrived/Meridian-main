@@ -4482,6 +4482,81 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_AccountingRulesStudio_PositionScopesDistinguishSamePriorityRules()
+    {
+        var service = CreateService();
+        await SeedBalancedConfigurationAsync(service);
+        await service.UpsertTemplateAsync(new UpsertJournalEntryTemplateRequest(
+            FundProfileId: "fund-alpha",
+            Template: BalancedInterestAccrualTemplate(),
+            Actor: "controller"));
+        var firstPositionId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var secondPositionId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var firstRule = new PostingRuleDto(
+            RuleId: "rule-interest-position-one",
+            DisplayName: "Position one interest accrual",
+            SourceEventType: "InterestAccrual",
+            TemplateId: "template-interest-accrual",
+            EffectiveFrom: new DateOnly(2026, 1, 1),
+            EffectiveTo: new DateOnly(2026, 12, 31),
+            Priority: 500,
+            Scope: new LedgerDimensionSetDto(FundId: "fund-alpha")
+            {
+                PositionId = firstPositionId
+            });
+        var secondRule = new PostingRuleDto(
+            RuleId: "rule-interest-position-two",
+            DisplayName: "Position two interest accrual",
+            SourceEventType: "InterestAccrual",
+            TemplateId: "template-interest-accrual",
+            EffectiveFrom: new DateOnly(2026, 1, 1),
+            EffectiveTo: new DateOnly(2026, 12, 31),
+            Priority: 500,
+            Scope: new LedgerDimensionSetDto(FundId: "fund-alpha")
+            {
+                PositionId = secondPositionId
+            });
+
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: firstRule,
+            Actor: "controller"));
+        var disjoint = await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: secondRule,
+            Actor: "controller"));
+
+        disjoint.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "posting-rule.priority-conflict");
+
+        var overlapping = await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: secondRule with
+            {
+                Scope = secondRule.Scope! with { PositionId = firstPositionId }
+            },
+            Actor: "controller"));
+
+        overlapping.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "posting-rule.priority-conflict" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == firstRule.RuleId);
+
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: secondRule,
+            Actor: "controller"));
+        var activated = await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
+            FundProfileId: "fund-alpha",
+            Actor: "controller",
+            EvidenceLinks: ["evidence://accounting/configuration/activation-approval"]));
+
+        activated.Status.Should().Be(AccountingConfigurationStatusDto.Active);
+        activated.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "posting-rule.priority-conflict");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntryLifecycle_ApprovesPostsAndCreatesImmutableReversalDraft()
     {
         var configuration = CreateService();

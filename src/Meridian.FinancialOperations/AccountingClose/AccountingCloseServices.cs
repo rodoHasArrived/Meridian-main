@@ -571,6 +571,7 @@ public sealed class TrialBalanceProjectionService
             Matches(expected.InvestorId, actual.InvestorId) &&
             Matches(expected.CapitalAccountId, actual.CapitalAccountId) &&
             Matches(expected.InstrumentId?.ToString("D"), actual.InstrumentId?.ToString("D")) &&
+            Matches(expected.PositionId?.ToString("D"), actual.PositionId?.ToString("D")) &&
             Matches(expected.TaxLotId, actual.TaxLotId) &&
             Matches(expected.CostCenterId, actual.CostCenterId) &&
             Matches(expected.CounterpartyId, actual.CounterpartyId) &&
@@ -632,7 +633,7 @@ public sealed class TrialBalanceProjectionService
             .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{NormalizeToken(pair.Key)}={NormalizeToken(pair.Value)}");
-        return string.Join(
+        var signature = string.Join(
             "|",
             NormalizeToken(dimensions.FundId),
             NormalizeToken(dimensions.EntityId),
@@ -652,6 +653,10 @@ public sealed class TrialBalanceProjectionService
             NormalizeToken(dimensions.VendorId),
             NormalizeToken(dimensions.ProjectId),
             string.Join(",", externalGl));
+
+        return dimensions.PositionId.HasValue
+            ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
+            : signature;
     }
 
     private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
@@ -662,6 +667,7 @@ public sealed class TrialBalanceProjectionService
             !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
             !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
             dimensions.InstrumentId.HasValue ||
+            dimensions.PositionId.HasValue ||
             !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
             !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
             !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||

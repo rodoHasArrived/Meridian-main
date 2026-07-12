@@ -1702,6 +1702,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             certificationState,
             generatedAtUtc.ToString("O"),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
+        if (dimensions.PositionId.HasValue)
+        {
+            payload += $"|positionId={dimensions.PositionId.Value:D}";
+        }
+
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
 
@@ -1793,7 +1798,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             AccountId: dimensions?.AccountId,
             CustomerId: dimensions?.CustomerId,
             VendorId: dimensions?.VendorId,
-            ProjectId: dimensions?.ProjectId);
+            ProjectId: dimensions?.ProjectId)
+        {
+            PositionId = dimensions?.PositionId
+        };
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportDimensionScopeIssues(
@@ -2006,6 +2014,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                && MatchesDimensionValue(normalized.InvestorId, filter.InvestorId)
                && MatchesDimensionValue(normalized.CapitalAccountId, filter.CapitalAccountId)
                && MatchesDimensionGuid(normalized.InstrumentId, filter.InstrumentId)
+               && MatchesDimensionGuid(normalized.PositionId, filter.PositionId)
                && MatchesDimensionValue(normalized.TaxLotId, filter.TaxLotId)
                && MatchesDimensionValue(normalized.CostCenterId, filter.CostCenterId)
                && MatchesDimensionValue(normalized.CounterpartyId, filter.CounterpartyId)
@@ -2073,7 +2082,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
         return HasAnyDimensionScope(normalized) ? normalized : null;
     }
 
@@ -2096,6 +2108,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            || dimensions.InvestorId is not null
            || dimensions.CapitalAccountId is not null
            || dimensions.InstrumentId.HasValue
+           || dimensions.PositionId.HasValue
            || dimensions.TaxLotId is not null
            || dimensions.CostCenterId is not null
            || dimensions.CounterpartyId is not null
@@ -2120,6 +2133,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         if (dimensions.InstrumentId.HasValue)
         {
             keys.Add("instrumentId");
+        }
+
+        if (dimensions.PositionId.HasValue)
+        {
+            keys.Add("positionId");
         }
 
         AddDimensionKey(keys, "taxLotId", dimensions.TaxLotId);
@@ -2174,6 +2192,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             string.Join(";", dimensions.ExternalGlDimensions
                 .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(static pair => $"{NormalizeOptional(pair.Key)}={NormalizeOptional(pair.Value)}")));
+        if (dimensions.PositionId.HasValue)
+        {
+            payload += $"|positionId={dimensions.PositionId.Value:D}";
+        }
+
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
     }
 

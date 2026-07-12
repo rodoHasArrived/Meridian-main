@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
@@ -469,6 +470,216 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task BuildCandidateAsync_TypedContextMatchesAuthoritativeState_EchoesTypedLineage()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeFalse();
+        result.BookContext.Should().Be(harness.Request.BookContext);
+        result.BookPositionId.Should().Be(harness.Request.BookPositionId);
+        result.EconomicEvent.Should().Be(harness.Request.EconomicEvent);
+        result.ProjectionLineage.Should().Be(harness.Request.ProjectionLineage);
+        result.RulePackReference.Should().Be(harness.Request.RulePackReference);
+        result.GeneratedPostingLines.Should().OnlyContain(line =>
+            line.Dimensions != null &&
+            line.Dimensions.FundId == harness.Request.BookContext!.FundProfileId &&
+            line.Dimensions.BookId == harness.Request.BookContext.LedgerBookId.ToString("D") &&
+            line.Dimensions.InstrumentId == harness.Request.Dimensions!.InstrumentId &&
+            line.Dimensions.PositionId == harness.Request.BookPositionId);
+        result.PostingCommand.Should().NotBeNull();
+        result.PostingCommand!.BookContext.Should().Be(harness.Request.BookContext);
+        result.PostingCommand.BookPositionId.Should().Be(harness.Request.BookPositionId);
+        result.PostingCommand.EconomicEvent.Should().Be(harness.Request.EconomicEvent);
+        result.PostingCommand.ProjectionLineage.Should().Be(harness.Request.ProjectionLineage);
+        result.PostingCommand.RulePackReference.Should().Be(harness.Request.RulePackReference);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_TypedAssertionsMismatch_BlocksCandidateWithSpecificIssues()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync();
+        var wrongPositionId = Guid.NewGuid();
+        var wrongEvent = harness.Request.EconomicEvent! with
+        {
+            EventId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid(),
+            SecurityId = Guid.NewGuid(),
+            BookPositionId = wrongPositionId
+        };
+        var request = harness.Request with
+        {
+            Dimensions = harness.Request.Dimensions! with { PositionId = wrongPositionId },
+            BookContext = harness.Request.BookContext! with
+            {
+                BaseCurrency = "EUR",
+                AccountingPolicyVersion = "v2",
+                PeriodId = Guid.NewGuid()
+            },
+            EconomicEvent = wrongEvent,
+            ProjectionLineage = harness.Request.ProjectionLineage! with { BookPositionId = wrongPositionId },
+            RulePackReference = harness.Request.RulePackReference! with
+            {
+                RulePackVersion = "v2",
+                SelectedRuleVersion = "v2"
+            }
+        };
+
+        var result = await harness.Service.BuildCandidateAsync(request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.CanSubmitForApproval.Should().BeFalse();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.book-context-currency-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.book-context-authoritative-policy-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.book-context-period-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.economic-event-id-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.economic-event-instrument-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.projection-trigger-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.book-position-dimension-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.book-context-dimensions-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.book-position-lineage-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.rule-pack-selected-version-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.rule-pack-version-mismatch");
+        result.Issues.Should().Contain(issue => issue.Code == "posting-candidate.rule-pack-selected-rule-membership-mismatch");
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_TypedContextWithoutPeriod_ResolvesCandidatePeriodInAuthoritativeBook()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync();
+        var request = harness.Request with
+        {
+            BookContext = harness.Request.BookContext! with { PeriodId = null }
+        };
+
+        var result = await harness.Service.BuildCandidateAsync(request);
+
+        result.HasBlockingIssues.Should().BeFalse();
+        result.PostingCommand.Should().NotBeNull();
+        result.Issues.Should().NotContain(issue =>
+            issue.Code == "posting-candidate.book-context-period-not-found" ||
+            issue.Code == "posting-candidate.book-context-period-ledger-book-mismatch");
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_TypedContextWithoutPeriod_MissingCandidatePeriodFailsClosed()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync();
+        var request = harness.Request with
+        {
+            PeriodId = Guid.NewGuid(),
+            BookContext = harness.Request.BookContext! with { PeriodId = null }
+        };
+
+        var result = await harness.Service.BuildCandidateAsync(request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-context-period-not-found" &&
+            issue.TargetId == "periodId" &&
+            issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_CandidatePeriodOwnedByAnotherBookFailsClosed()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync(
+            authoritativePeriodLedgerBookId: Guid.NewGuid());
+        var request = harness.Request with
+        {
+            BookContext = harness.Request.BookContext! with { PeriodId = null }
+        };
+
+        var result = await harness.Service.BuildCandidateAsync(request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-context-period-ledger-book-mismatch" &&
+            issue.TargetId == "periodId" &&
+            issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_GeneratedLineWithAnotherBookFailsClosed()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync(
+            generatedLineBookId: Guid.NewGuid());
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-context-generated-line-book-mismatch" &&
+            issue.TargetId.StartsWith("generatedPostingLines[", StringComparison.Ordinal) &&
+            issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_GeneratedLineWithAnotherFundFailsClosed()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync(
+            generatedLineFundId: "fund-beta");
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-context-generated-line-fund-mismatch" &&
+            issue.TargetId.StartsWith("generatedPostingLines[", StringComparison.Ordinal) &&
+            issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_BookPositionWithoutPositionDimensions_FailsClosed()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync();
+        var request = harness.Request with
+        {
+            Dimensions = harness.Request.Dimensions! with { PositionId = null },
+            BookContext = harness.Request.BookContext! with
+            {
+                Dimensions = harness.Request.BookContext.Dimensions! with { PositionId = null }
+            }
+        };
+
+        var result = await harness.Service.BuildCandidateAsync(request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-position-dimension-mismatch" && issue.BlocksCandidate);
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-position-generated-line-mismatch" && issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_TypedContextWithoutResolvers_FailsClosedAndEchoesAssertions()
+    {
+        var harness = await CreateTypedCandidateHarnessAsync();
+        var service = new AccountingPostingCandidateService(
+            harness.ConfigurationService,
+            harness.DraftService);
+
+        var result = await service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.CanSubmitForApproval.Should().BeFalse();
+        result.PostingCommand.Should().BeNull();
+        result.BookContext.Should().Be(harness.Request.BookContext);
+        result.RulePackReference.Should().Be(harness.Request.RulePackReference);
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.book-context-resolver-required" && issue.BlocksCandidate);
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.rule-pack-resolver-required" && issue.BlocksCandidate);
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_ApprovedGeneratedCandidateAppendsDurableLedgerWrite()
     {
         var ledgerBookId = Guid.NewGuid();
@@ -912,6 +1123,170 @@ public sealed class AccountingPostingCandidateServiceTests
             .WithMessage("*Postgres-backed ledger journal store*");
     }
 
+    private static async Task<TypedCandidateHarness> CreateTypedCandidateHarnessAsync(
+        string? generatedLineFundId = null,
+        Guid? generatedLineBookId = null,
+        Guid? authoritativePeriodLedgerBookId = null)
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var ownerNodeId = Guid.NewGuid();
+        var securityId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var correlationId = Guid.NewGuid();
+        const string evidenceLink = "provider://custodian/interest-accruals/2026-05";
+        var effectiveDate = new DateOnly(2026, 5, 31);
+        var occurredAt = DateTimeOffset.Parse("2026-05-31T20:00:00Z");
+        var generatedAt = DateTimeOffset.Parse("2026-05-31T20:05:00Z");
+
+        var generatedLineDimensions = generatedLineFundId is null && !generatedLineBookId.HasValue
+            ? null
+            : new LedgerDimensionSetDto(
+                FundId: generatedLineFundId,
+                BookId: generatedLineBookId?.ToString("D"));
+        var configurationService = await CreateSeededConfigurationServiceAsync(
+            ledgerBookId: ledgerBookId,
+            generatedLineDimensions: generatedLineDimensions);
+        var policyService = new AccountingPolicyService();
+        await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
+            AccountingBasisKindDto.Gaap,
+            PolicyId: "gaap-accrual-v1",
+            Version: "v1",
+            DisplayName: "GAAP governed posting-rule alignment",
+            EffectiveFrom: new DateOnly(2026, 1, 1),
+            RulePack: new AccountingPolicyRulePackDto(
+                "gaap-accrual-rules",
+                "v1",
+                [
+                    new AccountingPolicyRuleDto(
+                        "posting.interest-accrual",
+                        AccountingTreatmentKindDto.Accrual,
+                        RuleVersion: "v1",
+                        SourceEventType: "CustodianInterestAccrual",
+                        RequiresEvidence: true,
+                        RequiresApproval: true,
+                        AllowsAutoPosting: false)
+                ])));
+        var draftService = new AccountingJournalDraftService(
+            policyService,
+            new AccountingBasisProjectionService(policyService));
+        var ledgerBook = new LedgerBookDto(
+            ledgerBookId,
+            "fund-alpha",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "GAAP operating ledger",
+            "USD",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-accrual-v1",
+            AccountingPolicyVersion: "v1");
+        var period = new LedgerPeriodDto(
+            periodId,
+            ledgerBookId,
+            2026,
+            5,
+            "May 2026",
+            new DateOnly(2026, 5, 1),
+            effectiveDate,
+            LedgerPeriodStatusDto.Open,
+            DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
+            ClosedAt: null,
+            Version: 1,
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-accrual-v1",
+            AccountingPolicyVersion: "v1");
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            InstrumentId: securityId,
+            OrganizationId: "tenant-alpha",
+            PortfolioId: "portfolio-income",
+            BookId: ledgerBookId.ToString("D"),
+            AccountId: "account-custodian-interest",
+            CustomerId: "customer-custodian",
+            VendorId: "vendor-bny",
+            ProjectId: "project-interest-accrual")
+        {
+            PositionId = positionId
+        };
+        var bookContext = new AccountingBookContextDto(
+            ledgerBookId,
+            "fund-alpha",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            ledgerBook.DisplayName,
+            "USD",
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1",
+            "v1",
+            periodId,
+            dimensions);
+        var economicEvent = new EconomicEventReferenceDto(
+            sourceEventId,
+            "CustodianInterestAccrual",
+            EventVersion: 1,
+            effectiveDate,
+            occurredAt,
+            SourceDomain: "SecurityMaster",
+            SourceEntityId: securityId.ToString("D"),
+            CorrelationId: correlationId,
+            SourceContentHash: "sha256:factor-evidence",
+            EvidenceLinks: [evidenceLink])
+        {
+            SecurityId = securityId,
+            BookPositionId = positionId
+        };
+        var lineage = new ProjectionLineageDto(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "mbs-factor-paydown",
+            "v1",
+            "v1",
+            "Actual",
+            effectiveDate,
+            generatedAt,
+            "AssetOperations",
+            positionId.ToString("D"),
+            economicEvent,
+            EvidenceLinks: [evidenceLink])
+        {
+            BookPositionId = positionId
+        };
+        var request = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1") with
+        {
+            CorrelationId = correlationId,
+            Dimensions = dimensions,
+            BookContext = bookContext,
+            BookPositionId = positionId,
+            EconomicEvent = economicEvent,
+            ProjectionLineage = lineage,
+            RulePackReference = new AccountingRulePackReferenceDto(
+                "gaap-accrual-rules",
+                "v1",
+                "posting.interest-accrual",
+                "v1")
+        };
+        var service = new AccountingPostingCandidateService(
+            configurationService,
+            draftService,
+            new StaticLedgerBookService(
+                ledgerBook,
+                authoritativePeriodLedgerBookId.HasValue
+                    ? period with { LedgerBookId = authoritativePeriodLedgerBookId.Value }
+                    : period),
+            policyService);
+
+        return new TypedCandidateHarness(service, configurationService, draftService, request);
+    }
+
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null,
@@ -991,7 +1366,8 @@ public sealed class AccountingPostingCandidateServiceTests
     private static async Task<AccountingConfigurationService> CreateSeededConfigurationServiceAsync(
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null,
-        Guid? ledgerBookId = null)
+        Guid? ledgerBookId = null,
+        LedgerDimensionSetDto? generatedLineDimensions = null)
     {
         var configurationService = new AccountingConfigurationService(
             new InMemoryAccountingConfigurationStore(),
@@ -1001,7 +1377,8 @@ public sealed class AccountingPostingCandidateServiceTests
             configurationService,
             ledgerBookId,
             incomeAccountType,
-            creditAmount);
+            creditAmount,
+            generatedLineDimensions: generatedLineDimensions);
 
         return configurationService;
     }
@@ -1016,7 +1393,8 @@ public sealed class AccountingPostingCandidateServiceTests
         string ruleId = "posting.interest-accrual",
         string creditAccountPath = "income/interest",
         string creditNodeId = "interest-income",
-        string costCenterId = "income-review")
+        string costCenterId = "income-review",
+        LedgerDimensionSetDto? generatedLineDimensions = null)
     {
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
@@ -1087,7 +1465,7 @@ public sealed class AccountingPostingCandidateServiceTests
                         creditAmount is null ? "source-amount" : "fixed-credit",
                         creditAmount ?? 0m,
                         "USD",
-                        new LedgerDimensionSetDto(CostCenterId: costCenterId),
+                        generatedLineDimensions ?? new LedgerDimensionSetDto(CostCenterId: costCenterId),
                         "Credit interest income")
                 ]),
             "controller@meridian.local",
@@ -1350,6 +1728,46 @@ public sealed class AccountingPostingCandidateServiceTests
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(result);
         }
+    }
+
+    private sealed record TypedCandidateHarness(
+        AccountingPostingCandidateService Service,
+        AccountingConfigurationService ConfigurationService,
+        IAccountingJournalDraftService DraftService,
+        PostingRuleJournalCandidateRequestDto Request);
+
+    private sealed class StaticLedgerBookService(
+        LedgerBookDto book,
+        LedgerPeriodDto period) : ILedgerBookService
+    {
+        public Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default)
+            => Task.FromException<LedgerBookDto>(new NotSupportedException());
+
+        public Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+            => Task.FromResult<LedgerBookDto?>(ledgerBookId == book.LedgerBookId ? book : null);
+
+        public Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerBookDto>>([book]);
+
+        public Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default)
+            => Task.FromException<LedgerPeriodDto>(new NotSupportedException());
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerPeriodDto>>(
+                !query.LedgerBookId.HasValue || query.LedgerBookId == book.LedgerBookId ? [period] : []);
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerPeriodDto>>(
+                !ledgerBookId.HasValue || ledgerBookId == book.LedgerBookId ? [period] : []);
+
+        public Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default)
+            => Task.FromResult<LedgerPeriodSummaryDto?>(null);
+
+        public Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(
+            Guid periodId,
+            CloseLedgerPeriodRequest request,
+            CancellationToken ct = default)
+            => Task.FromException<LedgerPeriodCloseResultDto>(new NotSupportedException());
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

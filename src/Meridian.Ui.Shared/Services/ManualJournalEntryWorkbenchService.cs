@@ -936,7 +936,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
     }
 
     private static bool TryMapLedgerAccountType(string? value, out LedgerAccountType accountType)

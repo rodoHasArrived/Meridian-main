@@ -6,14 +6,16 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Instruments
 
 ## Purpose
 
-Physical bounded-context module project for instrument terms, contracts, obligations, classifications, and ledger-projection ownership conformance.
+Physical bounded-context module project for instrument terms, contracts, obligations,
+classifications, instrument roles, book-position economic projections, and ledger-projection
+ownership conformance.
 
 ## Layer responsibility
 
@@ -40,8 +42,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   sweep-profile, fund-family, and rebuild projection services.
 - `AssetOperations/AssetOperationsReadService.cs` - Security Master-keyed asset operations query,
   command, and projection builder for shared terms, lifecycle, cash-flow, activity,
-  reconciliation, ledger, evidence, workflow-audit, terms/obligations timeline, and readiness
-  views.
+  reconciliation, ledger, evidence, workflow-audit, terms/obligations timeline, and readiness views,
+  plus contract-ready instrument-role, book-position, economic-state, and projection-lineage
+  collections.
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
   traces, ledger-support references, and timeline variances without writing ledger facts.
@@ -63,6 +66,29 @@ browser and WPF clients render a shared event rail without owning projection log
 Application composition wires these services to Security Master, Asset Operations, and money-market
 projection stores, while UI Shared adapts them to shared browser/WPF routes without owning the
 instrument logic.
+
+The instrument-to-journal dependency direction is:
+
+```text
+Reference Data / Security Master
+-> Instruments / Asset Operations
+-> Financial Operations
+-> Ledger / Storage
+```
+
+Security Master remains the canonical owner of `SecurityId`, identifiers, classification, and
+reference-data evidence. This module consumes that identity and owns the downstream economic
+interpretation expressed by `InstrumentRoleDto`, `BookPositionDto`, `PositionEconomicStateDto`,
+`EconomicEventReferenceDto`, and `ProjectionLineageDto`. A unified passport/read model may compose
+both domains, but this module does not introduce an Instrument Master above Security Master.
+
+Instrument and Asset Operations projections may support a governed posting candidate, but they do
+not write or redefine ledger facts. Financial Operations resolves `AccountingBookContextDto`, reuses
+the existing accounting policy rule pack through `AccountingRulePackReferenceDto`, and owns the
+candidate and approval workflow. Ledger and Storage remain responsible for balanced immutable
+`JournalEntry` append and its child ledger entries. Candidate journals, projected economic events,
+position state, and balance snapshots remain drafts or rebuildable read models rather than a second
+accounting truth.
 Technical indicator calculation lives here because moving-average, oscillator, volatility, VWAP,
 and volume-derived analytics are instrument-market analytics rather than application orchestration.
 The service keeps per-symbol streaming state bounded by `IndicatorConfiguration.MaxQuotesHistory`
@@ -110,6 +136,12 @@ contracts and implementations moved out of the layer-oriented application/refere
 this physical design module so instrument terms, asset-specific contract read models, Security
 Master-keyed operational readiness projections, technical indicators, option-chain market-data
 services, and MMF liquidity projections are owned by `Meridian.Instruments`.
+
+The additive role, book-position, economic-state, event-reference, and projection-lineage contract
+alignment requires no initial schema migration or migration of existing Security Master,
+direct-lending, portfolio, fund-account, or asset-specific records. Durable persistence changes, if
+later required, remain separate reviewed migrations and cannot create another ledger or balance
+authority.
 
 ## Change rules
 

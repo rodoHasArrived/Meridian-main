@@ -197,8 +197,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 {
                     _frame.Navigate(new Page());
                 }
-                catch
+                catch (Exception blankNavEx)
                 {
+                    // Last-resort blank navigation failed too; nothing more we can do here.
+                    LoggingService.Instance.LogDebug(
+                        "Fallback blank-page navigation failed.",
+                        ("exception", blankNavEx.GetType().Name),
+                        ("message", blankNavEx.Message));
                 }
 
                 return true;
@@ -214,9 +219,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
-            catch
+            catch (Exception dialogEx)
             {
                 // Last-resort path: keep the error page visible even if the dialog fails.
+                LoggingService.Instance.LogDebug(
+                    "Navigation error dialog failed to display.",
+                    ("exception", dialogEx.GetType().Name),
+                    ("message", dialogEx.Message));
             }
 
             return false;
@@ -241,8 +250,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 tourService.StartTour(tour.Id);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Onboarding tours are optional UX; a failure here must not block navigation.
+            LoggingService.Instance.LogDebug(
+                "Failed to evaluate onboarding tour for page.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message),
+                ("page", pageTag));
         }
     }
 

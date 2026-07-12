@@ -393,6 +393,8 @@ public static class LedgerReportPackBuilder
             yield return ("capitalAccountId", dimensions.CapitalAccountId!.Trim());
         if (dimensions.InstrumentId is not null)
             yield return ("instrumentId", dimensions.InstrumentId.Value.ToString("D"));
+        if (dimensions.PositionId is not null)
+            yield return ("positionId", dimensions.PositionId.Value.ToString("D"));
         if (HasValue(dimensions.TaxLotId))
             yield return ("taxLotId", dimensions.TaxLotId!.Trim());
         if (HasValue(dimensions.CostCenterId))
