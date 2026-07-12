@@ -20,15 +20,17 @@ here.
 | `src/Meridian.Mcp/` | Stdio MCP server for repository navigation | No database access |
 | Browser workstation (`src/Meridian.Ui/dashboard/`) | Operator UI served by the host | Indirect only, through host APIs and shared read models |
 
-Most stores are optional at runtime: a store registers its PostgreSQL implementation only when its
-connection-string environment variable is set; otherwise the host falls back to in-memory or
-file-backed implementations. The exception is the governance pair — production-safe startup throws
-unless `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`
-are configured; `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` bypasses this for local/dev fixtures only
-and is rejected in Production
-(`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`). Migration runners create schemas
-and tables idempotently at startup (`create schema/table if not exists`), substituting the
-configured schema for the `__SCHEMA__` placeholder in each script.
+Store registration is driven by the connection-string environment variables, with three distinct
+postures. Most stores swap in an in-memory or file-backed implementation when their variable is
+unset. The Ledger + Operations Continuity store does not: without
+`MERIDIAN_LEDGER_CONNECTION_STRING` its journal, book, accounting-configuration, and continuity
+services are simply not registered, and the ledger/close endpoints are unavailable rather than
+served from a fallback. The governance pair is required: production-safe startup throws unless
+`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` are
+configured; `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` bypasses this for local/dev fixtures only and
+is rejected in Production (`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`).
+Migration runners create schemas and tables idempotently at startup (`create schema/table if not
+exists`), substituting the configured schema for the `__SCHEMA__` placeholder in each script.
 
 ## PostgreSQL Store Registry
 
@@ -122,7 +124,7 @@ erDiagram
 | Table | Primary key | References | Purpose |
 | --- | --- | --- | --- |
 | `journal_entries` | `global_sequence` (`journal_entry_id` unique) | `accounting_periods` (logical) | Immutable journal-entry headers with basis, policy, rule, source-event, and posting-kind lineage; idempotency guards on `(aggregate_id, command_id)`, `(aggregate_id, source_event_id)`, and metadata `idempotencyKey` |
-| `journal_legs` | `entry_id` | `journal_entries` (cascade) | Single-sided debit/credit lines (`numeric(38,10)`), check-constrained to balance semantics, with jsonb analytical `dimensions` |
+| `journal_legs` | `entry_id` | `journal_entries` (cascade) | Single-sided debit/credit lines (`numeric(38,10)`) with jsonb analytical `dimensions`; CHECK constraints enforce per-leg non-negative, single-sided amounts only — entry-level debit/credit balance is enforced in application code (`JournalEntry`) before insert, not by the database |
 | `accounting_periods` | `period_id` | `ledger_books` | Fiscal periods with `Open`/`SoftClosed`/`HardClosed` status and `optimistic_version` concurrency |
 | `period_close_events` | `event_id` | `accounting_periods` (cascade) | Close/reopen audit trail with the period version each save produced |
 | `ledger_books` | `ledger_book_id` | fund-structure node (logical) | Books scoping periods and policies to fund-structure nodes, keyed by `fund_profile_id` + node + `accounting_basis` |
