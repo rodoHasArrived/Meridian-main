@@ -1709,6 +1709,7 @@ Meridian-main
 │   │   ├── contract-compatibility-matrix.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
+│   │   ├── database-schema.md
 │   │   ├── design-review-memo.md
 │   │   ├── edgar-reference-data.md
 │   │   ├── environment-variables.md
@@ -3510,6 +3511,7 @@ Meridian-main
 │   │   │   └── ArchiveHealthModels.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetOperationsDtos.cs
+│   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   └── PortfolioCashLadderDtos.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillProgress.cs
@@ -3651,11 +3653,13 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationContracts.cs
 │   │   │   └── ProviderIntegrationContractsJsonContext.cs
 │   │   ├── Ledger
+│   │   │   ├── AccountingBookContextDtos.cs
 │   │   │   ├── AccountingConfigurationCloseReportingDtos.cs
 │   │   │   ├── AccountingConfigurationDtos.cs
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
+│   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
@@ -5883,6 +5887,8 @@ Meridian-main
 │   │   │   │   │   └── setup.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── covered-call.types.ts
+│   │   │   │   │   ├── instrument-accounting.test.ts
+│   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── provider-setup.ts
@@ -7412,6 +7418,7 @@ Meridian-main
 │   │   │   ├── AppConfigDtoRoundTripTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
+│   │   │   ├── InstrumentJournalContractCompatibilityTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
 │   │   │   ├── OperationalFinanceContractTests.cs
 │   │   │   └── ProviderIntegrationContractsTests.cs
@@ -7747,6 +7754,7 @@ Meridian-main
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
 │   │   │   ├── DepreciationScheduleCalculatorTests.cs
+│   │   │   ├── DimensionSignatureBackwardCompatibilityTests.cs
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
