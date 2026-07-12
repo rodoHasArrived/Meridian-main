@@ -57,7 +57,7 @@ jobs:
         run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}

@@ -1,6 +1,6 @@
 {
   "total_files": 674,
-  "total_lines": 96489,
+  "total_lines": 96536,
   "orphaned_count": 330,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2301,7 +2301,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 234,
+      "line_count": 245,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2405,7 +2405,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8716,
+      "line_count": 8721,
       "has_heading": true,
       "todo_count": 9,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2413,7 +2413,7 @@
     },
     {
       "path": "docs/generated/workflow-command-reference.md",
-      "line_count": 129,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2429,7 +2429,7 @@
     },
     {
       "path": "docs/HELP.md",
-      "line_count": 246,
+      "line_count": 247,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3325,7 +3325,7 @@
     },
     {
       "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
-      "line_count": 456,
+      "line_count": 475,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3965,7 +3965,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 162,
+      "line_count": 168,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5533,7 +5533,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 168,
+      "line_count": 172,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
