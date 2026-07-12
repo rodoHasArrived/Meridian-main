@@ -10,4 +10,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Data-driven reference taxonomies (allowed-value code lists) shared by both Security Master
+         validation engines. Embedded so the vocabularies load from data at runtime. -->
+    <None Remove="SecurityMaster/Data/security-reference-taxonomies.json" />
+    <EmbeddedResource Include="SecurityMaster/Data/security-reference-taxonomies.json" />
+  </ItemGroup>
 </Project>
