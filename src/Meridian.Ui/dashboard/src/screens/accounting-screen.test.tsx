@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { AccountingScreen } from "@/screens/accounting-screen";
@@ -1475,6 +1477,32 @@ async function renderAccountingScreen(
   const result = renderWithRouter(<AccountingScreen data={screenData} />, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
+}
+
+function AccountingLocationProbe({ onChange }: { onChange: (search: string) => void }) {
+  const location = useLocation();
+
+  useEffect(() => {
+    onChange(location.search);
+  }, [location.search, onChange]);
+
+  return null;
+}
+
+async function renderAccountingScreenWithLocation(
+  screenData: AccountingWorkspaceResponse = data,
+  initialEntry = "/accounting"
+) {
+  const onLocationChange = vi.fn();
+  const result = renderWithRouter(
+    <>
+      <AccountingScreen data={screenData} />
+      <AccountingLocationProbe onChange={onLocationChange} />
+    </>,
+    { initialEntries: [initialEntry] }
+  );
+  await waitForAsyncEffects();
+  return { ...result, onLocationChange };
 }
 
 describe("AccountingScreen", () => {
@@ -4187,6 +4215,9 @@ describe("AccountingScreen", () => {
 
     await waitFor(() => expect(securityRow).toHaveAttribute("aria-expanded", "true"));
     expect(securityRow).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /^Identity\b/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("heading", { name: "Security search" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Identifier conflicts/i })).toBeInTheDocument();
     expect(await screen.findByText(/Identity drill-in · Apple Inc\./i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Identifiers for Apple Inc." })).toBeInTheDocument();
@@ -4206,6 +4237,7 @@ describe("AccountingScreen", () => {
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
     const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
     await user.click(securityRow);
+    await user.click(screen.getByRole("tab", { name: /^Reference data\b/i }));
 
     expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
     expect(api.getReferenceDataWorkbenchCoverage).toHaveBeenCalledWith(expect.objectContaining({
@@ -4219,6 +4251,55 @@ describe("AccountingScreen", () => {
     expect(within(table).getByText("Bond reference")).toBeInTheDocument();
     expect(within(table).getByText("Option chain import")).toBeInTheDocument();
     expect(screen.getByText(/couponRate/)).toBeInTheDocument();
+  });
+
+  it("opens Security Master reference data from tab deep links", async () => {
+    const user = userEvent.setup();
+
+    await renderAccountingScreen(data, "/accounting/security-master?tab=reference");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+
+    expect(screen.getByRole("tab", { name: /^Reference data\b/i })).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
+  });
+
+  it("falls back to the Security Master identity tab for invalid tab deep links", async () => {
+    const user = userEvent.setup();
+
+    await renderAccountingScreen(data, "/accounting/security-master?tab=unknown");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+
+    expect(screen.getByRole("tab", { name: /^Identity\b/i })).toHaveAttribute("aria-selected", "true");
+    expect(document.getElementById("security-master-identity-tab-panel")).not.toHaveAttribute("hidden");
+  });
+
+  it("updates Security Master drill-in tabs in the route without clearing the selected row", async () => {
+    const user = userEvent.setup();
+    const { onLocationChange } = await renderAccountingScreenWithLocation(
+      data,
+      "/accounting/security-master?fundAccountId=fund-alpha"
+    );
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    await user.click(securityRow);
+    await waitFor(() => expect(securityRow).toHaveAttribute("aria-selected", "true"));
+
+    await user.click(screen.getByRole("tab", { name: /^Passport & controls\b/i }));
+
+    expect(screen.getByRole("tab", { name: /^Passport & controls\b/i })).toHaveAttribute("aria-selected", "true");
+    expect(securityRow).toHaveAttribute("aria-selected", "true");
+    await waitFor(() => {
+      const calls = onLocationChange.mock.calls;
+      const latestSearch = calls[calls.length - 1]?.[0] ?? "";
+      const params = new URLSearchParams(latestSearch);
+      expect(params.get("fundAccountId")).toBe("fund-alpha");
+      expect(params.get("tab")).toBe("passport");
+    });
   });
 
   it("selects Security Master search rows with keyboard-expanded detail linkage", async () => {
@@ -4328,6 +4409,7 @@ describe("AccountingScreen", () => {
 
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
     await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+    await user.click(screen.getByRole("tab", { name: /^Schedules\b/i }));
 
     const table = await screen.findByRole("treegrid", { name: "Cash-flow and factor schedules for sec-1" });
     expect(table).toHaveTextContent("sched-1-coupon");
@@ -4344,6 +4426,9 @@ describe("AccountingScreen", () => {
     expect(principalRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Principal on sec-1" })).toHaveTextContent("126,250 USD");
     expect(screen.getByRole("toolbar", { name: "Cash-flow schedule status for sec-1" })).toHaveTextContent("2");
+
+    await user.click(screen.getByRole("tab", { name: /^Lots\b/i }));
+
     expect(screen.getByRole("treegrid", { name: "Open lot read model for sec-1" })).toHaveTextContent("lot-1");
     expect(screen.getByRole("row", { name: "Inspect open lot lot-1 for AAPL" })).toHaveAttribute("aria-controls", "security-open-lot-detail-panel");
     expect(screen.getByRole("region", { name: "Open lot detail for lot-1 on AAPL" })).toHaveTextContent("85,500");
@@ -4390,6 +4475,7 @@ describe("AccountingScreen", () => {
 
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
     await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+    await user.click(screen.getByRole("tab", { name: /^Schedules\b/i }));
 
     const table = await screen.findByRole("treegrid", { name: "Corporate actions for sec-1" });
     expect(table).toBeInTheDocument();

@@ -34,6 +34,49 @@ class CiSummaryTests(unittest.TestCase):
 
         self.assertIn("Windows targeting is missing; add EnableWindowsTargeting=true.", findings)
 
+    def test_known_error_classification_detects_browser_and_docs_failures(self) -> None:
+        findings = MODULE.classify_known_patterns(
+            "ESLint failed\nstrictNullChecks reported an error\ngit diff --exit-code -- docs/source/generated"
+        )
+
+        self.assertIn("Dashboard lint failed.", findings)
+        self.assertIn("Dashboard strict TypeScript check failed.", findings)
+        self.assertIn("Generated documentation drift was detected.", findings)
+
+    def test_known_error_classification_respects_failed_step_context(self) -> None:
+        findings = MODULE.classify_known_patterns(
+            "ESLint src\nstrictNullChecks enabled\nTest Files 1 failed",
+            steps=[
+                MODULE.StepResult("Lint dashboard source", 0, 1),
+                MODULE.StepResult("Enforce strictNullChecks on dashboard source", 0, 1),
+                MODULE.StepResult("Run dashboard tests", 1, 1),
+            ],
+        )
+
+        self.assertNotIn("Dashboard lint failed.", findings)
+        self.assertNotIn("Dashboard strict TypeScript check failed.", findings)
+        self.assertIn("Dashboard npm or Vitest lane failed.", findings)
+
+    def test_known_error_classification_suppresses_step_gated_findings_when_all_steps_pass(self) -> None:
+        findings = MODULE.classify_known_patterns(
+            "ESLint src\nstrictNullChecks enabled\nOK: generate-ui-api-routes-ts.py is current",
+            steps=[
+                MODULE.StepResult("Generated UI contract drift gate", 0, 1),
+                MODULE.StepResult("Lint dashboard source", 0, 1),
+                MODULE.StepResult("Enforce strictNullChecks on dashboard source", 0, 1),
+            ],
+        )
+
+        self.assertEqual(findings, [])
+
+    def test_known_error_classification_detects_workflow_and_targeted_failures(self) -> None:
+        findings = MODULE.classify_known_patterns(
+            "Workflow hygiene checks failed\ndotnet_filter 'Category!=Integration' is too broad for Targeted Test"
+        )
+
+        self.assertIn("Workflow hygiene or lane manifest validation failed.", findings)
+        self.assertIn("Targeted Test filter validation failed.", findings)
+
     def test_load_dotnet_summary_reports_failed_slices(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "summary.json"
@@ -95,6 +138,11 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("| Build | failed | 1 | 10 |", summary)
         self.assertIn("C# compile error.", summary)
         self.assertIn("error CS1002", summary)
+
+    def test_first_interesting_lines_skips_successful_lint_command_echo(self) -> None:
+        lines = MODULE.first_interesting_lines("> eslint src\nstrictNullChecks enabled\nTest Files 1 failed")
+
+        self.assertEqual(lines, ["Test Files 1 failed"])
 
 
 if __name__ == "__main__":

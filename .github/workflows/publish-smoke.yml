@@ -57,6 +57,11 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
       - name: Cache NuGet packages
         uses: actions/cache@v5.0.5
         with:
@@ -77,6 +82,18 @@ jobs:
             -OutputDir artifacts/publish/publish-smoke `
             -OutputRetentionDays 0 `
             -OutputRetainLatest 0
+
+      - name: Generate release evidence manifest
+        shell: pwsh
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project '${{ inputs.project }}' `
+            --runtime '${{ inputs.runtime }}' `
+            --version '${{ inputs.version }}' `
+            --artifact-root artifacts/publish/publish-smoke `
+            --output artifacts/publish/publish-smoke/release-evidence.json `
+            --workflow-run-id '${{ github.run_id }}' `
+            --validation-lane publish-smoke
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v7.0.1

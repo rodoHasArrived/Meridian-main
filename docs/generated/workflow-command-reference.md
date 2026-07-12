@@ -103,6 +103,7 @@
 - Canonical output roots: artifacts/test-results/targeted-dotnet, artifacts/targeted-browser, artifacts/targeted-docs, artifacts/wpf-validation, artifacts/publish/targeted-desktop-smoke
 - Retention: workflow-artifact-retention (maxAgeDays=14, retainLatest=20)
 - Commands:
+  - `python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter="FullyQualifiedName~<TestClassOrMethod>" --wait`
   - `gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
   - `gh workflow run targeted-test.yml --ref <branch> -f mode=wpf-dev-loop -f runner=windows-latest -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests"`
 

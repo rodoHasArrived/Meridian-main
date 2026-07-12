@@ -1078,7 +1078,7 @@ export interface SecuritySearchState {
 export type SecurityMasterPageMetricTone = "default" | "success" | "warning";
 
 export interface SecurityMasterPageMetricViewModel {
-  id: "results" | "selected" | "conflicts" | "detail";
+  id: "results" | "selected" | "conflicts" | "detail" | "reference" | "passport";
   label: string;
   value: string;
   detail: string;
@@ -3788,6 +3788,9 @@ export function useSecurityMasterViewModel(
       conflicts,
       conflictsLoading,
       corporateActions,
+      instrumentPassport,
+      instrumentPassportLoading,
+      instrumentPassportError,
       referenceDataCoverage,
       referenceDataLoading: referenceDataCoverageLoading,
       referenceDataError: referenceDataCoverageError,
@@ -3801,6 +3804,9 @@ export function useSecurityMasterViewModel(
       conflicts,
       conflictsLoading,
       corporateActions,
+      instrumentPassport,
+      instrumentPassportError,
+      instrumentPassportLoading,
       referenceDataCoverage,
       referenceDataCoverageError,
       referenceDataCoverageLoading,
@@ -4452,6 +4458,9 @@ export function buildSecurityMasterPageViewState({
   conflicts,
   conflictsLoading,
   corporateActions,
+  instrumentPassport,
+  instrumentPassportLoading = false,
+  instrumentPassportError = null,
   referenceDataCoverage = null,
   referenceDataLoading = false,
   referenceDataError = null,
@@ -4472,6 +4481,9 @@ export function buildSecurityMasterPageViewState({
   conflicts: SecurityMasterConflict[] | null;
   conflictsLoading: boolean;
   corporateActions: CorporateAction[] | null;
+  instrumentPassport?: InstrumentPassport | null;
+  instrumentPassportLoading?: boolean;
+  instrumentPassportError?: ApiErrorDisplay | string | null;
   referenceDataCoverage?: ReferenceDataWorkbenchCoverage | null;
   referenceDataLoading?: boolean;
   referenceDataError?: ApiErrorDisplay | string | null;
@@ -4498,6 +4510,7 @@ export function buildSecurityMasterPageViewState({
     : selectedSecurityId
       ? "Loading schedules"
       : "No selection";
+  const normalizedPassportError = normalizeApiErrorDisplay(instrumentPassportError);
   const referenceDataLabel = referenceDataError
     ? "Error"
     : referenceDataLoading
@@ -4507,6 +4520,19 @@ export function buildSecurityMasterPageViewState({
         : selectedSecurityId
           ? "Pending"
           : "No selection";
+  const readyReferenceRoutes = referenceDataCoverage?.endpoints.filter((endpoint) => endpoint.status === "Ready").length ?? 0;
+  const reviewReferenceRoutes = referenceDataCoverage?.endpoints.filter((endpoint) => (
+    endpoint.status === "Blocked" || endpoint.status === "Error" || endpoint.status === "Missing"
+  )).length ?? 0;
+  const referenceDataDetail = referenceDataError
+    ? "Reference coverage could not be loaded."
+    : referenceDataLoading
+      ? "Refreshing endpoint coverage for the selected record."
+      : referenceDataCoverage
+        ? `${formatCount(readyReferenceRoutes, "ready route")} and ${formatCount(reviewReferenceRoutes, "route")} needing review.`
+        : selectedSecurityId
+          ? "Reference coverage is queued for the selected record."
+          : "Select a security to inspect source coverage.";
   const scheduleLabel = securitySchedules
     ? securitySchedules.length > 0
       ? formatCount(securitySchedules.length, "cash-flow event")
@@ -4521,6 +4547,40 @@ export function buildSecurityMasterPageViewState({
         : selectedSecurityId
           ? "No lots"
           : "No selection";
+  const operationsReadiness = instrumentPassport?.operationsWorkbench?.readiness ?? [];
+  const readyOperationCount = operationsReadiness.filter((item) => item.status === "Ready" || item.status === "Complete").length;
+  const totalOperationCount = operationsReadiness.length;
+  const passportControlLabel = normalizedPassportError
+    ? "Error"
+    : instrumentPassportLoading
+      ? "Loading"
+      : instrumentPassport
+        ? instrumentPassport.trustPosture.summary
+        : tradingParameters
+          ? "Controls set"
+          : selectedSecurityId
+            ? "Pending"
+            : "No selection";
+  const passportControlDetail = normalizedPassportError
+    ? "Passport readiness could not be loaded."
+    : instrumentPassportLoading
+      ? "Refreshing passport, provider confidence, and control readiness."
+      : instrumentPassport
+        ? totalOperationCount > 0
+          ? `${readyOperationCount}/${totalOperationCount} operations checks ready; trading controls ${tradingParameters ? "loaded" : "pending"}.`
+          : `Trust posture ${instrumentPassport.trustPosture.summary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
+        : selectedSecurityId
+          ? "Passport and control readiness are queued for the selected record."
+          : "Select a security to inspect passport and control readiness.";
+  const passportControlTone: SecurityMasterPageMetricTone = normalizedPassportError || instrumentPassportLoading
+    ? "warning"
+    : instrumentPassport
+      ? instrumentPassport.trustPosture.tone.toLowerCase() === "success" || instrumentPassport.trustPosture.tone.toLowerCase() === "ready"
+        ? "success"
+        : "warning"
+      : tradingParameters
+        ? "success"
+        : "default";
 
   return {
     ariaLabel: "Security Master command deck",
@@ -4529,22 +4589,19 @@ export function buildSecurityMasterPageViewState({
     description: "Search, inspect, and reconcile trusted security reference records from one dense master-detail page.",
     metrics: [
       {
-        id: "results",
-        label: "Search results",
-        value: hasQuery ? resultCount.toLocaleString() : "Search",
-        detail: hasQuery ? `${formatCount(resultCount, "security")} returned for the active query.` : "Search by ticker, ISIN, CUSIP, FIGI, or display name.",
-        tone: resultCount > 0 ? "success" : "default"
-      },
-      {
         id: "selected",
-        label: "Selected detail",
+        label: "Selected record",
         value: selectedName,
-        detail: selectedSecurityId ? `Security ID ${selectedSecurityId}` : "Select a table row to open the security detail page.",
+        detail: selectedSecurityId
+          ? `Security ID ${selectedSecurityId}; ${selectedClass}; ${statusLabel}.`
+          : hasQuery
+            ? `${formatCount(resultCount, "security")} returned. Select a row to open the record.`
+            : "Search by ticker, ISIN, CUSIP, FIGI, or display name.",
         tone: selectedSecurityId ? "success" : "default"
       },
       {
         id: "conflicts",
-        label: "Identifier conflicts",
+        label: "Open conflicts",
         value: conflictsLoading ? "Loading" : openConflictCount.toLocaleString(),
         detail: conflictsLoading
           ? "Refreshing provider conflict evidence."
@@ -4554,11 +4611,18 @@ export function buildSecurityMasterPageViewState({
         tone: openConflictCount > 0 || conflictsLoading ? "warning" : "success"
       },
       {
-        id: "detail",
-        label: "Detail coverage",
-        value: selectedSecurityId ? statusLabel : "No selection",
-        detail: selectedSecurityId ? `${selectedClass} detail record with ${identifiersLabel}.` : "Overview, schedules, controls, lots, and audit cues stay attached to the selected security.",
-        tone: selectedSecurityId ? (statusLabel.toLowerCase() === "active" ? "success" : "warning") : "default"
+        id: "reference",
+        label: "Reference coverage",
+        value: referenceDataLabel,
+        detail: referenceDataDetail,
+        tone: referenceDataError || referenceDataLoading || reviewReferenceRoutes > 0 ? "warning" : referenceDataCoverage ? "success" : "default"
+      },
+      {
+        id: "passport",
+        label: "Passport controls",
+        value: passportControlLabel,
+        detail: passportControlDetail,
+        tone: passportControlTone
       }
     ],
     detailEyebrow: "Security detail",

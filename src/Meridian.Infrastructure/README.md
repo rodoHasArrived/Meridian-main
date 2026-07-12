@@ -40,6 +40,10 @@ Provider registry paths normalize configured provider identifiers before factory
 registry can hold multiple adapter contracts for one provider family ID. This allows identifiers
 such as `alpaca` to resolve independently for streaming, backfill, and symbol-search contracts
 without dropping one registration because another adapter uses the same family ID.
+Composite historical failover treats provider rate limits as structured signals only:
+`RateLimitException` (including wrapped instances) or `HttpRequestException.StatusCode` equal to
+HTTP 429. Adapter implementations should map vendor 429 responses at the HTTP boundary instead of
+relying on exception message text such as "rate limit" or "too many requests".
 
 Brokerage adapter mappers preserve explicit provider fill realized P&L when a venue payload
 supplies it, while adapters without a native realized-P&L field leave the SDK value null so

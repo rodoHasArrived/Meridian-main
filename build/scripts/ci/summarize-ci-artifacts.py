@@ -16,14 +16,36 @@ KNOWN_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"error CS\d+"), "C# compile error."),
     (re.compile(r"error FS\d+"), "F# compile error."),
     (re.compile(r"error MSB\d+"), "MSBuild error."),
+    (re.compile(r"Generated UI contract drift|generate-ui-api-routes-ts|generate-workspace-catalog-ts", re.IGNORECASE), "Generated UI contract drift was detected."),
+    (re.compile(r"ESLint|npm .*run lint|lint .*failed", re.IGNORECASE), "Dashboard lint failed."),
+    (re.compile(r"strictNullChecks|typecheck:strict|tsc .*--noEmit", re.IGNORECASE), "Dashboard strict TypeScript check failed."),
+    (re.compile(r"npm ERR!|ERR_PNPM|vitest.*failed|failed.*vitest|Test Files\s+\d+\s+failed", re.IGNORECASE), "Dashboard npm or Vitest lane failed."),
+    (re.compile(r"git diff .*exit-code|Render .*check drift|generated documentation drift|docs drift", re.IGNORECASE), "Generated documentation drift was detected."),
+    (re.compile(r"Workflow hygiene checks failed|Lane manifest validation failed|actionlint", re.IGNORECASE), "Workflow hygiene or lane manifest validation failed."),
     (re.compile(r"System\.OutOfMemoryException"), "Build/test process ran out of memory."),
     (re.compile(r"VBCSCompiler|CS2012|being used by another process", re.IGNORECASE), "Likely compiler or output file lock contention."),
     (re.compile(r"dotnet_filter .* too broad|dotnet_filter is required"), "Targeted Test filter validation failed."),
-    (re.compile(r"git diff .*exit-code|Render .*check drift", re.IGNORECASE), "Generated documentation drift was detected."),
+    (re.compile(r"Mode '.*' requires runner=|Unsupported dotnet_project|Unsupported dotnet_filter", re.IGNORECASE), "Targeted Test mode or input validation failed."),
 ]
 
+STEP_GATED_FINDINGS: dict[str, tuple[str, ...]] = {
+    "Generated UI contract drift was detected.": ("Generated UI contract drift gate",),
+    "Dashboard lint failed.": ("Lint dashboard source",),
+    "Dashboard strict TypeScript check failed.": ("Enforce strictNullChecks on dashboard source",),
+    "Dashboard npm or Vitest lane failed.": (
+        "Install dashboard dependencies from lockfile",
+        "Run dashboard tests",
+        "Build dashboard bundle",
+    ),
+    "Generated documentation drift was detected.": ("Render roadmap/source docs and check drift",),
+    "Workflow hygiene or lane manifest validation failed.": (
+        "Validate lane manifest",
+        "Validate workflow hygiene",
+    ),
+}
+
 INTERESTING_LINE_RE = re.compile(
-    r"(error\s+[A-Z]+[0-9]+|error:|failed|exception|Traceback|Unsupported|too broad|does not exist)",
+    r"(error\s+[A-Z]+[0-9]+|error:|failed|exception|Traceback|Unsupported|too broad|does not exist|drift|npm ERR!)",
     re.IGNORECASE,
 )
 
@@ -75,10 +97,15 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def classify_known_patterns(text: str) -> list[str]:
+def classify_known_patterns(text: str, steps: list[StepResult] | None = None) -> list[str]:
+    failed_step_names = tuple(step.name for step in steps or [] if step.exit_code != 0)
     findings: list[str] = []
     for pattern, message in KNOWN_PATTERNS:
         if pattern.search(text):
+            gated_steps = STEP_GATED_FINDINGS.get(message)
+            if gated_steps and steps is not None:
+                if not any(step_name == gated_step for step_name in failed_step_names for gated_step in gated_steps):
+                    continue
             findings.append(message)
     return findings
 
@@ -199,7 +226,7 @@ def main() -> int:
         steps=steps,
         dotnet_totals=dotnet_totals,
         failed_dotnet=failed_dotnet,
-        known_findings=classify_known_patterns(combined_logs),
+        known_findings=classify_known_patterns(combined_logs, steps),
         interesting_lines=first_interesting_lines(combined_logs),
     )
 
