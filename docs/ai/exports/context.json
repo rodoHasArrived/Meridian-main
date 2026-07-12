@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-07-12T02:52:49Z",
+  "generatedAtUtc": "2026-07-12T02:59:24Z",
   "repository": "Meridian-main",
   "activeScope": {
     "productThesis": "Meridian proves operational records from source evidence to governed output.",
@@ -120,18 +120,18 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian/..\\Meridian.Application\\Meridian.Application.csproj",
-        "src/Meridian/..\\Meridian.Audit\\Meridian.Audit.csproj",
-        "src/Meridian/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian/..\\Meridian.Identity\\Meridian.Identity.csproj",
-        "src/Meridian/..\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
-        "src/Meridian/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian/..\\Meridian.QuantScript\\Meridian.QuantScript.csproj",
-        "src/Meridian/..\\Meridian.Storage\\Meridian.Storage.csproj",
-        "src/Meridian/..\\Meridian.Ui.Services\\Meridian.Ui.Services.csproj",
-        "src/Meridian/..\\Meridian.Ui.Shared\\Meridian.Ui.Shared.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Audit/Meridian.Audit.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+        "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj"
       ]
     },
     {
@@ -141,25 +141,25 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Application/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Application/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Application/..\\Meridian.DataIntegration\\Meridian.DataIntegration.csproj",
-        "src/Meridian.Application/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.Application/..\\Meridian.Entities\\Meridian.Entities.csproj",
-        "src/Meridian.Application/..\\Meridian.FSharp.DirectLending.Aggregates\\Meridian.FSharp.DirectLending.Aggregates.fsproj",
-        "src/Meridian.Application/..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj",
-        "src/Meridian.Application/..\\Meridian.FSharp\\Meridian.FSharp.fsproj",
-        "src/Meridian.Application/..\\Meridian.FinancialOperations\\Meridian.FinancialOperations.csproj",
-        "src/Meridian.Application/..\\Meridian.Identity\\Meridian.Identity.csproj",
-        "src/Meridian.Application/..\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
-        "src/Meridian.Application/..\\Meridian.Instruments\\Meridian.Instruments.csproj",
-        "src/Meridian.Application/..\\Meridian.Ledger\\Meridian.Ledger.csproj",
-        "src/Meridian.Application/..\\Meridian.Platform\\Meridian.Platform.csproj",
-        "src/Meridian.Application/..\\Meridian.PortfolioRecords\\Meridian.PortfolioRecords.csproj",
-        "src/Meridian.Application/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian.Application/..\\Meridian.ReferenceData\\Meridian.ReferenceData.csproj",
-        "src/Meridian.Application/..\\Meridian.Storage\\Meridian.Storage.csproj",
-        "src/Meridian.Application/..\\Meridian.Workflow\\Meridian.Workflow.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Entities/Meridian.Entities.csproj",
+        "src/Meridian.FSharp.DirectLending.Aggregates/Meridian.FSharp.DirectLending.Aggregates.fsproj",
+        "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+        "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+        "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+        "src/Meridian.Instruments/Meridian.Instruments.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj",
+        "src/Meridian.Platform/Meridian.Platform.csproj",
+        "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Workflow/Meridian.Workflow.csproj"
       ]
     },
     {
@@ -177,10 +177,10 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Backtesting/..\\Meridian.Application\\Meridian.Application.csproj",
-        "src/Meridian.Backtesting/..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
-        "src/Meridian.Backtesting/..\\Meridian.Storage\\Meridian.Storage.csproj",
-        "src/Meridian.Backtesting/..\\Meridian.Strategies\\Meridian.Strategies.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Strategies/Meridian.Strategies.csproj"
       ]
     },
     {
@@ -190,8 +190,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Backtesting.Sdk/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Backtesting.Sdk/..\\Meridian.Ledger\\Meridian.Ledger.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj"
       ]
     },
     {
@@ -209,9 +209,9 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Core/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Core/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.Core/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj"
       ]
     },
     {
@@ -221,12 +221,12 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.DataIntegration/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.DataIntegration/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.DataIntegration/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.DataIntegration/..\\Meridian.FSharp\\Meridian.FSharp.fsproj",
-        "src/Meridian.DataIntegration/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian.DataIntegration/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -244,8 +244,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Domain/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Domain/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj"
       ]
     },
     {
@@ -255,7 +255,7 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Entities/..\\Meridian.Contracts\\Meridian.Contracts.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj"
       ]
     },
     {
@@ -265,11 +265,11 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Execution/..\\Meridian.Application\\Meridian.Application.csproj",
-        "src/Meridian.Execution/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Execution/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Execution/..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
-        "src/Meridian.Execution/..\\Meridian.Ledger\\Meridian.Ledger.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj"
       ]
     },
     {
@@ -279,7 +279,7 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Execution.Sdk/..\\Meridian.Contracts\\Meridian.Contracts.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj"
       ]
     },
     {
@@ -289,15 +289,15 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.FinancialOperations/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.FSharp\\Meridian.FSharp.fsproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.Identity\\Meridian.Identity.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.Ledger\\Meridian.Ledger.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian.FinancialOperations/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+        "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -315,8 +315,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Identity/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Identity/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -326,14 +326,14 @@
         "net10.0"
       ],
       "project_references": [
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+        "src/Meridian.IbApi.SmokeStub/Meridian.IbApi.SmokeStub.csproj",
         "src/Meridian.Infrastructure/$(ResolvedIbApiProjectPath)",
-        "src/Meridian.Infrastructure/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Infrastructure/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Infrastructure/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.Infrastructure/..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
-        "src/Meridian.Infrastructure/..\\Meridian.IbApi.SmokeStub\\Meridian.IbApi.SmokeStub.csproj",
-        "src/Meridian.Infrastructure/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian.Infrastructure/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -343,11 +343,11 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Instruments/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Instruments/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Instruments/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.Instruments/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian.Instruments/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -357,8 +357,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Ledger/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Ledger/..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj"
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj"
       ]
     },
     {
@@ -368,7 +368,7 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Mcp/..\\Meridian.Core\\Meridian.Core.csproj"
+        "src/Meridian.Core/Meridian.Core.csproj"
       ]
     },
     {
@@ -378,8 +378,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Platform/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Platform/..\\Meridian.Core\\Meridian.Core.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj"
       ]
     },
     {
@@ -389,8 +389,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.PortfolioRecords/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.PortfolioRecords/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -400,7 +400,7 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.ProviderSdk/..\\Meridian.Contracts\\Meridian.Contracts.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj"
       ]
     },
     {
@@ -410,13 +410,13 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.QuantScript/..\\Meridian.Application\\Meridian.Application.csproj",
-        "src/Meridian.QuantScript/..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
-        "src/Meridian.QuantScript/..\\Meridian.Backtesting\\Meridian.Backtesting.csproj",
-        "src/Meridian.QuantScript/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.QuantScript/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.QuantScript/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj",
-        "src/Meridian.QuantScript/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+        "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -426,7 +426,7 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.ReferenceData/..\\Meridian.Contracts\\Meridian.Contracts.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj"
       ]
     },
     {
@@ -436,8 +436,8 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Reporting/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Reporting/..\\Meridian.Ledger\\Meridian.Ledger.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj"
       ]
     },
     {
@@ -447,10 +447,10 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Risk/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Risk/..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
-        "src/Meridian.Risk/..\\Meridian.Execution\\Meridian.Execution.csproj",
-        "src/Meridian.Risk/..\\Meridian.FSharp\\Meridian.FSharp.fsproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+        "src/Meridian.Execution/Meridian.Execution.csproj",
+        "src/Meridian.FSharp/Meridian.FSharp.fsproj"
       ]
     },
     {
@@ -460,11 +460,11 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Storage/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Storage/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Storage/..\\Meridian.Domain\\Meridian.Domain.csproj",
-        "src/Meridian.Storage/..\\Meridian.Ledger\\Meridian.Ledger.csproj",
-        "src/Meridian.Storage/..\\Meridian.ProviderSdk\\Meridian.ProviderSdk.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj",
+        "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj"
       ]
     },
     {
@@ -474,15 +474,15 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Strategies/..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
-        "src/Meridian.Strategies/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Strategies/..\\Meridian.Core\\Meridian.Core.csproj",
-        "src/Meridian.Strategies/..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
-        "src/Meridian.Strategies/..\\Meridian.Execution\\Meridian.Execution.csproj",
-        "src/Meridian.Strategies/..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj",
-        "src/Meridian.Strategies/..\\Meridian.FSharp.Trading\\Meridian.FSharp.Trading.fsproj",
-        "src/Meridian.Strategies/..\\Meridian.FSharp\\Meridian.FSharp.fsproj",
-        "src/Meridian.Strategies/..\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj"
+        "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+        "src/Meridian.Execution/Meridian.Execution.csproj",
+        "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+        "src/Meridian.FSharp.Trading/Meridian.FSharp.Trading.fsproj",
+        "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
       ]
     },
     {
@@ -492,11 +492,11 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Ui.Services/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Ui.Services/..\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
-        "src/Meridian.Ui.Services/..\\Meridian.Reporting\\Meridian.Reporting.csproj",
-        "src/Meridian.Ui.Services/..\\Meridian.Storage\\Meridian.Storage.csproj",
-        "src/Meridian.Ui.Services/..\\Meridian.Ui.Shared\\Meridian.Ui.Shared.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+        "src/Meridian.Reporting/Meridian.Reporting.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj"
       ]
     },
     {
@@ -506,26 +506,26 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Ui.Shared/..\\Meridian.Application\\Meridian.Application.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Audit\\Meridian.Audit.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Backtesting\\Meridian.Backtesting.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.DataIntegration\\Meridian.DataIntegration.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Entities\\Meridian.Entities.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Execution\\Meridian.Execution.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger.fsproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.FSharp\\Meridian.FSharp.fsproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.FinancialOperations\\Meridian.FinancialOperations.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Identity\\Meridian.Identity.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Instruments\\Meridian.Instruments.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Platform\\Meridian.Platform.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.PortfolioRecords\\Meridian.PortfolioRecords.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.QuantScript\\Meridian.QuantScript.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.ReferenceData\\Meridian.ReferenceData.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Reporting\\Meridian.Reporting.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Storage\\Meridian.Storage.csproj",
-        "src/Meridian.Ui.Shared/..\\Meridian.Strategies\\Meridian.Strategies.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Audit/Meridian.Audit.csproj",
+        "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+        "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+        "src/Meridian.Entities/Meridian.Entities.csproj",
+        "src/Meridian.Execution/Meridian.Execution.csproj",
+        "src/Meridian.FSharp.Ledger/Meridian.FSharp.Ledger.fsproj",
+        "src/Meridian.FSharp/Meridian.FSharp.fsproj",
+        "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Instruments/Meridian.Instruments.csproj",
+        "src/Meridian.Platform/Meridian.Platform.csproj",
+        "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+        "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+        "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+        "src/Meridian.Reporting/Meridian.Reporting.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Strategies/Meridian.Strategies.csproj"
       ]
     },
     {
@@ -535,9 +535,9 @@
         "net10.0"
       ],
       "project_references": [
-        "src/Meridian.Workflow/..\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "src/Meridian.Workflow/..\\Meridian.Entities\\Meridian.Entities.csproj",
-        "src/Meridian.Workflow/..\\Meridian.Storage\\Meridian.Storage.csproj"
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Entities/Meridian.Entities.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj"
       ]
     },
     {
@@ -548,17 +548,17 @@
         "net10.0-windows10.0.19041.0"
       ],
       "project_references": [
-        "src/Meridian.Wpf/..\\Meridian.Backtesting\\Meridian.Backtesting.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Identity\\Meridian.Identity.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Platform\\Meridian.Platform.csproj",
-        "src/Meridian.Wpf/..\\Meridian.QuantScript\\Meridian.QuantScript.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Reporting\\Meridian.Reporting.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Storage\\Meridian.Storage.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Strategies\\Meridian.Strategies.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Ui.Services\\Meridian.Ui.Services.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Ui.Shared\\Meridian.Ui.Shared.csproj",
-        "src/Meridian.Wpf/..\\Meridian.Workflow\\Meridian.Workflow.csproj"
+        "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+        "src/Meridian.Platform/Meridian.Platform.csproj",
+        "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+        "src/Meridian.Reporting/Meridian.Reporting.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Strategies/Meridian.Strategies.csproj",
+        "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+        "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+        "src/Meridian.Workflow/Meridian.Workflow.csproj"
       ]
     },
     {
@@ -568,9 +568,9 @@
         "net10.0"
       ],
       "project_references": [
-        "tests/Meridian.Backtesting.Tests/..\\..\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
-        "tests/Meridian.Backtesting.Tests/..\\..\\src\\Meridian.Backtesting\\Meridian.Backtesting.csproj",
-        "tests/Meridian.Backtesting.Tests/..\\..\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj"
+        "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+        "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj"
       ]
     },
     {
@@ -580,18 +580,18 @@
         "net10.0"
       ],
       "project_references": [
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Audit\\Meridian.Audit.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.DataIntegration\\Meridian.DataIntegration.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Documents\\Meridian.Documents.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Entities\\Meridian.Entities.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.FinancialOperations\\Meridian.FinancialOperations.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Identity\\Meridian.Identity.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Instruments\\Meridian.Instruments.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Platform\\Meridian.Platform.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.PortfolioRecords\\Meridian.PortfolioRecords.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.ReferenceData\\Meridian.ReferenceData.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Reporting\\Meridian.Reporting.csproj",
-        "tests/Meridian.DesignModules.Tests/..\\..\\src\\Meridian.Workflow\\Meridian.Workflow.csproj"
+        "src/Meridian.Audit/Meridian.Audit.csproj",
+        "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+        "src/Meridian.Documents/Meridian.Documents.csproj",
+        "src/Meridian.Entities/Meridian.Entities.csproj",
+        "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Instruments/Meridian.Instruments.csproj",
+        "src/Meridian.Platform/Meridian.Platform.csproj",
+        "src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj",
+        "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+        "src/Meridian.Reporting/Meridian.Reporting.csproj",
+        "src/Meridian.Workflow/Meridian.Workflow.csproj"
       ]
     },
     {
@@ -601,10 +601,10 @@
         "net10.0"
       ],
       "project_references": [
-        "tests/Meridian.DirectLending.Tests/..\\..\\src\\Meridian.Application\\Meridian.Application.csproj",
-        "tests/Meridian.DirectLending.Tests/..\\..\\src\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "tests/Meridian.DirectLending.Tests/..\\..\\src\\Meridian.Storage\\Meridian.Storage.csproj",
-        "tests/Meridian.DirectLending.Tests/..\\Meridian.TestSupport\\Meridian.TestSupport.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "tests/Meridian.TestSupport/Meridian.TestSupport.csproj"
       ]
     },
     {
@@ -614,12 +614,12 @@
         "net10.0"
       ],
       "project_references": [
-        "tests/Meridian.FundStructure.Tests/..\\..\\src\\Meridian.Application\\Meridian.Application.csproj",
-        "tests/Meridian.FundStructure.Tests/..\\..\\src\\Meridian.Contracts\\Meridian.Contracts.csproj",
-        "tests/Meridian.FundStructure.Tests/..\\..\\src\\Meridian.DataIntegration\\Meridian.DataIntegration.csproj",
-        "tests/Meridian.FundStructure.Tests/..\\..\\src\\Meridian.Entities\\Meridian.Entities.csproj",
-        "tests/Meridian.FundStructure.Tests/..\\..\\src\\Meridian.Ui.Shared\\Meridian.Ui.Shared.csproj",
-        "tests/Meridian.FundStructure.Tests/..\\..\\src\\Meridian.Workflow\\Meridian.Workflow.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Contracts/Meridian.Contracts.csproj",
+        "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+        "src/Meridian.Entities/Meridian.Entities.csproj",
+        "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+        "src/Meridian.Workflow/Meridian.Workflow.csproj"
       ]
     },
     {
@@ -629,7 +629,7 @@
         "net10.0"
       ],
       "project_references": [
-        "tests/Meridian.QuantScript.Tests/..\\..\\src\\Meridian.QuantScript\\Meridian.QuantScript.csproj"
+        "src/Meridian.QuantScript/Meridian.QuantScript.csproj"
       ]
     },
     {
@@ -647,32 +647,32 @@
         "net10.0"
       ],
       "project_references": [
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Application\\Meridian.Application.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Audit\\Meridian.Audit.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Backtesting\\Meridian.Backtesting.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Core\\Meridian.Core.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.DataIntegration\\Meridian.DataIntegration.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Domain\\Meridian.Domain.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Entities\\Meridian.Entities.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Execution\\Meridian.Execution.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.FinancialOperations\\Meridian.FinancialOperations.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Identity\\Meridian.Identity.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Infrastructure\\Meridian.Infrastructure.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Instruments\\Meridian.Instruments.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Ledger\\Meridian.Ledger.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Platform\\Meridian.Platform.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.ReferenceData\\Meridian.ReferenceData.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Reporting\\Meridian.Reporting.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Risk\\Meridian.Risk.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Storage\\Meridian.Storage.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Strategies\\Meridian.Strategies.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Ui.Services\\Meridian.Ui.Services.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Ui.Shared\\Meridian.Ui.Shared.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian.Workflow\\Meridian.Workflow.csproj",
-        "tests/Meridian.Tests/..\\..\\src\\Meridian\\Meridian.csproj",
-        "tests/Meridian.Tests/..\\Meridian.TestSupport\\Meridian.TestSupport.csproj"
+        "src/Meridian.Application/Meridian.Application.csproj",
+        "src/Meridian.Audit/Meridian.Audit.csproj",
+        "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+        "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+        "src/Meridian.Core/Meridian.Core.csproj",
+        "src/Meridian.DataIntegration/Meridian.DataIntegration.csproj",
+        "src/Meridian.Domain/Meridian.Domain.csproj",
+        "src/Meridian.Entities/Meridian.Entities.csproj",
+        "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+        "src/Meridian.Execution/Meridian.Execution.csproj",
+        "src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj",
+        "src/Meridian.Identity/Meridian.Identity.csproj",
+        "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+        "src/Meridian.Instruments/Meridian.Instruments.csproj",
+        "src/Meridian.Ledger/Meridian.Ledger.csproj",
+        "src/Meridian.Platform/Meridian.Platform.csproj",
+        "src/Meridian.ReferenceData/Meridian.ReferenceData.csproj",
+        "src/Meridian.Reporting/Meridian.Reporting.csproj",
+        "src/Meridian.Risk/Meridian.Risk.csproj",
+        "src/Meridian.Storage/Meridian.Storage.csproj",
+        "src/Meridian.Strategies/Meridian.Strategies.csproj",
+        "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+        "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
+        "src/Meridian.Workflow/Meridian.Workflow.csproj",
+        "src/Meridian/Meridian.csproj",
+        "tests/Meridian.TestSupport/Meridian.TestSupport.csproj"
       ]
     },
     {
@@ -693,9 +693,9 @@
         "net10.0-windows10.0.19041.0"
       ],
       "project_references": [
-        "tests/Meridian.Wpf.Tests/..\\..\\src\\Meridian.Reporting\\Meridian.Reporting.csproj",
-        "tests/Meridian.Wpf.Tests/..\\..\\src\\Meridian.Ui.Services\\Meridian.Ui.Services.csproj",
-        "tests/Meridian.Wpf.Tests/..\\..\\src\\Meridian.Wpf\\Meridian.Wpf.csproj"
+        "src/Meridian.Reporting/Meridian.Reporting.csproj",
+        "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+        "src/Meridian.Wpf/Meridian.Wpf.csproj"
       ]
     }
   ],
