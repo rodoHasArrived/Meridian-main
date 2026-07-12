@@ -6,7 +6,7 @@
     "src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs": 2226,
     "src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs": 2336,
     "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs": 2169,
-    "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs": 3845,
+    "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs": 3142,
     "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs": 2146,
     "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs": 2052,
     "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs": 3028,
