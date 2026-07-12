@@ -1322,6 +1322,13 @@ Meridian-main
 │   │   ├── wpf-workstation-shell-ux.md
 │   │   └── write-path-invariants.md
 │   ├── development
+│   │   ├── mockups
+│   │   │   └── web-ui
+│   │   │       ├── 01-trading-cockpit.html
+│   │   │       ├── 02-workspace-overview.html
+│   │   │       ├── 03-settings-task-route.html
+│   │   │       ├── 04-degraded-states.html
+│   │   │       └── README.md
 │   │   ├── policies
 │   │   │   ├── desktop-support-policy.md
 │   │   │   └── promotion-policy-matrix.md
@@ -1357,6 +1364,7 @@ Meridian-main
 │   │   ├── tooling-architecture.md
 │   │   ├── tooling-workflow-backlog.md
 │   │   ├── ui-fixture-mode-guide.md
+│   │   ├── web-ui-structural-improvement-proposal.md
 │   │   ├── wpf-implementation-notes.md
 │   │   └── wpf-web-ui-alignment-plan.md
 │   ├── diagrams
@@ -3649,6 +3657,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
+│   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs

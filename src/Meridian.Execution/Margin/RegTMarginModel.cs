@@ -147,12 +147,12 @@ public sealed class RegTMarginModel : IMarginModel
             }
         }
 
-        // Portfolio equity = long market value + short market value + cash
-        var longMarketValue = positions.Values
-            .Where(p => !p.IsShort)
-            .Sum(p => prices.TryGetValue(p.Symbol, out var px) ? p.Quantity * px : 0m);
-
-        var portfolioEquity = longMarketValue + cash;
+        // Portfolio (account) equity = long market value + short market value + cash.
+        // Short positions carry a negative market value (a liability to buy the shares
+        // back), so the signed notionals already accumulated above sum to
+        // long MV − |short MV|. Excluding shorts here would overstate equity and thereby
+        // understate maintenance-margin/excess-liquidity risk.
+        var portfolioEquity = totalNotional + cash;
 
         return new MarginRequirement(
             Symbol: null,

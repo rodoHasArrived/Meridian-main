@@ -1,11 +1,11 @@
 {
-  "total_files": 574,
-  "total_lines": 95280,
-  "orphaned_count": 245,
+  "total_files": 576,
+  "total_lines": 95682,
+  "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 202,
-  "average_lines": 166.0,
+  "average_lines": 166.1,
   "health_score": 78,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -219,7 +219,6 @@
     "docs/roadmap/roadmap-item-template.md",
     "docs/roadmap/schema-versioning.md",
     "docs/roadmap/status-taxonomy.md",
-    "docs/screenshots/web-audit.md",
     "docs/security/buyer-packet/architecture-summary.md",
     "docs/security/buyer-packet/control-mapping.md",
     "docs/security/buyer-packet/document-index.md",
@@ -1751,6 +1750,14 @@
       "stale": false
     },
     {
+      "path": "docs/development/mockups/web-ui/README.md",
+      "line_count": 27,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/development/modular-desktop-architecture.md",
       "line_count": 44,
       "has_heading": true,
@@ -1800,7 +1807,7 @@
     },
     {
       "path": "docs/development/README.md",
-      "line_count": 128,
+      "line_count": 136,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1889,6 +1896,14 @@
     {
       "path": "docs/development/ui-fixture-mode-guide.md",
       "line_count": 458,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/development/web-ui-structural-improvement-proposal.md",
+      "line_count": 358,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2176,7 +2191,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8595,
+      "line_count": 8604,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

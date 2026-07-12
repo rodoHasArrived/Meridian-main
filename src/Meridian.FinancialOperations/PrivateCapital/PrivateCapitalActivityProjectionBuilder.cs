@@ -24,7 +24,7 @@ public sealed record PostedPrivateCapitalActivityProjection(
 
 public static class PrivateCapitalActivityProjectionBuilder
 {
-    private const decimal BalanceTolerance = 0.000001m;
+    private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
     private static readonly IReadOnlyDictionary<Guid, string> EmptyJournalEntryCurrencies = new Dictionary<Guid, string>();
 
     private sealed record PrivateCapitalCapitalAccountSubledgerSource(
