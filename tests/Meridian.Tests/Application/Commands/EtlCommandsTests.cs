@@ -125,12 +125,12 @@ public sealed class EtlCommandsTests
     }
 
     [Theory]
-    [InlineData("--etl-list-files", EtlInspectionMode.ListFiles)]
-    [InlineData("--etl-test-connection", EtlInspectionMode.TestConnection)]
-    [InlineData("--etl-preview", EtlInspectionMode.Preview)]
-    public void ResolveInspectionMode_SeparatesReadOnlyModesFromPreview(string flag, EtlInspectionMode expected)
+    [InlineData("--etl-list-files", nameof(EtlInspectionMode.ListFiles))]
+    [InlineData("--etl-test-connection", nameof(EtlInspectionMode.TestConnection))]
+    [InlineData("--etl-preview", nameof(EtlInspectionMode.Preview))]
+    public void ResolveInspectionMode_SeparatesReadOnlyModesFromPreview(string flag, string expected)
     {
-        EtlCommands.ResolveInspectionMode([flag]).Should().Be(expected);
+        EtlCommands.ResolveInspectionMode([flag]).ToString().Should().Be(expected);
     }
 
     [Fact]

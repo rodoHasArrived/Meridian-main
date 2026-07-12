@@ -67,7 +67,8 @@ import {
   type SettingsProfileAuthenticationStep,
   type SettingsProviderConnectionRow,
   type SettingsRecentEventDetail,
-  type SettingsRecentEventTableRow
+  type SettingsRecentEventTableRow,
+  type SettingsSystemItem
 } from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
@@ -397,16 +398,32 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
-// Storage-health headline metric tone - mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
+// Concrete severity vocabulary: the settings screen's `default | success | warning | danger`
+// (and Badge `outline`) tones collapse onto the design system's canonical operator
+// severities consumed by SeverityBadge (ready · review · action · blocked · info). Used for
+// connection / diagnostic / capability / readiness health — never for environment or mode
+// chips, which stay on the categorical Badge component.
+type SettingsBadgeVariant = "default" | "outline" | "success" | "warning" | "danger";
+
+function toneToSeverity(tone: SettingsBadgeVariant): string {
+  if (tone === "success") return "ready";
+  if (tone === "warning") return "action";
+  if (tone === "danger") return "blocked";
+  return "info";
 }
+
+// Map the view-model's `SettingsSystemItem` tone onto the Concrete MetricCard left-accent tone.
+// The overview headline metrics are sourced from `vm.systemItems` (label + value + tone) so the
+// screen never recomputes the read model's values or tone rules.
+function systemItemMetricTone(tone: SettingsSystemItem["tone"]): MetricCardTone {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "neutral";
+}
+
+// The overview MetricCard row surfaces these `vm.systemItems` labels, in this order.
+const OVERVIEW_METRIC_LABELS = ["Providers online", "Active runs", "Open positions", "Storage health"] as const;
 
 const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
 
