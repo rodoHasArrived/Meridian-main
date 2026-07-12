@@ -1,0 +1,101 @@
+<!-- @dsCard group="Operations" viewport="980x640" name="Operator readiness" subtitle="SeverityBadge · GateRail · ReadinessPanel · ValidationIssueList · EvidenceLink · TrustStrip" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Operations — operator readiness</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 18px; background: var(--bg); }
+  .wrap { display: grid; gap: 16px; max-width: 940px; }
+  .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
+    letter-spacing: .04em; color: var(--text-muted); margin: 0 0 8px; }
+  .panel { border: 1px solid var(--border); border-radius: var(--radius-card, 8px); background: var(--bg-light); padding: 14px 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+  .btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 11px;
+    border-radius: var(--radius-button, 6px); border: 1px solid var(--border); background: var(--bg-light); color: var(--text-secondary); cursor: pointer; }
+  .btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const {
+  SeverityBadge, GateRail, ReadinessPanel, ValidationIssueList, EvidenceLink, TrustStrip, WorkspaceSection
+} = window.MeridianDesignSystem_4f61be;
+
+function Demo() {
+  return (
+    <div className="wrap">
+      <TrustStrip items={[
+        { label: "Readiness", value: "86 / 100", state: "review" },
+        { label: "Recon", value: "3 breaks", state: "blocked" },
+        { label: "Providers", value: "4 live", state: "ready" },
+        { label: "Approval", value: "Pending", state: "pending" },
+      ]} />
+
+      <div className="panel">
+        <p className="lbl">Operations pipeline — GateRail</p>
+        <GateRail gates={[
+          { key: "BrokerIngest", label: "Broker ingest", status: "Passed" },
+          { key: "SecurityMaster", label: "Security master", status: "Passed" },
+          { key: "LedgerPosting", label: "Ledger posting", status: "InProgress" },
+          { key: "Reconciliation", label: "Reconciliation", status: "ReviewRequired" },
+          { key: "Approval", label: "Approval", status: "NotStarted" },
+        ]} />
+      </div>
+
+      <div>
+        <p className="lbl">SeverityBadge — readiness vocabulary</p>
+        <div className="row">
+          <SeverityBadge status="Ready" />
+          <SeverityBadge status="ReviewRequired" />
+          <SeverityBadge status="NeedsAttention" />
+          <SeverityBadge status="Blocked" />
+          <SeverityBadge status="Unknown" />
+          <SeverityBadge status="Blocked" label="3 breaks" />
+        </div>
+      </div>
+
+      <div className="two">
+        <ReadinessPanel
+          state="ReviewRequired"
+          score="86 / 100"
+          title="Reconciliation"
+          detail="3 open exceptions above tolerance in the custody cash lane. Investigate before approval."
+          actions={<><button className="btn">Investigate</button><button className="btn btn--primary">Approve</button></>}
+        />
+        <div>
+          <p className="lbl">Validation issues — Info / Warning / Critical</p>
+          <ValidationIssueList issues={[
+            { code: "RECON-204", severity: "Critical", message: "Custody cash break exceeds tolerance band.", gate: "Reconciliation" },
+            { code: "MAP-118", severity: "Warning", message: "Provider field 'cusip' unmapped for 12 rows.", gate: "SecurityMaster" },
+            { code: "EVID-007", severity: "Info", message: "Approval evidence pack not yet generated." },
+          ]} />
+        </div>
+      </div>
+
+      <WorkspaceSection
+        id="evidence"
+        title="Evidence"
+        summary="Readiness, reconciliation, and approval artifacts for this close."
+        jump="Open evidence" jumpHref="#evidence"
+      >
+        <div className="row">
+          <EvidenceLink label="Recon pack" status="Ready" route="evidence://recon/2026-06" href="#evidence" />
+          <EvidenceLink label="Provider attestations" status="ReviewRequired" route="evidence://providers/q2" href="#evidence" />
+          <EvidenceLink label="Approval" status="Missing" route="evidence://approval/pending" href="#evidence" />
+        </div>
+      </WorkspaceSection>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

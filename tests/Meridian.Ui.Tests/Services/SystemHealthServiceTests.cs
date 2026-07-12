@@ -121,18 +121,13 @@ public sealed class SystemHealthServiceTests
     [InlineData(10)]
     [InlineData(50)]
     [InlineData(100)]
-    public async Task GetRecentEventsAsync_WithLimit_AcceptsValidLimits(int limit)
+    public void BuildRecentEventsRoute_WithLimit_AcceptsValidLimits(int limit)
     {
-        // Arrange
-        var service = SystemHealthService.Instance;
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // Act - Test signature accepts different limits
-        var act = async () => await service.GetRecentEventsAsync(limit, cts.Token);
+        // Act
+        var route = SystemHealthService.BuildRecentEventsRoute(limit);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>();
+        route.Should().Contain($"limit={limit}");
     }
 
     [Fact]

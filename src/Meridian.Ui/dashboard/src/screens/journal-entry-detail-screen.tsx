@@ -4,6 +4,7 @@ import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getManualJournalEntryWorkbench, getRunLedgerJournal } from "@/lib/api";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -109,15 +110,12 @@ export function JournalEntryDetailScreen() {
   }));
 
   return (
-    <div className="space-y-4">
+    <ScreenLayout
+      title={view.title}
+      scope={`Journal entry ${view.journalEntryId}`}
+      actions={<Badge variant={view.statusTone} dot>{view.statusLabel}</Badge>}
+    >
       <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>{view.title}</CardTitle>
-            <CardDescription>Journal entry {view.journalEntryId}</CardDescription>
-          </div>
-          <Badge variant={view.statusTone} dot>{view.statusLabel}</Badge>
-        </CardHeader>
         <CardContent>
           {view.notFoundText ? (
             <StatusBanner role="alert" tone="warning" title="Journal entry not found" detail={view.notFoundText} />
@@ -211,6 +209,66 @@ export function JournalEntryDetailScreen() {
         </Card>
       ) : null}
 
+      {view.dataCompleteness !== "not-found" ? (
+        <section className="grid gap-4 xl:grid-cols-3">
+          <Card className="panel-surface">
+            <CardHeader>
+              <CardTitle>Approval</CardTitle>
+              <CardDescription>Review who prepared, reviewed, and approved this posting.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-2">
+                <JournalEntryFact label="Prepared by" value={fieldValue(view.summaryFields, "Prepared by") ?? "System"} />
+                <JournalEntryFact label="Reviewed by" value={view.lifecycle[0]?.actor ?? "Review pending"} />
+                <JournalEntryFact label="Approved by" value={view.lifecycle.find((item) => item.label.includes("Approve"))?.actor ?? "Approval pending"} />
+                <JournalEntryFact label="Approval ID" value={view.lifecycle.find((item) => item.label.includes("Approve"))?.transitionId ?? "Not approved"} />
+              </dl>
+            </CardContent>
+          </Card>
+
+          <Card className="panel-surface">
+            <CardHeader>
+              <CardTitle>Source lineage</CardTitle>
+              <CardDescription>Trace where this entry came from before using it in close or reporting.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-2">
+                <JournalEntryFact label="Source" value={view.dataCompleteness === "full" ? "Manual journal workbench" : "Run ledger summary"} />
+                <JournalEntryFact label="Run / case" value={runId ?? "No run context"} />
+                <JournalEntryFact label="Reversal of" value="No reversal retained" />
+                <JournalEntryFact label="Rebooked from" value="No rebook lineage retained" />
+              </dl>
+            </CardContent>
+          </Card>
+
+          <Card className="panel-surface">
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+              <CardDescription>Use routed actions for evidence, cloning, review, export, or controlled reversal.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="outline" disabled disabledReason="Reversals are created from the Journal Entries workbench.">
+                  Reverse
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Clone</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to={evidenceWorkbenchPath("journal-entry", view.journalEntryId)}>Attach evidence</Link>
+                </Button>
+                <Button type="button" size="sm" variant="outline" disabled disabledReason="Review requests are submitted from the approval workflow.">
+                  Request review
+                </Button>
+                <Button type="button" size="sm" variant="outline" disabled disabledReason="Exports are generated from retained report or workbench output.">
+                  Export
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         {runId ? (
           <Button asChild size="sm" variant="outline">
@@ -221,6 +279,19 @@ export function JournalEntryDetailScreen() {
           <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Open Journal Entries workbench</Link>
         </Button>
       </div>
+    </ScreenLayout>
+  );
+}
+
+function JournalEntryFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
+      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dd className="break-words text-right text-sm text-foreground">{value}</dd>
     </div>
   );
+}
+
+function fieldValue(fields: { label: string; value: string }[], label: string): string | null {
+  return fields.find((field) => field.label === label)?.value ?? null;
 }

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { CandleChart, type Candle } from "./CandleChart";
 import { EquityCurve } from "./EquityCurve";
 import { DrawdownChart } from "./DrawdownChart";
@@ -31,6 +31,28 @@ describe("CandleChart", () => {
       (t) => t.getAttribute("fill") === "#fff" && t.textContent === "107.00"
     );
     expect(chip).toBeTruthy();
+  });
+
+  it("adds no interaction overlay unless a callback is provided", () => {
+    render(<CandleChart bars={bars} />);
+    expect(screen.queryByRole("slider")).toBeNull();
+  });
+
+  it("emits crosshair and activation events from the interaction overlay", () => {
+    const onCrosshairChange = vi.fn();
+    const onPointActivate = vi.fn();
+    render(
+      <CandleChart bars={bars} crosshairIndex={1} onCrosshairChange={onCrosshairChange} onPointActivate={onPointActivate} />
+    );
+
+    const slider = screen.getByRole("slider");
+    expect(slider).toHaveAttribute("aria-valuemax", String(bars.length - 1));
+
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(onCrosshairChange).toHaveBeenCalledWith(2);
+
+    fireEvent.keyDown(slider, { key: "Enter" });
+    expect(onPointActivate).toHaveBeenCalledWith(1);
   });
 });
 

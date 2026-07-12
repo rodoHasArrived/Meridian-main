@@ -295,6 +295,311 @@ public sealed class PromotionServiceLiveGovernanceTests
         }
 
         recordedRuns.Should().NotContain(entry => entry.RunType == RunType.Live);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionBlocked" &&
+            entry.Outcome == "Blocked" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "PromotionEvidenceIncomplete" &&
+            entry.Scope == $"source:{run.RunId}/strategy:{run.StrategyId}/target:Live" &&
+            entry.Metadata != null &&
+            entry.Metadata["requiredManualOverrideKind"] == ExecutionManualOverrideKinds.AllowLivePromotion &&
+            entry.Metadata["controlRejectReason"].Contains(PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenPaperRunMissingLiveChecklistItem_RecordsBlockedAudit()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Ready for live capital",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+        var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+            .Where(static item => !string.Equals(item, PromotionApprovalChecklist.RollbackKillSwitchReviewed, StringComparison.Ordinal))
+            .ToArray();
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital",
+            ApprovalChecklist: checklist,
+            EvidenceReferences: CreateLiveEvidenceReferences(manualOverride.OverrideId),
+            ManualOverrideId: manualOverride.OverrideId));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("approval checklist").And.Contain(PromotionApprovalChecklist.RollbackKillSwitchReviewed);
+
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+
+        var recordedRuns = new List<StrategyRunEntry>();
+        await foreach (var entry in store.GetAllRunsAsync())
+        {
+            recordedRuns.Add(entry);
+        }
+
+        recordedRuns.Should().NotContain(entry => entry.RunType == RunType.Live);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionBlocked" &&
+            entry.Outcome == "Blocked" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "PromotionChecklistIncomplete" &&
+            entry.Scope == $"source:{run.RunId}/strategy:{run.StrategyId}/target:Live" &&
+            entry.Metadata != null &&
+            entry.Metadata["requiredManualOverrideKind"] == ExecutionManualOverrideKinds.AllowLivePromotion &&
+            entry.Metadata["approvalChecklist"].Contains(PromotionApprovalChecklist.RollbackKillSwitchReviewed, StringComparison.Ordinal) == false &&
+            entry.Metadata["controlRejectReason"].Contains(PromotionApprovalChecklist.RollbackKillSwitchReviewed, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenPaperRunMissingBrokerExecutionReconciliationEvidence_ReturnsFailureWithoutCreatingLiveRun()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Ready for live capital",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+        var evidenceReferences = CreateLiveEvidenceReferences(manualOverride.OverrideId)
+            .Where(static item => !item.StartsWith(PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed, StringComparison.Ordinal))
+            .ToArray();
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
+            ManualOverrideId: manualOverride.OverrideId));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("promotion evidence").And.Contain(PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed);
+
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+
+        var recordedRuns = new List<StrategyRunEntry>();
+        await foreach (var entry in store.GetAllRunsAsync())
+        {
+            recordedRuns.Add(entry);
+        }
+
+        recordedRuns.Should().NotContain(entry => entry.RunType == RunType.Live);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionBlocked" &&
+            entry.Outcome == "Blocked" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "PromotionEvidenceIncomplete" &&
+            entry.Scope == $"source:{run.RunId}/strategy:{run.StrategyId}/target:Live" &&
+            entry.Metadata != null &&
+            entry.Metadata["requiredManualOverrideKind"] == ExecutionManualOverrideKinds.AllowLivePromotion &&
+            entry.Metadata["controlRejectReason"].Contains(PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenLiveEvidenceReferenceHasNoRetainedValue_ReturnsFailureWithoutCreatingLiveRun()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Ready for live capital",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+        var evidenceReferences = CreateLiveEvidenceReferences(manualOverride.OverrideId)
+            .Select(static item => item.StartsWith(PromotionApprovalChecklist.AuditRetentionReviewed, StringComparison.Ordinal)
+                ? $"{PromotionApprovalChecklist.AuditRetentionReviewed}:"
+                : item)
+            .ToArray();
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
+            ManualOverrideId: manualOverride.OverrideId));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("evidence references are invalid")
+            .And.Contain(PromotionApprovalChecklist.AuditRetentionReviewed)
+            .And.Contain("retained evidence");
+
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+
+        var recordedRuns = new List<StrategyRunEntry>();
+        await foreach (var entry in store.GetAllRunsAsync())
+        {
+            recordedRuns.Add(entry);
+        }
+
+        recordedRuns.Should().NotContain(entry => entry.RunType == RunType.Live);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionBlocked" &&
+            entry.Outcome == "Blocked" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "PromotionEvidenceInvalid" &&
+            entry.Metadata != null &&
+            entry.Metadata["controlRejectReason"].Contains(PromotionApprovalChecklist.AuditRetentionReviewed, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenLiveOverrideEvidenceReferencesDifferentOverride_ReturnsFailureWithoutCreatingLiveRun()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Ready for live capital",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+        var evidenceReferences = CreateLiveEvidenceReferences($"{manualOverride.OverrideId}-stale");
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
+            ManualOverrideId: manualOverride.OverrideId));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("evidence references are invalid")
+            .And.Contain(PromotionApprovalChecklist.LiveOverrideReviewed)
+            .And.Contain(manualOverride.OverrideId);
+
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+
+        var recordedRuns = new List<StrategyRunEntry>();
+        await foreach (var entry in store.GetAllRunsAsync())
+        {
+            recordedRuns.Add(entry);
+        }
+
+        recordedRuns.Should().NotContain(entry => entry.RunType == RunType.Live);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionBlocked" &&
+            entry.Outcome == "Blocked" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "PromotionEvidenceInvalid" &&
+            entry.Metadata != null &&
+            entry.Metadata["controlRejectReason"].Contains(manualOverride.OverrideId, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -464,6 +769,7 @@ public sealed class PromotionServiceLiveGovernanceTests
             $"{PromotionApprovalChecklist.RiskControlsReviewed}:risk-controls/pre-live",
             $"{PromotionApprovalChecklist.PaperValidationReviewed}:paper-validation/run-live-source",
             $"{PromotionApprovalChecklist.ReconciliationEvidenceReviewed}:reconciliation/live-readiness",
+            $"{PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed}:broker-execution-reconciliation/live-readiness",
             $"{PromotionApprovalChecklist.AccountingRecordsReviewed}:accounting-records/live-readiness",
             $"{PromotionApprovalChecklist.GovernedReportingReviewed}:report-pack/live-readiness",
             $"{PromotionApprovalChecklist.GovernanceSignoffReviewed}:governance-signoff/live-readiness",

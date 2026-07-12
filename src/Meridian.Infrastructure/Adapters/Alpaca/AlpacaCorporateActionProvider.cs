@@ -24,7 +24,10 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// Alpaca data subscription.  Requests are authenticated via the <c>APCA-API-KEY-ID</c>
 /// and <c>APCA-API-SECRET-KEY</c> headers read from the environment / configuration.
 /// </remarks>
-[DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Historical, DataSourceCategory.Broker)]
+[DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Reference, DataSourceCategory.Broker,
+    Priority = 12,
+    EnabledByDefault = false,
+    Description = "Dividend and split announcements from the Alpaca corporate-actions endpoints.")]
 [ImplementsAdr("ADR-001", "Corporate action data provider following ICorporateActionProvider contract")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory; never instantiates HttpClient directly")]
 public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProvider
@@ -147,7 +150,11 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         var actionType = announcement.CaType?.ToUpperInvariant() switch
         {
             "DIVIDEND" => "Dividend",
-            "SPLIT" => "Split",
+            "SPLIT" => announcement.OldRate is > 0m &&
+                announcement.NewRate is > 0m &&
+                announcement.NewRate.Value < announcement.OldRate.Value
+                    ? "ReverseStockSplit"
+                    : "StockSplit",
             "MERGER" => "Merger",
             "SPINOFF" => "SpinOff",
             _ => announcement.CaType ?? "Unknown",

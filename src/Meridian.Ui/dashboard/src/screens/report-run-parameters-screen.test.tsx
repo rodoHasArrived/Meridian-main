@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import * as api from "@/lib/api";
 import { ReportRunParametersScreen } from "@/screens/report-run-parameters-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -84,8 +85,39 @@ describe("ReportRunParametersScreen", () => {
     await renderScreen("/reporting/run");
 
     expect(screen.getByRole("combobox", { name: "Choose a report template to run" })).toBeInTheDocument();
-    expect(screen.getByText(/Trial Balance Pack/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Trial Balance Pack/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("region", { name: "Report run setup scan band" })).toHaveTextContent("Templates");
+    expect(screen.getByRole("region", { name: "Recommended report templates" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Saved report run views" })).toHaveTextContent("Monthly close package");
+    expect(screen.getByRole("button", { name: "Configure" })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "Report run setup context" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Report run next actions" })).toHaveTextContent("Review breaks");
+    expect(screen.getByRole("list", { name: "Report run readiness cues" })).toHaveTextContent("Open reconciliation breaks");
+    expect(screen.getByText("No recent report runs are loaded. Select a template to prepare the first run.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Or browse the Report Library" })).toHaveAttribute("href", "/reporting/library");
+  });
+
+  it("has no basic accessibility violations in the initial run setup state", async () => {
+    const { container } = await renderScreen("/reporting/run");
+
+    expect(screen.getByRole("complementary", { name: "Report run setup context" })).toBeInTheDocument();
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
+  });
+
+  it("keeps run setup focus order on template selection, library browse, and configure", async () => {
+    const user = userEvent.setup();
+
+    await renderScreen("/reporting/run");
+
+    await user.tab();
+    expect(screen.getByRole("combobox", { name: "Choose a report template to run" })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole("link", { name: "Or browse the Report Library" })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Configure" })).toHaveFocus();
   });
 
   it("navigates to the selected template's parameters when picked from the picker", async () => {
@@ -110,6 +142,14 @@ describe("ReportRunParametersScreen", () => {
   it("renders the readiness gate with open breaks and the exports runner for a known template", async () => {
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
+    expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
+    expect(screen.getByLabelText("Ledger book")).toHaveValue("Primary GL");
+    expect(screen.getByLabelText("Accounting basis")).toHaveValue("GAAP");
+    expect(screen.getByLabelText("Output format")).toHaveValue("PDF");
+    expect(screen.getByLabelText("Include supporting schedules")).toBeChecked();
+    expect(screen.getByLabelText("Include evidence appendix")).toBeChecked();
+    expect(screen.getByRole("heading", { name: "Can this report run?" })).toBeInTheDocument();
     expect(await screen.findByText("Warnings present")).toBeInTheDocument();
     expect(screen.getByText("Open reconciliation breaks")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review breaks" })).toHaveAttribute("href", "/accounting/reconciliation");

@@ -69,6 +69,29 @@ public sealed class PaperTradingGatewayTests
     }
 
     [Fact]
+    public async Task SubmitAsync_WhenDisposedAfterAcknowledgement_DrainsTerminalFillUpdate()
+    {
+        var gateway = new PaperTradingGateway(
+            NullLogger<PaperTradingGateway>.Instance,
+            options: new PaperTradingGatewayOptions { ScaffoldMarketFillPrice = 123.45m });
+
+        var acknowledgement = await gateway.SubmitAsync(MarketBuy("SPY", 10));
+
+        await gateway.DisposeAsync();
+
+        var updates = new List<Meridian.Execution.Models.OrderStatusUpdate>();
+        await foreach (var update in gateway.StreamOrderUpdatesAsync())
+        {
+            updates.Add(update);
+        }
+
+        updates.Should().ContainSingle(update =>
+            update.OrderId == acknowledgement.OrderId &&
+            update.Status == Meridian.Execution.Models.OrderStatus.Filled &&
+            update.AverageFillPrice == 123.45m);
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_RejectsMarketOnCloseBecauseTimingIsNotPreserved()
     {
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);
@@ -249,6 +272,9 @@ public sealed class PaperTradingGatewayTests
 
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => throw new NotImplementedException();
+
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
             => throw new NotImplementedException();
         public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)

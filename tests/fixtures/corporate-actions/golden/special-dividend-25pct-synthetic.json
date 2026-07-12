@@ -1,0 +1,43 @@
+{
+  "scenarioId": "special-dividend-25pct-synthetic",
+  "description": "Synthetic special dividend large enough to have broken subtractive adjustment: $5.00 on a $20.00 prior close (25%). The multiplicative factor is exactly 0.75 and every adjusted price stays positive. Also exercises withholding accrual (15%) and pay-date receivable settlement.",
+  "ticker": "SYNH",
+  "securityId": "e0000000-eeee-4000-8000-000000000001",
+  "actions": [
+    {
+      "corpActId": "e0000000-eeee-4000-8000-0000000000c1",
+      "securityId": "e0000000-eeee-4000-8000-000000000001",
+      "eventType": "SpecialDividend",
+      "exDate": "2026-03-03",
+      "payDate": "2026-03-17",
+      "dividendPerShare": 5.00,
+      "currency": "USD",
+      "splitRatio": null,
+      "newSecurityId": null,
+      "distributionRatio": null,
+      "acquirerSecurityId": null,
+      "exchangeRatio": null,
+      "subscriptionPricePerShare": null,
+      "rightsPerShare": null,
+      "recordDate": "2026-03-02",
+      "lifecycleState": "Confirmed",
+      "supersedesCorpActId": null,
+      "redemptionPricePercentOfPar": null
+    }
+  ],
+  "bars": [
+    { "sessionDate": "2026-02-27", "open": 19.80, "high": 20.10, "low": 19.50, "close": 20.00, "volume": 1000000 },
+    { "sessionDate": "2026-03-02", "open": 19.90, "high": 20.20, "low": 19.70, "close": 20.00, "volume": 900000 },
+    { "sessionDate": "2026-03-03", "open": 15.10, "high": 15.40, "low": 14.90, "close": 15.05, "volume": 2500000 },
+    { "sessionDate": "2026-03-04", "open": 15.10, "high": 15.30, "low": 14.95, "close": 15.20, "volume": 1200000 }
+  ],
+  "postingContext": { "positionQuantity": 2000, "withholdingTaxRate": 0.15, "financialAccountId": null },
+  "invariantTags": [
+    "series-continuity",
+    "factor-monotonicity",
+    "journal-balanced",
+    "receivable-settled",
+    "idempotent-posting"
+  ],
+  "knownDefectIds": []
+}

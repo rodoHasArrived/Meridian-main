@@ -7,49 +7,20 @@ using Meridian.Domain.Models;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Sinks;
+using Meridian.Tests.Infrastructure;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public class JsonlBatchWriteTests : IDisposable
+public class JsonlBatchWriteTests : TempDirectoryTestBase
 {
-    private readonly string _testRoot;
-
-    public JsonlBatchWriteTests()
-    {
-        _testRoot = Path.Combine(Path.GetTempPath(), $"mdc_batch_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testRoot);
-    }
-
-    public void Dispose()
-    {
-        if (!Directory.Exists(_testRoot))
-            return;
-
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                Directory.Delete(_testRoot, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4)
-            {
-                Thread.Sleep(10);
-            }
-            catch (UnauthorizedAccessException) when (attempt < 4)
-            {
-                Thread.Sleep(10);
-            }
-        }
-    }
 
     [Fact]
     public async Task AppendAsync_WithBatchingDisabled_WritesImmediately()
     {
         // Arrange
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, JsonlBatchOptions.NoBatching);
 
         var evt = CreateTestEvent("AAPL", 1);
@@ -62,7 +33,7 @@ public class JsonlBatchWriteTests : IDisposable
         sink.EventsWritten.Should().Be(1);
         sink.EventsBuffered.Should().Be(0);
 
-        var files = Directory.GetFiles(_testRoot, "*.jsonl", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories);
         files.Should().HaveCount(1);
         var lines = await File.ReadAllLinesAsync(files[0]);
         lines.Should().ContainSingle();
@@ -75,8 +46,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 10, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act - Add 5 events (less than batch size)
@@ -96,8 +67,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 5, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act - Add exactly batch size events
@@ -117,8 +88,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 3, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act - Add 10 events (3 full batches + 1 remaining)
@@ -143,8 +114,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Add some events
@@ -169,8 +140,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         for (int i = 0; i < 5; i++)
@@ -190,8 +161,8 @@ public class JsonlBatchWriteTests : IDisposable
         sink.EventsBuffered.Should().Be(0, "no events should be buffered after disposal");
 
         // Assert - File should contain all events
-        var files = Directory.GetFiles(_testRoot, "*.jsonl", SearchOption.AllDirectories);
-        files.Should().HaveCount(1, $"should find 1 file in {_testRoot}");
+        var files = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories);
+        files.Should().HaveCount(1, $"should find 1 file in {TestDataRoot}");
 
         var lines = await File.ReadAllLinesAsync(files[0]);
         lines.Should().HaveCount(5);
@@ -202,8 +173,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 5, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act - Add events for different symbols
@@ -219,7 +190,7 @@ public class JsonlBatchWriteTests : IDisposable
         await sink.FlushAsync();
         sink.EventsWritten.Should().Be(6);
 
-        var files = Directory.GetFiles(_testRoot, "*.jsonl", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories);
         files.Should().HaveCount(2);
         foreach (var file in files)
         {
@@ -244,8 +215,8 @@ public class JsonlBatchWriteTests : IDisposable
             ParallelSerializationThreshold = 50,
             FlushInterval = TimeSpan.FromMinutes(5)
         };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         await using var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act - Add enough events to trigger parallel serialization
@@ -288,8 +259,8 @@ public class JsonlBatchWriteTests : IDisposable
     {
         // Arrange
         var batchOptions = new JsonlBatchOptions { BatchSize = 5, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
-        var options = new StorageOptions { RootPath = _testRoot };
-        var policy = new TestStoragePolicy(_testRoot);
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
         var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act
@@ -302,7 +273,7 @@ public class JsonlBatchWriteTests : IDisposable
         await sink.DisposeAsync();
 
         // Assert
-        var files = Directory.GetFiles(_testRoot, "*.jsonl", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories);
         files.Should().HaveCount(1);
 
         var lines = await File.ReadAllLinesAsync(files[0]);

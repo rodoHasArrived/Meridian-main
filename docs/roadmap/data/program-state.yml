@@ -7,10 +7,10 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-06-24
+  snapshot_date: 2026-07-05
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer and Financial Operations control-center milestones
-  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, Financial Operations control-center, and bounded W7 live-readiness governance milestones
+  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
   near_term_release_baseline:
     - W1-DATA-001
     - W2-TRD-001
@@ -22,19 +22,24 @@ program:
     - W5-MASSET-001
     - W5X-FREX-001
     - W5X-FINOPS-001
-  active_productization_targets: []
+    - W7-LIVE-001
+    - W8-WPF-PARITY-001
+  active_productization_targets:
+    - W8-WPF-PARITY-001
   current_focus:
     - Data confidence and retained source evidence
     - Portfolio and accounting reconciliation
     - Accounting records
     - Approvals
     - Governed report packs
-    - Shared browser and WPF operational record workflow
+    - Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation
+    - WPF desktop workstation reactivation and web-UI parity over shared contracts and read models
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
+    - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
   deferred_lanes:
     - Backtesting Studio
-    - Live-readiness beyond paper-first governance
+    - Live execution productization and live portfolio operations beyond bounded W7 governance
     - Full treasury payment execution
     - Full alternative asset operations
     - Forecasting and scenario engines
@@ -42,6 +47,6 @@ program:
     - Client portal
     - No-code workflow designer
     - Mobile applications
-  active_ui_lane: browser_and_wpf_workstations
-  retained_support_lane: none
+  active_ui_lane: browser_workstation_and_wpf_desktop
+  shared_ui_seam: meridian_ui_services_shared_and_contracts
   mobile_lane: closed

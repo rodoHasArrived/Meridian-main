@@ -59,6 +59,7 @@ public static class UiEndpoints
 
         services.AddMutationRateLimiter();
         services.AddLeanAutoExportHostedService();
+        services.AddStatementFetchSchedulerHostedService();
         return services;
     }
 
@@ -184,8 +185,12 @@ public static class UiEndpoints
         app.MapFundAccountEndpoints(jsonOptions);
         app.MapLedgerEndpoints(jsonOptions);
 
+        // Portfolio-wide cash ladder and liquidity scenarios
+        app.MapPortfolioCashLadderEndpoints(jsonOptions);
+
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapReportingRunStreamEndpoints(jsonOptions);
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);

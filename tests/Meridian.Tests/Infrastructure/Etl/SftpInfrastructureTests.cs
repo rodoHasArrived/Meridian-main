@@ -222,6 +222,53 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.DisconnectCalls.Should().Be(1);
     }
 
+    [Fact]
+    public async Task PostProcessFileAsync_ForNestedArchivePath_CreatesRemoteParentsBeforeRename()
+    {
+        var client = new RecordingSftpClient();
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client));
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToArchive,
+            archiveLocation: "/archive/2026/06");
+        var file = new EtlRemoteFile
+        {
+            Path = "/inbound/positions.csv",
+            Name = "positions.csv"
+        };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        client.CreatedDirectories.Should().Equal("/archive", "/archive/2026", "/archive/2026/06");
+        client.RenameCalls.Should().ContainSingle(call =>
+            call.OldPath == "/inbound/positions.csv" &&
+            call.NewPath == "/archive/2026/06/positions.csv" &&
+            call.CanOverwrite);
+        client.DisconnectCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_ForErrorAction_MovesOnlyFailedFiles()
+    {
+        var client = new RecordingSftpClient();
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client));
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToError,
+            errorLocation: "/error");
+        var file = new EtlRemoteFile
+        {
+            Path = "/inbound/positions.csv",
+            Name = "positions.csv"
+        };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+        await reader.PostProcessFileAsync(source, file, succeeded: false);
+
+        client.RenameCalls.Should().ContainSingle(call =>
+            call.OldPath == "/inbound/positions.csv" &&
+            call.NewPath == "/error/positions.csv" &&
+            call.CanOverwrite);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))
@@ -238,7 +285,10 @@ public sealed class SftpInfrastructureTests : IDisposable
 
     private static EtlSourceDefinition CreateSource(
         string location = "sftp://custodian.example.com/inbound",
-        string? hostKeyFingerprint = Fingerprint)
+        string? hostKeyFingerprint = Fingerprint,
+        EtlSourcePostProcessingAction postProcessingAction = EtlSourcePostProcessingAction.LeaveInPlace,
+        string? archiveLocation = null,
+        string? errorLocation = null)
         => new()
         {
             Kind = EtlSourceKind.Sftp,
@@ -246,7 +296,10 @@ public sealed class SftpInfrastructureTests : IDisposable
             FilePattern = "*.csv",
             Username = "ops",
             SecretRef = "password",
-            HostKeySha256Fingerprint = hostKeyFingerprint
+            HostKeySha256Fingerprint = hostKeyFingerprint,
+            PostProcessingAction = postProcessingAction,
+            ArchiveLocation = archiveLocation,
+            ErrorLocation = errorLocation
         };
 
     private static EtlDestinationDefinition CreateDestination(bool overwriteIfExists = true)
@@ -288,6 +341,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         public List<string> UploadedPaths { get; } = [];
         public List<(string OldPath, string NewPath, bool CanOverwrite)> RenameCalls { get; } = [];
         public List<string> DeletedPaths { get; } = [];
+        public List<string> CreatedDirectories { get; } = [];
 
         public void Connect() => ConnectCalls++;
         public void Disconnect() => DisconnectCalls++;
@@ -331,7 +385,11 @@ public sealed class SftpInfrastructureTests : IDisposable
         }
 
         public bool Exists(string path) => _remoteFiles.Contains(path);
-        public void CreateDirectory(string path) { }
+        public void CreateDirectory(string path)
+        {
+            CreatedDirectories.Add(path);
+            _remoteFiles.Add(path);
+        }
         public void Dispose() { }
     }
 

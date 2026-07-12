@@ -193,13 +193,31 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
         self.assertIn(
-            "assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath)",
+            "assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath)",
             self.web_screenshot_capture_script,
         )
         self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
         self.assertIn("screenshotCoveragePath", self.web_screenshot_capture_script)
         self.assertIn("dataSecurityMasterLegacy", self.web_screenshot_capture_script)
         self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_supports_targeted_capture_filters(self) -> None:
+        self.assertIn('valueLists.get("capture")', self.web_screenshot_capture_script)
+        self.assertIn('valueLists.get("capture-id")', self.web_screenshot_capture_script)
+        self.assertIn('valueLists.get("capture-name")', self.web_screenshot_capture_script)
+        self.assertIn("selectCaptures(allCaptures, captureSelectors)", self.web_screenshot_capture_script)
+        self.assertIn("selectedCaptureCount", self.web_screenshot_capture_script)
+        self.assertIn("totalCaptureCount", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_fails_fast_on_browser_render_errors(self) -> None:
+        self.assertIn("createPageErrorTracker(page)", self.web_screenshot_capture_script)
+        self.assertIn("waitForCaptureStep", self.web_screenshot_capture_script)
+        self.assertIn("Maximum update depth exceeded", self.web_screenshot_capture_script)
+        self.assertIn("Meridian workstation route failed to render", self.web_screenshot_capture_script)
+        self.assertIn("hit a browser render error", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_disables_vite_hmr(self) -> None:
+        self.assertIn('MERIDIAN_SCREENSHOT_CAPTURE: "true"', self.web_screenshot_capture_script)
 
     @staticmethod
     def screenshot_coverage_path(route_path: str) -> str:

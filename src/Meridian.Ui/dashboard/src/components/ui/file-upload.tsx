@@ -91,6 +91,7 @@ export function FileUpload({
         accept={accept === "*" ? undefined : accept}
         disabled={disabled}
         className="sr-only"
+        aria-label={typeof label === "string" && label.trim() ? label : "File upload"}
         onChange={(event) => addFiles(event.target.files)}
       />
       {files.length > 0 ? (

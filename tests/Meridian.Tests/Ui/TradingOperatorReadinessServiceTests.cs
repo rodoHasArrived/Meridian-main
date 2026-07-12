@@ -4,10 +4,13 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Meridian.Testing;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -43,6 +46,32 @@ public sealed class TradingOperatorReadinessServiceTests
             item.Tone == OperatorWorkItemToneDto.Critical);
         first.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
         first.ReadyForPaperOperation.Should().BeFalse();
+        first.ReadyForLiveOperation.Should().BeFalse();
+        first.LiveOperationBlockers.Should().Contain([
+            "acceptanceGate:session",
+            "acceptanceGate:replay",
+            "promotion:approved-live-trace",
+            "brokerageSync:account-scope-required",
+            "brokerExecutionReconciliation:unavailable"
+        ]);
+        first.LiveOperationRequirements.Select(static requirement => requirement.RequirementId).Should().Contain([
+            "live-approval",
+            "trusted-data",
+            "paper-validation",
+            "reconciliation-evidence",
+            "accounting-records",
+            "governed-reporting",
+            "governance-signoff",
+            "exception-handling",
+            "rollback-kill-switch",
+            "audit-retention"
+        ]);
+        first.LiveOperationRequirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "governance-signoff" &&
+            requirement.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            requirement.ChecklistItem == PromotionApprovalChecklist.GovernanceSignoffReviewed &&
+            requirement.ChecklistSatisfied == false &&
+            requirement.EvidenceSatisfied == false);
         first.ReportPack.Should().NotBeNull();
         first.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         first.EvidenceCompleteness.Should().NotBeNull();
@@ -67,6 +96,65 @@ public sealed class TradingOperatorReadinessServiceTests
         var act = () => service.GetAsync(ct: cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task GetAsync_WithCleanBrokerExecutionReconciliation_ShouldSurfaceReadyGateWithoutWorkItem()
+    {
+        var localOrder = CreateExecutionOrderState("order-1", "AAPL", 10m);
+        var brokerOrder = CreateBrokerOrder("broker-1", "order-1", "AAPL", 10m);
+        var gateway = CreateBrokerageGateway([brokerOrder]);
+        var orderManager = CreateOrderManager([localOrder]);
+        using var provider = CreateExecutionReconciliationProvider(gateway, orderManager);
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.ExecutionReconciliation.Should().NotBeNull();
+        readiness.ExecutionReconciliation!.Status.Should().Be(TradingAcceptanceGateStatusDto.Ready);
+        readiness.ExecutionReconciliation.BreakCount.Should().Be(0);
+        readiness.ExecutionReconciliation.MatchedOpenOrderCount.Should().Be(1);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "broker-execution-reconciliation" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.WorkItems.Should().NotContain(item =>
+            item.Kind == OperatorWorkItemKindDto.BrokerExecutionReconciliation);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithBrokerExecutionReconciliationBreak_ShouldBlockLiveGateAndEmitWorkItem()
+    {
+        var localOrder = CreateExecutionOrderState("order-1", "AAPL", 10m);
+        var brokerOrder = CreateBrokerOrder("broker-1", "order-1", "AAPL", 12m);
+        var gateway = CreateBrokerageGateway([brokerOrder]);
+        var orderManager = CreateOrderManager([localOrder]);
+        using var provider = CreateExecutionReconciliationProvider(gateway, orderManager);
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.ExecutionReconciliation.Should().NotBeNull();
+        readiness.ExecutionReconciliation!.Status.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+        readiness.ExecutionReconciliation.Breaks.Should().ContainSingle(item =>
+            item.Kind == "QuantityMismatch" &&
+            item.LocalOrderId == "order-1" &&
+            item.BrokerOrderId == "broker-1" &&
+            item.LocalValue == "10" &&
+            item.BrokerValue == "12");
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "broker-execution-reconciliation" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Blocked &&
+            gate.RequiredNextAction == "Review broker/OMS open-order breaks before live operation.");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.Kind == OperatorWorkItemKindDto.BrokerExecutionReconciliation &&
+            item.Tone == OperatorWorkItemToneDto.Critical &&
+            item.Workspace == "Trading" &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
     }
 
     [Fact]
@@ -484,6 +572,221 @@ public sealed class TradingOperatorReadinessServiceTests
         readiness!.Status.Should().Be(TradingAcceptanceGateStatusDto.Ready);
     }
 
+    [Fact]
+    public void GetMissingPromotionTraceFields_WithLivePromotionMissingBrokerExecutionEvidence_ShouldNameMissingToken()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Where(static item => !item.StartsWith(PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed, StringComparison.Ordinal))
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var missing = InvokeGetMissingPromotionTraceFields(promotion);
+
+        missing.Should().Equal($"evidenceReferences:{PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed}");
+    }
+
+    [Fact]
+    public void GetMissingPromotionTraceFields_WithLivePromotionEvidenceReferenceNoRetainedValue_ShouldNameInvalidField()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Select(static item => item.StartsWith(PromotionApprovalChecklist.AuditRetentionReviewed, StringComparison.Ordinal)
+                ? $"{PromotionApprovalChecklist.AuditRetentionReviewed}:"
+                : item)
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var missing = InvokeGetMissingPromotionTraceFields(promotion);
+
+        missing.Should().Equal($"evidenceReferences:{PromotionApprovalChecklist.AuditRetentionReviewed}:retainedEvidence");
+    }
+
+    [Fact]
+    public void GetMissingPromotionTraceFields_WithLiveOverrideEvidenceReferencesStaleOverride_ShouldNameInvalidField()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Select(static item => item.StartsWith(PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                ? $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/override-live-stale"
+                : item)
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var missing = InvokeGetMissingPromotionTraceFields(promotion);
+
+        missing.Should().Equal($"evidenceReferences:{PromotionApprovalChecklist.LiveOverrideReviewed}:activeOverride");
+    }
+
+    [Fact]
+    public void BuildPromotionGate_WithLivePromotionMissingBrokerChecklistItem_ShouldBlockReadiness()
+    {
+        var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+            .Where(static item => !string.Equals(item, PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed, StringComparison.Ordinal))
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(checklist, CreateLivePromotionEvidenceReferences());
+
+        var gate = InvokeBuildPromotionGate(promotion);
+
+        gate.Status.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+        gate.Detail.Should().Contain($"approvalChecklist:{PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed}");
+    }
+
+    [Fact]
+    public void BuildLiveOperationBlockers_WithCompleteLiveProof_ShouldClearBlockers()
+    {
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            CreateLivePromotionEvidenceReferences());
+
+        var blockers = InvokeBuildLiveOperationBlockers(
+            TradingAcceptanceGateStatusDto.Ready,
+            [new TradingAcceptanceGateDto("promotion", "Promotion trace complete", TradingAcceptanceGateStatusDto.Ready, "Live approved.")],
+            promotion,
+            CreateHealthyBrokerageSyncStatus(),
+            CreateReadyExecutionReconciliation());
+
+        blockers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void BuildLiveOperationBlockers_WithMissingW7PromotionEvidence_ShouldNameEachMissingEvidenceItem()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Where(static item =>
+                !item.StartsWith(PromotionApprovalChecklist.GovernanceSignoffReviewed, StringComparison.Ordinal) &&
+                !item.StartsWith(PromotionApprovalChecklist.AuditRetentionReviewed, StringComparison.Ordinal))
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var blockers = InvokeBuildLiveOperationBlockers(
+            TradingAcceptanceGateStatusDto.Ready,
+            [new TradingAcceptanceGateDto("promotion", "Promotion trace complete", TradingAcceptanceGateStatusDto.Ready, "Live approved.")],
+            promotion,
+            CreateHealthyBrokerageSyncStatus(),
+            CreateReadyExecutionReconciliation());
+
+        blockers.Should().Contain("promotion:approved-live-trace");
+        blockers.Should().Contain([
+            $"promotion:evidenceReferences:{PromotionApprovalChecklist.GovernanceSignoffReviewed}",
+            $"promotion:evidenceReferences:{PromotionApprovalChecklist.AuditRetentionReviewed}"
+        ]);
+        blockers.Should().NotContain("brokerageSync:account-scope-required");
+        blockers.Should().NotContain("brokerExecutionReconciliation:unavailable");
+    }
+
+    [Fact]
+    public void BuildLiveOperationRequirements_WithCompleteLiveProof_ShouldMarkEachRequirementReady()
+    {
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            CreateLivePromotionEvidenceReferences());
+
+        var requirements = InvokeBuildLiveOperationRequirements(
+            promotion,
+            CreateReadyExecutionReconciliation());
+
+        requirements.Should().OnlyContain(requirement => requirement.Status == TradingAcceptanceGateStatusDto.Ready);
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "live-approval" &&
+            requirement.EvidenceReference == "audit-live-promotion" &&
+            requirement.BlockerCode == null);
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "broker-execution-reconciliation" &&
+            requirement.ChecklistItem == PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed &&
+            requirement.EvidenceReference == $"{PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed}:evidence/{PromotionApprovalChecklist.BrokerExecutionReconciliationReviewed.ToLowerInvariant()}" &&
+            requirement.ChecklistSatisfied &&
+            requirement.EvidenceSatisfied);
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "audit-retention" &&
+            requirement.ChecklistItem == PromotionApprovalChecklist.AuditRetentionReviewed);
+    }
+
+    [Fact]
+    public void BuildLiveOperationRequirements_WithMissingW7PromotionEvidence_ShouldExposeSpecificRequirementBlocker()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Where(static item => !item.StartsWith(PromotionApprovalChecklist.GovernanceSignoffReviewed, StringComparison.Ordinal))
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var requirements = InvokeBuildLiveOperationRequirements(
+            promotion,
+            CreateReadyExecutionReconciliation());
+
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "governance-signoff" &&
+            requirement.Status == TradingAcceptanceGateStatusDto.Blocked &&
+            requirement.ChecklistSatisfied &&
+            requirement.EvidenceSatisfied == false &&
+            requirement.EvidenceReference == null &&
+            requirement.BlockerCode == $"promotion:evidenceReferences:{PromotionApprovalChecklist.GovernanceSignoffReviewed}" &&
+            requirement.Detail.Contains(PromotionApprovalChecklist.GovernanceSignoffReviewed, StringComparison.Ordinal));
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "live-approval" &&
+            requirement.Status == TradingAcceptanceGateStatusDto.Blocked &&
+            requirement.BlockerCode == "promotion:approved-live-trace");
+    }
+
+    [Fact]
+    public void BuildLiveOperationRequirements_WithInvalidRetainedEvidence_ShouldExposeSpecificRequirementBlocker()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Select(static item => item.StartsWith(PromotionApprovalChecklist.AuditRetentionReviewed, StringComparison.Ordinal)
+                ? $"{PromotionApprovalChecklist.AuditRetentionReviewed}:"
+                : item)
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var requirements = InvokeBuildLiveOperationRequirements(
+            promotion,
+            CreateReadyExecutionReconciliation());
+
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "audit-retention" &&
+            requirement.Status == TradingAcceptanceGateStatusDto.Blocked &&
+            requirement.ChecklistSatisfied &&
+            requirement.EvidenceSatisfied == false &&
+            requirement.EvidenceReference == $"{PromotionApprovalChecklist.AuditRetentionReviewed}:" &&
+            requirement.BlockerCode == $"promotion:evidenceReferences:{PromotionApprovalChecklist.AuditRetentionReviewed}:retainedEvidence" &&
+            requirement.Detail.Contains("retained evidence", StringComparison.OrdinalIgnoreCase));
+        requirements.Should().ContainSingle(requirement =>
+            requirement.RequirementId == "live-approval" &&
+            requirement.Status == TradingAcceptanceGateStatusDto.Blocked);
+    }
+
+    [Fact]
+    public void BuildLiveOperationBlockers_WithInvalidLiveOverrideEvidence_ShouldNameActiveOverrideBlocker()
+    {
+        var evidenceReferences = CreateLivePromotionEvidenceReferences()
+            .Select(static item => item.StartsWith(PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                ? $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/override-live-stale"
+                : item)
+            .ToArray();
+        var promotion = CreateLivePromotionReadiness(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            evidenceReferences);
+
+        var blockers = InvokeBuildLiveOperationBlockers(
+            TradingAcceptanceGateStatusDto.Ready,
+            [new TradingAcceptanceGateDto("promotion", "Promotion trace complete", TradingAcceptanceGateStatusDto.Ready, "Live approved.")],
+            promotion,
+            CreateHealthyBrokerageSyncStatus(),
+            CreateReadyExecutionReconciliation());
+
+        blockers.Should().Contain("promotion:approved-live-trace");
+        blockers.Should().Contain($"promotion:evidenceReferences:{PromotionApprovalChecklist.LiveOverrideReviewed}:activeOverride");
+    }
+
 
     private static TradingReportPackReadinessDto? InvokeBuildReportPackReadinessForRuns(
         FundReportPackSnapshotDto snapshot,
@@ -495,6 +798,104 @@ public sealed class TradingOperatorReadinessServiceTests
         method.Should().NotBeNull();
         return (TradingReportPackReadinessDto?)method!.Invoke(null, [snapshot, candidateRunIds, null]);
     }
+
+    private static IReadOnlyList<string> InvokeGetMissingPromotionTraceFields(TradingPromotionReadinessDto promotion)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "GetMissingPromotionTraceFields",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (IReadOnlyList<string>)method!.Invoke(null, [promotion])!;
+    }
+
+    private static TradingAcceptanceGateDto InvokeBuildPromotionGate(TradingPromotionReadinessDto promotion)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "BuildPromotionGate",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (TradingAcceptanceGateDto)method!.Invoke(null, [promotion])!;
+    }
+
+    private static IReadOnlyList<string> InvokeBuildLiveOperationBlockers(
+        TradingAcceptanceGateStatusDto overallStatus,
+        IReadOnlyList<TradingAcceptanceGateDto> acceptanceGates,
+        TradingPromotionReadinessDto? promotion,
+        WorkstationBrokerageSyncStatusDto? brokerageStatus,
+        TradingExecutionReconciliationReadinessDto? executionReconciliation)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "BuildLiveOperationBlockers",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (IReadOnlyList<string>)method!.Invoke(null, [overallStatus, acceptanceGates, promotion, brokerageStatus, executionReconciliation])!;
+    }
+
+    private static IReadOnlyList<TradingLiveOperationRequirementDto> InvokeBuildLiveOperationRequirements(
+        TradingPromotionReadinessDto? promotion,
+        TradingExecutionReconciliationReadinessDto? executionReconciliation)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "BuildLiveOperationRequirements",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (IReadOnlyList<TradingLiveOperationRequirementDto>)method!.Invoke(null, [promotion, executionReconciliation])!;
+    }
+
+    private static TradingPromotionReadinessDto CreateLivePromotionReadiness(
+        IReadOnlyList<string> approvalChecklist,
+        IReadOnlyList<string> evidenceReferences)
+        => new(
+            State: "Approved",
+            Reason: "Live readiness reviewed.",
+            RequiresReview: false,
+            SourceRunId: "run-live-source",
+            TargetRunId: "run-live",
+            SuggestedNextMode: RunType.Live.ToString(),
+            AuditReference: "audit-live-promotion",
+            ApprovalStatus: "Approved",
+            ManualOverrideId: "override-live",
+            ApprovedBy: "ops",
+            ApprovalChecklist: approvalChecklist,
+            EvidenceReferences: evidenceReferences);
+
+    private static string[] CreateLivePromotionEvidenceReferences()
+        => PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+            .Select(static item => string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                ? $"{item}:manual-override/override-live"
+                : $"{item}:evidence/{item.ToLowerInvariant()}")
+            .ToArray();
+
+    private static WorkstationBrokerageSyncStatusDto CreateHealthyBrokerageSyncStatus()
+        => new(
+            FundAccountId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            ProviderId: "alpaca",
+            ExternalAccountId: "acct-live",
+            Health: WorkstationBrokerageSyncHealth.Healthy,
+            IsLinked: true,
+            IsStale: false,
+            LastAttemptedSyncAt: DateTimeOffset.UtcNow,
+            LastSuccessfulSyncAt: DateTimeOffset.UtcNow,
+            LastError: null,
+            PositionCount: 2,
+            OpenOrderCount: 1,
+            FillCount: 4,
+            CashTransactionCount: 3,
+            SecurityMissingCount: 0,
+            Warnings: []);
+
+    private static TradingExecutionReconciliationReadinessDto CreateReadyExecutionReconciliation()
+        => new(
+            Status: TradingAcceptanceGateStatusDto.Ready,
+            GatewayId: "alpaca",
+            BrokerDisplayName: "Alpaca",
+            BrokerHealthy: true,
+            BrokerConnected: true,
+            MatchedOpenOrderCount: 1,
+            BreakCount: 0,
+            ReconciledAt: DateTimeOffset.UtcNow,
+            Detail: "Broker and OMS open orders match.",
+            Breaks: []);
 
     private static FundReportPackSnapshotDto CreateReportPackSnapshot(
         GovernanceReportPackStatusDto status,
@@ -579,6 +980,52 @@ public sealed class TradingOperatorReadinessServiceTests
         CreatedAt = DateTimeOffset.UtcNow,
         LastUpdatedAt = DateTimeOffset.UtcNow
     };
+
+    private static BrokerOrder CreateBrokerOrder(
+        string brokerOrderId,
+        string clientOrderId,
+        string symbol,
+        decimal quantity) => new()
+        {
+            OrderId = brokerOrderId,
+            ClientOrderId = clientOrderId,
+            Symbol = symbol,
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = quantity,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+    private static IBrokerageGateway CreateBrokerageGateway(IReadOnlyList<BrokerOrder> openOrders)
+    {
+        var gateway = Substitute.For<IBrokerageGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        gateway.BrokerDisplayName.Returns("Alpaca Markets");
+        gateway.IsConnected.Returns(true);
+        gateway.CheckHealthAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(BrokerHealthStatus.Healthy("ready")));
+        gateway.GetOpenOrdersAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(openOrders));
+        return gateway;
+    }
+
+    private static IOrderManager CreateOrderManager(IReadOnlyList<OrderState> openOrders)
+    {
+        var orderManager = Substitute.For<IOrderManager>();
+        orderManager.GetOpenOrders().Returns(openOrders);
+        return orderManager;
+    }
+
+    private static ServiceProvider CreateExecutionReconciliationProvider(
+        IBrokerageGateway gateway,
+        IOrderManager orderManager)
+        => new ServiceCollection()
+            .AddSingleton<IExecutionGateway>(gateway)
+            .AddSingleton<IOrderManager>(orderManager)
+            .AddSingleton(new BrokerageExecutionReconciliationService(
+                NullLogger<BrokerageExecutionReconciliationService>.Instance))
+            .BuildServiceProvider();
 
     private static ExecutionReport CreateExecutionFill(string orderId, string symbol, decimal quantity, decimal fillPrice) => new()
     {

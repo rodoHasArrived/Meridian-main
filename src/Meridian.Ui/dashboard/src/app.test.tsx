@@ -38,6 +38,7 @@ function idleRequestStatus(operation: string) {
     error: null,
     startedAt: null,
     settledAt: null,
+    lastSucceededAt: null,
     staleDiscardCount: 0,
     backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
   };
@@ -83,6 +84,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     providerRoutingRefreshStatus: idleRequestStatus("provider routing refresh"),
     portfolioRefreshStatus: idleRequestStatus("portfolio refresh"),
     refresh: vi.fn(),
+    refreshWorkspace: vi.fn(),
     refreshTrading: vi.fn(),
     refreshPortfolio: vi.fn(),
     refreshProviderRouting: vi.fn(),
@@ -309,7 +311,7 @@ describe("App", () => {
   it("renders the daily control tower on the root route", async () => {
     mockDailyControlTowerData();
 
-    renderWithRouter(<App />, { initialEntries: ["/"] });
+    const { container } = renderWithRouter(<App />, { initialEntries: ["/"] });
 
     expect(await screen.findByRole(
       "heading",
@@ -343,6 +345,8 @@ describe("App", () => {
       expect(within(evidenceSummary).getByText(label)).toBeInTheDocument();
     });
     expect(within(evidenceSummary).getByText("Reporting package or evidence")).toBeInTheDocument();
+    const accessibilityResults = await axe(container);
+    expect(accessibilityResults.violations).toHaveLength(0);
     await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
   });
 
@@ -422,7 +426,8 @@ describe("App", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("renders route-aware workflow continuity without relying on memorized navigation", () => {
+  it("renders route-aware workflow continuity without relying on memorized navigation", async () => {
+    const user = userEvent.setup();
     mockWorkstationData({
       session: {
         displayName: "Ops Desk",
@@ -460,9 +465,14 @@ describe("App", () => {
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
     expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
     expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
+    expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByText("Flow details"));
+
+    expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary operator workflow steps" })).toBeInTheDocument();
-    expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Live quotes, current workflow step, Waiting" })).toHaveAttribute(
       "href",
       "/data/quotes?symbol=MSFT"
@@ -811,6 +821,8 @@ describe("App", () => {
   });
 
   it("announces and focuses hash-targeted workflow links", async () => {
+    const user = userEvent.setup();
+
     mockWorkstationData({
       session: {
         displayName: "Ops Desk",
@@ -848,11 +860,12 @@ describe("App", () => {
     expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
     await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 15000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
+    await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
+    await user.click(screen.getByText("Flow details"));
     expect(screen.getByRole("link", { name: /Provider setup, current workflow step/ })).toHaveAttribute(
       "aria-current",
       "step"
     );
-    await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
   });
 
   it("does not open the command palette shortcut while typing in an input", async () => {
@@ -976,7 +989,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
-    const positionsTable = await screen.findByRole("table", { name: /open positions/i }, { timeout: 5000 });
+    const positionsTable = await screen.findByRole("treegrid", { name: /open positions/i }, { timeout: 5000 });
     expect(within(positionsTable).getByText("NVDA")).toBeInTheDocument();
     expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThan(0);
   });

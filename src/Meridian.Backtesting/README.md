@@ -83,6 +83,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | Roadmap item | Title |
 | --- | --- |
 | `W3-CONT-001` | Research to paper continuity |
+| `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 <!-- source-roadmap-traceability:end -->
 

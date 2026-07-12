@@ -17,6 +17,9 @@ public static class EvidenceWorkflowServiceCollectionExtensions
             new FileEvidenceArtifactStore(
                 FileEvidenceArtifactStore.ResolveDataRoot(sp),
                 sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>()));
+        services.TryAddSingleton(sp => new StatementImportEvidenceBridge(
+            sp.GetRequiredService<IEvidenceArtifactStore>(),
+            FileEvidenceArtifactStore.ResolveDataRoot(sp)));
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, StrategyRunEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, TradingReadinessEvidenceContributor>());

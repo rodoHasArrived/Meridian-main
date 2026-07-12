@@ -1,5 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import * as api from "@/lib/api";
 import { AssetDetailScreen } from "@/screens/asset-detail-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -86,6 +87,21 @@ describe("AssetDetailScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Asset Detail" })).toBeInTheDocument();
     expect(screen.getByLabelText("Search securities")).toBeInTheDocument();
+    expect(screen.getByLabelText("Asset detail search readiness")).toHaveTextContent("Start from a known instrument");
+    expect(screen.getByLabelText("Suggested asset detail searches")).toHaveTextContent("AAPL");
+    expect(screen.getByText("Review areas")).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "Asset detail saved views and next actions" })).toHaveTextContent("Saved views");
+    expect(screen.getByRole("region", { name: "Asset detail saved views" })).toHaveTextContent("Equity book");
+    expect(screen.getByRole("region", { name: "Asset detail next actions" })).toHaveTextContent("Open live quotes");
+    expect(screen.getAllByRole("link", { name: "Open Security Master" }).some((link) => link.getAttribute("href") === "/accounting/security-master")).toBe(true);
+  });
+
+  it("has no basic accessibility violations in the search-ready state", async () => {
+    const { container } = await renderScreen("/accounting/security-master/detail");
+
+    expect(screen.getByLabelText("Asset detail search readiness")).toBeInTheDocument();
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it("preloads a portfolio holding symbol into asset search", async () => {
@@ -96,6 +112,32 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByLabelText("Search securities")).toHaveValue("AAPL");
     expect(await screen.findByRole("button", { name: /Apple Inc\./ })).toBeInTheDocument();
     expect(api.searchSecurities).toHaveBeenCalledWith("AAPL");
+  });
+
+  it("keeps search-ready focus order on search, result, saved views, and next actions", async () => {
+    vi.mocked(api.searchSecurities).mockResolvedValue([entry]);
+    const user = userEvent.setup();
+
+    await renderScreen("/portfolio/asset-detail?symbol=AAPL");
+    const result = await screen.findByRole("button", { name: /Apple Inc\./ });
+
+    await user.tab();
+    expect(screen.getByLabelText("Search securities")).toHaveFocus();
+
+    await user.tab();
+    expect(result).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "AAPL" })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "US91282CHT18" })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "MSFT" })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole("link", { name: "Open Security Master" })).toHaveFocus();
   });
 
   it("searches securities and navigates to the selected security's detail", async () => {

@@ -186,7 +186,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         Guid securityId,
         string? currency)
     {
-        if (!DateOnly.TryParse(dividend.ExDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate) ||
+        if (!ProviderDateParsing.TryParseProviderDate(dividend.ExDate, out var exDate) ||
             dividend.Amount is not > 0m)
         {
             return null;
@@ -210,7 +210,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         TwelveDataSplit split,
         Guid securityId)
     {
-        if (!DateOnly.TryParse(split.Date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate))
+        if (!ProviderDateParsing.TryParseProviderDate(split.Date, out var exDate))
         {
             return null;
         }
@@ -225,17 +225,22 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         var description = string.IsNullOrWhiteSpace(split.Description)
             ? $"Twelve Data split ratio {split.Ratio?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}."
             : split.Description.Trim();
+        var splitRatio = fromFactor is > 0m && toFactor is > 0m
+            ? toFactor / fromFactor
+            : split.Ratio;
+        var resolvedFromFactor = fromFactor ?? (splitRatio is > 0m ? 1m : null);
+        var resolvedToFactor = toFactor ?? splitRatio;
 
         return new CorporateActionCommand(
             SecurityId: securityId,
-            ActionType: "Split",
+            ActionType: splitRatio is > 0m and < 1m ? "ReverseStockSplit" : "StockSplit",
             ExDate: exDate,
             RecordDate: null,
             PayableDate: null,
             Amount: null,
             Currency: null,
-            SplitFromFactor: fromFactor,
-            SplitToFactor: toFactor,
+            SplitFromFactor: resolvedFromFactor,
+            SplitToFactor: resolvedToFactor,
             Description: description,
             SourceProvider: ProviderId);
     }

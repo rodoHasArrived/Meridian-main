@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { encodeViewStateEnvelope } from "@/lib/view-state-envelope";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand
@@ -9,12 +10,12 @@ describe("command palette view model", () => {
   it("marks the current workspace and setup anchor from the active route", () => {
     const model = buildCommandPaletteViewModel("/settings#alpaca-provider-setup");
 
-    expect(model.itemCountLabel).toBe("7 workspaces - 18 quick routes");
-    expect(model.commandListLabel).toBe("25 workstation commands");
-    expect(model.filteredItemCountLabel).toBe("25 commands available");
+    expect(model.itemCountLabel).toBe("7 workspaces - 16 quick routes");
+    expect(model.commandListLabel).toBe("23 workstation commands");
+    expect(model.filteredItemCountLabel).toBe("23 commands available");
     expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
       "Workspaces:7 workspaces",
-      "Quick routes:18 quick routes"
+      "Quick routes:16 quick routes"
     ]);
     expect(model.activeWorkspaceLabel).toBe("Current: Settings");
     expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. Current: Settings.");
@@ -41,13 +42,13 @@ describe("command palette view model", () => {
       commandLabel: "Stay on Alpaca provider setup",
       active: true
     });
-    expect(model.filteredItems).toHaveLength(25);
+    expect(model.filteredItems).toHaveLength(23);
   });
 
   it("filters commands by workspace, route, status, and description text", () => {
     const model = buildCommandPaletteViewModel("/settings", undefined, {}, "preview portfolio");
 
-    expect(model.filteredItemCountLabel).toBe("1 of 25 commands match");
+    expect(model.filteredItemCountLabel).toBe("1 of 23 commands match");
     expect(model.filteredItems.map((item) => item.id)).toEqual(["portfolio"]);
     expect(model.commandGroups).toEqual([
       expect.objectContaining({
@@ -58,6 +59,51 @@ describe("command palette view model", () => {
       })
     ]);
     expect(model.initialFocusItemId).toBe("portfolio");
+  });
+
+  it("groups entity search results ahead of workspace routes", () => {
+    const model = buildCommandPaletteViewModel("/data/quotes", undefined, {
+      entityItems: [
+        {
+          id: "symbol:AAPL",
+          label: "AAPL",
+          description: "Provider Polygon - Active - Historical data retained - 42 events",
+          route: "/data/quotes?symbol=AAPL",
+          sourceLabel: "Symbol",
+          statusLabel: "Active",
+          commandLabel: "Open AAPL quotes",
+          ariaLabel: "Open symbol AAPL in Live quotes"
+        }
+      ],
+      entitySearchStatus: "ready"
+    }, "aapl");
+
+    expect(model.itemCountLabel).toBe("1 entity result - 7 workspaces - 16 quick routes");
+    expect(model.entitySearchStatusLabel).toBe("1 entity result");
+    expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
+      "Entities:1 entity"
+    ]);
+    expect(model.filteredItems[0]).toMatchObject({
+      id: "entity:symbol:AAPL",
+      kind: "entity",
+      route: "/data/quotes?symbol=AAPL",
+      commandLabel: "Open AAPL quotes",
+      statusLabel: "Active"
+    });
+  });
+
+  it("surfaces degraded entity-search copy in no-match states", () => {
+    const model = buildCommandPaletteViewModel("/data", undefined, {
+      entitySearchStatus: "error",
+      entitySearchError: "symbol search and security search unavailable"
+    }, "zzzzzz");
+
+    expect(model.entitySearchStatusLabel).toBe(
+      "Entity search unavailable: symbol search and security search unavailable"
+    );
+    expect(model.emptyState?.detail).toBe(
+      'No commands match "zzzzzz". Entity search is unavailable; local workstation commands remain available. Clear the search to return to all workstation commands.'
+    );
   });
 
   it("promotes ranked operator focus actions ahead of route navigation", () => {
@@ -86,15 +132,15 @@ describe("command palette view model", () => {
       ]
     });
 
-    expect(model.itemCountLabel).toBe("2 focus actions - 7 workspaces - 18 quick routes");
-    expect(model.commandListLabel).toBe("27 workstation commands");
+    expect(model.itemCountLabel).toBe("2 focus actions - 7 workspaces - 16 quick routes");
+    expect(model.commandListLabel).toBe("25 workstation commands");
     expect(model.routeSummary).toBe(
       "Route to common operator workflows and canonical workspaces. Current: Data. 2 ranked focus actions available."
     );
     expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
       "Focus actions:2 focus actions",
       "Workspaces:7 workspaces",
-      "Quick routes:18 quick routes"
+      "Quick routes:16 quick routes"
     ]);
     expect(model.initialFocusItemId).toBe("focus:work-item:brokerage-sync");
     expect(model.items[0]).toMatchObject({
@@ -162,10 +208,10 @@ describe("command palette view model", () => {
   it("exposes a searchable empty state when commands do not match", () => {
     const model = buildCommandPaletteViewModel("/settings", undefined, {}, "not-a-command");
 
-    expect(model.items).toHaveLength(25);
+    expect(model.items).toHaveLength(23);
     expect(model.filteredItems).toEqual([]);
     expect(model.commandGroups).toEqual([]);
-    expect(model.filteredItemCountLabel).toBe("0 of 25 commands match");
+    expect(model.filteredItemCountLabel).toBe("0 of 23 commands match");
     expect(model.searchDescribedBy).toBe("command-palette-filter-count command-palette-empty-state-detail");
     expect(model.emptyState).toEqual({
       id: "command-palette-empty-state",
@@ -227,31 +273,26 @@ describe("command palette view model", () => {
   it("keeps quick routes available when workspace metadata is missing", () => {
     const model = buildCommandPaletteViewModel("/trading", []);
 
-    expect(model.items).toHaveLength(18);
-    expect(model.commandListLabel).toBe("18 workstation commands");
-    expect(model.itemCountLabel).toBe("0 workspaces - 18 quick routes");
+    expect(model.items).toHaveLength(16);
+    expect(model.commandListLabel).toBe("16 workstation commands");
+    expect(model.itemCountLabel).toBe("0 workspaces - 16 quick routes");
     expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. No active workspace.");
     expect(model.initialFocusItemId).toBe("route:trading-readiness");
     expect(model.emptyState).toBeNull();
   });
 
-  it("exposes family-office, operations-record, covered-call, provider, and price-alert route commands", () => {
+  it("exposes operations-record, covered-call, provider, and price-alert route commands but hides unwired surfaces", () => {
     const familyOfficeModel = buildCommandPaletteViewModel("/portfolio/family-office", undefined, {}, "family office");
+    const formulaWorkbenchModel = buildCommandPaletteViewModel("/strategy/formula-workbench", undefined, {}, "formula workbench");
     const operationsRecordModel = buildCommandPaletteViewModel("/reporting/operations-record", undefined, {}, "operations record");
     const exportsModel = buildCommandPaletteViewModel("/reporting/exports", undefined, {}, "exports");
     const coveredCallModel = buildCommandPaletteViewModel("/strategy/covered-call", undefined, {}, "covered call");
     const providerModel = buildCommandPaletteViewModel("/data/providers", undefined, {}, "provider catalog");
     const priceAlertsModel = buildCommandPaletteViewModel("/data/alerts", undefined, {}, "price alerts");
 
-    expect(familyOfficeModel.filteredItems.map((item) => item.id)).toContain("route:portfolio-family-office");
-    expect(familyOfficeModel.items.find((item) => item.id === "route:portfolio-family-office")).toMatchObject({
-      kind: "route",
-      label: "Family office",
-      route: "/portfolio/family-office",
-      statusLabel: "Current",
-      commandLabel: "Stay on Family office",
-      active: true
-    });
+    // Unwired surfaces (permanent empty states) never surface as palette routes.
+    expect(familyOfficeModel.items.map((item) => item.id)).not.toContain("route:portfolio-family-office");
+    expect(formulaWorkbenchModel.items.map((item) => item.id)).not.toContain("route:strategy-formula-workbench");
 
     expect(operationsRecordModel.filteredItems.map((item) => item.id)).toContain("route:reporting-operations-record");
     expect(operationsRecordModel.items.find((item) => item.id === "route:reporting-operations-record")).toMatchObject({
@@ -529,8 +570,8 @@ describe("command palette view model", () => {
       }
     });
 
-    expect(model.itemCountLabel).toBe("7 workspaces - 18 quick routes - 1 preset - 3 workflow actions");
-    expect(model.commandListLabel).toBe("29 commands");
+    expect(model.itemCountLabel).toBe("7 workspaces - 16 quick routes - 1 preset - 3 workflow actions");
+    expect(model.commandListLabel).toBe("27 commands");
     expect(model.backendStatusLabel).toBe("3 workflow actions - 1 preset");
     expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-reconciliation-breaks")).toMatchObject({
       kind: "workflow",
@@ -1011,15 +1052,133 @@ describe("command palette view model", () => {
       workflowError: "Request failed for /api/workstation/workflows (503)"
     });
 
-    expect(model.items).toHaveLength(25);
+    expect(model.items).toHaveLength(23);
     expect(model.backendStatusLabel).toBe("Workflow library unavailable");
     expect(model.routeSummary).toBe(
       "Route through shared workflow commands. Current: Settings. Workflow library unavailable; local route commands remain available."
     );
   });
 
+  it("builds runnable action items ordered after focus actions", () => {
+    const model = buildCommandPaletteViewModel("/reporting", undefined, {
+      actionItems: [
+        {
+          id: "reporting-run-exports",
+          verbLabel: "Run exports report: Monthly NAV pack",
+          description: "Start the selected on-demand exports report run.",
+          keywords: ["report", "run"],
+          confirm: true,
+          run: async () => undefined
+        },
+        {
+          id: "preset-pin:morning",
+          verbLabel: "Pin preset Morning close",
+          description: "Keep Morning close at the top of the palette preset list.",
+          disabled: true,
+          disabledReason: "Preset library unavailable.",
+          run: async () => undefined
+        }
+      ]
+    });
+
+    const actionItems = model.items.filter((item) => item.kind === "action");
+    expect(actionItems.map((item) => item.id)).toEqual([
+      "action:reporting-run-exports",
+      "action:preset-pin:morning"
+    ]);
+    expect(actionItems[0]).toMatchObject({
+      commandLabel: "Run exports report: Monthly NAV pack",
+      statusLabel: "Confirm to run",
+      statusTone: "ready",
+      action: { actionId: "reporting-run-exports", confirm: true }
+    });
+    expect(actionItems[1]).toMatchObject({
+      statusLabel: "Preset library unavailable.",
+      statusTone: "blocked",
+      action: { actionId: "preset-pin:morning", confirm: false }
+    });
+
+    const groupKinds = model.commandGroups.map((group) => group.kind);
+    expect(groupKinds.indexOf("action")).toBeLessThan(groupKinds.indexOf("workspace"));
+    expect(model.itemCountLabel).toContain("2 actions");
+
+    const filtered = buildCommandPaletteViewModel("/reporting", undefined, {
+      actionItems: [
+        {
+          id: "reporting-run-exports",
+          verbLabel: "Run exports report: Monthly NAV pack",
+          description: "Start the selected on-demand exports report run.",
+          keywords: ["report", "run"],
+          run: async () => undefined
+        }
+      ]
+    }, "run exports");
+    expect(filtered.filteredItems.some((item) => item.id === "action:reporting-run-exports")).toBe(true);
+  });
+
+  it("appends a saved view's state token to the preset route", () => {
+    const viewStateEnvelope = encodeViewStateEnvelope({
+      v: 1,
+      screen: "reporting-exports",
+      state: { selectedExportsTemplateId: "investor-monthly-statement" }
+    })!;
+
+    const model = buildCommandPaletteViewModel("/trading", undefined, {
+      workflowPresets: {
+        generatedAt: "2026-07-01T00:00:00Z",
+        presets: [
+          {
+            presetId: "saved-view-1",
+            name: "Month-end exports",
+            description: "Saved exports view",
+            workflowId: "reporting-delivery",
+            workflowTitle: "Reporting Delivery",
+            actionId: "reporting.exports",
+            actionLabel: "Open exports",
+            workspaceId: "reporting",
+            workspaceTitle: "Reporting",
+            targetPageTag: "ReportingExports",
+            tags: [],
+            isPinned: false,
+            createdAt: "2026-07-01T00:00:00Z",
+            updatedAt: "2026-07-01T00:00:00Z",
+            lastUsedAt: null,
+            viewStateEnvelope
+          },
+          {
+            presetId: "tampered-view",
+            name: "Tampered view",
+            description: "Bad token stays off the route",
+            workflowId: "reporting-delivery",
+            workflowTitle: "Reporting Delivery",
+            actionId: "reporting.exports",
+            actionLabel: "Open exports",
+            workspaceId: "reporting",
+            workspaceTitle: "Reporting",
+            targetPageTag: "ReportingExports",
+            tags: [],
+            isPinned: false,
+            createdAt: "2026-07-01T00:00:00Z",
+            updatedAt: "2026-07-01T00:00:00Z",
+            lastUsedAt: null,
+            viewStateEnvelope: "!!not-a-valid-token!!"
+          }
+        ]
+      }
+    });
+
+    const presets = model.items.filter((item) => item.kind === "preset");
+    const saved = presets.find((item) => item.presetId === "saved-view-1");
+    const tampered = presets.find((item) => item.presetId === "tampered-view");
+    expect(saved?.route).toContain(`view=${viewStateEnvelope}`);
+    expect(tampered?.route ?? "").not.toContain("view=");
+  });
+
   it("keeps command palette keyboard commands in the view model", () => {
     expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle" })).toBe("close");
+    expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle", actionArmed: true })).toBe(
+      "disarm-action"
+    );
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "last" })).toBe("focus-first");
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "first" })).toBe("focus-last");
     expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "outside" })).toBe("focus-first");

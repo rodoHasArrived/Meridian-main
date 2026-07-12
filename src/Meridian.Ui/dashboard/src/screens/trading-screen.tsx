@@ -26,8 +26,10 @@ import {
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { MetricCard } from "@/components/data/concrete";
 import { SeverityBadge } from "@/components/operations";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -67,6 +69,7 @@ import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail,
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
+  fundAccountId?: string | null;
 }
 
 const riskTone: Record<TradingWorkspaceResponse["risk"]["state"], string> = {
@@ -130,14 +133,6 @@ const acceptanceStatus: Record<AcceptanceLevel, string> = {
   ready: "ready",
   review: "review",
   atRisk: "blocked"
-};
-
-// `MetricSnapshot` tone → Concrete MetricCard left-accent tone.
-const metricCardTone: Record<TradingWorkspaceResponse["metrics"][number]["tone"], MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
 };
 
 const workItemTone: Record<string, string> = {
@@ -255,6 +250,7 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "actions",
       label: "",
+      srLabel: "Row actions",
       align: "right",
       render: (position) => (
         <button
@@ -329,6 +325,7 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     {
       id: "actions",
       label: "",
+      srLabel: "Row actions",
       align: "right",
       render: (order) => (
         <button
@@ -450,15 +447,17 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
-export function TradingScreen({ data }: TradingScreenProps) {
+export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const fundAccountId = asGuid(data?.brokerage?.account);
+  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
+    ?? normalizeFundAccountGuid(data?.brokerage?.account);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const orderTicket = useOrderTicketViewModel({
+    fundAccountId,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
     onOrderAccepted: async () => {
@@ -470,6 +469,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   });
 
   const confirmVm = useTradingConfirmViewModel({
+    fundAccountId,
     onActionSettled: async () => {
       await Promise.all([
         executionEvidence.refresh(),
@@ -549,7 +549,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             label={metric.label}
             value={metric.value}
             delta={metric.delta}
-            tone={metricCardTone[metric.tone]}
+            tone={semanticToneToMetricCardTone(metric.tone)}
           />
         ))}
       </section>
@@ -947,7 +947,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         min={0}
                         step={0.01}
                         value={orderTicket.controls.limitPrice.value}
-                        onChange={(e) => orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
+                        onChange={(e) => orderTicket.controls.limitPrice && orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
                         aria-label={orderTicket.controls.limitPrice.ariaLabel}
                         aria-describedby={orderTicket.controls.limitPrice.describedBy}
                         error={orderTicket.controls.limitPrice.invalid}
@@ -1672,6 +1672,22 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 />
               </label>
             </div>
+            <label htmlFor={promotionGate.fields.evidenceReferences.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.evidenceReferences.label}</span>
+              <textarea
+                id={promotionGate.fields.evidenceReferences.id}
+                aria-label={promotionGate.fields.evidenceReferences.ariaLabel}
+                placeholder={promotionGate.fields.evidenceReferences.placeholder}
+                value={promotionGate.form.evidenceReferences}
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.evidenceReferences.field, e.target.value)}
+                aria-describedby={promotionGate.fields.evidenceReferences.describedBy ?? undefined}
+                disabled={promotionGate.busy}
+                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              {promotionGate.fields.evidenceReferences.helpText ? (
+                <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
+              ) : null}
+            </label>
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -1796,16 +1812,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
       <ConfirmActionDialog vm={confirmVm} />
     </div>
   );
-}
-
-function asGuid(value: string | undefined): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
-    ? value
-    : undefined;
 }
 
 function buildCockpitAcceptance({
@@ -2435,14 +2441,6 @@ function TradingBlotterDetailPanel({
         <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
       )}
     </DenseRowDetailPanel>
-  );
-}
-
-function EmptyEvidenceState({ text }: { text: string }) {
-  return (
-    <div role="status" className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
-      {text}
-    </div>
   );
 }
 

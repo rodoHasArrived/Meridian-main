@@ -10,7 +10,12 @@ const repoMarkers = ["Meridian.sln", ".git"];
 
 function parseArgs(argv) {
   const values = new Map();
+  const valueLists = new Map();
   const flags = new Set();
+  const recordValue = (name, value) => {
+    values.set(name, value);
+    valueLists.set(name, [...(valueLists.get(name) ?? []), value]);
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -20,21 +25,21 @@ function parseArgs(argv) {
 
     const eqIndex = arg.indexOf("=");
     if (eqIndex > 0) {
-      values.set(arg.slice(2, eqIndex), arg.slice(eqIndex + 1));
+      recordValue(arg.slice(2, eqIndex), arg.slice(eqIndex + 1));
       continue;
     }
 
     const name = arg.slice(2);
     const next = argv[index + 1];
     if (next && !next.startsWith("--")) {
-      values.set(name, next);
+      recordValue(name, next);
       index += 1;
     } else {
       flags.add(name);
     }
   }
 
-  return { values, flags };
+  return { values, valueLists, flags };
 }
 
 async function pathExists(candidate) {
@@ -79,6 +84,50 @@ function normalizeBaseUrl(url) {
 function toRouteUrl(baseUrl, routePath) {
   const normalizedPath = routePath.startsWith("/") ? routePath : `/${routePath}`;
   return `${normalizeBaseUrl(baseUrl)}${normalizedPath}`;
+}
+
+function collectCaptureSelectors(valueLists) {
+  const selectors = [
+    ...(valueLists.get("capture") ?? []),
+    ...(valueLists.get("captures") ?? []),
+    ...(valueLists.get("capture-id") ?? []),
+    ...(valueLists.get("capture-name") ?? [])
+  ];
+
+  return selectors
+    .flatMap((value) => String(value).split(","))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function captureMatchesSelector(capture, selector) {
+  const candidates = [
+    capture.id,
+    capture.name,
+    capture.path,
+    screenshotCoveragePath(capture.path ?? ""),
+    capture.docLabel
+  ]
+    .filter((value) => typeof value === "string")
+    .map((value) => value.trim().toLowerCase());
+
+  return candidates.includes(selector);
+}
+
+function selectCaptures(captures, selectors) {
+  if (selectors.length === 0) {
+    return captures;
+  }
+
+  const selected = captures.filter((capture) =>
+    selectors.some((selector) => captureMatchesSelector(capture, selector))
+  );
+
+  if (selected.length === 0) {
+    throw new Error(`No web screenshot captures matched selector(s): ${selectors.join(", ")}`);
+  }
+
+  return selected;
 }
 
 function npmInvocation(args) {
@@ -132,6 +181,7 @@ function startViteServer(dashboardDir, host, port, logs) {
       env: {
         ...process.env,
         BROWSER: "none",
+        MERIDIAN_SCREENSHOT_CAPTURE: "true",
         MERIDIAN_API_BASE_URL: process.env.MERIDIAN_API_BASE_URL ?? "http://127.0.0.1:8080"
       },
       stdio: ["ignore", "pipe", "pipe"],
@@ -170,7 +220,17 @@ async function stopProcess(child) {
 
   if (process.platform === "win32") {
     const taskkill = spawn("taskkill", ["/pid", String(child.pid), "/t", "/f"], { stdio: "ignore" });
-    await new Promise((resolve) => taskkill.once("exit", resolve));
+    const taskkillExited = await new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(false), 5000);
+      taskkill.once("exit", () => {
+        clearTimeout(timer);
+        resolve(true);
+      });
+    });
+    if (!taskkillExited) {
+      taskkill.kill("SIGKILL");
+    }
+    await waitForExit(5000);
     return;
   }
 
@@ -375,7 +435,95 @@ function collectCaptureWaitForTexts(capture) {
   return [...new Set(waitForTexts)];
 }
 
-async function captureRoute(page, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
+function isActionableBrowserError(text) {
+  return /Maximum update depth exceeded|Meridian workstation route failed to render|Unhandled error/i.test(text);
+}
+
+function createPageErrorTracker(page) {
+  const errors = [];
+  const waiters = new Set();
+
+  const record = (message) => {
+    errors.push(message);
+    for (const waiter of waiters) {
+      waiter.resolve(message);
+    }
+    waiters.clear();
+  };
+
+  const onPageError = (error) => {
+    record(`pageerror: ${error.message}`);
+  };
+  const onConsole = (message) => {
+    if (message.type() !== "error") {
+      return;
+    }
+
+    const text = message.text();
+    if (isActionableBrowserError(text)) {
+      record(`console.error: ${text}`);
+    }
+  };
+
+  page.on("pageerror", onPageError);
+  page.on("console", onConsole);
+
+  return {
+    reset() {
+      errors.length = 0;
+      waiters.clear();
+    },
+    firstError() {
+      return errors[0] ?? null;
+    },
+    waitForErrorSignal() {
+      const existing = errors[0];
+      if (existing) {
+        return {
+          promise: Promise.resolve(existing),
+          dispose() {}
+        };
+      }
+
+      const waiter = {};
+      waiter.promise = new Promise((resolve) => {
+        waiter.resolve = resolve;
+      });
+      waiter.dispose = () => waiters.delete(waiter);
+      waiters.add(waiter);
+      return waiter;
+    },
+    dispose() {
+      page.off("pageerror", onPageError);
+      page.off("console", onConsole);
+      waiters.clear();
+    }
+  };
+}
+
+async function waitForCaptureStep(stepPromise, pageErrors, captureName, description) {
+  const waiter = pageErrors.waitForErrorSignal();
+  try {
+    await Promise.race([
+      stepPromise,
+      waiter.promise.then((message) => {
+        throw new Error(`Capture ${captureName} hit a browser render error while ${description}: ${message}`);
+      })
+    ]);
+  } finally {
+    waiter.dispose();
+  }
+}
+
+function assertNoCaptureBrowserError(pageErrors, captureName) {
+  const message = pageErrors.firstError();
+  if (message) {
+    throw new Error(`Capture ${captureName} hit a browser render error: ${message}`);
+  }
+}
+
+async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
+  pageErrors.reset();
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
     height: Number(capture.viewport?.height ?? defaults.height ?? 1100)
@@ -387,19 +535,40 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
   const outputPath = path.join(outputDir, fileName);
   const started = Date.now();
 
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
-  await page.waitForSelector(".workstation-frame", { timeout: timeoutMs });
+  await waitForCaptureStep(
+    page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs }),
+    pageErrors,
+    capture.name,
+    "loading the route"
+  );
+  await waitForCaptureStep(
+    page.waitForSelector(".workstation-frame", { timeout: timeoutMs }),
+    pageErrors,
+    capture.name,
+    "waiting for the workstation frame"
+  );
   for (const waitForText of collectCaptureWaitForTexts(capture)) {
-    await page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: timeoutMs });
+    await waitForCaptureStep(
+      page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: timeoutMs }),
+      pageErrors,
+      capture.name,
+      `waiting for visible text '${waitForText}'`
+    );
   }
   if (Array.isArray(capture.waitForSelectors)) {
     for (const selector of capture.waitForSelectors) {
       if (typeof selector === "string" && selector.trim().length > 0) {
-        await page.waitForSelector(selector, { timeout: timeoutMs });
+        await waitForCaptureStep(
+          page.waitForSelector(selector, { timeout: timeoutMs }),
+          pageErrors,
+          capture.name,
+          `waiting for selector '${selector}'`
+        );
       }
     }
   }
   await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
+  assertNoCaptureBrowserError(pageErrors, capture.name);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
   if (textLength < minTextLength) {
@@ -439,7 +608,7 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
 }
 
 async function main() {
-  const { values, flags } = parseArgs(process.argv.slice(2));
+  const { values, valueLists, flags } = parseArgs(process.argv.slice(2));
   const repoRoot = values.has("repo-root")
     ? path.resolve(values.get("repo-root"))
     : await findRepoRoot(process.cwd());
@@ -451,10 +620,12 @@ async function main() {
     throw new Error(`Unsupported web screenshot route config version: ${routeConfig.version}`);
   }
 
-  const captures = Array.isArray(routeConfig.captures) ? routeConfig.captures : [];
-  if (captures.length === 0) {
+  const allCaptures = Array.isArray(routeConfig.captures) ? routeConfig.captures : [];
+  if (allCaptures.length === 0) {
     throw new Error(`No web screenshot captures found in ${configPath}`);
   }
+  const captureSelectors = collectCaptureSelectors(valueLists);
+  const captures = selectCaptures(allCaptures, captureSelectors);
 
   if (flags.has("list")) {
     for (const capture of captures) {
@@ -488,6 +659,7 @@ async function main() {
   const startedUtc = new Date();
   let server = null;
   let browser = null;
+  let pageErrors = null;
   const results = [];
 
   const manifest = {
@@ -499,12 +671,14 @@ async function main() {
     configPath,
     baseUrl: normalizeBaseUrl(baseUrl),
     outputDir,
+    selectedCaptureCount: captures.length,
+    totalCaptureCount: allCaptures.length,
     captures: results,
     logs: []
   };
 
   try {
-    await assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath);
+    await assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath);
 
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);
@@ -522,14 +696,19 @@ async function main() {
 
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
-    browser = await chromium.launch();
+    // Sandboxes and CI images often provide a system Chromium instead of the exact
+    // browser build the pinned Playwright version would download.
+    const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+    browser = await chromium.launch(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {});
     const page = await browser.newPage();
     await setupApiMocking(page, fixtureRoutes);
+    pageErrors = createPageErrorTracker(page);
 
     for (const capture of captures) {
       try {
         const result = await captureRoute(
           page,
+          pageErrors,
           capture,
           outputDir,
           baseUrl,
@@ -568,6 +747,9 @@ async function main() {
     manifest.error = error instanceof Error ? error.message : String(error);
     throw error;
   } finally {
+    if (pageErrors) {
+      pageErrors.dispose();
+    }
     if (browser) {
       await browser.close();
     }

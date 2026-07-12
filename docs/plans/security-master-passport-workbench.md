@@ -1,7 +1,7 @@
 # Security Master Passport Workbench — Governed Write Blueprint
 
 > **Status:** Proposed (blueprint) · **Created:** 2026-06-26 · **Owner lane:** Data Confidence and Validation / Accounting and Ledger
-> **Roadmap anchors:** W5-MASSET-001 (multi-asset reference-data workbench — named next feature slice), W4-RPT-001 (governed report-pack restatement lifecycle)
+> **Roadmap anchors:** W5-MASSET-001 (multi-asset reference-data workbench — read-model slice complete per `docs/product/implementation-todo-list.md`; this blueprint is the deferred write-surface follow-on), W4-RPT-001 (governed report-pack restatement lifecycle)
 > **Depth:** full blueprint · **Source:** brainstorm 2026-06-26 (write-first reframe)
 
 ## Summary

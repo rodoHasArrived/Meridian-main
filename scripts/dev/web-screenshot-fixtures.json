@@ -20,19 +20,67 @@
       "storageHealth": "Warning",
       "lastHeartbeatUtc": "2026-04-28T18:15:00Z",
       "metrics": [
-        { "id": "providers", "label": "Providers Online", "value": "3 / 4", "delta": "1 degraded", "tone": "warning" },
-        { "id": "runs", "label": "Active Runs", "value": "2", "delta": "+1", "tone": "default" },
-        { "id": "positions", "label": "Open Positions", "value": "5", "delta": "+2", "tone": "default" },
-        { "id": "backfills", "label": "Active Backfills", "value": "1", "delta": "review", "tone": "warning" }
+        {
+          "id": "providers",
+          "label": "Providers Online",
+          "value": "3 / 4",
+          "delta": "1 degraded",
+          "tone": "warning"
+        },
+        {
+          "id": "runs",
+          "label": "Active Runs",
+          "value": "2",
+          "delta": "+1",
+          "tone": "default"
+        },
+        {
+          "id": "positions",
+          "label": "Open Positions",
+          "value": "5",
+          "delta": "+2",
+          "tone": "default"
+        },
+        {
+          "id": "backfills",
+          "label": "Active Backfills",
+          "value": "1",
+          "delta": "review",
+          "tone": "warning"
+        }
       ],
       "recentEvents": []
     },
     "/api/workstation/trading": {
       "metrics": [
-        { "id": "pnl", "label": "Net P&L", "value": "+$3,100", "delta": "+2.1%", "tone": "success" },
-        { "id": "orders", "label": "Open Orders", "value": "4", "delta": "+1", "tone": "default" },
-        { "id": "fills", "label": "Fills", "value": "13", "delta": "+3", "tone": "success" },
-        { "id": "risk", "label": "Risk", "value": "Observe", "delta": "0%", "tone": "warning" }
+        {
+          "id": "pnl",
+          "label": "Net P&L",
+          "value": "+$3,100",
+          "delta": "+2.1%",
+          "tone": "success"
+        },
+        {
+          "id": "orders",
+          "label": "Open Orders",
+          "value": "4",
+          "delta": "+1",
+          "tone": "default"
+        },
+        {
+          "id": "fills",
+          "label": "Fills",
+          "value": "13",
+          "delta": "+3",
+          "tone": "success"
+        },
+        {
+          "id": "risk",
+          "label": "Risk",
+          "value": "Observe",
+          "delta": "0%",
+          "tone": "warning"
+        }
       ],
       "positions": [
         {
@@ -78,7 +126,10 @@
         "var95": "$9,000",
         "maxDrawdown": "-1.1%",
         "buyingPowerUsed": "58%",
-        "activeGuardrails": ["Cap per single-name", "Throttle at 70%"]
+        "activeGuardrails": [
+          "Cap per single-name",
+          "Throttle at 70%"
+        ]
       },
       "brokerage": {
         "provider": "Interactive Brokers",
@@ -132,7 +183,10 @@
         "approvalStatus": "pending",
         "manualOverrideId": null,
         "approvedBy": null,
-        "approvalChecklist": ["DK1 trust packet", "Replay consistency"]
+        "approvalChecklist": [
+          "DK1 trust packet",
+          "Replay consistency"
+        ]
       },
       "trustGate": {
         "gateId": "dk1-provider-trust",
@@ -212,10 +266,34 @@
     ],
     "/api/workstation/portfolio": {
       "metrics": [
-        { "id": "equity", "label": "Total Equity", "value": "$312,400", "delta": "+1.2%", "tone": "success" },
-        { "id": "cash", "label": "Cash", "value": "$87,500", "delta": "-0.3%", "tone": "default" },
-        { "id": "positions", "label": "Positions", "value": "3", "delta": "0", "tone": "default" },
-        { "id": "pnl", "label": "Unrealized P&L", "value": "+$9,451", "delta": "+3.1%", "tone": "success" }
+        {
+          "id": "equity",
+          "label": "Total Equity",
+          "value": "$312,400",
+          "delta": "+1.2%",
+          "tone": "success"
+        },
+        {
+          "id": "cash",
+          "label": "Cash",
+          "value": "$87,500",
+          "delta": "-0.3%",
+          "tone": "default"
+        },
+        {
+          "id": "positions",
+          "label": "Positions",
+          "value": "3",
+          "delta": "0",
+          "tone": "default"
+        },
+        {
+          "id": "pnl",
+          "label": "Unrealized P&L",
+          "value": "+$9,451",
+          "delta": "+3.1%",
+          "tone": "success"
+        }
       ],
       "positions": [
         {
@@ -282,10 +360,34 @@
       "entity": "portfolio",
       "asOfUtc": "2026-06-02T00:00:00.0000000Z",
       "metrics": [
-        { "id": "multi-asset-classes", "label": "Asset classes", "value": "8", "delta": "covered", "tone": "default" },
-        { "id": "multi-asset-ready", "label": "Ready", "value": "2", "delta": "definition + evidence", "tone": "default" },
-        { "id": "multi-asset-review", "label": "Review required", "value": "6", "delta": "evidence gaps", "tone": "warning" },
-        { "id": "multi-asset-blocked", "label": "Blocked", "value": "0", "delta": "close gates", "tone": "success" }
+        {
+          "id": "multi-asset-classes",
+          "label": "Asset classes",
+          "value": "8",
+          "delta": "covered",
+          "tone": "default"
+        },
+        {
+          "id": "multi-asset-ready",
+          "label": "Ready",
+          "value": "2",
+          "delta": "definition + evidence",
+          "tone": "default"
+        },
+        {
+          "id": "multi-asset-review",
+          "label": "Review required",
+          "value": "6",
+          "delta": "evidence gaps",
+          "tone": "warning"
+        },
+        {
+          "id": "multi-asset-blocked",
+          "label": "Blocked",
+          "value": "0",
+          "delta": "close gates",
+          "tone": "success"
+        }
       ],
       "assetClasses": [
         {
@@ -361,10 +463,34 @@
     },
     "/api/workstation/strategy": {
       "metrics": [
-        { "id": "runs", "label": "Runs", "value": "24", "delta": "+8%", "tone": "success" },
-        { "id": "queued", "label": "Queued", "value": "3", "delta": "0%", "tone": "default" },
-        { "id": "review", "label": "Needs Review", "value": "2", "delta": "-1%", "tone": "warning" },
-        { "id": "promotions", "label": "Promotions", "value": "5", "delta": "+2", "tone": "default" }
+        {
+          "id": "runs",
+          "label": "Runs",
+          "value": "24",
+          "delta": "+8%",
+          "tone": "success"
+        },
+        {
+          "id": "queued",
+          "label": "Queued",
+          "value": "3",
+          "delta": "0%",
+          "tone": "default"
+        },
+        {
+          "id": "review",
+          "label": "Needs Review",
+          "value": "2",
+          "delta": "-1%",
+          "tone": "warning"
+        },
+        {
+          "id": "promotions",
+          "label": "Promotions",
+          "value": "5",
+          "delta": "+2",
+          "tone": "default"
+        }
       ],
       "runs": [
         {
@@ -402,14 +528,23 @@
         "description": "Rank liquid equities by momentum, quality, and volatility before risk-gate review.",
         "category": "Equity rotation",
         "sourcePrototype": "Strategy Designer screenshot fixture",
-        "tags": ["momentum", "quality", "risk-gate"],
+        "tags": [
+          "momentum",
+          "quality",
+          "risk-gate"
+        ],
         "document": {
           "documentId": "strategy-designer-fixture-1",
           "name": "Quality momentum rotation",
           "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
           "version": "1.0",
           "datasetReference": "fixture://strategy-designer/quality-momentum",
-          "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+          "universe": [
+            "AAPL",
+            "MSFT",
+            "NVDA",
+            "QQQ"
+          ],
           "cells": [
             {
               "cellId": "universe",
@@ -417,8 +552,13 @@
               "kind": "universe",
               "purpose": "Seed the candidate universe with liquid large-cap equities.",
               "source": "Provider historical bars / security master",
-              "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
-              "parameters": { "minimumDollarVolume": "25000000" },
+              "fieldRefs": [
+                "PRICE",
+                "AVG_DOLLAR_VOLUME_20D"
+              ],
+              "parameters": {
+                "minimumDollarVolume": "25000000"
+              },
               "disabledReason": null
             },
             {
@@ -427,8 +567,13 @@
               "kind": "score",
               "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
               "source": "Meridian factor library",
-              "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
-              "parameters": { "lookback": "63" },
+              "fieldRefs": [
+                "MOMENTUM_63D",
+                "VOLATILITY_20D"
+              ],
+              "parameters": {
+                "lookback": "63"
+              },
               "disabledReason": null
             }
           ],
@@ -443,7 +588,10 @@
               "rationale": "Keep low-liquidity symbols out of the scoring pass."
             }
           ],
-          "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+          "metadata": {
+            "evidenceLane": "browser-screenshot",
+            "fixture": "true"
+          },
           "createdAt": "2026-05-15T15:00:00Z",
           "updatedAt": "2026-05-15T15:00:00Z"
         }
@@ -459,7 +607,11 @@
         "description": "Canonical last or close price resolved through Meridian providers.",
         "isEnabled": true,
         "disabledReason": null,
-        "synonyms": ["close", "last", "bar.close"]
+        "synonyms": [
+          "close",
+          "last",
+          "bar.close"
+        ]
       },
       {
         "fieldId": "MOMENTUM_63D",
@@ -470,7 +622,10 @@
         "description": "Return over the last 63 trading sessions.",
         "isEnabled": true,
         "disabledReason": null,
-        "synonyms": ["return", "trend"]
+        "synonyms": [
+          "return",
+          "trend"
+        ]
       },
       {
         "fieldId": "AMX_PRIVATE_SCORE",
@@ -481,7 +636,11 @@
         "description": "Analyst model extension field kept disabled until provenance is attached.",
         "isEnabled": false,
         "disabledReason": "No Meridian canonical source",
-        "synonyms": ["analyst", "custom", "amx"]
+        "synonyms": [
+          "analyst",
+          "custom",
+          "amx"
+        ]
       }
     ],
     "/api/workstation/strategy/designer/drafts": [
@@ -502,7 +661,12 @@
       "description": "Screenshot fixture for the visual Strategy Designer evidence lane.",
       "version": "1.0",
       "datasetReference": "fixture://strategy-designer/quality-momentum",
-      "universe": ["AAPL", "MSFT", "NVDA", "QQQ"],
+      "universe": [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "QQQ"
+      ],
       "cells": [
         {
           "cellId": "universe",
@@ -510,8 +674,13 @@
           "kind": "universe",
           "purpose": "Seed the candidate universe with liquid large-cap equities.",
           "source": "Provider historical bars / security master",
-          "fieldRefs": ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
-          "parameters": { "minimumDollarVolume": "25000000" },
+          "fieldRefs": [
+            "PRICE",
+            "AVG_DOLLAR_VOLUME_20D"
+          ],
+          "parameters": {
+            "minimumDollarVolume": "25000000"
+          },
           "disabledReason": null
         },
         {
@@ -520,8 +689,13 @@
           "kind": "score",
           "purpose": "Rank candidates by medium-term momentum adjusted for volatility.",
           "source": "Meridian factor library",
-          "fieldRefs": ["MOMENTUM_63D", "VOLATILITY_20D"],
-          "parameters": { "lookback": "63" },
+          "fieldRefs": [
+            "MOMENTUM_63D",
+            "VOLATILITY_20D"
+          ],
+          "parameters": {
+            "lookback": "63"
+          },
           "disabledReason": null
         }
       ],
@@ -536,16 +710,43 @@
           "rationale": "Keep low-liquidity symbols out of the scoring pass."
         }
       ],
-      "metadata": { "evidenceLane": "browser-screenshot", "fixture": "true" },
+      "metadata": {
+        "evidenceLane": "browser-screenshot",
+        "fixture": "true"
+      },
       "createdAt": "2026-05-15T15:00:00Z",
       "updatedAt": "2026-05-15T15:00:00Z"
     },
     "/api/workstation/accounting": {
       "metrics": [
-        { "id": "breaks", "label": "Open Breaks", "value": "2", "delta": "+1", "tone": "warning" },
-        { "id": "drift", "label": "Timing Drift", "value": "1", "delta": "0%", "tone": "warning" },
-        { "id": "coverage", "label": "Security Gaps", "value": "0", "delta": "0%", "tone": "success" },
-        { "id": "audit", "label": "Audit Ready", "value": "4", "delta": "+2", "tone": "success" }
+        {
+          "id": "breaks",
+          "label": "Open Breaks",
+          "value": "2",
+          "delta": "+1",
+          "tone": "warning"
+        },
+        {
+          "id": "drift",
+          "label": "Timing Drift",
+          "value": "1",
+          "delta": "0%",
+          "tone": "warning"
+        },
+        {
+          "id": "coverage",
+          "label": "Security Gaps",
+          "value": "0",
+          "delta": "0%",
+          "tone": "success"
+        },
+        {
+          "id": "audit",
+          "label": "Audit Ready",
+          "value": "4",
+          "delta": "+2",
+          "tone": "success"
+        }
       ],
       "reconciliationQueue": [
         {
@@ -600,7 +801,10 @@
       },
       "reporting": {
         "profileCount": 3,
-        "recommendedProfiles": ["excel", "investor-pdf"],
+        "recommendedProfiles": [
+          "excel",
+          "investor-pdf"
+        ],
         "profiles": [
           {
             "id": "excel",
@@ -658,7 +862,11 @@
             "route": "/reporting/report-packs?recipient=investor-relations"
           }
         ],
-        "reportPackTargets": ["board", "strategy", "investor-relations"],
+        "reportPackTargets": [
+          "board",
+          "strategy",
+          "investor-relations"
+        ],
         "summary": "3 governed export profiles are available with report-pack distribution, publication, and restatement evidence loaded.",
         "templates": [
           {
@@ -666,7 +874,12 @@
             "family": "InvestorStatement",
             "name": "Investor Monthly Statement",
             "version": "1.0.0",
-            "sections": ["cover", "performance", "positions", "flows"],
+            "sections": [
+              "cover",
+              "performance",
+              "positions",
+              "flows"
+            ],
             "lifecycleStatus": "Approved",
             "isBuiltIn": true,
             "isLatestApproved": true,
@@ -678,7 +891,13 @@
             "family": "BoardPack",
             "name": "Board Close Pack",
             "version": "2",
-            "sections": ["close-summary", "reconciliation", "approval-log", "evidence-bundle", "distribution"],
+            "sections": [
+              "close-summary",
+              "reconciliation",
+              "approval-log",
+              "evidence-bundle",
+              "distribution"
+            ],
             "lifecycleStatus": "InReview",
             "isBuiltIn": false,
             "isLatestApproved": false,
@@ -701,7 +920,11 @@
               "publication-manifest:manifest-restated-demo",
               "restatement:pricing-correction"
             ],
-            "auditActions": ["Generated", "EvidenceBundled", "ControllerReviewed"],
+            "auditActions": [
+              "Generated",
+              "EvidenceBundled",
+              "ControllerReviewed"
+            ],
             "failureReason": null,
             "drilldownLinks": [
               {
@@ -745,8 +968,13 @@
             "attemptCount": 1,
             "sectionCount": 4,
             "lineageLinkedSections": 4,
-            "artifacts": ["publication-manifest:manifest-investor-202605"],
-            "auditActions": ["Generated", "Published"],
+            "artifacts": [
+              "publication-manifest:manifest-investor-202605"
+            ],
+            "auditActions": [
+              "Generated",
+              "Published"
+            ],
             "failureReason": null,
             "drilldownLinks": [],
             "nextActions": []
@@ -758,7 +986,10 @@
             "fundProfileId": "demo-fund",
             "fundAccountId": "demo-account",
             "period": "2026-05",
-            "templateId": { "name": "monthly-board-pack", "version": 1 },
+            "templateId": {
+              "name": "monthly-board-pack",
+              "version": 1
+            },
             "state": "Restated",
             "version": 2,
             "createdAt": "2026-05-27T10:00:00Z",
@@ -839,36 +1070,96 @@
       },
       "controlCenter": {
         "closeReadiness": "At risk",
-        "portfolioFilterOptions": ["all-portfolios", "paper-index", "direct-lending"],
-        "accountFilterOptions": ["operating-cash", "public-investments", "trading-expenses"],
+        "portfolioFilterOptions": [
+          "all-portfolios",
+          "paper-index",
+          "direct-lending"
+        ],
+        "accountFilterOptions": [
+          "operating-cash",
+          "public-investments",
+          "trading-expenses"
+        ],
         "blockerSeverityDistribution": [
-          { "severity": "Critical", "count": 1 },
-          { "severity": "Warning", "count": 2 }
+          {
+            "severity": "Critical",
+            "count": 1
+          },
+          {
+            "severity": "Warning",
+            "count": 2
+          }
         ],
         "agingCurves": [
-          { "bucket": "0-1d", "count": 2 },
-          { "bucket": "2-3d", "count": 1 },
-          { "bucket": "4d+", "count": 1 }
+          {
+            "bucket": "0-1d",
+            "count": 2
+          },
+          {
+            "bucket": "2-3d",
+            "count": 1
+          },
+          {
+            "bucket": "4d+",
+            "count": 1
+          }
         ],
         "ownerWorkload": [
-          { "owner": "fund-controller", "openCount": 3 },
-          { "owner": "reporting-ops", "openCount": 1 }
+          {
+            "owner": "fund-controller",
+            "openCount": 3
+          },
+          {
+            "owner": "reporting-ops",
+            "openCount": 1
+          }
         ],
         "slaBreachCount": 1,
         "trendSnapshots": [
-          { "metric": "Open breaks", "value": 2, "trend": "+1 today" },
-          { "metric": "Pending approvals", "value": 1, "trend": "unchanged" },
-          { "metric": "Evidence gaps", "value": 5, "trend": "-2 today" },
-          { "metric": "Distribution blockers", "value": 1, "trend": "new" }
+          {
+            "metric": "Open breaks",
+            "value": 2,
+            "trend": "+1 today"
+          },
+          {
+            "metric": "Pending approvals",
+            "value": 1,
+            "trend": "unchanged"
+          },
+          {
+            "metric": "Evidence gaps",
+            "value": 5,
+            "trend": "-2 today"
+          },
+          {
+            "metric": "Distribution blockers",
+            "value": 1,
+            "trend": "new"
+          }
         ],
         "drillLinks": [
-          { "label": "Review exceptions", "href": "/accounting/exceptions" },
-          { "label": "Open approvals", "href": "/accounting/approvals" },
-          { "label": "Report evidence", "href": "/reporting/evidence" }
+          {
+            "label": "Review exceptions",
+            "href": "/accounting/exceptions"
+          },
+          {
+            "label": "Open approvals",
+            "href": "/accounting/approvals"
+          },
+          {
+            "label": "Report evidence",
+            "href": "/reporting/evidence"
+          }
         ],
         "alerts": [
-          { "tone": "danger", "message": "Critical cash variance breached SLA for run-42." },
-          { "tone": "warning", "message": "Board report pack is pending controller approval." }
+          {
+            "tone": "danger",
+            "message": "Critical cash variance breached SLA for run-42."
+          },
+          {
+            "tone": "warning",
+            "message": "Board report pack is pending controller approval."
+          }
         ]
       }
     },
@@ -884,7 +1175,11 @@
         "supportsPosting": false,
         "statusLabel": "Ready for fixture import",
         "statusDetail": "Read-only external GL import and reconciliation are available for contract-first validation.",
-        "evidenceKinds": ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+        "evidenceKinds": [
+          "QuickBooksAccount",
+          "QuickBooksJournalEntry",
+          "QuickBooksTrialBalance"
+        ]
       },
       {
         "providerId": "quickbooks",
@@ -897,7 +1192,11 @@
         "supportsPosting": false,
         "statusLabel": "OAuth adapter planned",
         "statusDetail": "Live QuickBooks Online OAuth and posting/export are outside the contract-first slice.",
-        "evidenceKinds": ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+        "evidenceKinds": [
+          "QuickBooksAccount",
+          "QuickBooksJournalEntry",
+          "QuickBooksTrialBalance"
+        ]
       }
     ],
     "/api/accounting-system/import/latest": {
@@ -914,14 +1213,56 @@
         "chartAccountCount": 4,
         "journalEntryCount": 2,
         "trialBalanceLineCount": 4,
-        "evidenceReferences": ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
-        "warnings": ["External posting/export is disabled for the contract-first slice."]
+        "evidenceReferences": [
+          "quickbooks-fixture:chart-of-accounts",
+          "quickbooks-fixture:journal",
+          "quickbooks-fixture:trial-balance"
+        ],
+        "warnings": [
+          "External posting/export is disabled for the contract-first slice."
+        ]
       },
       "chartAccounts": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "displayName": "Operating Cash", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1000" },
-        { "externalAccountId": "qbo-1500", "accountCode": "Assets:Investments:Public", "displayName": "Public Investments", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1500" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "displayName": "Investment Income", "accountType": "Income", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "displayName": "Trading Expenses", "accountType": "Expense", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "displayName": "Operating Cash",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-1500",
+          "accountCode": "Assets:Investments:Public",
+          "displayName": "Public Investments",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1500"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "displayName": "Investment Income",
+          "accountType": "Income",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "displayName": "Trading Expenses",
+          "accountType": "Expense",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-6100"
+        }
       ],
       "journalEntries": [
         {
@@ -933,17 +1274,80 @@
           "totalCredits": 250000,
           "evidenceRef": "quickbooks-fixture:journal:qbo-je-100",
           "lines": [
-            { "externalLineId": "qbo-je-100-1", "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "description": "Capital contribution received", "debit": 250000, "credit": 0, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1" },
-            { "externalLineId": "qbo-je-100-2", "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "description": "Capital contribution offset", "debit": 0, "credit": 250000, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2" }
+            {
+              "externalLineId": "qbo-je-100-1",
+              "externalAccountId": "qbo-1000",
+              "accountCode": "Assets:Cash:Operating",
+              "description": "Capital contribution received",
+              "debit": 250000,
+              "credit": 0,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1"
+            },
+            {
+              "externalLineId": "qbo-je-100-2",
+              "externalAccountId": "qbo-4000",
+              "accountCode": "Income:Investment",
+              "description": "Capital contribution offset",
+              "debit": 0,
+              "credit": 250000,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2"
+            }
           ]
         }
       ],
       "trialBalance": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "accountName": "Operating Cash", "accountType": "Asset", "debit": 248750, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "accountName": "Investment Income", "accountType": "Income", "debit": 0, "credit": 250000, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "accountName": "Trading Expenses", "accountType": "Expense", "debit": 1250, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "accountName": "Operating Cash",
+          "accountType": "Asset",
+          "debit": 248750,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "accountName": "Investment Income",
+          "accountType": "Income",
+          "debit": 0,
+          "credit": 250000,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "accountName": "Trading Expenses",
+          "accountType": "Expense",
+          "debit": 1250,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100"
+        }
       ]
     },
+    "/api/workstation/runs/run-42/ledger/journal": [
+      {
+        "journalEntryId": "je-cash-1",
+        "timestamp": "2026-06-30T00:00:00Z",
+        "description": "Cash sweep",
+        "totalDebits": 500,
+        "totalCredits": 500,
+        "lineCount": 2,
+        "accountScopeDisplayName": "Cash",
+        "entityScopeDisplayName": "Fund Alpha",
+        "dimensions": {
+          "instrumentId": "cash-usd"
+        }
+      }
+    ],
     "/api/accounting-system/import/preview": {
       "summary": {
         "importId": "qbo-fixture-20260131",
@@ -958,14 +1362,56 @@
         "chartAccountCount": 4,
         "journalEntryCount": 2,
         "trialBalanceLineCount": 4,
-        "evidenceReferences": ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
-        "warnings": ["External posting/export is disabled for the contract-first slice."]
+        "evidenceReferences": [
+          "quickbooks-fixture:chart-of-accounts",
+          "quickbooks-fixture:journal",
+          "quickbooks-fixture:trial-balance"
+        ],
+        "warnings": [
+          "External posting/export is disabled for the contract-first slice."
+        ]
       },
       "chartAccounts": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "displayName": "Operating Cash", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1000" },
-        { "externalAccountId": "qbo-1500", "accountCode": "Assets:Investments:Public", "displayName": "Public Investments", "accountType": "Asset", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-1500" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "displayName": "Investment Income", "accountType": "Income", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "displayName": "Trading Expenses", "accountType": "Expense", "currency": "USD", "isActive": true, "parentExternalAccountId": null, "evidenceRef": "quickbooks-fixture:account:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "displayName": "Operating Cash",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-1500",
+          "accountCode": "Assets:Investments:Public",
+          "displayName": "Public Investments",
+          "accountType": "Asset",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-1500"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "displayName": "Investment Income",
+          "accountType": "Income",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "displayName": "Trading Expenses",
+          "accountType": "Expense",
+          "currency": "USD",
+          "isActive": true,
+          "parentExternalAccountId": null,
+          "evidenceRef": "quickbooks-fixture:account:qbo-6100"
+        }
       ],
       "journalEntries": [
         {
@@ -977,15 +1423,63 @@
           "totalCredits": 250000,
           "evidenceRef": "quickbooks-fixture:journal:qbo-je-100",
           "lines": [
-            { "externalLineId": "qbo-je-100-1", "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "description": "Capital contribution received", "debit": 250000, "credit": 0, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1" },
-            { "externalLineId": "qbo-je-100-2", "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "description": "Capital contribution offset", "debit": 0, "credit": 250000, "currency": "USD", "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2" }
+            {
+              "externalLineId": "qbo-je-100-1",
+              "externalAccountId": "qbo-1000",
+              "accountCode": "Assets:Cash:Operating",
+              "description": "Capital contribution received",
+              "debit": 250000,
+              "credit": 0,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:1"
+            },
+            {
+              "externalLineId": "qbo-je-100-2",
+              "externalAccountId": "qbo-4000",
+              "accountCode": "Income:Investment",
+              "description": "Capital contribution offset",
+              "debit": 0,
+              "credit": 250000,
+              "currency": "USD",
+              "evidenceRef": "quickbooks-fixture:journal:qbo-je-100:2"
+            }
           ]
         }
       ],
       "trialBalance": [
-        { "externalAccountId": "qbo-1000", "accountCode": "Assets:Cash:Operating", "accountName": "Operating Cash", "accountType": "Asset", "debit": 248750, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000" },
-        { "externalAccountId": "qbo-4000", "accountCode": "Income:Investment", "accountName": "Investment Income", "accountType": "Income", "debit": 0, "credit": 250000, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000" },
-        { "externalAccountId": "qbo-6100", "accountCode": "Expenses:Trading", "accountName": "Trading Expenses", "accountType": "Expense", "debit": 1250, "credit": 0, "currency": "USD", "asOfDate": "2026-01-31", "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100" }
+        {
+          "externalAccountId": "qbo-1000",
+          "accountCode": "Assets:Cash:Operating",
+          "accountName": "Operating Cash",
+          "accountType": "Asset",
+          "debit": 248750,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-1000"
+        },
+        {
+          "externalAccountId": "qbo-4000",
+          "accountCode": "Income:Investment",
+          "accountName": "Investment Income",
+          "accountType": "Income",
+          "debit": 0,
+          "credit": 250000,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-4000"
+        },
+        {
+          "externalAccountId": "qbo-6100",
+          "accountCode": "Expenses:Trading",
+          "accountName": "Trading Expenses",
+          "accountType": "Expense",
+          "debit": 1250,
+          "credit": 0,
+          "currency": "USD",
+          "asOfDate": "2026-01-31",
+          "evidenceRef": "quickbooks-fixture:trial-balance:qbo-6100"
+        }
       ]
     },
     "/api/accounting-system/reconciliation/latest": {
@@ -1004,7 +1498,11 @@
       "totalMeridianCredits": 0,
       "postingEnabled": false,
       "postingDisabledReason": "External GL posting/export is disabled until the provider-neutral evidence and reconciliation path is proven.",
-      "evidenceReferences": ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
+      "evidenceReferences": [
+        "quickbooks-fixture:chart-of-accounts",
+        "quickbooks-fixture:journal",
+        "quickbooks-fixture:trial-balance"
+      ],
       "rows": [
         {
           "rowId": "gl-recon-qbo-1000",
@@ -1052,10 +1550,34 @@
     },
     "/api/workstation/reporting": {
       "metrics": [
-        { "id": "packs", "label": "Report Packs", "value": "4", "delta": "+1", "tone": "success" },
-        { "id": "pending", "label": "Pending Review", "value": "1", "delta": "+1", "tone": "warning" },
-        { "id": "exports", "label": "Exports Ready", "value": "3", "delta": "0", "tone": "success" },
-        { "id": "approved", "label": "Approved", "value": "3", "delta": "+2", "tone": "success" }
+        {
+          "id": "packs",
+          "label": "Report Packs",
+          "value": "4",
+          "delta": "+1",
+          "tone": "success"
+        },
+        {
+          "id": "pending",
+          "label": "Pending Review",
+          "value": "1",
+          "delta": "+1",
+          "tone": "warning"
+        },
+        {
+          "id": "exports",
+          "label": "Exports Ready",
+          "value": "3",
+          "delta": "0",
+          "tone": "success"
+        },
+        {
+          "id": "approved",
+          "label": "Approved",
+          "value": "3",
+          "delta": "+2",
+          "tone": "success"
+        }
       ],
       "reconciliationQueue": [],
       "breakQueue": [],
@@ -1071,7 +1593,10 @@
       },
       "reporting": {
         "profileCount": 3,
-        "recommendedProfiles": ["excel", "investor-pdf"],
+        "recommendedProfiles": [
+          "excel",
+          "investor-pdf"
+        ],
         "profiles": [
           {
             "id": "excel",
@@ -1129,7 +1654,11 @@
             "route": "/reporting/report-packs?recipient=investor-relations"
           }
         ],
-        "reportPackTargets": ["board", "strategy", "investor-relations"],
+        "reportPackTargets": [
+          "board",
+          "strategy",
+          "investor-relations"
+        ],
         "summary": "3 governed export profiles are available with report-pack distribution, publication, and restatement evidence loaded.",
         "templates": [
           {
@@ -1137,7 +1666,12 @@
             "family": "InvestorStatement",
             "name": "Investor Monthly Statement",
             "version": "1.0.0",
-            "sections": ["cover", "performance", "positions", "flows"],
+            "sections": [
+              "cover",
+              "performance",
+              "positions",
+              "flows"
+            ],
             "lifecycleStatus": "Approved",
             "isBuiltIn": true,
             "isLatestApproved": true,
@@ -1149,7 +1683,13 @@
             "family": "BoardPack",
             "name": "Board Close Pack",
             "version": "2",
-            "sections": ["close-summary", "reconciliation", "approval-log", "evidence-bundle", "distribution"],
+            "sections": [
+              "close-summary",
+              "reconciliation",
+              "approval-log",
+              "evidence-bundle",
+              "distribution"
+            ],
             "lifecycleStatus": "InReview",
             "isBuiltIn": false,
             "isLatestApproved": false,
@@ -1172,7 +1712,11 @@
               "publication-manifest:manifest-restated-demo",
               "restatement:pricing-correction"
             ],
-            "auditActions": ["Generated", "EvidenceBundled", "ControllerReviewed"],
+            "auditActions": [
+              "Generated",
+              "EvidenceBundled",
+              "ControllerReviewed"
+            ],
             "failureReason": null,
             "drilldownLinks": [
               {
@@ -1216,8 +1760,13 @@
             "attemptCount": 1,
             "sectionCount": 4,
             "lineageLinkedSections": 4,
-            "artifacts": ["publication-manifest:manifest-investor-202605"],
-            "auditActions": ["Generated", "Published"],
+            "artifacts": [
+              "publication-manifest:manifest-investor-202605"
+            ],
+            "auditActions": [
+              "Generated",
+              "Published"
+            ],
             "failureReason": null,
             "drilldownLinks": [],
             "nextActions": []
@@ -1229,7 +1778,10 @@
             "fundProfileId": "demo-fund",
             "fundAccountId": "demo-account",
             "period": "2026-05",
-            "templateId": { "name": "monthly-board-pack", "version": 1 },
+            "templateId": {
+              "name": "monthly-board-pack",
+              "version": 1
+            },
             "state": "Restated",
             "version": 2,
             "createdAt": "2026-05-27T10:00:00Z",
@@ -1311,10 +1863,34 @@
     },
     "/api/workstation/data": {
       "metrics": [
-        { "id": "providers", "label": "Providers Healthy", "value": "4", "delta": "0", "tone": "success" },
-        { "id": "backfills", "label": "Backfills Running", "value": "2", "delta": "+1", "tone": "default" },
-        { "id": "exports", "label": "Exports Ready", "value": "3", "delta": "+1", "tone": "success" },
-        { "id": "review", "label": "Needs Review", "value": "1", "delta": "+1", "tone": "warning" }
+        {
+          "id": "providers",
+          "label": "Providers Healthy",
+          "value": "4",
+          "delta": "0",
+          "tone": "success"
+        },
+        {
+          "id": "backfills",
+          "label": "Backfills Running",
+          "value": "2",
+          "delta": "+1",
+          "tone": "default"
+        },
+        {
+          "id": "exports",
+          "label": "Exports Ready",
+          "value": "3",
+          "delta": "+1",
+          "tone": "success"
+        },
+        {
+          "id": "review",
+          "label": "Needs Review",
+          "value": "1",
+          "delta": "+1",
+          "tone": "warning"
+        }
       ],
       "providers": [
         {
@@ -1382,7 +1958,10 @@
       "expiresAt": null,
       "lastError": null,
       "warnings": [],
-      "scopes": ["trading:account", "brokerage-sync:read"],
+      "scopes": [
+        "trading:account",
+        "brokerage-sync:read"
+      ],
       "environment": "paper",
       "externalAccountId": "PA-DEMO",
       "verifiedAt": "2026-05-07T11:50:00Z",
@@ -1434,6 +2013,132 @@
         }
       ]
     },
+    "/api/portfolio/cash-ladder": {
+      "engineVersion": "portfolio-cash-ladder-v1",
+      "asOfDate": "2026-07-05",
+      "horizonDays": 14,
+      "baseCurrency": "USD",
+      "scenarioId": "base",
+      "openingCash": 50000,
+      "minimumCashThreshold": 10000,
+      "buckets": [
+        {
+          "bucketStart": "2026-07-05",
+          "bucketEnd": "2026-07-11",
+          "label": "Jul 5 - Jul 11",
+          "inflows": 3500,
+          "outflows": -1000,
+          "netFlow": 2500,
+          "cumulativeCash": 52500,
+          "breachesMinimumBalance": false,
+          "sources": [
+            {
+              "source": "Coupons & interest",
+              "amount": 3500,
+              "flowCount": 2
+            },
+            {
+              "source": "Capital activity",
+              "amount": -1000,
+              "flowCount": 1
+            }
+          ]
+        },
+        {
+          "bucketStart": "2026-07-12",
+          "bucketEnd": "2026-07-18",
+          "label": "Jul 12 - Jul 18",
+          "inflows": 0,
+          "outflows": -48000,
+          "netFlow": -48000,
+          "cumulativeCash": 4500,
+          "breachesMinimumBalance": true,
+          "sources": [
+            {
+              "source": "Capital activity",
+              "amount": -48000,
+              "flowCount": 1
+            }
+          ]
+        }
+      ],
+      "contributions": [
+        {
+          "securityId": "sec-fixture-bond-1",
+          "displayName": "Meridian 5.875% 2031",
+          "assetClass": "Bond",
+          "projectionRunId": "11111111-2222-3333-4444-555555555555",
+          "projectionEngineVersion": "asset-obligation-projection-v1",
+          "termsVersionId": "66666666-7777-8888-9999-000000000000",
+          "termsHash": "security-master:3",
+          "sourceDomain": "SecurityMaster",
+          "sourceEntityId": "sec-fixture-bond-1",
+          "flowType": "Coupon",
+          "sourceLane": "Coupons & interest",
+          "dueDate": "2026-07-10",
+          "amount": 3500,
+          "currency": "USD",
+          "baseAmount": 3500,
+          "scenarioAdjustment": null
+        },
+        {
+          "securityId": "fixture-investor-redemption",
+          "displayName": "Investor redemption",
+          "assetClass": "CapitalActivity",
+          "projectionRunId": null,
+          "projectionEngineVersion": null,
+          "termsVersionId": null,
+          "termsHash": null,
+          "sourceDomain": "PartnershipLedger",
+          "sourceEntityId": "inv-1",
+          "flowType": "Redemption",
+          "sourceLane": "Capital activity",
+          "dueDate": "2026-07-14",
+          "amount": -48000,
+          "currency": "USD",
+          "baseAmount": -48000,
+          "scenarioAdjustment": "Adverse move applied."
+        }
+      ],
+      "availableScenarios": [
+        {
+          "scenarioId": "base",
+          "displayName": "Base projection",
+          "description": "No stress applied; contractual flows and retained capital activity remain unchanged.",
+          "modeledEffects": [
+            "Contractual coupons and maturities",
+            "Retained capital activity"
+          ],
+          "assumptions": [
+            "1:1 FX translation",
+            "No new purchases or withdrawals"
+          ]
+        },
+        {
+          "scenarioId": "early-call",
+          "displayName": "Early call",
+          "description": "Callable instruments are redeemed at the earliest eligible date.",
+          "modeledEffects": [
+            "Callable bond principal returns sooner",
+            "Later coupons are removed"
+          ],
+          "assumptions": [
+            "Par call treatment",
+            "No reinvestment"
+          ]
+        }
+      ],
+      "assumptions": [
+        "Quantities use current portfolio holdings.",
+        "Projection terms are read-only screenshot fixtures."
+      ],
+      "warnings": [
+        "One bucket breaches the minimum balance threshold."
+      ],
+      "generatedAt": "2026-07-05T12:00:00Z",
+      "securitiesEvaluated": 3,
+      "securitiesWithFlows": 1
+    },
     "/api/workstation/workflows": {
       "generatedAt": "2026-04-28T18:15:00Z",
       "workflows": [
@@ -1446,8 +2151,14 @@
           "entryPageTag": "TradingShell",
           "tone": "Warning",
           "actions": [],
-          "evidenceTags": ["readiness gates", "replay verification"],
-          "marketPatternTags": ["paper trading", "live readiness gate"]
+          "evidenceTags": [
+            "readiness gates",
+            "replay verification"
+          ],
+          "marketPatternTags": [
+            "paper trading",
+            "live readiness gate"
+          ]
         }
       ],
       "actions": []
@@ -1516,7 +2227,10 @@
         "maskedKeyPreview": "********DEMO",
         "environment": "paper",
         "externalAccountId": "PA-DEMO",
-        "affectedWorkflows": ["Trading readiness", "Portfolio brokerage sync"],
+        "affectedWorkflows": [
+          "Trading readiness",
+          "Portfolio brokerage sync"
+        ],
         "recommendedAction": "Keep provider in paper mode for workstation capture.",
         "actionHref": "/workstation/settings/integrations"
       }
@@ -1533,7 +2247,10 @@
         "institutionId": "alpaca",
         "externalAccountId": "PA-DEMO",
         "scope": null,
-        "tags": ["paper", "brokerage"],
+        "tags": [
+          "paper",
+          "brokerage"
+        ],
         "description": "Paper brokerage route for screenshots.",
         "productionReady": true
       }
@@ -1560,7 +2277,10 @@
         "healthStatus": "Healthy",
         "isProductionReady": true,
         "isCertificationFresh": true,
-        "signals": ["latency:p50=18ms", "continuity:stable"]
+        "signals": [
+          "latency:p50=18ms",
+          "continuity:stable"
+        ]
       }
     ],
     "/api/workstation/workflow-summary": {
@@ -1568,6 +2288,138 @@
       "totalWorkflows": 1,
       "activeWorkflows": 1,
       "reviewRequired": 1
-    }
+    },
+    "/api/workstation/reconciliation/statement-connectors": [
+      {
+        "connectorId": "csv-mapped",
+        "displayName": "Custodian/Broker CSV (mapping profile)",
+        "fileExtensions": [
+          ".csv",
+          ".txt"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": false,
+        "requiresMappingProfile": true,
+        "defaultProfileId": "canonical-csv-v1"
+      },
+      {
+        "connectorId": "ofx",
+        "displayName": "OFX / QFX statement",
+        "fileExtensions": [
+          ".ofx",
+          ".qfx"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": false,
+        "requiresMappingProfile": true,
+        "defaultProfileId": "ofx-bank-v1"
+      },
+      {
+        "connectorId": "ib-flex",
+        "displayName": "Interactive Brokers Flex Report (XML)",
+        "fileExtensions": [
+          ".xml"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": false,
+        "requiresMappingProfile": false,
+        "defaultProfileId": "ib-flex-v1"
+      },
+      {
+        "connectorId": "alpaca-activity",
+        "displayName": "Alpaca account activity",
+        "fileExtensions": [
+          ".json"
+        ],
+        "supportsFileImport": true,
+        "supportsRemoteFetch": true,
+        "requiresMappingProfile": false,
+        "defaultProfileId": "alpaca-activity-v1"
+      }
+    ],
+    "/api/workstation/reconciliation/statement-mapping-profiles": [
+      {
+        "schemaVersion": 1,
+        "profileId": "canonical-csv-v1",
+        "displayName": "Canonical CSV (v1)",
+        "format": "csv",
+        "csv": {
+          "delimiter": ",",
+          "quote": "\"",
+          "hasHeader": true
+        },
+        "culture": null,
+        "dateFormats": null,
+        "fields": [
+          {
+            "canonicalField": "Account",
+            "sourceColumn": "Account",
+            "aliases": null,
+            "required": true
+          },
+          {
+            "canonicalField": "SecurityIdentifier",
+            "sourceColumn": "Symbol",
+            "aliases": [
+              "Ticker"
+            ],
+            "required": false
+          },
+          {
+            "canonicalField": "ActivityType",
+            "sourceColumn": "ActivityType",
+            "aliases": [
+              "Type"
+            ],
+            "required": true
+          },
+          {
+            "canonicalField": "Quantity",
+            "sourceColumn": "Quantity",
+            "aliases": null,
+            "required": false
+          },
+          {
+            "canonicalField": "Price",
+            "sourceColumn": "Price",
+            "aliases": null,
+            "required": false
+          },
+          {
+            "canonicalField": "CashAmount",
+            "sourceColumn": "Amount",
+            "aliases": [
+              "CashAmount"
+            ],
+            "required": false
+          },
+          {
+            "canonicalField": "TradeDate",
+            "sourceColumn": "TradeDate",
+            "aliases": [
+              "Date"
+            ],
+            "required": true
+          }
+        ],
+        "activityCodes": [
+          {
+            "sourceCode": "BUY",
+            "canonicalActivityType": "Buy"
+          },
+          {
+            "sourceCode": "SELL",
+            "canonicalActivityType": "Sell"
+          },
+          {
+            "sourceCode": "DIV",
+            "canonicalActivityType": "Dividend"
+          }
+        ],
+        "lastAcceptedFingerprint": null,
+        "isBuiltIn": true,
+        "notes": "Demo fixture mirroring the built-in canonical CSV mapping profile."
+      }
+    ]
   }
 }

@@ -28,19 +28,22 @@ public sealed class HistoricalBackfillService
     private readonly IEventMetrics _metrics;
     private readonly BackfillJobsConfig _jobsConfig;
     private readonly BackfillStatusStore? _checkpointStore;
+    private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
         ILogger? logger = null,
         IEventMetrics? metrics = null,
         BackfillJobsConfig? jobsConfig = null,
-        BackfillStatusStore? checkpointStore = null)
+        BackfillStatusStore? checkpointStore = null,
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
         _metrics = metrics ?? new DefaultEventMetrics();
         _jobsConfig = jobsConfig ?? new BackfillJobsConfig();
         _checkpointStore = checkpointStore;
+        _symbolTimelineResolver = symbolTimelineResolver;
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
@@ -220,19 +223,25 @@ public sealed class HistoricalBackfillService
                     {
                         foreach (var partition in executionPartitions)
                         {
+                            // A range spanning a ticker rename must query the provider with the
+                            // era-correct symbol per chunk, then land under the requested symbol.
+                            var eraSymbol = await ResolveEraSymbolAsync(symbol, partition.From, ct).ConfigureAwait(false);
                             var bars = await provider.GetDailyBarsAsync(
-                                symbol,
+                                eraSymbol,
                                 partition.From,
                                 BackfillPartitionPlanner.ToInclusiveEnd(partition),
                                 ct).ConfigureAwait(false);
 
-                            await PublishHistoricalBarsAsync(bars).ConfigureAwait(false);
+                            await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                         }
                     }
                     else
                     {
-                        var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
-                        await PublishHistoricalBarsAsync(bars).ConfigureAwait(false);
+                        var eraSymbol = effectiveFrom.HasValue
+                            ? await ResolveEraSymbolAsync(symbol, effectiveFrom.Value, ct).ConfigureAwait(false)
+                            : symbol;
+                        var bars = await provider.GetDailyBarsAsync(eraSymbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                        await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                     }
                 }
 
@@ -356,6 +365,64 @@ public sealed class HistoricalBackfillService
             Error: errorSummary,
             SkippedSymbols: skippedSymbols.ToArray(),
             SymbolValidationSignals: validationSignals.ToArray());
+    }
+
+    /// <summary>
+    /// Resolves the era-correct ticker for a chunk starting at <paramref name="chunkStart"/>.
+    /// Intentionally fail-open: any resolution failure falls back to the requested symbol so
+    /// symbology issues can never break a backfill run. Applied to the daily path only —
+    /// intraday aggregate bars cannot currently be re-tagged to the canonical symbol.
+    /// </summary>
+    private async Task<string> ResolveEraSymbolAsync(string symbol, DateOnly chunkStart, CancellationToken ct)
+    {
+        if (_symbolTimelineResolver is null)
+        {
+            return symbol;
+        }
+
+        try
+        {
+            return await _symbolTimelineResolver.ResolveTickerForDateAsync(symbol, chunkStart, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex,
+                "Era-symbol resolution failed for {Symbol} at {ChunkStart}; using the requested symbol",
+                symbol, chunkStart);
+            return symbol;
+        }
+    }
+
+    /// <summary>
+    /// Re-tags bars fetched under an era ticker back to the canonical requested symbol so a
+    /// rename-spanning backfill lands as one continuous series.
+    /// </summary>
+    private static IReadOnlyList<HistoricalBar> RetagBars(
+        IReadOnlyList<HistoricalBar> bars,
+        string canonicalSymbol,
+        string fetchedSymbol)
+    {
+        if (bars.Count == 0 || string.Equals(canonicalSymbol, fetchedSymbol, StringComparison.OrdinalIgnoreCase))
+        {
+            return bars;
+        }
+
+        return bars
+            .Select(bar => new HistoricalBar(
+                canonicalSymbol,
+                bar.SessionDate,
+                bar.Open,
+                bar.High,
+                bar.Low,
+                bar.Close,
+                bar.Volume,
+                bar.Source,
+                bar.SequenceNumber))
+            .ToArray();
     }
 
     private static IReadOnlyList<BackfillPartitionEstimate>? BuildExecutionPartitions(

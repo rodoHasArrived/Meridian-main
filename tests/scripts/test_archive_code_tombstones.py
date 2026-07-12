@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 class ArchiveCodeTombstonesTests(unittest.TestCase):
-    # Archive/code currently retains .NET source tombstones only.
-    CODE_EXTENSIONS = (".cs", ".fs")
+    # Archive/code retains .NET and browser-workstation TypeScript source tombstones.
+    CODE_EXTENSIONS = (".cs", ".fs", ".ts", ".tsx")
     TOMBSTONE_MARKER = "ARCHIVE TOMBSTONE"
     COMMENT_PREFIXES = ("//", "(*", "*)")
 

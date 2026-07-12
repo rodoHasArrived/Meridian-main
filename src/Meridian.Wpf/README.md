@@ -6,19 +6,21 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-06
 ---
 
 # src/Meridian.Wpf
 
 ## Purpose
 
-WPF workstation is the active Windows desktop operator workstation sharing contracts and read models
-with the browser workstation.
+WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
+the browser workstation. It projects the seven canonical workspaces over shared contracts and read
+models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
+`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 
-This module owns the desktop shell, WPF pages, route hosting, and desktop workstation view models.
+This module owns the retained desktop shell, WPF pages, route hosting, and desktop workstation view models.
 Keep shared contracts and read-model logic in shared UI services when browser and desktop both need
 the behavior. The seven operator workspaces now register through feature modules under
 `src/Meridian.Wpf/Features/` so new workspace-level navigation and shell ownership lands in the
@@ -606,7 +608,16 @@ Trading terminal work uses `DenseDataGridControl` for active positions and view-
 selected-position inspector state so paper/live desk review keeps row selection, P&L, mode, and
 next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns
 empty, selected, loading, and error inspector states with caller-supplied automation IDs so
-workspace pages can migrate selected-row detail without changing route/page tags.
+workspace pages can migrate selected-row detail without changing route/page tags. The desktop
+Trading hero now treats active live runs as ready only when the shared `ReadyForLiveOperation`
+posture is true, so paper-ready evidence cannot present a live desk as operator-ready. When the
+shared readiness payload includes `LiveOperationRequirements`, the desktop live-run hero uses the
+first non-ready W7 requirement to name and route the missing evidence item, such as governance
+sign-off, broker execution reconciliation, rollback/kill-switch, or audit-retention proof, instead
+of falling back to a generic readiness review.
+The desktop position blotter also stamps the active account-scoped operating context onto
+close/upsize action requests when the context resolves to a fund-account GUID, so generated broker
+orders evaluate the same account-scoped W7 readiness gate as browser trading actions.
 Trading shell fallback and context-handoff copy routes reconciliation and kill-switch handoffs
 through Accounting wording while preserving retained `GovernanceShell` target tags for route
 compatibility.
@@ -628,6 +639,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W8-WPF-PARITY-001` | WPF desktop workstation reactivation and web-UI parity |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

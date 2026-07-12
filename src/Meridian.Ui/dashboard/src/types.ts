@@ -1,3 +1,13 @@
+export * from "./types/market-data";
+export * from "./types/workstation-1";
+export * from "./types/workstation-2";
+export * from "./types/workstation-3";
+export * from "./types/workstation-4";
+export * from "./types/workstation-5";
+export * from "./types/workstation-6";
+export * from "./types/workstation-7";
+export * from "./types/workstation-8";
+
 export type WorkspaceKey =
   | "trading"
   | "portfolio"
@@ -978,7 +988,8 @@ export type OperatorWorkItemKind =
   | "ReportPackApproval"
   | "ProviderTrustGate"
   | "ExecutionControl"
-  | "LedgerPeriodClose";
+  | "LedgerPeriodClose"
+  | "BrokerExecutionReconciliation";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
 export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unknown";
@@ -1058,6 +1069,7 @@ export interface WorkflowPreset {
   createdAt: string;
   updatedAt: string;
   lastUsedAt: string | null;
+  viewStateEnvelope?: string | null;
 }
 
 export interface WorkflowPresetLibrary {
@@ -1114,6 +1126,7 @@ export interface WorkflowPresetSaveRequest {
   actionId?: string | null;
   tags?: string[] | null;
   isPinned: boolean;
+  viewStateEnvelope?: string | null;
 }
 
 export type OperationsWorkflowStatus =
@@ -2203,7 +2216,9 @@ export type EvidenceDocumentLinkKind =
   | "ReconciliationCase"
   | "ReportLine"
   | "CloseTask"
-  | "Fund";
+  | "Fund"
+  | "StatementRun"
+  | "StatementImport";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -2630,6 +2645,45 @@ export interface TradingAcceptanceGate {
   sessionId: string | null;
   runId: string | null;
   auditReference: string | null;
+  reason?: string | null;
+  lastEvidenceAt?: string | null;
+  requiredNextAction?: string | null;
+}
+
+export interface TradingExecutionReconciliationBreak {
+  kind: string;
+  description: string;
+  localOrderId: string | null;
+  brokerOrderId: string | null;
+  clientOrderId: string | null;
+  symbol: string | null;
+  localValue: string | null;
+  brokerValue: string | null;
+}
+
+export interface TradingExecutionReconciliationReadiness {
+  status: TradingAcceptanceGateStatus;
+  gatewayId: string;
+  brokerDisplayName: string;
+  brokerHealthy: boolean;
+  brokerConnected: boolean;
+  matchedOpenOrderCount: number;
+  breakCount: number;
+  reconciledAt: string;
+  detail: string;
+  breaks: TradingExecutionReconciliationBreak[];
+}
+
+export interface TradingLiveOperationRequirement {
+  requirementId: string;
+  label: string;
+  status: TradingAcceptanceGateStatus;
+  detail: string;
+  checklistItem: string;
+  evidenceReference: string | null;
+  checklistSatisfied: boolean;
+  evidenceSatisfied: boolean;
+  blockerCode?: string | null;
 }
 
 export interface TradingPaperSessionReadiness {
@@ -3722,6 +3776,9 @@ export interface TradingOperatorReadiness {
   asOf: string;
   overallStatus: TradingAcceptanceGateStatus;
   readyForPaperOperation: boolean;
+  readyForLiveOperation?: boolean;
+  liveOperationBlockers?: string[];
+  liveOperationRequirements?: TradingLiveOperationRequirement[];
   acceptanceGates: TradingAcceptanceGate[];
   activeSession: TradingPaperSessionReadiness | null;
   sessions: TradingPaperSessionReadiness[];
@@ -3730,6 +3787,7 @@ export interface TradingOperatorReadiness {
   promotion: TradingPromotionReadiness | null;
   trustGate: TradingTrustGateReadiness;
   brokerageSync: WorkstationBrokerageSyncStatus | null;
+  executionReconciliation?: TradingExecutionReconciliationReadiness | null;
   workItems: OperatorWorkItem[];
   warnings: string[];
 }
@@ -3771,6 +3829,7 @@ export interface OrderSubmitRequest {
   type: "Market" | "Limit" | "Stop";
   quantity: number;
   limitPrice?: number | null;
+  fundAccountId?: string | null;
 }
 
 export interface OrderResult {
@@ -4024,6 +4083,21 @@ export interface DataUploadPreviewResult {
   issues: DataUploadValidationIssue[];
   status: "ReadyForReview" | "NeedsSchemaRepair" | string;
   nextAction: string;
+}
+
+export interface DataQueryRequest {
+  sql: string;
+}
+
+export interface DataQueryResult {
+  success: boolean;
+  error: string | null;
+  columns: string[];
+  columnTypes: string[];
+  rows: (string | null)[][];
+  rowCount: number;
+  truncated: boolean;
+  elapsedMs: number;
 }
 
 export interface DataWorkspaceResponse {
@@ -4351,6 +4425,180 @@ export interface StatementRunException {
   toleranceBreached: boolean;
   createdAtUtc: string;
   status: string;
+}
+
+export interface StatementConnectorDescriptor {
+  connectorId: string;
+  displayName: string;
+  fileExtensions: string[];
+  supportsFileImport: boolean;
+  supportsRemoteFetch: boolean;
+  requiresMappingProfile: boolean;
+  defaultProfileId: string | null;
+}
+
+export interface StatementMappingProfileField {
+  canonicalField: string;
+  sourceColumn: string;
+  aliases: string[] | null;
+  required: boolean;
+}
+
+export interface StatementMappingProfileActivityCode {
+  sourceCode: string;
+  canonicalActivityType: string;
+}
+
+export interface StatementMappingProfileCsvOptions {
+  delimiter: string;
+  quote: string;
+  hasHeader: boolean;
+}
+
+export interface StatementMappingProfile {
+  schemaVersion: number;
+  profileId: string;
+  displayName: string;
+  format: string;
+  csv: StatementMappingProfileCsvOptions | null;
+  culture: string | null;
+  dateFormats: string[] | null;
+  fields: StatementMappingProfileField[];
+  activityCodes: StatementMappingProfileActivityCode[];
+  lastAcceptedFingerprint: string | null;
+  isBuiltIn: boolean;
+  notes: string | null;
+}
+
+export type StatementColumnConfidence = "Exact" | "Alias" | "Fuzzy" | "Unmapped";
+
+export interface StatementColumnMapping {
+  sourceColumn: string;
+  canonicalField: string | null;
+  confidence: StatementColumnConfidence;
+  score: number;
+  rationale: string;
+}
+
+export interface StatementImportIssue {
+  code: string;
+  severity: "Error" | "Warning" | "Info" | string;
+  rowNumber: number | null;
+  field: string | null;
+  message: string;
+}
+
+export interface StatementRecordPreview {
+  kind: string;
+  account: string;
+  symbol: string;
+  quantity: number;
+  price: number;
+  cashAmount: number;
+  activityType: string;
+  tradeDate: string;
+  settlementDate: string | null;
+  currency: string | null;
+  feesCommission: number | null;
+  externalTransactionId: string | null;
+}
+
+export interface StatementKindSummary {
+  kind: string;
+  recordCount: number;
+  sampleRecords: StatementRecordPreview[];
+}
+
+export interface StatementProfileSuggestion {
+  profileId: string;
+  displayName: string;
+  score: number;
+}
+
+export interface StatementImportPreview {
+  connectorId: string;
+  connectorDisplayName: string;
+  profileId: string | null;
+  fileName: string;
+  fileSizeBytes: number;
+  detectedColumns: string[];
+  columnMappings: StatementColumnMapping[];
+  recordCount: number;
+  kindSummaries: StatementKindSummary[];
+  issues: StatementImportIssue[];
+  profileSuggestions: StatementProfileSuggestion[];
+  status: "ReadyToImport" | "NeedsAttention" | string;
+  nextAction: string;
+}
+
+export interface StatementImportCommitResult {
+  runId: string;
+  duplicate: boolean;
+  recordCount: number;
+  kindSummaries: StatementKindSummary[];
+  breakCount: number;
+  caseCount: number;
+  retainedSourcePath: string;
+  retainedCanonicalPath: string;
+  status: string;
+  nextAction: string;
+  evidenceVaultIdentity?: EvidenceVaultIdentity | null;
+  evidenceWorkbenchRoute?: string | null;
+  reconciliationRoute?: string | null;
+  breakIds?: string[];
+  caseIds?: string[];
+  reconciliationCaseRoutes?: string[];
+  reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
+  nextActions?: string[];
+}
+
+export interface StatementImportReconciliationCaseLink {
+  caseId: string;
+  breakId?: string | null;
+  route: string;
+  label: string;
+  status: string;
+  priority: string;
+  reason: string;
+  suggestedNextAction: string;
+}
+
+export interface StatementFetchSchedule {
+  scheduleId: string;
+  connectorId: string;
+  externalAccountId: string;
+  fundAccountId: string;
+  sourceInstitution: string;
+  mappingProfileId: string | null;
+  toleranceProfileId: string;
+  cadenceHours: number;
+  enabled: boolean;
+  lastRunAtUtc: string | null;
+  lastRunStatus: string | null;
+  nextDueAtUtc: string | null;
+}
+
+export type StatementImportSourceKind = "broker" | "custodian";
+export type StatementFetchDatasets = "activity" | "positions" | "all";
+
+export interface StatementFetchPreviewRequest {
+  connectorId: string;
+  externalAccountId: string;
+  since?: string | null;
+  mappingProfileId?: string | null;
+  datasets?: StatementFetchDatasets | null;
+}
+
+export interface StatementFetchScheduleUpsertRequest {
+  scheduleId?: string | null;
+  connectorId: string;
+  externalAccountId: string;
+  fundAccountId: string;
+  sourceInstitution: string;
+  mappingProfileId?: string | null;
+  toleranceProfileId?: string | null;
+  cadenceHours: number;
+  enabled: boolean;
 }
 
 export interface AccountingReconciliationRecord {
@@ -5441,6 +5689,46 @@ export interface ReportingDueScheduleRunResult {
   runs: ReportingScheduleRunResult[];
 }
 
+export interface ReportingStarterSeedSchedule {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  cadence: string;
+  description: string;
+  state?: ReportingScheduleRecord["state"] | string;
+  defaultPeriod?: string | null;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
+}
+
+export interface ReportingStarterKit {
+  kitId: string;
+  archetype: string;
+  displayName: string;
+  description: string;
+  templateIds: string[];
+  defaultLayoutId: string;
+  defaultPeriod: string;
+  seedSchedules: ReportingStarterSeedSchedule[];
+}
+
+export interface ReportingStarterKitState {
+  isProvisioned: boolean;
+  selectedKitId?: string | null;
+  archetype?: string | null;
+  enabledTemplateIds: string[];
+  defaultLayoutId?: string | null;
+  defaultPeriod?: string | null;
+  seedScheduleIds: string[];
+  provisionedAtUtc?: string | null;
+  provisionedBy?: string | null;
+}
+
+export interface ReportingStarterKitProvisionResult {
+  kit: ReportingStarterKit;
+  state: ReportingStarterKitState;
+  seededSchedules: ReportingScheduleRecord[];
+}
+
 export interface ReportingRunRequest {
   templateId: string;
   asOfDate?: string | null;
@@ -5450,6 +5738,7 @@ export interface ReportingRunRequest {
   datasetRows?: Record<string, string>[] | null;
   datasetSourceId?: string | null;
   retryReason?: string | null;
+  allowRestatement?: boolean;
 }
 
 export interface ReportingRunResult {
@@ -5614,6 +5903,8 @@ export interface AccountingReportingSummary {
   brandingThemes?: ReportBrandingTheme[];
   reportWriterDatasetSources?: ReportWriterDatasetSource[];
   dailyWork?: ReportingDailyWorkItem[];
+  starterKits?: ReportingStarterKit[] | null;
+  starterKitState?: ReportingStarterKitState | null;
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
@@ -6088,7 +6379,8 @@ export type ManualJournalEntryType =
   | "Subscription"
   | "Redemption"
   | "LpTransfer"
-  | "ManagementFee";
+  | "ManagementFee"
+  | "ClosingEntry";
 
 export interface LedgerBook {
   ledgerBookId: string;
@@ -6944,7 +7236,7 @@ export interface RuleDryRunResult {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
-export type LedgerPostingKind = "Originating" | "Adjustment";
+export type LedgerPostingKind = "Originating" | "Adjustment" | "ClosingEntry";
 export type AccountingTreatmentKind =
   | "General"
   | "Accrual"
@@ -7125,6 +7417,8 @@ export interface ManualJournalEntryLine {
   taxLotId?: string | null;
   description?: string | null;
   evidenceLink?: string | null;
+  ledgerAccountSymbol?: string | null;
+  ledgerAccountFinancialAccountId?: string | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {
@@ -8803,6 +9097,7 @@ export interface SecurityMasterTrustSnapshot {
   lotModel?: SecurityMasterLotModel | null;
   scheduleBook?: SecurityMasterScheduleBook | null;
   openLotReadModel?: SecurityMasterOpenLotReadModel | null;
+  corporateActionDescriptors?: CorporateActionDescriptor[] | null;
 }
 
 export interface OperatorOverridesDto {
@@ -9851,25 +10146,6 @@ export interface SystemOverviewResponse {
   recentEvents: SystemEventRecord[];
 }
 
-// --- Symbol management types ---
-
-export interface SymbolRecord {
-  symbol: string;
-  status: "Active" | "Monitored" | "Archived" | "Error";
-  provider: string | null;
-  lastEventAt: string | null;
-  eventCount: number;
-  hasHistoricalData: boolean;
-}
-
-export interface SymbolStatistics {
-  totalSymbols: number;
-  monitoredSymbols: number;
-  archivedSymbols: number;
-  symbolsWithErrors: number;
-  totalEventsLast24h: number;
-}
-
 // --- Quality monitoring types ---
 
 export interface QualitySymbolScore {
@@ -9907,6 +10183,128 @@ export interface QualityDashboardResponse {
   symbols: QualitySymbolScore[];
   recentGaps: QualityGapEntry[];
   recentAnomalies: QualityAnomalyEntry[];
+}
+
+// --- Provider × instrument-type capability matrix ---
+
+export interface ProviderCapabilitySurface {
+  streaming: boolean;
+  historical: boolean;
+  symbolSearch: boolean;
+  corporateActions: boolean;
+  optionsChain: boolean;
+  brokerage: boolean;
+}
+
+export interface ProviderInstrumentCapabilityCell {
+  instrumentType: string;
+  supported: boolean;
+  stream: boolean;
+  backfill: boolean;
+  corporateActions: boolean;
+  symbolSearch: boolean;
+  optionsChain: boolean;
+}
+
+export interface ProviderInstrumentCapabilityRow {
+  providerId: string;
+  declaredInstrumentTypes: string[];
+  surfaces: ProviderCapabilitySurface;
+  cells: ProviderInstrumentCapabilityCell[];
+}
+
+export interface ProviderDiscoveryFailure {
+  stage: string;
+  subject: string;
+  moduleId: string | null;
+  errorType: string;
+  errorMessage: string;
+}
+
+export interface ProviderCapabilityMatrixResponse {
+  generatedAt: string;
+  instrumentTypes: string[];
+  providers: ProviderInstrumentCapabilityRow[];
+  discoveryFailures: ProviderDiscoveryFailure[];
+}
+
+// --- Corporate action inbox ---
+
+export interface CorporateActionProposalEntry {
+  securityId: string;
+  ticker: string;
+  actionType: string;
+  exDate: string;
+  recordDate: string | null;
+  payableDate: string | null;
+  amount: number | null;
+  currency: string | null;
+  splitFromFactor: number | null;
+  splitToFactor: number | null;
+  winningSource: string;
+  agreeingSources: string[];
+  dissentingSources: string[];
+  autoApplied: boolean;
+}
+
+export interface CorporateActionInboxResponse {
+  lastIngestAt: string | null;
+  stagedCount: number;
+  appliedLastRun: number;
+  duplicatesSkippedLastRun: number;
+  staged: CorporateActionProposalEntry[];
+  errors: string[];
+}
+
+// --- Security master quality report (RC001 coverage gaps) ---
+
+export interface SecurityMasterQualityViolation {
+  ruleId: string;
+  ruleName: string;
+  category: string;
+  securityId: string;
+  fieldPath: string | null;
+  message: string;
+  severity: string;
+  detectedAt: string;
+}
+
+export interface SecurityMasterQualityReport {
+  runAt: string;
+  securitiesScanned: number;
+  violationCount: number;
+  violations: SecurityMasterQualityViolation[];
+}
+
+export interface CorporateActionInboxApplyRequest {
+  securityId: string;
+  actionType: string;
+  exDate: string;
+}
+
+// --- Security master coverage drafts ---
+
+export interface SecurityMasterDraftIdentifier {
+  kind: string;
+  value: string;
+  isPrimary: boolean;
+  validFrom: string;
+  validTo: string | null;
+  provider: string | null;
+}
+
+export interface SecurityMasterDraftProposal {
+  symbol: string;
+  resolved: boolean;
+  proposedSecurityId: string;
+  assetClass: string;
+  displayName: string | null;
+  exchange: string | null;
+  currency: string | null;
+  identifiers: SecurityMasterDraftIdentifier[];
+  sourceSystem: string;
+  provenance: string;
+  notes: string | null;
 }
 
 export interface ReconciliationCalibrationProfile {
@@ -9967,6 +10365,37 @@ export interface CorporateAction {
   exchangeRatio: number | null;
   subscriptionPricePerShare: number | null;
   rightsPerShare: number | null;
+}
+
+/** Canonical corporate-action lifecycle vocabulary; Ex/Paid are derived from ExDate/PayDate at read time. */
+export type CorporateActionLifecycleState = "Announced" | "Confirmed" | "Ex" | "Paid" | "Cancelled";
+
+/**
+ * One event in an effective corporate action's supersede chain (original announcement first,
+ * chain tip last). Mirrors CorporateActionTimelineEntryDto.
+ */
+export interface CorporateActionTimelineEntry {
+  corpActId: string;
+  lifecycleState: string;
+  exDate: string;
+  payDate: string | null;
+  isAmendment: boolean;
+}
+
+/**
+ * Canonical-taxonomy projection of one effective corporate action: catalog display identity
+ * (displayName + ISO 15022 caevCode), lifecycle state resolved at the snapshot's as-of time,
+ * and the amendment timeline. Mirrors CorporateActionDescriptorDto; corpActId joins back to
+ * the raw CorporateAction row.
+ */
+export interface CorporateActionDescriptor {
+  corpActId: string;
+  canonicalName: string;
+  caevCode: string | null;
+  displayName: string;
+  lifecycleState: string;
+  isCancelled: boolean;
+  timeline: CorporateActionTimelineEntry[];
 }
 
 export interface TradingParameters {
@@ -10075,6 +10504,31 @@ export interface InstrumentPassportOperationsWorkbench {
   handoffs: InstrumentPassportOperationsHandoff[];
 }
 
+export interface InstrumentPassportClassificationProfile {
+  instrumentType: string;
+  displayName: string;
+  securityMasterAssetClass: string;
+  assetFamily?: string | null;
+  subType?: string | null;
+  defaultProviderSecurityType: string;
+  isTradeable: boolean;
+  isReferenceOnly: boolean;
+  isDerivative: boolean;
+  requiresUnderlying: boolean;
+  producesCashFlows: boolean;
+  requiresLotTracking: boolean;
+  settlementModel: string;
+  compatibleSecurityMasterAssetClasses: string[];
+  preferredIdentifierKinds: string[];
+  requiredEconomicTerms: string[];
+  providerCapabilities: string[];
+  lifecycleEvents: string[];
+  validationRules: string[];
+  ledgerBehaviorHints: string[];
+  riskModelHints: string[];
+  summary: string;
+}
+
 export interface SecurityMasterOperatingModelStage {
   stageId: string;
   title: string;
@@ -10176,131 +10630,7 @@ export interface InstrumentPassport {
   referenceDataWorkbench?: InstrumentPassportReferenceDataWorkbench | null;
   operatingModel?: SecurityMasterOperatingModel | null;
   operationsWorkbench?: InstrumentPassportOperationsWorkbench | null;
-}
-
-export interface SessionStatsDto {
-  sessionDate: string;
-  open: number;
-  high: number;
-  low: number;
-  last: number;
-  volume: number;
-  vwap: number;
-  tradeCount: number;
-  change: number;
-  changePercent: number | null;
-  firstTradeAt: string;
-  lastTradeAt: string;
-}
-
-export interface QuoteDataResponse {
-  symbol: string;
-  timestamp: string;
-  bidPrice: number;
-  bidSize: number;
-  askPrice: number;
-  askSize: number;
-  midPrice: number | null;
-  spread: number | null;
-  sequenceNumber: number;
-  streamId: string | null;
-  venue: string | null;
-  session: SessionStatsDto | null;
-}
-
-export interface QuotesResponse {
-  symbol: string;
-  quote: QuoteDataResponse | null;
-  timestamp: string;
-}
-
-export interface QuotesSnapshotItem {
-  symbol: string;
-  timestamp: string;
-  bidPrice: number;
-  bidSize: number;
-  askPrice: number;
-  askSize: number;
-  midPrice: number | null;
-  spread: number | null;
-  lastPrice: number | null;
-  lastSize: number | null;
-  lastTradeTimestamp: string | null;
-  sequenceNumber: number;
-  streamId: string | null;
-  venue: string | null;
-  session: SessionStatsDto | null;
-}
-
-export interface QuotesSnapshotResponse {
-  timestamp: string;
-  count: number;
-  quotes: QuotesSnapshotItem[];
-}
-
-export interface TradeDataResponse {
-  symbol: string;
-  timestamp: string;
-  price: number;
-  size: number;
-  aggressor: string;
-  sequenceNumber: number;
-  streamId: string | null;
-  venue: string | null;
-}
-
-export interface TradesResponse {
-  symbol: string;
-  trades: TradeDataResponse[];
-  count: number;
-  timestamp: string;
-}
-
-export interface OrderBookLevelDto {
-  side: string;
-  level: number;
-  price: number;
-  size: number;
-  marketMaker: string | null;
-}
-
-export interface OrderBookResponse {
-  symbol: string;
-  timestamp: string;
-  bids: OrderBookLevelDto[];
-  asks: OrderBookLevelDto[];
-  midPrice: number | null;
-  imbalance: number | null;
-  marketState: string;
-  sequenceNumber: number;
-  isStale: boolean;
-  streamId: string | null;
-  venue: string | null;
-}
-
-export interface HistoricalBarPoint {
-  start: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  vwap: number;
-  tradeCount: number;
-}
-
-export interface HistoricalBarsResponse {
-  success: boolean;
-  message: string | null;
-  symbol: string;
-  intervalMinutes: number;
-  from: string | null;
-  to: string | null;
-  totalBars: number;
-  filesProcessed: number;
-  totalFiles: number;
-  queryTimeMs: number;
-  bars: HistoricalBarPoint[];
+  classificationProfile?: InstrumentPassportClassificationProfile | null;
 }
 
 export type QuantPlotKind =

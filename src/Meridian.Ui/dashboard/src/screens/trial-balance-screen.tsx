@@ -3,16 +3,19 @@ import { Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AccountTree, type AccountNode } from "@/components/accounting/AccountTree";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
+import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { getRunLedgerJournal } from "@/lib/api";
+import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import {
   buildAccountingLedgerJournalEvidenceViewState,
   useAccountingReconciliationViewModel
@@ -30,6 +33,9 @@ type TrialBalanceViewMode = "table" | "hierarchy";
 export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
+  const [entityScope, setEntityScope] = useState("All entities");
+  const [ledgerBook, setLedgerBook] = useState("Primary GL");
+  const [period, setPeriod] = useState("Current period");
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
   const reconciliation = useAccountingReconciliationViewModel(data, "ledger");
@@ -108,6 +114,9 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     return selectedRow ? trialBalanceAccountTreeCode(selectedRow) : undefined;
   }, [reconciliation.trialBalanceView.rows, reconciliation.trialBalanceView.selectedRowId]);
 
+  const shouldVirtualizeTrialBalance =
+    reconciliation.trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD;
+
   const relatedSecurities = useMemo(() => {
     const seen = new Map<string, string>();
     for (const row of reconciliation.trialBalanceView.rows) {
@@ -147,28 +156,96 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     );
   }
 
+  const selectedBasisLabel =
+    reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "—";
+
+  // Focus zone — ≤4 signals of "what needs my attention on this run right now".
+  const focusSignals: FocusSignal[] = [
+    {
+      id: "run",
+      label: "Selected run",
+      value: selectedReconciliation?.strategyName ?? "—",
+      hint: selectedReconciliation?.runId
+    },
+    { id: "basis", label: "Accounting basis", value: selectedBasisLabel },
+    { id: "accounts", label: "Accounts in view", value: reconciliation.trialBalanceView.filteredRowCountLabel },
+    {
+      id: "journal",
+      label: "Journal entries",
+      value: journalLoading ? "…" : String(journalEvidence.rows.length)
+    }
+  ];
+
+  const trialBalanceScope = `${entityScope} · ${ledgerBook} · ${period}`;
+
   return (
-    <div className="space-y-4">
+    <ScreenLayout
+      title="Trial Balance"
+      scope={trialBalanceScope}
+      description="Pick a ledger run to review basis-aware account balances."
+      actions={
+        <FormRow label="Run" labelFor="trial-balance-run-select" className="w-full max-w-xs sm:w-64">
+          <Select
+            id="trial-balance-run-select"
+            value={selectedReconciliation?.runId ?? ""}
+            onChange={(event) => selectRun(event.target.value)}
+          >
+            {reconciliationQueue.map((item) => (
+              <option key={item.runId} value={item.runId}>
+                {item.strategyName} ({item.runId})
+              </option>
+            ))}
+          </Select>
+        </FormRow>
+      }
+      focus={focusSignals}
+      context={
+        reconciliation.trialBalanceView.selectedDetail ? (
+          <AccountingTrialBalanceSelectedDetailPanel
+            panelId={reconciliation.trialBalanceView.detailPanelId}
+            detail={reconciliation.trialBalanceView.selectedDetail}
+          />
+        ) : null
+      }
+      contextOpen={Boolean(reconciliation.trialBalanceView.selectedDetail)}
+      contextLabel="Trial-balance detail"
+      onContextClose={() => reconciliation.selectTrialBalanceRow(null)}
+    >
       <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>Trial Balance</CardTitle>
-            <CardDescription>Pick a ledger run to review basis-aware account balances.</CardDescription>
-          </div>
-          <FormRow label="Run" labelFor="trial-balance-run-select" className="w-full max-w-xs sm:w-64">
-            <Select
-              id="trial-balance-run-select"
-              value={selectedReconciliation?.runId ?? ""}
-              onChange={(event) => selectRun(event.target.value)}
-            >
-              {reconciliationQueue.map((item) => (
-                <option key={item.runId} value={item.runId}>
-                  {item.strategyName} ({item.runId})
-                </option>
-              ))}
-            </Select>
-          </FormRow>
+        <CardHeader>
+          <CardTitle>Trial balance scope</CardTitle>
+          <CardDescription>Confirm entity, book, and period before drilling into account, ledger, journal, or evidence detail.</CardDescription>
         </CardHeader>
+        <CardContent className="grid gap-3 lg:grid-cols-[repeat(3,minmax(0,1fr))_auto] lg:items-end">
+          <FormRow label="Entity / fund / portfolio" labelFor="trial-balance-entity-scope">
+            <Input
+              id="trial-balance-entity-scope"
+              value={entityScope}
+              onChange={(event) => setEntityScope(event.target.value)}
+            />
+          </FormRow>
+          <FormRow label="Book" labelFor="trial-balance-book">
+            <Input
+              id="trial-balance-book"
+              value={ledgerBook}
+              onChange={(event) => setLedgerBook(event.target.value)}
+            />
+          </FormRow>
+          <FormRow label="Period" labelFor="trial-balance-period">
+            <Input
+              id="trial-balance-period"
+              value={period}
+              onChange={(event) => setPeriod(event.target.value)}
+            />
+          </FormRow>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline">Compare prior period</Button>
+            <Button type="button" size="sm" variant="outline">Export</Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={WORKSTATION_ROUTE_CATALOG.reportingPreviewValidation}>Jump to report preview</Link>
+            </Button>
+          </div>
+        </CardContent>
       </Card>
 
       <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
@@ -236,7 +313,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
           </div>
           {reconciliation.trialBalanceView.hasRows ? (
             viewMode === "table" ? (
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
+              shouldVirtualizeTrialBalance ? (
                 <DenseDataTable
                   columns={trialBalanceColumns}
                   rows={reconciliation.trialBalanceView.rows}
@@ -245,29 +322,21 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
                   getRowSelectAriaLabel={(line) => line.selectAriaLabel}
                   getRowAriaControls={(line) => line.detailPanelId}
                   getRowAriaExpanded={(line) => line.isExpanded}
+                  getRowTypeaheadText={(line) => line.accountLabel}
                   selectedRowId={reconciliation.trialBalanceView.selectedRowId}
                   onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
                   emptyText={reconciliation.trialBalanceView.emptyDetail}
                   ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                  virtualization={{ rowHeight: 36, viewportRowCount: 15 }}
                 />
-                {reconciliation.trialBalanceView.selectedDetail ? (
-                  <AccountingTrialBalanceSelectedDetailPanel
-                    panelId={reconciliation.trialBalanceView.detailPanelId}
-                    detail={reconciliation.trialBalanceView.selectedDetail}
-                  />
-                ) : (
-                  <aside
-                    id={reconciliation.trialBalanceView.detailPanelId}
-                    role="region"
-                    aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
-                    className="row-detail-panel h-fit min-w-0"
-                  >
-                    <div className="eyebrow-label">Trial-balance detail</div>
-                    <h3 className="mt-1 text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.detailEmptyTitle}</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{reconciliation.trialBalanceView.detailEmptyText}</p>
-                  </aside>
-                )}
-              </div>
+              ) : (
+                <TrialBalanceTable
+                  rows={reconciliation.trialBalanceView.rows}
+                  selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                  caption={reconciliation.trialBalanceView.tableLabel}
+                  onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                />
+              )
             ) : (
               <AccountTree
                 nodes={treeNodes}
@@ -360,6 +429,6 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
       <p className="text-xs text-muted-foreground">
         Looking for the full ledger explorer? <Link className="text-primary underline-offset-2 hover:underline" to={WORKSTATION_ROUTE_CATALOG.accountingLedger}>Open Ledger Explorer</Link>.
       </p>
-    </div>
+    </ScreenLayout>
   );
 }

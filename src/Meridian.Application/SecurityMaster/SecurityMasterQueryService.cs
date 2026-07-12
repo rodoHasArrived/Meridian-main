@@ -22,13 +22,40 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetDetailAsync(securityId, ct);
 
+    public async Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+    {
+        var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        var asOfProjection = await _rebuilder.RebuildAsOfAsync(securityId, asOfUtc, current, ct).ConfigureAwait(false);
+        return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
+    }
+
     public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
     {
         var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
-        var projection = await TryGetProjectionByIdentifierAsync(identifierKind, identifierValue, provider, asOf, ct)
+        var projection = await TryGetProjectionByIdentifierAsync(
+                identifierKind,
+                identifierValue,
+                provider,
+                asOf,
+                allowIdentityFallback: asOfUtc is not null,
+                ct)
             .ConfigureAwait(false);
+        if (projection is null)
+        {
+            return null;
+        }
 
-        return projection is null ? null : SecurityMasterMapping.ToDetail(projection);
+        if (asOfUtc is null)
+        {
+            return SecurityMasterMapping.ToDetail(projection);
+        }
+
+        // An explicit historical lookup must return the terms as recorded at that time —
+        // resolving the identifier as-of and then returning the current projection would
+        // silently hand back today's terms under yesterday's identity.
+        var asOfProjection = await _rebuilder.RebuildAsOfAsync(projection.SecurityId, asOf, projection, ct)
+            .ConfigureAwait(false);
+        return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
     }
 
     public async Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
@@ -182,6 +209,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         string identifierValue,
         string? provider,
         DateTimeOffset asOf,
+        bool allowIdentityFallback,
         CancellationToken ct)
     {
         var providerCandidates = BuildLookupCandidates(provider, SecurityIdentifierNormalizer.NormalizeProvider);
@@ -213,7 +241,23 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
 
         var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
         var universe = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        return universe.FirstOrDefault(candidate => MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+        var asOfMatch = universe.FirstOrDefault(candidate =>
+            MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+        if (asOfMatch is not null || !allowIdentityFallback)
+        {
+            return asOfMatch;
+        }
+
+        // As-of fallback: an identifier row's recorded validity window is frequently its
+        // data-entry time rather than the real-world assignment time, so a point-in-time lookup
+        // can miss a security whose identity is genuinely stable. When nothing is active at the
+        // requested as-of, resolve by identity while ignoring the temporal window. The caller's
+        // as-of term rebuild still governs which economic terms are returned, so this only
+        // restores identity resolution — it never hands back today's terms under yesterday's
+        // identity.
+        var identifierKindText = identifierKind.ToString();
+        return universe.FirstOrDefault(candidate =>
+            MatchesIdentifierIgnoringWindow(candidate, identifierKind, identifierKindText, normalizedValue, normalizedProvider));
     }
 
     private static IReadOnlyList<string?> BuildLookupCandidates(string? value, Func<string?, string> normalize)
@@ -276,6 +320,34 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         }
 
         return string.Equals(candidate.PrimaryIdentifierKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+               && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
+    }
+
+    private static bool MatchesIdentifierIgnoringWindow(
+        SecurityProjectionRecord candidate,
+        SecurityIdentifierKind identifierKind,
+        string identifierKindText,
+        string normalizedValue,
+        string normalizedProvider)
+    {
+        if (candidate.Identifiers.Any(identifier =>
+                identifier.Kind == identifierKind
+                && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(identifier.Provider, identifier.NormalizedProvider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        if (candidate.Aliases.Any(alias =>
+                string.Equals(alias.AliasKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
+                && alias.IsEnabled
+                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(alias.Provider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        return string.Equals(candidate.PrimaryIdentifierKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
     }
 

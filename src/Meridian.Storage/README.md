@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-01
 ---
 
 # src/Meridian.Storage
@@ -84,6 +84,13 @@ Backfill status and checkpoint sidecars are Storage-owned durable records publis
 `Meridian.Contracts.Backfill` result payload plus per-symbol checkpoint and bar-count maps under
 the storage root through `AtomicFileWriter`, allowing interrupted jobs to resume without
 Application owning file persistence details.
+
+Adaptive partition placement recommendations are Storage-owned through
+`AdaptivePartitionPlacementPlanner`. The planner converts observed event volume, coverage window,
+symbol count, provider/source breadth, and event-type breadth into a recommended
+`PartitionStrategy` plus storage profile, then maps the recommendation back to concrete
+path-driving `StorageOptions` fields. Backfill orchestration opts into those recommendations for
+request-scoped placement while broader tier-promotion automation remains a separate workflow.
 
 Shared-storage coordination lease persistence is Storage-owned durable state. The
 `SharedStorageCoordinationStore` in `Meridian.Storage.Coordination` persists Contracts-owned
@@ -164,6 +171,21 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+`LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
+durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
+timestamp so restart, close, and reporting projections can hydrate from the stored spine before
+running ledger-owned trial-balance or statement logic.
+
+`LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
+durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
+timestamp plus a book/period helper for close-period reporting, so restart, close, and reporting
+projections can hydrate from the stored spine before running ledger-owned trial-balance or statement
+logic. `DurableAutomatedJournalPoster` implements the ledger-owned
+`IAutomatedJournalPostingTarget` contract so approved automated projector output can use the same
+target shape as in-memory backtests while still appending to the governed journal store first.
+`PostgresLedgerBookService` now uses that book/period hydration path before building period-close
+trial-balance summaries, keeping UI-facing close evidence tied to `ILedgerJournalStore.QueryAsync`
+and ledger-owned balance math.
 
 ### Direct lending and operational projections
 

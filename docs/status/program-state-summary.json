@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v2",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-06-24",
+  "snapshotDate": "2026-07-05",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -16,7 +16,8 @@
       "Governed report packs",
       "Shared browser and WPF operational record workflow",
       "Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence",
-      "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records"
+      "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records",
+      "Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention"
     ],
     "activeUiLane": "browser_and_wpf_workstations",
     "retainedSupportLane": "none",
@@ -128,6 +129,19 @@
       "Last Reviewed": "2026-06-02"
     },
     {
+      "ID": "W5X-CONNECT-001",
+      "Wave": "W5X",
+      "Title": "Custodian and broker statement connector library",
+      "Workspaces": "Accounting; Data",
+      "Status": "done",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs; src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs; src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs; docs/adr/018-declarative-statement-mapping-profiles.md; tests/Meridian.Tests/Reconciliation/Connectors/StatementImportServiceTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/IbFlexStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/OfxStatementConnectorTests.cs; tests/Meridian.Tests/Reconciliation/Connectors/AlpacaActivityStatementConnectorTests.cs",
+      "Last Reviewed": "2026-07-02"
+    },
+    {
       "ID": "W5X-FINOPS-001",
       "Wave": "W5X",
       "Title": "Financial operations control center",
@@ -158,13 +172,13 @@
       "Wave": "W6",
       "Title": "Backtesting studio evidence loop",
       "Workspaces": "Strategy",
-      "Status": "planned",
+      "Status": "done",
       "Health": "green",
       "Priority": "medium",
       "Owner Lane": "Strategy Analytics",
-      "Evidence Posture": "planned_evidence",
-      "Evidence": "",
-      "Last Reviewed": "2026-06-04"
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs; src/Meridian.Strategies/Services/PromotionService.cs; src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; tests/Meridian.Tests/Strategies/PromotionServiceTests.cs; tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs",
+      "Last Reviewed": "2026-07-05"
     },
     {
       "ID": "W7-LIVE-001",

@@ -19,7 +19,7 @@ Minimum tests: payment request creation, independent approval, expected cash mov
 
 ## Alternative Asset Operations
 
-Alternative asset expansion beyond the current structured and private-capital coverage must name the minimum asset classes, provider or administrator source evidence, Security Master identity requirements, valuation evidence, cash-flow evidence, ledger-classification requirements, and close/reporting handoff before the lane is treated as productized.
+Alternative asset operations now have a v1 minimum coverage baseline inside the existing Security Master passport/detail, Asset Operations, and `/api/workstation/portfolio/multi-asset-coverage` flows: `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, and retained `DirectLoan` rows declare required terms, provider/source evidence, ledger classification, reconciliation signals, and close/reporting handoff. Broader expansion remains deferred for live eFront/Yardi/cap-table/trustee adapters, new root workspaces, or core-ledger rewrites until a future roadmap row defines provider integration, posting automation, governance, and acceptance evidence.
 
 ## Enterprise Risk
 
@@ -43,7 +43,14 @@ No-code workflow design remains deferred until policy-safe configuration boundar
 
 ## Document Vault
 
-Document-vault productization must define request lists, immutable manifests, extracted-field review, document-to-object links, retention policy, access controls, and audit evidence before it can move from deferred scope to active implementation.
+Evidence Vault productization has moved into active scope through `W5X-EVIDENCE-001` with the
+browser-first statement reconciliation onboarding wedge in `W5X-STMT-ONBOARD-001`. That v1 slice
+uses existing request-list, immutable-manifest, extracted-field review, document-to-object link,
+retention, access-control, and audit-evidence primitives; its WPF UI parity is now tracked as
+`W8-WPF-PARITY-001` (the Evidence Workbench is a Wave P1 parity item).
+Broader document-portal, collaboration, and self-service document management expansion remains
+deferred until a later roadmap row defines entitlement, assignment, request history, and audit
+retention gates.
 
 ## Collaboration
 

@@ -55,6 +55,9 @@ public sealed class PaperExecutionGatewayLotSizeTests
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult(_securityId == securityId ? CreateDetail(securityId, "XYZ") : null);
 
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
         public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             if (_securityId is null)

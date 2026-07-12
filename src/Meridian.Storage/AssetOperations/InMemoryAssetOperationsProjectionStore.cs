@@ -36,7 +36,10 @@ public sealed class InMemoryAssetOperationsProjectionStore : IAssetOperationsPro
             projection.ReconciliationResults,
             projection.LedgerProjections,
             projection.Readiness,
-            projection.WorkflowAudit);
+            projection.WorkflowAudit)
+        {
+            TermsObligationsTimeline = projection.TermsObligationsTimeline
+        };
 
         lock (_gate)
         {

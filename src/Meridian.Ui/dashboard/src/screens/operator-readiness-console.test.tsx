@@ -164,14 +164,15 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("group", { name: /Primary next action: Promotion checklist incomplete/i })).toBeInTheDocument();
     expect(screen.getAllByText("Promotion checklist incomplete").length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Trading readiness summary" })).toHaveClass("mds-rpanel");
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Full-console readiness checkpoints" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toHaveClass("mds-rpanel");
     expect(screen.getByRole("group", { name: /Brokerage sync healthy: Unavailable/i })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Prioritized operator work items table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Promotion blockers readiness evidence table" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Promotion blockers readiness evidence table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected promotion blockers evidence detail" })).toBeInTheDocument();
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
       undefined,
@@ -194,7 +195,7 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    await screen.findByRole("table", { name: "Prioritized operator work items table" });
+    await screen.findByRole("treegrid", { name: "Prioritized operator work items table" });
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
       "fund-1",
       expect.objectContaining({ signal: expect.any(Object) })

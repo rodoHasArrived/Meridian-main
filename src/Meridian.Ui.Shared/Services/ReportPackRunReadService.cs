@@ -113,6 +113,7 @@ public sealed class ReportPackRunReadService
     private readonly ReportTemplateRegistryService? _templateRegistry;
     private readonly ReportPackDeliveryService? _deliveryService;
     private readonly ReportingScheduleService? _scheduleService;
+    private readonly ReportingStarterKitService? _starterKitService;
 
     private static readonly ReportBrandingThemeDto[] BuiltInReportBrandingThemes =
     [
@@ -154,7 +155,8 @@ public sealed class ReportPackRunReadService
         ReportPackWorkflowService? workflowService = null,
         ReportTemplateRegistryService? templateRegistry = null,
         ReportPackDeliveryService? deliveryService = null,
-        ReportingScheduleService? scheduleService = null)
+        ReportingScheduleService? scheduleService = null,
+        ReportingStarterKitService? starterKitService = null)
     {
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
         _runStore = runStore;
@@ -162,6 +164,7 @@ public sealed class ReportPackRunReadService
         _templateRegistry = templateRegistry;
         _deliveryService = deliveryService;
         _scheduleService = scheduleService;
+        _starterKitService = starterKitService;
     }
 
     public WorkstationReportingPayload BuildPayload(int recentRunLimit = DefaultRecentRunLimit) =>
@@ -180,7 +183,9 @@ public sealed class ReportPackRunReadService
         var allDeliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
         var allSchedules = _scheduleService?.ListSchedules(100) ?? [];
         var totalTemplateCount = CountTemplates();
-        var templates = BuildTemplates(accessContext);
+        var starterKits = _starterKitService?.ListKits() ?? [];
+        var starterKitState = _starterKitService?.GetState();
+        var templates = ApplyStarterKitTemplateFilter(BuildTemplates(accessContext), starterKitState);
         var familyByTemplate = templates
             .GroupBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First().Family, StringComparer.OrdinalIgnoreCase);
@@ -278,7 +283,9 @@ public sealed class ReportPackRunReadService
             BrandingThemes: BuiltInReportBrandingThemes,
             ReportWriterDatasetSources: reportWriterDatasetSources,
             AccessAudit: accessAudit,
-            DailyWork: dailyWork);
+            DailyWork: dailyWork,
+            StarterKits: starterKits,
+            StarterKitState: starterKitState);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -1334,6 +1341,21 @@ public sealed class ReportPackRunReadService
     private int CountTemplates() =>
         _templateRegistry?.List().Count()
         ?? _templateCatalog.ListTemplates().Count();
+
+    private static WorkstationReportingTemplatePayload[] ApplyStarterKitTemplateFilter(
+        WorkstationReportingTemplatePayload[] templates,
+        ReportingStarterKitStateDto? starterKitState)
+    {
+        if (starterKitState?.IsProvisioned != true || starterKitState.EnabledTemplateIds.Count == 0)
+        {
+            return templates;
+        }
+
+        var enabled = starterKitState.EnabledTemplateIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return templates
+            .Where(template => enabled.Contains(template.TemplateId))
+            .ToArray();
+    }
 
     private static WorkstationReportAccessAuditSummaryDto BuildAccessAuditSummary(
         ReportAccessQueryContext? accessContext,

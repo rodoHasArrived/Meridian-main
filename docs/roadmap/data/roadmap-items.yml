@@ -259,9 +259,10 @@ items:
     health: green
     priority: high
     evidence_posture: complete
-    current_summary: Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The next feature slice is the still-partial multi-asset reference-data workbench completion inside the existing Security Master detail/passport flow, not a new route.
+    current_summary: Completed the shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The v1 alternative-asset baseline now promotes `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and `CommitmentGuarantee` into first-class Security Master classes while retaining `DirectLoan` and governed `CustomAsset` compatibility fallback rows. Live eFront/Yardi/cap-table/trustee adapter builds, new root workspaces, and core-ledger rewrites remain out of scope.
     exit_criteria:
-      - Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
+      - Equities, options, futures, FX, fixed income, loans, `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
+      - Structured credit, private fund, private company equity, real estate, and commitment/guarantee rows expose class-specific trustee/servicer, factor schedule, collateral tape, administrator/GP, capital call, distribution, NAV, capital account, cap table, valuation, appraisal, debt-service, fee/accrual, covenant, and release/expiry evidence targets.
       - Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
       - Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
       - Follow-on multi-asset reference-data workbench work extends the existing Security Master detail/passport flow with provider evidence, identifier confidence, terms and obligations, projected cash-flow readiness, ledger classification, and operations handoff without introducing a new route.
@@ -277,12 +278,18 @@ items:
       - type: test
         path: tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs
       - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs
+      - type: test
         path: tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs
+      - type: test
+        path: tests/Meridian.FSharp.Tests/DomainTests.fs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs
       - type: test
         path: src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts
-    last_reviewed: 2026-06-02
+    last_reviewed: 2026-07-02
 
   - id: W5X-FREX-001
     title: Shared financial record explorers
@@ -407,6 +414,141 @@ items:
         path: tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs
     last_reviewed: 2026-06-24
 
+  - id: W5X-CONNECT-001
+    title: Custodian and broker statement connector library
+    wave: W5X
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+    workspace:
+      - Accounting
+      - Data
+    owner_lane: Accounting and Ledger
+    status: done
+    health: green
+    priority: high
+    evidence_posture: complete
+    current_summary: Delivered 2026-07-02. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. Scheduled fetches run through persisted schedules with duplicate-key idempotency; the Accounting workspace gains an Import Statement surface with a live mapping-profile editor.
+    exit_criteria:
+      - Operators onboard a new custodian CSV or OFX layout by authoring a mapping profile document without a release.
+      - Statement imports preview detected columns with per-column mapping confidence and per-kind (position, transaction, cash, fee, dividend) record breakdowns before commit.
+      - Committed imports enter the existing reconciliation queue with retained raw and canonical evidence and duplicate-key idempotency.
+      - IB Flex XML, OFX bank and investment, Alpaca activity plus portfolio, and profile-driven CSV statements all normalize through one connector seam with golden-file regression coverage.
+      - Format drift against a profile's last accepted layout is surfaced as a warning before rows map incorrectly.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileCatalog.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs
+      - type: doc
+        path: docs/adr/018-declarative-statement-mapping-profiles.md
+      - type: test
+        path: tests/Meridian.Tests/Reconciliation/Connectors/StatementImportServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Reconciliation/Connectors/IbFlexStatementConnectorTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Reconciliation/Connectors/OfxStatementConnectorTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Reconciliation/Connectors/AlpacaActivityStatementConnectorTests.cs
+    last_reviewed: 2026-07-02
+
+  - id: W5X-EVIDENCE-001
+    title: Evidence Vault productization
+    wave: W5X
+    stage_gates:
+      - AccountingRecords
+      - GovernedReportPack
+      - PortfolioLedgerReview
+    workspace:
+      - Accounting
+      - Reporting
+      - Data
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: green
+    priority: high
+    evidence_posture: in_progress
+    current_summary: Active 2026-07-02. Productizes the existing Evidence Vault identity, intake, request-list, document-list, extracted-field review, object-link, immutable-manifest, and audit primitives as a reusable evidence layer. The first implemented acceptance path is browser-first statement reconciliation onboarding; WPF UI parity is intentionally omitted from this v1 slice while shared DTO/API support remains compatible.
+    exit_criteria:
+      - Evidence Vault retains imported source documents with immutable vault identity, manifest route, source hash, source record, reviewer state, and audit trail.
+      - Request-list and document-list queries can filter retained documents by subject, classification, review status, and object links.
+      - Document authority stays bounded to support, block, suggest, and link; documents cannot approve, post, certify, or release.
+      - Browser Accounting, Reporting, and Data evidence workbench routes can deep-link into retained support for a selected subject without WPF-specific UI work.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx
+      - type: test
+        path: tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/StatementImportEvidenceBridgeTests.cs
+    last_reviewed: 2026-07-02
+
+  - id: W5X-STMT-ONBOARD-001
+    title: Statement reconciliation onboarding wedge
+    wave: W5X
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+    workspace:
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: green
+    priority: high
+    evidence_posture: in_progress
+    current_summary: Active 2026-07-02. Turns the delivered statement connector library into the browser-first onboarding wedge: operators can import custodian or broker CSV, OFX, IB Flex, or mapped connector files, commit them into reconciliation, and immediately drill into retained Evidence Vault proof for the statement run. WPF implementation is omitted for this v1 wedge.
+    exit_criteria:
+      - Browser statement import commit returns Evidence Vault identity, Evidence workbench route, reconciliation route, and next actions.
+      - The retained raw statement source is copied into Evidence Vault as a Statement document linked to statement run, fund account, period, and import source.
+      - Statement imports with reconciliation breaks mark retained statement evidence as review-required and route operators into reconciliation casework.
+      - The wedge reuses W5X-CONNECT-001 mapping profiles and connector parsing without requiring code releases for CSV/OFX layout onboarding.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/statement-import-panel.tsx
+      - type: test
+        path: tests/Meridian.Tests/Ui/StatementImportEvidenceBridgeTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/statement-import-panel.test.tsx
+    last_reviewed: 2026-07-02
+
   - id: W6-BTSTUDIO-001
     title: Backtesting studio evidence loop
     wave: W6
@@ -441,21 +583,69 @@ items:
       - Trading
       - Settings
     owner_lane: Accounting and Ledger
-    status: planned
+    status: done
     health: green
     priority: medium
-    evidence_posture: planned_evidence
-    current_summary: Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
+    evidence_posture: complete
+    current_summary: Closed 2026-07-05 as bounded live-readiness governance. Paper-to-live promotion now requires the paper baseline, trusted-data review, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback or kill-switch evidence, audit-retention evidence, an active AllowLivePromotion manual override, brokerage live-enablement checks, and clear execution controls before a live run can be created. This closes the governance gate only; broader live execution productization and live portfolio operations remain separate follow-on work.
     exit_criteria:
-      - Live action surfaces remain paper-first until acceptance gates are green.
-      - Credential and provider checks stay secret-safe and read-only by default.
-      - Governance sign-off is linked before any live-readiness claim.
-      - Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
+      - Live action surfaces remain paper-first unless the live approval checklist, evidence references, manual override, and execution-control checks are all green.
+      - Credential and provider checks stay secret-safe and read-only by default; live promotion is blocked when brokerage configuration is not live-enabled.
+      - Governance sign-off, rollback or kill-switch posture, exception-handling evidence, and audit-retention evidence are linked before any live-readiness claim.
+      - The completed slice strengthens operational evidence and approval posture without productizing broader live execution or live portfolio operations.
     source_modules:
       - SRC-HOST
       - SRC-APP
       - SRC-CONTRACTS
+      - SRC-EXECUTION
+      - SRC-STRATEGIES
       - SRC-UI-DASHBOARD
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-06-04
+    evidence:
+      - type: source
+        path: src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs
+      - type: source
+        path: src/Meridian.Strategies/Services/PromotionService.cs
+      - type: source
+        path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/PromotionServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs
+    last_reviewed: 2026-07-05
+
+  - id: W8-WPF-PARITY-001
+    title: WPF desktop workstation reactivation and web-UI parity
+    wave: W8
+    workspace:
+      - Trading
+      - Portfolio
+      - Accounting
+      - Reporting
+      - Strategy
+      - Data
+      - Settings
+    owner_lane: Desktop Workstation
+    status: in_progress
+    health: on_track
+    priority: high
+    evidence_posture: in_progress
+    current_summary: Reactivated 2026-07-06. The WPF desktop workstation returns to the active product/UI lane as a co-equal surface alongside the browser workstation. The desktop shell already projects the seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings) over shared contracts and read models. Remaining work closes the parity gap with browser-first screens that shipped while WPF was deferred, tracked in `docs/development/wpf-web-ui-alignment-plan.md`. Both surfaces continue to consume shared `Meridian.Ui.Services`, `Meridian.Ui.Shared`, and `Meridian.Contracts` seams so neither client forks product state.
+    exit_criteria:
+      - The WPF lane is documented as active and co-equal with the browser workstation across the design charter, product README, CLAUDE.md, and desktop policy.
+      - Every browser workstation screen has a WPF equivalent page/view-model or an explicitly sequenced parity item, recorded in the WPF web-UI alignment plan.
+      - New WPF parity surfaces consume shared contracts, read models, and workstation endpoints rather than inventing desktop-local product state.
+      - Desktop parity work preserves existing WPF behavior, MVVM boundaries, cancellation flow, and shared-contract usage, validated through the desktop build and desktop-focused service tests.
+    source_modules:
+      - SRC-WPF
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+      - SRC-CONTRACTS
+    evidence:
+      - type: reference
+        path: docs/development/wpf-web-ui-alignment-plan.md
+      - type: reference
+        path: docs/development/wpf-implementation-notes.md
+    last_reviewed: 2026-07-06

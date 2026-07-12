@@ -61,12 +61,22 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
-- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/CanonicalReconciliationEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation.
+- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/ReconciliationMatchingEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation. The canonical daily pipeline is split across `ReconciliationIngestionContracts.cs`, `ReconciliationNormalizationService.cs`, `MatchingTolerances.cs`, `ReconciliationMatchingEngine.cs`, `DefaultReconciliationIngestionScheduler.cs`, and `ReconciliationRunOrchestrator.cs` (one type per file).
 - `Reconciliation/StatementBreakClassifier.cs`, `StatementMappingProfiles.cs`, and `StatementToleranceProfiles.cs` - canonical break taxonomy, broker mapping profiles, and tolerance governance.
 - `Reconciliation/ReconciliationEngineService.cs` - Security Master-enriched portfolio-vs-ledger
   reconciliation engine that joins positions, ledger balances, and the F# ledger reconciliation
   kernel.
 - `Reconciliation/FileReconciliationDecisionJournal.cs` - crash-safe copy-on-write JSONL decision and resolution history persistence.
+- `Reconciliation/Connectors/` - custodian/broker statement connector library (ADR-018):
+  declarative versioned CSV/OFX mapping-profile documents with a file-backed store, live catalog,
+  and format-drift detection; per-column mapping-confidence scoring; connectors for
+  profile-driven CSV, OFX 1.x/2.x bank + investment statements, IB Flex Report XML, and
+  fetch-capable Alpaca activity + portfolio snapshots; `StatementImportService` preview/commit
+  orchestration that renders deterministic canonical-CSV artifacts into the existing
+  statement-run workflow (positions, transactions, cash balances, fees, and dividends all
+  classify per kind), returning retained break ids plus structured reconciliation case links for
+  the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
+  persisted fetch schedules with an idempotent schedule runner.
 - `Banking/` - payment initiation, approval/rejection workflow, bank-side transaction records,
   deterministic transaction seeding, and PostgreSQL-backed banking persistence adapter.
 
@@ -75,6 +85,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Operations Continuity workflow state, command transitions, status derivation, persistence, audit hashing, reconciliation-break assignment/escalation, approval-policy rules, and close-calendar configuration live here so close, approval, report-pack, checklist-control, reviewer-independence, due-date, owner override, and retained audit policy remains part of Financial Operations rather than application orchestration or UI endpoints. The Financial Operations command-center read service also owns unified queue-row composition and deterministic status, owner, due/SLA, severity, blocker type, close/report impact, evidence, action, and route labels for browser and WPF clients.
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
+
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store.
+The commit result also carries the specific break ids and structured reconciliation case links
+created by the Financial Operations workflow, including each case route, status, priority, reason,
+and suggested next action, allowing Evidence Vault and browser clients to point operators directly
+at the retained casework instead of only showing aggregate break/case counts.
 
 Operations Continuity reconciliation runs retain the canonical Financial Operations lane coverage
 for cash, position, trade, income, MBS factor, bank, and GL support. The workflow aggregate derives
@@ -462,6 +478,8 @@ evidence deletion.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5X-FINOPS-001` | Financial operations control center |
+| `W5X-CONNECT-001` | Custodian and broker statement connector library |
+| `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -484,6 +502,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~AccountingCloseServicesTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PaymentApprovalTests|FullyQualifiedName~BankTransactionSeedTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccountingPolicyServiceTests|FullyQualifiedName~LedgerCliCommandTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~Reconciliation.Connectors" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ### API and contract notes

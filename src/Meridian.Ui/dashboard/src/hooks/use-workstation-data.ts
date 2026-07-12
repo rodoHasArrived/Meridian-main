@@ -32,6 +32,7 @@ import {
   setFeatureCapability
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -96,7 +97,7 @@ interface RefreshEntry {
   key: RefreshDataKey;
   category: RefreshCategory;
   workspaceKeys?: WorkspaceKey[];
-  promise: Promise<unknown>;
+  start: (requestOptions: { signal: AbortSignal }) => Promise<unknown>;
 }
 
 interface SettledRefreshEntry {
@@ -193,6 +194,8 @@ const initialState: WorkstationDataState = {
   portfolioRefreshStatus: null as unknown as RequestLifecycleStatus
 };
 
+const WORKSPACE_REFRESH_STALE_MS = 30_000;
+
 export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   const activeWorkspace = options.activeWorkspace ?? "trading";
   const workflowSummaryHasOperatingContext = options.workflowSummaryScope?.hasOperatingContext ?? false;
@@ -211,13 +214,17 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     staleMessage: "Older workstation refresh response discarded.",
     maxRetries: 2
   });
+  const refreshTradingRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const tradingRefreshLifecycle = useRequestLifecycle({
     operation: "trading workspace refresh",
     runningMessage: "Refreshing trading workspace evidence.",
     successMessage: "Trading workspace refreshed.",
     failureMessage: "Trading workspace refresh failed.",
     staleMessage: "Older trading refresh response discarded.",
-    maxRetries: 2
+    maxRetries: 2,
+    onRetry: ({ attempt }) => {
+      void refreshTradingRef.current({ attempt });
+    }
   });
   const providerRoutingRefreshLifecycle = useRequestLifecycle({
     operation: "provider routing refresh",
@@ -243,6 +250,12 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     portfolioRefreshStatus: portfolioRefreshLifecycle.status
   }));
   const refreshingPortfolio = useRef(false);
+  const stateRef = useRef<WorkstationDataState>(state);
+  const lastLoadedAtRef = useRef<Partial<Record<RefreshDataKey, number>>>({});
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     activeWorkspaceRef.current = activeWorkspace;
@@ -265,6 +278,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
 
   const refresh = useCallback(async () => {
     const activeWorkspace = activeWorkspaceRef.current;
+    const shouldFetchDeferred = !hasPublishedBootstrapRef.current;
     tradingRefreshLifecycle.invalidate();
     providerRoutingRefreshLifecycle.invalidate();
     portfolioRefreshLifecycle.invalidate();
@@ -273,7 +287,6 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       return;
     }
 
-    const requestOptions = { signal: token.signal };
     resetDevelopmentFixtureUsage();
     setState((current) => ({
       ...current,
@@ -284,7 +297,7 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       providerRoutingRefreshing: false
     }));
 
-    const entries = createRefreshEntries(requestOptions, {
+    const entries = createRefreshEntries({
       hasOperatingContext: workflowSummaryHasOperatingContext,
       operatingContext: workflowSummaryOperatingContext,
       fundProfileId: workflowSummaryFundProfileId,
@@ -292,12 +305,9 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       fundDisplayName: workflowSummaryFundDisplayName
     });
     const primaryEntries = selectPrimaryRefreshEntries(entries, activeWorkspace);
-    const allSettled = settleRefreshEntries(entries);
-    const primarySettled = primaryEntries.length === entries.length
-      ? allSettled
-      : settleRefreshEntries(primaryEntries);
+    const deferredEntries = entries.filter((entry) => !primaryEntries.includes(entry));
 
-    const primaryResults = await primarySettled;
+    const primaryResults = await settleRefreshEntries(primaryEntries, { signal: token.signal });
     if (!token.isCurrent()) {
       fullRefreshLifecycle.markStale(token.version);
       return;
@@ -305,24 +315,31 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
 
     const primaryPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, primaryResults, {
       loading: false,
-      replaceErrors: false
+      replaceErrorsFor: getWorkspaceKeysForEntries(primaryEntries)
     }));
     if (primaryPublished) {
       hasPublishedBootstrapRef.current = true;
+      markRefreshEntriesLoaded(primaryResults, lastLoadedAtRef.current);
     }
 
-    const allResults = await allSettled;
+    if (!shouldFetchDeferred || deferredEntries.length === 0) {
+      fullRefreshLifecycle.succeed(token);
+      return;
+    }
+
+    const deferredResults = await settleRefreshEntries(deferredEntries, { signal: token.signal });
     if (!token.isCurrent()) {
       fullRefreshLifecycle.markStale(token.version);
       return;
     }
 
-    const finalPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, allResults, {
+    const deferredPublished = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, deferredResults, {
       loading: false,
-      replaceErrors: true
+      replaceErrorsFor: getWorkspaceKeysForEntries(deferredEntries)
     }));
-    if (finalPublished) {
+    if (deferredPublished) {
       hasPublishedBootstrapRef.current = true;
+      markRefreshEntriesLoaded(deferredResults, lastLoadedAtRef.current);
     }
     fullRefreshLifecycle.succeed(token);
   }, [
@@ -339,17 +356,82 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     workflowSummaryOperatingContext
   ]);
 
+  const refreshWorkspace = useCallback(async (
+    workspace: WorkspaceKey = activeWorkspaceRef.current,
+    options: { staleOnly?: boolean } = {}
+  ) => {
+    const token = fullRefreshLifecycle.start({
+      busyMode: "drop",
+      runningMessage: "Refreshing active workspace evidence."
+    });
+    if (!token) {
+      return;
+    }
+
+    resetDevelopmentFixtureUsage();
+    const entries = selectPrimaryRefreshEntries(createRefreshEntries({
+      hasOperatingContext: workflowSummaryHasOperatingContext,
+      operatingContext: workflowSummaryOperatingContext,
+      fundProfileId: workflowSummaryFundProfileId,
+      fundAccountId: workflowSummaryFundAccountId,
+      fundDisplayName: workflowSummaryFundDisplayName
+    }), workspace);
+    const scopedEntries = options.staleOnly
+      ? entries.filter((entry) => shouldRefreshEntry(entry, stateRef.current, lastLoadedAtRef.current))
+      : entries;
+
+    if (scopedEntries.length === 0) {
+      fullRefreshLifecycle.succeed(token, { message: "Active workspace evidence is current." });
+      return;
+    }
+
+    const settlements = await settleRefreshEntries(scopedEntries, { signal: token.signal });
+    if (!token.isCurrent()) {
+      fullRefreshLifecycle.markStale(token.version);
+      return;
+    }
+
+    const published = token.safeSetState(setState, (current) => mergeRefreshSettlements(current, settlements, {
+      loading: false,
+      replaceErrorsFor: getWorkspaceKeysForEntries(scopedEntries)
+    }));
+    if (published) {
+      markRefreshEntriesLoaded(settlements, lastLoadedAtRef.current);
+    }
+    fullRefreshLifecycle.succeed(token);
+  }, [
+    fullRefreshLifecycle.markStale,
+    fullRefreshLifecycle.start,
+    fullRefreshLifecycle.succeed,
+    workflowSummaryFundAccountId,
+    workflowSummaryFundDisplayName,
+    workflowSummaryFundProfileId,
+    workflowSummaryHasOperatingContext,
+    workflowSummaryOperatingContext
+  ]);
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
+  useEffect(() => {
+    if (!hasPublishedBootstrapRef.current) {
+      return;
+    }
+
+    void refreshWorkspace(activeWorkspace, { staleOnly: true });
+  }, [activeWorkspace, refreshWorkspace]);
+
   // Keep the trading cockpit fresh without re-fetching every workspace.
   // Positions, orders, fills, and readiness status change as trading runs.
-  const refreshTrading = useCallback(async () => {
-    const token = tradingRefreshLifecycle.start({ busyMode: "drop" });
+  const refreshTrading = useCallback(async (options: { attempt?: number } = {}) => {
+    const token = tradingRefreshLifecycle.start({ busyMode: "drop", attempt: options.attempt });
     if (!token) return;
     try {
-      const result = await getTradingWorkspace({ signal: token.signal });
+      const result = await getTradingWorkspace({
+        signal: token.signal,
+        fundAccountId: normalizeFundAccountGuid(workflowSummaryFundAccountId)
+      });
       if (!token.isCurrent()) {
         tradingRefreshLifecycle.markStale(token.version);
         return;
@@ -393,8 +475,13 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     tradingRefreshLifecycle.finish,
     tradingRefreshLifecycle.markStale,
     tradingRefreshLifecycle.start,
-    tradingRefreshLifecycle.succeed
+    tradingRefreshLifecycle.succeed,
+    workflowSummaryFundAccountId
   ]);
+
+  useEffect(() => {
+    refreshTradingRef.current = refreshTrading;
+  }, [refreshTrading]);
 
   const updateFeatureCapability = useCallback(async (capabilityKey: string, isEnabled: boolean) => {
     const result = await setFeatureCapability(capabilityKey, isEnabled);
@@ -606,11 +693,10 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   usePollingInterval(refreshProviderRouting, resolveProviderRoutingPollingInterval(activeWorkspace, documentVisible));
   usePollingInterval(refreshPortfolio, resolvePortfolioPollingInterval(activeWorkspace, documentVisible));
 
-  return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, updateFeatureCapability, upsertWorkflowPreset };
+  return { ...state, refresh, refreshWorkspace, refreshTrading, refreshPortfolio, refreshProviderRouting, updateFeatureCapability, upsertWorkflowPreset };
 }
 
 function createRefreshEntries(
-  requestOptions: { signal: AbortSignal },
   workflowSummaryScope: {
     hasOperatingContext?: boolean;
     operatingContext?: string | null;
@@ -619,48 +705,54 @@ function createRefreshEntries(
     fundDisplayName?: string | null;
   } = {}
 ): RefreshEntry[] {
+  const tradingFundAccountId = normalizeFundAccountGuid(workflowSummaryScope.fundAccountId);
   return [
-    { key: "session", category: "bootstrap", promise: getSession(requestOptions) },
-    { key: "overview", category: "bootstrap", promise: getSystemStatus(requestOptions) },
-    { key: "strategy", category: "workspace", workspaceKeys: ["strategy"], promise: getStrategyWorkspace(requestOptions) },
-    { key: "trading", category: "workspace", workspaceKeys: ["trading"], promise: getTradingWorkspace(requestOptions) },
-    { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio"], promise: getPortfolioWorkspace(requestOptions) },
+    { key: "session", category: "bootstrap", start: (requestOptions) => getSession(requestOptions) },
+    { key: "overview", category: "bootstrap", start: (requestOptions) => getSystemStatus(requestOptions) },
+    { key: "strategy", category: "workspace", workspaceKeys: ["strategy"], start: (requestOptions) => getStrategyWorkspace(requestOptions) },
+    {
+      key: "trading",
+      category: "workspace",
+      workspaceKeys: ["trading"],
+      start: (requestOptions) => getTradingWorkspace({ ...requestOptions, fundAccountId: tradingFundAccountId })
+    },
+    { key: "portfolio", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getPortfolioWorkspace(requestOptions) },
     {
       key: "portfolioMultiAssetCoverage",
       category: "workspace",
       workspaceKeys: ["portfolio", "accounting"],
-      promise: getPortfolioMultiAssetCoverage(requestOptions)
+      start: (requestOptions) => getPortfolioMultiAssetCoverage(requestOptions)
     },
-    { key: "data", category: "workspace", workspaceKeys: ["data"], promise: getDataWorkspace(requestOptions) },
-    { key: "accounting", category: "workspace", workspaceKeys: ["accounting"], promise: getAccountingWorkspace(requestOptions) },
-    { key: "reporting", category: "workspace", workspaceKeys: ["reporting"], promise: getReportingWorkspace(requestOptions) },
-    { key: "brokerageConnection", category: "workspace", workspaceKeys: ["portfolio"], promise: getAlpacaConnectionStatus(requestOptions) },
+    { key: "data", category: "workspace", workspaceKeys: ["data"], start: (requestOptions) => getDataWorkspace(requestOptions) },
+    { key: "accounting", category: "workspace", workspaceKeys: ["accounting"], start: (requestOptions) => getAccountingWorkspace(requestOptions) },
+    { key: "reporting", category: "workspace", workspaceKeys: ["reporting"], start: (requestOptions) => getReportingWorkspace(requestOptions) },
+    { key: "brokerageConnection", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getAlpacaConnectionStatus(requestOptions) },
     {
       key: "robinhoodConnection",
       category: "workspace",
       workspaceKeys: ["settings", "portfolio"],
-      promise: getRobinhoodConnectionStatus(requestOptions)
+      start: (requestOptions) => getRobinhoodConnectionStatus(requestOptions)
     },
-    { key: "providerConnections", category: "workspace", workspaceKeys: ["settings", "data"], promise: getProviderConnections(requestOptions) },
-    { key: "providerReadiness", category: "workspace", workspaceKeys: ["settings", "data"], promise: getProviderReadiness(requestOptions) },
-    { key: "providerRoutingConnections", category: "workspace", workspaceKeys: ["settings"], promise: getProviderRoutingConnections(requestOptions) },
-    { key: "providerRoutingBindings", category: "workspace", workspaceKeys: ["settings"], promise: getProviderRoutingBindings(requestOptions) },
+    { key: "providerConnections", category: "workspace", workspaceKeys: ["settings", "data"], start: (requestOptions) => getProviderConnections(requestOptions) },
+    { key: "providerReadiness", category: "workspace", workspaceKeys: ["settings", "data"], start: (requestOptions) => getProviderReadiness(requestOptions) },
+    { key: "providerRoutingConnections", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getProviderRoutingConnections(requestOptions) },
+    { key: "providerRoutingBindings", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getProviderRoutingBindings(requestOptions) },
     {
       key: "providerRoutingTrustSnapshots",
       category: "workspace",
       workspaceKeys: ["settings"],
-      promise: getProviderRoutingTrustSnapshots(requestOptions)
+      start: (requestOptions) => getProviderRoutingTrustSnapshots(requestOptions)
     },
-    { key: "rolePermissionCatalog", category: "workspace", workspaceKeys: ["settings"], promise: getRolePermissionCatalog(requestOptions) },
-    { key: "securityAssetProfiles", category: "workspace", workspaceKeys: ["settings", "data"], promise: getSecurityAssetProfiles(requestOptions) },
-    { key: "ledgerMappingWorkbench", category: "workspace", workspaceKeys: ["settings"], promise: getLedgerMappingWorkbench(requestOptions) },
-    { key: "operationsApprovalPolicyMatrix", category: "workspace", workspaceKeys: ["settings"], promise: getOperationsApprovalPolicyMatrix(requestOptions) },
-    { key: "operationsCloseCalendar", category: "workspace", workspaceKeys: ["settings"], promise: getOperationsCloseCalendar({}, requestOptions) },
-    { key: "brokeragePortfolio", category: "workspace", workspaceKeys: ["portfolio"], promise: getBrokerageHouseholdPortfolio("alpaca", requestOptions) },
+    { key: "rolePermissionCatalog", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getRolePermissionCatalog(requestOptions) },
+    { key: "securityAssetProfiles", category: "workspace", workspaceKeys: ["settings", "data"], start: (requestOptions) => getSecurityAssetProfiles(requestOptions) },
+    { key: "ledgerMappingWorkbench", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getLedgerMappingWorkbench(requestOptions) },
+    { key: "operationsApprovalPolicyMatrix", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getOperationsApprovalPolicyMatrix(requestOptions) },
+    { key: "operationsCloseCalendar", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getOperationsCloseCalendar({}, requestOptions) },
+    { key: "brokeragePortfolio", category: "workspace", workspaceKeys: ["portfolio"], start: (requestOptions) => getBrokerageHouseholdPortfolio("alpaca", requestOptions) },
     {
       key: "workflowSummary",
       category: "workflow",
-      promise: getWorkstationWorkflowSummary({
+      start: (requestOptions) => getWorkstationWorkflowSummary({
         hasOperatingContext: workflowSummaryScope.hasOperatingContext,
         operatingContext: workflowSummaryScope.operatingContext ?? undefined,
         fundProfileId: workflowSummaryScope.fundProfileId ?? undefined,
@@ -669,9 +761,9 @@ function createRefreshEntries(
         signal: requestOptions.signal
       })
     },
-    { key: "workflowLibrary", category: "workflow", promise: getWorkflowLibrary(requestOptions) },
-    { key: "workflowPresets", category: "workflow", promise: getWorkflowPresets(requestOptions) },
-    { key: "featureCapabilities", category: "workspace", workspaceKeys: ["settings"], promise: getFeatureCapabilities(requestOptions) }
+    { key: "workflowLibrary", category: "workflow", start: (requestOptions) => getWorkflowLibrary(requestOptions) },
+    { key: "workflowPresets", category: "workflow", start: (requestOptions) => getWorkflowPresets(requestOptions) },
+    { key: "featureCapabilities", category: "workspace", workspaceKeys: ["settings"], start: (requestOptions) => getFeatureCapabilities(requestOptions) }
   ];
 }
 
@@ -716,8 +808,11 @@ function getActiveWorkspaceRefreshKeys(activeWorkspace: WorkspaceKey): RefreshDa
   }
 }
 
-async function settleRefreshEntries(entries: RefreshEntry[]): Promise<SettledRefreshEntry[]> {
-  const results = await Promise.allSettled(entries.map((entry) => entry.promise));
+async function settleRefreshEntries(
+  entries: RefreshEntry[],
+  requestOptions: { signal: AbortSignal }
+): Promise<SettledRefreshEntry[]> {
+  const results = await Promise.allSettled(entries.map((entry) => entry.start(requestOptions)));
   return entries.map((entry, index) => ({
     entry,
     result: results[index]
@@ -727,7 +822,7 @@ async function settleRefreshEntries(entries: RefreshEntry[]): Promise<SettledRef
 function mergeRefreshSettlements(
   current: WorkstationDataState,
   settlements: SettledRefreshEntry[],
-  options: { loading: boolean; replaceErrors: boolean }
+  options: { loading: boolean; replaceErrorsFor?: WorkspaceKey[] }
 ): WorkstationDataState {
   const next: WorkstationDataState = {
     ...current,
@@ -735,9 +830,15 @@ function mergeRefreshSettlements(
     providerRoutingRefreshing: false,
     usingDevelopmentFixtures: hasDevelopmentFixtureUsage()
   };
-  const workspaceErrors: WorkspaceErrorMap = options.replaceErrors ? {} : { ...current.workspaceErrors };
+  const workspaceErrors: WorkspaceErrorMap = { ...current.workspaceErrors };
+  for (const workspaceKey of options.replaceErrorsFor ?? []) {
+    delete workspaceErrors[workspaceKey];
+  }
   const bootstrapErrors: string[] = [];
-  const workflowErrors: string[] = options.replaceErrors || !current.workflowError ? [] : [current.workflowError];
+  const hasBootstrapSettlements = settlements.some((settlement) => settlement.entry.category === "bootstrap");
+  const hasWorkflowSettlements = settlements.some((settlement) => settlement.entry.category === "workflow");
+  const workflowErrors: string[] = hasWorkflowSettlements || !current.workflowError ? [] : [current.workflowError];
+  const currentErrorIsWorkspaceError = Object.values(current.workspaceErrors).includes(current.error ?? "");
 
   for (const { entry, result } of settlements) {
     if (result.status === "fulfilled") {
@@ -761,8 +862,38 @@ function mergeRefreshSettlements(
 
   next.workspaceErrors = workspaceErrors;
   next.workflowError = workflowErrors[0] ?? null;
-  next.error = firstWorkspaceError(workspaceErrors) ?? bootstrapErrors[0] ?? null;
+  const retainedGlobalError = !hasBootstrapSettlements && current.error && !currentErrorIsWorkspaceError
+    ? current.error
+    : null;
+  next.error = firstWorkspaceError(workspaceErrors) ?? bootstrapErrors[0] ?? retainedGlobalError ?? null;
   return next;
+}
+
+function getWorkspaceKeysForEntries(entries: RefreshEntry[]): WorkspaceKey[] {
+  return Array.from(new Set(entries.flatMap((entry) => entry.workspaceKeys ?? [])));
+}
+
+function markRefreshEntriesLoaded(
+  settlements: SettledRefreshEntry[],
+  lastLoadedAt: Partial<Record<RefreshDataKey, number>>,
+  loadedAt = Date.now()
+) {
+  for (const { entry, result } of settlements) {
+    if (result.status === "fulfilled") {
+      lastLoadedAt[entry.key] = loadedAt;
+    }
+  }
+}
+
+function shouldRefreshEntry(
+  entry: RefreshEntry,
+  current: WorkstationDataState,
+  lastLoadedAt: Partial<Record<RefreshDataKey, number>>,
+  now = Date.now()
+) {
+  const currentValue = current[entry.key as keyof WorkstationDataState];
+  const loadedAt = lastLoadedAt[entry.key];
+  return currentValue == null || loadedAt === undefined || now - loadedAt > WORKSPACE_REFRESH_STALE_MS;
 }
 
 function assignRefreshValue(state: WorkstationDataState, key: RefreshDataKey, value: unknown) {

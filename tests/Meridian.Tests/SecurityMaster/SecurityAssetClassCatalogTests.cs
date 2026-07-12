@@ -23,6 +23,11 @@ public sealed class SecurityAssetClassCatalogTests
             "CashSweep",
             "Swap",
             "DirectLoan",
+            "StructuredCredit",
+            "PrivateFundInterest",
+            "PrivateCompanyEquity",
+            "RealEstateHolding",
+            "CommitmentGuarantee",
             "Commodity",
             "CryptoCurrency",
             "Cfd",
@@ -79,6 +84,21 @@ public sealed class SecurityAssetClassCatalogTests
             .Should()
             .OnlyContain(static pack => pack.AutomationDepth == AssetPackAutomationDepth.DeepAccountingAutomation);
         SecurityAssetPackRegistry.Find("controlled-other-asset")!.AutomationDepth.Should().Be(AssetPackAutomationDepth.WideCapture);
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ShouldClaimAlternativeAssetClassesDirectlyAndRetainWideFallback()
+    {
+        SecurityAssetPackRegistry.Find("fixed-income")!.AssetClasses.Should().Contain("StructuredCredit");
+        SecurityAssetPackRegistry.Find("private-fund-partnership")!.AssetClasses.Should().Contain(
+            "PrivateFundInterest",
+            "PrivateCompanyEquity");
+        SecurityAssetPackRegistry.Find("real-estate")!.AssetClasses.Should().Contain("RealEstateHolding");
+        SecurityAssetPackRegistry.Find("commitment-guarantee")!.AssetClasses.Should().Contain("CommitmentGuarantee");
+
+        SecurityAssetPackRegistry.Find("controlled-other-asset")!.AssetClasses.Should().Contain(
+            "OtherSecurity",
+            "CustomAsset");
     }
 
     [Fact]
@@ -413,9 +433,13 @@ public sealed class SecurityAssetClassCatalogTests
     {
         var loanPacks = SecurityAssetPackRegistry.FindByAssetClass("DirectLoan");
         var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund");
+        var structuredCreditPacks = SecurityAssetPackRegistry.FindByAssetClass("StructuredCredit");
+        var commitmentPacks = SecurityAssetPackRegistry.FindByAssetClass("CommitmentGuarantee");
 
         loanPacks.Should().Contain(static pack => pack.PackId == "private-loan-credit");
         etfPacks.Should().ContainSingle(static pack => pack.PackId == "public-equity-etf");
         etfPacks[0].LedgerExtensionPolicy.Should().Contain("journal templates");
+        structuredCreditPacks.Should().ContainSingle(static pack => pack.PackId == "fixed-income");
+        commitmentPacks.Should().ContainSingle(static pack => pack.PackId == "commitment-guarantee");
     }
 }

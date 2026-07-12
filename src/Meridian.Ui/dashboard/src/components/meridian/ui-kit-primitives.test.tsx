@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS, DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -51,7 +52,7 @@ describe("DenseDataTable", () => {
     expect(selectedRow).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("tabindex", "-1");
-    expect(screen.getByRole("table", { name: "Test table" })).toHaveAccessibleDescription(
+    expect(screen.getByRole("treegrid", { name: "Test table" })).toHaveAccessibleDescription(
       DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS
     );
 
@@ -215,4 +216,123 @@ describe("DenseDataTable", () => {
     expect(screen.getByRole("row", { name: "AAPL Active" })).not.toHaveClass("state-disabled");
     expect(screen.getByRole("row", { name: "MSFT Monitored" })).toHaveClass("state-disabled");
   });
+
+  it("skips cell rendering when parent state changes but table props stay stable", async () => {
+    const user = userEvent.setup();
+    const renderSymbol = vi.fn((row: TestRow) => row.symbol);
+    const stableColumns: DenseDataTableColumn<TestRow>[] = [
+      { id: "symbol", label: "Symbol", render: renderSymbol }
+    ];
+
+    function StableTableHost() {
+      const [tick, setTick] = useState(0);
+      return (
+        <>
+          <button type="button" onClick={() => setTick((current) => current + 1)}>
+            Parent tick {tick}
+          </button>
+          <DenseDataTable
+            columns={stableColumns}
+            rows={rows}
+            getRowId={getTestRowId}
+            emptyText="No rows"
+            ariaLabel="Memoized table"
+          />
+        </>
+      );
+    }
+
+    render(<StableTableHost />);
+
+    expect(renderSymbol).toHaveBeenCalledTimes(rows.length);
+
+    await user.click(screen.getByRole("button", { name: "Parent tick 0" }));
+
+    expect(screen.getByRole("button", { name: "Parent tick 1" })).toBeInTheDocument();
+    expect(renderSymbol).toHaveBeenCalledTimes(rows.length);
+  });
+
+  it("can cap initially visible rows without changing the default table behavior", async () => {
+    const user = userEvent.setup();
+    const extendedRows = [
+      ...rows,
+      { id: "nvda", symbol: "NVDA", status: "Watched" }
+    ];
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={extendedRows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="Capped table"
+        maxVisibleRows={2}
+      />
+    );
+
+    expect(screen.getByRole("row", { name: "AAPL Active" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "MSFT Monitored" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "NVDA Watched" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show all 3 rows" }));
+
+    expect(screen.getByRole("row", { name: "NVDA Watched" })).toBeInTheDocument();
+  });
+
+  it("guards the DOM with a default row cap when no explicit limit is given", async () => {
+    const user = userEvent.setup();
+    const manyRows = Array.from({ length: 150 }, (_, index) => ({
+      id: `row-${index}`,
+      symbol: `SYM${index}`,
+      status: "Watched"
+    }));
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={manyRows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="Unbounded table"
+      />
+    );
+
+    // Only the first 100 rows are mounted by default; the rest stay behind the
+    // progressive-disclosure control so a large set never floods the DOM.
+    expect(screen.getByRole("row", { name: "SYM0 Watched" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "SYM99 Watched" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "SYM100 Watched" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show all 150 rows" }));
+    expect(screen.getByRole("row", { name: "SYM149 Watched" })).toBeInTheDocument();
+  });
+
+  it("renders every row when the cap is explicitly disabled with null", () => {
+    const manyRows = Array.from({ length: 130 }, (_, index) => ({
+      id: `row-${index}`,
+      symbol: `SYM${index}`,
+      status: "Watched"
+    }));
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={manyRows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="Uncapped table"
+        maxVisibleRows={null}
+      />
+    );
+
+    expect(screen.getByRole("row", { name: "SYM129 Watched" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Show all/ })).not.toBeInTheDocument();
+  });
 });
+
+function getTestRowId(row: TestRow) {
+  return row.id;
+}

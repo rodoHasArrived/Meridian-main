@@ -10,26 +10,9 @@
 // directory (provider drawers, symbol-universe manager, …) — those are separate surfaces.
 
 export {
-  DenseDataTable,
-  type DenseDataTableProps,
-  type DataTableColumn,
-} from "./dense-data-table";
-export {
-  ExpandableDataTable,
-  type ExpandableDataTableProps,
-  type ExpandableDataTableColumn,
-} from "./expandable-data-table";
-export {
-  FilteredDataTable,
-  type FilteredDataTableProps,
-  type FilteredDataTableColumn,
-} from "./filtered-data-table";
-export {
-  ColumnChooser,
-  type ColumnChooserProps,
-  type ColumnChooserColumn,
-} from "./column-chooser";
-export { Pagination, type PaginationProps } from "./pagination";
+  Pagination,
+  type PaginationProps,
+} from "./pagination";
 export { EmptyState, type EmptyStateProps, type EmptyStateIcon } from "./empty-state";
 export {
   Skeleton,
@@ -44,10 +27,3 @@ export {
   type EntitySummaryItem,
 } from "./entity-summary";
 export { MetricCard, type MetricCardProps, type MetricCardTone } from "./metric-card";
-export {
-  useTableState,
-  type TableState,
-  type TableSort,
-  type TableFilters,
-  type SortDirection,
-} from "./use-table-state";

@@ -140,8 +140,10 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
             var gateDecision = BrokerageOrderPlacementGate.Evaluate(
-                context.RequestServices.GetService<BrokerageConfiguration>());
+                context.RequestServices.GetService<BrokerageConfiguration>(),
+                activeGatewayId);
             if (!gateDecision.IsAllowed)
             {
                 var blocked = new OrderResult
@@ -581,6 +583,28 @@ public static class ExecutionEndpoints
         .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
+        group.MapGet("/sessions/{sessionId}/tca", async (string sessionId, HttpContext context) =>
+        {
+            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+            if (persistence is null)
+                return Results.NotFound();
+
+            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            var session = persistence.GetSession(sessionId);
+            if (session is null)
+                return Results.NotFound();
+
+            var report = SessionTcaReporter.Generate(
+                sessionId,
+                session.Summary.StrategyId,
+                session.FillHistory ?? Array.Empty<ExecutionReport>(),
+                session.OrderHistory);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("GetExecutionSessionTcaReport")
+        .Produces<SessionTcaReport>(200)
+        .Produces(404);
+
         group.MapPost("/sessions/create", async (CreatePaperSessionRequest request, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
@@ -898,6 +922,7 @@ public static class ExecutionEndpoints
                 side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
                 quantity: request.Quantity ?? Math.Abs(position.Quantity),
                 positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                fundAccountId: request.FundAccountId,
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
@@ -942,6 +967,7 @@ public static class ExecutionEndpoints
                 side: position.Quantity < 0 ? OrderSide.Sell : OrderSide.Buy,
                 quantity: request.Quantity ?? Math.Abs(position.Quantity),
                 positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "open" : null,
+                fundAccountId: request.FundAccountId,
                 successVerb: "Upsize",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
@@ -952,7 +978,7 @@ public static class ExecutionEndpoints
         .Produces(403)
         .Produces(503);
 
-        group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
+        group.MapPost("/positions/{symbol}/close", async (string symbol, Guid? fundAccountId, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
             {
@@ -999,6 +1025,7 @@ public static class ExecutionEndpoints
                 side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
                 quantity: Math.Abs(position.Quantity),
                 positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                fundAccountId: fundAccountId,
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
@@ -1078,6 +1105,7 @@ public static class ExecutionEndpoints
         OrderSide side,
         decimal quantity,
         string? positionEffect,
+        Guid? fundAccountId,
         string successVerb,
         JsonSerializerOptions jsonOptions,
         HttpContext context)
@@ -1098,8 +1126,10 @@ public static class ExecutionEndpoints
             return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
+        var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
         var blockedGateDecision = BrokerageOrderPlacementGate.Evaluate(
-            context.RequestServices.GetService<BrokerageConfiguration>());
+            context.RequestServices.GetService<BrokerageConfiguration>(),
+            activeGatewayId);
         if (!blockedGateDecision.IsAllowed)
         {
             var blockedActionId = GenerateActionId();
@@ -1135,7 +1165,8 @@ public static class ExecutionEndpoints
         }
 
         var gateDecision = BrokerageOrderPlacementGate.Evaluate(
-            context.RequestServices.GetService<BrokerageConfiguration>());
+            context.RequestServices.GetService<BrokerageConfiguration>(),
+            activeGatewayId);
         if (!gateDecision.IsAllowed)
         {
             var blocked = new TradingActionResult(
@@ -1166,6 +1197,7 @@ public static class ExecutionEndpoints
             Type = OrderType.Market,
             Quantity = quantity,
             ClientOrderId = $"{actionName.ToLowerInvariant()}-{position.Symbol}-{Guid.NewGuid():N}",
+            FundAccountId = fundAccountId,
             Metadata = metadata
         };
 

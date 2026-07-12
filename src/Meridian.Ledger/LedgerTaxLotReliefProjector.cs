@@ -9,41 +9,52 @@ public static class LedgerTaxLotReliefProjector
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        var orderedLots = OrderLots(input).ToList();
+        // Feed reference-data (day-count amortization, factor, corporate-action) basis
+        // adjustments into the relief engine before ordering, so cost-basis relief reflects the
+        // effective lots rather than their raw recorded quantity and unit cost.
+        var effectiveLots = input.BasisAdjustments.Count == 0
+            ? input.OpenLots
+            : LedgerTaxLotBasisAdjuster.Apply(input.OpenLots, input.BasisAdjustments);
+
+        var orderedLots = OrderLots(input, effectiveLots).ToList();
         var selections = SelectLots(input.QuantitySold, orderedLots);
         var proceeds = RoundCurrency(input.QuantitySold * input.SalePrice);
         var costBasis = selections.Sum(static selection => selection.CostBasis);
         var realizedGainOrLoss = proceeds - costBasis;
         var lines = BuildLines(input, proceeds, costBasis, realizedGainOrLoss);
 
-        return new LedgerTaxLotReliefProjection(input, selections, proceeds, costBasis, realizedGainOrLoss, lines);
+        return new LedgerTaxLotReliefProjection(input, selections, proceeds, costBasis, realizedGainOrLoss, lines)
+        {
+            AppliedAdjustments = input.BasisAdjustments,
+            EffectiveLots = effectiveLots,
+        };
     }
 
-    private static IEnumerable<LedgerTaxLot> OrderLots(LedgerTaxLotReliefInput input)
+    private static IEnumerable<LedgerTaxLot> OrderLots(LedgerTaxLotReliefInput input, IReadOnlyList<LedgerTaxLot> effectiveLots)
     {
         return input.ReliefMethod switch
         {
-            LedgerTaxLotReliefMethod.Fifo => input.OpenLots
+            LedgerTaxLotReliefMethod.Fifo => effectiveLots
                 .OrderBy(static lot => lot.AcquiredDate)
                 .ThenBy(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase),
-            LedgerTaxLotReliefMethod.Lifo => input.OpenLots
+            LedgerTaxLotReliefMethod.Lifo => effectiveLots
                 .OrderByDescending(static lot => lot.AcquiredDate)
                 .ThenBy(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase),
-            LedgerTaxLotReliefMethod.Hifo => input.OpenLots
+            LedgerTaxLotReliefMethod.Hifo => effectiveLots
                 .OrderByDescending(static lot => lot.UnitCost)
                 .ThenBy(static lot => lot.AcquiredDate)
                 .ThenBy(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase),
-            LedgerTaxLotReliefMethod.SpecificId => OrderSpecificLots(input),
+            LedgerTaxLotReliefMethod.SpecificId => OrderSpecificLots(input, effectiveLots),
             _ => throw new ArgumentOutOfRangeException(nameof(input), input.ReliefMethod, "Unsupported tax-lot relief method."),
         };
     }
 
-    private static IEnumerable<LedgerTaxLot> OrderSpecificLots(LedgerTaxLotReliefInput input)
+    private static IEnumerable<LedgerTaxLot> OrderSpecificLots(LedgerTaxLotReliefInput input, IReadOnlyList<LedgerTaxLot> effectiveLots)
     {
         if (input.SpecificLotIds.Count == 0)
             throw new ArgumentException("SpecificId relief requires at least one selected lot identifier.", nameof(input));
 
-        var openLots = input.OpenLots.ToDictionary(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase);
+        var openLots = effectiveLots.ToDictionary(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var lotId in input.SpecificLotIds)
         {

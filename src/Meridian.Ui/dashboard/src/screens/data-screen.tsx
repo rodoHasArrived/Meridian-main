@@ -13,10 +13,9 @@ import {
   TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { MetricCard } from "@/components/meridian/metric-card";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
@@ -33,20 +32,29 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
+import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
+import { useDataQualityPanel } from "@/screens/data-screen.data-quality.view-model";
 import {
-  DATA_BACKFILL_DETAIL_PANEL_ID,
-  DATA_EXPORT_DETAIL_PANEL_ID,
+  CAPABILITY_LEGEND,
+  useCapabilityMatrixPanel,
+  type CapabilityMatrixViewModel
+} from "@/screens/data-screen.capability-matrix.view-model";
+import {
+  useCorporateActionInboxPanel,
+  type CorporateActionInboxViewModel
+} from "@/screens/data-screen.corporate-action-inbox.view-model";
+import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
+import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
+import { resultToneClass } from "@/screens/data-screen.tone-styles";
+import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import {
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataViewModel
 } from "@/screens/data-screen.view-model";
 import type { DataWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
-  DataOperationsBackfillDetailState,
-  DataOperationsBackfillRow,
   DataOperationsEmptyState,
-  DataOperationsExportDetailState,
-  DataOperationsExportRow,
   DataUploadPanelState,
   DataOperationsLoadingState,
   DataOperationsProviderDiagnosticRow,
@@ -142,86 +150,6 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   }
 ];
 
-const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = [
-  {
-    id: "job",
-    label: "Job",
-    render: (backfill) => (
-      <span className="block min-w-0">
-        <span className="block font-mono font-semibold text-foreground">{backfill.jobId}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}</span>
-      </span>
-    )
-  },
-  {
-    id: "scope",
-    label: "Scope",
-    render: (backfill) => <span className="text-muted-foreground">{backfill.scope}</span>
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (backfill) => (
-      <Badge
-        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
-      >
-        {backfill.status}
-      </Badge>
-    )
-  },
-  {
-    id: "progress",
-    label: "Progress",
-    render: (backfill) => (
-      <span className="block min-w-[8rem]">
-        <span className="mb-1 block font-mono text-xs text-muted-foreground">{backfill.progress}</span>
-        <span className="block h-1 rounded-full bg-border/70">
-          <span className="block h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
-        </span>
-      </span>
-    )
-  },
-  {
-    id: "updated",
-    label: "Updated",
-    render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
-  }
-];
-
-const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
-  {
-    id: "profile",
-    label: "Profile",
-    render: (item) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{item.profile}</span>
-        <span className="mt-1 block font-mono text-xs text-muted-foreground">{item.exportId}</span>
-      </span>
-    )
-  },
-  {
-    id: "target",
-    label: "Target",
-    render: (item) => <span className="text-muted-foreground">{item.target}</span>
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (item) => <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
-  },
-  {
-    id: "rows",
-    label: "Rows",
-    align: "right",
-    render: (item) => <span className="font-mono text-xs text-foreground">{item.rows}</span>
-  },
-  {
-    id: "updated",
-    label: "Updated",
-    render: (item) => <span className="font-mono text-xs text-muted-foreground">{item.updatedAt}</span>
-  }
-];
-
 export function DataScreen({
   data,
   providerConnections = null,
@@ -257,6 +185,18 @@ export function DataScreen({
     providerRoutingTrustSnapshots
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
+  const queryPanel = useDataQueryPanel();
+  const qualityPanel = useDataQualityPanel();
+  const capabilityMatrixPanel = useCapabilityMatrixPanel();
+  const corporateActionInboxPanel = useCorporateActionInboxPanel();
+  const coverageGapsPanel = useCoverageGapsPanel();
+  const [savedQueryName, setSavedQueryName] = useState("");
+  const activeWorkstream = vm.workstream;
+  const showHealthMonitoring = activeWorkstream === "overview";
+  const showProviderWorkstream = activeWorkstream === "providers";
+  const showBackfillWorkstream = activeWorkstream === "backfills";
+  const showExportWorkstream = activeWorkstream === "exports";
+  const showQueryWorkstream = activeWorkstream === "query";
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -268,10 +208,11 @@ export function DataScreen({
         label="Data workspace filters"
         searchValue={`Provider: ${vm.providerSection.selectedDetail?.title ?? "All providers"}`}
         options={[
-          { id: "uploads", label: "Uploads", count: String(vm.uploadPanelState.templateOptions.length) },
-          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: true },
-          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length) },
-          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length) }
+          { id: "health", label: "Health", count: String(data.metrics.length), active: showHealthMonitoring },
+          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: showProviderWorkstream },
+          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length), active: showBackfillWorkstream },
+          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length), active: showExportWorkstream },
+          { id: "query", label: "SQL", count: "Read only", active: showQueryWorkstream }
         ]}
         fields={[
           { id: "sync", label: "Sync", value: vm.providerSection.statusLabel },
@@ -305,22 +246,36 @@ export function DataScreen({
         )}
       />
 
-      <section className="workspace-metric-strip">
-        {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
-      </section>
+      {showHealthMonitoring ? (
+        <>
+          <section className="workspace-metric-strip">
+            {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
+          </section>
+
+          <DataQualityRegion panel={qualityPanel} />
+
+          <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
+
+          <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
+
+          <CoverageGapsRegion panel={coverageGapsPanel} />
+        </>
+      ) : null}
 
       <section className="data-management-frame">
         <nav className="workspace-directory-rail" aria-label="Data folders">
           <div className="operator-rail-section">Data folders</div>
-          <a href="#data-upload-intake-title">Upload templates</a>
-          <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
-          <a href="#data-backfill-queue-title">Backfill queue</a>
-          <a href="#data-recent-exports-title">Export packages</a>
+          <Link to="/data" aria-current={showHealthMonitoring ? "page" : undefined}>Health monitoring</Link>
+          <Link to="/data/providers" aria-current={showProviderWorkstream ? "page" : undefined}>Provider catalog</Link>
+          <Link to="/data/backfills" aria-current={showBackfillWorkstream ? "page" : undefined}>Backfill queue</Link>
+          <Link to="/data/exports" aria-current={showExportWorkstream ? "page" : undefined}>Export packages</Link>
+          <Link to="/data/query" aria-current={showQueryWorkstream ? "page" : undefined}>SQL query</Link>
           <Link to="/data/watchlist">Watchlist</Link>
           <Link to="/data/quotes">Live quotes</Link>
         </nav>
 
         <div className="data-management-main">
+        {showHealthMonitoring ? (
         <section className="workspace-region workspace-region-compact">
           <CardHeader>
             <div className="eyebrow-label">{workspace.label} Lane</div>
@@ -351,17 +306,21 @@ export function DataScreen({
             />
           </CardContent>
         </section>
+        ) : null}
 
         <RouteFocusCard
           state={vm.routeFocusCard}
         />
 
-        <DataUploadIntakePanel
-          state={vm.uploadPanelState}
-          onTemplateSelect={vm.selectUploadTemplate}
-          onFileSelect={vm.previewDataUpload}
-        />
+        {showProviderWorkstream ? (
+          <DataUploadIntakePanel
+            state={vm.uploadPanelState}
+            onTemplateSelect={vm.selectUploadTemplate}
+            onFileSelect={vm.previewDataUpload}
+          />
+        ) : null}
 
+        {showProviderWorkstream ? (
         <section aria-labelledby="data-provider-health-title" className="workspace-region data-provider-region">
           <CardHeader>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -420,7 +379,10 @@ export function DataScreen({
           <CardContent className="space-y-3">
             {vm.providerSection.hasRows ? (
               <>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+                <div
+                  className="flex flex-wrap items-stretch gap-2 rounded-md border border-border/70 bg-secondary/20 px-2 py-2"
+                  aria-label="Provider management scan band"
+                >
                   {vm.providerSection.summaryCards.map((card) => (
                     <ProviderSummaryCard key={card.id} card={card} />
                   ))}
@@ -456,6 +418,7 @@ export function DataScreen({
                   emptyText={vm.providerSection.emptyState.description}
                   ariaLabel={vm.providerSection.tableLabel}
                   caption={vm.providerSection.description}
+                  maxVisibleRows={100}
                 />
                 </div>
                 <ProviderDetailPanel
@@ -472,81 +435,19 @@ export function DataScreen({
             )}
           </CardContent>
         </section>
+        ) : null}
 
-        <section aria-labelledby="data-backfill-queue-title" className="workspace-region">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <CardTitle id="data-backfill-queue-title">Backfill queue</CardTitle>
-                <CardDescription>Run or inspect historical repairs that support market-data quality and export readiness.</CardDescription>
-              </div>
-              <Button size="sm" onClick={vm.openBackfillDialog}>
-                Trigger backfill
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
-              {vm.backfillSection.hasRows ? (
-                <DenseDataTable
-                  columns={backfillQueueColumns}
-                  rows={vm.backfillSection.rows}
-                  getRowId={(backfill) => backfill.rowId}
-                  getRowAriaLabel={(backfill) => backfill.ariaLabel}
-                  getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
-                  getRowAriaControls={(backfill) => backfill.detailPanelId}
-                  getRowAriaExpanded={(backfill) => backfill.expanded}
-                  getRowClassName={(backfill) => backfill.rowClassName}
-                  selectedRowId={vm.selectedBackfillRowId}
-                  onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
-                  emptyText={vm.backfillSection.emptyState.description}
-                  ariaLabel={vm.backfillSection.tableLabel}
-                  caption={vm.backfillSection.description}
-                />
-              ) : (
-                <EmptyState state={vm.backfillSection.emptyState} />
-              )}
-              <BackfillDetailPanel
-                detail={vm.selectedBackfillDetail}
-                emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
-              />
-            </div>
-          </CardContent>
-        </section>
+        {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
 
-        <section aria-labelledby="data-recent-exports-title" className="workspace-region">
-          <CardHeader>
-            <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
-            <CardDescription>Latest package and reporting outputs tied to Data workspace evidence.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
-              {vm.exportSection.hasRows ? (
-                <DenseDataTable
-                  columns={exportColumns}
-                  rows={vm.exportSection.rows}
-                  getRowId={(item) => item.rowId}
-                  getRowAriaLabel={(item) => item.ariaLabel}
-                  getRowSelectAriaLabel={(item) => item.selectAriaLabel}
-                  getRowAriaControls={(item) => item.detailPanelId}
-                  getRowAriaExpanded={(item) => item.expanded}
-                  getRowClassName={(item) => item.rowClassName}
-                  selectedRowId={vm.exportSection.selectedRowId}
-                  onRowSelect={(item) => vm.selectExport(item.exportId)}
-                  emptyText={vm.exportSection.emptyState.description}
-                  ariaLabel={vm.exportSection.tableLabel}
-                  caption={vm.exportSection.description}
-                />
-              ) : (
-                <EmptyState state={vm.exportSection.emptyState} />
-              )}
-              <ExportDetailPanel
-                detail={vm.exportSection.selectedDetail}
-                emptyState={vm.exportSection.detailEmptyState ?? vm.exportSection.emptyState}
-              />
-            </div>
-          </CardContent>
-        </section>
+        {showExportWorkstream ? <DataExportWorkstream vm={vm} /> : null}
+
+        {showQueryWorkstream ? (
+          <DataQueryWorkstream
+            queryPanel={queryPanel}
+            savedQueryName={savedQueryName}
+            setSavedQueryName={setSavedQueryName}
+          />
+        ) : null}
         </div>
       </section>
 
@@ -581,10 +482,10 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
         : "border-border/70 bg-secondary/25";
 
   return (
-    <div className={cn("min-w-0 rounded-md border px-3 py-3", toneClass)}>
+    <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
       <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
       <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
-      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+      <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
     </div>
   );
 }
@@ -734,7 +635,7 @@ function DataUploadIntakePanel({
                   </ul>
                 </div>
               </div>
-              <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {state.selectedTemplateFields.map((field) => (
                   <div key={field.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
                     <div className="flex items-center justify-between gap-2">
@@ -746,12 +647,12 @@ function DataUploadIntakePanel({
                     <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground" title={field.example}>{field.example}</p>
                   </div>
                 ))}
-              </dl>
+              </div>
             </div>
           ) : null}
         </div>
 
-        <aside className="row-detail-panel h-fit min-w-0" aria-labelledby="data-upload-preview-title">
+        <div className="row-detail-panel h-fit min-w-0" role="region" aria-labelledby="data-upload-preview-title">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="eyebrow-label">Preview</div>
@@ -788,9 +689,9 @@ function DataUploadIntakePanel({
           </label>
 
           {state.retainedPath ? (
-            <dl className="mt-3 grid gap-2">
+            <div className="mt-3 grid gap-2">
               <FieldTile field={{ id: "retained-path", label: "Retained path", value: state.retainedPath }} />
-            </dl>
+            </div>
           ) : null}
 
           {state.issueRows.length > 0 ? (
@@ -828,7 +729,7 @@ function DataUploadIntakePanel({
               </table>
             </div>
           ) : null}
-        </aside>
+        </div>
       </CardContent>
     </section>
   );
@@ -939,11 +840,11 @@ function ProviderDetailTabPanel({
   if (activeTab === "credentials") {
     return (
       <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
-        <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
           {detail.credentialFields.map((field) => (
             <FieldTile key={field.id} field={field} />
           ))}
-        </dl>
+        </div>
         <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
           <div className="eyebrow-label">Secret handling</div>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -1002,11 +903,11 @@ function ProviderDetailTabPanel({
 
   return (
     <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
-      <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
         {detail.overviewFields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
-      </dl>
+      </div>
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Recommended action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
@@ -1051,127 +952,6 @@ function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "su
   }
 }
 
-function BackfillDetailPanel({
-  detail,
-  emptyState
-}: {
-  detail: DataOperationsBackfillDetailState | null;
-  emptyState: DataOperationsEmptyState | null;
-}) {
-  if (!detail) {
-    return (
-      <DenseRowDetailPanel
-        id={DATA_BACKFILL_DETAIL_PANEL_ID}
-        role="status"
-        ariaLabel="Backfill detail empty state"
-        className="row-detail-panel h-fit min-w-0"
-      >
-        <div className="eyebrow-label">Selected Backfill</div>
-        <h3 className="mt-2 text-sm font-semibold text-foreground">
-          {emptyState?.title ?? "No backfill selected"}
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {emptyState?.description ?? "Select a backfill row to inspect repair scope, provider, progress, and update evidence."}
-        </p>
-      </DenseRowDetailPanel>
-    );
-  }
-
-  return (
-    <DenseRowDetailPanel
-      id={detail.id}
-      ariaLabel={detail.ariaLabel}
-      className="row-detail-panel h-fit min-w-0"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Selected Backfill</div>
-          <h3 className="mt-2 text-sm font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-        </div>
-        <Badge variant={detail.statusVariant} dot>
-          {detail.statusLabel}
-        </Badge>
-      </div>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {detail.rows.map((field) => (
-          <FieldTile key={field.id} field={field} />
-        ))}
-      </dl>
-    </DenseRowDetailPanel>
-  );
-}
-
-function ExportDetailPanel({
-  detail,
-  emptyState
-}: {
-  detail: DataOperationsExportDetailState | null;
-  emptyState: DataOperationsEmptyState | null;
-}) {
-  if (!detail) {
-    return (
-      <aside
-        id={DATA_EXPORT_DETAIL_PANEL_ID}
-        role="status"
-        aria-label="Export detail empty state"
-        className="row-detail-panel h-fit min-w-0"
-      >
-        <div className="eyebrow-label">Selected Export</div>
-        <h3 className="mt-2 text-sm font-semibold text-foreground">
-          {emptyState?.title ?? "No export selected"}
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and handoff guidance."}
-        </p>
-      </aside>
-    );
-  }
-
-  return (
-    <aside
-      id={detail.id}
-      role="region"
-      aria-label={detail.ariaLabel}
-      aria-live="polite"
-      className="row-detail-panel h-fit min-w-0"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Selected Export</div>
-          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
-        </div>
-        <Badge variant={detail.statusVariant} dot>
-          {detail.statusLabel}
-        </Badge>
-      </div>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-        {detail.fields.map((field) => (
-          <FieldTile key={field.id} field={field} />
-        ))}
-      </dl>
-      <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
-        <div className="eyebrow-label">Next action</div>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
-      </div>
-    </aside>
-  );
-}
-
-function EmptyState({ state }: { state: DataOperationsEmptyState }) {
-  return (
-    <div
-      role="status"
-      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
-    >
-      <div className="font-semibold text-foreground">{state.title}</div>
-      <p className="mt-1 leading-6">{state.description}</p>
-    </div>
-  );
-}
-
 function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
   return (
     <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
@@ -1207,11 +987,11 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
             >
               <div className="eyebrow-label">Routing posture</div>
-              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
                   <FieldTile key={row.id} field={row} />
                 ))}
-              </dl>
+              </div>
               {vm.providerSetupDialogState.successMetadata.warnings.length > 0 ? (
                 <div
                   className="mt-3 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning"
@@ -1295,11 +1075,11 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                     <Badge variant="success">No key needed</Badge>
                   ) : null}
                 </div>
-                <dl className="mt-3 grid gap-2 sm:grid-cols-3">
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {vm.providerSetupDialogState.selectedProviderSummary.rows.map((row) => (
                     <FieldTile key={row.id} field={row} />
                   ))}
-                </dl>
+                </div>
                 {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage ? (
                   <p className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs leading-5 text-success">
                     {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage}
@@ -1605,12 +1385,12 @@ function ProviderSetupInstitutionSearch({
           </Button>
         </div>
         {state.linkTokenResult ? (
-          <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
             <FieldTile field={{ id: "plaid-link-token", label: "Link token", value: state.linkTokenResult.linkTokenPreview }} />
             <FieldTile field={{ id: "plaid-link-environment", label: "Environment", value: state.linkTokenResult.environmentLabel ?? "Sandbox" }} />
             <FieldTile field={{ id: "plaid-link-institution", label: "Institution", value: state.linkTokenResult.institutionLabel ?? "Selected bank" }} />
             <FieldTile field={{ id: "plaid-link-expiration", label: "Expires", value: state.linkTokenResult.expirationLabel ?? "Temporary" }} />
-          </dl>
+          </div>
         ) : null}
         {state.linkedEvidence ? (
           <div
@@ -1624,11 +1404,11 @@ function ProviderSetupInstitutionSearch({
               </div>
               <Badge variant="success">{state.linkedEvidence.accountCountLabel}</Badge>
             </div>
-            <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+            <div className="mt-2 grid gap-2 sm:grid-cols-3">
               <FieldTile field={{ id: "plaid-linked-item", label: "Item", value: state.linkedEvidence.itemId }} />
               <FieldTile field={{ id: "plaid-linked-status", label: "Status", value: state.linkedEvidence.status }} />
               <FieldTile field={{ id: "plaid-linked-request", label: "Request", value: state.linkedEvidence.requestId ?? "Recorded" }} />
-            </dl>
+            </div>
             {state.linkedEvidence.accounts.length > 0 ? (
               <ul className="mt-3 grid gap-2" aria-label="Linked Plaid accounts">
                 {state.linkedEvidence.accounts.map((account) => (
@@ -2000,12 +1780,6 @@ function FieldTile({ field }: { field: { id: string; label: string; value: strin
   );
 }
 
-const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
-  warning: "border-warning/35 bg-warning/10 text-warning",
-  success: "border-success/35 bg-success/10 text-success",
-  danger: "border-danger/35 bg-danger/10 text-danger"
-};
-
 function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
   return (
     <div
@@ -2017,12 +1791,183 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
         <div className="font-semibold">{state.title}</div>
         <div className="font-mono text-xs">{state.statusLabel}</div>
       </div>
-      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {state.rows.map((row) => (
           <FieldTile key={row.id} field={row} />
         ))}
-      </dl>
+      </div>
       {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
+  );
+}
+
+function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel }) {
+  return (
+    <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle id="capability-matrix-title">Provider capability matrix</CardTitle>
+            <CardDescription>
+              Declared provider coverage per instrument type.
+              {panel.model ? ` ${panel.model.summary}` : null}
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void panel.refresh()}
+            disabled={panel.loading}
+            aria-label="Refresh provider capability matrix"
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {panel.error ? (
+            <StatusBanner tone="danger" title="Capability matrix unavailable" detail={panel.error} />
+          ) : !panel.model ? (
+            <p className="text-sm text-muted-foreground" role="status">Loading capability matrix…</p>
+          ) : (
+            <div className="grid gap-4">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm" aria-label="Provider capability by instrument type">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="border-b p-2 text-left font-semibold">Provider</th>
+                      {panel.model.columns.map((column) => (
+                        <th key={column} scope="col" className="border-b p-2 text-left font-semibold">
+                          {column}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {panel.model.rows.map((row) => (
+                      <tr key={row.providerId}>
+                        <th scope="row" className="border-b p-2 text-left font-mono font-semibold">
+                          {row.providerId}
+                        </th>
+                        {row.cells.map((cell) => (
+                          <td
+                            key={cell.instrumentType}
+                            title={cell.description}
+                            className={cn(
+                              "border-b p-2 font-mono",
+                              cell.supported ? "text-foreground" : "text-muted-foreground/50"
+                            )}
+                          >
+                            <span aria-label={cell.description}>{cell.marks}</span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}
+              </p>
+              {panel.model.failures.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold">Discovery failures</h3>
+                  <ul className="mt-2 grid gap-1.5">
+                    {panel.model.failures.map((failure, index) => (
+                      <li key={`${failure.stage}-${failure.subject}-${index}`} className="text-sm text-muted-foreground">
+                        <Badge variant="danger">{failure.stage}</Badge>{" "}
+                        <span className="font-mono">{failure.subject}</span> — {failure.errorType}: {failure.errorMessage}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxViewModel }) {
+  return (
+    <section aria-labelledby="corporate-action-inbox-title" className="workspace-region corporate-action-inbox-region">
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle id="corporate-action-inbox-title">
+              Corporate action inbox
+              {panel.model && panel.model.stagedCount > 0 ? ` (${panel.model.stagedCount})` : null}
+            </CardTitle>
+            <CardDescription>
+              Staged provider announcements awaiting operator review.
+              {panel.model ? ` ${panel.model.summary} Last ingest: ${panel.model.lastIngestLabel}.` : null}
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void panel.refresh()}
+            disabled={panel.loading}
+            aria-label="Refresh corporate action inbox"
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {panel.error ? (
+            <StatusBanner tone="danger" title="Corporate action inbox unavailable" detail={panel.error} />
+          ) : !panel.model ? (
+            <p className="text-sm text-muted-foreground" role="status">Loading corporate action inbox…</p>
+          ) : panel.model.rows.length === 0 ? (
+            <p className="text-sm text-muted-foreground" role="status">{panel.model.summary}</p>
+          ) : (
+            <ul className="grid gap-1.5" aria-label="Staged corporate action proposals">
+              {panel.model.rows.map((row) => (
+                <li key={row.key} className="flex flex-wrap items-center gap-2 text-sm">
+                  <Badge variant={row.tone === "warning" ? "warning" : "outline"}>
+                    {row.actionType}
+                  </Badge>
+                  <span className="font-mono font-semibold">{row.ticker}</span>
+                  <span className="text-muted-foreground">
+                    {row.valueLabel} · ex {row.exDateLabel} ({row.countdownLabel}) · {row.consensusLabel}
+                    {row.dissentingSources.length > 0
+                      ? ` · disputed by ${row.dissentingSources.join(", ")}`
+                      : ""}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void panel.apply(row)}
+                    disabled={panel.applyingKey !== null}
+                    aria-label={`Apply ${row.actionType} for ${row.ticker}`}
+                  >
+                    {panel.applyingKey === row.key ? "Applying…" : "Apply"}
+                  </Button>
+                  {panel.applyErrors[row.key] ? (
+                    <span className="text-sm text-destructive" role="alert">{panel.applyErrors[row.key]}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+          {panel.model && panel.model.errors.length > 0 && (
+            <div className="mt-3">
+              <h3 className="text-sm font-semibold">Provider errors last run</h3>
+              <ul className="mt-2 grid gap-1">
+                {panel.model.errors.map((message) => (
+                  <li key={message} className="text-sm text-muted-foreground font-mono">{message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }

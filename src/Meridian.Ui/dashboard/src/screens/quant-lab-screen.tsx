@@ -6,9 +6,10 @@ import {
   Settings2,
   Sparkles
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { SeverityBadge } from "@/components/operations";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import {
   DenseDataTable,
@@ -58,19 +59,18 @@ export function QuantLabScreen() {
   const vm = useQuantLabScreenViewModel();
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <FlaskConical className="h-5 w-5 text-primary" />
+          Quant Lab
+        </span>
+      }
+      scope="Strategy Lane"
+      description="Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline."
+    >
       <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <FlaskConical className="h-5 w-5 text-primary" />
-            Quant Lab
-          </CardTitle>
-          <CardDescription>
-            Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline.
-          </CardDescription>
-        </CardHeader>
         <CardContent className="space-y-3">
           <ToolbarStrip
             ariaLabel="Quant Lab status"
@@ -128,7 +128,7 @@ export function QuantLabScreen() {
           <TemplatesPanel templates={vm.templateRows} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -198,9 +198,7 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
               )}
               {panel.title}
             </CardTitle>
-            <Badge variant={panel.tone === "success" ? "success" : panel.tone === "danger" ? "danger" : "outline"} dot>
-              {panel.statusBadgeLabel}
-            </Badge>
+            <SeverityBadge status={panel.tone} label={panel.statusBadgeLabel} />
           </div>
           {result.runtimeError ? (
             <CardDescription className="text-danger/80">{panel.description}</CardDescription>
@@ -305,18 +303,10 @@ function TradeLedgerPanel({
               ariaLabel={ledger.selectedDetail.ariaLabel}
               fields={ledger.selectedDetail.fields}
               status={
-                <Badge
-                  variant={
-                    ledger.selectedDetail.statusTone === "success"
-                      ? "success"
-                      : ledger.selectedDetail.statusTone === "warning"
-                        ? "warning"
-                        : "outline"
-                  }
-                  dot
-                >
-                  {ledger.selectedDetail.statusLabel}
-                </Badge>
+                <SeverityBadge
+                  status={ledger.selectedDetail.statusTone}
+                  label={ledger.selectedDetail.statusLabel}
+                />
               }
             />
           ) : (

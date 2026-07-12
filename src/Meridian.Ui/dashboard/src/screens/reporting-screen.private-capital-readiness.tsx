@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SeverityBadge } from "@/components/operations";
+import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   AccountingWorkspaceResponse,
@@ -412,13 +413,5 @@ function ReportingPrivateCapitalRouteLink({ label, href }: { label: string; href
 }
 
 function formatReportingMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
-    }).format(value);
-  } catch {
-    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-  }
+  return formatCurrencyAmount(value, { currency, maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2 });
 }

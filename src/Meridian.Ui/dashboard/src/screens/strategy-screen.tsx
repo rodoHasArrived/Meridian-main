@@ -1,15 +1,18 @@
 import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { Histogram } from "@/components/charts";
+import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
 import type {
   StrategyComparisonTableRow,
@@ -59,11 +62,6 @@ const plotLegendToneClass = {
   muted: "bg-muted-foreground/70"
 } as const;
 
-const distributionBarToneClass = {
-  selected: "bg-primary",
-  base: "bg-primary/65"
-} as const;
-
 const promotionTitleToneClass = {
   success: "text-success",
   danger: "text-danger"
@@ -75,6 +73,19 @@ const sampleToneBadgeVariant = {
   warning: "warning",
   danger: "danger"
 } as const;
+
+/** Map a raw run status string onto a Concrete operator severity. Covers the full
+ * `StrategyRunRecord.status` union (`Running` · `Queued` · `Needs Review` · `Completed`) plus
+ * common backend variants so no valid status silently falls through to the neutral `info` gray:
+ * Completed→ready, Needs Review→review, Running→action, failure states→blocked, Queued/unknown→info. */
+function strategyRunSeverityStatus(status: string): string {
+  const key = status.trim().toLowerCase();
+  if (key === "completed" || key === "complete" || key === "done" || key === "passed") return "ready";
+  if (key === "needs review" || key === "needsreview" || key === "review" || key === "review required" || key === "reviewrequired") return "review";
+  if (key === "failed" || key === "cancelled" || key === "canceled" || key === "error" || key === "blocked") return "blocked";
+  if (key === "running" || key === "inprogress" || key === "in progress") return "action";
+  return "info";
+}
 
 const plotToolMomentColumns: DenseDataTableColumn<StrategyPlotMomentRow>[] = [
   {
@@ -183,41 +194,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   const navigate = useNavigate();
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  if (!data) {
-    return (
-      <Card
-        role={vm.loadingState.role}
-        aria-busy={vm.loadingState.ariaBusy}
-        aria-live={vm.loadingState.ariaLive}
-        aria-labelledby={vm.loadingState.titleId}
-        aria-describedby={vm.loadingState.detailId}
-        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
-      >
-        <CardHeader className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
-              dot
-            >
-              {vm.loadingState.badgeLabel}
-            </Badge>
-            <span className="toolbar-chip" aria-label={`Route ${vm.loadingState.routeLabel}`}>
-              <span className="text-muted-foreground">Route</span>
-              <b>{vm.loadingState.routeLabel}</b>
-            </span>
-          </div>
-          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
-          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   const runColumns = useMemo<DenseDataTableColumn<StrategyRunTableRow>[]>(() => [
     {
       id: "compare",
       label: "",
+      srLabel: "Select for comparison",
       render: (run) => (
         <input
           type="checkbox"
@@ -246,7 +227,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (run) => run.statusText
+      render: (run) => <SeverityBadge status={strategyRunSeverityStatus(run.statusText)} label={run.statusText} />
     },
     {
       id: "pnl",
@@ -316,7 +297,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge>
+      render: (row) => <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
     },
     {
       id: "net-pnl",
@@ -355,10 +336,43 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     }
   ], []);
 
+  // Keep this after every hook call: an early return before the useMemo columns would
+  // change the hook order when the strategy slice arrives and crash the mounted screen.
+  if (!data) {
+    return (
+      <Card
+        role={vm.loadingState.role}
+        aria-busy={vm.loadingState.ariaBusy}
+        aria-live={vm.loadingState.ariaLive}
+        aria-labelledby={vm.loadingState.titleId}
+        aria-describedby={vm.loadingState.detailId}
+        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+      >
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
+              dot
+            >
+              {vm.loadingState.badgeLabel}
+            </Badge>
+            <span className="toolbar-chip" aria-label={`Route ${vm.loadingState.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{vm.loadingState.routeLabel}</b>
+            </span>
+          </div>
+          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
+          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
+        {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
       </section>
 
       <Card>
@@ -524,7 +538,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   <Button
                     size="sm"
                     aria-label={vm.promotionPanel.sessionCreated.actionAriaLabel}
-                    onClick={() => { navigate(vm.promotionPanel.sessionCreated.actionHref); }}
+                    onClick={() => {
+                      if (vm.promotionPanel.sessionCreated) {
+                        navigate(vm.promotionPanel.sessionCreated.actionHref);
+                      }
+                    }}
                   >
                     {vm.promotionPanel.sessionCreated.actionLabel}
                   </Button>
@@ -758,7 +776,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     description={vm.selectedComparisonDetail.description}
                     fields={vm.selectedComparisonDetail.fields}
                     ariaLabel={vm.selectedComparisonDetail.ariaLabel}
-                    status={<Badge variant={vm.selectedComparisonDetail.statusVariant} dot>{vm.selectedComparisonDetail.statusLabel}</Badge>}
+                    status={<SeverityBadge status={categoricalVariantToSeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
                   />
                 </div>
               ) : (
@@ -1042,6 +1060,8 @@ function PlotToolWorkspacePanel({
     {
       id: "status",
       label: "Status",
+      // Mode-derived chip (LIVE/PAPER/BACKTEST) — a categorical environment badge, not an
+      // operator severity, so it stays a plain Badge.
       render: (study) => <Badge variant={study.statusBadgeVariant}>{study.statusBadgeLabel}</Badge>
     },
     {
@@ -1232,14 +1252,14 @@ function SelectedPlotStudyDetail({
 }) {
   if (!detail) {
     return (
-      <aside
+      <div
         id={id}
         role="status"
         aria-live="polite"
         className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
       >
         {emptyText}
-      </aside>
+      </div>
     );
   }
 
@@ -1253,6 +1273,7 @@ function SelectedPlotStudyDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>{detail.eyebrow}</span>
+        {/* Mode-derived chip (LIVE/PAPER/BACKTEST), not a severity — stays a plain Badge. */}
         <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
       </div>
       <div className="body">
@@ -1314,16 +1335,24 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="plottool-distribution-chart" aria-label={vm.distributionChart.ariaLabel}>
-              {vm.distributionChart.bars.map((bar) => (
-                <div
-                  key={bar.id}
-                  className={cn("flex-1 rounded-t-sm", distributionBarToneClass[bar.tone])}
-                  style={{ height: `${bar.heightPercent}%` }}
-                  aria-label={bar.ariaLabel}
-                />
-              ))}
+            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+              <Histogram
+                bins={vm.distributionChart.bars.map((bar, index) => ({
+                  x0: index,
+                  x1: index + 1,
+                  count: bar.heightPercent
+                }))}
+                signed={false}
+                showMean={false}
+                valueFmt={(value) => String(Math.round(value))}
+                countFmt={(count) => `${Math.round(count)}%`}
+              />
             </div>
+            <ul className="sr-only">
+              {vm.distributionChart.bars.map((bar) => (
+                <li key={bar.id}>{bar.ariaLabel}</li>
+              ))}
+            </ul>
             <p className="text-xs leading-5 text-muted-foreground">{vm.distributionFootnote}</p>
           </CardContent>
         </Card>
@@ -1394,6 +1423,8 @@ function PlotToolScatterChart({
 }: {
   chart: StrategyPlotScatterChartState;
 }) {
+  const hasObservations = chart.points.length > 0;
+
   return (
     <svg
       viewBox={chart.viewBox}
@@ -1433,33 +1464,37 @@ function PlotToolScatterChart({
         <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
         <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
       </g>
-      <polyline
-        fill="none"
-        stroke={chart.trendLine.stroke}
-        strokeWidth={chart.trendLine.strokeWidth}
-        strokeDasharray={chart.trendLine.strokeDasharray}
-        points={chart.trendLine.points}
-      />
-      <line
-        x1={chart.marker.verticalGuide.x1}
-        y1={chart.marker.verticalGuide.y1}
-        x2={chart.marker.verticalGuide.x2}
-        y2={chart.marker.verticalGuide.y2}
-        stroke={chart.marker.verticalGuide.stroke}
-        strokeWidth={chart.marker.verticalGuide.strokeWidth}
-        strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
-        opacity={chart.marker.verticalGuide.opacity}
-      />
-      <line
-        x1={chart.marker.horizontalGuide.x1}
-        y1={chart.marker.horizontalGuide.y1}
-        x2={chart.marker.horizontalGuide.x2}
-        y2={chart.marker.horizontalGuide.y2}
-        stroke={chart.marker.horizontalGuide.stroke}
-        strokeWidth={chart.marker.horizontalGuide.strokeWidth}
-        strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
-        opacity={chart.marker.horizontalGuide.opacity}
-      />
+      {hasObservations ? (
+        <>
+          <polyline
+            fill="none"
+            stroke={chart.trendLine.stroke}
+            strokeWidth={chart.trendLine.strokeWidth}
+            strokeDasharray={chart.trendLine.strokeDasharray}
+            points={chart.trendLine.points}
+          />
+          <line
+            x1={chart.marker.verticalGuide.x1}
+            y1={chart.marker.verticalGuide.y1}
+            x2={chart.marker.verticalGuide.x2}
+            y2={chart.marker.verticalGuide.y2}
+            stroke={chart.marker.verticalGuide.stroke}
+            strokeWidth={chart.marker.verticalGuide.strokeWidth}
+            strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
+            opacity={chart.marker.verticalGuide.opacity}
+          />
+          <line
+            x1={chart.marker.horizontalGuide.x1}
+            y1={chart.marker.horizontalGuide.y1}
+            x2={chart.marker.horizontalGuide.x2}
+            y2={chart.marker.horizontalGuide.y2}
+            stroke={chart.marker.horizontalGuide.stroke}
+            strokeWidth={chart.marker.horizontalGuide.strokeWidth}
+            strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
+            opacity={chart.marker.horizontalGuide.opacity}
+          />
+        </>
+      ) : null}
       {chart.points.map((point) => (
         <circle
           key={point.id}
@@ -1470,26 +1505,30 @@ function PlotToolScatterChart({
           fillOpacity={point.fillOpacity}
         />
       ))}
-      <circle
-        cx={chart.marker.x}
-        cy={chart.marker.y}
-        r={chart.marker.radius}
-        fill={chart.marker.fill}
-        stroke={chart.marker.stroke}
-        strokeWidth={chart.marker.strokeWidth}
-      />
-      <rect
-        x={chart.marker.labelX}
-        y={chart.marker.labelY}
-        width={chart.marker.labelWidth}
-        height={chart.marker.labelHeight}
-        rx={chart.marker.labelRadius}
-        fill={chart.marker.labelFill}
-        stroke={chart.marker.labelStroke}
-      />
-      <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="Cascadia Mono" fontSize="10">
-        {chart.marker.labelText}
-      </text>
+      {hasObservations ? (
+        <>
+          <circle
+            cx={chart.marker.x}
+            cy={chart.marker.y}
+            r={chart.marker.radius}
+            fill={chart.marker.fill}
+            stroke={chart.marker.stroke}
+            strokeWidth={chart.marker.strokeWidth}
+          />
+          <rect
+            x={chart.marker.labelX}
+            y={chart.marker.labelY}
+            width={chart.marker.labelWidth}
+            height={chart.marker.labelHeight}
+            rx={chart.marker.labelRadius}
+            fill={chart.marker.labelFill}
+            stroke={chart.marker.labelStroke}
+          />
+          <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="Cascadia Mono" fontSize="10">
+            {chart.marker.labelText}
+          </text>
+        </>
+      ) : null}
     </svg>
   );
 }
@@ -1504,14 +1543,4 @@ function PlotToolLegendItem({ item }: { item: StrategyPlotLegendItem }) {
       <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
     </div>
   );
-}
-
-function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | undefined {
-  for (let index = items.length - 1; index >= 0; index -= 1) {
-    if (predicate(items[index])) {
-      return items[index];
-    }
-  }
-
-  return undefined;
 }

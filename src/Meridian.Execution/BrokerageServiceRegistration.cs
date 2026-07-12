@@ -39,7 +39,7 @@ public static class BrokerageServiceRegistration
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
             {
                 var paperLogger = sp.GetRequiredService<ILogger<PaperTradingGateway>>();
-                return new PaperTradingGateway(paperLogger);
+                return new PaperTradingGateway(paperLogger, options: sp.GetService<Adapters.PaperTradingGatewayOptions>());
             }
             return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
         });
@@ -54,7 +54,7 @@ public static class BrokerageServiceRegistration
             {
                 var paperLogger = sp.GetRequiredService<ILogger<Adapters.PaperTradingGateway>>();
                 var secMaster = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
-                return new Adapters.PaperTradingGateway(paperLogger, secMaster);
+                return new Adapters.PaperTradingGateway(paperLogger, secMaster, sp.GetService<Adapters.PaperTradingGatewayOptions>());
             }
 
             // Resolve the named brokerage gateway via keyed registration
@@ -74,6 +74,8 @@ public static class BrokerageServiceRegistration
             var auditTrail = sp.GetService<ExecutionAuditTrailService>();
             var portfolioState = sp.GetService<Meridian.Execution.Models.IPortfolioState>();
             var brokerageConfiguration = sp.GetRequiredService<BrokerageConfiguration>();
+            var liveOrderReadinessGate = sp.GetService<ILiveOrderReadinessGate>();
+            var orderManagementOptions = sp.GetService<OrderManagementSystemOptions>();
 
             return new OrderManagementSystem(
                 gateway,
@@ -83,8 +85,12 @@ public static class BrokerageServiceRegistration
                 operatorControls,
                 auditTrail,
                 portfolioState,
-                brokerageConfiguration: brokerageConfiguration);
+                brokerageConfiguration: brokerageConfiguration,
+                liveOrderReadinessGate: liveOrderReadinessGate,
+                options: orderManagementOptions);
         });
+
+        services.TryAddSingleton<BrokerageExecutionReconciliationService>();
 
         return services;
     }

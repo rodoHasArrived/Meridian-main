@@ -28,7 +28,6 @@ import type {
   AccountingWorkspaceResponse,
   OperatorWorkflowHomeSummary,
   ReportingWorkspaceResponse,
-  OperatorWorkItem,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   SessionInfo,

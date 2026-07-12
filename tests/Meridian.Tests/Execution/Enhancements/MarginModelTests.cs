@@ -98,6 +98,25 @@ public sealed class MarginModelTests
         req.MaintenanceMargin.Should().Be((100 * 160m * 0.25m) + (50 * 320m * 0.25m));
     }
 
+    [Fact]
+    public void RegT_WithOptions_UsesConfiguredRates()
+    {
+        var model = new RegTMarginModel(Microsoft.Extensions.Options.Options.Create(new RegTMarginOptions
+        {
+            LongInitialRate = 0.60m,
+            LongMaintenanceRate = 0.35m,
+            ShortInitialRate = 1.60m,
+            ShortMaintenanceRate = 1.40m
+        }));
+        var position = MakePosition("AAPL", 100, 150m);
+
+        var req = model.CalculateForPosition(position, lastPrice: 200m, portfolioEquity: 100_000m);
+
+        model.LongInitialRate.Should().Be(0.60m);
+        req.InitialMargin.Should().Be(100 * 200m * 0.60m);
+        req.MaintenanceMargin.Should().Be(100 * 200m * 0.35m);
+    }
+
     // -------------------------------------------------------------------------
     // PortfolioMarginModel
     // -------------------------------------------------------------------------

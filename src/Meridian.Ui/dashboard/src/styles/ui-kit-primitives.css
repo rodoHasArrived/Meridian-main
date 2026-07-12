@@ -176,6 +176,32 @@
   color: var(--fg);
 }
 
+.dense-data-table-row-cap {
+  display: flex;
+  justify-content: center;
+  padding: 0.625rem;
+  border-top: 1px solid rgba(31, 52, 76, 0.66);
+  background: rgba(8, 16, 26, 0.72);
+}
+
+.dense-data-table-row-cap button {
+  min-height: 1.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid rgba(42, 178, 212, 0.32);
+  border-radius: var(--radius-sm);
+  background: rgba(42, 178, 212, 0.10);
+  color: var(--cyan-primary);
+  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dense-data-table-row-cap button:focus-visible {
+  outline: 2px solid rgba(42, 178, 212, 0.45);
+  outline-offset: 2px;
+}
+
 .entity-summary {
   border: 1px solid rgba(31, 52, 76, 0.95);
   border-radius: var(--radius-xl);
@@ -354,6 +380,40 @@
 .dense-data-table-empty {
   color: var(--ws-text-muted);
   padding: 2rem 0.75rem;
+}
+
+/* ── Virtualized dense tables ────────────────────────────────────────────────
+   When DenseDataTable windows rows it mounts only a slice plus top/bottom spacer
+   rows. Keep row heights exact, neutralize the spacers, and disable zebra
+   striping (nth-child parity is meaningless once the mounted slice shifts).
+──────────────────────────────────────────────────────────────────────────*/
+.dense-data-table-wrap-virtual {
+  overflow-y: auto;
+}
+
+.dense-data-table-spacer,
+.dense-data-table-spacer:hover {
+  background: transparent;
+}
+
+.dense-data-table-spacer td {
+  padding: 0;
+  border: 0;
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr:nth-child(even) {
+  background: var(--ws-surface);
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr.selectable td,
+.dense-data-table-wrap-virtual .dense-data-table tbody tr td {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dense-data-table-wrap-virtual .dense-data-table tbody tr.selected {
+  background: var(--ws-row-selected);
 }
 
 /* ── Concrete radius normalization ──────────────────────────────────────────

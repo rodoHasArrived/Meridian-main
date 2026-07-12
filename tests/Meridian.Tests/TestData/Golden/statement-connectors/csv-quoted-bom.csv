@@ -1,0 +1,3 @@
+﻿account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency
+"ACME, LLC Fund",AAPL,"1,000",187.25,-187250.00,trade,2026-06-02,2026-06-04,USD
+"ACME, LLC Fund",AAPL,"1,000",190.10,190100.00,position,2026-06-30,,USD

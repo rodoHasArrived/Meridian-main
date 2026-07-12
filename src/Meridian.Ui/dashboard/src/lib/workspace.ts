@@ -25,6 +25,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioAttribution: "/portfolio/attribution",
   portfolioAssetDetail: "/portfolio/asset-detail",
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
+  portfolioCashLadder: "/portfolio/cash-ladder",
   portfolioFamilyOffice: "/portfolio/family-office",
   accounting: "/accounting",
   accountingConfigure: "/accounting/configure",
@@ -32,19 +33,27 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
   accountingTrialBalance: "/accounting/trial-balance",
+  accountingAccountDetail: "/accounting/accounts/detail",
   accountingJournalEntries: "/accounting/journal-entries",
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
   accountingCapitalAccounts: "/accounting/capital-accounts",
   accountingReconciliation: "/accounting/reconciliation",
+  accountingReconciliationMatch: "/accounting/reconciliation/match",
+  accountingStatementImport: "/accounting/statement-import",
+  accountingCloseCalendar: "/accounting/close-calendar",
   accountingExceptions: "/accounting/exceptions",
   accountingSecurityMaster: "/accounting/security-master",
   accountingAssetDetail: "/accounting/security-master/detail",
   accountingApprovals: "/accounting/approvals",
+  accountingApprovalInbox: "/accounting/approvals/inbox",
   accountingEvidence: "/accounting/evidence",
+  accountingEvidenceDetail: "/accounting/evidence/detail",
   reporting: "/reporting",
   reportingReportBuilder: "/reporting/report-builder",
   reportingLibrary: "/reporting/library",
   reportingRunParameters: "/reporting/run",
+  reportingPreviewValidation: "/reporting/preview",
+  reportingRunDetail: "/reporting/runs/detail",
   reportingScheduled: "/reporting/scheduled",
   reportingRunStatus: "/reporting/run-status",
   reportingOperationsRecord: "/reporting/operations-record",
@@ -66,10 +75,16 @@ export const WORKSTATION_ROUTE_CATALOG = {
   dataAlerts: "/data/alerts",
   dataEvidence: "/data/evidence",
   dataBackfills: "/data/backfills",
+  dataExports: "/data/exports",
+  dataQuery: "/data/query",
   dataSecurityMasterLegacy: "/data/security-master",
   settings: "/settings",
   settingsPreferences: "/settings/preferences",
   settingsIntegrations: "/settings/integrations",
+  settingsAccess: "/settings/access",
+  settingsProviders: "/settings/providers",
+  settingsDiagnostics: "/settings/diagnostics",
+  settingsFeatureCoverage: "/settings/feature-coverage",
   settingsAlpacaProviderSetup: "/settings#alpaca-provider-setup",
   settingsBackendCapabilityCoverage: "/settings#backend-capability-coverage",
   settingsDiagnosticEndpoints: "/settings#diagnostic-endpoints"
@@ -78,6 +93,19 @@ export const WORKSTATION_ROUTE_CATALOG = {
 export type WorkstationRouteKey = keyof typeof WORKSTATION_ROUTE_CATALOG;
 export type WorkstationRoutePath = (typeof WORKSTATION_ROUTE_CATALOG)[WorkstationRouteKey];
 export type WorkstationRouteQueryValue = string | number | boolean | null | undefined;
+
+/**
+ * Routes whose screens have no data source wired yet — they render a permanent
+ * "not connected" empty state (Family Office is mounted without an
+ * entityStructure; the Formula Workbench has no formula catalog endpoint).
+ * They stay routable for deep links and legacy bookmarks, but are kept out of
+ * primary navigation and the command palette so operators are not steered into
+ * dead ends. Remove a route from this set when its read model lands.
+ */
+export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set([
+  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
+  WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench
+]);
 
 const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   trading: WORKSTATION_ROUTE_CATALOG.trading,
@@ -286,6 +314,54 @@ export function canonicalizeWorkspaceSummaries(workspaces: WorkspaceSummary[]): 
 
 export function workspaceForPath(pathname: string): WorkspaceSummary {
   return workspaceForKey(normalizeWorkspacePath(pathname));
+}
+
+export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> = {
+  alerts: "Alerts",
+  approvals: "Close Cockpit",
+  "asset-detail": "Asset Detail",
+  "capital-accounts": "Capital Accounts",
+  configure: "Governance",
+  "covered-call": "Covered Call",
+  designer: "Designer",
+  "entity-setup": "Entity Setup",
+  evidence: "Evidence",
+  exceptions: "Reconciliation Casework",
+  "family-office": "Family Office",
+  "formula-workbench": "Formula Workbench",
+  "journal-entries": "Journal Entry",
+  ledger: "Ledger Explorer",
+  "operations-continuity": "Operations Continuity",
+  "operations-record": "Operations Record",
+  exports: "Exports",
+  providers: "Providers",
+  "quant-lab": "Quant Lab",
+  quotes: "Quotes",
+  readiness: "Readiness",
+  reconciliation: "Reconciliation Casework",
+  "report-packs": "Delivery Evidence",
+  run: "Run Report",
+  "run-status": "Run Status",
+  scheduled: "Scheduled Reports",
+  "security-master": "Security Master",
+  "statement-import": "Import Statement",
+  watchlist: "Watchlist"
+};
+
+export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
+  const segments = pathname.split("/").filter(Boolean);
+  const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
+  if (routeSegments.length === 0) {
+    return workspace.label;
+  }
+
+  return routeSegments.map(formatWorkstationRouteSegmentLabel).join(" / ");
+}
+
+export function formatWorkstationRouteSegmentLabel(segment: string): string {
+  return WORKSTATION_ROUTE_SEGMENT_LABELS[segment] ?? segment.split("-").map((part) => (
+    part.length > 0 ? `${part[0].toUpperCase()}${part.slice(1)}` : part
+  )).join(" ");
 }
 
 export function normalizeWorkspacePath(pathname: string): WorkspaceKey {

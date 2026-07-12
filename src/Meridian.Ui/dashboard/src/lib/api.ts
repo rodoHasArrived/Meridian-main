@@ -50,6 +50,8 @@ import type {
   ExternalGlMappingProfile,
   DataFetchRequest,
   DataFetchResult,
+  DataQueryRequest,
+  DataQueryResult,
   DataUploadPreviewResult,
   DataUploadTemplateCatalog,
   DataWorkspaceResponse,
@@ -156,6 +158,14 @@ import type {
   ReconciliationBulkCaseworkRequest,
   ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  StatementConnectorDescriptor,
+  StatementFetchPreviewRequest,
+  StatementFetchSchedule,
+  StatementFetchScheduleUpsertRequest,
+  StatementImportCommitResult,
+  StatementImportPreview,
+  StatementImportSourceKind,
+  StatementMappingProfile,
   StatementRunException,
   StatementRunSummary,
   ReconciliationCaseworkCommand,
@@ -294,6 +304,7 @@ import type {
   ReportingRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
+  ReportingStarterKitProvisionResult,
   ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
@@ -351,6 +362,7 @@ import {
   STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   buildReferenceDataWorkbenchEndpoints,
+  securityMasterCoverageDraftEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -414,8 +426,12 @@ import {
   reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementExceptionsEndpoint,
+  reconciliationStatementFetchScheduleEndpoint,
+  reconciliationStatementFetchScheduleRunEndpoint,
+  reconciliationStatementMappingProfileEndpoint,
   reconciliationStatementRunEndpoint,
   reconciliationStatementRunsEndpoint,
+  STATEMENT_CONNECTOR_API_ENDPOINTS,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   reportingPackDeliveriesEndpoint,
@@ -426,6 +442,7 @@ import {
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
+  reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
   securityMasterAssetProfileLineageEndpoint,
@@ -441,7 +458,6 @@ import {
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
   strategyDesignerDraftEndpoint,
-  strategyRunsEndpoint,
   symbolArchiveEndpoint,
   symbolRemoveEndpoint,
   symbolSearchEndpoint,
@@ -513,6 +529,7 @@ import {
   workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationTradingEndpoint,
   workstationTradingReadinessEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
@@ -525,6 +542,7 @@ import {
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 const csrfCookieName = "mdc-csrf";
@@ -746,7 +764,17 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
   }
 
   const { resolveDevFixture } = await import("@/lib/dev-fixtures");
-  return resolveDevFixture<T>(path);
+  const fixture = resolveDevFixture<T>(path);
+  if (fixture !== undefined) {
+    // Keep this loud: without it a developer can work for hours against a broken endpoint
+    // while fixtures silently stand in for real backend failures.
+    console.warn(
+      `[dev-fixture] Backend request failed with ${status} for ${path}; serving development fixture data instead. ` +
+        "Responses on this screen do not reflect the live backend."
+    );
+  }
+
+  return fixture;
 }
 
 function markDevelopmentFixtureUsage() {
@@ -899,8 +927,10 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     try {
       return JSON.parse(text) as T;
     } catch {
+      // Deliberately reports the enclosing catch's `error` (the response.json() failure),
+      // not the fallback JSON.parse failure — the original error is the actionable one.
       const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-      throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+      throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
     }
   }
 
@@ -913,7 +943,7 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     return JSON.parse(text) as T;
   } catch (error) {
     const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-    throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+    throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
   }
 }
 
@@ -1073,8 +1103,9 @@ export function getStrategyBriefing(options: ApiRequestOptions = {}) {
   return getJson<StrategyBriefingResponse>(WORKSTATION_API_ENDPOINTS.strategyBriefing, options);
 }
 
-export function getTradingWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
+export function getTradingWorkspace(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
+  const { fundAccountId, ...requestOptions } = options;
+  return getJson<TradingWorkspaceResponse>(workstationTradingEndpoint(fundAccountId), requestOptions);
 }
 
 export function getTradingReadiness(options: ApiRequestOptions & { fundAccountId?: string } = {}) {
@@ -1841,6 +1872,10 @@ export function deleteWorkflowPreset(presetId: string) {
 
 export function getDataWorkspace(options: ApiRequestOptions = {}) {
   return getJson<DataWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
+}
+
+export function runDataQuery(request: DataQueryRequest, options: ApiRequestOptions = {}) {
+  return postJson<DataQueryResult>(WORKSTATION_API_ENDPOINTS.dataQuery, request, options);
 }
 
 export function getDataUploadTemplates(options: ApiRequestOptions = {}) {
@@ -2621,6 +2656,10 @@ export function saveReportingSchedule(request: ReportingScheduleUpsertRequest, o
   return postJson<ReportingScheduleRecord>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, request, options);
 }
 
+export function provisionReportingStarterKit(kitId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingStarterKitProvisionResult>(reportingStarterKitProvisionEndpoint(kitId), undefined, options);
+}
+
 export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(reportingSchedulePauseEndpoint(scheduleId), undefined, options);
 }
@@ -2691,8 +2730,15 @@ export function cancelAllOrders() {
   return postJson<TradingActionResult>(EXECUTION_API_ENDPOINTS.ordersCancelAll);
 }
 
-export function closePosition(positionKey: string) {
-  return postJson<TradingActionResult>(executionPositionCloseEndpoint(), { positionKey });
+export function closePosition(positionKey: string, fundAccountId?: string | null) {
+  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId);
+  return postJson<TradingActionResult>(
+    executionPositionCloseEndpoint(),
+    {
+      positionKey,
+      ...(normalizedFundAccountId ? { fundAccountId: normalizedFundAccountId } : {})
+    }
+  );
 }
 
 // --- Paper session management ---
@@ -2896,9 +2942,9 @@ export function getRunSweeps(limit?: number) {
 
 // --- Security Master search ---
 
-export async function searchSecurities(query: string, take = 25, activeOnly = true) {
+export async function searchSecurities(query: string, take = 25, activeOnly = true, options: ApiRequestOptions = {}) {
   const path = workstationSecurityMasterSearchEndpoint({ query, take, activeOnly });
-  const results = await getJson<SecurityMasterEntry[]>(path);
+  const results = await getJson<SecurityMasterEntry[]>(path, options);
 
   if (import.meta.env.DEV && results.length === 0) {
     const fixtureResults = await getDevelopmentSearchFallback(query, take, activeOnly);
@@ -3004,6 +3050,104 @@ export function getReconciliationStatementExceptions(options: ApiRequestOptions 
 export const getStatementRuns = getReconciliationStatementRuns;
 export const getStatementRun = getReconciliationStatementRun;
 export const getStatementRunExceptions = getReconciliationStatementExceptions;
+
+// --- Statement connector library ---
+
+export function getStatementConnectors(options: ApiRequestOptions = {}) {
+  return getJson<StatementConnectorDescriptor[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.connectors, options);
+}
+
+export function listStatementMappingProfiles(options: ApiRequestOptions = {}) {
+  return getJson<StatementMappingProfile[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, options);
+}
+
+export function upsertStatementMappingProfile(profile: StatementMappingProfile, options: ApiRequestOptions = {}) {
+  return putJson<StatementMappingProfile>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, profile, options);
+}
+
+export function deleteStatementMappingProfile(profileId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<void>(reconciliationStatementMappingProfileEndpoint(profileId), options);
+}
+
+export function previewStatementImport(
+  request: {
+    file: File;
+    connectorId?: string | null;
+    mappingProfileId?: string | null;
+    externalAccountId?: string | null;
+  },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
+  appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
+  appendOptionalStatementFormField(formData, "externalAccountId", request.externalAccountId);
+  return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
+}
+
+export function commitStatementImport(
+  request: {
+    file: File;
+    connectorId?: string | null;
+    mappingProfileId?: string | null;
+    externalAccountId: string;
+    sourceKind: StatementImportSourceKind;
+    sourceInstitution: string;
+    fundAccountId: string;
+    periodStart: string;
+    periodEnd: string;
+    toleranceProfileId?: string | null;
+  },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
+  appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
+  formData.append("externalAccountId", request.externalAccountId);
+  formData.append("sourceKind", request.sourceKind);
+  formData.append("sourceInstitution", request.sourceInstitution);
+  formData.append("fundAccountId", request.fundAccountId);
+  formData.append("periodStart", request.periodStart);
+  formData.append("periodEnd", request.periodEnd);
+  appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
+  return postFormData<StatementImportCommitResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.importCommit, formData, options);
+}
+
+export function fetchStatementPreview(request: StatementFetchPreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchPreview, request, options);
+}
+
+export function listStatementFetchSchedules(options: ApiRequestOptions = {}) {
+  return getJson<StatementFetchSchedule[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedules, options);
+}
+
+export function upsertStatementFetchSchedule(
+  request: StatementFetchScheduleUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<StatementFetchSchedule>(STATEMENT_CONNECTOR_API_ENDPOINTS.fetchSchedules, request, options);
+}
+
+export function deleteStatementFetchSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<void>(reconciliationStatementFetchScheduleEndpoint(scheduleId), options);
+}
+
+export function runStatementFetchSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<StatementImportCommitResult>(
+    reconciliationStatementFetchScheduleRunEndpoint(scheduleId),
+    undefined,
+    options
+  );
+}
+
+function appendOptionalStatementFormField(formData: FormData, name: string, value: string | null | undefined) {
+  const trimmed = value?.trim();
+  if (trimmed) {
+    formData.append(name, trimmed);
+  }
+}
 
 export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
   return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
@@ -3594,6 +3738,28 @@ export function getQualityDashboard() {
 
 export function getQualityGaps() {
   return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
+}
+
+// --- Provider capability matrix and security-master supply surfaces ---
+
+export function getProviderCapabilityMatrix() {
+  return getJson<import("@/types").ProviderCapabilityMatrixResponse>(PROVIDER_API_ENDPOINTS.capabilityMatrix);
+}
+
+export function getCorporateActionInbox() {
+  return getJson<import("@/types").CorporateActionInboxResponse>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInbox);
+}
+
+export function getSecurityMasterCoverageDraft(symbol: string) {
+  return getJson<import("@/types").SecurityMasterDraftProposal>(securityMasterCoverageDraftEndpoint(symbol));
+}
+
+export function getSecurityMasterQualityReport() {
+  return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
+}
+
+export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
+  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
 }
 
 export function getQualityAnomalies() {

@@ -1,0 +1,176 @@
+<!-- @dsCard group="Documentation" viewport="1200x900" name="Component API: Input" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Input — API Reference</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    body { margin: 0; padding: 20px; font-family: var(--font-body, system-ui); background: var(--bg); color: var(--text-primary); }
+    .api-doc { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-top: 0; }
+    h2 { font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 32px; }
+    .props-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    .props-table th { background: var(--bg-medium); padding: 10px 12px; text-align: left; border: 1px solid var(--border); font-weight: 600; }
+    .props-table td { padding: 10px 12px; border: 1px solid var(--border); }
+    .props-table .prop-name { font-family: var(--font-data); color: var(--accent); font-weight: 600; }
+    .props-table .prop-type { font-family: var(--font-data); color: var(--text-muted); font-size: 11px; }
+    .props-table .prop-default { font-family: var(--font-data); color: var(--text-muted); }
+    .example { background: var(--bg-light); border: 1px solid var(--border); padding: 16px; margin: 16px 0; }
+    .example-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-preview { margin-bottom: 12px; }
+    .example-code { background: #E4E7EA; border: 1px solid var(--border); padding: 12px; font-family: var(--font-data); font-size: 11px; overflow-x: auto; border-radius: 2px; }
+    .note { background: #D2D8DE; border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; }
+    input { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg-light); font-family: var(--font-data); font-size: 13px; width: 100%; max-width: 300px; box-sizing: border-box; }
+    input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(47,111,143,.2); }
+    input:disabled { opacity: 0.6; background: #E4E7EA; }
+    input.error { border-color: var(--red); }
+    .error-msg { color: var(--red); font-size: 11px; margin-top: 5px; }
+    .field { margin-bottom: 12px; }
+    .label { display: block; font-size: 11px; font-weight: 600; font-variant: all-small-caps; color: var(--text-muted); margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <div class="api-doc">
+    <h1>Input</h1>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">Text input field with optional error state, label, and placeholder. Use for forms, searches, and data entry.</p>
+
+    <h2>Props</h2>
+    <table class="props-table">
+      <thead>
+        <tr>
+          <th>Prop</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="prop-name">label</span></td>
+          <td><span class="prop-type">string</span></td>
+          <td><span class="prop-default">—</span></td>
+          <td>Field label (optional). Displays above the input.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">value</span></td>
+          <td><span class="prop-type">string</span></td>
+          <td><span class="prop-default">""</span></td>
+          <td>Input value. Controlled component.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">onChange</span></td>
+          <td><span class="prop-type">function</span></td>
+          <td><span class="prop-default">—</span></td>
+          <td>Change event handler: (e) => {}</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">placeholder</span></td>
+          <td><span class="prop-type">string</span></td>
+          <td><span class="prop-default">""</span></td>
+          <td>Placeholder text shown when field is empty.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">error</span></td>
+          <td><span class="prop-type">string</span></td>
+          <td><span class="prop-default">—</span></td>
+          <td>Error message. Shows red border + message when present.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">disabled</span></td>
+          <td><span class="prop-type">boolean</span></td>
+          <td><span class="prop-default">false</span></td>
+          <td>Disable input and prevent editing.</td>
+        </tr>
+        <tr>
+          <td><span class="prop-name">type</span></td>
+          <td><span class="prop-type">"text" | "email" | "password" | "number" | "date"</span></td>
+          <td><span class="prop-default">"text"</span></td>
+          <td>Input type. Affects keyboard and validation.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Examples</h2>
+
+    <div class="example">
+      <div class="example-title">1. Basic Input</div>
+      <div class="example-preview">
+        <div class="field">
+          <label class="label">Name</label>
+          <input type="text" placeholder="Enter your name">
+        </div>
+      </div>
+      <div class="example-code">&lt;Input label="Name" placeholder="Enter your name" /&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">2. Controlled Input (with state)</div>
+      <div class="example-code">const [value, setValue] = useState("");
+&lt;Input
+  label="Email"
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+  placeholder="you@example.com"
+/&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">3. With Error State</div>
+      <div class="example-preview">
+        <div class="field">
+          <label class="label">Password</label>
+          <input type="password" class="error" placeholder="Min 8 characters">
+          <div class="error-msg">Password must be at least 8 characters</div>
+        </div>
+      </div>
+      <div class="example-code">&lt;Input
+  label="Password"
+  type="password"
+  error="Password must be at least 8 characters"
+  placeholder="Min 8 characters"
+/&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">4. Disabled Input</div>
+      <div class="example-preview">
+        <div class="field">
+          <label class="label">Account ID</label>
+          <input type="text" value="ACC-12345" disabled>
+        </div>
+      </div>
+      <div class="example-code">&lt;Input label="Account ID" value="ACC-12345" disabled /&gt;</div>
+    </div>
+
+    <div class="example">
+      <div class="example-title">5. Different Input Types</div>
+      <div class="example-preview">
+        <div class="field">
+          <label class="label">Date</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="example-code">&lt;Input type="date" label="Transaction date" /&gt;
+&lt;Input type="email" label="Email" placeholder="user@domain.com" /&gt;
+&lt;Input type="number" label="Amount" placeholder="0.00" /&gt;</div>
+    </div>
+
+    <h2>Validation</h2>
+    <div class="note">
+      Use <code>FormValidation</code> for consistent error handling:
+      <br><code>const errors = FormValidation.validateField(value, [FormValidation.Validators.required, FormValidation.Validators.email]);</code>
+    </div>
+
+    <h2>Accessibility</h2>
+    <div class="note">
+      ✓ <strong>Labels:</strong> Always use the <code>label</code> prop or associated &lt;label&gt; element.
+      <br>✓ <strong>Focus visible:</strong> Clear blue focus ring on keyboard navigation.
+      <br>✓ <strong>Error announcement:</strong> Use <code>aria-invalid="true"</code> + <code>aria-describedby</code> for error messages.
+      <br>✓ <strong>Placeholder:</strong> Never use placeholder as the only label.
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,10 +1,13 @@
 import type { KeyboardEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
+import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
+import type { RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
   FinancialRecordExplorerShell,
   type FinancialRecordExplorerAction,
@@ -13,9 +16,16 @@ import {
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard, type MetricCardTone, EmptyState } from "@/components/data/concrete";
+import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
-import { EquityCurve, ChartCard } from "@/components/charts";
+import {
+  EquityCurve,
+  ChartCard,
+  ChartSyncProvider,
+  useChartSync,
+  useChartCrosshairSync,
+  nearestTimestampIndex
+} from "@/components/charts";
 import {
   getFinancialRecordExplorer,
   getRunAttribution,
@@ -25,7 +35,8 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { workstationRouteWithQuery } from "@/lib/workspace";
+import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
@@ -58,7 +69,10 @@ interface PortfolioScreenProps {
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
+  refreshStatus?: RequestLifecycleStatus | null;
 }
+
+export const PORTFOLIO_FRESHNESS_BUDGET_MS = 5 * 60_000;
 
 const pnlToneClass = {
   success: "text-success",
@@ -274,7 +288,8 @@ export function PortfolioScreen({
   accounting,
   brokerageConnection,
   brokeragePortfolio,
-  multiAssetCoverage
+  multiAssetCoverage,
+  refreshStatus
 }: PortfolioScreenProps) {
   const location = useLocation();
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -497,9 +512,23 @@ export function PortfolioScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          {refreshStatus ? (
+            <FreshnessChip
+              {...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace")}
+            />
+          ) : null}
           {vm.headerChips.map((chip) => (
             <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
           ))}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
+              aria-label="Open the portfolio cash ladder: projected inflows and outflows with liquidity scenarios"
+            >
+              <Wallet className="size-4" aria-hidden />
+              Cash Ladder
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -756,7 +785,7 @@ export function PortfolioScreen({
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
                   <SeverityBadge
-                    status={severityStatusFromTone(vm.brokerageTrustSnapshot.statusTone)}
+                    status={readinessToneToSeverityStatus(vm.brokerageTrustSnapshot.statusTone)}
                     label={vm.brokerageTrustSnapshot.statusLabel}
                   />
                 </div>
@@ -844,7 +873,7 @@ export function PortfolioScreen({
             />
             <aside
               id={vm.brokerageAccountDetailId}
-              role="complementary"
+              role="region"
               aria-live="polite"
               aria-label={vm.selectedBrokerageAccount.ariaLabel}
               className={cn(
@@ -904,7 +933,7 @@ export function PortfolioScreen({
               />
               <aside
                 id={vm.brokeragePositionDetailId}
-                role="complementary"
+                role="region"
                 aria-live="polite"
                 aria-label={vm.selectedBrokeragePosition?.ariaLabel ?? "Brokerage position detail"}
                 className={cn(
@@ -1044,7 +1073,7 @@ export function PortfolioScreen({
 
           <aside
             id={vm.positionDetailId}
-            role="complementary"
+            role="region"
             aria-live="polite"
             aria-label={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
             className={cn(
@@ -1244,7 +1273,7 @@ export function PortfolioScreen({
                 />
                 <aside
                   id={vm.runDetailId}
-                  role="complementary"
+                  role="region"
                   aria-live="polite"
                   aria-label={vm.selectedRun?.ariaLabel ?? "Run evidence detail"}
                   className={cn(
@@ -1344,18 +1373,21 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Concrete KPI tile fed from a read-model `MetricSnapshot`. The snapshot's `"default"`
- * tone maps to the Concrete `"neutral"` left-accent; other tones pass through 1:1. */
-const metricSnapshotToneClass: Record<MetricSnapshot["tone"], MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
+const drillInCurrency = (value: number) => `$${Math.round(value).toLocaleString("en-US")}`;
 
 /** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
- * evidence only — rendered when the selected run has a fetched equity/drawdown series. */
-function PortfolioDrillInChart({
+ * evidence only — rendered when the selected run has a fetched equity/drawdown series. The
+ * chart is scoped in its own ChartSyncProvider so crosshair and point activation stay local to
+ * this drill-in (never global) and can drive a per-point evidence readout. */
+function PortfolioDrillInChart(props: { profile: EquityCurveSummary; runTitle: string }) {
+  return (
+    <ChartSyncProvider>
+      <PortfolioDrillInChartInner {...props} />
+    </ChartSyncProvider>
+  );
+}
+
+function PortfolioDrillInChartInner({
   profile,
   runTitle
 }: {
@@ -1366,15 +1398,15 @@ function PortfolioDrillInChart({
   const equity = points.map((point) => point.totalEquity);
   const drawdown = points.map((point) => -Math.abs(point.drawdownFromPeakPercent * 100));
   const labels = points.map((point) => point.date);
-  const currency = (value: number) =>
-    `$${Math.round(value).toLocaleString("en-US")}`;
+  const timestamps = useMemo(() => points.map((point) => Date.parse(point.date)), [points]);
+  const sync = useChartCrosshairSync(timestamps);
 
   return (
     <ChartCard
       title="Run equity and drawdown"
       subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
       readout={[
-        { label: "Final equity", value: currency(profile.finalEquity) },
+        { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
         {
           label: "Max drawdown",
           value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
@@ -1389,9 +1421,48 @@ function PortfolioDrillInChart({
         series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
         drawdown={drawdown}
         labels={labels}
-        valueFmt={currency}
+        valueFmt={drillInCurrency}
+        crosshairIndex={sync.crosshairIndex}
+        onCrosshairChange={sync.onCrosshairChange}
+        onPointActivate={sync.onPointActivate}
       />
+      <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
     </ChartCard>
+  );
+}
+
+/** Evidence drill: when a chart point is activated, surface that point's source-backed
+ * detail. Reads the selected timestamp from the shared chart-sync context so it stays in
+ * step with the equity curve (and any future linked chart in the same provider). */
+function PortfolioDrillInPointEvidence({
+  profile,
+  timestamps
+}: {
+  profile: EquityCurveSummary;
+  timestamps: number[];
+}) {
+  const { selectedTimestamp } = useChartSync();
+  const selectedIndex = nearestTimestampIndex(timestamps, selectedTimestamp);
+  if (selectedIndex == null) {
+    return null;
+  }
+  const point = profile.points[selectedIndex];
+  if (!point) {
+    return null;
+  }
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-xs"
+    >
+      <span className="font-semibold text-foreground">Selected point — {point.date}</span>
+      <span className="ml-2 text-muted-foreground">
+        Equity {drillInCurrency(point.totalEquity)} · drawdown{" "}
+        {(-Math.abs(point.drawdownFromPeakPercent * 100)).toFixed(2)}%
+      </span>
+    </div>
   );
 }
 
@@ -1401,7 +1472,7 @@ function PortfolioMetricCard({ metric }: { metric: MetricSnapshot }) {
       label={metric.label}
       value={metric.value}
       delta={metric.delta ?? undefined}
-      tone={metricSnapshotToneClass[metric.tone]}
+      tone={semanticToneToMetricCardTone(metric.tone)}
     />
   );
 }
@@ -1426,20 +1497,6 @@ function workflowStatusVariant(statusTone: "default" | "success" | "warning" | "
 }
 
 type PortfolioTone = "default" | "success" | "warning" | "danger";
-
-/** Map a read-model status tone to a canonical severity string for {@link SeverityBadge}. */
-function severityStatusFromTone(tone: PortfolioTone): string {
-  switch (tone) {
-    case "success":
-      return "Ready";
-    case "warning":
-      return "ReviewRequired";
-    case "danger":
-      return "Blocked";
-    default:
-      return "Info";
-  }
-}
 
 /** Map a read-model status tone to a {@link TrustStrip} state token. */
 function trustStateFromTone(tone: PortfolioTone): TrustStripItem["state"] {

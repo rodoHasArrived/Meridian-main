@@ -1807,12 +1807,12 @@ describe("EvidenceWorkbenchScreen", () => {
       "/strategy?runId=run-1"
     );
     expect(screen.getByRole("region", { name: "Evidence packet actions" })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Run Lifecycle evidence nodes" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Run Lifecycle evidence nodes" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" })).toHaveTextContent(
       "Run detail is available."
     );
     expect(screen.getByText("artifacts/evidence/strategy-run/run-1/detail.json")).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: /evidence lineage edges for momentum strategy run/i })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: /evidence lineage edges for momentum strategy run/i })).toBeInTheDocument();
     expect(screen.getAllByText("Requires").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("region", { name: "Selected lineage edge: Requires" })).toHaveTextContent(
       "Replay evidence supports the run."

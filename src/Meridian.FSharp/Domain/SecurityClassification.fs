@@ -52,6 +52,10 @@ type SecuritySubType =
     | FutureContract
     | SwapContract
     | DirectLoan
+    | StructuredCredit
+    | PrivateCompanyEquity
+    | RealEstateHolding
+    | CommitmentGuarantee
     | OtherSubType of string
 
 /// Structured sector / industry classification supporting multiple taxonomy schemes.
@@ -129,4 +133,8 @@ module SecurityClassification =
         | SecuritySubType.FutureContract -> "FutureContract"
         | SecuritySubType.SwapContract -> "SwapContract"
         | SecuritySubType.DirectLoan -> "DirectLoan"
+        | SecuritySubType.StructuredCredit -> "StructuredCredit"
+        | SecuritySubType.PrivateCompanyEquity -> "PrivateCompanyEquity"
+        | SecuritySubType.RealEstateHolding -> "RealEstateHolding"
+        | SecuritySubType.CommitmentGuarantee -> "CommitmentGuarantee"
         | SecuritySubType.OtherSubType value -> value

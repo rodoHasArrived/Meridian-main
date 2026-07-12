@@ -25,6 +25,7 @@ import {
   formatReadinessStatusValue,
   mapBrokerageSyncLevel,
   mapReadinessStatusLevel,
+  livePromotionApprovalChecklist,
   paperPromotionApprovalChecklist,
   updateOrderTicketForm,
   validatePaperSessionForm,
@@ -58,6 +59,34 @@ const eligibleEvaluation: PromotionEvaluationResult = {
   found: true,
   ready: true
 };
+
+const liveEligibleEvaluation: PromotionEvaluationResult = {
+  ...eligibleEvaluation,
+  runId: "run-live-source",
+  sourceMode: "paper",
+  targetMode: "live",
+  reason: "Eligible for live",
+  requiresHumanApproval: true,
+  requiresManualOverride: true,
+  requiredManualOverrideKind: "AllowLivePromotion"
+};
+
+const livePromotionEvidenceReferences = [
+  "DK1_TRUST_PACKET_REVIEWED:evidence-vault/dk1-trust-packet",
+  "RUN_LINEAGE_REVIEWED:strategy-run/run-live-source",
+  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:ledger-continuity/live-book",
+  "RISK_CONTROLS_REVIEWED:risk-controls/pre-live",
+  "PAPER_VALIDATION_REVIEWED:paper-validation/run-live-source",
+  "RECONCILIATION_EVIDENCE_REVIEWED:reconciliation/live-readiness",
+  "BROKER_EXECUTION_RECONCILIATION_REVIEWED:broker-execution-reconciliation/live-readiness",
+  "ACCOUNTING_RECORDS_REVIEWED:accounting-records/live-readiness",
+  "GOVERNED_REPORTING_REVIEWED:report-pack/live-readiness",
+  "GOVERNANCE_SIGNOFF_REVIEWED:governance-signoff/live-readiness",
+  "EXCEPTION_HANDLING_REVIEWED:exceptions/live-readiness",
+  "ROLLBACK_KILL_SWITCH_REVIEWED:controls/kill-switch/live-readiness",
+  "AUDIT_RETENTION_REVIEWED:audit-retention/live-readiness",
+  "LIVE_OVERRIDE_REVIEWED:manual-override/override-9"
+];
 
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
@@ -795,6 +824,7 @@ describe("trading readiness view model", () => {
     expect(state.summaryRows).toEqual([
       expect.objectContaining({ id: "overall", label: "Overall", value: "Blocked", level: "atRisk", ariaLabel: "Overall readiness: Blocked" }),
       expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
+      expect.objectContaining({ id: "live", label: "Live", value: "Not live ready", level: "review", ariaLabel: "Live operation readiness: Not live ready" }),
       expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
       expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 16:05 UTC" })
     ]);
@@ -832,6 +862,74 @@ describe("trading readiness view model", () => {
       }
     ]);
     expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 16:05 UTC.");
+  });
+
+  it("surfaces explicit live-readiness blockers in summary rows", () => {
+    const state = buildTradingReadinessState({
+      readiness: {
+        ...blockedReadiness,
+        readyForLiveOperation: false,
+        liveOperationBlockers: ["acceptanceGate:promotion", "brokerExecutionReconciliation:Blocked"]
+      },
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.summaryRows.find((row) => row.id === "live")).toEqual(expect.objectContaining({
+      label: "Live",
+      value: "2 blockers",
+      level: "atRisk",
+      ariaLabel: "Live operation readiness: 2 blockers. Blockers: acceptanceGate:promotion, brokerExecutionReconciliation:Blocked"
+    }));
+  });
+
+  it("surfaces W7 live-operation requirements as individual summary rows", () => {
+    const state = buildTradingReadinessState({
+      readiness: {
+        ...blockedReadiness,
+        readyForLiveOperation: false,
+        liveOperationRequirements: [
+          {
+            requirementId: "trusted-data",
+            label: "Trusted data",
+            status: "Ready",
+            detail: "Trusted data checklist and retained evidence are ready: DK1_TRUST_PACKET_REVIEWED:evidence/dk1.",
+            checklistItem: "DK1_TRUST_PACKET_REVIEWED",
+            evidenceReference: "DK1_TRUST_PACKET_REVIEWED:evidence/dk1",
+            checklistSatisfied: true,
+            evidenceSatisfied: true,
+            blockerCode: null
+          },
+          {
+            requirementId: "governance-signoff",
+            label: "Governance sign-off",
+            status: "Blocked",
+            detail: "Missing evidence reference GOVERNANCE_SIGNOFF_REVIEWED.",
+            checklistItem: "GOVERNANCE_SIGNOFF_REVIEWED",
+            evidenceReference: null,
+            checklistSatisfied: true,
+            evidenceSatisfied: false,
+            blockerCode: "promotion:evidenceReferences:GOVERNANCE_SIGNOFF_REVIEWED"
+          }
+        ]
+      },
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.summaryRows).toContainEqual(expect.objectContaining({
+      id: "live-requirement-trusted-data",
+      label: "Trusted data",
+      value: "Ready",
+      level: "ready"
+    }));
+    expect(state.summaryRows).toContainEqual(expect.objectContaining({
+      id: "live-requirement-governance-signoff",
+      label: "Governance sign-off",
+      value: "Blocked",
+      level: "atRisk",
+      ariaLabel: "Governance sign-off: Blocked. Missing evidence reference GOVERNANCE_SIGNOFF_REVIEWED. Blocker: promotion:evidenceReferences:GOVERNANCE_SIGNOFF_REVIEWED."
+    }));
   });
 
   it("limits displayed operator work items and warnings in the view model", () => {
@@ -1129,6 +1227,35 @@ describe("trading confirmation view model", () => {
     expect(result.current.acknowledgement.checked).toBe(false);
     expect(result.current.canConfirm).toBe(false);
   });
+
+  it("passes fund account scope into close-position confirmations", async () => {
+    const acceptedResult: TradingActionResult = {
+      actionId: "act-close",
+      status: "Accepted",
+      message: "Close submitted.",
+      occurredAt: "2026-04-26T16:00:00Z"
+    };
+    const services: TradingConfirmServices = {
+      cancelOrder: vi.fn(),
+      cancelAllOrders: vi.fn(),
+      closePosition: vi.fn().mockResolvedValue(acceptedResult),
+      pauseStrategy: vi.fn(),
+      stopStrategy: vi.fn()
+    };
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const { result } = renderHook(() => useTradingConfirmViewModel({ services, fundAccountId }));
+
+    act(() => {
+      result.current.openConfirm({ kind: "close-position", positionKey: "paper:AAPL", symbol: "AAPL" });
+      result.current.setReviewAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.executeConfirm();
+    });
+
+    expect(services.closePosition).toHaveBeenCalledWith("paper:AAPL", fundAccountId);
+  });
 });
 
 describe("trading order ticket view model", () => {
@@ -1147,6 +1274,19 @@ describe("trading order ticket view model", () => {
 
     expect(form.limitPrice).toBeNull();
     expect(buildOrderSubmitRequest(form)).toEqual({
+      symbol: "AAPL",
+      side: "Buy",
+      type: "Market",
+      quantity: 10
+    });
+    expect(buildOrderSubmitRequest(form, "53bf0251-17f6-4fb7-8dbe-6fb4966e2749")).toEqual({
+      symbol: "AAPL",
+      side: "Buy",
+      type: "Market",
+      quantity: 10,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    });
+    expect(buildOrderSubmitRequest(form, "brokerage-account-label")).toEqual({
       symbol: "AAPL",
       side: "Buy",
       type: "Market",
@@ -1279,7 +1419,10 @@ describe("trading order ticket view model", () => {
     const services: OrderTicketServices = {
       submitOrder: vi.fn().mockReturnValue(deferred.promise)
     };
-    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
 
     act(() => {
       result.current.openTicket();
@@ -1301,7 +1444,8 @@ describe("trading order ticket view model", () => {
       symbol: "MSFT",
       side: "Buy",
       type: "Market",
-      quantity: 2
+      quantity: 2,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
     });
     expect(result.current.successText).toBe("Order submitted - ord-42.");
   });
@@ -1482,6 +1626,12 @@ describe("trading promotion gate view model", () => {
       describedBy: null,
       required: false
     });
+    expect(ready.fields.evidenceReferences).toMatchObject({
+      label: "Evidence references",
+      placeholder: "TOKEN:evidence-path, one per line",
+      describedBy: "promotion-evidence-references-help",
+      helpText: "Live approvals require retained evidence references for every live checklist item."
+    });
     expect(validatePromotionApproval(ready.form, eligibleEvaluation)).toBeNull();
   });
 
@@ -1517,7 +1667,8 @@ describe("trading promotion gate view model", () => {
       approvalReason: " Meets risk constraints ",
       rejectionReason: " Drawdown instability ",
       reviewNotes: " ",
-      manualOverrideId: " override-9 "
+      manualOverrideId: " override-9 ",
+      evidenceReferences: " "
     };
 
     expect(buildPromotionApprovalRequest(form)).toEqual({
@@ -1525,6 +1676,7 @@ describe("trading promotion gate view model", () => {
       approvedBy: "operator-7",
       approvalReason: "Meets risk constraints",
       approvalChecklist: undefined,
+      evidenceReferences: undefined,
       reviewNotes: undefined,
       manualOverrideId: "override-9"
     });
@@ -1855,6 +2007,33 @@ describe("trading promotion gate view model", () => {
       expect(checklist[1].description).toContain("S1"); // strategyName
       expect(checklist[2].description).toContain("1.20"); // Sharpe ratio formatted
     });
+
+    it("buildPromotionApprovalChecklist_ProjectsLiveReadinessRequirements", () => {
+      const checklist = buildPromotionApprovalChecklist(liveEligibleEvaluation);
+
+      expect(checklist).toHaveLength(livePromotionApprovalChecklist.length);
+      expect(checklist.map((item) => item.label)).toEqual([
+        "DK1 data trust",
+        "Run lineage",
+        "Risk metrics",
+        "Portfolio/Ledger continuity",
+        "Paper validation",
+        "Reconciliation evidence",
+        "Broker order parity",
+        "Accounting records",
+        "Governed reporting",
+        "Governance sign-off",
+        "Exception handling",
+        "Rollback/kill-switch",
+        "Audit retention",
+        "Live override"
+      ]);
+      expect(checklist.find((item) => item.id === "broker-execution-reconciliation")).toMatchObject({
+        label: "Broker order parity",
+        status: "ready",
+        description: "Broker and OMS open-order reconciliation evidence reviewed"
+      });
+    });
   });
 });
 
@@ -1887,42 +2066,6 @@ describe("trading readiness named operator states", () => {
     lastPersistedOrderUpdateAt: null,
     verificationAuditId: "audit-v1",
     mismatchReasons: []
-  };
-
-  const healthyBrokerageSync = {
-    fundAccountId: "fund-1",
-    providerId: "alpaca",
-    externalAccountId: "ACCT-1",
-    health: "Healthy" as const,
-    isLinked: true,
-    isStale: false,
-    lastAttemptedSyncAt: "2026-04-01T01:00:00Z",
-    lastSuccessfulSyncAt: "2026-04-01T01:00:00Z",
-    lastError: null,
-    positionCount: 1,
-    openOrderCount: 0,
-    fillCount: 5,
-    cashTransactionCount: 0,
-    securityMissingCount: 0,
-    warnings: []
-  };
-
-  const signedTrustGate: TradingTrustGateReadiness = {
-    gateId: "dk1",
-    status: "signed",
-    readyForOperatorReview: true,
-    operatorSignoffRequired: true,
-    operatorSignoffStatus: "signed",
-    generatedAt: "2026-04-01T00:00:00Z",
-    packetPath: "artifacts/dk1-packet.json",
-    sourceSummary: "wave1-summary.json",
-    requiredSampleCount: 4,
-    readySampleCount: 4,
-    validatedEvidenceDocumentCount: 4,
-    requiredOwners: ["ops"],
-    blockers: [],
-    detail: "Signed.",
-    operatorSignoff: null
   };
 
   it("context-required: missing session blocks cockpit with paper-session-missing work item", () => {
@@ -2176,6 +2319,69 @@ describe("trading readiness named operator states", () => {
     expect(state.visibleWarnings[0].text).toBe("Live execution remains disabled until governance sign-off is attached.");
     expect(state.statusAnnouncement).toContain("review required");
   });
+
+  it("live-execution: broker order reconciliation blocks readiness with actionable parity evidence", () => {
+    const readiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      overallStatus: "Blocked",
+      executionReconciliation: {
+        status: "Blocked",
+        gatewayId: "alpaca",
+        brokerDisplayName: "Alpaca Markets",
+        brokerHealthy: true,
+        brokerConnected: true,
+        matchedOpenOrderCount: 0,
+        breakCount: 1,
+        reconciledAt: "2026-04-26T16:03:00Z",
+        detail: "1 broker/OMS open-order reconciliation break requires review before live operation.",
+        breaks: [
+          {
+            kind: "QuantityMismatch",
+            description: "Order quantity differs between OMS and broker.",
+            localOrderId: "order-1",
+            brokerOrderId: "broker-1",
+            clientOrderId: "order-1",
+            symbol: "AAPL",
+            localValue: "10",
+            brokerValue: "12"
+          }
+        ]
+      },
+      workItems: [
+        {
+          workItemId: "broker-execution-reconciliation-alpaca",
+          kind: "BrokerExecutionReconciliation",
+          label: "Broker execution reconciliation",
+          detail: "1 broker/OMS open-order reconciliation break requires review before live operation.",
+          tone: "Critical",
+          createdAt: "2026-04-26T16:03:00Z",
+          runId: null,
+          fundAccountId: null,
+          auditReference: null,
+          workspace: "Trading",
+          targetRoute: "/api/workstation/trading/readiness",
+          targetPageTag: "TradingShell"
+        }
+      ],
+      warnings: []
+    };
+
+    const state = buildTradingReadinessState({ readiness, refreshing: false, errorText: null });
+
+    expect(state.summaryRows).toContainEqual(expect.objectContaining({
+      id: "broker-execution",
+      label: "Broker orders",
+      value: "1 break",
+      level: "atRisk",
+      ariaLabel: "Broker execution reconciliation: 1 break"
+    }));
+    expect(state.visibleWorkItems[0].action).toEqual({
+      label: "Review broker orders",
+      href: "/trading",
+      ariaLabel: "Open broker execution reconciliation for Broker execution reconciliation",
+      detail: "Review broker/OMS open-order parity before live operation."
+    });
+  });
 });
 
 // ─── Milestone 2: Work-item action routing for non-brokerage kinds ────────────
@@ -2303,6 +2509,16 @@ describe("trading readiness work-item action routing", () => {
     expect(action?.detail).toContain("reconciliation");
   });
 
+  it("routes BrokerExecutionReconciliation work items to the trading readiness route", () => {
+    const state = buildTradingReadinessState({ readiness: workItemForKind("BrokerExecutionReconciliation"), refreshing: false, errorText: null });
+    const action = state.visibleWorkItems[0].action;
+
+    expect(action).not.toBeNull();
+    expect(action?.label).toBe("Review broker orders");
+    expect(action?.href).toBe("/trading/readiness");
+    expect(action?.detail).toContain("broker/OMS");
+  });
+
   it("returns null action for unrouted work item kinds", () => {
     const state = buildTradingReadinessState({ readiness: workItemForKind("ReportPackApproval"), refreshing: false, errorText: null });
     expect(state.visibleWorkItems[0].action).toBeNull();
@@ -2351,6 +2567,90 @@ describe("promotion approval checklist", () => {
     expect(request.runId).toBe("run-1");
   });
 
+  it("includes broker execution reconciliation in serialized live approval checklist", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-live-source",
+      approvedBy: "operator-1",
+      approvalReason: "Live readiness evidence reviewed",
+      manualOverrideId: "override-9",
+      evidenceReferences: livePromotionEvidenceReferences.join("\n"),
+      approvalChecklist: livePromotionApprovalChecklist
+    };
+
+    const request = buildPromotionApprovalRequest(form);
+    expect(request.approvalChecklist).toEqual(livePromotionApprovalChecklist);
+    expect(request.approvalChecklist).toContain("BROKER_EXECUTION_RECONCILIATION_REVIEWED");
+    expect(request.evidenceReferences).toEqual(livePromotionEvidenceReferences);
+  });
+
+  it("blocks live approval when broker execution reconciliation evidence is missing", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-live-source",
+      approvedBy: "operator-1",
+      approvalReason: "Live readiness evidence reviewed",
+      manualOverrideId: "override-9",
+      evidenceReferences: livePromotionEvidenceReferences
+        .filter((reference) => !reference.startsWith("BROKER_EXECUTION_RECONCILIATION_REVIEWED"))
+        .join("\n"),
+      approvalChecklist: livePromotionApprovalChecklist
+    };
+
+    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toContain("BROKER_EXECUTION_RECONCILIATION_REVIEWED");
+  });
+
+  it("blocks live approval when a W7 evidence reference has no retained value", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-live-source",
+      approvedBy: "operator-1",
+      approvalReason: "Live readiness evidence reviewed",
+      manualOverrideId: "override-9",
+      evidenceReferences: livePromotionEvidenceReferences
+        .map((reference) => reference.startsWith("AUDIT_RETENTION_REVIEWED") ? "AUDIT_RETENTION_REVIEWED:" : reference)
+        .join("\n"),
+      approvalChecklist: livePromotionApprovalChecklist
+    };
+
+    const error = validatePromotionApproval(form, liveEligibleEvaluation);
+
+    expect(error).toContain("invalid");
+    expect(error).toContain("AUDIT_RETENTION_REVIEWED must include retained evidence");
+  });
+
+  it("blocks live approval when live override evidence references a different override", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-live-source",
+      approvedBy: "operator-1",
+      approvalReason: "Live readiness evidence reviewed",
+      manualOverrideId: "override-9",
+      evidenceReferences: livePromotionEvidenceReferences
+        .map((reference) => reference.startsWith("LIVE_OVERRIDE_REVIEWED") ? "LIVE_OVERRIDE_REVIEWED:manual-override/override-9-stale" : reference)
+        .join("\n"),
+      approvalChecklist: livePromotionApprovalChecklist
+    };
+
+    const error = validatePromotionApproval(form, liveEligibleEvaluation);
+
+    expect(error).toContain("LIVE_OVERRIDE_REVIEWED must reference active manual override override-9");
+  });
+
+  it("allows live approval when all live evidence references are attached", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-live-source",
+      approvedBy: "operator-1",
+      approvalReason: "Live readiness evidence reviewed",
+      manualOverrideId: "override-9",
+      evidenceReferences: livePromotionEvidenceReferences.join("\n"),
+      approvalChecklist: livePromotionApprovalChecklist
+    };
+
+    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toBeNull();
+  });
+
   it("omits approvalChecklist from the request when the form list is empty", () => {
     const form = {
       ...emptyPromotionGateForm,
@@ -2395,6 +2695,35 @@ describe("promotion approval checklist", () => {
     });
     expect(result.current.form.approvalChecklist).toContain("DK1_TRUST_PACKET_REVIEWED");
     expect(result.current.form.approvalChecklist).toContain("RISK_CONTROLS_REVIEWED");
+  });
+
+  it("auto-populates the live checklist from an eligible live evaluation result", async () => {
+    const deferred = createDeferred<PromotionEvaluationResult>();
+    const services: PromotionGateServices = {
+      evaluatePromotion: () => deferred.promise,
+      approvePromotion: vi.fn(),
+      rejectPromotion: vi.fn(),
+      getPromotionHistory: () => Promise.resolve([])
+    };
+
+    const { result } = renderHook(() => usePromotionGateViewModel(services));
+
+    act(() => {
+      result.current.updateField("runId", "run-live-source");
+    });
+    act(() => {
+      void result.current.evaluateGateChecks();
+    });
+
+    await act(async () => {
+      deferred.resolve(liveEligibleEvaluation);
+      await deferred.promise;
+    });
+
+    await waitFor(() => {
+      expect(result.current.form.approvalChecklist).toEqual(livePromotionApprovalChecklist);
+    });
+    expect(result.current.form.approvalChecklist).toContain("BROKER_EXECUTION_RECONCILIATION_REVIEWED");
   });
 
   it("clears the approval checklist when the runId field changes", async () => {

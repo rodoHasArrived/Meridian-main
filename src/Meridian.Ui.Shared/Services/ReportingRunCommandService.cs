@@ -74,7 +74,8 @@ public sealed class ReportingRunCommandService
                 ReportWriterDatasetSourceId: datasetSourceEvidence.SourceId,
                 ReportWriterDatasetSourceLabel: datasetSourceEvidence.Label,
                 AccessPolicy: template.AccessPolicy,
-                RetryReason: request.RetryReason),
+                RetryReason: request.RetryReason,
+                AllowRestatement: request.AllowRestatement),
             cancellationToken).ConfigureAwait(false);
 
         return new ReportingRunResultDto(ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId), template));

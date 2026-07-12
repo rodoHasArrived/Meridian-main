@@ -60,7 +60,10 @@ describe("ReconciliationPanel", () => {
         currency="USD"
       />,
     );
-    expect(screen.getByText("$7.00")).toBeInTheDocument();
+    const statementSide = screen.getByText("Statement").closest(".rec__side") as HTMLElement;
+    const statementRows = within(statementSide).getAllByRole("row").filter((row) => row.closest("tbody"));
+    expect(within(statementRows[0]).getByText("$7.00")).toBeInTheDocument();
+    expect(within(statementRows[0]).queryByText("$100.00")).toBeNull();
     // The configured "fee" column replaces the default amount column in the items table.
     // (The amount still drives the reconciliation summary balance, so assert on the header.)
     expect(screen.getAllByRole("columnheader", { name: /Fee/ }).length).toBeGreaterThan(0);

@@ -21,8 +21,9 @@ internal sealed class WalRepairCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-        => CliArguments.HasFlag(args, "--wal-repair");
+    public IReadOnlyList<string> Triggers { get; } = ["--wal-repair"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

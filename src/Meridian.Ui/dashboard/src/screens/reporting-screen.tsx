@@ -1,27 +1,36 @@
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
+import { useReportRunStream } from "@/hooks/use-report-run-stream";
 import { Select } from "@/components/ui/select";
 import { SeverityBadge } from "@/components/operations";
+import { registerCommandPaletteActions } from "@/components/meridian/command-palette.actions";
+import {
+  encodeViewStateEnvelope,
+  readViewStateFromSearch,
+  stripViewStateFromSearch,
+  VIEW_STATE_QUERY_KEY
+} from "@/lib/view-state-envelope";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
-import { MetricCard } from "@/components/meridian/metric-card";
+import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
   approveReportTemplateDraft,
-  createReportTemplateDraft,
   deliverReportPack,
   generateReportPack,
   pauseReportingSchedule,
   previewReportPack,
+  provisionReportingStarterKit,
   recordReportPackDeliveryFailure,
   rejectReportTemplateDraft,
-  renderReportTemplate,
   resumeReportingSchedule,
   runDueReportingSchedules,
   runReportingNow,
@@ -33,15 +42,16 @@ import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/reporting-periods";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
-import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
   type ReportingProfileRow,
+  type ReportingExportStatusState,
   type ReportingRunActionRow,
   type ReportingRunStatusRow,
   type ReportingScheduleDeliveryPlanRow,
   type ReportingScheduleRow,
+  type ReportingStarterKitPanelViewModel,
   type ReportingTemplateLifecycleActionRow,
   type ReportingTemplateRow,
   type ReportingWriterGridRow,
@@ -58,25 +68,18 @@ import {
 import {
   ExportsReportRunner,
   type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState
+  type ExportsReportRunDraftState,
+  type RestatementTargetSelection
 } from "@/screens/reporting-screen.exports-runner";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
   ReportWriterDesignerGrid,
   ReportingReportWriterSection,
-  formatReportWriterFilterOperator,
-  isBlankFilterOperator,
-  normalizeReportWriterFilterOperator,
-  normalizeReportWriterGridKind,
-  normalizeReportWriterPreviewDatasetProfile,
-  normalizeReportWriterTopNText,
-  parseReportWriterTopN,
   useReportingReportWriter,
   type ReportWriterChartDraft,
   type ReportWriterDraftSettings,
   type ReportWriterDropZone,
   type ReportWriterFormatRuleDraft,
-  type ReportWriterPreviewDatasetProfile
 } from "@/screens/reporting-screen.report-writer";
 import {
   ReportingScheduleManagementPanel,
@@ -93,7 +96,6 @@ import { ReportingGeneratedGridExportLinks, ReportingRunVersionFields } from "@/
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
-  ReportingScheduleField,
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
 import { ReportingTaskModeLauncher } from "@/screens/reporting-screen.task-modes";
@@ -110,19 +112,19 @@ import type {
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
-  ReportWriterAggregateFunction,
-  ReportWriterChartDefinition,
-  ReportWriterFilterDefinition,
-  ReportWriterFilterOperator,
-  ReportWriterFormatRule,
-  ReportWriterGridDefinition,
-  ReportWriterGridKind,
   ReportingRunRequest,
-  ReportWriterMetricDefinition,
   RenderReportTemplateRequest,
   ReportingScheduleUpsertRequest,
   ReportingWorkflowEvidenceLink
 } from "@/types";
+import {
+  buildReportAccessPolicy,
+  buildReportWriterGridDefinition,
+  buildReportWriterPreviewRows,
+  normalizeDraftText,
+  normalizeIdentifierToken,
+  parseReportTemplateVersion
+} from "@/screens/reporting-screen.report-writer-helpers";
 
 interface ReportingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -152,8 +154,120 @@ const reportingStatusFromVariant: Record<
   live: "Blocked",
   research: "Info"
 };
+
+function ReportingStarterKitChooser({
+  panel,
+  status,
+  runningStarterKitId,
+  onProvision
+}: {
+  panel: ReportingStarterKitPanelViewModel;
+  status: ReportingCommandStatus | null;
+  runningStarterKitId: string | null;
+  onProvision: (kitId: string, title: string) => void | Promise<void>;
+}) {
+  if (!panel.hasCards) {
+    return null;
+  }
+
+  return (
+    <section
+      role="region"
+      aria-label={panel.title}
+      className="panel-surface space-y-4 px-4 py-4"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Starter desk</div>
+          <h2 className="mt-2 text-lg font-semibold text-foreground">{panel.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{panel.description}</p>
+        </div>
+        <Badge variant={panel.statusVariant}>{panel.statusLabel}</Badge>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {panel.cards.map((card) => {
+          const busyId = `starter-kit:${card.id}`;
+          return (
+            <Card key={card.id} className="border-border/70 bg-background/45">
+              <CardHeader className="space-y-2">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge variant="outline">{card.defaultPeriodLabel}</Badge>
+                  <Badge variant="outline">{card.seedScheduleSummary}</Badge>
+                </div>
+                <CardTitle className="text-base">{card.title}</CardTitle>
+                <CardDescription>{card.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <dl className="grid gap-2 text-xs sm:grid-cols-2">
+                  <div className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
+                    <dt className="uppercase text-muted-foreground">Templates</dt>
+                    <dd className="mt-1 font-medium text-foreground">{card.templateSummary}</dd>
+                  </div>
+                  <div className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
+                    <dt className="uppercase text-muted-foreground">Hub layout</dt>
+                    <dd className="mt-1 break-all font-mono text-foreground">{card.layoutLabel}</dd>
+                  </div>
+                </dl>
+                <div className="flex flex-wrap gap-1.5" aria-label={`${card.title} templates`}>
+                  {card.templateNames.map((name) => (
+                    <Badge key={name} variant="outline">{name}</Badge>
+                  ))}
+                </div>
+                <div className="space-y-1.5" aria-label={`${card.title} draft schedules`}>
+                  {card.seedSchedules.map((schedule) => (
+                    <div key={schedule.id} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge variant="outline">{schedule.cadence}</Badge>
+                        <span className="font-medium text-foreground">{schedule.stateLabel}</span>
+                      </div>
+                      <p className="mt-1 text-muted-foreground">{schedule.description}</p>
+                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">{schedule.deliveryTargetSummary}</p>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full justify-center"
+                  aria-label={card.actionAriaLabel}
+                  busy={runningStarterKitId === busyId}
+                  busyLabel="Provisioning"
+                  disabled={Boolean(runningStarterKitId)}
+                  onClick={() => void onProvision(card.id, card.title)}
+                >
+                  <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                  {card.actionLabel}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {status ? (
+        <ReportingCommandStatusView status={status} />
+      ) : null}
+    </section>
+  );
+}
+
 const livePortfolioAutoRefreshIntervalMs = 60_000;
+const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
+// The report-run live chip renders in the "Live" state whenever the SSE channel is healthy,
+// so this budget only governs its internal age tick; a modest interval keeps the dot lively.
+export const REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS = 15_000;
+
+// Governed report-pack workflow rows carry a `report-pack:{id}` run id (server ProjectWorkflowRun)
+// that the run-stream endpoint cannot resolve — it only knows IReportingOrchestrationService run
+// ids and 404s on the workflow scheme. Only generic reporting runs are streamable, so selection
+// skips workflow rows instead of opening an SSE channel that would just 404-loop.
+function isStreamableReportingRun(run: ReportingRunStatusRow): boolean {
+  return !run.id.startsWith("report-pack:");
+}
 const defaultExportsReportRunRequester = "browser-workstation";
+const EXPORTS_VIEW_STATE_SCREEN = "reporting-exports";
+const exportsViewReflectDebounceMs = 300;
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "profile",
@@ -198,18 +312,33 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 ];
 
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
     [data?.reporting?.dailyWork, vm.runStatusRows, vm.templateRows]
   );
+  // Watch the most recent run over the report-run SSE stream. This is additive — the 30s
+  // reporting poll is unchanged and remains the source of truth for the rendered rows. When the
+  // channel is healthy it surfaces that run's approval/status transitions instantly; while it is
+  // unhealthy (or where EventSource is unavailable, e.g. in tests) nothing extra renders.
+  const watchedRunId = vm.runStatusRows.find(isStreamableReportingRun)?.id ?? null;
+  const { status: watchedRunStreamStatus, healthy: watchedRunStreamHealthy } = useReportRunStream(watchedRunId);
+  // When the watched run's stream is healthy, its pushed status supersedes the stale polled status
+  // for that row, so the prominent badge reflects the live approval state instead of contradicting
+  // the live line beneath it until the next 30s poll catches up.
+  const isWatchedRunLive = (run: ReportingRunStatusRow): boolean =>
+    run.id === watchedRunId && watchedRunStreamHealthy && watchedRunStreamStatus !== null;
+  const resolveRowStatus = (run: ReportingRunStatusRow): string =>
+    isWatchedRunLive(run) && watchedRunStreamStatus ? watchedRunStreamStatus.status : run.status;
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
   const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateRunStatus, setTemplateRunStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
+  const [starterKitStatus, setStarterKitStatus] = useState<ReportingCommandStatus | null>(null);
   const [deliveryFailureStatus, setDeliveryFailureStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
   const [exportsRunDraft, setExportsRunDraft] = useState<ExportsReportRunDraftState>(() => buildDefaultExportsReportRunDraft(data?.reporting ?? null));
@@ -258,6 +387,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
   const runningTemplateLifecycleActionId = templateLifecycleStatus?.state === "running" ? templateLifecycleStatus.id : null;
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
+  const runningStarterKitId = starterKitStatus?.state === "running" ? starterKitStatus.id : null;
   const runningDeliveryFailureId = deliveryFailureStatus?.state === "running" ? deliveryFailureStatus.id : null;
   const runningBrandingThemeId = brandingPackStatus?.state === "running" ? brandingPackStatus.id : null;
   const isRefreshingLivePortfolioViews = livePortfolioRefreshStatus?.state === "running";
@@ -265,6 +395,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
+  const isReportBuilderTaskMode = vm.taskMode.id === "report-builder";
+  const isRunStatusTaskMode = vm.taskMode.id === "run-status";
+  const isDeliveryEvidenceTaskMode = vm.taskMode.id === "delivery-evidence" || vm.taskMode.id === "report-pack-approval";
+  const isExportsTaskMode = vm.taskMode.id === "exports";
+  const isGovernanceTaskMode = vm.taskMode.id === "governance";
+  const showStarterKitChooser =
+    isReportBuilderTaskMode &&
+    vm.starterKitPanel.showChooser &&
+    starterKitStatus?.state !== "success";
   const scheduleModel: ReportingScheduleManagementModel = {
     scheduleSummary: vm.scheduleSummary,
     hasScheduleRows: vm.hasScheduleRows,
@@ -277,9 +416,12 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     scheduleDeliveryPlanListLabel: vm.scheduleDeliveryPlanListLabel,
     scheduleDeliveryPlanEmptyText: vm.scheduleDeliveryPlanEmptyText
   };
-  const selectedExportsTemplate = resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft);
   const exportsRunRows = vm.runStatusRows.filter(isExportsOnDemandRun);
   const templateRowsKey = vm.templateRows.map((template) => template.id).join("|");
+  const selectedExportsTemplate = useMemo(
+    () => resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft),
+    [exportsRunDraft.templateRowId, templateRowsKey, vm.templateRows]
+  );
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -318,6 +460,79 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       return buildDefaultExportsReportRunDraft(data.reporting);
     });
   }, [data?.reporting, templateRowsKey]);
+
+  const exportsViewHydratedRef = useRef(false);
+  useEffect(() => {
+    if (exportsViewHydratedRef.current || vm.templateRows.length === 0) {
+      return;
+    }
+
+    exportsViewHydratedRef.current = true;
+    const envelope = readViewStateFromSearch(search, EXPORTS_VIEW_STATE_SCREEN);
+    if (!envelope) {
+      return;
+    }
+
+    const templateRowId = typeof envelope.state.selectedExportsTemplateId === "string"
+      ? envelope.state.selectedExportsTemplateId
+      : null;
+    const asOfDate = typeof envelope.state.asOfDate === "string" ? envelope.state.asOfDate : null;
+    const template = templateRowId ? vm.templateRows.find((row) => row.id === templateRowId) : null;
+    if (!template || !template.canRunOnDemand) {
+      return;
+    }
+
+    setExportsRunDraft((current) => ({
+      ...current,
+      templateRowId: template.id,
+      asOfDate: asOfDate ?? current.asOfDate
+    }));
+  }, [search, templateRowsKey, vm.templateRows]);
+
+  const reflectExportsViewTimer = useRef<number | null>(null);
+  const shouldReflectExportsViewState = useRef(false);
+  const reflectExportsViewState = useCallback((nextDraft: ExportsReportRunDraftState) => {
+    if (reflectExportsViewTimer.current !== null) {
+      window.clearTimeout(reflectExportsViewTimer.current);
+    }
+
+    reflectExportsViewTimer.current = window.setTimeout(() => {
+      reflectExportsViewTimer.current = null;
+      const template = resolveSelectedExportsTemplate(vm.templateRows, nextDraft);
+      const token = template
+        ? encodeViewStateEnvelope({
+            v: 1,
+            screen: EXPORTS_VIEW_STATE_SCREEN,
+            state: { selectedExportsTemplateId: template.id, asOfDate: nextDraft.asOfDate }
+          })
+        : null;
+
+      // When the state cannot encode, strip any carried token so a stale view
+      // param never lingers in the shareable URL.
+      const params = new URLSearchParams(stripViewStateFromSearch(search));
+      if (token) {
+        params.set(VIEW_STATE_QUERY_KEY, token);
+      }
+
+      const nextSearch = params.toString();
+      navigate(nextSearch ? `${pathname}?${nextSearch}` : pathname, { replace: true });
+    }, exportsViewReflectDebounceMs);
+  }, [navigate, pathname, search, vm.templateRows]);
+
+  useEffect(() => () => {
+    if (reflectExportsViewTimer.current !== null) {
+      window.clearTimeout(reflectExportsViewTimer.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!shouldReflectExportsViewState.current) {
+      return;
+    }
+
+    shouldReflectExportsViewState.current = false;
+    reflectExportsViewState(exportsRunDraft);
+  }, [exportsRunDraft, reflectExportsViewState]);
 
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
@@ -389,14 +604,42 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
+    shouldReflectExportsViewState.current = true;
+    setExportsRunDraft((current) => {
+      return { ...current, [field]: value };
+    });
+  }
+
+  function updateExportsReportRestatementTarget(target: RestatementTargetSelection | null) {
     setExportsRunDraft((current) => ({
       ...current,
-      [field]: value
+      restatementTargetRunId: target?.runId ?? "",
+      restatementTemplateId: target?.templateId ?? "",
+      restatementJobId: target?.jobId ?? "",
+      restatementAsOfDate: target?.asOfDate ?? "",
+      restatementDatasetSourceId: target?.datasetSourceId ?? "",
+      // Clear any carried reason when the operator cancels the restatement.
+      retryReason: target ? current.retryReason : ""
     }));
   }
 
   async function handleExportsReportRun() {
-    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand || runningTemplateRunId) {
+    if (runningTemplateRunId) {
+      return;
+    }
+
+    // Restatement runs from the selected released run's identity, independent of the current
+    // template selection (which may be empty or gated); an ordinary run needs a runnable template.
+    if (exportsRunDraft.restatementTargetRunId.trim().length > 0) {
+      await executeTemplateRun(
+        { id: exportsRunDraft.restatementTargetRunId, name: `Restatement of ${exportsRunDraft.restatementTargetRunId}` },
+        buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
+        "Exports report run"
+      );
+      return;
+    }
+
+    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand) {
       return;
     }
 
@@ -407,32 +650,76 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     );
   }
 
+  const handleExportsReportRunRef = useRef(handleExportsReportRun);
+  handleExportsReportRunRef.current = handleExportsReportRun;
+
+  const selectedExportsTemplateId = selectedExportsTemplate?.id ?? null;
+  const selectedExportsTemplateName = selectedExportsTemplate?.name ?? null;
+  const selectedExportsTemplateCanRun = selectedExportsTemplate?.canRunOnDemand ?? false;
+  const selectedExportsTemplateRunDisabledReason = selectedExportsTemplate?.runDisabledReason ?? null;
+
+  useEffect(() => {
+    if (!isExportsTaskMode || !selectedExportsTemplateId || !selectedExportsTemplateName) {
+      return;
+    }
+
+    const disabled = !selectedExportsTemplateCanRun || Boolean(runningTemplateRunId);
+    return registerCommandPaletteActions("reporting-screen", [
+      {
+        id: "reporting-run-exports",
+        verbLabel: `Run exports report: ${selectedExportsTemplateName}`,
+        description: "Start the selected on-demand exports report run with the drafted as-of date.",
+        keywords: ["report", "export", "run"],
+        confirm: true,
+        disabled,
+        disabledReason: runningTemplateRunId
+          ? "A template run is already in progress."
+          : selectedExportsTemplateRunDisabledReason,
+        run: async () => {
+          await handleExportsReportRunRef.current();
+          return {
+            title: `${selectedExportsTemplateName} run requested.`,
+            detail: "Track progress under Reporting exports run status.",
+            tone: "success" as const
+          };
+        }
+      }
+    ]);
+  }, [
+    isExportsTaskMode,
+    runningTemplateRunId,
+    selectedExportsTemplateCanRun,
+    selectedExportsTemplateId,
+    selectedExportsTemplateName,
+    selectedExportsTemplateRunDisabledReason
+  ]);
+
   async function executeTemplateRun(
-    template: ReportingTemplateRow,
+    identity: { id: string; name: string },
     request: ReportingRunRequest,
     statusLabel: string
   ) {
     setTemplateRunStatus({
-      id: template.id,
+      id: identity.id,
       label: statusLabel,
       state: "running",
-      message: `${template.name} is running.`,
+      message: `${identity.name} is running.`,
       details: []
     });
 
     try {
       const result = await runReportingNow(request);
       setTemplateRunStatus({
-        id: template.id,
+        id: identity.id,
         label: statusLabel,
         state: "success",
-        message: `${template.name} run created.`,
+        message: `${identity.name} run created.`,
         details: buildReportRunResultDetails(result.run)
       });
     } catch (error) {
-      const display = describeApiError(error, `${template.name} run failed.`);
+      const display = describeApiError(error, `${identity.name} run failed.`);
       setTemplateRunStatus({
-        id: template.id,
+        id: identity.id,
         label: statusLabel,
         state: "error",
         message: display.summary,
@@ -706,6 +993,46 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       setScheduleActionStatus({
         id: statusId,
         label: "Save reporting schedule",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  async function handleProvisionStarterKit(kitId: string, title: string) {
+    const statusId = `starter-kit:${kitId}`;
+    if (runningStarterKitId) {
+      return;
+    }
+
+    setStarterKitStatus({
+      id: statusId,
+      label: "Provision reporting starter kit",
+      state: "running",
+      message: `${title} reporting desk is provisioning.`,
+      details: []
+    });
+
+    try {
+      const result = await provisionReportingStarterKit(kitId);
+      setStarterKitStatus({
+        id: statusId,
+        label: "Provision reporting starter kit",
+        state: "success",
+        message: `${result.kit.displayName} reporting desk provisioned.`,
+        details: [
+          `Templates enabled: ${result.state.enabledTemplateIds.join(", ")}`,
+          `Hub layout: ${result.state.defaultLayoutId ?? result.kit.defaultLayoutId}`,
+          `Default period: ${result.state.defaultPeriod ?? result.kit.defaultPeriod}`,
+          `Draft schedules: ${result.seededSchedules.map((schedule) => `${schedule.scheduleId} (${schedule.state})`).join("; ")}`
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${title} starter kit provisioning failed.`);
+      setStarterKitStatus({
+        id: statusId,
+        label: "Provision reporting starter kit",
         state: "error",
         message: display.summary,
         details: display.details
@@ -1012,18 +1339,34 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         chips={vm.workbenchChips}
       />
 
-      <ReportingHub model={hubModel} />
+      {isDailyReportingCockpitLanding ? (
+        <ReportingHub model={hubModel} />
+      ) : null}
+
+      {showStarterKitChooser ? (
+        <ReportingStarterKitChooser
+          panel={vm.starterKitPanel}
+          status={starterKitStatus}
+          runningStarterKitId={runningStarterKitId}
+          onProvision={handleProvisionStarterKit}
+        />
+      ) : isReportBuilderTaskMode && starterKitStatus ? (
+        <ReportingCommandStatusView status={starterKitStatus} />
+      ) : null}
 
       {isDailyReportingCockpitLanding ? (
         <ReportingTaskModeLauncher />
       ) : (
         <>
+      {isRunStatusTaskMode && data.metrics.length > 0 ? (
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
-          <MetricCard key={metric.id} {...metric} />
+          <MetricSnapshotCard key={metric.id} {...metric} />
         ))}
       </section>
+      ) : null}
 
+      {isGovernanceTaskMode ? (
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
           <CardHeader>
@@ -1066,8 +1409,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
-      {data.reporting.reportLineProvenanceExplorer ? (
+      {isDeliveryEvidenceTaskMode && data.reporting.reportLineProvenanceExplorer ? (
         <FinancialRecordExplorerShell
           className="report-line-provenance-explorer"
           explorerLabel="Report-line provenance"
@@ -1084,7 +1428,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </FinancialRecordExplorerShell>
       ) : null}
 
-      {(data.reporting.portfolioCuts ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.portfolioCuts ?? []).length > 0 ? (
         <section role="region" aria-label="Portfolio reporting cuts">
           <Card className="panel-surface">
             <CardHeader>
@@ -1127,7 +1471,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.livePortfolioViews ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.livePortfolioViews ?? []).length > 0 ? (
         <section role="region" aria-label="Live portfolio views">
           <Card className="panel-surface">
             <CardHeader>
@@ -1200,8 +1544,13 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
                       {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
                     </p>
-                    <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
-                      Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}
+                    <p className="mt-1 flex flex-wrap items-center gap-2 break-all font-mono text-[11px] text-muted-foreground">
+                      <span>Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}</span>
+                      <FreshnessChip
+                        label={`${view.label} source data`}
+                        staleBudgetMs={LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS}
+                        timestamp={view.sourceAsOfUtc ?? null}
+                      />
                     </p>
                     <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
                       Market tick: {view.isMarketTickLinked ? "linked" : "snapshot"} · provider={view.marketDataProvider ?? "unavailable"} · age={view.marketTickAgeSeconds ?? "n/a"}s · seq={view.marketTickSequence ?? "n/a"} · tick={view.marketTickAsOfUtc ?? view.sourceAsOfUtc ?? "unavailable"}
@@ -1241,7 +1590,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.pnlSlices ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.pnlSlices ?? []).length > 0 ? (
         <section role="region" aria-label="P&L slicing">
           <Card className="panel-surface">
             <CardHeader>
@@ -1296,7 +1645,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.analyticsRows ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.analyticsRows ?? []).length > 0 ? (
         <section role="region" aria-label="Top-N and contribution analytics">
           <Card className="panel-surface">
             <CardHeader>
@@ -1368,7 +1717,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.crossFundConsolidations ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.crossFundConsolidations ?? []).length > 0 ? (
         <section role="region" aria-label="Cross-fund consolidations">
           <Card className="panel-surface">
             <CardHeader>
@@ -1425,7 +1774,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.structuredExports ?? []).length > 0 ? (
+      {isExportsTaskMode && (data.reporting.structuredExports ?? []).length > 0 ? (
         <section role="region" aria-label="Structured reporting exports">
           <Card className="panel-surface">
             <CardHeader>
@@ -1570,6 +1919,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isReportBuilderTaskMode ? (
       <ReportingBrandingAccessPanel
         themes={data.reporting.brandingThemes ?? []}
         draft={brandingDraft}
@@ -1582,8 +1932,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         onPreviewCustom={handlePreviewCustomBrandedPack}
         onGenerateCustom={handleGenerateCustomBrandedPack}
       />
+      ) : null}
 
-      {writerGrids.length > 0 ? (
+      {isReportBuilderTaskMode && writerGrids.length > 0 ? (
         <ReportingReportWriterSection>
           {writerGrids.map((grid) => (
             <ReportWriterDesignerGrid
@@ -1629,6 +1980,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </ReportingReportWriterSection>
       ) : null}
 
+      {isExportsTaskMode ? (
       <ExportsReportRunner
         draft={exportsRunDraft}
         templates={vm.templateRows}
@@ -1639,10 +1991,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester={defaultExportsReportRunRequester}
         onDraftChange={updateExportsReportRunDraft}
+        onRestatementTargetChange={updateExportsReportRestatementTarget}
         onRun={() => void handleExportsReportRun()}
       />
+      ) : null}
 
+      {isReportBuilderTaskMode || isRunStatusTaskMode || isGovernanceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        {isReportBuilderTaskMode || isGovernanceTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Template families</div>
@@ -1783,7 +2139,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </CardContent>
         </Card>
+        ) : null}
 
+        {isRunStatusTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Run status</div>
@@ -1795,11 +2153,26 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-mono text-sm text-foreground">{run.id}</span>
-                  <SeverityBadge status={run.status} label={run.status} />
+                  <div className="flex items-center gap-2">
+                    {isWatchedRunLive(run) ? (
+                      <FreshnessChip
+                        live
+                        label={`Run ${run.id} status`}
+                        timestamp={null}
+                        staleBudgetMs={REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS}
+                      />
+                    ) : null}
+                    <SeverityBadge status={resolveRowStatus(run)} label={resolveRowStatus(run)} />
+                  </div>
                 </div>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
                 </p>
+                {isWatchedRunLive(run) && watchedRunStreamStatus ? (
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="report-run-live-status">
+                    Live · attempt {watchedRunStreamStatus.attemptCount} · streamed ahead of the 30s poll
+                  </p>
+                ) : null}
                 <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${run.id} audit metadata`}>
                     <div>
                       <dt className="text-[11px] uppercase text-muted-foreground">Run ID</dt>
@@ -1913,11 +2286,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             ) : null}
           </CardContent>
         </Card>
+        ) : null}
       </section>
+      ) : null}
 
-      <ReportingPrivateCapitalReadinessPanel data={data} />
+      {isReportBuilderTaskMode ? (
+        <ReportingPrivateCapitalReadinessPanel data={data} />
+      ) : null}
 
+      {isReportBuilderTaskMode || isDeliveryEvidenceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {isReportBuilderTaskMode ? (
         <ReportingScheduleManagementPanel
           model={scheduleModel}
           scheduleDraft={scheduleDraft}
@@ -1934,16 +2313,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           onScheduleAction={handleScheduleAction}
           onSchedulePlanRun={handleSchedulePlanRun}
         />
+        ) : null}
 
+        {isReportBuilderTaskMode || isDeliveryEvidenceTaskMode ? (
         <ReportingDeliveryHistoryPanel
           deliveryAttempts={data.reporting.deliveryAttempts ?? []}
           deliveryFailureStatus={deliveryFailureStatus}
           runningDeliveryFailureId={runningDeliveryFailureId}
           onRecordDeliveryFailure={handleRecordDeliveryFailure}
         />
+        ) : null}
       </section>
+      ) : null}
 
-      {vm.workflowTaskPanel ? (
+      {isDeliveryEvidenceTaskMode && vm.workflowTaskPanel ? (
         <section
           role="region"
           aria-label={vm.workflowTaskPanel.regionLabel}
@@ -2352,6 +2735,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isDeliveryEvidenceTaskMode && vm.exportStatus ? (
+        <ReportingExportStatusPanel status={vm.exportStatus} />
+      ) : null}
+
+      {isDeliveryEvidenceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2395,7 +2783,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             {vm.hasPackTargets ? (
               <div
                 role="list"
-                aria-label={vm.packTargetsListLabel}
+                aria-label="Report-pack distribution route recipients"
                 className="data-grid-surface space-y-2 border-0 bg-background/40 p-3"
               >
                 {vm.packTargets.map((target) => (
@@ -2448,7 +2836,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
+      {isExportsTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2521,54 +2911,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
             {vm.exportStatus ? (
-              <div
-                role="status"
-                aria-label={vm.exportStatus.ariaLabel}
-                className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
-              >
-                <p>{vm.exportStatus.text}</p>
-                {vm.exportStatus.fields.length > 0 ? (
-                  <dl className="grid gap-2 sm:grid-cols-2">
-                    {vm.exportStatus.fields.map((field) => (
-                      <div
-                        key={field.label}
-                        className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                      >
-                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {field.label}
-                        </dt>
-                        <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
-                          {field.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-                {vm.exportStatus.warnings.length > 0 ? (
-                  <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
-                    {vm.exportStatus.warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                {vm.exportStatus.artifacts.length > 0 ? (
-                  <dl
-                    aria-label="Export artifacts"
-                    className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                  >
-                    {vm.exportStatus.artifacts.map((artifact) => (
-                      <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
-                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {artifact.label}
-                        </dt>
-                        <dd className={cn("break-words font-mono text-xs", artifact.className)}>
-                          {artifact.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-              </div>
+              <ReportingExportStatusPanel status={vm.exportStatus} className="mt-3" />
             ) : null}
             <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
             {vm.selectedProfile ? (
@@ -2643,6 +2986,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </div>
         </aside>
       </section>
+      ) : null}
         </>
       )}
     </div>
@@ -2654,6 +2998,65 @@ function ReportingHighlight({ title, description }: { title: string; description
     <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ReportingExportStatusPanel({
+  status,
+  className
+}: {
+  status: ReportingExportStatusState;
+  className?: string;
+}) {
+  return (
+    <div
+      role="status"
+      aria-label={status.ariaLabel}
+      className={cn("space-y-3 rounded-md border px-3 py-2 text-sm leading-6", status.className, className)}
+    >
+      <p>{status.text}</p>
+      {status.fields.length > 0 ? (
+        <dl className="grid gap-2 sm:grid-cols-2">
+          {status.fields.map((field) => (
+            <div
+              key={field.label}
+              className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                {field.label}
+              </dt>
+              <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
+                {field.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      {status.warnings.length > 0 ? (
+        <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+          {status.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+      {status.artifacts.length > 0 ? (
+        <dl
+          aria-label="Export artifacts"
+          className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+        >
+          {status.artifacts.map((artifact) => (
+            <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                {artifact.label}
+              </dt>
+              <dd className={cn("break-words font-mono text-xs", artifact.className)}>
+                {artifact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </div>
   );
 }
@@ -2693,7 +3096,13 @@ function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceRespons
     asOfDate: new Date().toISOString().slice(0, 10),
     maxRetries: "0",
     requestedBy: defaultExportsReportRunRequester,
-    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting)
+    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting),
+    retryReason: "",
+    restatementTargetRunId: "",
+    restatementTemplateId: "",
+    restatementJobId: "",
+    restatementAsOfDate: "",
+    restatementDatasetSourceId: ""
   };
 }
 
@@ -2708,9 +3117,31 @@ function resolveSelectedExportsTemplate(
 }
 
 export function buildExportsReportRunRequest(
-  template: ReportingTemplateRow,
+  template: ReportingTemplateRow | null,
   draft: ExportsReportRunDraftState
 ): ReportingRunRequest {
+  // Authorized restatement targets a specific released run's series: reuse its job id and as-of
+  // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
+  // It carries its own template identity, so it does not depend on the current template selection.
+  if (draft.restatementTargetRunId) {
+    return {
+      templateId: draft.restatementTemplateId,
+      jobId: draft.restatementJobId,
+      asOfDate: draft.restatementAsOfDate,
+      maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
+      requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
+      // Reuse the released run's dataset source so the restatement renders and diffs against the
+      // same data, not the default retained dataset.
+      datasetSourceId: normalizeOptionalDatasetSourceId(draft.restatementDatasetSourceId),
+      retryReason: draft.retryReason.trim() || null,
+      allowRestatement: true
+    };
+  }
+
+  if (!template) {
+    throw new Error("A report template must be selected to run a report.");
+  }
+
   return {
     templateId: template.templateName,
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
@@ -2965,606 +3396,8 @@ function buildRenderReportTemplateRequest(
   };
 }
 
-function buildReportWriterGridDefinition(
-  grid: ReportingWriterGridRow,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
-  settings: ReportWriterDraftSettings,
-  chartDraft?: ReportWriterChartDraft | null,
-  formatRules?: ReportWriterFormatRuleDraft[] | null
-): ReportWriterGridDefinition {
-  const kind = normalizeReportWriterGridKind(settings.gridKind);
-  const metrics = normalizeWriterMetrics(zones.metrics, kind);
-  return {
-    gridId: grid.gridId,
-    title: grid.title,
-    kind,
-    rowFields: normalizeStringList(zones.rowFields.map(resolveWriterFieldName)),
-    columnFields: normalizeStringList(zones.columnFields.map(resolveWriterFieldName)),
-    metrics,
-    formulas: normalizeWriterFormulas(zones.formulas),
-    topN: kind === "TopN" ? parseReportWriterTopN(settings.topN) : null,
-    sortBy: kind === "Contribution" ? "contributionAbsPercent" : grid.sortBy,
-    sortDescending: grid.sortDescending,
-    filters: buildWriterFilters(settings),
-    formatRules: buildWriterFormatRules(formatRules),
-    chart: buildWriterChartDefinition(chartDraft)
-  };
-}
-
-function buildWriterFormatRules(drafts: ReportWriterFormatRuleDraft[] | null | undefined): ReportWriterFormatRule[] | null {
-  if (!drafts || drafts.length === 0) return null;
-  const valid = drafts.filter((d) => d.column.trim().length > 0);
-  if (valid.length === 0) return null;
-  return valid.map((d) => ({
-    column: d.column.trim(),
-    operator: d.operator,
-    value: d.value || null,
-    style: d.style
-  }));
-}
-
-function buildWriterChartDefinition(draft: ReportWriterChartDraft | null | undefined): ReportWriterChartDefinition | null {
-  if (!draft?.enabled || !draft.categoryField.trim()) return null;
-  const valueColumns = draft.valueColumns
-    .split(",")
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0);
-  if (valueColumns.length === 0) return null;
-  return { type: draft.type, categoryField: draft.categoryField.trim(), valueColumns };
-}
-
-function buildReportWriterPreviewRows(
-  grid: ReportWriterGridDefinition,
-  profile: ReportWriterPreviewDatasetProfile
-): Record<string, string>[] {
-  const dimensionFields = normalizeStringList([
-    ...(grid.rowFields ?? []),
-    ...(grid.columnFields ?? [])
-  ]);
-  const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
-  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)))
-    .filter((field) => grid.kind !== "Contribution" || !isGeneratedContributionField(field));
-  const numericFields = normalizeStringList([
-    ...metricSourceFields,
-    ...formulaFields,
-    ...(grid.sortBy ? [grid.sortBy] : [])
-  ]).filter((field) =>
-    !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase())
-    && (grid.kind !== "Contribution" || !isGeneratedContributionField(field)));
-  const fields = normalizeStringList([...dimensionFields, ...numericFields]);
-  const filters = grid.filters ?? [];
-  const filterFields = normalizeStringList(filters.map((filter) => filter.field));
-
-  if (fields.length === 0 && filterFields.length === 0) {
-    return [{ previewDataset: profile, previewRow: "1" }, { previewDataset: profile, previewRow: "2" }];
-  }
-
-  return Array.from({ length: 4 }, (_, index) => {
-    const row: Record<string, string> = { previewDataset: profile };
-    for (const field of dimensionFields) {
-      row[field] = previewDimensionValue(field, index, profile);
-    }
-
-    for (const field of numericFields) {
-      row[field] = grid.kind === "Contribution" && isPnlLikeField(field)
-        ? previewContributionPnlValue(index, profile)
-        : previewNumericValue(field, index, profile);
-    }
-
-    for (const filter of filters) {
-      if (!filter.field) {
-        continue;
-      }
-
-      row[filter.field] = previewFilterValue(filter, index, profile);
-    }
-
-    return row;
-  });
-}
-
-function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTemplateDraftRequest["accessPolicy"] {
-  if (settings.accessMode === "CompanyWide") {
-    return {
-      mode: "CompanyWide",
-      allowOwnerAccess: true
-    };
-  }
-
-  const principalId = normalizeDraftText(settings.principalId, "browser-workstation");
-  const principalKind = settings.accessMode === "Private" ? "User" : settings.principalKind;
-  return {
-    mode: settings.accessMode,
-    ownerPrincipalId: settings.accessMode === "Private" ? principalId : null,
-    principals: [
-      {
-        kind: principalKind,
-        principalId,
-        displayName: principalId
-      }
-    ],
-    allowOwnerAccess: true
-  };
-}
-
-function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
-  const field = normalizeDraftText(settings.filterField, "");
-  if (!field) {
-    return null;
-  }
-
-  const operator = normalizeReportWriterFilterOperator(settings.filterOperator);
-  const value = isBlankFilterOperator(operator)
-    ? null
-    : normalizeDraftText(settings.filterValue, "");
-  if (!isBlankFilterOperator(operator) && !value) {
-    return null;
-  }
-
-  return [
-    {
-      field,
-      operator,
-      value,
-      label: isBlankFilterOperator(operator)
-        ? `${field} ${formatReportWriterFilterOperator(operator)}`
-        : `${field} ${formatReportWriterFilterOperator(operator)} ${value}`
-    }
-  ];
-}
-
-function normalizeWriterMetrics(
-  tokens: ReportingWriterToken[],
-  gridKind: ReportWriterGridKind | null = null
-): ReportWriterMetricDefinition[] {
-  const metrics = tokens
-    .map(tokenToMetricDefinition)
-    .filter((metric): metric is ReportWriterMetricDefinition => Boolean(metric));
-  const deduped = dedupeBy(metrics, (metric) => metric.name.toLowerCase());
-  return gridKind === "Contribution" ? preferContributionMetric(deduped) : deduped;
-}
-
-function tokenToMetricDefinition(token: ReportingWriterToken): ReportWriterMetricDefinition | null {
-  if (token.kind === "formula") {
-    return null;
-  }
-
-  const sourceField = normalizeDraftText(token.sourceField ?? token.fieldName ?? token.label, "");
-  if (!sourceField) {
-    return null;
-  }
-
-  const name = normalizeIdentifierToken(token.name ?? sourceField, sourceField);
-  return {
-    name,
-    sourceField,
-    function: normalizeAggregateFunction(token.function),
-    label: token.kind === "metric" ? token.label : sourceField
-  };
-}
-
-function preferContributionMetric(metrics: ReportWriterMetricDefinition[]): ReportWriterMetricDefinition[] {
-  const contributionIndex = metrics.findIndex((metric) =>
-    isPnlLikeField(metric.name)
-    || isPnlLikeField(metric.sourceField)
-    || isPnlLikeField(metric.label));
-  if (contributionIndex <= 0) {
-    return metrics;
-  }
-
-  const next = [...metrics];
-  const [contributionMetric] = next.splice(contributionIndex, 1);
-  next.unshift(contributionMetric);
-  return next;
-}
-
-function normalizeWriterFormulas(tokens: ReportingWriterToken[]) {
-  const formulas = tokens
-    .map(tokenToFormulaDefinition)
-    .filter((formula): formula is NonNullable<ReturnType<typeof tokenToFormulaDefinition>> => Boolean(formula));
-  return dedupeBy(formulas, (formula) => formula.name.toLowerCase());
-}
-
-function tokenToFormulaDefinition(token: ReportingWriterToken) {
-  if (token.kind === "metric") {
-    const metricName = normalizeIdentifierToken(token.name ?? token.label, "");
-    return metricName
-      ? {
-          name: `${metricName}Formula`,
-          expression: `{${metricName}}`,
-          label: `${token.label} formula`
-        }
-      : null;
-  }
-
-  if (token.kind === "field") {
-    const field = normalizeDraftText(token.fieldName ?? token.sourceField ?? token.label, "");
-    return field
-      ? {
-          name: normalizeIdentifierToken(field, "fieldFormula"),
-          expression: `{${field}}`,
-          label: field
-        }
-      : null;
-  }
-
-  const name = normalizeIdentifierToken(token.name ?? token.label, "");
-  const expression = normalizeDraftText(token.expression ?? token.detail, "");
-  return name && expression
-    ? {
-        name,
-        expression,
-        label: token.label
-      }
-    : null;
-}
-
-function resolveWriterFieldName(token: ReportingWriterToken): string {
-  return normalizeDraftText(token.fieldName ?? token.sourceField ?? token.name ?? token.label, "");
-}
-
-function extractReportWriterFormulaFields(expression: string | null | undefined): string[] {
-  if (!expression) {
-    return [];
-  }
-
-  const fields: string[] = [];
-  let position = 0;
-  while (position < expression.length) {
-    const current = expression[position];
-    if (isReportWriterIdentifierStart(current)) {
-      const identifierStart = position;
-      const identifier = readReportWriterIdentifier(expression, position);
-      position += identifier.length;
-      const nextToken = skipReportWriterWhitespace(expression, position);
-      if (identifier.toLowerCase() === "total" && expression[nextToken] === "(") {
-        const totalArgument = readReportWriterFunctionFieldArgument(expression, nextToken + 1);
-        if (totalArgument) {
-          fields.push(totalArgument.field);
-          position = totalArgument.nextPosition;
-          continue;
-        }
-      }
-
-      if (isReportWriterFormulaFunction(identifier) && expression[nextToken] === "(") {
-        position = nextToken + 1;
-        continue;
-      }
-
-      fields.push(identifier);
-      position = identifierStart + Math.max(identifier.length, 1);
-      continue;
-    }
-
-    if (current !== "{") {
-      position += 1;
-      continue;
-    }
-
-    const end = expression.indexOf("}", position + 1);
-    if (end < 0) {
-      break;
-    }
-
-    const field = expression.slice(position + 1, end).trim();
-    if (field) {
-      fields.push(field);
-    }
-
-    position = end + 1;
-  }
-
-  return normalizeStringList(fields);
-}
-
-function readReportWriterFunctionFieldArgument(
-  expression: string,
-  argumentStart: number
-): { field: string; nextPosition: number } | null {
-  const start = skipReportWriterWhitespace(expression, argumentStart);
-  if (start >= expression.length) {
-    return null;
-  }
-
-  if (expression[start] === "{") {
-    const closeBrace = expression.indexOf("}", start + 1);
-    if (closeBrace < 0) {
-      return null;
-    }
-
-    const closeParen = skipReportWriterWhitespace(expression, closeBrace + 1);
-    if (expression[closeParen] !== ")") {
-      return null;
-    }
-
-    const field = expression.slice(start + 1, closeBrace).trim();
-    return field ? { field, nextPosition: closeParen + 1 } : null;
-  }
-
-  const close = expression.indexOf(")", start);
-  if (close < 0) {
-    return null;
-  }
-
-  const field = expression.slice(start, close).trim();
-  return field ? { field, nextPosition: close + 1 } : null;
-}
-
-function readReportWriterIdentifier(expression: string, start: number): string {
-  let position = start;
-  while (position < expression.length && isReportWriterIdentifierPart(expression[position])) {
-    position += 1;
-  }
-
-  return expression.slice(start, position);
-}
-
-function skipReportWriterWhitespace(expression: string, position: number): number {
-  while (position < expression.length && /\s/.test(expression[position])) {
-    position += 1;
-  }
-
-  return position;
-}
-
-function isReportWriterIdentifierStart(value: string | undefined): boolean {
-  return Boolean(value && /[A-Za-z_]/.test(value));
-}
-
-function isReportWriterIdentifierPart(value: string | undefined): boolean {
-  return Boolean(value && /[A-Za-z0-9_.-]/.test(value));
-}
-
-function isReportWriterFormulaFunction(identifier: string): boolean {
-  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round"].includes(identifier.toLowerCase());
-}
-
-function isGeneratedContributionField(field: string | null | undefined): boolean {
-  const normalized = normalizeIdentifierToken(field ?? "", "").toLowerCase();
-  return normalized === "contributionpercent" || normalized === "contributionabspercent";
-}
-
-function isPnlLikeField(field: string | null | undefined): boolean {
-  const normalized = (field ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
-  return normalized.includes("pnl") || normalized.includes("profitloss");
-}
-
-function previewDimensionValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("sector")) {
-      return ["Operating expense", "Capital activity", "Financing", "Revenue"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["Close accrual", "Investor activity", "Cash financing", "Management fee"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Beta", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["GL-6000", "GL-3100", "GL-2100", "GL-4100"][index] ?? "Ledger line";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("sector")) {
-      return ["Cash", "Settlement", "Financing", "Reserve"][index] ?? "Cash";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["T+0 liquidity", "T+1 settlement", "Credit facility", "Operating reserve"][index] ?? "Cash ladder";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Alpha", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["USD sweep", "Broker receivable", "Credit draw", "Reserve cash"][index] ?? "Cash bucket";
-    }
-  }
-
-  if (normalized.includes("sector")) {
-    return ["Technology", "Technology", "Rates", "Credit"][index] ?? "Other";
-  }
-
-  if (normalized.includes("strategy")) {
-    return ["Core", "Growth", "Rates", "Credit"][index] ?? "Core";
-  }
-
-  if (normalized.includes("fund")) {
-    return ["Fund A", "Fund A", "Fund B", "Fund B"][index] ?? "Fund A";
-  }
-
-  if (normalized.includes("region")) {
-    return ["North America", "Europe", "Asia Pacific", "North America"][index] ?? "North America";
-  }
-
-  if (normalized.includes("security") || normalized.includes("asset")) {
-    return ["ABC Corp", "XYZ Fund", "UST 10Y", "Cash USD"][index] ?? "Position";
-  }
-
-  return `${formatPreviewFieldLabel(field)} ${(index % 2) + 1}`;
-}
-
-function previewNumericValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["25", "-7", "4", "12"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["350", "150", "500", "225"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["250", "125", "80", "60"][index] ?? "0";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["1", "0", "-1", "0"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["1250", "900", "650", "300"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["1200", "875", "600", "275"][index] ?? "0";
-    }
-  }
-
-  if (normalized.includes("pnl") || normalized.includes("p&l")) {
-    return ["10", "5", "-2", "4"][index] ?? "0";
-  }
-
-  if (normalized.includes("cash") || normalized.includes("liquidity")) {
-    return ["1000", "750", "400", "250"][index] ?? "0";
-  }
-
-  if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-    return ["100", "50", "75", "25"][index] ?? "0";
-  }
-
-  if (normalized.includes("percent") || normalized.includes("pct")) {
-    return ["12.5", "8.25", "-3.5", "6"][index] ?? "0";
-  }
-
-  return String((index + 1) * 10);
-}
-
-function previewContributionPnlValue(index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  if (profile === "ledgerFacts") {
-    return ["150", "-50", "0", "25"][index] ?? "0";
-  }
-
-  if (profile === "cashLadder") {
-    return ["12", "-4", "0", "2"][index] ?? "0";
-  }
-
-  return ["150", "-50", "0", "25"][index] ?? "0";
-}
-
-function previewFilterValue(
-  filter: ReportWriterFilterDefinition,
-  index: number,
-  profile: ReportWriterPreviewDatasetProfile
-): string {
-  const operator = normalizeReportWriterFilterOperator(filter.operator);
-  const value = filter.value ?? "";
-  if (operator === "IsBlank") {
-    return index === 0 ? "" : previewDimensionValue(filter.field, index, profile);
-  }
-
-  if (operator === "IsNotBlank") {
-    return index === 0 ? previewDimensionValue(filter.field, index, profile) : "";
-  }
-
-  if (["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(operator)) {
-    const numeric = Number.parseFloat(value);
-    if (Number.isFinite(numeric)) {
-      return index < 2 ? String(numeric + 10 + index) : String(numeric - 10 - index);
-    }
-  }
-
-  if (operator === "Contains") {
-    return index < 2 ? `Preview ${value} ${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "StartsWith") {
-    return index < 2 ? `${value}${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "EndsWith") {
-    return index < 2 ? `Preview ${index + 1}${value}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "NotEquals") {
-    return index < 2 ? `${value}-alternate-${index + 1}` : value;
-  }
-
-  return index < 2 ? value : previewDimensionValue(filter.field, index, profile);
-}
-
-function formatPreviewFieldLabel(field: string): string {
-  const spaced = field
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .trim();
-  if (!spaced) {
-    return "Value";
-  }
-
-  return spaced.replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function normalizeAggregateFunction(value: ReportWriterAggregateFunction | string | null | undefined): ReportWriterAggregateFunction {
-  switch ((value ?? "").toString().toLowerCase()) {
-    case "count":
-      return "Count";
-    case "average":
-      return "Average";
-    case "min":
-      return "Min";
-    case "max":
-      return "Max";
-    default:
-      return "Sum";
-  }
-}
-
-function normalizeStringList(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
-}
-
-function normalizeDraftText(value: string | null | undefined, fallback: string): string {
-  const normalized = value?.trim();
-  return normalized || fallback;
-}
-
-function normalizeIdentifierToken(value: string | null | undefined, fallback: string): string {
-  const normalized = normalizeDraftText(value, fallback)
-    .replace(/[^A-Za-z0-9_.-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return normalized || fallback;
-}
-
-function parseReportTemplateVersion(version: string): number | null {
-  const first = version.split(".", 1)[0];
-  const parsed = Number.parseInt(first, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
-  const seen = new Set<string>();
-  const output: T[] = [];
-  for (const item of items) {
-    const key = keySelector(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      output.push(item);
-    }
-  }
-
-  return output;
-}
-
 function formatReportingMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
-    }).format(value);
-  } catch {
-    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-  }
+  return formatCurrencyAmount(value, { currency, maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2 });
 }
 
 function formatReportingDateRange(startDate: string, endDate: string): string {
@@ -3572,7 +3405,7 @@ function formatReportingDateRange(startDate: string, endDate: string): string {
 }
 
 function formatReportingPercent(value: number): string {
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+  return formatPercentAmount(value);
 }
 
 function formatHeatMapWidth(value: number): string {

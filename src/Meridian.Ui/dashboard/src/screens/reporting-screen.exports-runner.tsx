@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { latestReleasedRunsPerSeries } from "@/screens/reporting-screen.view-model";
 import type { ReportingRunStatusRow, ReportingTemplateRow } from "@/screens/reporting-screen.view-model";
 import {
   ReportingCommandStatusView,
@@ -12,13 +13,35 @@ import {
 } from "@/screens/reporting-screen.shared-components";
 import type { ReportWriterDatasetSource } from "@/types";
 
-export type ExportsReportRunDraftField = "templateRowId" | "asOfDate" | "maxRetries" | "requestedBy" | "datasetSourceId";
+export type ExportsReportRunDraftField =
+  | "templateRowId"
+  | "asOfDate"
+  | "maxRetries"
+  | "requestedBy"
+  | "datasetSourceId"
+  | "retryReason";
 
 export interface ExportsReportRunDraftState {
   templateRowId: string;
   asOfDate: string;
   maxRetries: string;
   requestedBy: string;
+  datasetSourceId: string;
+  retryReason: string;
+  // Identity of the released run being superseded. An empty runId means "run a new report".
+  restatementTargetRunId: string;
+  restatementTemplateId: string;
+  restatementJobId: string;
+  restatementAsOfDate: string;
+  restatementDatasetSourceId: string;
+}
+
+/** Identity carried when the operator authorizes restating a specific released run. */
+export interface RestatementTargetSelection {
+  runId: string;
+  templateId: string;
+  jobId: string;
+  asOfDate: string;
   datasetSourceId: string;
 }
 
@@ -32,6 +55,7 @@ interface ExportsReportRunnerProps {
   runningTemplateRunId: string | null;
   defaultRequester: string;
   onDraftChange: (field: ExportsReportRunDraftField, value: string) => void;
+  onRestatementTargetChange: (target: RestatementTargetSelection | null) => void;
   onRun: () => void;
 }
 
@@ -45,11 +69,40 @@ export function ExportsReportRunner({
   runningTemplateRunId,
   defaultRequester,
   onDraftChange,
+  onRestatementTargetChange,
   onRun
 }: ExportsReportRunnerProps) {
   const selectedDataset = datasetSources.find((source) => source.sourceId === draft.datasetSourceId) ?? null;
-  const runDisabledReason = resolveExportsRunDisabledReason(selectedTemplate);
-  const isRunningSelected = Boolean(selectedTemplate && runningTemplateRunId === selectedTemplate.id);
+  // Only the latest released run per series can be restated: the backend supersedes the series'
+  // released head, so offering an older released version would mismatch the run the operator picked.
+  const releasedRuns = latestReleasedRunsPerSeries(recentRuns);
+  const restatementTarget = draft.restatementTargetRunId
+    ? releasedRuns.find((run) => run.id === draft.restatementTargetRunId) ?? null
+    : null;
+  const isRestating = Boolean(restatementTarget);
+  const restatementReasonMissing = isRestating && draft.retryReason.trim().length === 0;
+  const runDisabledReason = isRestating
+    ? (restatementReasonMissing
+      ? "Enter a restatement reason to supersede the selected released report."
+      : null)
+    : resolveExportsRunDisabledReason(selectedTemplate);
+  const activeRunId = isRestating ? draft.restatementTargetRunId : selectedTemplate?.id;
+  const isRunningSelected = Boolean(activeRunId && runningTemplateRunId === activeRunId);
+
+  const handleRestatementTargetChange = (runId: string) => {
+    const target = runId ? releasedRuns.find((run) => run.id === runId) ?? null : null;
+    onRestatementTargetChange(
+      target
+        ? {
+            runId: target.id,
+            templateId: target.templateId,
+            jobId: target.restatementJobId,
+            asOfDate: target.restatementAsOfDate,
+            datasetSourceId: target.restatementDatasetSourceId
+          }
+        : null
+    );
+  };
 
   return (
     <section role="region" aria-label="Exports report runner">
@@ -79,6 +132,7 @@ export function ExportsReportRunner({
               <Select
                 value={selectedTemplate?.id ?? draft.templateRowId}
                 onChange={(event) => onDraftChange("templateRowId", event.target.value)}
+                disabled={isRestating}
                 aria-label="Exports report template"
               >
                 {templates.length > 0 ? templates.map((template) => (
@@ -96,6 +150,7 @@ export function ExportsReportRunner({
                 type="date"
                 value={draft.asOfDate}
                 onChange={(event) => onDraftChange("asOfDate", event.target.value)}
+                disabled={isRestating}
                 aria-label="Exports report as-of date"
               />
             </label>
@@ -118,7 +173,7 @@ export function ExportsReportRunner({
               <Select
                 value={draft.datasetSourceId}
                 onChange={(event) => onDraftChange("datasetSourceId", event.target.value)}
-                disabled={!selectedTemplate?.hasWriterGrids || datasetSources.length === 0}
+                disabled={isRestating || !selectedTemplate?.hasWriterGrids || datasetSources.length === 0}
                 aria-label="Exports report dataset source"
               >
                 <option value="">Default retained dataset</option>
@@ -145,12 +200,63 @@ export function ExportsReportRunner({
                 busy={isRunningSelected}
                 busyLabel="Running"
                 onClick={onRun}
-                aria-label={selectedTemplate ? `Run ${selectedTemplate.name} from Exports` : "Run report from Exports"}
+                aria-label={
+                  isRestating
+                    ? `Restate released report ${restatementTarget?.id ?? ""}`.trim()
+                    : selectedTemplate
+                      ? `Run ${selectedTemplate.name} from Exports`
+                      : "Run report from Exports"
+                }
               >
                 <Send className="h-4 w-4" aria-hidden="true" />
-                Run report
+                {isRestating ? "Restate report" : "Run report"}
               </Button>
             </div>
+          </div>
+
+          <div className="rounded-md border border-warning/40 bg-warning/5 px-3 py-3 space-y-3" aria-label="Restatement authorization">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">Restate a released report</h4>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Regenerating a released report is a governed action that supersedes the released run. Select the
+                released run to restate — its template and as-of date are reused so the new run versions into the same
+                series — and record why. The reason is retained in the run&apos;s audit trail.
+              </p>
+            </div>
+            <label className="block space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Released run to supersede</span>
+              <Select
+                value={draft.restatementTargetRunId}
+                onChange={(event) => handleRestatementTargetChange(event.target.value)}
+                disabled={releasedRuns.length === 0}
+                aria-label="Released run to restate"
+              >
+                <option value="">Run a new report (no restatement)</option>
+                {releasedRuns.map((run) => (
+                  <option key={run.id} value={run.id}>
+                    {run.id} · {run.templateLabel} · as of {run.asOfDateLabel}
+                  </option>
+                ))}
+              </Select>
+              {releasedRuns.length === 0 ? (
+                <span className="text-xs text-muted-foreground">No released reports are available to restate.</span>
+              ) : null}
+            </label>
+            {isRestating ? (
+              <label className="block space-y-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Restatement reason</span>
+                <Input
+                  value={draft.retryReason}
+                  onChange={(event) => onDraftChange("retryReason", event.target.value)}
+                  placeholder="Reason for restating the released report"
+                  aria-label="Restatement reason"
+                  aria-invalid={restatementReasonMissing ? true : undefined}
+                />
+                {restatementReasonMissing ? (
+                  <span className="text-xs text-warning">A restatement reason is required to supersede a released report.</span>
+                ) : null}
+              </label>
+            ) : null}
           </div>
 
           <div className="grid gap-3 xl:grid-cols-[1fr_1fr]">

@@ -32,6 +32,8 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
 income-statement and balance-sheet rows with net-income and accounting-equation checks.
+`Ledger.CalculateNetBalance` exposes the ledger-owned normal-balance calculation over the shared
+F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
 `MultiCurrencyJournalProjector` converts local-currency debit/credit journal inputs into balanced
@@ -39,12 +41,33 @@ base-currency ledger posting lines while preserving local amount, currency, and 
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
 marks, preserves price-source/evidence references, and prepares balanced fair-value adjustment
 lines against unrealized gain/loss accounts.
+`DailyPortfolioPricingDraftBuilder` converts that projection into a governed
+`AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
+fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
+Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
+`FixedAssetDepreciationProjector` is the depreciation analogue: it projects balanced
+depreciation-expense/accumulated-depreciation (contra-asset) lines scoped per fixed asset.
+`DepreciationScheduleCalculator` builds the period-by-period schedule (straight-line,
+declining-balance with an auto-switch to straight-line and salvage floor, and usage-driven
+units-of-production), always depreciating to salvage value with the final period absorbing rounding.
+`FixedAssetDepreciationDraftBuilder` batches all of a period's per-asset projections into a single
+governed `AutomatedJournalDraft` (kind `DepreciationPosted`) so one approval covers the whole
+depreciation run, mirroring `DailyPortfolioPricingDraftBuilder`.
 `LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger
 account level so accounting statements can follow front-office lot-relief policy.
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
 prepares balanced cash, security cost-basis, and realized gain/loss lines before durable posting.
+`LedgerTaxLot` carries an optional `SecurityId` so cost-basis lots link to Security Master
+reference data. `LedgerTaxLotBasisAdjuster` (fed via `LedgerTaxLotReliefInput.BasisAdjustments`)
+restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — corporate-action
+splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
+before relief, keeping the ledger engine free of Security Master contracts while relieving basis
+against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
+the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
+matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
+entries so cash flow projections are booked instead of remaining display-only.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
@@ -52,9 +75,18 @@ approval/posting.
 `AutomatedJournalApproval` governs those drafts through submit, approve, reject, and post
 transitions, requiring approval/posting evidence and preserving approval metadata on the posted
 ledger journal entry.
+`IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
+projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
+while durable implementations can append the same approved projection to the governed journal
+store without forking projector output.
 `LockedAccountingPeriodBook` records book-scoped accounting period locks and rejects late journal
 postings that fall inside a locked range, preserving published NAV and close evidence while still
 allowing separate books such as shadow-NAV ledgers to continue independently.
+`PeriodCloseProjector` turns a point-in-time trial balance into balanced closing entries: every
+revenue and expense account is zeroed and the net income is rolled into retained earnings, scoped
+per financial account. `PeriodCloseDraftBuilder` wraps that projection in a governed
+`AutomatedJournalDraft` (kind `PeriodCloseClosingEntries`) so closes post through
+`AutomatedJournalApproval` instead of remaining status-only.
 `ShadowNavValidator` compares actual and shadow ledger books at a point in time, reports
 account-level and NAV variances against configured tolerances, and prepares a governed override
 draft when independent fund-admin validation requires review.

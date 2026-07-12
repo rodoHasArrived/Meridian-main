@@ -21,15 +21,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
+import { FreshnessChip } from "@/components/ui/freshness-chip";
+import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
+import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
+import { DepthChart } from "@/components/charts";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   computeIntradayMetrics,
+  LIVE_QUOTES_FRESHNESS_BUDGET_MS,
   useLiveQuotesScreenViewModel,
   type LiveMarketDataCommandId,
   type LiveMarketDataWorkspaceViewModel,
@@ -71,18 +78,17 @@ export function LiveQuotesScreen() {
   const session = marketVm.sessionStats;
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <LineChart className="h-5 w-5 text-primary" />
+          {workspaceVm.title}
+        </span>
+      }
+      scope="Data Lane"
+      description={`${workspaceVm.description} Refreshes every ${vm.pollIntervalSecondsLabel}s unless paused.`}
+    >
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Data Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <LineChart className="h-5 w-5 text-primary" />
-            {workspaceVm.title}
-          </CardTitle>
-          <CardDescription>
-            {workspaceVm.description} Refreshes every {vm.pollIntervalSecondsLabel}s unless paused.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <form
             onSubmit={vm.submitLookup}
@@ -190,6 +196,13 @@ export function LiveQuotesScreen() {
             <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
             {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+            <FreshnessChip
+              {...freshnessInputFromLifecycle(vm.requestStatus.market, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Market panels")}
+            />
+            <FreshnessChip
+              {...freshnessInputFromLifecycle(vm.requestStatus.snapshot, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Quote matrix")}
+              live={vm.quoteStreamHealthy}
+            />
             {activeSymbol ? <span>Selected {activeSymbol}; last update {marketVm.lastUpdateLabel}</span> : null}
           </div>
         </CardContent>
@@ -229,11 +242,13 @@ export function LiveQuotesScreen() {
         </Card>
         ) : (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Start a quote list</CardTitle>
-            <CardDescription>Add symbols before opening detail, order book, replay, or ticket workflows.</CardDescription>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3 pt-6">
+            <EmptyState
+              icon="search"
+              title="Start a quote list"
+              detail="Add symbols before opening detail, order book, replay, or ticket workflows."
+              compact
+            />
             <div className="grid gap-2 sm:grid-cols-3">
               <Button type="button" variant="default" size="sm" onClick={workspaceVm.loadStarterSet}>
                 <ListPlus className="h-4 w-4" aria-hidden="true" />
@@ -313,6 +328,19 @@ export function LiveQuotesScreen() {
               ) : (
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
+                  {marketVm.orderbook.bids.length > 0 || marketVm.orderbook.asks.length > 0 ? (
+                    <div
+                      className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40"
+                      role="img"
+                      aria-label={`Order-book depth profile for ${activeSymbol}: cumulative bid and ask size around the mid price.`}
+                    >
+                      <DepthChart
+                        bids={marketVm.orderbook.bids.map((level) => ({ price: level.price, size: level.size }))}
+                        asks={marketVm.orderbook.asks.map((level) => ({ price: level.price, size: level.size }))}
+                        mid={marketVm.orderbook.midPrice ?? null}
+                      />
+                    </div>
+                  ) : null}
                   <DepthLadder
                     ladder={marketVm.depthLadder}
                     onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
@@ -356,7 +384,7 @@ export function LiveQuotesScreen() {
         </div>
         </>
       ) : null}
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -1013,6 +1041,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
         emptyText={market.tradesDetailEmptyText}
         ariaLabel={market.tradesTableLabel}
         caption={market.tradesTableCaption}
+        virtualization={denseTableVirtualization(market.tradeDisplayRows.length)}
       />
       <div id={market.tradesDetailPanelId} aria-live="polite">
         {market.selectedTradeDetail ? (

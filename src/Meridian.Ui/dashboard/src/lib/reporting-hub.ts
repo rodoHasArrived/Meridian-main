@@ -13,6 +13,7 @@
  */
 import { compareIsoDate, formatReportingPeriodLabel } from "@/lib/reporting-periods";
 
+import { pluralizeCount } from "@/lib/format";
 export type ReportingHubReadiness =
   | "Released"
   | "Approved"
@@ -198,7 +199,7 @@ function resolveOpenLink(run: ReportingHubRunInput): { href: string; label: stri
 }
 
 function countUnit(count: number, singular: string): string {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+  return pluralizeCount(count, singular);
 }
 
 function presentWorkKind(kind: string): string {
@@ -270,7 +271,7 @@ function buildDailyWorkItem(item: ReportingHubDailyWorkInput): ReportingHubDaily
   const nextActionLabel = item.primaryActionLabel.trim() || "Review";
   const proofLabel = buildProofLabel(evidenceGaps, item.secondaryActionLabel);
   const detailParts = [item.detail, dueLabel, evidenceGaps.length > 0 ? `${countUnit(evidenceGaps.length, "evidence gap")}` : ""]
-    .filter((part) => part.trim().length > 0);
+    .filter((part): part is string => part != null && part.trim().length > 0);
 
   return {
     workItemId: item.workItemId,

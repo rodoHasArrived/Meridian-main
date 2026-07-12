@@ -135,7 +135,7 @@ describe("WatchlistScreen", () => {
   it("renders sorted rows through the dense table with live quote labels", async () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    const table = await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    const table = await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     const rows = within(table).getAllByRole("row");
 
     await waitFor(() => expect(within(rows[1]).getByText("188.05 x 200")).toBeInTheDocument());
@@ -157,6 +157,14 @@ describe("WatchlistScreen", () => {
       expect(api.getLiveQuotesSnapshot).toHaveBeenCalled();
     });
     expect(vi.mocked(api.getLiveQuotesSnapshot).mock.calls[0]?.[0]).toEqual(["MSFT", "AAPL"]);
+  });
+
+  it("shows a freshness chip once live quotes have loaded", async () => {
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
+
+    expect(screen.getByLabelText(/Watchlist quotes updated/)).toBeInTheDocument();
   });
 
   it("lets operators manually refresh live quotes", async () => {
@@ -223,7 +231,7 @@ describe("WatchlistScreen", () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     expect(await screen.findByText(/Live prices for 1 of 2 symbols/i, undefined, fullSuiteTimeout)).toBeInTheDocument();
-    const table = screen.getByRole("table", { name: /subscribed symbol watchlist/i });
+    const table = screen.getByRole("treegrid", { name: /subscribed symbol watchlist/i });
     expect(within(table).getByText("188.05 x 200")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveTextContent("No quote");
   });
@@ -232,7 +240,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.type(screen.getByLabelText("Add symbol"), " spy ");
     await user.click(screen.getByRole("button", { name: /Add SPY to watchlist/i }));
 
@@ -249,7 +257,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.type(screen.getByLabelText("Add symbol"), " spy, dia qqq spy ");
     await user.click(screen.getByRole("button", { name: /Add 3 symbols to watchlist: SPY, DIA, QQQ/i }));
 
@@ -272,7 +280,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Add US core starter pack: SPY, QQQ, AAPL, MSFT/i }));
 
     await waitFor(() => expect(api.bulkAddSymbols).toHaveBeenCalledWith(["SPY", "QQQ", "AAPL", "MSFT"]));
@@ -301,7 +309,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Add Risk pulse starter pack: TLT, GLD, USO, VIXY/i }));
 
     const alert = await screen.findByRole("alert");
@@ -340,7 +348,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
     expect(api.removeSymbol).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
@@ -359,7 +367,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
     await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
@@ -372,7 +380,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
 
     expect(api.removeSymbol).not.toHaveBeenCalled();
@@ -391,7 +399,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
     const msftRow = screen.getByRole("row", { name: /Select MSFT watchlist row/i });
     const detail = screen.getByRole("complementary", { name: /selected watchlist symbol detail/i });
     expect(msftRow).toHaveAttribute("aria-controls", "watchlist-selected-symbol-detail");
@@ -422,7 +430,7 @@ describe("WatchlistScreen", () => {
 
     vi.mocked(api.getSymbols).mockResolvedValueOnce([]);
     const emptyRender = renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
-    expect(await screen.findByRole("table", { name: /subscribed symbol watchlist/i })).toHaveTextContent(/No symbols configured/i);
+    expect(await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i })).toHaveTextContent(/No symbols configured/i);
     emptyRender.unmount();
     cleanup();
     vi.mocked(api.getSymbols).mockClear();
@@ -435,7 +443,7 @@ describe("WatchlistScreen", () => {
 
     await userEvent.setup().click(screen.getByRole("button", { name: /Retry symbol watchlist load/i }));
 
-    expect(await screen.findByRole("table", { name: /subscribed symbol watchlist/i })).toBeInTheDocument();
+    expect(await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i })).toBeInTheDocument();
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 });

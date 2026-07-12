@@ -210,7 +210,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var projection = CreateProjectionFromResult(
             result,
             aliases: null,
-            GetProfileBackedAssetClassOverride(request.AssetClass),
+            GetProfileBackedAssetClassOverride(request.AssetClass, request.AssetSpecificTerms),
             GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
@@ -321,13 +321,25 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private static string? GetProfileBackedAssetClassOverride(SecurityProjectionRecord projection)
         => IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms)
-            ? GetProfileBackedAssetClassOverride(projection.AssetClass)
+            ? GetProfileBackedAssetClassOverride(projection.AssetClass, projection.AssetSpecificTerms)
             : null;
 
-    private static string? GetProfileBackedAssetClassOverride(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+    private static string? GetProfileBackedAssetClassOverride(string assetClass, JsonElement assetSpecificTerms)
+    {
+        if (!IsProfileBackedCustomAsset(assetClass, assetSpecificTerms))
+        {
+            return null;
+        }
+
+        if (TryResolveProfileBackedAlternativeAssetClass(assetSpecificTerms, out var resolvedAssetClass))
+        {
+            return resolvedAssetClass;
+        }
+
+        return string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
             ? "CustomAsset"
             : null;
+    }
 
     private static JsonElement? GetProfileBackedAssetSpecificTermsOverride(
         SecurityProjectionRecord currentProjection,
@@ -351,11 +363,79 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private static bool IsProfileBackedCustomAsset(string? assetClass, JsonElement assetSpecificTerms)
         => (string.IsNullOrWhiteSpace(assetClass)
             || string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase))
            && assetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
            && assetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
+
+    private static bool TryResolveProfileBackedAlternativeAssetClass(JsonElement assetSpecificTerms, out string assetClass)
+    {
+        var profileId = GetString(assetSpecificTerms, "customProfileId");
+        var category = GetString(assetSpecificTerms, "category");
+        var subType = GetString(assetSpecificTerms, "subType");
+        var accountingClassification = GetString(assetSpecificTerms, "accountingClassification");
+
+        if (ProfileFieldsContain(assetSpecificTerms, "tranche", "collateralType", "originalFace", "couponOrIndex")
+            && MatchesAny(profileId, category, subType, accountingClassification, "structured-credit-io-po", "StructuredCredit", "MBS", "ABS", "CLO", "CMBS"))
+        {
+            assetClass = "StructuredCredit";
+            return true;
+        }
+
+        if (ProfileFieldsContain(assetSpecificTerms, "gpSponsor", "strategy", "vintage", "commitment", "navDate")
+            && MatchesAny(profileId, category, subType, accountingClassification, "private-fund-interest", "PrivateFunds", "PartnershipInterest", "PrivateFund"))
+        {
+            assetClass = "PrivateFundInterest";
+            return true;
+        }
+
+        if (ProfileFieldsContain(assetSpecificTerms, "issuer", "shareClass", "round", "costBasis")
+            && MatchesAny(profileId, category, subType, accountingClassification, "private-company-equity", "PrivateEquity", "PrivateCompanyEquity"))
+        {
+            assetClass = "PrivateCompanyEquity";
+            return true;
+        }
+
+        if (ProfileFieldsContain(assetSpecificTerms, "propertyType", "addressOrMarket", "ownershipPercent", "appraisalValue", "valuationDate")
+            && MatchesAny(profileId, category, subType, accountingClassification, "real-estate-holding", "RealEstate", "RealEstateInterest", "RealEstateHolding"))
+        {
+            assetClass = "RealEstateHolding";
+            return true;
+        }
+
+        if (ProfileFieldsContain(assetSpecificTerms, "counterparty", "committedAmount", "effectiveDate")
+            && MatchesAny(profileId, category, subType, accountingClassification, "commitment-guarantee", "CommitmentGuarantee", "UnfundedCommitment", "Guarantee"))
+        {
+            assetClass = "CommitmentGuarantee";
+            return true;
+        }
+
+        assetClass = string.Empty;
+        return false;
+    }
+
+    private static string? GetString(JsonElement json, string propertyName)
+        => json.TryGetProperty(propertyName, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
+            ? value.GetString()
+            : null;
+
+    private static bool MatchesAny(string? profileId, string? category, string? subType, string? accountingClassification, params string[] expected)
+        => expected.Any(value =>
+            string.Equals(profileId, value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(category, value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(subType, value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(accountingClassification, value, StringComparison.OrdinalIgnoreCase));
+
+    private static bool ProfileFieldsContain(JsonElement assetSpecificTerms, params string[] requiredFieldKeys)
+        => assetSpecificTerms.TryGetProperty("profileFields", out var profileFields)
+           && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
+           && requiredFieldKeys.All(key => profileFields.TryGetProperty(key, out _));
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {

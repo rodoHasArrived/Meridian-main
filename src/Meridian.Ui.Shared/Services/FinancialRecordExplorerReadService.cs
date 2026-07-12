@@ -1822,7 +1822,8 @@ public sealed class FinancialRecordExplorerReadService
     private static string BuildTermsObligationsSummary(AssetOperationsDetailDto operations)
     {
         var terms = operations.TermsHistory.Count;
-        var obligations = operations.ProjectedCashFlows.Count + operations.LifecycleEvents.Count;
+        var obligations = operations.TermsObligationsTimeline?.Events.Count
+            ?? operations.ProjectedCashFlows.Count + operations.LifecycleEvents.Count;
         if (terms == 0 && obligations == 0)
         {
             return "No terms";
@@ -1836,11 +1837,15 @@ public sealed class FinancialRecordExplorerReadService
         var latestTerms = operations.TermsHistory
             .OrderByDescending(static terms => terms.EffectiveDate)
             .FirstOrDefault();
-        var nextFlow = operations.ProjectedCashFlows
-            .OrderBy(static flow => flow.DueDate)
-            .FirstOrDefault();
+        var nextTimelineEvent = operations.TermsObligationsTimeline?.Events
+            .FirstOrDefault(static timelineEvent => !string.Equals(timelineEvent.EventLane, "Lifecycle", StringComparison.OrdinalIgnoreCase));
+        var nextFlow = nextTimelineEvent is null
+            ? operations.ProjectedCashFlows
+                .OrderBy(static flow => flow.DueDate)
+                .FirstOrDefault()
+            : null;
 
-        if (latestTerms is null && nextFlow is null)
+        if (latestTerms is null && nextTimelineEvent is null && nextFlow is null)
         {
             return "No retained terms or obligation rows are available.";
         }
@@ -1851,7 +1856,14 @@ public sealed class FinancialRecordExplorerReadService
             parts.Add($"{latestTerms.Summary} Effective {latestTerms.EffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}.");
         }
 
-        if (nextFlow is not null)
+        if (nextTimelineEvent is not null)
+        {
+            var amount = nextTimelineEvent.ExpectedAmount.HasValue
+                ? $" for {FormatAmountCurrency(nextTimelineEvent.ExpectedAmount.Value, nextTimelineEvent.Currency)}"
+                : string.Empty;
+            parts.Add($"Next timeline event is {nextTimelineEvent.EventKind} due {nextTimelineEvent.EffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}{amount}; status {nextTimelineEvent.Status}.");
+        }
+        else if (nextFlow is not null)
         {
             parts.Add($"Next obligation is {nextFlow.FlowType} due {nextFlow.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {FormatAmountCurrency(nextFlow.Amount, nextFlow.Currency)}.");
         }
@@ -1860,7 +1872,9 @@ public sealed class FinancialRecordExplorerReadService
     }
 
     private static FinancialRecordExplorerTone ToneFromTerms(AssetOperationsDetailDto operations)
-        => operations.TermsHistory.Count == 0 && operations.ProjectedCashFlows.Count == 0
+        => operations.TermsHistory.Count == 0 &&
+           operations.ProjectedCashFlows.Count == 0 &&
+           (operations.TermsObligationsTimeline?.Events.Count ?? 0) == 0
             ? FinancialRecordExplorerTone.Warning
             : FinancialRecordExplorerTone.Success;
 

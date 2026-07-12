@@ -20,7 +20,7 @@ export interface MultiSelectAction {
  *   onSelectionChange={setSelected}
  *   totalCount={rows.length}
  *   actions={[
- *     { id: 'delete', label: 'Delete', icon: '🗑️', dangerous: true,
+ *     { id: 'delete', label: 'Delete', icon: '⌫', dangerous: true,
  *       onClick: (ids) => deleteRows(Array.from(ids)) }
  *   ]}
  * />

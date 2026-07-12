@@ -17,8 +17,12 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: web-screenshot-capture-${{ github.ref }}
-  cancel-in-progress: false
+  # The workflow always checks out the default branch and writes the fixed
+  # automation/web-screenshot-capture branch, so every dispatch must share one
+  # concurrency lane. Otherwise duplicate dispatches can queue and reopen a
+  # screenshot PR from the same base after the first PR merges.
+  group: web-screenshot-capture
+  cancel-in-progress: true
 
 env:
   CI: true

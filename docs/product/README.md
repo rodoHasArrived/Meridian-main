@@ -10,10 +10,25 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Version 0.21)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update, the v0.19 no-code provider integration manifest, the v0.20 customer-neutral operational-finance architecture clarification, and the v0.21 LedgerGraph OS / Close, Data and Evidence Control Tower positioning addendum
+  - [Meridian Design Document (Version 0.25)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update, the v0.19 no-code provider integration manifest, the v0.20 customer-neutral operational-finance architecture clarification, the v0.21 LedgerGraph OS / Close, Data and Evidence Control Tower positioning addendum, the v0.23 bounded W7 live-readiness gate, the v0.24 WPF deferral policy, and the v0.25 WPF desktop workstation reactivation and web-UI parity policy
   - [Meridian Implementation TODO List](implementation-todo-list.md) — single planning-tooling tracker for implemented design-document items and remaining TODOs
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
+  - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
+    prioritization of the next highest-value implementable features, sequenced against the W6/W7
+    roadmap lanes
+  - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
+    code-grounded improvement lanes for the provider and accounting subsystems with a dated status
+    table tracking which lanes have since shipped
+  - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
+    code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
+    aggregating per-security projection runs into scenario-aware, per-currency cash ladders
+  - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
+    nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
+    and sequencing
+  - [Browser Workstation UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) —
+    phased, code-ready implementation plan for the nine brainstorm ideas with per-phase file
+    anchors, contracts, test plans, and validation commands
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
@@ -46,6 +61,14 @@ The operating question remains:
 
 Scope guidance is evidence-led. Use current source, the roadmap registry, and the design charter to determine whether work belongs to a prior baseline, named productization target, or later expansion lane. Prior baselines and named targets are roadmap/status evidence, not development ceilings.
 
+As of 2026-07-06, active product UI work runs across two co-equal operator UI lanes: the browser
+workstation (`src/Meridian.Ui/dashboard/`) and the reactivated WPF desktop workstation
+(`src/Meridian.Wpf/`). Both consume the shared `Meridian.Ui.Services`, `Meridian.Ui.Shared`, and
+`Meridian.Contracts` seams rather than forking product state. The WPF lane's immediate focus is
+closing web-UI parity gaps for screens that shipped browser-first while it was deferred, tracked as
+`W8-WPF-PARITY-001` and detailed in
+[`docs/development/wpf-web-ui-alignment-plan.md`](../development/wpf-web-ui-alignment-plan.md).
+
 ## Canonical Product Truth Order
 
 1. `docs/roadmap/data/*.yml`  
@@ -60,10 +83,10 @@ Scope guidance is evidence-led. Use current source, the roadmap registry, and th
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Version 0.21)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 0.25)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 0.21)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, and the operational proof layer thesis.
+- Design Baseline: `Meridian Design Document (Version 0.25)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the WPF deferral and subsequent v0.25 WPF reactivation/web-UI parity policy, and the operational proof layer thesis.
 
 ## Stakeholder Narrative
 
@@ -104,7 +127,7 @@ Use this compact claim status model for stakeholder-facing updates:
 ## Current Supportability Claims
 
 - Source review on 2026-06-09 confirms the active W1-W5 support surface is centered on accounting configuration, manual journal entry workbenches, private-capital fund-event ledger records, capital-account subledgers, retained evidence categories, governed report outputs, report-pack delivery/readiness, report-writer grids, and company-scoped access metadata.
-- `src/Meridian.Contracts/`, `src/Meridian.Ledger/`, `src/Meridian.Reporting/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui/dashboard/`, and `src/Meridian.Wpf/` now carry the shared source seams for those workflows; browser and WPF surfaces should consume those seams instead of forking product state.
+- `src/Meridian.Contracts/`, `src/Meridian.Ledger/`, `src/Meridian.Reporting/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Ui/dashboard/` now carry the active shared source seams for those workflows; retained WPF compatibility should consume those seams instead of forking product state when maintenance is explicitly approved.
 - External GL and provider systems remain source evidence or integration context unless a route explicitly posts Meridian-owned records. Meridian-owned ledger entries, retained source evidence, approvals, documents, and report outputs are the operational record.
 - Mobile remains closed. Responsive browser validation is allowed for the browser workstation, but there is no native mobile, MAUI, React Native, Flutter, or mobile-first workflow lane.
 
@@ -113,7 +136,7 @@ Use this compact claim status model for stakeholder-facing updates:
 - W1-W5 are closed baselines in the registry and treated as the coherent near-term operational record release unless a later registry change says otherwise.
 - W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
 - W5X-FREX-001 is a planned productization target that uses the closed W1-W5 evidence baseline to build shared Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer surfaces. It is not a claim that those explorer surfaces are already complete.
-- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity and WPF dense workpaper execution; broader proof-layer expansions such as Evidence Vault request lists, Operational Event Command Spine, and additional fund-event command-center specializations remain separate roadmap decisions.
+- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. Broader proof-layer expansions such as Evidence Vault request lists, Operational Event Command Spine, and additional fund-event command-center specializations remain separate roadmap decisions.
 - The remaining proof-layer targets, including Operational Evidence Graph, Operational Event Command Spine, fund-event command-center specializations, Capital Account Workbench, Private-Capital Close Cockpit, and Evidence Vault with Request Lists, are design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - W6 is the deferred Backtesting Studio evidence loop.
 - W7 remains the controlled live-readiness path.
@@ -142,7 +165,7 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Version 0.21)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 0.25)](meridian-design-document.md) | Core design source for stakeholder framing |
 | Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
@@ -167,7 +190,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Version 0.21)](meridian-design-document.md)
+- [Meridian Design Document (Version 0.25)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item list](../roadmap/README.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

@@ -6,10 +6,10 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
   return (
     <div style={{
       background: "var(--card-surface)", border: "1px solid var(--border)",
-      borderRadius: "var(--radius-card, 8px)", boxShadow: "var(--shadow-card)",
+      borderRadius: "var(--radius-card,2px)", boxShadow: "var(--shadow-card)",
       display: "flex", flexDirection: "column", overflow: "hidden", ...style
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--bg-medium)", borderBottom: "1px solid var(--border-strong)" }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{title}</div>
           {subtitle && <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>{subtitle}</div>}
@@ -18,7 +18,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
           {readout.map((r, i) => (
             <div key={i} style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontFamily: "var(--font-body)", fontSize: 9, fontVariant: "all-small-caps", letterSpacing: ".03em", color: "var(--text-muted)" }}>{r.label}</span>
-              <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontVariantNumeric: "tabular-nums", color: r.color || "var(--text-primary)" }}>{r.value}</span>
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontVariantNumeric: "slashed-zero tabular-nums", color: r.color || "var(--text-primary)" }}>{r.value}</span>
             </div>
           ))}
         </div>}

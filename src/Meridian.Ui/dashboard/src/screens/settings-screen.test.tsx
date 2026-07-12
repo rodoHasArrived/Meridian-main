@@ -546,7 +546,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
       "Operator control posture"
     );
-    const eventTable = screen.getByRole("table", { name: "1 recent system event" });
+    const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
       name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
     });
@@ -586,8 +586,86 @@ describe("SettingsScreen", () => {
     })).toHaveAttribute("href", "/trading/readiness");
     expect(within(profileRegion).getByRole("link", {
       name: "Open Settings diagnostic services from profile authentication posture"
-    })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
+    })).toHaveAttribute("href", "/settings/diagnostics");
     expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
+  });
+
+  it("routes Settings preferences to provider connection tasks before hash inference", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/preferences#settings-overview"]
+    });
+
+    expect(document.querySelector("#provider-connection-center")).toBeInTheDocument();
+    expect(document.querySelector("#fund-operations-control-center")).not.toBeInTheDocument();
+    expect(document.querySelector("#settings-appearance")).not.toBeInTheDocument();
+  });
+
+  it("routes Settings integrations to operations tasks before hash inference", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/integrations#provider-connection-center"]
+    });
+
+    expect(document.querySelector("#fund-operations-control-center")).toBeInTheDocument();
+    expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
+  });
+
+  it("resolves object-centric Settings routes before stale hashes", () => {
+    const accessRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/access#provider-connection-center"]
+    });
+    expect(document.querySelector("#settings-overview")).toBeInTheDocument();
+    expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
+    accessRender.unmount();
+
+    const providerRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/providers#settings-overview"]
+    });
+    expect(document.querySelector("#provider-connection-center")).toBeInTheDocument();
+    expect(document.querySelector("#data-provider-modules")).toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
+    providerRender.unmount();
+
+    const diagnosticsRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/diagnostics#runtime-feature-capabilities"]
+    });
+    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+    expect(document.querySelector("#runtime-feature-capabilities")).not.toBeInTheDocument();
+    diagnosticsRender.unmount();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        featureCapabilities={{
+          capabilities: [
+            {
+              capabilityKey: "desktop.settings.workspace",
+              displayName: "Settings workspace",
+              description: "Preferences and diagnostics.",
+              isEnabled: true,
+              defaultEnabled: true,
+              isPermanent: true,
+              isOverridden: false,
+              canToggle: false,
+              disabledReason: "Required for workstation navigation."
+            }
+          ]
+        }}
+      />,
+      { initialEntries: ["/settings/feature-coverage#diagnostic-endpoints"] }
+    );
+    expect(document.querySelector("#runtime-feature-capabilities")).toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
+  });
+
+  it("renders appearance controls in the profile task view", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings#settings-overview"]
+    });
+
+    const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
+    expect(within(appearanceRegion).getByRole("radiogroup", { name: "Appearance" })).toBeInTheDocument();
+    expect(within(appearanceRegion).getByRole("radiogroup", { name: "Display density" })).toBeInTheDocument();
   });
 
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {

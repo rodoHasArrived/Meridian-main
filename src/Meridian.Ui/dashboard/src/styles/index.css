@@ -1038,22 +1038,6 @@
     white-space: nowrap;
   }
 
-  .metric-tile {
-    min-width: 0;
-    padding: 0.75rem 0.875rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    background: var(--card-bg);
-    box-shadow: var(--shadow-panel);
-    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
-  }
-
-  .metric-tile:hover {
-    border-color: var(--border-hi);
-    background: var(--surface-raise-bg);
-    box-shadow: var(--shadow-workstation);
-  }
-
   .plottool-chart-shell {
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-xl);
@@ -1143,8 +1127,7 @@
   .panel-surface-strong,
   .glass-card,
   .data-grid-surface,
-  .workspace-header-card,
-  .metric-tile {
+  .workspace-header-card {
     border-color: var(--border-color);
     border-radius: var(--radius-md);
     background: var(--card-bg);
@@ -1154,8 +1137,7 @@
   .panel-surface:hover,
   .panel-surface-strong:hover,
   .glass-card:hover,
-  .workspace-header-card:hover,
-  .metric-tile:hover {
+  .workspace-header-card:hover {
     border-color: var(--border-hi);
     background: var(--surface-raise-bg);
     box-shadow: var(--shadow-workstation);
@@ -1184,4 +1166,3 @@
     transition-duration: 0.01ms !important;
   }
 }
-

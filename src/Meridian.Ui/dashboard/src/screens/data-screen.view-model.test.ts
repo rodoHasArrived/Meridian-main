@@ -42,7 +42,12 @@ import {
   validateProviderSetupForm,
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-screen.view-model";
-import { buildSecurityMasterWorkspaceState } from "@/screens/data-screen.security-master";
+import {
+  buildCorporateActionChipState,
+  buildCorporateActionLifecycleState,
+  buildSecurityMasterWorkspaceState
+} from "@/screens/data-screen.security-master";
+import type { CorporateActionDescriptor } from "@/types";
 import type {
   BackfillProgressResponse,
   BackfillPreviewResult,
@@ -351,7 +356,8 @@ const providerReadiness: ProviderReadinessSummary = {
 
 describe("data-screen view model", () => {
   it("keeps Data workspace API types canonical with Data Operations compatibility aliases", () => {
-    const typesSource = readFileSync(resolve(process.cwd(), "src/types.ts"), "utf8");
+    // types.ts is a barrel re-export; the Data workspace declarations live in the workstation-3 module.
+    const typesSource = readFileSync(resolve(process.cwd(), "src/types/workstation-3.ts"), "utf8");
 
     expect(typesSource).toContain("export interface DataProviderRecord");
     expect(typesSource).toContain("export interface DataWorkspaceResponse");
@@ -446,6 +452,9 @@ describe("data-screen view model", () => {
 
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
+    expect(resolveDataWorkstream("/data/providers")).toBe("providers");
+    expect(resolveDataWorkstream("/data/exports")).toBe("exports");
+    expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");
     expect(resolveDataWorkstream("/data-operations/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data-operations")).toBe("overview");
@@ -499,6 +508,125 @@ describe("data-screen view model", () => {
     }));
     expect(exportEvidence.map((item) => item.title)).not.toContain("Research pack");
     expect(exportEvidence.map((item) => item.destination)).not.toContain("report-pack / research");
+  });
+
+  it("projects corporate-action descriptors into chips with CAEV badges and cancelled treatment", () => {
+    const dividend: CorporateActionDescriptor = {
+      corpActId: "ca-1",
+      canonicalName: "Dividend",
+      caevCode: "DVCA",
+      displayName: "Cash dividend",
+      lifecycleState: "Ex",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-1", lifecycleState: "Confirmed", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: false }
+      ]
+    };
+
+    expect(buildCorporateActionChipState(dividend)).toEqual({
+      label: "Cash dividend",
+      caevCode: "DVCA",
+      cancelled: false,
+      ariaLabel: "Cash dividend, CAEV DVCA"
+    });
+
+    const cancelled = buildCorporateActionChipState({
+      ...dividend,
+      displayName: "Special dividend",
+      lifecycleState: "Cancelled",
+      isCancelled: true
+    });
+    expect(cancelled.cancelled).toBe(true);
+    expect(cancelled.ariaLabel).toBe("Special dividend, CAEV DVCA, Cancelled");
+
+    const internalExtension = buildCorporateActionChipState({ ...dividend, caevCode: null, displayName: "Futures expiry" });
+    expect(internalExtension.caevCode).toBeNull();
+    expect(internalExtension.ariaLabel).toBe("Futures expiry");
+  });
+
+  it("fills reached lifecycle stops and marks amendments on the four-stop timeline", () => {
+    const amendedDividend: CorporateActionDescriptor = {
+      corpActId: "ca-tip",
+      canonicalName: "Dividend",
+      caevCode: "DVCA",
+      displayName: "Cash dividend",
+      lifecycleState: "Ex",
+      isCancelled: false,
+      timeline: [
+        { corpActId: "ca-original", lifecycleState: "Announced", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: false },
+        { corpActId: "ca-tip", lifecycleState: "Confirmed", exDate: "2026-05-29", payDate: "2026-06-28", isAmendment: true }
+      ]
+    };
+
+    const lifecycle = buildCorporateActionLifecycleState(amendedDividend);
+
+    expect(lifecycle.stops.map((stop) => [stop.id, stop.reached, stop.current])).toEqual([
+      ["announced", true, false],
+      ["confirmed", true, false],
+      ["ex", true, true],
+      ["paid", false, false]
+    ]);
+    expect(lifecycle.stops.find((stop) => stop.id === "ex")?.date).toBe("2026-05-29");
+    expect(lifecycle.stops.find((stop) => stop.id === "paid")?.date).toBe("2026-06-28");
+    expect(lifecycle.amended).toBe(true);
+    expect(lifecycle.entries.map((entry) => [entry.label, entry.amended])).toEqual([
+      ["Original terms", false],
+      ["Amended", true]
+    ]);
+  });
+
+  it("keeps pre-cancellation progress filled but no current stop for cancelled actions", () => {
+    const lifecycle = buildCorporateActionLifecycleState({
+      corpActId: "ca-cancel",
+      canonicalName: "SpecialDividend",
+      caevCode: "DVCA",
+      displayName: "Special dividend",
+      lifecycleState: "Cancelled",
+      isCancelled: true,
+      timeline: [
+        { corpActId: "ca-announce", lifecycleState: "Announced", exDate: "2026-04-10", payDate: "2026-05-01", isAmendment: false },
+        { corpActId: "ca-cancel", lifecycleState: "Cancelled", exDate: "2026-04-10", payDate: "2026-05-01", isAmendment: true }
+      ]
+    });
+
+    expect(lifecycle.cancelled).toBe(true);
+    expect(lifecycle.stops.map((stop) => [stop.id, stop.reached])).toEqual([
+      ["announced", true],
+      ["confirmed", false],
+      ["ex", false],
+      ["paid", false]
+    ]);
+    expect(lifecycle.stops.every((stop) => !stop.current)).toBe(true);
+  });
+
+  it("builds expandable corporate-action rows from the workspace state", () => {
+    const collapsed = buildSecurityMasterWorkspaceState({
+      query: "GS",
+      selectedSecurityId: "gs-common-us",
+      activeTab: "corporate-actions",
+      statusFilter: "active"
+    });
+    const rows = collapsed.selectedSecurity?.corporateActions ?? [];
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((row) => !row.expanded)).toBe(true);
+    expect(rows[0].chip).toEqual(expect.objectContaining({ label: "Cash dividend", caevCode: "DVCA" }));
+    expect(rows[0].toggleLabel).toContain("Expand lifecycle timeline");
+
+    const cancelledRow = rows.find((row) => row.status === "Cancelled");
+    expect(cancelledRow?.chip.cancelled).toBe(true);
+    expect(cancelledRow?.lifecycle.cancelled).toBe(true);
+
+    const expanded = buildSecurityMasterWorkspaceState({
+      query: "GS",
+      selectedSecurityId: "gs-common-us",
+      activeTab: "corporate-actions",
+      statusFilter: "active",
+      expandedCorporateActionIds: [rows[0].id]
+    });
+    const expandedRow = expanded.selectedSecurity?.corporateActions.find((row) => row.id === rows[0].id);
+    expect(expandedRow?.expanded).toBe(true);
+    expect(expandedRow?.toggleLabel).toContain("Collapse lifecycle timeline");
   });
 
   it("normalizes request data and validates required symbols and date range", () => {

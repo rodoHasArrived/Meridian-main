@@ -10,6 +10,7 @@ export const defaultMeridianApiBaseUrl = "http://localhost:8080";
 export const meridianDevFixtureHeader = "x-meridian-dev-fixture";
 export const meridianApiAvailabilityCacheMs = 2_000;
 export const meridianApiAvailabilityTimeoutMs = 200;
+export const meridianScreenshotCaptureEnv = "MERIDIAN_SCREENSHOT_CAPTURE";
 
 export interface MeridianApiAvailabilityProbe {
   isAvailable: () => Promise<boolean>;
@@ -18,6 +19,11 @@ export interface MeridianApiAvailabilityProbe {
 export function resolveMeridianApiBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
   const configured = env.MERIDIAN_API_BASE_URL ?? env.VITE_MERIDIAN_API_BASE_URL;
   return (configured?.trim() || defaultMeridianApiBaseUrl).replace(/\/+$/, "");
+}
+
+export function resolveViteHmrConfig(env: NodeJS.ProcessEnv = process.env): false | undefined {
+  const value = env[meridianScreenshotCaptureEnv]?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes" ? false : undefined;
 }
 
 export function createMeridianApiAvailabilityProbe(
@@ -153,6 +159,7 @@ export default defineConfig({
   base: "/workstation/",
   plugins: [react()],
   server: {
+    hmr: resolveViteHmrConfig(),
     proxy: createMeridianApiProxy(apiBaseUrl)
   },
   preview: {

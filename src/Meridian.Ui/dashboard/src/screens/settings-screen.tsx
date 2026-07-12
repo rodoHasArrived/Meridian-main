@@ -1,18 +1,22 @@
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
+import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox, Toggle } from "@/components/ui/checkbox";
+import { DensityToggle } from "@/components/ui/density-toggle";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { MetricCard } from "@/components/data/concrete";
 import { SeverityBadge } from "@/components/operations";
+import { badgeVariantToOperatorSeverity, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   activateProviderIntegration,
   approveSecurityAssetProfile,
@@ -532,8 +536,8 @@ interface SettingsTaskView {
 const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "overview",
-    label: "Profile",
-    href: "#settings-overview",
+    label: "Access",
+    href: "/settings/access",
     sectionId: "settings-overview"
   },
   {
@@ -545,7 +549,7 @@ const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "providers",
     label: "Provider Connections",
-    href: "#provider-connection-center",
+    href: "/settings/providers",
     sectionId: "provider-connection-center"
   },
   {
@@ -557,13 +561,13 @@ const settingsTaskViews: SettingsTaskView[] = [
   {
     id: "diagnostics",
     label: "Diagnostics",
-    href: "#diagnostic-endpoints",
+    href: "/settings/diagnostics",
     sectionId: "diagnostic-endpoints"
   },
   {
     id: "runtime",
     label: "Feature Coverage",
-    href: "#runtime-feature-capabilities",
+    href: "/settings/feature-coverage",
     sectionId: "runtime-feature-capabilities"
   }
 ];
@@ -573,10 +577,7 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   if (normalizedHash === "backend-capability-coverage") {
     return "runtime";
   }
-  if (normalizedHash === "robinhood-provider-setup") {
-    return "providers";
-  }
-  if (normalizedHash === "alpaca-provider-setup") {
+  if (normalizedHash === "alpaca-provider-setup" || normalizedHash === "robinhood-provider-setup") {
     return "providers";
   }
   if (normalizedHash === "scoped-access-control") {
@@ -586,6 +587,29 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
     return "operations";
   }
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
+}
+
+function resolveSettingsTaskViewIdFromPath(pathname: string): SettingsTaskViewId | null {
+  const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase();
+  if (normalizedPath.endsWith("/settings/access")) {
+    return "overview";
+  }
+  if (normalizedPath.endsWith("/settings/providers")) {
+    return "providers";
+  }
+  if (normalizedPath.endsWith("/settings/diagnostics")) {
+    return "diagnostics";
+  }
+  if (normalizedPath.endsWith("/settings/feature-coverage")) {
+    return "runtime";
+  }
+  if (normalizedPath.endsWith("/settings/preferences")) {
+    return "providers";
+  }
+  if (normalizedPath.endsWith("/settings/integrations")) {
+    return "operations";
+  }
+  return null;
 }
 
 function inferSettingsTaskView({
@@ -781,8 +805,9 @@ export function SettingsScreen({
     const initialHash = typeof window === "undefined" ? "" : window.location.hash;
     return initialHash ? resolveSettingsTaskViewId(initialHash) : null;
   });
+  const routePathTaskView = resolveSettingsTaskViewIdFromPath(location.pathname);
   const routeHashTaskView = location.hash ? resolveSettingsTaskViewId(location.hash) : null;
-  const activeTaskView = routeHashTaskView ?? hashTaskView ?? inferredTaskView;
+  const activeTaskView = routePathTaskView ?? routeHashTaskView ?? hashTaskView ?? inferredTaskView;
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -962,11 +987,11 @@ export function SettingsScreen({
   const showOperationsSection = activeTaskView === "operations";
   const showAssetProfileSection = activeTaskView === "operations";
   const showProviderSection = activeTaskView === "providers";
-  const showDataProviderModulesSection = activeTaskView === "data-providers";
+  const showDataProviderModulesSection = activeTaskView === "providers" || activeTaskView === "data-providers";
   const showBrokerageSection = activeTaskView === "providers";
   const showDiagnosticsSection = activeTaskView === "diagnostics";
   const showRuntimeSection = activeTaskView === "runtime";
-  const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
+  const showBackendCapabilitySection = activeTaskView === "runtime";
 
   useEffect(() => {
     setHashTaskView(routeHashTaskView);
@@ -2685,24 +2710,24 @@ export function SettingsScreen({
           value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"}
           tone={
             overview
-              ? settingsMetricTone[overview.providersOnline === overview.providersTotal ? "success" : "warning"]
+              ? semanticToneToMetricCardTone(overview.providersOnline === overview.providersTotal ? "success" : "warning")
               : "neutral"
           }
         />
         <MetricCard
           label="Active runs"
           value={overview ? String(overview.activeRuns) : "—"}
-          tone={settingsMetricTone.default}
+          tone={semanticToneToMetricCardTone("default")}
         />
         <MetricCard
           label="Open positions"
           value={overview ? String(overview.openPositions) : "—"}
-          tone={settingsMetricTone.default}
+          tone={semanticToneToMetricCardTone("default")}
         />
         <MetricCard
           label="Storage health"
           value={overview?.storageHealth ?? "—"}
-          tone={settingsMetricTone[settingsStorageHealthTone(overview?.storageHealth)]}
+          tone={semanticToneToMetricCardTone(settingsStorageHealthTone(overview?.storageHealth))}
         />
       </section>
 
@@ -2737,7 +2762,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.profileAuthenticationPanel.summary}</CardDescription>
               </div>
               <SeverityBadge
-                status={toneToSeverity(vm.profileAuthenticationPanel.statusTone)}
+                status={badgeVariantToOperatorSeverity(vm.profileAuthenticationPanel.statusTone)}
                 label={vm.profileAuthenticationPanel.statusLabel}
               />
             </div>
@@ -2795,13 +2820,15 @@ export function SettingsScreen({
               </div>
             </div>
 
-            <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
+            <div className="grid gap-2">
               <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                 {vm.profileAuthenticationPanel.stepsTitle}
               </h3>
-              {vm.profileAuthenticationPanel.steps.map((step) => (
-                <ProfileAuthenticationStepRow key={step.id} step={step} />
-              ))}
+              <div role="list" aria-label={vm.profileAuthenticationPanel.stepsAriaLabel} className="grid gap-2">
+                {vm.profileAuthenticationPanel.steps.map((step) => (
+                  <ProfileAuthenticationStepRow key={step.id} step={step} />
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -2818,7 +2845,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.systemSummary}</CardDescription>
               </div>
               <SeverityBadge
-                status={toneToSeverity(vm.systemTone)}
+                status={badgeVariantToOperatorSeverity(vm.systemTone)}
                 label={overview?.systemStatus ?? "Unavailable"}
               />
             </div>
@@ -2844,6 +2871,36 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      {showAccessSection ? (
+      <Card
+        id="settings-appearance"
+        role="region"
+        aria-label="Appearance preferences"
+        className="panel-surface scroll-mt-6 border border-border/70"
+      >
+        <CardHeader>
+          <div className="eyebrow-label">Operator preferences</div>
+          <CardTitle className="mt-2 flex items-center gap-2 text-base">
+            <MonitorCheck className="h-4 w-4 text-primary" />
+            Appearance
+          </CardTitle>
+          <CardDescription className="mt-2">
+            Choose the workstation theme and screen density for this browser.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Theme</div>
+            <ThemeToggle fullWidth />
+          </div>
+          <div className="grid gap-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Density</div>
+            <DensityToggle persist="meridian.workstation.density.v1" fullWidth />
+          </div>
+        </CardContent>
+      </Card>
+      ) : null}
 
       {showAccessSection ? (
       <Card
@@ -2893,10 +2950,10 @@ export function SettingsScreen({
             </div>
           </div>
 
-          <div role="list" aria-label="Scoped access assignments" className="grid gap-2">
-            {scopedAccessAssignments.length > 0 ? (
-              scopedAccessAssignments.map((assignment) => (
-                <article
+          {scopedAccessAssignments.length > 0 ? (
+            <div role="list" aria-label="Scoped access assignments" className="grid gap-2">
+              {scopedAccessAssignments.map((assignment) => (
+                <div
                   key={assignment.assignmentId}
                   role="listitem"
                   className={cn(
@@ -2960,14 +3017,14 @@ export function SettingsScreen({
                       Revoked by {assignment.revokedBy ?? "unknown"}: {assignment.revocationReason}
                     </p>
                   ) : null}
-                </article>
-              ))
-            ) : (
-              <p className="rounded-md border border-border/70 bg-secondary/25 px-4 py-4 text-center text-sm text-muted-foreground">
-                No scoped access assignments are loaded for the selected filter.
-              </p>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-md border border-border/70 bg-secondary/25 px-4 py-4 text-center text-sm text-muted-foreground">
+              No scoped access assignments are loaded for the selected filter.
+            </p>
+          )}
 
           <form
             className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
@@ -3186,7 +3243,7 @@ export function SettingsScreen({
               <SettingsChip label="Loaded" value={vm.operationsControlCenter.loadedCountLabel} />
               <SettingsChip label="Review" value={vm.operationsControlCenter.reviewCountLabel} />
               <SeverityBadge
-                status={toneToSeverity(vm.operationsControlCenter.statusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.operationsControlCenter.statusVariant)}
                 label={vm.operationsControlCenter.statusLabel}
               />
             </div>
@@ -3195,7 +3252,7 @@ export function SettingsScreen({
         <CardContent className="grid gap-4">
           <div className="grid gap-3 xl:grid-cols-4" role="list" aria-label={vm.operationsControlCenter.listLabel}>
             {vm.operationsControlCenter.cards.map((card) => (
-              <article
+              <div
                 key={card.id}
                 role="listitem"
                 className={cn(
@@ -3209,7 +3266,7 @@ export function SettingsScreen({
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.description}</p>
                   </div>
                   <SeverityBadge
-                    status={toneToSeverity(card.statusVariant)}
+                    status={badgeVariantToOperatorSeverity(card.statusVariant)}
                     label={card.statusLabel}
                     className="shrink-0"
                   />
@@ -3247,7 +3304,7 @@ export function SettingsScreen({
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />
                   </a>
                 </div>
-              </article>
+              </div>
             ))}
           </div>
           <form
@@ -3729,7 +3786,7 @@ export function SettingsScreen({
               <SettingsChip label="Projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
               <SettingsChip label="Close IDs" value={vm.assetProfileGovernancePanel.closeIdentifierCountLabel} />
               <SeverityBadge
-                status={toneToSeverity(vm.assetProfileGovernancePanel.statusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.assetProfileGovernancePanel.statusVariant)}
                 label={vm.assetProfileGovernancePanel.statusLabel}
               />
             </div>
@@ -3738,7 +3795,7 @@ export function SettingsScreen({
         <CardContent className="grid gap-4">
           <div className="grid gap-3 xl:grid-cols-5" role="list" aria-label={vm.assetProfileGovernancePanel.listLabel}>
             {vm.assetProfileGovernancePanel.rows.map((row) => (
-              <article
+              <div
                 key={`${row.profileId}-${row.versionLabel}`}
                 role="listitem"
                 className={cn("grid gap-3 rounded-md border px-3 py-3", diagnosticToneClass[capabilityTone(row.statusVariant)])}
@@ -3757,7 +3814,7 @@ export function SettingsScreen({
                   <SettingsFieldRow label="Close ID" value={row.requiredCloseIdentifierLabel} tone="warning" />
                 </dl>
                 <p className="text-xs leading-5 text-foreground/75">{row.accountingImpactLabel}</p>
-              </article>
+              </div>
             ))}
           </div>
 
@@ -4035,7 +4092,7 @@ export function SettingsScreen({
                 </Button>
               ) : null}
               <SeverityBadge
-                status={toneToSeverity(vm.providerConnectionCenter.statusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.providerConnectionCenter.statusVariant)}
                 label={vm.providerConnectionCenter.statusLabel}
               />
             </div>
@@ -4136,12 +4193,12 @@ export function SettingsScreen({
                             <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
                             <Badge variant="outline">{row.capabilityLabel}</Badge>
                             <SeverityBadge
-                              status={toneToSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
+                              status={badgeVariantToOperatorSeverity(row.healthTone === "muted" ? "default" : row.healthTone)}
                               label={row.healthLabel}
                             />
                             {inlineProviderManagementEnabled ? (
                               <SeverityBadge
-                                status={toneToSeverity(providerDraftStatusVariant(providerInlineState[row.providerId], row))}
+                                status={badgeVariantToOperatorSeverity(providerDraftStatusVariant(providerInlineState[row.providerId], row))}
                                 label={providerDraftStatusLabel(providerInlineState[row.providerId], row)}
                               />
                             ) : null}
@@ -4227,7 +4284,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.alpacaConnectionPanel.statusDetail}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.alpacaConnectionPanel.statusTone)}
+              status={badgeVariantToOperatorSeverity(vm.alpacaConnectionPanel.statusTone)}
               label={vm.alpacaConnectionPanel.stateLabel}
             />
           </div>
@@ -4415,11 +4472,7 @@ export function SettingsScreen({
                 {vm.alpacaConnectionPanel.warnings[0]}
               </div>
             ) : null}
-            <div
-              role="list"
-              aria-label={vm.alpacaConnectionPanel.setupChecklistAriaLabel}
-              className="grid gap-2"
-            >
+            <div className="grid gap-2">
               <div className="min-w-0">
                 <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                   {vm.alpacaConnectionPanel.setupChecklistTitle}
@@ -4428,6 +4481,11 @@ export function SettingsScreen({
                   {vm.alpacaConnectionPanel.setupChecklistDetail}
                 </p>
               </div>
+              <div
+                role="list"
+                aria-label={vm.alpacaConnectionPanel.setupChecklistAriaLabel}
+                className="grid gap-2"
+              >
               {vm.alpacaConnectionPanel.setupChecklist.map((step) => (
                 <div
                   key={step.id}
@@ -4440,7 +4498,7 @@ export function SettingsScreen({
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
                     </div>
                     <SeverityBadge
-                      status={toneToSeverity(step.badgeVariant)}
+                      status={badgeVariantToOperatorSeverity(step.badgeVariant)}
                       label={step.statusLabel}
                       className="shrink-0"
                     />
@@ -4455,6 +4513,7 @@ export function SettingsScreen({
                   ) : null}
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -4477,7 +4536,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.robinhoodConnectionPanel.statusDetail}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.robinhoodConnectionPanel.statusTone)}
+              status={badgeVariantToOperatorSeverity(vm.robinhoodConnectionPanel.statusTone)}
               label={vm.robinhoodConnectionPanel.stateLabel}
             />
           </div>
@@ -4655,7 +4714,7 @@ export function SettingsScreen({
                 <CardDescription className="mt-2">{vm.diagnosticSummary}</CardDescription>
               </div>
               <SeverityBadge
-                status={toneToSeverity(vm.diagnosticStatusVariant)}
+                status={badgeVariantToOperatorSeverity(vm.diagnosticStatusVariant)}
                 label={vm.diagnosticStatusLabel}
               />
             </div>
@@ -4685,7 +4744,7 @@ export function SettingsScreen({
                       </span>
                       <span className="inline-flex items-center gap-2">
                         <SeverityBadge
-                          status={toneToSeverity(link.badgeVariant)}
+                          status={badgeVariantToOperatorSeverity(link.badgeVariant)}
                           label={link.statusLabel}
                           className="shrink-0"
                         />
@@ -4721,7 +4780,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.runtimeCapabilitySection.summary}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.runtimeCapabilitySection.statusVariant)}
+              status={badgeVariantToOperatorSeverity(vm.runtimeCapabilitySection.statusVariant)}
               label={vm.runtimeCapabilitySection.statusLabel}
             />
           </div>
@@ -4744,7 +4803,7 @@ export function SettingsScreen({
                       <p className="mt-2 text-xs leading-5 text-muted-foreground">{capability.description}</p>
                     </div>
                     <SeverityBadge
-                      status={toneToSeverity(capability.statusVariant)}
+                      status={badgeVariantToOperatorSeverity(capability.statusVariant)}
                       label={capability.statusLabel}
                       className="shrink-0"
                     />
@@ -4788,7 +4847,7 @@ export function SettingsScreen({
               <CardDescription className="mt-2">{vm.backendCapabilitySummary}</CardDescription>
             </div>
             <SeverityBadge
-              status={toneToSeverity(vm.backendCapabilityStatusVariant)}
+              status={badgeVariantToOperatorSeverity(vm.backendCapabilityStatusVariant)}
               label={vm.backendCapabilityStatusLabel}
             />
           </div>
@@ -4808,7 +4867,7 @@ export function SettingsScreen({
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{group.description}</p>
                   </div>
                   <SeverityBadge
-                    status={toneToSeverity(group.statusVariant)}
+                    status={badgeVariantToOperatorSeverity(group.statusVariant)}
                     label={group.statusLabel}
                     className="shrink-0"
                   />
@@ -4886,7 +4945,7 @@ function ProfileAuthenticationStepRow({ step }: { step: SettingsProfileAuthentic
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
         </div>
         <SeverityBadge
-          status={toneToSeverity(step.badgeVariant)}
+          status={badgeVariantToOperatorSeverity(step.badgeVariant)}
           label={step.statusLabel}
           className="shrink-0"
         />
@@ -4937,7 +4996,7 @@ function RecentEventDetailPanel({
                 <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
               </div>
               <SeverityBadge
-                status={toneToSeverity(detail.statusVariant)}
+                status={badgeVariantToOperatorSeverity(detail.statusVariant)}
                 label={detail.statusLabel}
                 className="shrink-0"
               />
@@ -5432,9 +5491,7 @@ function formatScopedAccessApprovalLimit(assignment: UserAccessAssignment): stri
     return "Not specified";
   }
 
-  const amount = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2
-  }).format(assignment.approvalLimitAmount);
+  const amount = formatNumberAmount(assignment.approvalLimitAmount);
   const currency = assignment.approvalLimitCurrency?.trim();
   return currency ? `${currency} ${amount}` : amount;
 }
@@ -5733,7 +5790,7 @@ function ProviderIntegrationRuntimePanel({
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Runtime evidence</h5>
             <SeverityBadge
-              status={toneToSeverity(providerRuntimeStatusVariant(state))}
+              status={badgeVariantToOperatorSeverity(providerRuntimeStatusVariant(state))}
               label={providerRuntimeStatusLabel(state)}
             />
           </div>
@@ -5879,7 +5936,7 @@ function ProviderIntegrationRuntimePanel({
             <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
-                <SeverityBadge status={toneToSeverity(providerRuntimeRunVariant(run))} label={run.status} />
+                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeRunVariant(run))} label={run.status} />
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">
                 {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
@@ -5900,7 +5957,7 @@ function ProviderIntegrationRuntimePanel({
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <SeverityBadge status={toneToSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
+                      <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeProcessingStatusVariant(record.status))} label={record.status} />
                       <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
                     </div>
                     <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
@@ -5984,7 +6041,7 @@ function ProviderIntegrationRuntimePanel({
           {issueGroups.slice(0, 3).map((group) => (
             <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge status={toneToSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
+                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimeSeverityVariant(group.severity))} label={group.severity} />
                 <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
                 <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
               </div>
@@ -6015,7 +6072,7 @@ function ProviderIntegrationRuntimePanel({
           {state.promotion.rows.slice(0, 3).map((promotionRow) => (
             <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
               <div className="flex flex-wrap items-center gap-2">
-                <SeverityBadge status={toneToSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
+                <SeverityBadge status={badgeVariantToOperatorSeverity(providerRuntimePromotionVariant(promotionRow.status))} label={promotionRow.status} />
                 <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
                 <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
               </div>
@@ -6087,7 +6144,7 @@ function ProviderIntegrationWorkbenchPanel({
     }
   };
 
-  const useTemplate = async () => {
+  const applyTemplate = async () => {
     const selectedManifestId = state.selectedManifestId.trim();
     if (!selectedManifestId) {
       setState((current) => ({ ...current, message: "Select or enter a manifest id before loading a template.", details: [], tone: "warning" }));
@@ -6338,7 +6395,7 @@ function ProviderIntegrationWorkbenchPanel({
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Load templates
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void useTemplate()} disabled={busy || !state.selectedManifestId.trim()} busy={state.busyAction === "template"} aria-label={`Use selected provider integration template for ${row.displayName}`}>
+          <Button type="button" variant="outline" size="sm" onClick={() => void applyTemplate()} disabled={busy || !state.selectedManifestId.trim()} busy={state.busyAction === "template"} aria-label={`Use selected provider integration template for ${row.displayName}`}>
             <Save className="h-3.5 w-3.5" aria-hidden="true" />
             Use template
           </Button>

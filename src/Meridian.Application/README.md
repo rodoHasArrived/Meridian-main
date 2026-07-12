@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-05
 ---
 
 # src/Meridian.Application
@@ -229,6 +229,11 @@ and UI presentation concerns in their owning layers.
   symbol are retained as review-required contamination evidence and filtered out of the matching bar
   set so same-date fallback data cannot falsely close the requested symbol; zero symbol-scoped
   provider bars likewise block closure until retained evidence exists.
+  Backfill storage placement now consumes the Storage-owned `AdaptivePartitionPlacementPlanner`.
+  Request-scoped options use hourly symbol partitions for intraday runs, provider/source-aware
+  partitions for composite provider evidence, and monthly date partitions for long-window archival
+  backfills while preserving the caller's compression, retention, sink, quota, and manifest
+  settings.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
@@ -266,11 +271,28 @@ and UI presentation concerns in their owning layers.
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action
   appends are routed through `SecurityMasterCorporateActionCommandService` so HTTP endpoints,
   imports, provider backfills, and future UI commands share the same validation, append, and
-  structured audit path before the event store is touched.
+  structured audit path before the event store is touched. That shared validation is driven by
+  the contract-owned `CorporateActionTypeDescriptorCatalog`: unknown event types are rejected
+  with the accepted vocabulary, per-type required fields are enforced, and — when the security
+  projection is available — asset-class validity is checked (fail-open on lookup faults, so a
+  projection-store outage never blocks an otherwise valid append). Amendments and cancellations
+  are superseding events validated by `CorporateActionValidation.ValidateSupersede` (chain-tip
+  only, same event type, no lifecycle regression); an accepted supersede flows through
+  `ICorporateActionRestatementTrigger` into the existing period-aware restatement resolver so a
+  provider correction landing in a closed ledger period yields a governed restatement proposal
+  on the append result rather than a silent mutation. Stored legacy event-type aliases stay
+  readable through the projector's normalization; the one-time
+  `--security-master-normalize-corporate-actions` CLI sweep (dry-run by default, `--apply` to
+  rewrite) cleans the stored strings themselves.
+  `SecurityMasterCashFlowService` now generates deterministic calculated bullet and sinker
+  schedules from retained Security Master economic terms when provider-backed schedules are not
+  selected, so downstream Asset Operations views can present expected coupon/principal dates with
+  source-governed scenario posture instead of an empty calculated schedule.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
-  futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`
-  records. It declares required identifiers, economics, provider evidence, ledger classification,
+  futures, FX, fixed income, direct loans, structured credit, private fund interests, private
+  company equity, real estate holdings, commitment/guarantee exposures, governed `CustomAsset`,
+  and `OtherSecurity` records. It declares required identifiers, economics, provider evidence, ledger classification,
   reconciliation signals, and close blockers while leaving missing live provider evidence as
   review-required/blocking evidence instead of fabricating completeness. It also projects the
   contract-owned `SecurityAssetPackRegistry` into the shared multi-asset coverage payload so
@@ -280,10 +302,16 @@ and UI presentation concerns in their owning layers.
   Bond rows expose factor and corporate-action drill-through proof, including retained factor
   evidence blockers, while private-credit depth is represented on the canonical `DirectLoan` row
   with commitment, unfunded-commitment, paydown, covenant, obligation, and
-  `Meridian.FSharp.DirectLending.Aggregates` rule-kernel evidence requirements. Structured and
-  private assets stay on governed profile-backed `CustomAsset` rows, where servicer/trustee
-  reports, warehouse tapes, NAV, capital calls, distributions, obligation schedules, and valuation
-  approvals are treated as retained provider evidence before close readiness can become complete.
+  `Meridian.FSharp.DirectLending.Aggregates` rule-kernel evidence requirements. Alternative asset
+  rows now declare class-specific retained evidence: structured credit needs trustee/servicer,
+  factor, collateral-tape, valuation-source, and cash-remittance support; private fund interests
+  need administrator/GP, capital-call, distribution, NAV, and capital-account support; private
+  company equity needs cap-table, share-class, financing, valuation/409A, transaction, exit, and
+  dividend support; real estate holdings need property-manager, rent-roll, lease, appraisal,
+  debt-service, ownership, and SPV support; commitments and guarantees need agreements, draw/usage
+  notices, fee/accrual schedules, collateral/covenants, and release/expiry support. Profile-backed
+  `CustomAsset` records remain the compatibility fallback when old profile metadata cannot be
+  upgraded to one of those first-class rows.
 - Asset-specific instrument projection services for bonds, options, equity, futures, FX spot,
   crypto, deposits, certificates of deposit, commodities, swaps, money-market funds, and shared
   Asset Operations read/projection flows are owned by `Meridian.Instruments`. Money-market fund
@@ -370,15 +398,19 @@ and UI presentation concerns in their owning layers.
   definitions, and alert-runbook registries live in `Meridian.Platform.Monitoring`; shared alert and health-check contracts live
   in `Meridian.Core.Monitoring`; runtime error ring-buffer diagnostics and system-health snapshots
   live in `Meridian.Platform.Diagnostics`.
-- `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
-  status response generation. ASP.NET endpoint adapter extensions for packaging, archive
-  maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
+- `Http/` - core host-facing runtime services such as `ConfigStore` and status response
+  generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
+  data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
+  in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
   startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
   `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
   persistence-backed services. Local/dev launcher flows may set
   `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
+  `ProviderFeatureRegistration` supplies a non-secret empty `IConfiguration` fallback before
+  registering provider adapters, preserving host-provided configuration when present while keeping
+  credential-gated data providers resolvable in composition slices.
 
 ## Important workflows
 

@@ -146,7 +146,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         provider.GetRequiredService<IStatementRunWorkflowService>()
             .Should().BeOfType<StatementRunWorkflowService>();
         provider.GetRequiredService<IBrokerStatementService>()
-            .Should().BeOfType<CsvBrokerStatementService>();
+            .Should().BeOfType<RoutingBrokerStatementService>();
+        provider.GetRequiredService<CsvBrokerStatementService>().Should().NotBeNull();
+        provider.GetRequiredService<IbFlexBrokerStatementService>().Should().NotBeNull();
         provider.GetRequiredService<IStatementReconciliationCheckpointStore>()
             .Should().BeOfType<FileStatementReconciliationCheckpointStore>();
         provider.GetRequiredService<StatementReconciliationOrchestrator>().Should().NotBeNull();

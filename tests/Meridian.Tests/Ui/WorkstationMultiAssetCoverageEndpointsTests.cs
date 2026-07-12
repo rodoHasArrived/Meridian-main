@@ -60,6 +60,19 @@ public sealed partial class WorkstationEndpointsTests
             pack.ReportingTaxonomy.Risk.Contains("credit risk") &&
             pack.LedgerExtensionPolicy.Contains("core ledger", StringComparison.OrdinalIgnoreCase));
         payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "fixed-income" &&
+            pack.AssetClasses.Contains("StructuredCredit"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "private-fund-partnership" &&
+            pack.AssetClasses.Contains("PrivateFundInterest") &&
+            pack.AssetClasses.Contains("PrivateCompanyEquity"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "real-estate" &&
+            pack.AssetClasses.Contains("RealEstateHolding"));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "commitment-guarantee" &&
+            pack.AssetClasses.Contains("CommitmentGuarantee"));
+        payload.AssetPacks.Should().Contain(static pack =>
             pack.PackId == "controlled-other-asset" &&
             pack.AutomationDepth == "WideCapture" &&
             pack.AssetClasses.Contains("Art") &&
@@ -90,6 +103,35 @@ public sealed partial class WorkstationEndpointsTests
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "Bond" &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "FactorCorporateActionEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "StructuredCredit" &&
+            row.EvidenceRequirements.Any(static requirement =>
+                requirement.Category == "ProviderEvidence" &&
+                requirement.Label.Contains("Trustee report", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredCreditTrusteeEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "FactorScheduleEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredCollateralTape") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredValuationEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "PrivateFundInterest" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Capital account schedule", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "FundAdministratorStatement") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CapitalAccountScheduleEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "PrivateCompanyEquity" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Cap table", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CapTableEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PrivateCompanyValuationEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "RealEstateHolding" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Rent roll", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PropertyManagerEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "RealEstateAppraisalEvidence"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "CommitmentGuarantee" &&
+            row.EvidenceRequirements.Any(static requirement => requirement.Label.Contains("Fee schedule", StringComparison.OrdinalIgnoreCase)) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CommitmentAgreementEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "ReleaseExpiryEvidence"));
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "CustomAsset" &&
             row.EvidenceRequirements.Any(static requirement => requirement.Category == "Governance") &&
@@ -135,6 +177,16 @@ public sealed partial class WorkstationEndpointsTests
         bond!.Subject.AssetClass.Should().Be("Bond");
         loan.ProjectedCashFlows.Should().ContainSingle(static flow => flow.FlowType == "Interest");
         bond.ProjectedCashFlows.Should().ContainSingle(static flow => flow.FlowType == "Coupon");
+        loan.TermsObligationsTimeline.Should().NotBeNull();
+        bond.TermsObligationsTimeline.Should().NotBeNull();
+        loan.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "Interest" &&
+            timelineEvent.EventLane == "Interest" &&
+            timelineEvent.ExpectedAmount == 100m);
+        bond.TermsObligationsTimeline!.Events.Should().ContainSingle(static timelineEvent =>
+            timelineEvent.EventKind == "Coupon" &&
+            timelineEvent.EventLane == "Coupon" &&
+            timelineEvent.ExpectedAmount == 100m);
         loan.Readiness.Capabilities.Should().BeEquivalentTo(bond.Readiness.Capabilities);
     }
 

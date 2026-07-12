@@ -5,6 +5,7 @@ using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Infrastructure.Adapters.Edgar;
@@ -1118,7 +1119,7 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
     }
 
     private static DateOnly? ParseDateOnly(string? value)
-        => DateOnly.TryParse(value, out var parsed) ? parsed : null;
+        => ProviderDateParsing.ParseProviderDateOrNull(value);
 
     private static string? GetRawScalar(JsonElement root, string propertyName)
     {

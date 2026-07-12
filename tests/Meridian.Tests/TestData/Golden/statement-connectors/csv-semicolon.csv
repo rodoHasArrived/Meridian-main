@@ -1,0 +1,3 @@
+Account Number;Ticker;Units;Trade Price;Net Amount;Transaction Type;Trade Date
+FUND-B;VTI;25;265.40;-6635.00;BUY;06/03/2026
+FUND-B;VTI;150;268.10;40215.00;POS;06/30/2026

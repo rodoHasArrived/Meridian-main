@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { pluralizeCount } from "@/lib/format";
 import {
   connectAlpacaConnection,
   revokeAlpacaConnection,
@@ -2021,7 +2022,7 @@ function buildProfileAuthenticationPanel(
         tone: diagnosticBlocked ? "warning" : "success",
         badgeVariant: diagnosticBlocked ? "warning" : "success",
         actionLabel: "Open diagnostics",
-        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints,
+        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics,
         actionAriaLabel: "Open Settings diagnostic services from profile authentication posture"
       }
     ]
@@ -2455,7 +2456,7 @@ function formatProviderRoutingScore(score: number): string {
 }
 
 function formatCount(value: number, singular: string): string {
-  return `${value} ${singular}${value === 1 ? "" : "s"}`;
+  return pluralizeCount(value, singular);
 }
 
 function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): string {

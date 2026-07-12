@@ -89,6 +89,9 @@ provider credential responses expose masked status only, file-backed vault paylo
 submitted secrets, and read-only brokerage sync adapters may fetch account, portfolio, activity,
 corporate-action, and factor evidence without placing orders. Adapter readiness notes should link
 any write-capable live execution path back to the shared execution governance gates.
+Interactive Brokers contract construction resolves default SecType values from the Contracts-owned
+`InstrumentTypeDescriptorCatalog`, while still honoring explicit provider SecType overrides such
+as `GOVT` for government bonds.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

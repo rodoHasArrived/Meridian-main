@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
+using Meridian.Application.Backfill;
 
 namespace Meridian.Application.Scheduling;
 
@@ -126,6 +127,13 @@ public sealed class BackfillExecutionLog
     /// Idempotency key (symbol+range+provider) used to suppress duplicates.
     /// </summary>
     public string? AutoRemediationIdempotencyKey { get; set; }
+
+    /// <summary>
+    /// Typed SLA metadata when this execution was created by auto gap remediation.
+    /// Null for non-remediation executions; legacy remediation entries carry the same
+    /// data as key=value strings in <see cref="Warnings"/> instead.
+    /// </summary>
+    public BackfillRemediationSlaMetadata? AutoRemediationSla { get; set; }
 }
 
 /// <summary>

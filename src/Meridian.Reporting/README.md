@@ -28,6 +28,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, shadow NAV,
   performance, holdings, capital account, board packet, audit package, and certified-dataset
   template metadata.
+- `ReportingStarterKitCatalog.cs` - starter reporting-desk kit records that map operator
+  archetypes to enabled template ids, hub layout ids, default periods, and draft schedule seeds.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
   audit contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
@@ -118,7 +120,10 @@ instead of widening generated-run packages to a default audience. Reporting temp
 investor, SEC, shadow NAV, performance, holdings, capital-account, board, audit, certified-dataset,
 and custom report packs; shared UI services layer schedule persistence, delivery history, template
 grid render calls, and rendered HTML/PDF artifacts on top of those module contracts without moving
-orchestration ownership out of Reporting.
+orchestration ownership out of Reporting. Starter reporting-desk kits remain catalog data in this
+module: each kit references existing template ids, a default Reporting hub layout id, a default
+period, and schedule seeds that UI Shared provisions through the normal schedule service as editable
+drafts.
 
 ### Migration and archive notes
 

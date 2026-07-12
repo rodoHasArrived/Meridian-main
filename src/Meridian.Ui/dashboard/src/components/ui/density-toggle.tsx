@@ -1,7 +1,8 @@
 import { type RefObject, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { applyDensity as applyDensityToElement, isDensity, type Density } from "@/lib/density";
 
-export type Density = "compact" | "default" | "spacious";
+export type { Density };
 
 export interface DensityToggleProps {
   value?: Density;
@@ -41,17 +42,6 @@ function resolveTarget(target: DensityToggleProps["target"]): HTMLElement | null
   return target;
 }
 
-function applyDensity(el: HTMLElement | null, value: Density) {
-  if (!el) {
-    return;
-  }
-  if (value === "default") {
-    el.removeAttribute("data-theme-density");
-  } else {
-    el.setAttribute("data-theme-density", value);
-  }
-}
-
 function Glyph({ gap }: { gap: number }) {
   return (
     <span aria-hidden="true" className="inline-flex w-[11px] flex-col" style={{ gap }}>
@@ -86,7 +76,7 @@ export function DensityToggle({
     }
     if (persist && typeof localStorage !== "undefined") {
       const saved = localStorage.getItem(persist);
-      if (saved === "compact" || saved === "default" || saved === "spacious") {
+      if (isDensity(saved)) {
         return saved;
       }
     }
@@ -98,7 +88,7 @@ export function DensityToggle({
     if (!apply) {
       return;
     }
-    applyDensity(resolveTarget(target), value);
+    applyDensityToElement(value, resolveTarget(target));
   }, [value, apply, target]);
 
   const select = (next: Density) => {
@@ -116,7 +106,7 @@ export function DensityToggle({
       role="radiogroup"
       aria-label="Display density"
       className={cn(
-        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-[#F3F6F9] p-0.5",
+        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-card p-0.5",
         fullWidth && "flex w-full",
         className
       )}
@@ -136,8 +126,8 @@ export function DensityToggle({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active
-                ? "bg-card font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
-                : "bg-transparent text-muted-foreground hover:bg-[#EAEEF3] hover:text-foreground"
+                ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
+                : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
             <Glyph gap={level.gap} />

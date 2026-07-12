@@ -17,13 +17,17 @@ public sealed class ConnectivityTestService : IAsyncDisposable
     private readonly ILogger _log = LoggingSetup.ForContext<ConnectivityTestService>();
     private readonly HttpClient _httpClient;
     private readonly ProgressDisplayService _progress;
+    private readonly int _tcpConnectTimeoutMs;
     private bool _disposed;
 
-    public ConnectivityTestService()
+    public ConnectivityTestService(Meridian.Contracts.Configuration.ConnectivityProbeOptions? probeOptions = null)
     {
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.ConnectivityTest);
         _progress = new ProgressDisplayService();
+        var tcpConnectTimeoutMs = (probeOptions ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions()).TcpConnectTimeoutMs;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tcpConnectTimeoutMs, nameof(probeOptions));
+        _tcpConnectTimeoutMs = tcpConnectTimeoutMs;
     }
 
     /// <summary>
@@ -473,7 +477,7 @@ public sealed class ConnectivityTestService : IAsyncDisposable
         {
             using var client = new TcpClient();
             var connectTask = client.ConnectAsync(host, port);
-            var completed = await Task.WhenAny(connectTask, Task.Delay(5000, ct)) == connectTask;
+            var completed = await Task.WhenAny(connectTask, Task.Delay(_tcpConnectTimeoutMs, ct)) == connectTask;
             sw.Stop();
 
             if (completed && client.Connected)

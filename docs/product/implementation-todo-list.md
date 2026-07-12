@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001 and W5X-FINOPS-001 are verified as `done` with `evidence_posture: complete`; W6 and W7 remain `planned` with `evidence_posture: planned_evidence`.
+- W5X-FREX-001, W5X-FINOPS-001, and bounded W7-LIVE-001 governance are verified as `done` with `evidence_posture: complete`; W6 remains `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -52,6 +52,8 @@ Result:
   Evidence: `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx`, `tests/fixtures/security-instrument-explorer-parity.json`; roadmap status `done`; evidence posture `complete`.
 - [x] `W5X-FINOPS-001`: Financial operations control center.
   Evidence: `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts`, `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`, `tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx`, `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`, `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`, and `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`; roadmap status `done`; evidence posture `complete`.
+- [x] `W7-LIVE-001`: Live-readiness governance.
+  Evidence: `src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs`, `src/Meridian.Strategies/Services/PromotionService.cs`, `src/Meridian.Execution/Services/ExecutionOperatorControlService.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs`, and `docs/roadmap/generated/ROADMAP_SUMMARY.md`; roadmap status `done`; evidence posture `complete`. This is a bounded governance gate, not broader live execution productization or live portfolio operations.
 
 ## Evidence-Backed Foundations Not Marked Complete
 
@@ -89,13 +91,18 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [x] Add WPF workstation tests for the same explorer flow and verify parity with the browser read model.
 - [x] Update roadmap evidence and generated docs before moving `W5X-FREX-001` from planned to complete.
 
-## Next Feature Slice: Multi-Asset Reference-Data Workbench
+## Multi-Asset Reference-Data Workbench Complete: Security Master Detail/Passport Flow
 
-- [ ] Complete the still-partial multi-asset reference-data workbench inside the existing Security Master detail flow.
-- [ ] Keep the work anchored to the current Security Master detail/passport route and shared read models; do not create a new route for this slice.
-- [ ] Extend the detail flow to cover multi-asset reference-data review, provider evidence, identifier confidence, terms/obligations, projected cash-flow readiness, ledger classification, and operations handoff from the retained Security Master context.
-- [ ] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
+- [x] Complete the multi-asset reference-data workbench inside the existing Security Master detail flow.
+  Evidence: the instrument passport read model is built by `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` (`BuildInstrumentPassportAsync` and `BuildReferenceDataWorkbench`) and exposed as `InstrumentPassportDto` in `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs`; the browser Security Master detail flow (`src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts`) and the WPF detail flow (`src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs`) render the same shared workbench sections. Anchored to roadmap row `W5-MASSET-001` (`done`, evidence posture `complete`), whose exit criteria name this follow-on slice.
+- [x] Keep the work anchored to the current Security Master detail/passport route and shared read models; do not create a new route for this slice.
+  Evidence: all workbench state is delivered inside `InstrumentPassportDto` on the pre-existing `UiApiRoutes.WorkstationSecurityMasterInstrumentPassport` route (`/api/workstation/security-master/securities/{securityId:guid}/passport`, `src/Meridian.Contracts/Api/UiApiRoutes.cs`) served by `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`; the browser client (`getSecurityInstrumentPassport` in `src/Meridian.Ui/dashboard/src/lib/api.ts`) and the WPF client (`src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs`) call the same endpoint and consume the same DTO without client-local readiness rules.
+- [x] Extend the detail flow to cover multi-asset reference-data review, provider evidence, identifier confidence, terms/obligations, projected cash-flow readiness, ledger classification, and operations handoff from the retained Security Master context.
+  Evidence: `BuildReferenceDataWorkbench` in `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` emits the `provider-evidence`, `identifier-confidence`, `terms-obligations`, `cash-flow-readiness`, `ledger-classification`, and `operations-handoff` sections, and the companion operations workbench emits identity/provider-evidence/terms/operations-readiness/handoff panels with valuation, reconciliation, ledger, close, and report readiness plus owner/blocker/impacted-output handoff rows — all sourced from retained Security Master state (`InstrumentPassportReferenceDataWorkbenchDto`, `InstrumentPassportOperationsWorkbenchDto`, `InstrumentPassportClassificationProfileDto`, and `InstrumentPassportProviderConfidenceDto` in `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs`).
+- [x] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
+  Evidence: endpoint proof in `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs` (asserts all six workbench section ids, provider-evidence and ledger-classification summaries, operations panels, readiness rows, and handoff completeness); browser proof in `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` (reference-data workbench and operations workbench rendering; 43 tests passing on 2026-07-04); WPF proof in `tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs` (instrument passport fields including `Multi-asset reference-data workbench` and `Operations handoff`).
 - [x] Closed-period propagation: replace the no-op restatement candidate resolver with a report-pack-backed `ReportPackRestatementCandidateResolver` that locates the published packs which consumed the edited security (from retained report-line provenance) and surfaces them as governed restatement candidates, so a closed-period reference-data edit no longer always degrades to a manual locate-affected-packs task. Remaining: soft-closed governed-adjustment posting, period-precise candidate narrowing, and a durable security→report-line index.
+- [ ] Deferred follow-on — passport governed-write workbench: the write-surface slice (field edit → submit → approve → publish command lifecycle polish, conflict-authority policy hardening, restatement-propagation wrap-up, and its Phase 1/2/5/6 checklist) stays tracked in `docs/plans/security-master-passport-workbench.md`, together with the closed-period remainders above (soft-closed governed-adjustment posting, period-precise candidate narrowing, durable security→report-line index). This is a separate write-surface scope and does not block the completed read-model workbench rows in this section.
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 
@@ -142,10 +149,14 @@ Acceptance evidence produced for this FINOPS slice:
 
 ## W7 TODOs: Live-Readiness Governance
 
-- [ ] Define explicit live-readiness gates for trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and governance sign-off.
-- [ ] Keep live action surfaces paper-first until all readiness gates are green.
-- [ ] Add evidence for sign-off, exception handling, rollback/kill-switch posture, and audit retention before claiming live-readiness completion.
-- [ ] Avoid live execution productization until W7 acceptance evidence exists.
+- [x] Define explicit live-readiness gates for trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and governance sign-off.
+  Evidence: `PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)` requires the paper baseline plus `PAPER_VALIDATION_REVIEWED`, `RECONCILIATION_EVIDENCE_REVIEWED`, `ACCOUNTING_RECORDS_REVIEWED`, `GOVERNED_REPORTING_REVIEWED`, and `GOVERNANCE_SIGNOFF_REVIEWED`; `PromotionService.GetMissingLiveEvidenceRequirements` rejects missing evidence references before creating a live run.
+- [x] Keep live action surfaces paper-first until all readiness gates are green.
+  Evidence: `PromotionService.EvaluateAsync` targets live mode only from a completed paper run, blocks live promotion when brokerage configuration is not live-enabled or still paper, and requires operator controls plus an `AllowLivePromotion` manual override; `ExecutionOperatorControlService.EvaluateLivePromotion` blocks promotion while the circuit breaker is open or the override is missing or inactive.
+- [x] Add evidence for sign-off, exception handling, rollback/kill-switch posture, and audit retention before claiming live-readiness completion.
+  Evidence: `PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)` includes `GOVERNANCE_SIGNOFF_REVIEWED`, `EXCEPTION_HANDLING_REVIEWED`, `ROLLBACK_KILL_SWITCH_REVIEWED`, and `AUDIT_RETENTION_REVIEWED`; `PromotionServiceLiveGovernanceTests` proves missing evidence fails closed, approved live promotions write promotion audit metadata, and durable promotion history survives restart.
+- [x] Avoid live execution productization until W7 acceptance evidence exists.
+  Evidence: `W7-LIVE-001` closes only the bounded governance row; the roadmap summary and design document keep broader live execution productization and live portfolio operations outside this completion claim.
 
 
 ## Codex Memory Inventory Pass: 2026-06-22
@@ -173,7 +184,8 @@ Classification key: already implemented; partially implemented; missing; impleme
 
 - [ ] Treasury payments: design native live payment execution, bank release automation, return/reversal evidence, payment processor orchestration, and payment approval proof before implementation.
 - [ ] Treasury payments: add tests for payment request, approval, expected cash movement, bank confirmation, reconciliation, reversal evidence, and audit linkage.
-- [ ] Alternative asset operations: define the minimum asset classes and provider/source evidence needed beyond current structured/private coverage rows.
+- [x] Alternative asset operations: define and implement the minimum first-class asset classes and provider/source evidence needed beyond current structured/private coverage rows.
+  Evidence: `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, and retained `DirectLoan` are covered by `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs`, `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs`, `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs`, and `src/Meridian.FSharp/Domain/SecurityMaster.fs`; proven by `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, `tests/Meridian.FSharp.Tests/DomainTests.fs`, and `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`. Roadmap row `W5-MASSET-001` remains `done` with evidence posture `complete`.
 - [ ] Enterprise risk: define stress/scenario, independent risk cockpit, cross-portfolio governance, breach acceptance, and evidence-retention requirements.
 - [ ] Forecasting: define the forecasting engine boundary, scenario inputs, retained evidence model, budget/cash/close/report links, and acceptance tests.
 - [ ] Capital structure modeling: define debt/equity waterfall, commitment, obligation, covenant, and financing-event evidence requirements.
@@ -181,6 +193,7 @@ Classification key: already implemented; partially implemented; missing; impleme
 - [ ] Reporting and analytics platform: build the full reporting and analytics platform beyond the W4/W5 governed report-pack baselines; define analytics surfaces, datasets, scheduling, distribution, and acceptance evidence before marking complete.
 - [ ] Client portal: keep broad self-service portal deferred; first define entitlement, recipient approval, delivery evidence, request history, amendment, and restatement gates.
 - [ ] No-code workflow designer: define policy-safe workflow configuration boundaries, approval rules, versioning, test cases, and activation controls before UI design.
-- [ ] Document vault: define request lists, immutable manifests, extracted-field review, document-to-object links, retention policy, and audit evidence before marking as complete.
+- [ ] Evidence Vault productization: active browser-first implementation is tracked by `W5X-EVIDENCE-001`; statement reconciliation onboarding is the first acceptance path, while broader document portal/collaboration expansion remains deferred.
+- [ ] Statement reconciliation onboarding wedge: active browser-first implementation is tracked by `W5X-STMT-ONBOARD-001`; WPF UI parity is omitted from this v1 slice.
 - [ ] Collaboration: define operator comments, assignments, waiting-on-evidence state, waiting-on-approval state, escalation history, and audit retention beyond current workflow queue support.
 - [ ] Mobile: keep native iOS/Android, MAUI, React Native, Flutter, and mobile-first workflows closed unless roadmap explicitly reopens the lane.

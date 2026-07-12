@@ -24,7 +24,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 - `src/Meridian.ReferenceData` - registered source module root.
 - `SecurityMaster/SecurityKindMapping.cs` - canonical asset-class and instrument-kind
-  normalization for Security Master validation and readiness workflows.
+  normalization plus descriptor-backed compatibility profiles for Security Master validation,
+  provider routing, and readiness workflows.
 - `SecurityMaster/SecurityAssetProfileCatalog.cs` - Security Master profile catalog
   contract plus seeded approved custom/private asset profile templates.
 
