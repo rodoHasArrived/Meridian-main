@@ -37,11 +37,18 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
 
-        // Record newly detected conflicts; ON CONFLICT DO NOTHING preserves any existing resolution
-        // state so a re-detected, already-resolved conflict is never re-opened.
-        foreach (var conflict in detected)
+        // Record newly detected conflicts in one transaction (one commit instead of one per conflict);
+        // ON CONFLICT DO NOTHING preserves any existing resolution state so a re-detected,
+        // already-resolved conflict is never re-opened.
+        if (detected.Count > 0)
         {
-            await InsertIfAbsentAsync(connection, transaction: null, conflict, ct).ConfigureAwait(false);
+            await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+            foreach (var conflict in detected)
+            {
+                await InsertIfAbsentAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
+            }
+
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
         }
 
         if (detected.Count > 0)
@@ -86,7 +93,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
     public async Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
     {
-        var newStatus = request.Resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
+        var newStatus = "Dismiss".Equals(request.Resolution, StringComparison.OrdinalIgnoreCase)
             ? "Dismissed"
             : "Resolved";
 
@@ -137,11 +144,12 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
         int newConflicts = 0;
         foreach (var conflict in candidates)
         {
-            var inserted = await InsertIfAbsentAsync(connection, transaction: null, conflict, ct).ConfigureAwait(false);
+            var inserted = await InsertIfAbsentAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
             if (inserted)
             {
                 newConflicts++;
@@ -150,6 +158,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     conflict.FieldPath, conflict.ValueB, projection.SecurityId);
             }
         }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
 
         if (newConflicts > 0)
         {

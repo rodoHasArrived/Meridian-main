@@ -136,15 +136,13 @@ public sealed class SecurityMasterMigrationRunner
         var seenOrdinals = new Dictionary<int, string>();
         foreach (var script in scripts)
         {
-            if (seenOrdinals.TryGetValue(script.Ordinal, out var existing))
+            if (!seenOrdinals.TryAdd(script.Ordinal, script.FileName))
             {
                 throw new InvalidOperationException(
                     $"Duplicate Security Master migration ordinal {script.Ordinal:D3}: " +
-                    $"'{existing}' and '{script.FileName}' share the same ordinal. " +
+                    $"'{seenOrdinals[script.Ordinal]}' and '{script.FileName}' share the same ordinal. " +
                     "Migration ordinals must be unique so apply order is deterministic.");
             }
-
-            seenOrdinals.Add(script.Ordinal, script.FileName);
         }
 
         return scripts;
@@ -171,6 +169,13 @@ public sealed class SecurityMasterMigrationRunner
         if (string.IsNullOrWhiteSpace(value))
         {
             throw new InvalidOperationException($"{parameterName} is required.");
+        }
+
+        // Unquoted Postgres identifiers must not start with a digit — the schema name is interpolated
+        // unquoted into DDL, so a leading digit would be a SQL syntax error at runtime.
+        if (!(char.IsAsciiLetter(value[0]) || value[0] == '_'))
+        {
+            throw new InvalidOperationException($"{parameterName} must start with a letter or underscore.");
         }
 
         foreach (var c in value)
