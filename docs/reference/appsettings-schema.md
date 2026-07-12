@@ -30,6 +30,7 @@ Use this page when you need to map configuration sections to high-impact operati
 | `Backfill` | Controls historical import behavior, retry policy, and scheduling. | `MDC_BACKFILL_*` |
 | `Storage` | Controls retention, partitioning, and storage pressure behavior. | `MDC_STORAGE_*` |
 | `IB`, `IBClientPortal` | Controls broker connectivity and execution-adjacent account surfaces. | `MDC_IB_*` |
+| `Connectivity:Probes` | Controls operator-tunable connectivity diagnostics, including TCP probe timeout behavior. | JSON/appsettings only |
 | `StockSharp` | Controls connector runtime and broker/data credential surfaces. | `MDC_STOCKSHARP_*` |
 | `Alpaca`, provider blocks under `Backfill:Providers` | Provider-specific data/credential posture. | `MDC_ALPACA_*`, provider-specific keys |
 | `Serilog` | Logging signal/noise and sensitive-output posture. | `MDC_DEBUG`, `MDC_LOG_LEVEL` |

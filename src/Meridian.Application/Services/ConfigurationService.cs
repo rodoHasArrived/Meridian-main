@@ -1,8 +1,10 @@
+using System.Text.Json;
 using Meridian.Application.Config;
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
+using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
 using Meridian.Contracts.Configuration;
@@ -289,8 +291,105 @@ public sealed class ConfigurationService : IAsyncDisposable
         AppConfig config,
         CancellationToken ct = default)
     {
-        await using var tester = new ConnectivityTestService();
+        var probeOptions = ResolveConnectivityProbeOptions(config);
+        await using var tester = new ConnectivityTestService(probeOptions);
         return await tester.TestAllAsync(config, ct);
+    }
+
+    internal static ConnectivityProbeOptions ResolveConnectivityProbeOptions(AppConfig config)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+
+        if (!TryGetAdditionalSection(config, ConnectivityProbeOptions.SectionKey, out var section))
+        {
+            return new ConnectivityProbeOptions();
+        }
+
+        var options = new ConnectivityProbeOptions();
+        if (TryGetJsonProperty(section, nameof(ConnectivityProbeOptions.TcpConnectTimeoutMs), out var timeoutElement))
+        {
+            if (timeoutElement.ValueKind != JsonValueKind.Number ||
+                !timeoutElement.TryGetInt32(out var tcpConnectTimeoutMs))
+            {
+                throw new ConfigurationException(
+                    $"{ConnectivityProbeOptions.SectionKey}:{nameof(ConnectivityProbeOptions.TcpConnectTimeoutMs)} must be an integer.",
+                    fieldName: $"{ConnectivityProbeOptions.SectionKey}:{nameof(ConnectivityProbeOptions.TcpConnectTimeoutMs)}");
+            }
+
+            options.TcpConnectTimeoutMs = tcpConnectTimeoutMs;
+        }
+
+        return options;
+    }
+
+    private static bool TryGetAdditionalSection(AppConfig config, string sectionKey, out JsonElement section)
+    {
+        section = default;
+        if (config.AdditionalSections is null || config.AdditionalSections.Count == 0)
+        {
+            return false;
+        }
+
+        var parts = sectionKey.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 0 ||
+            !TryGetDictionaryValue(config.AdditionalSections, parts[0], out var current))
+        {
+            return false;
+        }
+
+        foreach (var part in parts.Skip(1))
+        {
+            if (!TryGetJsonProperty(current, part, out current))
+            {
+                return false;
+            }
+        }
+
+        section = current;
+        return true;
+    }
+
+    private static bool TryGetDictionaryValue(
+        IReadOnlyDictionary<string, JsonElement> values,
+        string key,
+        out JsonElement value)
+    {
+        if (values.TryGetValue(key, out value))
+        {
+            return true;
+        }
+
+        foreach (var entry in values)
+        {
+            if (string.Equals(entry.Key, key, StringComparison.OrdinalIgnoreCase))
+            {
+                value = entry.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool TryGetJsonProperty(JsonElement element, string propertyName, out JsonElement value)
+    {
+        value = default;
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
