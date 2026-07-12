@@ -1062,6 +1062,8 @@ Meridian-main
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
+│       │   ├── dispatch-targeted-test.py
+│       │   ├── generate-release-evidence-manifest.py
 │       │   ├── run-dotnet-ci-tests.py
 │       │   └── summarize-ci-artifacts.py
 │       ├── docs
@@ -8574,8 +8576,8 @@ Meridian-main
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_summary.py
+│   │   ├── test_ci_workflow_contract.py
 │   │   ├── test_cleanup_generated_script.py
-│   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
@@ -8600,6 +8602,8 @@ Meridian-main
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
+│   │   ├── test_release_evidence_manifest.py
+│   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_route_maintenance_classification.py
@@ -8611,6 +8615,7 @@ Meridian-main
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py
+│   │   ├── test_targeted_test_dispatcher.py
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_screenshot_captures.py
 │   │   ├── test_validate_source_readmes.py

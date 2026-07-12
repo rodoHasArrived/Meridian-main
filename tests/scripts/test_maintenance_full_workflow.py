@@ -51,11 +51,16 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
         self.assertNotIn("--filter", line)
 
     def test_fsharp_maintenance_lane_matches_ci_discovery_arguments(self) -> None:
-        self.assertIn('fsharp_test_args=(', self.script)
-        self.assertIn('--logger "trx;LogFileName=test-results-fsharp.trx"', self.script)
-        self.assertIn("--results-directory .ai/test-results", self.script)
-        self.assertIn('--collect "XPlat Code Coverage"', self.script)
-        self.assertIn("--blame-hang-timeout 60s", self.script)
+        line = next(
+            (line for line in self.script.splitlines() if 'run_step "dotnet-test-fsharp"' in line),
+            None,
+        )
+        self.assertIsNotNone(line, 'run_step "dotnet-test-fsharp" not found in maintenance-full.sh')
+
+        self.assertIn('"${BUILDCTL[@]}"', line)
+        self.assertIn('"${test_common_args[@]}"', line)
+        self.assertIn('--logger "trx;LogFileName=test-results-fsharp.trx"', line)
+        self.assertIn('--collect "XPlat Code Coverage"', line)
 
     def test_wpf_tests_are_left_to_desktop_validation_lane(self) -> None:
         self.assertIn('record_step "dotnet-test-wpf" "skipped"', self.script)
