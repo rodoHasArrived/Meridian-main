@@ -467,7 +467,7 @@ JSON/JSONL via `AtomicFileWriter`. The relational stores above never hold tick d
 | Lane | Mechanism | What is persisted |
 | --- | --- | --- |
 | Market data capture | Write-Ahead Log (`src/Meridian.Storage/Archival/WriteAheadLog.cs`): `wal_*.wal` files, per-record SHA-256 checksums, COMMIT records | `MarketEvent` envelope (`Trade`, `LOBSnapshot`, `BboQuotePayload`, `HistoricalBar`, option/order-book payloads) — field reference in [Data Dictionary](data-dictionary.md) |
-| Market data archive | JSONL + Parquet dual sinks (`CompositeSink`), canonical layout `{root}/{yyyy}/{MM}/{dd}/{source}/{symbol}/{Type}.jsonl[.gz]` | Partitioned event files with per-file checksums and event counts |
+| Market data archive | JSONL sink with `BySymbol` naming by default (`StorageOptions.NamingConvention`); Parquet dual-sink (`CompositeSink`) is opt-in via `EnableParquetSink`/`ActiveSinks`, and the canonical `{root}/{yyyy}/{MM}/{dd}/{source}/{symbol}/{Type}.jsonl[.gz]` layout is one of eight selectable naming conventions | Partitioned event files with per-file checksums and event counts |
 | Catalog and manifests | `_catalog/manifest.json` (`StorageCatalog`), per-session `DataManifest`, schema registry (`*.schema.json`) | Symbol/date/file index, sequence ranges and gaps, quality metrics, schema versions |
 | Backfill state | `<dataRoot>/_status/backfill.json` + symbol checkpoint/barcount JSON (`BackfillStatusStore`) | Last backfill result, per-symbol checkpoints and bar counts per granularity |
 | Strategy lane | JSONL append-only stores under `data/strategies/` | Strategy design drafts (`designer/strategy-design-drafts.jsonl`), promotion history (`promotions/promotion-history.jsonl`); strategy run entries are in-memory today (`StrategyRunStore`) |
