@@ -57,6 +57,10 @@ import {
   verifyProviderConnection
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import {
+  formatProviderIntegrationSetupDraftIssues,
+  validateProviderIntegrationSetupDraft
+} from "@/lib/provider-integration-setup-validation";
 import { cn } from "@/lib/utils";
 import {
   buildSettingsScreenViewModel,
@@ -6161,6 +6165,17 @@ function ProviderIntegrationWorkbenchPanel({
         ...current,
         message: "Provider integration setup draft is not valid JSON.",
         details,
+        tone: "warning"
+      }));
+      return;
+    }
+
+    const validationIssues = validateProviderIntegrationSetupDraft(manifestDraft.value, connectionDraft.value);
+    if (validationIssues.length > 0) {
+      setState((current) => ({
+        ...current,
+        message: "Provider integration setup draft failed validation. Fix the reported fields and save again.",
+        details: formatProviderIntegrationSetupDraftIssues(validationIssues),
         tone: "warning"
       }));
       return;

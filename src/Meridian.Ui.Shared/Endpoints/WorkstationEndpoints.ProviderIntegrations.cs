@@ -164,19 +164,33 @@ public static partial class WorkstationEndpoints
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
+            catch (ProviderIntegrationSetupValidationException ex)
+            {
+                return Results.ValidationProblem(
+                    ToValidationProblemErrors(ex.Issues),
+                    title: "Provider integration setup draft failed validation.",
+                    detail: "Fix the reported fields and save the draft again.");
+            }
             catch (ArgumentException ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
             catch (InvalidOperationException ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                return Results.Problem(
+                    "Provider integration setup save failed unexpectedly. Check server logs for operation setup-save-draft.",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         })
         .WithName("SaveWorkstationProviderIntegrationSetup")
         .Produces<ProviderIntegrationSetupSaveResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status500InternalServerError)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireAnyPermission(
             UserPermission.ManageProviders,
@@ -1124,4 +1138,13 @@ public static partial class WorkstationEndpoints
             UserPermission.ManageProviders,
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
+
+    private static Dictionary<string, string[]> ToValidationProblemErrors(
+        IReadOnlyList<ProviderIntegrationSetupValidationIssue> issues)
+        => issues
+            .GroupBy(issue => issue.Field, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(issue => issue.Message).ToArray(),
+                StringComparer.Ordinal);
 }
