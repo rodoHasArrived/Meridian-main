@@ -71,10 +71,7 @@ public static class QuantLabEndpoints
             {
                 var logger = services.GetService<ILoggerFactory>()?.CreateLogger("QuantLabEndpoints");
                 logger?.LogWarning(ex, "Quant Lab run failed");
-                return Results.Json(
-                    QuantRunResponse.FromError(ex.Message),
-                    jsonOptions,
-                    statusCode: StatusCodes.Status500InternalServerError);
+                return EndpointHelpers.Error(ex, jsonOptions, "Quant Lab run failed.");
             }
         })
         .WithName("RunQuantScript")

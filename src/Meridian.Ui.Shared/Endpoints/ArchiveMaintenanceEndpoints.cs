@@ -88,7 +88,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to update schedule: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to update schedule.");
             }
         });
 
@@ -109,7 +109,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to delete schedule: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to delete schedule.");
             }
         });
 
@@ -136,7 +136,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to trigger schedule: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to trigger schedule.");
             }
         });
 
@@ -166,7 +166,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Maintenance execution failed: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Maintenance execution failed.");
             }
         });
 
@@ -187,7 +187,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to cancel execution: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to cancel execution.");
             }
         });
 
@@ -208,7 +208,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get executions: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get executions.");
             }
         });
 
@@ -229,7 +229,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get execution: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get execution.");
             }
         });
 
@@ -249,7 +249,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get schedule executions: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get schedule executions.");
             }
         });
 
@@ -268,7 +268,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get failed executions: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get failed executions.");
             }
         });
 
@@ -287,7 +287,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get schedule summary: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get schedule summary.");
             }
         });
 
@@ -307,7 +307,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get schedule summary: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get schedule summary.");
             }
         });
 
@@ -338,7 +338,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get statistics: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get statistics.");
             }
         });
 
@@ -357,7 +357,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get service status: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get service status.");
             }
         });
 
@@ -402,7 +402,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Validation failed: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Validation failed.");
             }
         });
 
@@ -464,7 +464,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get presets: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get presets.");
             }
         });
 
@@ -491,7 +491,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get task types: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to get task types.");
             }
         });
 
@@ -517,7 +517,7 @@ public static class ArchiveMaintenanceEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to cleanup history: {ex.Message}");
+                return EndpointHelpers.Error(ex, JsonOptions, "Failed to cleanup history.");
             }
         });
     }

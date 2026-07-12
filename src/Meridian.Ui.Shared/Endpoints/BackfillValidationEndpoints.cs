@@ -104,7 +104,7 @@ public static class BackfillValidationEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Backfill validation report failed");
-                return Results.Problem("Backfill validation failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Backfill validation failed.");
             }
         })
         .WithName("GetBackfillValidation")
@@ -164,7 +164,7 @@ public static class BackfillValidationEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Backfill validation failed for symbol {Symbol}", symbol);
-                return Results.Problem("Backfill validation failed for the requested symbol.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Backfill validation failed for the requested symbol.");
             }
         })
         .WithName("GetBackfillValidationBySymbol")

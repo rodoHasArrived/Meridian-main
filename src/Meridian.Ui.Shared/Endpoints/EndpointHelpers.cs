@@ -21,6 +21,36 @@ internal static class EndpointHelpers
         => Results.StatusCode(StatusCodes.Status403Forbidden);
 
     /// <summary>
+    /// Handles a synchronous endpoint handler with shared error formatting.
+    /// </summary>
+    internal static IResult HandleSync(Func<IResult> handler, JsonSerializerOptions? opts = null)
+    {
+        try
+        {
+            return handler();
+        }
+        catch (Exception ex)
+        {
+            return Error(ex, opts);
+        }
+    }
+
+    /// <summary>
+    /// Handles an async endpoint handler with shared error formatting.
+    /// </summary>
+    internal static async Task<IResult> HandleAsync(Func<Task<IResult>> handler, JsonSerializerOptions? opts = null)
+    {
+        try
+        {
+            return await handler().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return Error(ex, opts);
+        }
+    }
+
+    /// <summary>
     /// Handles a synchronous endpoint handler with service null-check and error handling.
     /// </summary>
     internal static IResult HandleSync<TService>(
@@ -37,7 +67,7 @@ internal static class EndpointHelpers
         }
         catch (Exception ex)
         {
-            return FormatErrorResult(ex, opts);
+            return Error(ex, opts);
         }
     }
 
@@ -59,7 +89,7 @@ internal static class EndpointHelpers
         }
         catch (Exception ex)
         {
-            return FormatErrorResult(ex, opts);
+            return Error(ex, opts);
         }
     }
 
@@ -82,7 +112,7 @@ internal static class EndpointHelpers
         }
         catch (Exception ex)
         {
-            return FormatErrorResult(ex, opts);
+            return Error(ex, opts);
         }
     }
 
@@ -101,21 +131,46 @@ internal static class EndpointHelpers
     /// Formats an exception into a structured JSON error response using FriendlyErrorFormatter.
     /// Returns a consistent error envelope with error code, message, and actionable suggestion.
     /// </summary>
-    private static IResult FormatErrorResult(Exception ex, JsonSerializerOptions opts)
+    internal static IResult Error(
+        Exception ex,
+        JsonSerializerOptions? opts = null,
+        string? error = null,
+        int? statusCode = null)
     {
         var formatted = FriendlyErrorFormatter.Format(ex);
-        var statusCode = GetHttpStatusCode(ex);
+        var resolvedStatusCode = statusCode ?? GetHttpStatusCode(ex);
+        var title = string.IsNullOrWhiteSpace(error) ? formatted.Title : error.Trim();
 
         return Results.Json(new
         {
-            error = formatted.Title,
+            error = title,
             code = formatted.Code,
-            message = formatted.Message,
+            message = GetClientMessage(ex, formatted, resolvedStatusCode, title),
             suggestion = formatted.Suggestion,
             docsLink = formatted.DocsLink,
             timestamp = DateTimeOffset.UtcNow
-        }, opts, statusCode: statusCode);
+        }, opts, statusCode: resolvedStatusCode);
     }
+
+    private static string GetClientMessage(
+        Exception ex,
+        FormattedError formatted,
+        int statusCode,
+        string title)
+    {
+        if (CanExposeMessage(ex, statusCode))
+        {
+            return formatted.Message;
+        }
+
+        return statusCode >= StatusCodes.Status500InternalServerError
+            ? title
+            : formatted.Title;
+    }
+
+    private static bool CanExposeMessage(Exception ex, int statusCode)
+        => statusCode < StatusCodes.Status500InternalServerError &&
+           ex is ArgumentException or UnauthorizedAccessException;
 
     /// <summary>
     /// Maps exception types to appropriate HTTP status codes.

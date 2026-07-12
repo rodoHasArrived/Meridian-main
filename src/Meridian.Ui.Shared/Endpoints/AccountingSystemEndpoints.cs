@@ -21,27 +21,19 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var providers = await service.ListProvidersAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(providers, jsonOptions);
         })
         .WithName("ListAccountingSystemProviders")
-        .Produces<IReadOnlyList<AccountingSystemProviderDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<AccountingSystemProviderDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemProductionReadiness, async (
             AccountingProductionReadinessRequestDto request,
             HttpContext context,
             AccountingProductionReadinessService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
@@ -53,7 +45,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("AssessAccountingProductionReadiness")
         .Produces<AccountingProductionReadinessDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemTenantAdministrationProfile, async (
             string? tenantId,
@@ -61,11 +54,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingTenantAdministrationProfileStore store) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var resolvedTenantId = tenantContext.TenantId ?? tenantId;
             var resolvedCompanyId = tenantContext.CompanyId ?? companyId;
@@ -77,18 +65,14 @@ public static class AccountingSystemEndpoints
         .WithName("GetAccountingTenantAdministrationProfile")
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemTenantAdministrationProfile, async (
             AccountingTenantAdministrationProfileUpsertRequestDto request,
             HttpContext context,
             IAccountingTenantAdministrationProfileStore store) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
@@ -117,6 +101,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -128,11 +113,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingProductionCertificationProfileStore store) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var resolvedTenantId = tenantContext.TenantId ?? tenantId;
             var resolvedCompanyId = tenantContext.CompanyId ?? companyId;
@@ -145,6 +125,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
@@ -152,11 +133,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingProductionCertificationProfileStore store) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
@@ -185,6 +161,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -193,11 +170,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingMigrationRunExecutionService service) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -222,6 +194,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingMigrationRunExecutionResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -231,11 +204,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingMigrationRunArtifactStore store) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var artifacts = await store
                 .ListAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
@@ -251,6 +219,7 @@ public static class AccountingSystemEndpoints
         .WithName("ListAccountingMigrationRunArtifacts")
         .Produces<AccountingMigrationRunArtifactListDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
@@ -258,11 +227,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingMigrationRunArtifactStore store) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -291,6 +255,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingMigrationRunArtifactDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -301,11 +266,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingMigrationRunWorkerPlanStore store) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var plans = await store
                 .ListAsync(fundProfileId, ledgerBookId, kind, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
@@ -322,6 +282,7 @@ public static class AccountingSystemEndpoints
         .WithName("ListAccountingMigrationWorkerPlans")
         .Produces<AccountingMigrationRunWorkerPlanListDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMigrationWorkerPlans, async (
@@ -329,11 +290,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             IAccountingMigrationRunWorkerPlanWriter store) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             try
             {
                 EnsureHumanOrigin(request.ActionOrigin);
@@ -359,6 +315,7 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingMigrationRunWorkerPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -367,11 +324,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var previewRequest = request with
             {
@@ -384,6 +336,8 @@ public static class AccountingSystemEndpoints
         })
         .WithName("PreviewAccountingSystemImport")
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -394,11 +348,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var result = await service
                 .GetLatestImportAsync(
@@ -414,6 +363,7 @@ public static class AccountingSystemEndpoints
         .WithName("GetLatestAccountingSystemImport")
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemReconciliationLatest, async (
@@ -423,11 +373,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var result = await service
                 .ReconcileLatestAsync(
@@ -443,6 +388,7 @@ public static class AccountingSystemEndpoints
         .WithName("GetLatestAccountingSystemReconciliation")
         .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapGet(UiApiRoutes.AccountingSystemMappingProfiles, async (
@@ -452,11 +398,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var result = await service
                 .ListMappingProfilesAsync(
@@ -472,6 +413,7 @@ public static class AccountingSystemEndpoints
         .WithName("ListAccountingSystemMappingProfiles")
         .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemMappingProfiles, async (
@@ -479,11 +421,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
@@ -519,6 +456,8 @@ public static class AccountingSystemEndpoints
         .Produces<ExternalGlMappingProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -532,11 +471,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var result = await service
                 .ListExportPackagesAsync(
@@ -553,6 +487,7 @@ public static class AccountingSystemEndpoints
         .WithName("ListAccountingSystemExportPackages")
         .Produces<IReadOnlyList<ExternalGlExportPackageDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemExportPackages, async (
@@ -560,11 +495,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
@@ -600,6 +530,8 @@ public static class AccountingSystemEndpoints
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -608,11 +540,6 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -639,18 +566,14 @@ public static class AccountingSystemEndpoints
         .Produces<ExternalGlExportPackageManifestDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
 
         group.MapPost(UiApiRoutes.AccountingSystemExportPackageCertification, async (
             CertifyAccountingSystemExportPackageRequestDto request,
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingCertificationAccess(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -683,18 +606,10 @@ public static class AccountingSystemEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
+        .RequirePermission(UserPermission.AdminMaintenance)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
-
-    private static bool HasAccountingAccess(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(
-            context,
-            UserPermission.AdminMaintenance,
-            UserPermission.ManageFundStructure);
-
-    private static bool HasAccountingCertificationAccess(HttpContext context)
-        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
     private static string ResolveMutationActor(HttpContext context, string suppliedActor)
         => context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var user) &&

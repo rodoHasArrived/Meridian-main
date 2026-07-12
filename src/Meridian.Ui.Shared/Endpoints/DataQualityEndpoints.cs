@@ -19,36 +19,6 @@ public static class DataQualityEndpoints
     };
 
     /// <summary>
-    /// Wraps a synchronous handler with consistent error handling and JSON serialization.
-    /// </summary>
-    private static IResult HandleSync(Func<IResult> handler)
-    {
-        try
-        {
-            return handler();
-        }
-        catch (Exception ex)
-        {
-            return Results.Problem(ex.Message);
-        }
-    }
-
-    /// <summary>
-    /// Wraps an async handler with consistent error handling and JSON serialization.
-    /// </summary>
-    private static async Task<IResult> HandleAsync(Func<Task<IResult>> handler, CancellationToken ct = default)
-    {
-        try
-        {
-            return await handler();
-        }
-        catch (Exception ex)
-        {
-            return Results.Problem(ex.Message);
-        }
-    }
-
-    /// <summary>
     /// Parses an optional date string, defaulting to today (UTC).
     /// </summary>
     private static DateOnly ParseDateOrToday(string? date) =>
@@ -67,22 +37,22 @@ public static class DataQualityEndpoints
         // ==================== DASHBOARD ====================
 
         app.MapGet(UiApiRoutes.QualityDashboard, () =>
-            HandleSync(() => Json(ToResponse(qualityService.GetDashboard()))));
+            EndpointHelpers.HandleSync(() => Json(ToResponse(qualityService.GetDashboard()))));
 
         app.MapGet(UiApiRoutes.QualityMetrics, () =>
-            HandleSync(() => Json(qualityService.GetRealTimeMetrics())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.GetRealTimeMetrics())));
 
         // ==================== COMPLETENESS ====================
 
         app.MapGet(UiApiRoutes.QualityCompleteness, (string? date) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.Completeness.GetScoresForDate(targetDate));
             }));
 
         app.MapGet(UiApiRoutes.QualityCompletenessBySymbol, (string symbol, string? date) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 if (date != null)
                 {
@@ -97,10 +67,10 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityCompletenessSummary, () =>
-            HandleSync(() => Json(qualityService.Completeness.GetSummary())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.Completeness.GetSummary())));
 
         app.MapGet(UiApiRoutes.QualityCompletenessLow, (string? date, double? threshold) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.Completeness.GetLowCompletenessSymbols(targetDate, threshold ?? 0.8));
@@ -109,7 +79,7 @@ public static class DataQualityEndpoints
         // ==================== GAP ANALYSIS ====================
 
         app.MapGet(UiApiRoutes.QualityGaps, (string? date, int? count) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 if (date != null)
                 {
@@ -121,14 +91,14 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityGapsBySymbol, (string symbol, string? date) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.GapAnalyzer.AnalyzeGaps(symbol, targetDate));
             }));
 
         app.MapGet(UiApiRoutes.QualityGapsTimeline, (string symbol, string? date) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 var analysis = qualityService.GapAnalyzer.AnalyzeGaps(symbol, targetDate);
@@ -136,7 +106,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityGapsStatistics, (string? date) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = date != null ? DateOnly.Parse(date) : (DateOnly?)null;
                 return Json(qualityService.GapAnalyzer.GetStatistics(targetDate));
@@ -145,7 +115,7 @@ public static class DataQualityEndpoints
         // ==================== SEQUENCE ERRORS ====================
 
         app.MapGet(UiApiRoutes.QualityErrors, (string? date, int? count) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 if (date != null)
                 {
@@ -157,22 +127,22 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityErrorsBySymbol, (string symbol, string? date, int? count) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = date != null ? DateOnly.Parse(date) : (DateOnly?)null;
                 return Json(qualityService.SequenceTracker.GetSummary(symbol, targetDate));
             }));
 
         app.MapGet(UiApiRoutes.QualityErrorsStatistics, () =>
-            HandleSync(() => Json(qualityService.SequenceTracker.GetStatistics())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.SequenceTracker.GetStatistics())));
 
         app.MapGet(UiApiRoutes.QualityErrorsTopSymbols, (int? count) =>
-            HandleSync(() => Json(qualityService.SequenceTracker.GetSymbolsWithMostErrors(count ?? 10))));
+            EndpointHelpers.HandleSync(() => Json(qualityService.SequenceTracker.GetSymbolsWithMostErrors(count ?? 10))));
 
         // ==================== ANOMALIES ====================
 
         app.MapGet(UiApiRoutes.QualityAnomalies, (string? date, string? type, string? severity, int? count) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 IReadOnlyList<DataAnomaly> anomalies;
 
@@ -198,13 +168,13 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityAnomaliesBySymbol, (string symbol, int? count) =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetAnomalies(symbol, count ?? 100).Select(ToResponse).ToArray())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.AnomalyDetector.GetAnomalies(symbol, count ?? 100).Select(ToResponse).ToArray())));
 
         app.MapGet(UiApiRoutes.QualityAnomaliesUnacknowledged, (int? count) =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetUnacknowledgedAnomalies(count ?? 100).Select(ToResponse).ToArray())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.AnomalyDetector.GetUnacknowledgedAnomalies(count ?? 100).Select(ToResponse).ToArray())));
 
         app.MapPost(UiApiRoutes.QualityAnomaliesAcknowledge, (string anomalyId) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var success = qualityService.AnomalyDetector.AcknowledgeAnomaly(anomalyId);
                 return success
@@ -213,18 +183,18 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityAnomaliesStatistics, () =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetStatistics())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.AnomalyDetector.GetStatistics())));
 
         app.MapGet(UiApiRoutes.QualityAnomaliesStale, () =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetStaleSymbols())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.AnomalyDetector.GetStaleSymbols())));
 
         // ==================== LATENCY ====================
 
         app.MapGet(UiApiRoutes.QualityLatency, () =>
-            HandleSync(() => Json(qualityService.LatencyHistogram.GetAllDistributions())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.LatencyHistogram.GetAllDistributions())));
 
         app.MapGet(UiApiRoutes.QualityLatencyBySymbol, (string symbol, string? provider) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var distribution = qualityService.LatencyHistogram.GetDistribution(symbol, provider);
                 return distribution != null
@@ -233,25 +203,25 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityLatencyHistogram, (string symbol, string? provider) =>
-            HandleSync(() => Json(new { symbol, provider, buckets = qualityService.LatencyHistogram.GetBuckets(symbol, provider) })));
+            EndpointHelpers.HandleSync(() => Json(new { symbol, provider, buckets = qualityService.LatencyHistogram.GetBuckets(symbol, provider) })));
 
         app.MapGet(UiApiRoutes.QualityLatencyStatistics, () =>
-            HandleSync(() => Json(ToResponse(qualityService.LatencyHistogram.GetStatistics()))));
+            EndpointHelpers.HandleSync(() => Json(ToResponse(qualityService.LatencyHistogram.GetStatistics()))));
 
         app.MapGet(UiApiRoutes.QualityLatencyHigh, (double? thresholdMs) =>
-            HandleSync(() => Json(qualityService.LatencyHistogram.GetHighLatencySymbols(thresholdMs ?? 100))));
+            EndpointHelpers.HandleSync(() => Json(qualityService.LatencyHistogram.GetHighLatencySymbols(thresholdMs ?? 100))));
 
         // ==================== CROSS-PROVIDER COMPARISON ====================
 
         app.MapGet(UiApiRoutes.QualityComparison, (string symbol, string? date, string? eventType) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(ToResponse(qualityService.CrossProvider.Compare(symbol, targetDate, eventType ?? "Trade")));
             }));
 
         app.MapGet(UiApiRoutes.QualityComparisonDiscrepancies, (string? date, int? count) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 if (date != null)
                 {
@@ -263,12 +233,12 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityComparisonStatistics, () =>
-            HandleSync(() => Json(qualityService.CrossProvider.GetStatistics())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.CrossProvider.GetStatistics())));
 
         // ==================== REPORTS ====================
 
         app.MapGet(UiApiRoutes.QualityReportsDaily, async (string? date, CancellationToken ct) =>
-            await HandleAsync(async () =>
+            await EndpointHelpers.HandleAsync(async () =>
             {
                 var targetDate = ParseDateOrToday(date);
                 var report = await qualityService.GenerateDailyReportAsync(targetDate, null, ct);
@@ -276,7 +246,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityReportsWeekly, async (string? weekStart, CancellationToken ct) =>
-            await HandleAsync(async () =>
+            await EndpointHelpers.HandleAsync(async () =>
             {
                 DateOnly start;
                 if (weekStart != null)
@@ -295,7 +265,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapPost(UiApiRoutes.QualityReportsExport, async (ReportExportRequest request, CancellationToken ct) =>
-            await HandleAsync(async () =>
+            await EndpointHelpers.HandleAsync(async () =>
             {
                 var targetDate = ParseDateOrToday(request.Date);
                 var format = Enum.TryParse<ReportExportFormat>(request.Format, true, out var f)
@@ -310,7 +280,7 @@ public static class DataQualityEndpoints
         // ==================== HEALTH ====================
 
         app.MapGet(UiApiRoutes.QualityHealth, () =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var metrics = qualityService.GetRealTimeMetrics();
                 var status = metrics.OverallHealthScore switch
@@ -334,7 +304,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityHealthBySymbol, (string symbol) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var health = qualityService.GetSymbolHealth(symbol);
                 return health != null
@@ -343,7 +313,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.QualityHealthUnhealthy, () =>
-            HandleSync(() => Json(qualityService.GetUnhealthySymbols())));
+            EndpointHelpers.HandleSync(() => Json(qualityService.GetUnhealthySymbols())));
     }
 
     private static QualityDashboardResponse ToResponse(DataQualityDashboard dashboard) =>
@@ -525,10 +495,10 @@ public static class DataQualityEndpoints
     public static void MapSlaEndpoints(this WebApplication app, DataFreshnessSlaMonitor slaMonitor)
     {
         app.MapGet(UiApiRoutes.SlaStatus, () =>
-            HandleSync(() => Json(slaMonitor.GetSnapshot())));
+            EndpointHelpers.HandleSync(() => Json(slaMonitor.GetSnapshot())));
 
         app.MapGet(UiApiRoutes.SlaStatusBySymbol, (string symbol) =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var status = slaMonitor.GetSymbolStatus(symbol);
                 return status != null
@@ -537,7 +507,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.SlaViolations, () =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var snapshot = slaMonitor.GetSnapshot();
                 var violations = snapshot.SymbolStatuses
@@ -553,7 +523,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.SlaHealth, () =>
-            HandleSync(() =>
+            EndpointHelpers.HandleSync(() =>
             {
                 var snapshot = slaMonitor.GetSnapshot();
                 var status = snapshot.OverallFreshnessScore switch
@@ -579,7 +549,7 @@ public static class DataQualityEndpoints
             }));
 
         app.MapGet(UiApiRoutes.SlaMetrics, () =>
-            HandleSync(() => Json(new
+            EndpointHelpers.HandleSync(() => Json(new
             {
                 totalViolations = slaMonitor.TotalViolations,
                 currentViolations = slaMonitor.CurrentViolations,

@@ -75,7 +75,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Package creation failed: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Package creation failed.");
             }
         });
 
@@ -123,7 +123,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Package import failed: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Package import failed.");
             }
         });
 
@@ -159,7 +159,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Package validation failed: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Package validation failed.");
             }
         });
 
@@ -195,7 +195,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to read package: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Failed to read package.");
             }
         });
 
@@ -241,7 +241,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to list packages: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Failed to list packages.");
             }
         });
 
@@ -280,7 +280,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to delete package: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Failed to delete package.");
             }
         });
 
@@ -325,7 +325,7 @@ public static class PackagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to download package: {ex.Message}");
+                return EndpointHelpers.Error(ex, s_jsonOptions, "Failed to download package.");
             }
         });
     }

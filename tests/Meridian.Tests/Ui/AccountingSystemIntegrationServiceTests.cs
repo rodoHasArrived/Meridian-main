@@ -23,6 +23,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -5874,8 +5875,75 @@ public sealed class AccountingSystemIntegrationServiceTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task AccountingSystemEndpoints_DeclareRouteLevelAuthorizationMetadata()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+
+        var readPermissions = new[] { UserPermission.AdminMaintenance, UserPermission.ManageFundStructure };
+        var routeExpectations = new (string Method, string Route, bool RequireAll, UserPermission[] Permissions)[]
+        {
+            ("GET", UiApiRoutes.AccountingSystemProviders, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemProductionReadiness, false, readPermissions),
+            ("GET", UiApiRoutes.AccountingSystemTenantAdministrationProfile, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemTenantAdministrationProfile, true, [UserPermission.AdminMaintenance]),
+            ("GET", UiApiRoutes.AccountingSystemProductionCertificationProfile, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemProductionCertificationProfile, true, [UserPermission.AdminMaintenance]),
+            ("POST", UiApiRoutes.AccountingSystemMigrationRuns, true, [UserPermission.AdminMaintenance]),
+            ("GET", UiApiRoutes.AccountingSystemMigrationRunArtifacts, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemMigrationRunArtifacts, true, [UserPermission.AdminMaintenance]),
+            ("GET", UiApiRoutes.AccountingSystemMigrationWorkerPlans, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemMigrationWorkerPlans, true, [UserPermission.AdminMaintenance]),
+            ("POST", UiApiRoutes.AccountingSystemImportPreview, false, readPermissions),
+            ("GET", UiApiRoutes.AccountingSystemImportLatest, false, readPermissions),
+            ("GET", UiApiRoutes.AccountingSystemReconciliationLatest, false, readPermissions),
+            ("GET", UiApiRoutes.AccountingSystemMappingProfiles, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemMappingProfiles, true, [UserPermission.AdminMaintenance]),
+            ("GET", UiApiRoutes.AccountingSystemExportPackages, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemExportPackages, true, [UserPermission.AdminMaintenance]),
+            ("GET", UiApiRoutes.AccountingSystemExportPackageManifest, false, readPermissions),
+            ("POST", UiApiRoutes.AccountingSystemExportPackageCertification, true, [UserPermission.AdminMaintenance])
+        };
+
+        foreach (var (method, route, requireAll, permissions) in routeExpectations)
+        {
+            var endpoint = FindEndpoint(app, method, route);
+
+            endpoint.Should().NotBeNull($"the {method} {route} route should be mapped");
+            var metadata = endpoint!.Metadata.GetMetadata<EndpointAuthorizationMetadata>();
+            metadata.Should().NotBeNull($"{method} {route} must attach a discoverable permission requirement");
+            metadata!.RequireAll.Should().Be(requireAll);
+            metadata.Permissions.Should().BeEquivalentTo(permissions);
+        }
+    }
+
     private static AccountingSystemIntegrationService CreateService(params IAccountingSystemProvider[] additionalProviders)
         => CreateService(null, additionalProviders);
+
+    private static RouteEndpoint? FindEndpoint(WebApplication app, string method, string route)
+        => app.Services
+            .GetRequiredService<EndpointDataSource>()
+            .Endpoints
+            .OfType<RouteEndpoint>()
+            .FirstOrDefault(candidate =>
+                NormalizeRoute(candidate.RoutePattern.RawText) == route &&
+                MatchesMethod(candidate, method));
+
+    private static string NormalizeRoute(string? rawRoute)
+    {
+        if (string.IsNullOrEmpty(rawRoute))
+        {
+            return string.Empty;
+        }
+
+        return rawRoute.StartsWith('/') ? rawRoute : "/" + rawRoute;
+    }
+
+    private static bool MatchesMethod(RouteEndpoint endpoint, string method)
+    {
+        var metadata = endpoint.Metadata.GetMetadata<HttpMethodMetadata>();
+        return metadata is null || metadata.HttpMethods.Contains(method, StringComparer.OrdinalIgnoreCase);
+    }
 
     private static AccountingSystemIntegrationService CreateService(
         ILedgerJournalStore? ledgerJournalStore,

@@ -71,7 +71,7 @@ public static class BackfillEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = $"Backfill preview failed: {ex.Message}" });
+                return EndpointHelpers.Error(ex, jsonOptions, "Backfill preview failed.");
             }
         })
         .WithName("PreviewBackfill")
@@ -99,7 +99,7 @@ public static class BackfillEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = $"Backfill execution failed: {ex.Message}" });
+                return EndpointHelpers.Error(ex, jsonOptions, "Backfill execution failed.");
             }
         })
         .WithName("RunBackfill")

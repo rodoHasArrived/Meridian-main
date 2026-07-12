@@ -6,6 +6,7 @@ using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -25,6 +26,7 @@ public static class MessagingEndpoints
     public static void MapMessagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Messaging");
+        var logger = app.Logger;
 
         // Messaging config - reads actual webhook configuration
         group.MapGet(UiApiRoutes.MessagingConfig, ([FromServices] DailySummaryWebhook? webhook) =>
@@ -235,6 +237,7 @@ public static class MessagingEndpoints
             catch (Exception ex)
             {
                 sw.Stop();
+                logger.LogError(ex, "Test message failed.");
                 lock (s_lock)
                 {
                     s_totalFailed++;
@@ -242,18 +245,12 @@ public static class MessagingEndpoints
                     {
                         Id = Guid.NewGuid().ToString("N")[..12],
                         Channel = req?.Channel ?? "webhook",
-                        Error = ex.Message,
+                        Error = "Test message failed.",
                         Timestamp = DateTimeOffset.UtcNow
                     });
                 }
 
-                return Results.Json(new
-                {
-                    success = false,
-                    channel = req?.Channel ?? "webhook",
-                    message = $"Test message failed: {ex.Message}",
-                    timestamp = DateTimeOffset.UtcNow
-                }, jsonOptions);
+                return EndpointHelpers.Error(ex, jsonOptions, "Test message failed.");
             }
         })
         .WithName("TestMessaging")
@@ -378,13 +375,8 @@ public static class MessagingEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Json(new
-                {
-                    messageId,
-                    retried = false,
-                    message = $"Retry failed: {ex.Message}",
-                    timestamp = DateTimeOffset.UtcNow
-                }, jsonOptions);
+                logger.LogError(ex, "Retry failed for messaging error {MessageId}.", messageId);
+                return EndpointHelpers.Error(ex, jsonOptions, "Retry failed.");
             }
         })
         .WithName("RetryMessagingError")

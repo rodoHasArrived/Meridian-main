@@ -54,7 +54,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to get historical bars.");
             }
         })
         .WithName("QueryHistoricalData")
@@ -72,7 +72,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to list historical symbols.");
             }
         })
         .WithName("GetAvailableSymbols")
@@ -94,7 +94,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to get historical date range.");
             }
         })
         .WithName("GetSymbolDateRange")
@@ -156,7 +156,7 @@ public static class HistoricalEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return EndpointHelpers.Error(ex, jsonOptions, "Historical gap detection failed.");
             }
         })
         .WithName("GetSymbolBars")

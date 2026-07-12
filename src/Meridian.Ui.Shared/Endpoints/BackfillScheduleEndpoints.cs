@@ -79,7 +79,7 @@ public static class BackfillScheduleEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return EndpointHelpers.Error(ex, jsonOptions, "Backfill scheduling failed.");
             }
         })
         .WithName("RunBackfillGapFill")

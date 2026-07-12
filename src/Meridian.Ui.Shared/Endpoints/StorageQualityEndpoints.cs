@@ -50,7 +50,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to generate quality summary.");
-                return Results.Problem("Failed to generate quality summary.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to generate quality summary.");
             }
         })
         .WithName("GetQualitySummary").Produces(200);
@@ -82,7 +82,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to retrieve quality scores.");
-                return Results.Problem("Failed to retrieve quality scores.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to retrieve quality scores.");
             }
         })
         .WithName("GetQualityScores").Produces(200);
@@ -109,7 +109,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to get quality trend for symbol {Symbol}.", symbol);
-                return Results.Problem("Failed to get symbol quality.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to get symbol quality.");
             }
         })
         .WithName("GetSymbolQuality").Produces(200);
@@ -134,7 +134,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to retrieve quality alerts.");
-                return Results.Problem("Failed to retrieve quality alerts.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to retrieve quality alerts.");
             }
         })
         .WithName("GetQualityAlerts").Produces(200);
@@ -176,7 +176,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to rank quality sources for symbol {Symbol}.", symbol);
-                return Results.Problem("Failed to rank quality sources.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to rank quality sources.");
             }
         })
         .WithName("GetSourceRankings").Produces(200);
@@ -219,7 +219,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to compute quality trends.");
-                return Results.Problem("Failed to compute quality trends.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to compute quality trends.");
             }
         })
         .WithName("GetQualityTrends").Produces(200);
@@ -255,7 +255,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to detect quality anomalies.");
-                return Results.Problem("Failed to detect quality anomalies.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to detect quality anomalies.");
             }
         })
         .WithName("GetQualityAnomalies").Produces(200);
@@ -288,7 +288,7 @@ public static class StorageQualityEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Quality check failed for path {Path}.", req.Path);
-                return Results.Problem("Quality check failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Quality check failed.");
             }
         })
         .WithName("RunQualityCheck").Produces(200).Produces(400).Produces(404)

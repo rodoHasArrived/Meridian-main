@@ -101,7 +101,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to compute storage breakdown.");
-                return Results.Problem("Failed to compute storage breakdown.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to compute storage breakdown.");
             }
         })
         .WithName("GetStorageBreakdown").Produces(200);
@@ -309,7 +309,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Storage cleanup failed.");
-                return Results.Problem("Storage cleanup failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Storage cleanup failed.");
             }
         })
         .WithName("RunStorageCleanup").Produces(200).Produces(500)
@@ -366,7 +366,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to load storage catalog.");
-                return Results.Problem("Failed to load storage catalog.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to load storage catalog.");
             }
         })
         .WithName("GetStorageCatalog").Produces(200);
@@ -429,7 +429,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Storage health check failed.");
-                return Results.Problem("Storage health check failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Storage health check failed.");
             }
         })
         .WithName("RunStorageHealthCheck").Produces(200);
@@ -450,7 +450,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Storage orphan scan failed.");
-                return Results.Problem("Storage orphan scan failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Storage orphan scan failed.");
             }
         })
         .WithName("FindOrphanedFiles").Produces(200);
@@ -480,7 +480,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Storage tier migration failed.");
-                return Results.Problem("Storage tier migration failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Storage tier migration failed.");
             }
         })
         .WithName("MigrateTier").Produces(200).Produces(400)
@@ -502,7 +502,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to get tier statistics.");
-                return Results.Problem("Failed to get tier statistics.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to get tier statistics.");
             }
         })
         .WithName("GetTierStatistics").Produces(200);
@@ -526,7 +526,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to generate migration plan.");
-                return Results.Problem("Failed to generate migration plan.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to generate migration plan.");
             }
         })
         .WithName("GetTierMigrationPlan").Produces(200);
@@ -547,7 +547,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Storage defragmentation failed.");
-                return Results.Problem("Storage defragmentation failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Storage defragmentation failed.");
             }
         })
         .WithName("RunDefragmentation").Produces(200)
@@ -576,7 +576,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Parquet conversion failed.");
-                return Results.Problem("Parquet conversion failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Parquet conversion failed.");
             }
         })
         .WithName("ConvertToParquet").Produces(200)
@@ -680,10 +680,7 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to compute storage capacity forecast.");
-                return Results.Json(new
-                {
-                    error = "Failed to compute storage capacity forecast."
-                }, jsonOptions, statusCode: 500);
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to compute storage capacity forecast.");
             }
         })
         .WithName("GetStorageCapacityForecast")

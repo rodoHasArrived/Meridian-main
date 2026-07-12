@@ -123,7 +123,7 @@ public static class CatalogEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Catalog search failed.");
-                return Results.Problem("Catalog search failed.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Catalog search failed.");
             }
         })
         .WithName("CatalogSearch")
@@ -159,7 +159,7 @@ public static class CatalogEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to list catalog symbols.");
-                return Results.Problem("Failed to list catalog symbols.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to list catalog symbols.");
             }
         })
         .WithName("CatalogSymbols")
@@ -237,7 +237,7 @@ public static class CatalogEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to build catalog timeline.");
-                return Results.Problem("Failed to build catalog timeline.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to build catalog timeline.");
             }
         })
         .WithName("CatalogTimeline")
@@ -280,7 +280,7 @@ public static class CatalogEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to build catalog coverage summary.");
-                return Results.Problem("Failed to build catalog coverage summary.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to build catalog coverage summary.");
             }
         })
         .WithName("CatalogCoverage")

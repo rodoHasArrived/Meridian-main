@@ -240,7 +240,7 @@ public static class CheckpointEndpoints
             }
             catch (Exception ex)
             {
-                return Results.BadRequest(new { error = $"Resume failed: {ex.Message}" });
+                return EndpointHelpers.Error(ex, jsonOptions, "Resume failed.");
             }
         })
         .WithName("ResumeCheckpoint")

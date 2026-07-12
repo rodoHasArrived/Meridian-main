@@ -93,7 +93,7 @@ public static class SymbolEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to discover archived symbols");
-                return Results.Problem("Failed to discover archived symbols.");
+                return EndpointHelpers.Error(ex, jsonOptions, "Failed to discover archived symbols.");
             }
         })
         .WithName("GetArchivedSymbols")
