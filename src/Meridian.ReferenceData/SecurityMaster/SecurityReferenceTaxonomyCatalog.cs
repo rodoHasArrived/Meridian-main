@@ -54,9 +54,25 @@ public sealed class SecurityReferenceTaxonomyCatalog : ISecurityReferenceTaxonom
     public SecurityReferenceTaxonomyCatalog(IEnumerable<ReferenceTaxonomyDto> taxonomies)
     {
         ArgumentNullException.ThrowIfNull(taxonomies);
-        _byKey = taxonomies
-            .Where(static taxonomy => !string.IsNullOrWhiteSpace(taxonomy.Key))
-            .ToDictionary(static taxonomy => taxonomy.Key, StringComparer.OrdinalIgnoreCase);
+
+        // This type initializes during startup (static Default), so construction must tolerate
+        // malformed data instead of throwing: null entries and blank keys are skipped, a repeated
+        // key overwrites the earlier entry (last wins), and a missing values array degrades to an
+        // empty list rather than a null.
+        var byKey = new Dictionary<string, ReferenceTaxonomyDto>(StringComparer.OrdinalIgnoreCase);
+        foreach (var taxonomy in taxonomies)
+        {
+            if (taxonomy is null || string.IsNullOrWhiteSpace(taxonomy.Key))
+            {
+                continue;
+            }
+
+            byKey[taxonomy.Key] = taxonomy.Values is null
+                ? taxonomy with { Values = Array.Empty<string>() }
+                : taxonomy;
+        }
+
+        _byKey = byKey;
     }
 
     /// <summary>
@@ -93,28 +109,32 @@ public sealed class SecurityReferenceTaxonomyCatalog : ISecurityReferenceTaxonom
     private static SecurityReferenceTaxonomyCatalog Load()
     {
         var fromResource = TryLoadFromEmbeddedResource();
-        if (fromResource is { Count: > 0 })
+        if (fromResource is not { Count: > 0 })
         {
-            LoadedFromEmbeddedResource = true;
-            return new SecurityReferenceTaxonomyCatalog(fromResource);
+            return new SecurityReferenceTaxonomyCatalog(SecurityReferenceTaxonomyFallback.Taxonomies);
         }
 
-        return new SecurityReferenceTaxonomyCatalog(SecurityReferenceTaxonomyFallback.Taxonomies);
+        // Overlay the embedded document on the code fallback rather than replacing it, so a data
+        // edit that drops a key the validators reference degrades to the fallback vocabulary
+        // instead of failing GetValues during startup.
+        LoadedFromEmbeddedResource = true;
+        return new SecurityReferenceTaxonomyCatalog(
+            SecurityReferenceTaxonomyFallback.Taxonomies.Concat(fromResource));
     }
 
     private static IReadOnlyList<ReferenceTaxonomyDto>? TryLoadFromEmbeddedResource()
     {
-        var assembly = typeof(SecurityReferenceTaxonomyCatalog).Assembly;
-        var resourceName = Array.Find(
-            assembly.GetManifestResourceNames(),
-            static name => name.EndsWith(ResourceFileName, StringComparison.OrdinalIgnoreCase));
-        if (resourceName is null)
-        {
-            return null;
-        }
-
         try
         {
+            var assembly = typeof(SecurityReferenceTaxonomyCatalog).Assembly;
+            var resourceName = Array.Find(
+                assembly.GetManifestResourceNames(),
+                static name => name.EndsWith(ResourceFileName, StringComparison.OrdinalIgnoreCase));
+            if (resourceName is null)
+            {
+                return null;
+            }
+
             using var stream = assembly.GetManifestResourceStream(resourceName);
             if (stream is null)
             {
@@ -125,8 +145,11 @@ public sealed class SecurityReferenceTaxonomyCatalog : ISecurityReferenceTaxonom
             var json = reader.ReadToEnd();
             return JsonSerializer.Deserialize<IReadOnlyList<ReferenceTaxonomyDto>>(json, SerializerOptions);
         }
-        catch (JsonException)
+        catch (Exception)
         {
+            // This runs inside the static initializer; any failure (bad JSON, IO, reflection) must
+            // fall back to the in-code taxonomies instead of surfacing as a fatal
+            // TypeInitializationException at startup.
             return null;
         }
     }

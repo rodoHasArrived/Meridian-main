@@ -51,4 +51,25 @@ public sealed class SecurityReferenceTaxonomyCatalogTests
         found.Should().BeFalse();
         values.Should().BeEmpty();
     }
+
+    [Fact]
+    public void Constructor_ToleratesMalformedEntries_WithoutThrowing()
+    {
+        // The catalog initializes during startup (static Default), so malformed data must degrade
+        // instead of throwing: duplicate keys overwrite (last wins, letting the embedded document
+        // override the code fallback), null entries are skipped, and a null values array becomes
+        // an empty list.
+        var catalog = new SecurityReferenceTaxonomyCatalog(
+        [
+            new ReferenceTaxonomyDto("dup-key", "First", null, ["A"]),
+            null!,
+            new ReferenceTaxonomyDto("  ", "Blank key", null, ["B"]),
+            new ReferenceTaxonomyDto("DUP-KEY", "Second", null, ["C"]),
+            new ReferenceTaxonomyDto("null-values", "Null values", null, null!)
+        ]);
+
+        catalog.GetValues("dup-key").Should().Equal("C");
+        catalog.GetValues("null-values").Should().BeEmpty();
+        catalog.GetTaxonomies().Should().HaveCount(2);
+    }
 }
