@@ -181,6 +181,13 @@ initial browser payloads and refresh-only calls evaluate the same W7 live-readin
 `Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
 approved live promotion target, retained audit reference, ready live-operation requirements, and a
 retained snapshot version before the execution layer can attach live-readiness evidence to an order.
+The gate also verifies that the readiness matrix covers every canonical Live checklist token and
+rejects partial or malformed W7 payloads with the missing checklist item names. Each canonical Live
+requirement must also be checklist-satisfied, evidence-satisfied, and backed by a nonblank retained
+evidence reference before live broker order evidence can be attached.
+Accounting-record and governed-reporting requirements must retain evidence references that identify
+the linked ledger journal/run and report output, so live-order approval cannot rely on readiness
+flags without an accounting/reporting evidence chain.
 Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
 their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
 readiness projection as the workstation payload.
@@ -1027,6 +1034,13 @@ fund workspace view, also filter schedule rows, `scheduleDeliveryPlans`, and `De
 through the visible template/workflow set for the current `ReportAccessQueryContext`, so
 unauthorized users cannot infer locked schedule recipients, delivery modes, due dates, package
 links, or delivery status from the read model.
+`ReportingStarterKitService` resolves the Reporting module starter-kit catalog, persists the
+selected editable starter state, and provisions seed schedules through `ReportingScheduleService`
+with `Draft` state instead of bypassing schedule governance. The
+`/api/fund-structure/reporting/starter-kits` and
+`/api/fund-structure/reporting/starter-kits/{kitId}/provision` endpoints require the same reporting
+read/workflow permissions as the surrounding Reporting API, and `ReportPackRunReadService` carries
+both the starter kit catalog and selected kit state in `WorkstationReportingPayload`.
 Approved custom report-writer templates carry their saved grid definitions into the reporting
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain
@@ -1618,6 +1632,11 @@ statement-run intake and reconcile commands. Client-supplied `ImportedBy` or rec
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the
 reconciliation API service persists durable cases, comments, attachments, SLA metadata, and audit
 events.
+Statement connector commit endpoints pass the Financial Operations commit result through
+`StatementImportEvidenceBridge`, which retains the raw imported-file reference in Evidence Vault,
+links the vault document to the statement run and returned reconciliation cases, and preserves the
+structured case links in the response so workstation clients can open proof and casework from the
+same operator handoff without depending on legacy parallel case-route arrays.
 The shared workstation service graph registers that reconciliation API adapter over the Financial
 Operations statement-run workflow, so browser, host-served workstation, and desktop composition can
 resolve the same source-backed statement-run list, detail, break, case, and queue-status

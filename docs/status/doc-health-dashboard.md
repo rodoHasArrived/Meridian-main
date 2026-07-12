@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [#########################-----] 83/100
+  [#######################-------] 77/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 540 |
-| Total lines | 90,039 |
-| Average file size (lines) | 166.7 |
-| Orphaned files | 206 |
-| Files without headings | 38 |
+| Total documentation files | 674 |
+| Total lines | 96,470 |
+| Average file size (lines) | 143.1 |
+| Orphaned files | 330 |
+| Files without headings | 148 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 204 |
-| **Health score** | **83/100** |
+| **Health score** | **77/100** |
 
 ### Score Breakdown
 
@@ -45,21 +45,21 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 These files lack a Markdown heading, making them harder to navigate:
 
 - `Meridian Design System/SKILL.md`
-- `Meridian Design System/components/charts/CandleChart.prompt.md`
-- `Meridian Design System/components/charts/ChartCard.prompt.md`
-- `Meridian Design System/components/charts/EquityCurve.prompt.md`
-- `Meridian Design System/components/core/Badge.prompt.md`
-- `Meridian Design System/components/core/Button.prompt.md`
-- `Meridian Design System/components/core/Eyebrow.prompt.md`
-- `Meridian Design System/components/core/Input.prompt.md`
-- `Meridian Design System/components/core/PanelSurface.prompt.md`
-- `Meridian Design System/components/core/StatusBanner.prompt.md`
-- `Meridian Design System/components/data/DenseDataTable.prompt.md`
-- `Meridian Design System/components/data/EntitySummary.prompt.md`
-- `Meridian Design System/components/data/KeyValueGrid.prompt.md`
-- `Meridian Design System/components/data/MetricCard.prompt.md`
-- `Meridian Design System/components/shell/NavRail.prompt.md`
-- ... and 23 more
+- `Meridian Design System/components/accounting/AccountTree.prompt.md`
+- `Meridian Design System/components/accounting/AgingTable.prompt.md`
+- `Meridian Design System/components/accounting/AllocationEditor.prompt.md`
+- `Meridian Design System/components/accounting/AmountCell.prompt.md`
+- `Meridian Design System/components/accounting/CommitmentBar.prompt.md`
+- `Meridian Design System/components/accounting/FxRevaluationTable.prompt.md`
+- `Meridian Design System/components/accounting/JournalEntryForm.prompt.md`
+- `Meridian Design System/components/accounting/LedgerTable.prompt.md`
+- `Meridian Design System/components/accounting/Money.prompt.md`
+- `Meridian Design System/components/accounting/ReconciliationPanel.prompt.md`
+- `Meridian Design System/components/accounting/StatementTable.prompt.md`
+- `Meridian Design System/components/accounting/TaxLotTable.prompt.md`
+- `Meridian Design System/components/accounting/TrialBalance.prompt.md`
+- `Meridian Design System/components/charts/BarChart.prompt.md`
+- ... and 133 more
 
 ### Orphaned Documentation
 
@@ -78,14 +78,14 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/SKILL.md`
 - `.agents/skills/meridian-test-writer/SKILL.md`
 - `AGENTS.md`
+- `Meridian Design System/BRAND_GUIDELINES.md`
 - `Meridian Design System/CONTENT_FUNDAMENTALS.md`
 - `Meridian Design System/ICONOGRAPHY.md`
 - `Meridian Design System/INSPIRATION_BRIEF.md`
 - `Meridian Design System/SKILL.md`
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
-- `Meridian Design System/components/charts/CandleChart.prompt.md`
-- `Meridian Design System/components/charts/ChartCard.prompt.md`
-- ... and 186 more
+- `Meridian Design System/components/accounting/AccountTree.prompt.md`
+- ... and 310 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 83 | 540 | 206 | 0 |
+| 1970-01-01 | 77 | 674 | 330 | 0 |
 
 ---
 

@@ -248,6 +248,9 @@ public sealed class LedgerBookServiceTests
         result.Summary.PeriodOnPeriodVariance.Should().Be(400m);
         result.Summary.OpenBreakCount.Should().Be(1);
         result.Summary.SignoffStatus.Should().Be(LedgerPeriodSignoffStatusDto.Pending);
+        store.QueryHistory.Should().Contain(query =>
+            query.LedgerBookId == book.LedgerBookId &&
+            query.PeriodId == current.PeriodId);
         result.Summary.TrialBalance.Should().Contain(row =>
             row.AccountName == "Management fees" &&
             row.AccountType == nameof(LedgerAccountType.Revenue) &&
@@ -945,7 +948,10 @@ public sealed class LedgerBookServiceTests
             periodSummary.NetIncome == 100m);
         filteredPnlReport.TotalRevenue.Should().Be(100m);
         filteredPnlReport.NetIncome.Should().Be(100m);
-        store.QueryHistory.Should().HaveCount(4);
+        store.QueryHistory.Should().Contain(query =>
+            query.LedgerBookId == book.LedgerBookId &&
+            query.PeriodId == period.PeriodId &&
+            query.LineDimensions == null);
         store.QueryHistory.Should().Contain(query =>
             query.LedgerBookId == book.LedgerBookId &&
             query.PeriodId == period.PeriodId &&

@@ -398,9 +398,10 @@ and UI presentation concerns in their owning layers.
   definitions, and alert-runbook registries live in `Meridian.Platform.Monitoring`; shared alert and health-check contracts live
   in `Meridian.Core.Monitoring`; runtime error ring-buffer diagnostics and system-health snapshots
   live in `Meridian.Platform.Diagnostics`.
-- `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
-  status response generation. ASP.NET endpoint adapter extensions for packaging, archive
-  maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
+- `Http/` - core host-facing runtime services such as `ConfigStore` and status response
+  generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
+  data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
+  in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
   startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and

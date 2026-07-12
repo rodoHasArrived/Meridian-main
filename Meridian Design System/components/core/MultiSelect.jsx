@@ -2,7 +2,8 @@
 // Manages a Set of selected IDs; integrates with table rows via row key.
 // Toolbar shows count + contextual actions (delete, export, reassign, etc.).
 
-import React, { useState } from 'react';
+import React from 'react';
+const { useState } = React;
 
 export function MultiSelect({
   selectedIds = new Set(),

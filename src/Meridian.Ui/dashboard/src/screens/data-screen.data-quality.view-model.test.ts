@@ -1,5 +1,6 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { buildDataQualityPanelModel, scoreTone } from "./data-screen.data-quality.view-model";
+import { buildDataQualityPanelModel, scoreTone, useDataQualityPanel } from "./data-screen.data-quality.view-model";
 import type { QualityDashboardResponse } from "@/types";
 
 function response(overrides: Partial<QualityDashboardResponse> = {}): QualityDashboardResponse {
@@ -117,5 +118,78 @@ describe("buildDataQualityPanelModel", () => {
 
     expect(calm.scoreCards.find((card) => card.id === "anomaly-rate")?.tone).toBe("success");
     expect(busy.scoreCards.find((card) => card.id === "anomaly-rate")?.tone).toBe("danger");
+  });
+});
+
+describe("useDataQualityPanel", () => {
+  it("reads as loading until the first fetch settles, then exposes the model", async () => {
+    let resolveFetch: ((value: QualityDashboardResponse) => void) | null = null;
+    const fetchDashboard = () =>
+      new Promise<QualityDashboardResponse>((resolve) => {
+        resolveFetch = resolve;
+      });
+
+    const { result } = renderHook(() => useDataQualityPanel(fetchDashboard));
+
+    expect(result.current.loading).toBe(true);
+    expect(result.current.model).toBeNull();
+
+    await act(async () => {
+      resolveFetch?.(response({ symbols: [] }));
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBeNull();
+    expect(result.current.model?.overallLabel).toBe("99.2%");
+  });
+
+  it("discards a stale response when a newer refresh supersedes it", async () => {
+    const resolvers: Array<(value: QualityDashboardResponse) => void> = [];
+    const fetchDashboard = () =>
+      new Promise<QualityDashboardResponse>((resolve) => {
+        resolvers.push(resolve);
+      });
+
+    const { result } = renderHook(() => useDataQualityPanel(fetchDashboard));
+    // First call is the mount fetch; trigger a second (superseding) refresh.
+    await act(async () => {
+      void result.current.refresh();
+    });
+
+    // Settle the newer request first, then the older one.
+    await act(async () => {
+      resolvers[1]?.(response({ overallScore: 88, completenessScore: 88, freshnessScore: 88 }));
+      resolvers[0]?.(response({ overallScore: 12, completenessScore: 12, freshnessScore: 12 }));
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // The newer (second) response wins; the older, late one is dropped.
+    expect(result.current.model?.overallLabel).toBe("88.0%");
+  });
+});
+
+describe("useDataQualityPanel stale-failure handling", () => {
+  it("does not clobber a newer success when an older superseded request fails", async () => {
+    const resolvers: Array<(value: QualityDashboardResponse) => void> = [];
+    const rejecters: Array<(reason: unknown) => void> = [];
+    const fetchDashboard = () =>
+      new Promise<QualityDashboardResponse>((resolve, reject) => {
+        resolvers.push(resolve);
+        rejecters.push(reject);
+      });
+
+    const { result } = renderHook(() => useDataQualityPanel(fetchDashboard));
+    await act(async () => {
+      void result.current.refresh(); // second, superseding request
+    });
+
+    await act(async () => {
+      resolvers[1]?.(response({ overallScore: 77, completenessScore: 77, freshnessScore: 77 }));
+      rejecters[0]?.(new Error("stale failure")); // older request fails late
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBeNull();
+    expect(result.current.model?.overallLabel).toBe("77.0%");
   });
 });

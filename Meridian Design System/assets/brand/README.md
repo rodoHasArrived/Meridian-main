@@ -84,7 +84,7 @@ All SVG assets include:
 
 ## Usage Guidelines
 
-For detailed usage guidelines, color combinations, typography, and do's/don'ts, see [`BRAND_GUIDELINES.md`](../../BRAND_GUIDELINES.md).
+For detailed usage guidelines, color combinations, typography, and do's/don'ts, see [`BRAND_GUIDELINES.md`](../BRAND_GUIDELINES.md).
 
 ## Asset Optimization
 
@@ -118,6 +118,6 @@ For questions about brand usage or asset modifications:
 
 ---
 
-**Last Updated**: 2026-05-10  
-**Status**: Active  
+**Last Updated**: 2026-05-10
+**Status**: Active
 **License**: Meridian proprietary branding

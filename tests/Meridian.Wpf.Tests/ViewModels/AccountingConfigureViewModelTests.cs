@@ -51,7 +51,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         };
 
         harness.ViewModel.ManualJournalEntryTypeOptions.Should().Equal(expected.Select(static item => item.EntryType));
-        harness.ViewModel.ManualJournalEntryTypeOptions.Should().Equal(Enum.GetValues<ManualJournalEntryTypeDto>());
+        // ClosingEntry is automation-only (period-close rolls temporary balances into retained
+        // earnings) and is intentionally excluded from manual journal presets; every other entry
+        // type must be exposed as a manual preset.
+        harness.ViewModel.ManualJournalEntryTypeOptions.Should().Equal(
+            Enum.GetValues<ManualJournalEntryTypeDto>()
+                .Where(static type => type != ManualJournalEntryTypeDto.ClosingEntry));
         harness.ViewModel.ManualJournalEntryTypeRows.Should().HaveCount(expected.Length);
 
         foreach (var item in expected)

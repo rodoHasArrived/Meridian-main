@@ -196,12 +196,19 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                     config.Validation.UseRealTimeMode);
             }
 
+            // Flush timeouts are operator-tunable via the Pipeline config section; unset or
+            // non-positive values fall back to the pipeline's built-in defaults (30s / 60s).
+            var finalFlushTimeout = ToPositiveTimeout(config.Pipeline?.FinalFlushTimeoutSeconds);
+            var sinkFlushTimeout = ToPositiveTimeout(config.Pipeline?.SinkFlushTimeoutSeconds);
+
             return new EventPipeline(
                 sink,
                 EventPipelinePolicy.DurableStreaming,
                 metrics: metrics,
                 wal: wal,
                 auditTrail: auditTrail,
+                finalFlushTimeout: finalFlushTimeout,
+                sinkFlushTimeout: sinkFlushTimeout,
                 validator: validator,
                 deadLetterSink: deadLetterSink,
                 dedupLedger: dedupLedger,
@@ -275,6 +282,13 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
 
         return services;
     }
+
+    /// <summary>
+    /// Converts an optional configured timeout (in seconds) to a <see cref="TimeSpan"/>, treating
+    /// null or non-positive values as unset so the pipeline applies its built-in default.
+    /// </summary>
+    private static TimeSpan? ToPositiveTimeout(int? seconds)
+        => seconds is > 0 ? TimeSpan.FromSeconds(seconds.Value) : null;
 
     /// <summary>
     /// Resolves each sink ID from the <paramref name="activeIds"/> list using the

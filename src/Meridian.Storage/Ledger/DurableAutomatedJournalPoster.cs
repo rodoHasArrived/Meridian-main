@@ -10,13 +10,33 @@ namespace Meridian.Storage.Ledger;
 /// append happens first so a storage failure leaves the approval un-posted rather than
 /// leaving books that disagree.
 /// </summary>
-public sealed class DurableAutomatedJournalPoster
+public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarget
 {
     private readonly ILedgerJournalStore _store;
+    private readonly Meridian.Ledger.Ledger? _projectionLedger;
 
-    public DurableAutomatedJournalPoster(ILedgerJournalStore store)
+    public DurableAutomatedJournalPoster(ILedgerJournalStore store, Meridian.Ledger.Ledger? projectionLedger = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
+        _projectionLedger = projectionLedger;
+    }
+
+    public Task<AutomatedJournalApproval> PostAsync(
+        AutomatedJournalApproval approval,
+        AutomatedJournalPostingContext context,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return PostAsync(
+            approval,
+            context.PeriodId,
+            context.Actor,
+            context.OccurredAtUtc,
+            context.Reason,
+            context.EvidenceLinks,
+            projectionLedger: _projectionLedger,
+            aggregateId: context.AggregateId,
+            ct);
     }
 
     public async Task<AutomatedJournalApproval> PostAsync(
@@ -32,6 +52,8 @@ public sealed class DurableAutomatedJournalPoster
     {
         ArgumentNullException.ThrowIfNull(approval);
         ArgumentNullException.ThrowIfNull(evidenceLinks);
+        if (periodId == Guid.Empty)
+            throw new ArgumentException("Period id is required.", nameof(periodId));
         if (evidenceLinks.Count == 0)
             throw new ArgumentException("Posting evidence is required.", nameof(evidenceLinks));
 
@@ -45,7 +67,7 @@ public sealed class DurableAutomatedJournalPoster
                 periodId),
             ct).ConfigureAwait(false);
 
-        var projection = projectionLedger ?? new Meridian.Ledger.Ledger();
+        var projection = projectionLedger ?? _projectionLedger ?? new Meridian.Ledger.Ledger();
         return approval.PostTo(projection, actor, occurredAtUtc, reason, evidenceLinks);
     }
 }

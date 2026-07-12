@@ -43,6 +43,7 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
     private double _priceMin;
     private double _priceMax;
     private double _controlHeight = 200.0;
+    private long _renderVersion;
 
     // ── Packed Bgra32 color constants: (A<<24)|(R<<16)|(G<<8)|B ───────────────
 
@@ -56,6 +57,12 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
     public ObservableCollection<PriceLabelViewModel> PriceLabels { get; } = new();
 
     /// <summary>
+    /// Monotonic version incremented whenever inputs that affect the rendered bitmap change.
+    /// The WPF control uses this as a lightweight dirty flag so idle timer ticks do not redraw.
+    /// </summary>
+    public long RenderVersion => _renderVersion;
+
+    /// <summary>
     /// Called by the UserControl code-behind whenever the control is resized so
     /// price-label Y positions stay accurate.
     /// </summary>
@@ -63,6 +70,7 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
     {
         _controlHeight = height > 0 ? height : 200.0;
         UpdatePriceLabels();
+        _renderVersion++;
     }
 
     /// <summary>
@@ -136,6 +144,7 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
         _priceMax = highestAsk + margin;
 
         UpdatePriceLabels();
+        _renderVersion++;
     }
 
     // ── Hot path — NO allocations, NO LINQ ────────────────────────────────────

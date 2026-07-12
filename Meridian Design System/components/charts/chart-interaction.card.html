@@ -1,0 +1,74 @@
+<!-- @dsCard group="Charts" viewport="900x640" name="Chart Interaction" subtitle="Crosshair · tooltip · cursors synced across stacked charts" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Chart interaction</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const DS = window.MeridianDesignSystem_4f61be;
+const { CandleChart, EquityCurve, ChartTooltip, Eyebrow } = DS;
+const { ChartCursorSync, useSyncedCursor } = DS.ChartCursor;
+
+// synthetic bars
+let p = 200;
+const BARS = Array.from({ length: 60 }, (_, i) => {
+  const o = p; const c = o + (Math.sin(i / 4) * 3 + (i % 5 - 2)); p = c;
+  const h = Math.max(o, c) + Math.abs(Math.cos(i)) * 2;
+  const l = Math.min(o, c) - Math.abs(Math.sin(i)) * 2;
+  return { t: `06-${String((i % 28) + 1).padStart(2, "0")}`, o, h, l, c, v: 1000 + (i % 9) * 400 };
+});
+const EQ = BARS.map((b, i) => ({ t: b.t, v: 100000 + (b.c - 200) * 900 + i * 120 }));
+
+function PriceChart() {
+  const cx = useSyncedCursor(BARS.length);
+  const b = cx.index != null ? BARS[cx.index] : null;
+  return (
+    <div {...cx.bind} style={{ ...cx.bind.style, height: 300, border: "1px solid var(--border)", background: "var(--chart-plot)" }}>
+      <CandleChart bars={BARS} crosshairIndex={cx.index} showVolume={false} />
+      <ChartTooltip index={cx.index} count={BARS.length} title={b && b.t}
+        rows={b ? [
+          { label: "O", value: b.o.toFixed(2) },
+          { label: "H", value: b.h.toFixed(2) },
+          { label: "L", value: b.l.toFixed(2) },
+          { label: "C", value: b.c.toFixed(2), color: b.c >= b.o ? "var(--green-dim)" : "var(--red-dim)" },
+        ] : []} />
+    </div>
+  );
+}
+function EqChart() {
+  const cx = useSyncedCursor(EQ.length);
+  const e = cx.index != null ? EQ[cx.index] : null;
+  return (
+    <div {...cx.bind} style={{ ...cx.bind.style, height: 180, border: "1px solid var(--border)", background: "var(--chart-plot)" }}>
+      <EquityCurve series={EQ.map((d) => d.v)} crosshairIndex={cx.index} />
+      <ChartTooltip index={cx.index} count={EQ.length} title={e && e.t}
+        rows={e ? [{ label: "Equity", value: "$" + Math.round(e.v).toLocaleString() }] : []} />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ maxWidth: 860, display: "flex", flexDirection: "column", gap: 8 }}>
+      <Eyebrow>Hover either pane — the crosshair and readout track across both (shared x-domain)</Eyebrow>
+      <ChartCursorSync>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <PriceChart />
+          <EqChart />
+        </div>
+      </ChartCursorSync>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

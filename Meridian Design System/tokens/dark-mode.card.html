@@ -1,0 +1,165 @@
+<!-- @dsCard group="Theming" viewport="1200x800" name="Dark Mode Guide" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dark Mode — Theme Guide</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    body { margin: 0; padding: 20px; font-family: var(--font-body); background: var(--bg); color: var(--text-primary); transition: background 200ms, color 200ms; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-top: 0; }
+    h2 { font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 32px; }
+    .swatch { display: inline-flex; align-items: center; gap: 12px; margin: 8px 0; padding: 12px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 4px; }
+    .swatch-box { width: 80px; height: 60px; border: 1px solid var(--border); }
+    .swatch-label { font-family: var(--font-data); font-size: 12px; }
+    .mode-toggle { display: flex; gap: 8px; margin: 20px 0; }
+    .mode-toggle button { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 13px; }
+    .mode-toggle button.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 16px 0; }
+    .example-card { padding: 16px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 4px; }
+    .note { background: var(--bg-active); border-left: 3px solid var(--accent); padding: 12px 14px; margin: 16px 0; font-size: 13px; border-radius: 4px; }
+    code { font-family: var(--font-data); background: var(--bg-medium); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dark Mode Theme</h1>
+    <p style="color: var(--text-muted);">Meridian supports automatic dark mode via <code>prefers-color-scheme: dark</code> or manual override with <code>data-theme="dark"</code> attribute.</p>
+
+    <div class="mode-toggle">
+      <button class="active" id="btn-light" onclick="setMode('light')">Light mode</button>
+      <button id="btn-dark" onclick="setMode('dark')">Dark mode</button>
+      <button id="btn-system" onclick="setMode('system')">System default</button>
+    </div>
+
+    <h2>How to Use</h2>
+    <div class="note">
+      <strong>Automatic:</strong> Dark mode activates when user's OS has <code>prefers-color-scheme: dark</code> enabled (system settings).
+      <br><strong>Manual override:</strong> Add <code>data-theme="dark"</code> to the <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code> tag.
+      <br><strong>Example:</strong> <code>&lt;html data-theme="dark"&gt;</code>
+    </div>
+
+    <div class="example-grid">
+      <div class="example-card">
+        <h3 style="margin-top: 0;">Light Mode (Default)</h3>
+        <p>Canvas: <code>#DEE3EA</code></p>
+        <p>Text: <code>#22272E</code></p>
+        <p>Accent: <code>#2F6F8F</code></p>
+        <p>Best for: Daytime, outdoor use, high ambient light.</p>
+      </div>
+      <div class="example-card">
+        <h3 style="margin-top: 0;">Dark Mode</h3>
+        <p>Canvas: <code>#0E1113</code></p>
+        <p>Text: <code>#E5EAEF</code></p>
+        <p>Accent: <code>#5790BE</code> (cooler blue for night)</p>
+        <p>Best for: Nighttime, low-light environments, reduced eye strain.</p>
+      </div>
+    </div>
+
+    <h2>Color Palette</h2>
+
+    <h3>Canvas & Cards</h3>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--bg);"></div>
+      <div class="swatch-label">
+        <strong>--bg</strong><br>
+        Light: #DEE3EA | Dark: #0E1113
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--bg-light);"></div>
+      <div class="swatch-label">
+        <strong>--bg-light</strong><br>
+        Light: #FFFFFF | Dark: #1A2026
+      </div>
+    </div>
+
+    <h3>Text</h3>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--text-primary); opacity: 0.3;"></div>
+      <div class="swatch-label">
+        <strong>--text-primary</strong><br>
+        Light: #22272E | Dark: #E5EAEF
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--text-muted); opacity: 0.3;"></div>
+      <div class="swatch-label">
+        <strong>--text-muted</strong><br>
+        Light: #59636F | Dark: #7A8591
+      </div>
+    </div>
+
+    <h3>Semantic (tuned per mode for legibility)</h3>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--green);"></div>
+      <div class="swatch-label">
+        <strong>--green</strong><br>
+        Light: #16885F | Dark: #4D9E78
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--red);"></div>
+      <div class="swatch-label">
+        <strong>--red</strong><br>
+        Light: #BA3F55 | Dark: #C9656E
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-box" style="background: var(--amber);"></div>
+      <div class="swatch-label">
+        <strong>--orange</strong> (alias --amber)<br>
+        Light: #8A520E | Dark: #BD9038
+      </div>
+    </div>
+
+    <h2>Implementation Notes</h2>
+    <ul style="line-height: 1.8;">
+      <li><strong>No manual switching in code:</strong> OS preference is automatic. Only override <code>data-theme="dark"</code> if user explicitly requests dark mode.</li>
+      <li><strong>Accent color:</strong> Becomes a cooler blue in dark mode (<code>#5790BE</code>) for night-friendly contrast. Primary actions remain clear.</li>
+      <li><strong>Border colors:</strong> Become lighter in dark mode (<code>#45505C</code>) to remain visible on dark canvas.</li>
+      <li><strong>Transitions:</strong> Background and color shift smoothly (200ms) when theme changes.</li>
+      <li><strong>All components inherit:</strong> Button, Input, Modal, Table — all automatically adapt to dark mode via CSS variables.</li>
+    </ul>
+
+    <h2>Testing</h2>
+    <p>Test dark mode on your system:</p>
+    <ul>
+      <li><strong>macOS:</strong> System Preferences → General → Appearance → Dark</li>
+      <li><strong>Windows:</strong> Settings → Personalization → Colors → Dark</li>
+      <li><strong>Linux:</strong> GNOME Settings → Appearance → Dark</li>
+      <li><strong>Browser DevTools:</strong> Cmd+Shift+P (or Ctrl+Shift+P) → "Emulate CSS media feature prefers-color-scheme"</li>
+    </ul>
+  </div>
+
+  <script>
+    function setMode(mode) {
+      const html = document.documentElement;
+      if (mode === 'dark') {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('meridian-theme', 'dark');
+      } else if (mode === 'light') {
+        html.setAttribute('data-theme', 'light');
+        localStorage.setItem('meridian-theme', 'light');
+      } else {
+        html.removeAttribute('data-theme');
+        localStorage.removeItem('meridian-theme');
+      }
+      updateButtons(mode);
+    }
+
+    function updateButtons(mode) {
+      document.getElementById('btn-light').classList.toggle('active', mode === 'light');
+      document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
+      document.getElementById('btn-system').classList.toggle('active', mode === 'system');
+    }
+
+    // Restore saved theme on load
+    const saved = localStorage.getItem('meridian-theme');
+    if (saved) setMode(saved);
+    else updateButtons('system');
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import { WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
+import { pluralizeCount } from "@/lib/format";
 import {
   buildEvidenceTimelineCandidate,
   type EvidenceTimelineCandidate
@@ -987,7 +988,7 @@ function materializeScopedLinkedContextItem(
   };
 }
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }
 
 function formatStatusCount(count: number, label: string): string {

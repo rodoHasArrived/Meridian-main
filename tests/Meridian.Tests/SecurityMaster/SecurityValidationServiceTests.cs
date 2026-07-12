@@ -59,6 +59,82 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_DuplicateFigiAcrossRecords_ProducesCriticalCollisionIssue()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        const string duplicateFigi = "BBG000B9XRY4"; // Valid FIGI check digit shared by two securities.
+
+        var first = CreateProjection(
+            securityA,
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Figi, duplicateFigi, isPrimary: true)]);
+        var second = CreateProjection(
+            securityB,
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Figi, duplicateFigi, isPrimary: true)]);
+
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(first, [first, second], Now);
+
+        var issue = report.Issues.Should()
+            .ContainSingle(static item => item.Code == "SM_DUPLICATE_CANONICAL_IDENTIFIER")
+            .Which;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Critical);
+        issue.AffectedFields.Should().Contain("identifiers.Figi");
+        issue.EvidenceLinks.Should().Contain(link => link.EvidenceId == securityB.ToString());
+    }
+
+    [Fact]
+    public void Scenario_SameCanonicalValueWithDifferentProvidersOnOneRecord_IsFlaggedAsDuplicate()
+    {
+        // A canonical identifier (ISIN) is provider-independent, so repeating the same value with
+        // a different provider annotation on one record must still trip in-record duplicate
+        // detection — provider only distinguishes ProviderSymbol identities.
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: false, provider: "Bloomberg")
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_DUPLICATE_ACTIVE"
+            && issue.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_InvalidLeiCheckDigit_ProducesStructuredIdentifierFormatIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Lei, "HWUPKR0MPOU8FGXBT395", isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_FORMAT_INVALID"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("Lei", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Scenario_InvalidOptionTerms_ProducesStructuredAssetClassIssues()
     {
         var securityId = Guid.NewGuid();

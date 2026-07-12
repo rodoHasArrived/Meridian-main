@@ -320,6 +320,25 @@ public static class LedgerAccounts
     public static readonly LedgerAccount AllocationControl =
         new("Allocation Control", LedgerAccountType.Asset);
 
+    // -------------------------------------------------------------------------
+    // Fixed-asset / depreciation accounts
+    // -------------------------------------------------------------------------
+
+    /// <summary>Gross capitalized cost of a fixed asset, scoped by asset identity.</summary>
+    public static LedgerAccount FixedAssetCostFor(string assetId) =>
+        CreateScoped("Fixed Asset Cost", LedgerAccountType.Asset, assetId);
+
+    /// <summary>
+    /// Accumulated depreciation for a fixed asset — a contra-asset that carries a credit balance and
+    /// nets against <see cref="FixedAssetCostFor"/> to yield net book value.
+    /// </summary>
+    public static LedgerAccount AccumulatedDepreciationFor(string assetId) =>
+        CreateScoped("Accumulated Depreciation", LedgerAccountType.Asset, assetId);
+
+    /// <summary>Periodic depreciation expense charged on a fixed asset.</summary>
+    public static LedgerAccount DepreciationExpenseFor(string assetId) =>
+        CreateScoped("Depreciation Expense", LedgerAccountType.Expense, assetId);
+
     private static LedgerAccount CreateScoped(string name, LedgerAccountType accountType, string financialAccountId)
         => new(name, accountType, FinancialAccountId: NormalizeAccountId(financialAccountId));
 

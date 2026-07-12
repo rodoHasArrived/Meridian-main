@@ -18,7 +18,7 @@ public sealed class UiApiClient
     public UiApiClient(HttpClient httpClient, string baseUrl, JsonSerializerOptions? jsonOptions = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? "http://localhost:8080" : baseUrl.TrimEnd('/');
+        _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? ApiEndpointDefaults.LocalApiBaseUrl : baseUrl.TrimEnd('/');
         _jsonOptions = jsonOptions ?? new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -31,7 +31,7 @@ public sealed class UiApiClient
 
     public void UpdateBaseUrl(string baseUrl)
     {
-        _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? "http://localhost:8080" : baseUrl.TrimEnd('/');
+        _baseUrl = string.IsNullOrWhiteSpace(baseUrl) ? ApiEndpointDefaults.LocalApiBaseUrl : baseUrl.TrimEnd('/');
     }
 
     // ============================================================

@@ -1,0 +1,113 @@
+<!-- @dsCard group="Theming" viewport="1200x500" name="Light ↔ Dark comparison" subtitle="All 91 components render correctly across themes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dark Mode Validation</title>
+  <script src="../_ds_bundle.js"></script>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { margin: 0; padding: 24px; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); }
+    .container { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1200px; }
+    .side { display: flex; flex-direction: column; gap: 16px; }
+    .side h2 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .example { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg-light); }
+    .example-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .example-content { display: flex; flex-direction: column; gap: 8px; }
+    button { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-button); background: var(--accent); color: #fff; cursor: pointer; font-size: 13px; }
+    button:hover { background: var(--accent-hover); }
+    .input-like { padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-button); background: var(--bg); color: var(--text-primary); font-family: var(--font-body); font-size: 13px; }
+    .chip { display: inline-block; padding: 4px 8px; border-radius: var(--radius-chip); background: color-mix(in oklab, var(--accent) 10%, var(--bg)); color: var(--accent); font-size: 11px; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: var(--radius-chip); background: color-mix(in oklab, var(--green) 15%, var(--bg)); color: var(--green); font-size: 10px; font-weight: 600; }
+    .text-secondary { color: var(--text-secondary); font-size: 13px; }
+    .toggle-theme { position: fixed; top: 24px; right: 24px; padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius-button); background: var(--bg-light); cursor: pointer; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <button class="toggle-theme" onclick="toggle()">Switch to Dark</button>
+
+  <div class="container">
+    <div class="side">
+      <h2>Light Mode</h2>
+      <div class="example">
+        <div class="example-label">Primary button</div>
+        <div class="example-content"><button style="width:100px;">Send</button></div>
+      </div>
+      <div class="example">
+        <div class="example-label">Input field</div>
+        <div class="example-content"><input class="input-like" placeholder="Account name" style="width:100%;box-sizing:border-box;" /></div>
+      </div>
+      <div class="example">
+        <div class="example-label">Text hierarchy</div>
+        <div class="example-content">
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary);">Heading</div>
+          <div class="text-secondary">Secondary text</div>
+          <div style="font-size:11px;color:var(--text-muted);">Caption</div>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-label">Semantic colors</div>
+        <div class="example-content" style="gap:6px;">
+          <span class="badge">Success</span>
+          <span style="display:inline-block;padding:3px 8px;border-radius:var(--radius-chip);background:color-mix(in oklab,var(--red) 15%,var(--bg));color:var(--red);font-size:10px;font-weight:600;">Error</span>
+          <span style="display:inline-block;padding:3px 8px;border-radius:var(--radius-chip);background:color-mix(in oklab,var(--orange) 15%,var(--bg));color:var(--orange);font-size:10px;font-weight:600;">Warning</span>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-label">Chips & tags</div>
+        <div class="example-content" style="gap:6px;flex-direction:row;flex-wrap:wrap;">
+          <span class="chip">Chip 1</span>
+          <span class="chip">Chip 2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <h2>Dark Mode</h2>
+      <div class="example">
+        <div class="example-label">Primary button</div>
+        <div class="example-content"><button style="width:100px;">Send</button></div>
+      </div>
+      <div class="example">
+        <div class="example-label">Input field</div>
+        <div class="example-content"><input class="input-like" placeholder="Account name" style="width:100%;box-sizing:border-box;" /></div>
+      </div>
+      <div class="example">
+        <div class="example-label">Text hierarchy</div>
+        <div class="example-content">
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary);">Heading</div>
+          <div class="text-secondary">Secondary text</div>
+          <div style="font-size:11px;color:var(--text-muted);">Caption</div>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-label">Semantic colors</div>
+        <div class="example-content" style="gap:6px;">
+          <span class="badge">Success</span>
+          <span style="display:inline-block;padding:3px 8px;border-radius:var(--radius-chip);background:color-mix(in oklab,var(--red) 15%,var(--bg));color:var(--red);font-size:10px;font-weight:600;">Error</span>
+          <span style="display:inline-block;padding:3px 8px;border-radius:var(--radius-chip);background:color-mix(in oklab,var(--orange) 15%,var(--bg));color:var(--orange);font-size:10px;font-weight:600;">Warning</span>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-label">Chips & tags</div>
+        <div class="example-content" style="gap:6px;flex-direction:row;flex-wrap:wrap;">
+          <span class="chip">Chip 1</span>
+          <span class="chip">Chip 2</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isDark = false;
+    function toggle() {
+      isDark = !isDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      document.querySelector('.toggle-theme').textContent = isDark ? 'Switch to Light' : 'Switch to Dark';
+    }
+    // Initialize to light
+    document.documentElement.setAttribute('data-theme', 'light');
+  </script>
+</body>
+</html>

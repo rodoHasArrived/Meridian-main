@@ -94,6 +94,14 @@ public sealed class BackfillWorkerService : IDisposable
                 $"MaxConcurrentRequests must be between {MinConcurrentRequests} and {MaxConcurrentRequests}");
         }
 
+        if (config.WorkerErrorRetryDelayMs <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(config),
+                config.WorkerErrorRetryDelayMs,
+                "WorkerErrorRetryDelayMs must be positive so the worker loop backs off after errors");
+        }
+
         _jobManager = jobManager;
         _requestQueue = requestQueue;
         _provider = provider;
@@ -217,7 +225,7 @@ public sealed class BackfillWorkerService : IDisposable
             catch (Exception ex)
             {
                 _log.Error(ex, "Error in worker loop");
-                await Task.Delay(1000, ct).ConfigureAwait(false);
+                await Task.Delay(_config.WorkerErrorRetryDelayMs, ct).ConfigureAwait(false);
             }
         }
     }

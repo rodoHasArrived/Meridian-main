@@ -45,17 +45,23 @@ validation gate, resolved Security Master identity, non-blocked validation, and 
 that preserves the Security Master ID, fill ID, symbol, and gate evidence for provenance.
 Live execution controls include persisted circuit-breaker state, position limits, and manual
 overrides. Run-scoped manual overrides are matched against order `runId` metadata, and submitted
-orders that use an override carry the applied override ID, run/strategy/symbol scope, and control
-decision metadata in the execution audit trail. Orders rejected by operator controls carry stable
-reject codes such as `CIRCUIT_BREAKER_OPEN`, `POSITION_LIMIT_EXCEEDED`, or `MANUAL_FORCE_BLOCK`
-plus the same run/strategy/symbol audit scope so operations can distinguish policy failures from
-broker failures during review. The OMS also records durable audit outcomes for
+paper orders that use an override carry the applied override ID, run/strategy/symbol scope, and
+control decision metadata in the execution audit trail. Live broker orders evaluate operator
+controls with broker-account, override, and live-readiness metadata stripped from the client
+request, so client-supplied override IDs cannot bypass kill-switch or position controls before
+broker routing. Orders rejected by operator controls carry stable reject codes such as
+`CIRCUIT_BREAKER_OPEN`, `POSITION_LIMIT_EXCEEDED`, or `MANUAL_FORCE_BLOCK` plus the same
+run/strategy/symbol audit scope so operations can distinguish policy failures from broker failures
+during review. The OMS also records durable audit outcomes for
 submitted, rejected, cancelled, cancel-rejected, modified, and modify-rejected order lifecycle
 events with broker, order, symbol, scope, reject reason, and operation metadata for operations
 review. Shared `/api/execution/controls/*` endpoints expose the snapshot plus secured mutations for
 the global circuit breaker, default position limit, symbol position limits, and manual override
 create/clear actions so browser and desktop clients do not need client-local execution-control
 state.
+OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
+`MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
+are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
 
 ## Diagrams
 

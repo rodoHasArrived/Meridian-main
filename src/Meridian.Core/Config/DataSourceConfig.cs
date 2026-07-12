@@ -1,3 +1,5 @@
+using Meridian.Contracts.Api;
+
 namespace Meridian.Core.Config;
 
 /// <summary>
@@ -178,7 +180,7 @@ public sealed record IBClientPortalOptions(
     // <summary>
     // Base URL for the IB Client Portal API.
     // </summary>
-    string BaseUrl = "https://localhost:5000",
+    string BaseUrl = ApiEndpointDefaults.IbClientPortalBaseUrl,
 
     // <summary>
     // Whether Meridian should allow the self-signed certificate typically used by local Client Portal sessions.

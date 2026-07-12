@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
 import type {
   StrategyComparisonTableRow,
@@ -72,20 +73,6 @@ const sampleToneBadgeVariant = {
   warning: "warning",
   danger: "danger"
 } as const;
-
-/** Map a view-model `Badge` variant onto a Concrete operator-severity status string so run,
- * study, comparison, and promotion statuses render through the shared `SeverityBadge`.
- * Presentational only — the view-model keeps emitting its `*BadgeVariant` fields for its tests. */
-function strategySeverityStatus(variant: string): string {
-  switch (variant) {
-    case "success": return "ready";
-    case "danger": return "blocked";
-    case "warning": return "action";
-    case "paper":
-    case "research": return "review";
-    default: return "info";
-  }
-}
 
 /** Map a raw run status string onto a Concrete operator severity. Covers the full
  * `StrategyRunRecord.status` union (`Running` · `Queued` · `Needs Review` · `Completed`) plus
@@ -310,7 +297,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (row) => <SeverityBadge status={strategySeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
+      render: (row) => <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
     },
     {
       id: "net-pnl",
@@ -551,7 +538,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   <Button
                     size="sm"
                     aria-label={vm.promotionPanel.sessionCreated.actionAriaLabel}
-                    onClick={() => { navigate(vm.promotionPanel.sessionCreated.actionHref); }}
+                    onClick={() => {
+                      if (vm.promotionPanel.sessionCreated) {
+                        navigate(vm.promotionPanel.sessionCreated.actionHref);
+                      }
+                    }}
                   >
                     {vm.promotionPanel.sessionCreated.actionLabel}
                   </Button>
@@ -785,7 +776,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     description={vm.selectedComparisonDetail.description}
                     fields={vm.selectedComparisonDetail.fields}
                     ariaLabel={vm.selectedComparisonDetail.ariaLabel}
-                    status={<SeverityBadge status={strategySeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
+                    status={<SeverityBadge status={categoricalVariantToSeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
                   />
                 </div>
               ) : (

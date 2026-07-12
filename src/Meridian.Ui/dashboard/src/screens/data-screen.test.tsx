@@ -242,23 +242,15 @@ describe("DataScreen", () => {
     expect(screen.getByRole("link", { name: /open live quotes while data workspace loads/i })).toHaveAttribute("href", "/data/quotes");
   });
 
-  it("renders provider, backfill, and export summaries", () => {
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+  it("renders provider setup and status on the provider route", () => {
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
-    expect(screen.getByText("Data command deck")).toBeInTheDocument();
     expect(screen.getByText("Upload data template")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Data upload template" })).toHaveValue("trade-data");
     expect(screen.getByRole("link", { name: "Download Trade data CSV template" }))
       .toHaveAttribute("download", "meridian-trade-data-template.csv");
-    expect(screen.getByText("Provider posture")).toBeInTheDocument();
-    expect(screen.getByText("Backfill repair")).toBeInTheDocument();
-    expect(screen.getByText("Upload intake")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Data workspace route focus" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Security Master in Accounting" }))
-      .toHaveAttribute("href", "/accounting/security-master");
+    expect(screen.getByRole("region", { name: "Provider route focus" })).toBeInTheDocument();
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Provider management scan band")).toHaveTextContent("Connection Health");
     expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
     const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
@@ -273,6 +265,13 @@ describe("DataScreen", () => {
     expect(within(providerDetail).getByText("Keep provider active.")).toBeInTheDocument();
     expect(within(providerDetail).getByText("Reason: TRUST_OK")).toBeInTheDocument();
     expect(within(providerDetail).getByText("Gate: No gate impact")).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Recent exports" })).not.toBeInTheDocument();
+  });
+
+  it("renders backfill and export workstreams on their own routes", () => {
+    const backfills = renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
+
     const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });
     expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(runningBackfill).toHaveClass("bg-paper/5");
@@ -280,6 +279,11 @@ describe("DataScreen", () => {
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
     expect(within(backfillDetail).getByText(/Replay is currently advancing/i)).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
+
+    backfills.unmount();
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/exports"] });
+
     const exportTable = screen.getByRole("treegrid", { name: "Recent exports" });
     expect(exportTable).toBeInTheDocument();
     const exportRow = screen.getByRole("row", { name: "Inspect export EX-2201" });
@@ -294,6 +298,8 @@ describe("DataScreen", () => {
     expect(within(exportDetail).queryByText("research pack")).not.toBeInTheDocument();
     expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
   });
 
   it("runs SQL queries with paged results and export actions", async () => {
@@ -310,7 +316,7 @@ describe("DataScreen", () => {
       elapsedMs: 18
     });
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/query"] });
 
     await user.click(screen.getByRole("button", { name: "Run query" }));
 
@@ -362,7 +368,7 @@ describe("DataScreen", () => {
       "trade_id,trade_date,account_code,symbol\nTRD-1,2026-06-01,FUND-A,AAPL\n"
     ], "trades.csv", { type: "text/csv" });
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.upload(screen.getByLabelText("Upload Trade data CSV file for preview"), file);
 
@@ -414,13 +420,19 @@ describe("DataScreen", () => {
       exports: []
     };
 
-    renderWithRouter(<DataScreen data={emptyData} />, { initialEntries: ["/data/backfills"] });
+    const providers = renderWithRouter(<DataScreen data={emptyData} />, { initialEntries: ["/data/providers"] });
 
     expect(screen.getByText("No providers configured")).toBeInTheDocument();
+    providers.unmount();
+
+    const backfills = renderWithRouter(<DataScreen data={emptyData} />, { initialEntries: ["/data/backfills"] });
     expect(screen.getByText("No backfills queued")).toBeInTheDocument();
-    expect(screen.getByText("No exports available")).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "Backfill detail empty state" })).toHaveTextContent("No backfill activity yet");
-    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
+    backfills.unmount();
+
+    renderWithRouter(<DataScreen data={emptyData} />, { initialEntries: ["/data/exports"] });
+    expect(screen.getByText("No exports available")).toBeInTheDocument();
+    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(1);
   });
 
   it("supports keyboard provider selection and updates the provider detail panel", async () => {
@@ -446,7 +458,7 @@ describe("DataScreen", () => {
       ]
     };
 
-    renderWithRouter(<DataScreen data={providerData} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={providerData} />, { initialEntries: ["/data/providers"] });
 
     const polygonProvider = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     const databentoProvider = screen.getByRole("row", { name: "Inspect provider Databento" });
@@ -476,7 +488,7 @@ describe("DataScreen", () => {
         providerConnections={[polygonConnection]}
         onProviderRoutingRefresh={refreshProviderRouting}
       />,
-      { initialEntries: ["/data"] }
+      { initialEntries: ["/data/providers"] }
     );
 
     expect(screen.getByRole("combobox", { name: "Configured Provider" })).toHaveValue("provider-row-polygon");
@@ -495,7 +507,7 @@ describe("DataScreen", () => {
   it("renders a diagnostics empty state when provider evidence has not loaded", async () => {
     const user = userEvent.setup();
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
 
@@ -525,7 +537,7 @@ describe("DataScreen", () => {
 
     renderWithRouter(
       <DataScreen data={data} onProviderSetupConfigured={refreshProviderRouting} />,
-      { initialEntries: ["/data"] }
+      { initialEntries: ["/data/providers"] }
     );
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
@@ -780,7 +792,7 @@ describe("DataScreen", () => {
       resolveSetup = resolve;
     }));
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
@@ -877,7 +889,7 @@ describe("DataScreen", () => {
       ]
     };
 
-    renderWithRouter(<DataScreen data={exportData} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={exportData} />, { initialEntries: ["/data/exports"] });
 
     const readyExport = screen.getByRole("row", { name: "Inspect export EX-2201" });
     const attentionExport = screen.getByRole("row", { name: "Inspect export EX-2202" });
@@ -902,7 +914,7 @@ describe("DataScreen", () => {
   it("opens the trigger backfill dialog when the Trigger backfill button is clicked", async () => {
     const user = userEvent.setup();
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
@@ -920,7 +932,7 @@ describe("DataScreen", () => {
   it("keeps preview disabled until the backfill symbols are valid", async () => {
     const user = userEvent.setup();
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
@@ -953,7 +965,7 @@ describe("DataScreen", () => {
 
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
@@ -989,7 +1001,7 @@ describe("DataScreen", () => {
       resolvePreview = resolve;
     }));
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     fireEvent.change(screen.getByRole("textbox", { name: "Backfill symbols" }), {
@@ -1051,7 +1063,7 @@ describe("DataScreen", () => {
     vi.spyOn(api, "triggerBackfill").mockResolvedValueOnce(mockResult);
     vi.spyOn(api, "getBackfillProgress").mockResolvedValue(mockProgress);
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "MSFT");
@@ -1074,7 +1086,7 @@ describe("DataScreen", () => {
 
     vi.spyOn(api, "previewBackfill").mockRejectedValueOnce(new Error("Provider offline"));
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
     await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "SPY");

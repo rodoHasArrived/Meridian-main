@@ -37,3 +37,4 @@ Snapshot date: 2026-07-05
 | W5X-STMT-ONBOARD-001 | Statement reconciliation onboarding wedge | in_progress | green | high | Accounting and Ledger |
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |
+| W8-WPF-PARITY-001 | WPF desktop workstation reactivation and web-UI parity | in_progress | on_track | high | Desktop Workstation |

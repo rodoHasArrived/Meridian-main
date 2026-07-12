@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -29,15 +31,18 @@ public sealed record ProviderIntegrationHttpResponse(
 public sealed class ProviderIntegrationRestDryRunService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly IProviderIntegrationHttpTransport transport;
 
     public ProviderIntegrationRestDryRunService(
         IProviderIntegrationManifestStore store,
-        IProviderIntegrationHttpTransport transport)
+        IProviderIntegrationHttpTransport transport,
+        ILogger<ProviderIntegrationRestDryRunService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        this.logger = logger ?? NullLogger<ProviderIntegrationRestDryRunService>.Instance;
     }
 
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
@@ -46,6 +51,22 @@ public sealed class ProviderIntegrationRestDryRunService
         => await RunRestDryRunAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "rest-dry-run",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: request?.EndpointKey,
+                SyncRunId: request?.SyncRunId),
+            () => RunRestDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunCoreAsync(
         string? tenantId,
         ProviderIntegrationRestDryRunRequestDto request,
         CancellationToken ct = default)

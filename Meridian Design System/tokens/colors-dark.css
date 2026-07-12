@@ -1,0 +1,165 @@
+/* Meridian — Dark Mode
+   ─────────────────────
+   Dark overrides the FINAL component tokens directly (not the --theme-* source),
+   so it wins cleanly regardless of white-label brand. All derived tints/dims
+   (--green-a10, --red-dim, …) are color-mix() off these base tokens in colors.css,
+   so they re-derive automatically — we only flip the ~24 base tokens + --dim-mix.
+
+   IMPORTANT: this file must be @imported LAST (after theme.css) so these
+   rules win the specificity tie against theme.css's :root map.
+
+   THREE blocks, each a clean :root / [data-*] scope the token compiler registers:
+     1. @media (prefers-color-scheme: dark) :root          → auto (OS) dark
+     2. :root[data-theme="dark"]                            → manual dark
+     3. :root[data-theme="light"]                           → forced-light opt-out
+
+   Forcing light under OS dark: <html data-theme="light"> re-asserts the light
+   base values (block 3, specificity 0,2,0) over the auto-dark block (:root inside
+   the media query, 0,1,0). Block 3 is unconditional and harmless under OS light
+   (it just re-states the colors.css defaults). The two dark blocks share one
+   identical token set.
+*/
+
+/* ── 1. Auto (OS) dark ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    /* Backgrounds — neutral charcoal, flat concrete (no warm tint) */
+    --bg:                 #0E1113;  /* canvas — graphite black */
+    --bg-light:           #1A2026;  /* card — charcoal panel, lifts off canvas */
+    --bg-medium:          #232A32;  /* headers — structural band */
+    --bg-hover:           #283039;  /* hover — flat shift up */
+    --bg-active:          #2F3F4A;  /* active — cool selection */
+    --card-surface-raised:#20272E;  /* raised — lifts ABOVE panel (zebra reads) */
+
+    /* Borders — structural & present in dark too */
+    --border:             #45505C;  /* line — clearly visible, load-bearing */
+    --border-hover:       #5A6776;  /* hover — firm */
+    --border-focus:       #5B9FD9;  /* focus */
+    --border-strong:      #6E7C8A;  /* heavy rule — totals / headers */
+    --border-divider:     #2D353D;  /* divider */
+
+    /* Text — warmer, less harsh */
+    --text-primary:       #E5EAEF;  /* headings — warm white */
+    --text-secondary:     #A5AFBC;  /* secondary */
+    --text-muted:         #8F9AA7;  /* muted — lifted 2026-07 so it clears AA on --bg-hover rows too (4.67:1 hover · 5.75:1 panel) */
+    --text-disabled:      #5A6574;  /* disabled */
+
+    /* Accent — steel blue, muted for dark */
+    --accent:             #5790BE;  /* steel blue */
+    --accent-dim:         #609BC9;  /* pressed — dark ink stays AA (dark pressed goes LIGHTER, between accent and hover; the old #3C6688 left --text-on-accent at 3.11:1 and failed as text on panels) */
+    --accent-hover:       #6BA6D4;  /* hover */
+    --accent-ghost:       #1E2A33;  /* ghost bg */
+    --text-on-accent:     #0D1117;  /* dark ink — white on the lighter dark-mode accent is only ~3.45:1, fails AA */
+
+    /* Semantics — desaturated, industrial (dark-tuned) */
+    --green:              #4D9E78;  /* success — muted spruce */
+    --red:                #C9656E;  /* danger — muted brick */
+    --orange:             #BD9038;  /* warning — muted ochre */
+    --purple:             #8B83B8;  /* pending — muted slate-violet */
+
+    /* Dim mix flips white so tinted-chip text goes lighter, not darker */
+    --dim-mix:            #FFFFFF;
+
+    /* Chrome — even darker than the light-mode near-black */
+    --topbar-bg:          #0D1117;
+    --topbar-text:        #E6EAF0;
+    --statusbar-bg:       #0D1117;
+    --statusbar-text:     #B1BAC4;
+    --statusbar-border:   #30363D;
+
+    --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+  }
+}
+
+/* ── 2. Manual dark — identical token block, attribute-driven ── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg:                 #0E1113;
+  --bg-light:           #1A2026;
+  --bg-medium:          #232A32;
+  --bg-hover:           #283039;
+  --bg-active:          #2F3F4A;
+  --card-surface-raised:#20272E;
+
+  --border:             #45505C;
+  --border-hover:       #5A6776;
+  --border-focus:       #5B9FD9;
+  --border-strong:      #6E7C8A;
+  --border-divider:     #2D353D;
+
+  --text-primary:       #E5EAEF;
+  --text-secondary:     #A5AFBC;
+  --text-muted:         #8F9AA7;
+  --text-disabled:      #5A6574;
+
+  --accent:             #5790BE;
+  --accent-dim:         #609BC9;
+  --accent-hover:       #6BA6D4;
+  --accent-ghost:       #1E2A33;
+  --text-on-accent:     #0D1117;
+
+  --green:              #4D9E78;
+  --red:                #C9656E;
+  --orange:             #BD9038;
+  --purple:             #8B83B8;
+
+  --dim-mix:            #FFFFFF;
+
+  --topbar-bg:          #0B0E10;
+  --topbar-text:        #E6EAF0;
+  --statusbar-bg:       #0B0E10;
+  --statusbar-text:     #B1BAC4;
+  --statusbar-border:   #2A3036;
+
+  --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+}
+
+/* ── 3. Forced light — opt out of OS dark by re-asserting the light base values
+      (mirrors colors.css). Higher specificity (0,2,0) than the auto-dark :root
+      (0,1,0), so <html data-theme="light"> wins under OS dark; a harmless no-op
+      under OS light. ── */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg:                 #DEE3EA;
+  --bg-light:           #FFFFFF;
+  --bg-medium:          #EBEFF4;
+  --bg-hover:           #EAEEF3;
+  --bg-active:          #D7E5F1;
+  --card-surface-raised:#F3F6F9;
+
+  --border:             #CBD3DC;
+  --border-hover:       #ADB8C4;
+  --border-focus:       #2F6F8F;
+  --border-strong:      #99A5B2;
+  --border-divider:     #D2D9E2;
+
+  --text-primary:       #22272E;
+  --text-secondary:     #4D5967;
+  --text-muted:         #59636F;
+  --text-disabled:      #889099;
+
+  --accent:             #2F6F8F;
+  --accent-dim:         #255B75;
+  --accent-hover:       #3B82A6;
+  --accent-ghost:       #E1EAF2;
+  --text-on-accent:     #FFFFFF;
+
+  --green:              #16885F;
+  --red:                #BA3F55;
+  --orange:             #8A520E;
+  --purple:             #6F5BA7;
+
+  --dim-mix:            #000;
+
+  --topbar-bg:          #171A1F;
+  --topbar-text:        #F4F6F8;
+  --statusbar-bg:       #171A1F;
+  --statusbar-text:     #D7DCE2;
+  --statusbar-border:   #262B31;
+
+  --scrim:              rgba(14, 17, 19, 0.5);
+}

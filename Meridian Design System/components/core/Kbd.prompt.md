@@ -1,0 +1,1 @@
+Keyboard shortcut hint — crisp key caps for operator workstations. Renders a single key or a combo (split on `+` or whitespace) as `min-width 18px` caps with a 2px bottom border for a tactile look. Mono key glyphs, tracks tokens for white-label + dark.

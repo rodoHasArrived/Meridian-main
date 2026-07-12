@@ -1,15 +1,21 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSchemaDriftService
 {
+    private readonly ILogger<ProviderIntegrationSchemaDriftService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationSchemaDriftService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSchemaDriftService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSchemaDriftService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSchemaDriftService>.Instance;
     }
 
     public async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckAsync(
@@ -18,6 +24,22 @@ public sealed class ProviderIntegrationSchemaDriftService
         => await CheckAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckAsync(
+        string? tenantId,
+        ProviderIntegrationSchemaDriftCheckRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "schema-drift-check",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: request?.EndpointKey,
+                SyncRunId: request?.SyncRunId),
+            () => CheckCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationSchemaDriftCheckResultDto> CheckCoreAsync(
         string? tenantId,
         ProviderIntegrationSchemaDriftCheckRequestDto request,
         CancellationToken ct = default)

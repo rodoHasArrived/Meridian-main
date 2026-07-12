@@ -20,20 +20,19 @@ namespace Meridian.Execution.Adapters;
 [ImplementsAdr("ADR-015", "Simulated IOrderGateway over live Meridian feed — no real orders")]
 public sealed class PaperTradingGateway : IOrderGateway
 {
-    // Notional fill price used for market orders in this scaffold.
-    // A production implementation would source the last-traded price from ILiveFeedAdapter.
-    private const decimal ScaffoldMarketFillPrice = 1m;
+    // Notional fill price used for market orders in this scaffold, configurable via
+    // PaperTradingGatewayOptions. A production implementation would source the
+    // last-traded price from ILiveFeedAdapter.
+    private readonly decimal _scaffoldMarketFillPrice;
+    private int _scaffoldPriceWarningIssued;
 
     private readonly ILogger<PaperTradingGateway> _logger;
-    private readonly ISecurityMasterQueryService? _securityMaster;
+    private readonly PaperTradingGatewayTradingParameters _tradingParameters;
     private readonly System.Threading.Channels.Channel<OrderStatusUpdate> _updates;
     private readonly Dictionary<string, OrderRequest> _workingOrders = new();
-    private const int MaxCachedSymbols = 1024;
-    private const int MaxCacheableSymbolLength = 64;
-
-    private readonly ConcurrentDictionary<string, TradingParametersDto> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, Task> _fillTasks = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _lock = new();
-    private bool _disposed;
+    private int _disposed;
 
     /// <inheritdoc/>
     public string BrokerName => "Paper";
@@ -78,12 +77,23 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// Optional Security Master query service. When provided, lot-size validation and
     /// tick-size price rounding are applied on a best-effort basis.
     /// </param>
-    public PaperTradingGateway(ILogger<PaperTradingGateway> logger, ISecurityMasterQueryService? securityMaster = null)
+    /// <param name="options">
+    /// Optional gateway options. When omitted, defaults apply (including the notional
+    /// scaffold market fill price).
+    /// </param>
+    public PaperTradingGateway(
+        ILogger<PaperTradingGateway> logger,
+        ISecurityMasterQueryService? securityMaster = null,
+        PaperTradingGatewayOptions? options = null)
     {
-        _logger = logger;
-        _securityMaster = securityMaster;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _tradingParameters = new PaperTradingGatewayTradingParameters(
+            _logger,
+            securityMaster,
+            LogLevel.Debug);
+        _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
-        // CompletionQueue (Wait mode, 500 capacity) ensures no terminal order updates are dropped.
+        // Disposal waits for in-flight fills before completing this bounded update channel.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(
             singleReader: false, singleWriter: false);
     }
@@ -92,7 +102,7 @@ public sealed class PaperTradingGateway : IOrderGateway
     public async Task<OrderAcknowledgement> SubmitAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         var validation = await ValidateOrderAsync(request, ct).ConfigureAwait(false);
         if (!validation.IsValid)
         {
@@ -103,7 +113,10 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         lock (_lock)
         {
-            _workingOrders[orderId] = request with { ClientOrderId = orderId };
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            var trackedRequest = request with { ClientOrderId = orderId };
+            _workingOrders[orderId] = trackedRequest;
+            TrackFillSimulationLocked(orderId, trackedRequest);
         }
 
         _logger.LogInformation(
@@ -116,10 +129,6 @@ public sealed class PaperTradingGateway : IOrderGateway
             Symbol: request.Symbol,
             Status: GatewayOrderStatus.Accepted,
             AcknowledgedAt: DateTimeOffset.UtcNow);
-
-        // Use CancellationToken.None so the fill simulation always runs to completion
-        // and emits a terminal update, even if the caller cancels after receiving the ack.
-        _ = SimulateFillAsync(request with { ClientOrderId = orderId }, CancellationToken.None);
 
         return ack;
     }
@@ -156,16 +165,10 @@ public sealed class PaperTradingGateway : IOrderGateway
         }
 
         // Best-effort lot-size validation using the Security Master (requires ISecurityMasterQueryService).
-        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
-        if (tradingParams?.LotSize is { } lotSize && lotSize > 0m)
+        var lotSizeError = await _tradingParameters.ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
+        if (lotSizeError is not null)
         {
-            var absQty = Math.Abs(request.Quantity);
-            if (absQty % lotSize != 0m)
-            {
-                return new OrderValidationResult(
-                    false,
-                    $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.");
-            }
+            return new OrderValidationResult(false, lotSizeError);
         }
 
         return new OrderValidationResult(true);
@@ -174,7 +177,7 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// <inheritdoc/>
     public Task<bool> CancelAsync(string orderId, CancellationToken ct = default)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         OrderRequest? cancelledRequest = null;
         lock (_lock)
@@ -198,7 +201,12 @@ public sealed class PaperTradingGateway : IOrderGateway
                 RejectReason: null,
                 Timestamp: DateTimeOffset.UtcNow);
 
-            _updates.Writer.TryWrite(update);
+            if (!_updates.Writer.TryWrite(update))
+            {
+                _logger.LogWarning(
+                    "Paper cancellation update for {OrderId} could not be queued because the update channel was unavailable.",
+                    orderId);
+            }
         }
 
         return Task.FromResult(cancelledRequest is not null);
@@ -227,17 +235,23 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         // For limit orders use the limit price; for market orders use the scaffold notional price.
         // A real implementation would source the fill price from the live feed via ILiveFeedAdapter.
-        var fillPrice = ((OrderType)request.Type) switch
+        var referencePrice = ((OrderType)request.Type) switch
         {
-            OrderType.Limit or OrderType.StopLimit
-                => request.LimitPrice ?? ScaffoldMarketFillPrice,
-            OrderType.StopMarket => request.StopPrice ?? ScaffoldMarketFillPrice,
-            _ => ScaffoldMarketFillPrice
+            OrderType.Limit or OrderType.StopLimit => request.LimitPrice,
+            OrderType.StopMarket => request.StopPrice,
+            _ => null
         };
 
+        if (referencePrice is null)
+        {
+            WarnScaffoldPriceUsed();
+        }
+
+        var fillPrice = referencePrice ?? _scaffoldMarketFillPrice;
+
         // Best-effort tick-size rounding: snap fill price to the instrument's tick grid.
-        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
-        fillPrice = SnapToTickSize(fillPrice, tradingParams?.TickSize);
+        fillPrice = await _tradingParameters.SnapToTickSizeAsync(request.Symbol, fillPrice, ct)
+            .ConfigureAwait(false);
 
         var fill = new OrderStatusUpdate(
             OrderId: orderId,
@@ -249,7 +263,12 @@ public sealed class PaperTradingGateway : IOrderGateway
             RejectReason: null,
             Timestamp: DateTimeOffset.UtcNow);
 
-        _updates.Writer.TryWrite(fill);
+        if (!_updates.Writer.TryWrite(fill))
+        {
+            _logger.LogWarning(
+                "Paper fill update for {OrderId} could not be queued because the update channel was unavailable.",
+                orderId);
+        }
 
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
@@ -257,77 +276,73 @@ public sealed class PaperTradingGateway : IOrderGateway
     }
 
     /// <summary>
-    /// Looks up trading parameters for a symbol via the Security Master. Successful results are
-    /// cached per symbol for the lifetime of this gateway instance to avoid repeated I/O.
-    /// Returns <c>null</c> on any error or when no Security Master is configured.
+    /// Emits a one-time loud warning when a fill is priced from the scaffold notional price
+    /// instead of a real market price, so paper P&amp;L consumers cannot miss it.
     /// </summary>
-    private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
+    private void WarnScaffoldPriceUsed()
     {
-        if (_securityMaster is null)
-            return null;
-
-        var cacheKey = NormalizeSymbolForCache(symbol);
-        if (cacheKey is not null && _tradingParamsCache.TryGetValue(cacheKey, out var cached))
-            return cached;
-
-        try
-        {
-            var detail = await _securityMaster.GetByIdentifierAsync(
-                SecurityIdentifierKind.Ticker, symbol, provider: null, ct)
-                .ConfigureAwait(false);
-
-            if (detail is null)
-                return null;
-
-            var result = await _securityMaster.GetTradingParametersAsync(detail.SecurityId, DateTimeOffset.UtcNow, ct)
-                .ConfigureAwait(false);
-
-            if (result is not null && cacheKey is not null && _tradingParamsCache.Count < MaxCachedSymbols)
-            {
-                _tradingParamsCache.TryAdd(cacheKey, result);
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Could not resolve trading parameters for {Symbol} — lot-size and tick-size checks skipped", symbol);
-            return null;
-        }
-    }
-
-    private static string? NormalizeSymbolForCache(string symbol)
-    {
-        if (string.IsNullOrWhiteSpace(symbol))
-            return null;
-
-        var normalized = symbol.Trim().ToUpperInvariant();
-        return normalized.Length <= MaxCacheableSymbolLength ? normalized : null;
-    }
-
-    /// <summary>
-    /// Rounds <paramref name="price"/> to the nearest multiple of <paramref name="tickSize"/>.
-    /// Returns <paramref name="price"/> unchanged when <paramref name="tickSize"/> is null or zero.
-    /// </summary>
-    private static decimal SnapToTickSize(decimal price, decimal? tickSize)
-    {
-        if (tickSize is not { } tick || tick <= 0m)
-            return price;
-
-        return Math.Round(price / tick, MidpointRounding.AwayFromZero) * tick;
+        PaperTradingGatewayScaffoldPricing.WarnIfFirstUse(
+            ref _scaffoldPriceWarningIssued,
+            _logger,
+            _scaffoldMarketFillPrice,
+            "Paper gateway");
     }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
             return;
         }
 
-        _disposed = true;
+        Task[] fillTasks;
+        lock (_lock)
+        {
+            fillTasks = _fillTasks.Values.ToArray();
+        }
+
+        if (fillTasks.Length > 0)
+        {
+            try
+            {
+                await Task.WhenAll(fillTasks).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Paper gateway observed one or more fill simulation failures during disposal.");
+            }
+        }
+
         _updates.Writer.TryComplete();
 
         await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    private bool IsDisposed => Volatile.Read(ref _disposed) != 0;
+
+    private void TrackFillSimulationLocked(string orderId, OrderRequest request)
+    {
+        // Use CancellationToken.None so the fill simulation always runs to completion
+        // and emits a terminal update, even if the caller cancels after receiving the ack.
+        var fillTask = SimulateFillAsync(request, CancellationToken.None);
+        _fillTasks[orderId] = fillTask;
+        _ = ObserveFillSimulationAsync(orderId, fillTask);
+    }
+
+    private async Task ObserveFillSimulationAsync(string orderId, Task fillTask)
+    {
+        try
+        {
+            await fillTask.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Paper fill simulation failed for {OrderId}.", orderId);
+        }
+        finally
+        {
+            _fillTasks.TryRemove(orderId, out _);
+        }
     }
 }

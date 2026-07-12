@@ -13,7 +13,7 @@ namespace Meridian.Execution.Adapters;
 /// streaming via bounded channels, and rate limit scaffolding.
 /// Concrete implementations override broker-specific methods.
 /// </summary>
-public abstract class BaseBrokerageGateway : IBrokerageGateway
+public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewayModeProvider
 {
     private readonly Channel<ExecutionReport> _reportChannel;
     private volatile bool _disposed;
@@ -40,6 +40,9 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     // ── IExecutionGateway ──────────────────────────────────────────────
     /// <inheritdoc />
     public abstract string GatewayId { get; }
+
+    /// <inheritdoc />
+    public ExecutionMode ExecutionMode => ExecutionMode.Live;
 
     /// <inheritdoc />
     public bool IsConnected => _connected;

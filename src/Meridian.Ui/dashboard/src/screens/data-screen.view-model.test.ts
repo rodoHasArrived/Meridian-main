@@ -356,7 +356,8 @@ const providerReadiness: ProviderReadinessSummary = {
 
 describe("data-screen view model", () => {
   it("keeps Data workspace API types canonical with Data Operations compatibility aliases", () => {
-    const typesSource = readFileSync(resolve(process.cwd(), "src/types.ts"), "utf8");
+    // types.ts is a barrel re-export; the Data workspace declarations live in the workstation-3 module.
+    const typesSource = readFileSync(resolve(process.cwd(), "src/types/workstation-3.ts"), "utf8");
 
     expect(typesSource).toContain("export interface DataProviderRecord");
     expect(typesSource).toContain("export interface DataWorkspaceResponse");
@@ -451,6 +452,9 @@ describe("data-screen view model", () => {
 
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
+    expect(resolveDataWorkstream("/data/providers")).toBe("providers");
+    expect(resolveDataWorkstream("/data/exports")).toBe("exports");
+    expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");
     expect(resolveDataWorkstream("/data-operations/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data-operations")).toBe("overview");

@@ -10,8 +10,8 @@ function inject() {
   const css = `
 .mds-seltb{display:none;position:relative;
   background:var(--bg-light,#fff);border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-card,8px);padding:12px 14px;
-  box-shadow:var(--shadow-card,0 1px 1px rgba(0,0,0,.08));
+  border-radius:var(--radius-card,2px);padding:12px 14px;
+  box-shadow:var(--shadow-card,none);
   margin-bottom:12px;}
 .mds-seltb--active{display:flex;align-items:center;justify-content:space-between;gap:12px;
   animation:mds-seltb-slide-in 150ms ease;}
@@ -25,13 +25,13 @@ function inject() {
   text-decoration:underline;padding:0;line-height:1;}
 .mds-seltb__shortcut:hover{opacity:.8;}
 .mds-seltb__actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.mds-seltb__btn{appearance:none;border:1px solid;border-radius:var(--radius-button,6px);
+.mds-seltb__btn{appearance:none;border:1px solid;border-radius:var(--radius-button,2px);
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.02em;padding:6px 12px;cursor:pointer;
   transition:background-color 100ms ease,border-color 100ms ease;}
 .mds-seltb__btn--primary{background:var(--accent,#2F6F8F);border-color:var(--accent,#2F6F8F);
-  color:#fff;}
-.mds-seltb__btn--primary:hover{background:rgba(47,111,143,.80);border-color:var(--accent,#2F6F8F);}
+  color:var(--text-on-accent,#fff);}
+.mds-seltb__btn--primary:hover{background:var(--accent-hover,#3B82A6);border-color:var(--accent-hover,#3B82A6);}
 .mds-seltb__btn--primary:active{background:var(--accent-dim,#255B75);}
 .mds-seltb__btn--ghost{background:var(--bg-light,#fff);border-color:var(--border,#D7DCE2);
   color:var(--text-primary,#22272E);}
@@ -39,7 +39,7 @@ function inject() {
 .mds-seltb__btn--danger{background:var(--bg-light,#fff);border-color:var(--border,#D7DCE2);
   color:var(--red,#BA3F55);}
 .mds-seltb__btn--danger:hover{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#BA3F55);}
-.mds-seltb__btn--danger:active{background:var(--red-a20,rgba(186,63,85,.20));}
+.mds-seltb__btn--danger:active{background:var(--red-a20,color-mix(in srgb,var(--red) 35%,transparent));}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "seltb");

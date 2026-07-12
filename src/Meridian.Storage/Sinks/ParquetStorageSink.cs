@@ -6,6 +6,7 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Services;
 using Parquet;
@@ -536,53 +537,13 @@ public sealed class ParquetStorageSink : IStorageSink
     }
 
     /// <summary>
-    /// Writes Parquet data atomically using a temp-file-then-rename strategy.
-    /// Prevents partially written files from appearing at the destination on crash or I/O error.
+    /// Writes Parquet data atomically using the shared <see cref="AtomicFileWriter"/> durable
+    /// write path (temp file, fsync, rename, directory fsync). Prevents partially written or
+    /// non-durable files from appearing at the destination on crash or I/O error.
     /// </summary>
-    private static async Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync, CancellationToken ct = default)
+    private static Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync, CancellationToken ct = default)
     {
-        ct.ThrowIfCancellationRequested();
-        var tempPath = GetAtomicTempPath(path);
-        try
-        {
-            {
-                await using var tempStream = new FileStream(
-                    tempPath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    bufferSize: 65536,
-                    FileOptions.Asynchronous);
-                await writeAsync(tempStream);
-            }
-            ct.ThrowIfCancellationRequested();
-            File.Move(tempPath, path, overwrite: true);
-        }
-        catch
-        {
-            TryDeleteTempFile(tempPath);
-            throw;
-        }
-    }
-
-    private static string GetAtomicTempPath(string destinationPath)
-    {
-        var directory = Path.GetDirectoryName(destinationPath) ?? ".";
-        var fileName = Path.GetFileName(destinationPath);
-        return Path.Combine(directory, $".{fileName}.{Guid.NewGuid():N}.tmp");
-    }
-
-    private static void TryDeleteTempFile(string path)
-    {
-        try
-        {
-            if (File.Exists(path))
-                File.Delete(path);
-        }
-        catch
-        {
-            // best-effort: do not mask the original exception
-        }
+        return AtomicFileWriter.WriteStreamAsync(path, writeAsync, ct);
     }
 
     private string GetBufferKey(MarketEvent evt)

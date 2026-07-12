@@ -30,7 +30,7 @@ These diagrams align the current design document with maintained architecture so
 
 | Diagram | Source | Shows |
 | --- | --- | --- |
-| Operational Record System Context | [`meridian-operational-record-context.mmd`](diagrams/meridian-operational-record-context.mmd) | Meridian's W1-W5 system boundary, user groups, active browser/WPF surfaces, shared UI seams, external providers, accounting systems, documents, identity, and report delivery channels. |
+| Operational Record System Context | [`meridian-operational-record-context.mmd`](diagrams/meridian-operational-record-context.mmd) | Meridian's W1-W5 system boundary, user groups, active browser workstation, retained WPF compatibility surface, shared UI seams, external providers, accounting systems, documents, identity, and report delivery channels. |
 | Operational Record Evidence Flow | [`meridian-operational-record-flow.mmd`](diagrams/meridian-operational-record-flow.mmd) | Source evidence through provider ingestion, normalization, validation, review gates, reconciliation, approvals, approved records, accounting evidence, report packs, and audit lineage. |
 | Bounded Context Ownership Map | [`meridian-bounded-context-ownership.mmd`](diagrams/meridian-bounded-context-ownership.mmd) | The design document's ownership boundaries and cross-context flow rule: consume published APIs, views, or events rather than writing another context's owned records. |
 

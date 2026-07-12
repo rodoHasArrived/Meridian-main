@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1318,10 +1319,10 @@ function validateCellKindParameters(cell: StrategyBuilderCell, cellIds: Readonly
     const parsedMinSize = minSize ? Number(minSize) : null;
     const parsedMaxSize = maxSize ? Number(maxSize) : null;
 
-    if (minSize && (!Number.isFinite(parsedMinSize) || parsedMinSize < 0)) {
+    if (minSize && (!Number.isFinite(parsedMinSize) || (parsedMinSize !== null && parsedMinSize < 0))) {
       messages.push({ code: "UniverseBuilderMinSizeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) minSize must be a non-negative number.` });
     }
-    if (maxSize && (!Number.isFinite(parsedMaxSize) || parsedMaxSize < 0)) {
+    if (maxSize && (!Number.isFinite(parsedMaxSize) || (parsedMaxSize !== null && parsedMaxSize < 0))) {
       messages.push({ code: "UniverseBuilderMaxSizeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) maxSize must be a non-negative number.` });
     }
     if (
@@ -2373,8 +2374,7 @@ function formatQuantity(value: number): string {
 }
 
 function formatCurrency(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
 }
 
 function slugifyId(value: string): string {

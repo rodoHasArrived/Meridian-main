@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/format";
 import type { CorporateActionDescriptor } from "@/types";
 
 export type SecurityMasterTab = "overview" | "company" | "corporate-actions" | "print";
@@ -798,10 +799,9 @@ const SECURITY_MASTER_RECORDS: SecurityMasterRecord[] = [
   }
 ];
 
-const scoreFormatter = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2
-});
+function formatScore(value: number): string {
+  return formatNumber(value, { minimumFractionDigits: 2 });
+}
 
 const CORPORATE_ACTION_LIFECYCLE_STOPS: ReadonlyArray<{ id: SecurityMasterLifecycleStopId; label: string; rank: number }> = [
   { id: "announced", label: "Announced", rank: 0 },
@@ -959,7 +959,7 @@ function buildSearchRowState(record: SecurityMasterRecord, selectedSecurityId: s
     isin: record.isin,
     status: record.status,
     statusVariant: record.status === "Active" ? "success" : record.status === "Pending" ? "warning" : "outline",
-    scoreText: scoreFormatter.format(record.score),
+    scoreText: formatScore(record.score),
     scoreWidth: `${Math.max(18, Math.min(100, Math.round((record.score / 110) * 100)))}%`,
     selected,
     ariaLabel: [
@@ -968,7 +968,7 @@ function buildSearchRowState(record: SecurityMasterRecord, selectedSecurityId: s
       record.assetType,
       `${record.market} ${record.country}`,
       `ISIN ${record.isin}`,
-      `score ${scoreFormatter.format(record.score)}`
+      `score ${formatScore(record.score)}`
     ].join(". ")
   };
 }
@@ -1000,7 +1000,7 @@ function buildSelectedSecurityState(
     status: record.status,
     statusVariant: record.status === "Active" ? "success" : record.status === "Pending" ? "warning" : "outline",
     assetType: record.assetType,
-    scoreText: scoreFormatter.format(record.score),
+    scoreText: formatScore(record.score),
     summaryFields: record.summaryFields,
     identifierSections: record.identifierSections,
     auditTrail: record.auditTrail,

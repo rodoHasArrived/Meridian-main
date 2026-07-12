@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { ChartCard, EquityCurve as EquityCurveChart } from "@/components/charts";
 import { SeverityBadge } from "@/components/operations";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -17,20 +18,7 @@ import {
 } from "@/screens/covered-call-screen.view-model";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-
-/** Map the view-model's `Badge` variant onto a Concrete operator-severity status string so
- * covered-call run/trade/chain statuses render through the shared `SeverityBadge`. Presentational
- * only — the view-model keeps emitting `statusBadgeVariant` for its own tests. */
-function coveredCallSeverityStatus(variant: string): string {
-  switch (variant) {
-    case "success": return "ready";
-    case "danger": return "blocked";
-    case "warning": return "action";
-    case "paper":
-    case "research": return "review";
-    default: return "info";
-  }
-}
+import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -73,7 +61,7 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
     label: "Status",
     render: (row) => (
       <SeverityBadge
-        status={coveredCallSeverityStatus(row.statusBadgeVariant)}
+        status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)}
         label={row.statusLabel}
         aria-label={row.statusAriaLabel}
       />
@@ -101,7 +89,7 @@ const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={coveredCallSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   },
   {
@@ -150,14 +138,14 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
     id: "reason",
     label: "Reason",
     render: (row) => (
-      <SeverityBadge status={coveredCallSeverityStatus(row.statusBadgeVariant)} label={row.exitReasonLabel} />
+      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.exitReasonLabel} />
     )
   },
   {
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={coveredCallSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   }
 ];
@@ -171,19 +159,17 @@ export function CoveredCallScreen() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
+          Covered Call Backtest
+        </span>
+      }
+      scope="Strategy Lane"
+      description="Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff."
+    >
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-primary" aria-hidden="true" />
-            Covered Call Backtest
-          </CardTitle>
-          <CardDescription>
-            Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure
-            filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <StageStepper navigation={vm.stageNavigation} onSelect={vm.goToStage} />
         </CardContent>
@@ -218,7 +204,7 @@ export function CoveredCallScreen() {
       {vm.stage === "results" ? <ResultsStage vm={vm} /> : null}
 
       <HistoryPanel vm={vm} />
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -419,7 +405,7 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
             title={panel.selectedDetail.title}
             subtitle={panel.selectedDetail.subtitle}
             description={panel.selectedDetail.description}
-            status={<SeverityBadge status={coveredCallSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+            status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
             fields={panel.selectedDetail.fields}
             ariaLabel={panel.selectedDetail.ariaLabel}
           />
@@ -674,7 +660,7 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
               title={panel.selectedDetail.title}
               subtitle={panel.selectedDetail.subtitle}
               description={panel.selectedDetail.description}
-              status={<SeverityBadge status={coveredCallSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+              status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
               fields={panel.selectedDetail.fields}
               ariaLabel={panel.selectedDetail.ariaLabel}
             />

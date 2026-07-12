@@ -586,7 +586,7 @@ describe("SettingsScreen", () => {
     })).toHaveAttribute("href", "/trading/readiness");
     expect(within(profileRegion).getByRole("link", {
       name: "Open Settings diagnostic services from profile authentication posture"
-    })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
+    })).toHaveAttribute("href", "/settings/diagnostics");
     expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
 
@@ -607,6 +607,55 @@ describe("SettingsScreen", () => {
 
     expect(document.querySelector("#fund-operations-control-center")).toBeInTheDocument();
     expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
+  });
+
+  it("resolves object-centric Settings routes before stale hashes", () => {
+    const accessRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/access#provider-connection-center"]
+    });
+    expect(document.querySelector("#settings-overview")).toBeInTheDocument();
+    expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
+    accessRender.unmount();
+
+    const providerRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/providers#settings-overview"]
+    });
+    expect(document.querySelector("#provider-connection-center")).toBeInTheDocument();
+    expect(document.querySelector("#data-provider-modules")).toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
+    providerRender.unmount();
+
+    const diagnosticsRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/diagnostics#runtime-feature-capabilities"]
+    });
+    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+    expect(document.querySelector("#runtime-feature-capabilities")).not.toBeInTheDocument();
+    diagnosticsRender.unmount();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        featureCapabilities={{
+          capabilities: [
+            {
+              capabilityKey: "desktop.settings.workspace",
+              displayName: "Settings workspace",
+              description: "Preferences and diagnostics.",
+              isEnabled: true,
+              defaultEnabled: true,
+              isPermanent: true,
+              isOverridden: false,
+              canToggle: false,
+              disabledReason: "Required for workstation navigation."
+            }
+          ]
+        }}
+      />,
+      { initialEntries: ["/settings/feature-coverage#diagnostic-endpoints"] }
+    );
+    expect(document.querySelector("#runtime-feature-capabilities")).toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
 
   it("renders appearance controls in the profile task view", () => {

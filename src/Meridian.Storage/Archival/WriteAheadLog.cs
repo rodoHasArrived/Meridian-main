@@ -384,13 +384,48 @@ public sealed class WriteAheadLog : IAsyncDisposable
                         Directory.CreateDirectory(archiveDir);
                         var archivePath = Path.Combine(archiveDir, Path.GetFileName(walFile) + ".gz");
 
-                        await using var input = File.OpenRead(walFile);
-                        await using var output = File.Create(archivePath);
-                        await using var gzip = new GZipStream(output, CompressionLevel.Optimal);
-                        await input.CopyToAsync(gzip, ct);
+                        // Fully write, flush, and close the compressed archive before touching the
+                        // original. Disposing the GZipStream flushes its trailer; fsyncing the output
+                        // guarantees the bytes reach disk.
+                        await using (var input = File.OpenRead(walFile))
+                        await using (var output = new FileStream(
+                            archivePath,
+                            FileMode.Create,
+                            FileAccess.Write,
+                            FileShare.None,
+                            bufferSize: 64 * 1024,
+                            FileOptions.WriteThrough | FileOptions.Asynchronous))
+                        {
+                            // leaveOpen so disposing the GZipStream (which flushes its trailer)
+                            // does not close 'output' before we fsync it below.
+                            await using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true))
+                            {
+                                await input.CopyToAsync(gzip, ct);
+                            }
+
+                            await output.FlushAsync(ct);
+                            // Force an OS-level fsync so the archive is durable on every OS/filesystem
+                            // before the original WAL file is removed.
+                            output.Flush(flushToDisk: true);
+                        }
+
+                        // Persist the archive rename and verify the archive actually landed before
+                        // deleting the only remaining copy of the records.
+                        await AtomicFileWriter.SyncDirectoryAsync(archiveDir, ct);
+
+                        var archiveInfo = new FileInfo(archivePath);
+                        if (!archiveInfo.Exists || archiveInfo.Length == 0)
+                        {
+                            _log.Error(
+                                "Refusing to delete WAL file {File}: archive {Archive} is missing or empty",
+                                walFile, archivePath);
+                            continue;
+                        }
                     }
 
                     File.Delete(walFile);
+                    // post-commit (the WAL file is already gone): must not observe cancellation.
+                    await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None);
                     _log.Information("Truncated WAL file {File}", walFile);
                 }
             }
@@ -827,6 +862,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 // Replace original with repaired file
                 File.Delete(walFile);
                 File.Move(tempPath, walFile);
+
+                // Make the rename durable so the repaired file survives a crash or power loss.
+                // post-commit (the repaired file is already in place): must not observe cancellation.
+                await AtomicFileWriter.SyncDirectoryAsync(
+                    Path.GetDirectoryName(walFile) ?? _walDirectory, CancellationToken.None);
 
                 repairedFiles++;
 

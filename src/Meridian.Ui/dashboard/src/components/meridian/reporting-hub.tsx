@@ -4,27 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
-import type { ReportingHubBadgeVariant, ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
+import { badgeVariantToSeverityStatus, semanticToneToTextClass } from "@/lib/shared-tone-mappings";
+import type { ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
 
 export interface ReportingHubProps {
   model: ReportingHubModel;
   className?: string;
 }
-
-const toneClasses: Record<ReportingHubTone, string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-  muted: "text-muted-foreground"
-};
-
-// Concrete severity layer: hub badge variant → operator-readiness status string.
-const badgeVariantStatus: Record<ReportingHubBadgeVariant, string> = {
-  success: "Ready",
-  warning: "ReviewRequired",
-  danger: "Blocked",
-  outline: "Info"
-};
 
 /**
  * Reporting launch surface with daily work first and report-family launch cards below.
@@ -66,12 +52,12 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        <AlertTriangle className={cn("h-3.5 w-3.5", toneClasses[item.tone])} aria-hidden="true" />
+                        <AlertTriangle className={cn("h-3.5 w-3.5", semanticToneToTextClass(item.tone))} aria-hidden="true" />
                         {item.kindLabel}
                       </div>
                       <div className="mt-1 break-words text-sm font-semibold text-foreground">{item.title}</div>
                     </div>
-                    <SeverityBadge status={badgeVariantStatus[item.badgeVariant]} label={item.statusLabel} />
+                    <SeverityBadge status={badgeVariantToSeverityStatus(item.badgeVariant)} label={item.statusLabel} />
                   </div>
                   <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
                   <dl className="grid gap-2 text-xs sm:grid-cols-2" aria-label={`${item.title} decision facts`}>
@@ -139,9 +125,9 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="min-w-0 break-words font-semibold text-foreground">{card.family}</span>
-                      <SeverityBadge status={badgeVariantStatus[card.badgeVariant]} label={card.statusLabel} />
+                      <SeverityBadge status={badgeVariantToSeverityStatus(card.badgeVariant)} label={card.statusLabel} />
                     </div>
-                    <p className={cn("text-xs leading-5", toneClasses[card.statusTone])}>{card.approvedAsOfLabel}</p>
+                    <p className={cn("text-xs leading-5", semanticToneToTextClass(card.statusTone))}>{card.approvedAsOfLabel}</p>
                     <p className="text-[11px] leading-4 text-muted-foreground">
                       {card.detail}
                       {card.latestRunId ? (
@@ -187,7 +173,7 @@ function ReportingHubFact({
   return (
     <div className="rounded-md border border-border/60 bg-background/50 px-2.5 py-2">
       <dt className="text-[11px] uppercase text-muted-foreground">{label}</dt>
-      <dd className={cn("mt-1 break-words font-mono text-[11px]", toneClasses[tone])}>{value}</dd>
+      <dd className={cn("mt-1 break-words font-mono text-[11px]", semanticToneToTextClass(tone))}>{value}</dd>
     </div>
   );
 }

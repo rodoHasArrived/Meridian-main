@@ -7,11 +7,11 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-panel{background:var(--card-surface,#fff);border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-card,8px);box-shadow:var(--shadow-card,0 1px 1px rgba(0,0,0,.08));}
+.mds-panel{background:var(--card-surface,#fff);border:1px solid var(--border,#D7DCE2);}
 .mds-panel--raised{background:var(--card-surface-raised,#FAFBFC);}
-.mds-panel--elevated{box-shadow:var(--shadow-elevated,0 1px 2px rgba(0,0,0,.10));}
-.mds-panel--flat{box-shadow:none;}
+.mds-panel--elevated{border:1px solid var(--border,#D7DCE2);}
+.mds-panel--flat{border:none;}
+.mds-panel--strong{border-color:var(--border-strong,#99A5B2);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "panel");
@@ -19,9 +19,9 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function PanelSurface({ raised = false, elevated = false, flat = false, className = "", children, ...rest }) {
+export function PanelSurface({ raised = false, elevated = false, flat = false, strong = false, className = "", children, ...rest }) {
   inject();
   const cls = `mds-panel${raised ? " mds-panel--raised" : ""}${elevated ? " mds-panel--elevated" : ""}` +
-    `${flat ? " mds-panel--flat" : ""}${className ? " " + className : ""}`;
+    `${flat ? " mds-panel--flat" : ""}${strong ? " mds-panel--strong" : ""}${className ? " " + className : ""}`;
   return <div className={cls} {...rest}>{children}</div>;
 }

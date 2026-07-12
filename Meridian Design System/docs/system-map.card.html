@@ -1,0 +1,62 @@
+<!-- @dsCard group="Documentation" viewport="1180x720" name="System map" subtitle="Foundations → 154 exported symbols → 22 templates — the whole system at a glance" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
+  .pipe { display: grid; grid-template-columns: 1fr 24px 1fr 24px 1fr; align-items: stretch; gap: 0; margin-bottom: 14px; }
+  .stage { background: var(--card-surface); border: 1px solid var(--border-strong); border-radius: var(--radius-card); padding: 10px 14px; }
+  .arrow { align-self: center; text-align: center; font-family: var(--font-data); font-size: 14px; color: var(--text-muted); }
+  .stage .t { font-size: 12px; font-weight: 600; }
+  .stage .s { font-family: var(--font-data); font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .dom { background: var(--card-surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; }
+  .dom .h { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-secondary); display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-divider); padding-bottom: 6px; margin-bottom: 7px; }
+  .dom .h code { font-family: var(--font-data); font-size: 9px; color: var(--text-muted); }
+  .dom .c { font-family: var(--font-data); font-size: 10px; line-height: 1.7; color: var(--text-primary); }
+  .tmpl { grid-column: 1 / -1; background: var(--card-surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; }
+  .tmpl .h { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-secondary); border-bottom: 1px solid var(--border-divider); padding-bottom: 6px; margin-bottom: 8px; }
+  .tcols { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .tset .k { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-primary); margin-bottom: 4px; }
+  .tset .c { font-family: var(--font-data); font-size: 10px; line-height: 1.7; color: var(--text-secondary); }
+  .tset .star { color: var(--accent, #2F6F8F); }
+  .foot { margin-top: 12px; font-size: 11px; color: var(--text-secondary); }
+  .foot code { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); }
+</style>
+</head>
+<body>
+  <div class="pipe">
+    <div class="stage"><div class="t">Foundations</div><div class="s">styles.css → 370 tokens · colors / type / elevation / density / dark / print</div></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="t">Components</div><div class="s">_ds_bundle.js → 154 exports on window.MeridianDesignSystem_4f61be</div></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="t">Templates</div><div class="s">templates/ → 22 copy-and-edit workstations (.dc.html)</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="dom"><div class="h">Core<code>components/core</code></div><div class="c">Button · Input · Select · Combobox · Modal · Tabs · CommandPalette · SplitPane · HotkeysProvider · Toast · FormHooks</div></div>
+    <div class="dom"><div class="h">Data<code>components/data</code></div><div class="c">DenseDataTable · FilteredDataTable · WorksheetGrid · FilterBuilder · ColumnManager · Pagination · MetricCard · TableHooks</div></div>
+    <div class="dom"><div class="h">Charts<code>components/charts</code></div><div class="c">CandleChart · EquityCurve · DrawdownChart · Histogram · CorrelationHeatmap · PnLCalendar · CoverageMatrix · Sparkline</div></div>
+    <div class="dom"><div class="h">Accounting<code>components/accounting</code></div><div class="c">AmountCell · LedgerTable · TrialBalance · ReconciliationPanel · JournalEntryForm · TaxLotTable · AgingTable · Money</div></div>
+    <div class="dom"><div class="h">Trading<code>components/trading</code></div><div class="c">OrderTicket · DepthLadder · Blotter · FillsFeed — with the live-mode confirm gate</div></div>
+    <div class="dom"><div class="h">Operations<code>components/operations</code></div><div class="c">SeverityBadge · GateRail · ReadinessPanel · DiffView · LogTail · EventTimeline · TrustStrip</div></div>
+    <div class="dom"><div class="h">Shell<code>components/shell</code></div><div class="c">WorkstationTopbar · NavRail · StatusBar · SessionControls</div></div>
+    <div class="dom"><div class="h">Guides<code>guidelines/ · docs/</code></div><div class="c">PATTERNS · COOKBOOK · TOKEN_REFERENCE · ACCESSIBILITY · ENTITY_SCHEMAS · STATES_AND_ANTIPATTERNS</div></div>
+
+    <div class="tmpl">
+      <div class="h">Templates — copy a folder, edit one file</div>
+      <div class="tcols">
+        <div class="tset"><div class="k">Start here</div><div class="c"><span class="star">dashboard-workstation ★</span><br>blank-workstation</div></div>
+        <div class="tset"><div class="k">Data &amp; analysis</div><div class="c">security-master-registry<br>charting-workstation<br>ingestion-operations<br>alerting-workstation</div></div>
+        <div class="tset"><div class="k">Books &amp; reporting</div><div class="c">accounting-workstation<br>journaling-workstation<br>report-library<br>report-scheduler<br>basket-builder</div></div>
+        <div class="tset"><div class="k">Research suite</div><div class="c">strategy-builder<br>field-formula<br>amx-governance<br>backtest-builder<br>strategy-onboarding<br>strategy-runs</div></div>
+        <div class="tset"><div class="k">Trading &amp; admin</div><div class="c">trading-desk<br>settings-admin</div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Consume: link <code>styles.css</code>, load <code>_ds_bundle.js</code>, then <code>const { Button } = window.MeridianDesignSystem_4f61be</code>. When to reach for what: <code>PATTERNS.md</code>.</p>
+</body>
+</html>

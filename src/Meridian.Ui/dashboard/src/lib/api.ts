@@ -304,6 +304,7 @@ import type {
   ReportingRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
+  ReportingStarterKitProvisionResult,
   ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
@@ -441,6 +442,7 @@ import {
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
+  reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
   securityMasterAssetProfileLineageEndpoint,
@@ -762,7 +764,17 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
   }
 
   const { resolveDevFixture } = await import("@/lib/dev-fixtures");
-  return resolveDevFixture<T>(path);
+  const fixture = resolveDevFixture<T>(path);
+  if (fixture !== undefined) {
+    // Keep this loud: without it a developer can work for hours against a broken endpoint
+    // while fixtures silently stand in for real backend failures.
+    console.warn(
+      `[dev-fixture] Backend request failed with ${status} for ${path}; serving development fixture data instead. ` +
+        "Responses on this screen do not reflect the live backend."
+    );
+  }
+
+  return fixture;
 }
 
 function markDevelopmentFixtureUsage() {
@@ -2642,6 +2654,10 @@ export function listReportingSchedules(options: ApiRequestOptions = {}) {
 
 export function saveReportingSchedule(request: ReportingScheduleUpsertRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, request, options);
+}
+
+export function provisionReportingStarterKit(kitId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingStarterKitProvisionResult>(reportingStarterKitProvisionEndpoint(kitId), undefined, options);
 }
 
 export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getQualityDashboard } from "@/lib/api";
-import { describeApiError } from "@/lib/api-errors";
+import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
 import type {
   QualityAnomalyEntry,
   QualityDashboardResponse,
@@ -148,27 +148,45 @@ export interface DataQualityPanelViewModel {
 export function useDataQualityPanel(
   fetchDashboard: QualityDashboardFetcher = getQualityDashboard
 ): DataQualityPanelViewModel {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { status, start, succeed, fail, finish } = useRequestLifecycle({
+    operation: "data-quality-dashboard",
+    failureMessage: "Data quality dashboard is unavailable."
+  });
   const [model, setModel] = useState<DataQualityPanelModel | null>(null);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    const request = start({ busyMode: "supersede" });
+    if (!request) {
+      return;
+    }
     try {
       const response = await fetchDashboard();
-      setModel(buildDataQualityPanelModel(response));
+      if (!request.isCurrent()) {
+        // A newer refresh superseded this one; drop the stale response.
+        return;
+      }
+      request.safeSetState(setModel, buildDataQualityPanelModel(response));
+      succeed(request);
     } catch (fetchError) {
-      setError(describeApiError(fetchError, "Data quality dashboard is unavailable.").summary);
-      setModel(null);
+      if (!request.isCurrent()) {
+        // A newer refresh superseded this one; discard the stale failure so it
+        // cannot clobber the newer request's state (symmetric with the success path).
+        return;
+      }
+      request.safeSetState(setModel, null);
+      fail(request, fetchError);
     } finally {
-      setLoading(false);
+      finish(request);
     }
-  }, [fetchDashboard]);
+  }, [fail, fetchDashboard, finish, start, succeed]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  return { loading, error, model, refresh };
+  // Preserve the previous contract: the panel reads as loading until the first
+  // request settles, then tracks in-flight refreshes. The lifecycle version guard
+  // adds the stale-response protection the hand-rolled fetch lacked.
+  const loading = status.phase === "idle" || status.inFlight;
+  return { loading, error: status.error, model, refresh };
 }

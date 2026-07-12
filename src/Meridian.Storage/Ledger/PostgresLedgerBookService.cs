@@ -423,8 +423,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
     private async Task<LedgerPeriodFinancials> BuildFinancialsAsync(LedgerAccountingPeriod period, CancellationToken ct)
     {
-        var entries = await _store.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
-        return CalculateFinancials(entries);
+        var ledger = await _store
+            .HydrateLedgerPeriodAsync(RequireLedgerBookId(period), period.PeriodId, ct: ct)
+            .ConfigureAwait(false);
+        return CalculateFinancials(ledger);
     }
 
     private async Task<decimal?> CalculatePeriodVarianceAsync(
@@ -646,21 +648,23 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return parts.Count == 0 ? "ledger-book-rollout" : string.Join(";", parts);
     }
 
-    private static LedgerPeriodFinancials CalculateFinancials(IReadOnlyList<LedgerJournalEntryRecord> entries)
+    private static LedgerPeriodFinancials CalculateFinancials(Meridian.Ledger.Ledger ledger)
     {
+        ArgumentNullException.ThrowIfNull(ledger);
+
         var totals = new Dictionary<string, AccountAccumulator>(StringComparer.Ordinal);
         var totalDebits = 0m;
         var totalCredits = 0m;
 
-        foreach (var entry in entries)
+        foreach (var entry in ledger.Journal)
         {
-            var entryDimensions = BuildDimensions(entry.Entry.Metadata);
-            foreach (var line in entry.Entry.Lines)
+            var entryDimensions = BuildDimensions(entry.Metadata);
+            foreach (var line in entry.Lines)
             {
                 totalDebits += line.Debit;
                 totalCredits += line.Credit;
 
-                var dimensions = BuildDimensions(line.Dimensions) ?? BuildDimensions(entry.Entry.Metadata, line.EntryId) ?? entryDimensions;
+                var dimensions = BuildDimensions(line.Dimensions) ?? BuildDimensions(entry.Metadata, line.EntryId) ?? entryDimensions;
                 var key = BuildAccumulatorKey(line.Account, dimensions);
                 if (!totals.TryGetValue(key, out var accumulator))
                 {
@@ -675,7 +679,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var trialBalance = totals.Values
             .Select(static accumulator =>
             {
-                var balance = CalculateNetBalance(accumulator.Account, accumulator.Debits, accumulator.Credits);
+                var balance = Meridian.Ledger.Ledger.CalculateNetBalance(
+                    accumulator.Account,
+                    accumulator.Debits,
+                    accumulator.Credits);
                 return new LedgerPeriodTrialBalanceLineDto(
                     accumulator.Account.Name,
                     accumulator.Account.AccountType.ToString(),
@@ -704,11 +711,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         return new LedgerPeriodFinancials(trialBalance, totalDebits, totalCredits, netIncome);
     }
-
-    private static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits)
-        => account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debits - credits
-            : credits - debits;
 
     private static LedgerDimensionSetDto? EnsureBookDimensions(
         LedgerDimensionSetDto? dimensions,

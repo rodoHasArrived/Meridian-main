@@ -4,7 +4,14 @@ import {
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput
 } from "@/app-shell.operating-scope";
-import { canonicalizeWorkspaceSummaries, isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
+import {
+  canonicalizeWorkspaceSummaries,
+  isWorkspacePathActive,
+  UNWIRED_WORKSTATION_ROUTES,
+  WORKSPACES,
+  WORKSTATION_ROUTE_CATALOG,
+  workspacePath
+} from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -118,14 +125,16 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.dataEvidence },
-    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills }
+    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills },
+    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },
+    { label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery }
   ],
   settings: [
-    { label: "Profile", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
-    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
+    { label: "Access", route: WORKSTATION_ROUTE_CATALOG.settingsAccess },
+    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsProviders },
     { label: "Accounting Systems", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations },
-    { label: "Data Providers", route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup },
-    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints }
+    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics },
+    { label: "Feature Coverage", route: WORKSTATION_ROUTE_CATALOG.settingsFeatureCoverage }
   ]
 };
 
@@ -147,7 +156,7 @@ export function buildWorkspaceNavViewModel(
     const exactWorkspaceActive = isExactRouteActive(pathname, workspaceCanonicalRoute);
     const workspaceRoute = appendOperatingScopeToRoute(workspaceCanonicalRoute, operatingScope);
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
-    const rawSubRoutes = WORKSPACE_SUBROUTES[workspace.key] ?? [];
+    const rawSubRoutes = visibleWorkspaceSubroutes(workspace.key);
     const subItems: WorkspaceNavSubItemViewModel[] = rawSubRoutes.map((sub) => {
       const subActive = isSubRouteActive(pathname, sub.route, sub.match);
       const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
@@ -215,12 +224,16 @@ export function buildWorkspaceNavViewModel(
   };
 }
 
+function visibleWorkspaceSubroutes(workspaceKey: WorkspaceKey): WorkspaceSubrouteDefinition[] {
+  return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).filter((sub) => !UNWIRED_WORKSTATION_ROUTES.has(sub.route));
+}
+
 function buildContextItems(
   pathname: string,
   workspaceKey: WorkspaceKey,
   operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>
 ): WorkspaceNavSubItemViewModel[] {
-  return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).map((sub) => {
+  return visibleWorkspaceSubroutes(workspaceKey).map((sub) => {
     const active = isSubRouteActive(pathname, sub.route, sub.match);
     const route = appendOperatingScopeToRoute(sub.route, operatingScope);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);

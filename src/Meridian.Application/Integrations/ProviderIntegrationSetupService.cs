@@ -1,14 +1,20 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationSetupService
 {
+    private readonly ILogger<ProviderIntegrationSetupService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationSetupService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSetupService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSetupService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSetupService>.Instance;
     }
 
     public async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftAsync(
@@ -17,6 +23,19 @@ public sealed class ProviderIntegrationSetupService
         => await SaveDraftAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftAsync(
+        string? tenantId,
+        ProviderIntegrationSetupSaveRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "setup-save-draft",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.Manifest?.ManifestId,
+                ConnectionId: request?.Connection?.ConnectionId),
+            () => SaveDraftCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationSetupSaveResultDto> SaveDraftCoreAsync(
         string? tenantId,
         ProviderIntegrationSetupSaveRequestDto request,
         CancellationToken ct = default)

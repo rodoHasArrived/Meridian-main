@@ -635,6 +635,73 @@ public sealed class OrderManagementSystemTests : IDisposable
     }
 
     [Fact]
+    public async Task PlaceOrderAsync_WithLiveBrokerAndClientOverrideMetadata_DoesNotBypassOperatorControls()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var bypassOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Operator approved emergency closeout.",
+            CreatedBy: "ops",
+            Symbol: "AAPL",
+            StrategyId: "strategy-live",
+            RunId: "run-live-001"));
+        await controls.SetCircuitBreakerAsync(
+            isOpen: true,
+            reason: "Operator halt",
+            changedBy: "ops");
+
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Approved("audit://live/run-live-001"));
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            auditTrail: auditTrail,
+            brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            StrategyId = "strategy-live",
+            FundAccountId = LiveFundAccountId,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "ops",
+                ["correlationId"] = "act-live-forged-override",
+                ["manualOverrideId"] = bypassOverride.OverrideId,
+                ["runId"] = "run-live-001"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Operator halt");
+        liveReadinessGate.Request.Should().NotBeNull();
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "OrderRejected" &&
+            entry.Reason == "CIRCUIT_BREAKER_OPEN" &&
+            entry.CorrelationId == "act-live-forged-override" &&
+            entry.Metadata != null &&
+            entry.Metadata["rejectCode"] == "CIRCUIT_BREAKER_OPEN");
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_WithClientBrokerAccountMetadata_StripsRoutingKeysBeforeGatewaySubmit()
     {
         OrderRequest? submittedRequest = null;
@@ -696,6 +763,68 @@ public sealed class OrderManagementSystemTests : IDisposable
         submittedRequest.Metadata["asset_class"].Should().Be("treasury");
     }
 
+    [Fact]
+    public async Task PlaceOrderAsync_WithTypedPaperGatewayIdNotNamedPaper_DoesNotRequireLiveReadinessGate()
+    {
+        var gateway = new TypedPaperExecutionGateway("sandbox-paper");
+        var liveReadinessGate = new RecordingLiveOrderReadinessGate(
+            LiveOrderReadinessDecision.Rejected("should not be evaluated for typed paper gateways"));
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            liveOrderReadinessGate: liveReadinessGate);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            LimitPrice = 100m
+        });
+
+        result.Success.Should().BeTrue();
+        liveReadinessGate.Request.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CancelAllAsync_WhenManyOpenOrders_RespectsConfiguredConcurrencyCap()
+    {
+        var gateway = new ConcurrencyObservingCancelGateway();
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            options: new OrderManagementSystemOptions
+            {
+                CancelAllMaxConcurrency = 2
+            });
+
+        for (var i = 0; i < 6; i++)
+        {
+            await oms.PlaceOrderAsync(new OrderRequest
+            {
+                Symbol = $"SYM{i}",
+                Side = OrderSide.Buy,
+                Type = OrderType.Limit,
+                Quantity = 1m,
+                LimitPrice = 10m
+            });
+        }
+
+        var cancelAllTask = oms.CancelAllAsync();
+        try
+        {
+            await gateway.WaitForSecondCancelStartedAsync();
+
+            gateway.MaxObservedConcurrency.Should().BeLessThanOrEqualTo(2);
+        }
+        finally
+        {
+            gateway.ReleaseCancels();
+            await cancelAllTask;
+        }
+    }
+
     private static BrokerageConfiguration CreateEnabledBrokerageConfiguration(string gatewayId) =>
         new()
         {
@@ -731,6 +860,167 @@ public sealed class OrderManagementSystemTests : IDisposable
         {
             Request = request;
             return Task.FromResult(decision);
+        }
+    }
+
+    private sealed class TypedPaperExecutionGateway(string gatewayId) : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        public string GatewayId => gatewayId;
+
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public bool IsConnected => true;
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = request.ClientOrderId ?? "paper-1",
+                ClientOrderId = request.ClientOrderId,
+                ReportType = ExecutionReportType.Fill,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Filled,
+                OrderQuantity = request.Quantity,
+                FilledQuantity = request.Quantity,
+                FillPrice = request.LimitPrice,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Cancelled,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Cancelled,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Modified,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    private sealed class ConcurrencyObservingCancelGateway : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        private readonly TaskCompletionSource _secondCancelStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _releaseCancels = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _currentConcurrency;
+        private int _startedCancels;
+        private int _maxObservedConcurrency;
+
+        public string GatewayId => "paper";
+
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public bool IsConnected => true;
+
+        public int MaxObservedConcurrency => Volatile.Read(ref _maxObservedConcurrency);
+
+        public Task WaitForSecondCancelStartedAsync() =>
+            _secondCancelStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        public void ReleaseCancels() =>
+            _releaseCancels.TrySetResult();
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+                ClientOrderId = request.ClientOrderId,
+                ReportType = ExecutionReportType.New,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Accepted,
+                OrderQuantity = request.Quantity,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public async Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
+        {
+            var current = Interlocked.Increment(ref _currentConcurrency);
+            RecordMaxObservedConcurrency(current);
+            if (Interlocked.Increment(ref _startedCancels) == 2)
+            {
+                _secondCancelStarted.TrySetResult();
+            }
+
+            try
+            {
+                await _releaseCancels.Task.WaitAsync(ct);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _currentConcurrency);
+            }
+
+            return new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Cancelled,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Cancelled,
+                Timestamp = DateTimeOffset.UtcNow
+            };
+        }
+
+        private void RecordMaxObservedConcurrency(int current)
+        {
+            while (true)
+            {
+                var observed = Volatile.Read(ref _maxObservedConcurrency);
+                if (current <= observed)
+                {
+                    return;
+                }
+
+                if (Interlocked.CompareExchange(ref _maxObservedConcurrency, current, observed) == observed)
+                {
+                    return;
+                }
+            }
+        }
+
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+            Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Modified,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
         }
     }
 }

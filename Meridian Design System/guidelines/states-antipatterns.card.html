@@ -1,0 +1,54 @@
+<!-- @dsCard group="Documentation" viewport="860x620" name="States & Anti-Patterns" subtitle="The five data states every surface owes · do → don't" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>States & anti-patterns</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 24px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
+  .wrap { max-width: 800px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font: 600 20px var(--font-display); margin: 0; }
+  h2 { font: 600 11px var(--font-body); font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-muted); margin: 0 0 8px; }
+  .states { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .st { border: 1px solid var(--border); background: var(--bg-light); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .st b { font-size: 11px; font-variant: all-small-caps; letter-spacing: .03em; }
+  .st span { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+  .st code { font-family: var(--font-data); font-size: 10px; color: var(--accent-dim); }
+  .anti { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
+  .cell { border: 1px solid var(--border); padding: 8px 10px; font-family: var(--font-data); font-size: 11px; line-height: 1.4; }
+  .do { border-left: 3px solid var(--green); }
+  .dont { border-left: 3px solid var(--red); text-decoration-thickness: 1px; }
+  .do::before { content: "DO "; color: var(--green-dim); font-family: var(--font-body); font-weight: 700; font-size: 9px; }
+  .dont::before { content: "DON'T "; color: var(--red-dim); font-family: var(--font-body); font-weight: 700; font-size: 9px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>States &amp; anti-patterns</h1>
+  <div>
+    <h2>The five states every data surface owes</h2>
+    <div class="states">
+      <div class="st"><b style="color:var(--text-muted)">Loading</b><span>Shape-preserving skeleton</span><code>SkeletonTable</code></div>
+      <div class="st"><b style="color:var(--accent-dim)">Empty · no data</b><span>Zero-state + action</span><code>EmptyState</code></div>
+      <div class="st"><b style="color:var(--accent-dim)">Empty · filtered</b><span>Distinct copy + Clear</span><code>EmptyState</code></div>
+      <div class="st"><b style="color:var(--red-dim)">Error</b><span>Banner + retry, no stale rows</span><code>StatusBanner</code></div>
+      <div class="st"><b style="color:var(--green-dim)">Ready</b><span>The component</span><code>—</code></div>
+    </div>
+  </div>
+  <div>
+    <h2>Anti-patterns — do → don't</h2>
+    <div class="anti">
+      <div class="row"><div class="cell do">&lt;Timestamp value={t}/&gt; · &lt;Delta value={-4.1} suffix="%"/&gt;</div><div class="cell dont">new Date(t).toLocaleString() · `${v}%`</div></div>
+      <div class="row"><div class="cell do">color: var(--text-on-accent)</div><div class="cell dont">color: white / #fff on a fill</div></div>
+      <div class="row"><div class="cell do">&lt;Badge variant="live"&gt;</div><div class="cell dont">a hand-built .env-chip twin</div></div>
+      <div class="row"><div class="cell do">z-index: var(--z-modal)</div><div class="cell dont">z-index: 9999</div></div>
+      <div class="row"><div class="cell do">NotificationCenter · ReadOnlyBanner</div><div class="cell dont">a toast for persistent state</div></div>
+      <div class="row"><div class="cell do">useRowSelection(rows, r =&gt; r.id)</div><div class="cell dont">track selectedIndex across paged data</div></div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--text-muted);margin:0;">Full reference: <code>guidelines/STATES_AND_ANTIPATTERNS.md</code></p>
+</div>
+</body>
+</html>

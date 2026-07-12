@@ -18,8 +18,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
-public static class LedgerEndpoints
+public static partial class LedgerEndpoints
 {
+    private const string ClosingEntryClientRejectionMessage =
+        "Closing entries are produced by the governed period-close workflow and cannot be submitted as manual journal drafts.";
+
     public static void MapLedgerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapGet(UiApiRoutes.LedgerBooks, async (
@@ -1893,6 +1896,14 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            // Closing entries are the sanctioned exception to the closed-period posting bar; only the
+            // in-process period-close automation may produce them. Reject client-submitted ClosingEntry
+            // drafts so this HTTP boundary cannot be used to post to a closed period.
+            if (request.Draft?.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            {
+                return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
+            }
+
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -1942,6 +1953,11 @@ public static class LedgerEndpoints
             if (service is null)
             {
                 return ServiceUnavailable();
+            }
+
+            if (request.Draft?.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            {
+                return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
             }
 
             try
@@ -2015,89 +2031,7 @@ public static class LedgerEndpoints
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        app.MapPost(UiApiRoutes.LedgerJournalAutomationDividendIntake, async (RunDividendDraftIntakeRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
-            if (runner is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await runner.RunDividendIntakeAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
-        .WithName("RunLedgerJournalAutomationDividendIntake")
-        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerJournalAutomationFeeAccrualIntake, async (RunFeeAccrualDraftIntakeRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
-            if (runner is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await runner.RunFeeAccrualIntakeAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
-        .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
-        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        MapJournalAutomationEndpoints(app, jsonOptions);
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryEvidence, async (AttachManualJournalEntryEvidenceRequest request, HttpContext context) =>
         {

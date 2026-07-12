@@ -1,3 +1,13 @@
+export * from "./types/market-data";
+export * from "./types/workstation-1";
+export * from "./types/workstation-2";
+export * from "./types/workstation-3";
+export * from "./types/workstation-4";
+export * from "./types/workstation-5";
+export * from "./types/workstation-6";
+export * from "./types/workstation-7";
+export * from "./types/workstation-8";
+
 export type WorkspaceKey =
   | "trading"
   | "portfolio"
@@ -4535,7 +4545,22 @@ export interface StatementImportCommitResult {
   evidenceVaultIdentity?: EvidenceVaultIdentity | null;
   evidenceWorkbenchRoute?: string | null;
   reconciliationRoute?: string | null;
+  breakIds?: string[];
+  caseIds?: string[];
+  reconciliationCaseRoutes?: string[];
+  reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
   nextActions?: string[];
+}
+
+export interface StatementImportReconciliationCaseLink {
+  caseId: string;
+  breakId?: string | null;
+  route: string;
+  label: string;
+  status: string;
+  priority: string;
+  reason: string;
+  suggestedNextAction: string;
 }
 
 export interface StatementFetchSchedule {
@@ -5664,6 +5689,46 @@ export interface ReportingDueScheduleRunResult {
   runs: ReportingScheduleRunResult[];
 }
 
+export interface ReportingStarterSeedSchedule {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  cadence: string;
+  description: string;
+  state?: ReportingScheduleRecord["state"] | string;
+  defaultPeriod?: string | null;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
+}
+
+export interface ReportingStarterKit {
+  kitId: string;
+  archetype: string;
+  displayName: string;
+  description: string;
+  templateIds: string[];
+  defaultLayoutId: string;
+  defaultPeriod: string;
+  seedSchedules: ReportingStarterSeedSchedule[];
+}
+
+export interface ReportingStarterKitState {
+  isProvisioned: boolean;
+  selectedKitId?: string | null;
+  archetype?: string | null;
+  enabledTemplateIds: string[];
+  defaultLayoutId?: string | null;
+  defaultPeriod?: string | null;
+  seedScheduleIds: string[];
+  provisionedAtUtc?: string | null;
+  provisionedBy?: string | null;
+}
+
+export interface ReportingStarterKitProvisionResult {
+  kit: ReportingStarterKit;
+  state: ReportingStarterKitState;
+  seededSchedules: ReportingScheduleRecord[];
+}
+
 export interface ReportingRunRequest {
   templateId: string;
   asOfDate?: string | null;
@@ -5673,6 +5738,7 @@ export interface ReportingRunRequest {
   datasetRows?: Record<string, string>[] | null;
   datasetSourceId?: string | null;
   retryReason?: string | null;
+  allowRestatement?: boolean;
 }
 
 export interface ReportingRunResult {
@@ -5837,6 +5903,8 @@ export interface AccountingReportingSummary {
   brandingThemes?: ReportBrandingTheme[];
   reportWriterDatasetSources?: ReportWriterDatasetSource[];
   dailyWork?: ReportingDailyWorkItem[];
+  starterKits?: ReportingStarterKit[] | null;
+  starterKitState?: ReportingStarterKitState | null;
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
@@ -6311,7 +6379,8 @@ export type ManualJournalEntryType =
   | "Subscription"
   | "Redemption"
   | "LpTransfer"
-  | "ManagementFee";
+  | "ManagementFee"
+  | "ClosingEntry";
 
 export interface LedgerBook {
   ledgerBookId: string;
@@ -7167,7 +7236,7 @@ export interface RuleDryRunResult {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
-export type LedgerPostingKind = "Originating" | "Adjustment";
+export type LedgerPostingKind = "Originating" | "Adjustment" | "ClosingEntry";
 export type AccountingTreatmentKind =
   | "General"
   | "Accrual"
@@ -7348,6 +7417,8 @@ export interface ManualJournalEntryLine {
   taxLotId?: string | null;
   description?: string | null;
   evidenceLink?: string | null;
+  ledgerAccountSymbol?: string | null;
+  ledgerAccountFinancialAccountId?: string | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {
@@ -10075,25 +10146,6 @@ export interface SystemOverviewResponse {
   recentEvents: SystemEventRecord[];
 }
 
-// --- Symbol management types ---
-
-export interface SymbolRecord {
-  symbol: string;
-  status: "Active" | "Monitored" | "Archived" | "Error";
-  provider: string | null;
-  lastEventAt: string | null;
-  eventCount: number;
-  hasHistoricalData: boolean;
-}
-
-export interface SymbolStatistics {
-  totalSymbols: number;
-  monitoredSymbols: number;
-  archivedSymbols: number;
-  symbolsWithErrors: number;
-  totalEventsLast24h: number;
-}
-
 // --- Quality monitoring types ---
 
 export interface QualitySymbolScore {
@@ -10579,131 +10631,6 @@ export interface InstrumentPassport {
   operatingModel?: SecurityMasterOperatingModel | null;
   operationsWorkbench?: InstrumentPassportOperationsWorkbench | null;
   classificationProfile?: InstrumentPassportClassificationProfile | null;
-}
-
-export interface SessionStatsDto {
-  sessionDate: string;
-  open: number;
-  high: number;
-  low: number;
-  last: number;
-  volume: number;
-  vwap: number;
-  tradeCount: number;
-  change: number;
-  changePercent: number | null;
-  firstTradeAt: string;
-  lastTradeAt: string;
-}
-
-export interface QuoteDataResponse {
-  symbol: string;
-  timestamp: string;
-  bidPrice: number;
-  bidSize: number;
-  askPrice: number;
-  askSize: number;
-  midPrice: number | null;
-  spread: number | null;
-  sequenceNumber: number;
-  streamId: string | null;
-  venue: string | null;
-  session: SessionStatsDto | null;
-}
-
-export interface QuotesResponse {
-  symbol: string;
-  quote: QuoteDataResponse | null;
-  timestamp: string;
-}
-
-export interface QuotesSnapshotItem {
-  symbol: string;
-  timestamp: string;
-  bidPrice: number;
-  bidSize: number;
-  askPrice: number;
-  askSize: number;
-  midPrice: number | null;
-  spread: number | null;
-  lastPrice: number | null;
-  lastSize: number | null;
-  lastTradeTimestamp: string | null;
-  sequenceNumber: number;
-  streamId: string | null;
-  venue: string | null;
-  session: SessionStatsDto | null;
-}
-
-export interface QuotesSnapshotResponse {
-  timestamp: string;
-  count: number;
-  quotes: QuotesSnapshotItem[];
-}
-
-export interface TradeDataResponse {
-  symbol: string;
-  timestamp: string;
-  price: number;
-  size: number;
-  aggressor: string;
-  sequenceNumber: number;
-  streamId: string | null;
-  venue: string | null;
-}
-
-export interface TradesResponse {
-  symbol: string;
-  trades: TradeDataResponse[];
-  count: number;
-  timestamp: string;
-}
-
-export interface OrderBookLevelDto {
-  side: string;
-  level: number;
-  price: number;
-  size: number;
-  marketMaker: string | null;
-}
-
-export interface OrderBookResponse {
-  symbol: string;
-  timestamp: string;
-  bids: OrderBookLevelDto[];
-  asks: OrderBookLevelDto[];
-  midPrice: number | null;
-  imbalance: number | null;
-  marketState: string;
-  sequenceNumber: number;
-  isStale: boolean;
-  streamId: string | null;
-  venue: string | null;
-}
-
-export interface HistoricalBarPoint {
-  start: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  vwap: number;
-  tradeCount: number;
-}
-
-export interface HistoricalBarsResponse {
-  success: boolean;
-  message: string | null;
-  symbol: string;
-  intervalMinutes: number;
-  from: string | null;
-  to: string | null;
-  totalBars: number;
-  filesProcessed: number;
-  totalFiles: number;
-  queryTimeMs: number;
-  bars: HistoricalBarPoint[];
 }
 
 export type QuantPlotKind =

@@ -105,8 +105,8 @@ manual journal, and accounting workstation work.
   named productization targets are status signals, not project development restrictions.
 - Accounting workflow behavior should start from shared contracts and services. Important seams
   include `src/Meridian.Contracts/`, `src/Meridian.FinancialOperations/`, `src/Meridian.Ledger/`,
-  `src/Meridian.Ui.Shared/`, and `src/Meridian.Ui.Services/`; browser and WPF should project those
-  DTOs rather than invent local accounting state.
+  `src/Meridian.Ui.Shared/`, and `src/Meridian.Ui.Services/`; browser surfaces and retained WPF
+  compatibility should project those DTOs rather than invent local accounting state.
 - Accounting entries are double-entry only. Accounting UI must expose validation, source,
   approval, retained evidence, and audit trail before commit, and code must not silently create
   accounting records from unverified market data.
@@ -128,11 +128,12 @@ manual journal, and accounting workstation work.
   administration, broad LP portal, native live-payment execution, full forecasting, or Backtesting
   Studio behavior from these Accounting slices.
 - Browser Accounting surfaces live under `src/Meridian.Ui/dashboard/src/screens/accounting-screen*`
-  and should stay thin over shared API clients and DTO mirrors. WPF Accounting registration starts
-  in `src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs` with WPF pages and view
-  models rendering the same shared posture.
+  and should stay thin over shared API clients and DTO mirrors. WPF Accounting registration remains
+  retained compatibility under `src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs`;
+  do not add new WPF accounting product/UI work unless the lane is explicitly reactivated.
 - Narrow validation usually starts with focused `tests/Meridian.Tests` filters for
   `OperationsContinuityWorkflowServiceTests`, `WorkstationEndpointsTests.AccountingConfiguration`,
   `AccountingSystemIntegrationServiceTests`, `AccountingConfigurationServiceTests`, and related
-  close/journal tests, plus `src/Meridian.Ui/dashboard` tests or `tests/Meridian.Wpf.Tests` when
-  the browser or desktop projection changes.
+  close/journal tests, plus `src/Meridian.Ui/dashboard` tests when browser projection changes;
+  use `tests/Meridian.Wpf.Tests` only for explicitly approved WPF maintenance or compatibility
+  changes.
