@@ -5364,6 +5364,7 @@ Meridian-main
 │   │   │   │   │   │   ├── coverage-passport-drill-in.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.test.ts
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.ts
+│   │   │   │   │   │   ├── decision-brief-pill.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
@@ -5413,6 +5414,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
+│   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
@@ -5739,6 +5741,8 @@ Meridian-main
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
 │   │   │   │   │   ├── daily-control-tower-screen.test.tsx
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
+│   │   │   │   │   ├── data-screen.analytics-status.test.tsx
+│   │   │   │   │   ├── data-screen.analytics-status.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
 │   │   │   │   │   ├── data-screen.cell-actions.test.tsx

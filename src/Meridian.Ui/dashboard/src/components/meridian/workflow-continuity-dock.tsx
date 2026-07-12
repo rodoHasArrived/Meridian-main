@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown, GitBranch, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, GitBranch, SlidersHorizontal, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 import type { AppShellOperatingScopeQueryKey } from "@/app-shell.operating-scope";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function WorkflowContinuityDock({
@@ -90,36 +89,9 @@ export function WorkflowContinuityDock({
         ) : null}
       </div>
 
-      <article
-        className={cn(
-          "workflow-continuity-decision",
-          `workflow-continuity-decision-${decision.statusTone}`
-        )}
-        aria-labelledby="workflow-decision-title"
-      >
-        <div className="workflow-continuity-decision-copy">
-          <div className="workflow-continuity-decision-head">
-            <span className="eyebrow-label">{decision.label}</span>
-            <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
-          </div>
-          <h3 id="workflow-decision-title">{decision.title}</h3>
-          <p className="workflow-continuity-decision-summary">{decision.summary}</p>
-          <div className="workflow-continuity-decision-reason">
-            <span>{decision.reasonLabel}</span>
-            <span>{decision.reason}</span>
-          </div>
-          {decision.evidenceLabel ? (
-            <span className="workflow-continuity-decision-evidence">{decision.evidenceLabel}</span>
-          ) : null}
-        </div>
-        <Button asChild variant="default" size="sm" className="workflow-continuity-decision-action">
-          <Link to={decision.actionHref} aria-label={decision.actionAriaLabel}>
-            <span>{decision.actionLabel}</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
-      </article>
-
+      {/* The cross-workspace decision brief renders as the masthead status pill
+          (DecisionBriefPill); the dock keeps only operating context and the
+          on-demand flow details so a blocked item never repaints every route. */}
       <details
         className="workflow-continuity-operator-flow"
         aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}

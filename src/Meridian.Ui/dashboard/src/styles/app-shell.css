@@ -261,6 +261,63 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
 }
 
+/* Decision-brief status pill — the masthead handle for the cross-workspace
+   break queue. Replaces the per-route decision-brief banner. */
+.masthead-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 280px;
+  min-height: 28px;
+  padding: 0 0.625rem;
+  border-radius: 2px;
+  border: 1px solid var(--topbar-border, #262B31);
+  color: var(--ws-masthead-fg, #F4F6F8);
+  font-size: 0.75rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.masthead-status-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.masthead-status-pill-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #8A93A0;
+}
+
+.masthead-status-pill-status {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.masthead-status-pill-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+}
+
+.masthead-status-pill-blocked .masthead-status-pill-dot { background: #D95F5F; }
+.masthead-status-pill-blocked .masthead-status-pill-status { color: #E8A0A0; }
+.masthead-status-pill-review .masthead-status-pill-dot { background: #D9B24A; }
+.masthead-status-pill-review .masthead-status-pill-status { color: #D9C27A; }
+.masthead-status-pill-ready .masthead-status-pill-dot { background: #4CAF7E; }
+.masthead-status-pill-ready .masthead-status-pill-status { color: #9FD0A5; }
+
+@media (max-width: 900px) {
+  .masthead-status-pill-title {
+    display: none;
+  }
+}
+
 .workstation-session-card {
   display: inline-flex;
   align-items: center;
