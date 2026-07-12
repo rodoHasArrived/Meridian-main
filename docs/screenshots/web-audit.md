@@ -1,6 +1,14 @@
 # Web Workstation Screenshot Audit
 
-Date: 2026-06-20 UTC (catalog regenerated 2026-07-02 UTC)
+Date: 2026-06-20 UTC (catalog regenerated 2026-07-12 UTC)
+
+Catalog refresh 2026-07-12: the full web catalog was regenerated after the reporting workspace
+redesign and design-system round so the captures reflect current source. The regeneration also
+re-anchored the `W04` (`/reporting`) and `W04H` (`/reporting/library`) captures in
+`scripts/dev/web-screenshot-routes.json` to the redesigned surface ("Reporting workbench",
+"Report family health", "Daily reporting cockpit") after the removal of the "Reporting Hub"
+heading caused capture timeouts. Step-health grades below are still from the 2026-06-20 review
+pass and predate this refresh.
 
 Catalog refresh 2026-07-02: the full web catalog was regenerated after the web UI improvement
 round (route-aware Settings task states, appearance controls, Accounting progressive disclosure,
