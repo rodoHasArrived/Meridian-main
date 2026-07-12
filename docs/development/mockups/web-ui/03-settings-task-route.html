@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 03 — Settings as Routed Task Pages</title>
+<style>
+  :root {
+    --canvas: #dee3ea; --panel: #ffffff; --panel-2: #f3f5f8;
+    --chrome: #171a1f; --chrome-text: #e6e9ee;
+    --accent: #2f6f8f; --accent-soft: #e4edf2;
+    --border: #c3cbd6; --border-strong: #9aa5b4;
+    --text: #1c222b; --muted: #5a6675;
+    --ready: #2e7d5b; --ready-wash: #e3efe9;
+    --review: #8a6d1f; --review-wash: #f4ecd9;
+    --blocked: #a93b3b; --blocked-wash: #f6e4e4;
+    --sans: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto;
+    background: var(--canvas); color: var(--text); font: 14px/1.45 var(--sans);
+  }
+  .pin {
+    display: inline-block; vertical-align: middle; margin-left: 6px;
+    font: 600 10px/1 var(--mono); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 2px;
+    padding: 2px 4px; background: var(--accent-soft); cursor: help;
+  }
+  .mock-note { background: #fdf6dd; border-bottom: 1px solid #d8c98a; padding: 6px 14px; font-size: 12px; color: #5c4d12; }
+  .mock-note strong { font-family: var(--mono); }
+  .masthead { display: flex; align-items: center; gap: 12px; background: var(--chrome); color: var(--chrome-text); padding: 8px 14px; font-size: 13px; }
+  .brand { font-weight: 650; } .brand em { font-style: normal; color: #8fa8b8; font-weight: 400; }
+  .palette { flex: 0 1 380px; display: flex; align-items: center; gap: 8px; background: #23262d; border: 1px solid #3a3f49; border-radius: 2px; padding: 5px 10px; color: #98a1ae; font-size: 12.5px; }
+  .palette kbd { margin-left: auto; font: 11px var(--mono); border: 1px solid #3a3f49; border-radius: 2px; padding: 1px 5px; }
+  .masthead .grow { flex: 1; }
+  .status-pill { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #6b4040; background: #2a2024; color: #e8b4b4; border-radius: 2px; padding: 4px 10px; font: 500 12px var(--mono); cursor: pointer; }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #d95f5f; }
+  .status-pill span.rev { color: #d9c27a; }
+  .mode-chip { border: 1px solid #3f5a3f; border-radius: 2px; padding: 4px 10px; color: #9fd0a5; font: 600 12px var(--mono); }
+  .session { color: #98a1ae; font-size: 12.5px; } .session b { color: var(--chrome-text); font-weight: 600; }
+  .frame { display: grid; grid-template-columns: 208px 1fr; min-height: 0; }
+  .sidebar { background: var(--panel-2); border-right: 1px solid var(--border); padding: 10px 0; overflow-y: auto; font-size: 13px; }
+  .sidebar .group-label { padding: 2px 14px 6px; font: 600 10px var(--mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+  .sidebar a { display: block; padding: 6px 14px; color: var(--text); text-decoration: none; }
+  .sidebar a.ws { font-weight: 600; }
+  .sidebar a.sub { padding-left: 30px; color: var(--muted); }
+  .sidebar a.active { background: var(--panel); color: var(--accent); font-weight: 600; border-left: 2px solid var(--accent); padding-left: 28px; }
+  .sidebar a:hover { background: #e9edf2; }
+  .route { display: grid; grid-template-rows: auto 1fr; min-height: 0; min-width: 0; }
+  .route-header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel-2); }
+  .route-header h1 { font-size: 17px; font-weight: 650; margin: 0; }
+  .crumb { font: 12px var(--mono); color: var(--muted); }
+  .actions { display: flex; gap: 8px; margin-left: auto; }
+  .btn { font: 600 12.5px var(--sans); border-radius: 2px; padding: 6px 12px; border: 1px solid var(--border-strong); background: var(--panel); color: var(--text); cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* settings task page */
+  .task { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px; padding: 12px 16px; min-height: 0; overflow-y: auto; align-content: start; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 2px; }
+  .panel-head { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .panel-head h2 { font-size: 13.5px; font-weight: 650; margin: 0; }
+  .panel-head .count { font: 12px var(--mono); color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  thead th { background: var(--panel-2); text-align: left; font: 600 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 8px 10px; border-bottom: 1px solid #e4e8ee; }
+  tbody td.mono { font-family: var(--mono); }
+  tbody tr:hover { background: #f0f4f7; cursor: pointer; }
+  tbody tr.selected { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent); }
+  .chip { font: 600 10.5px var(--mono); border-radius: 2px; padding: 2px 6px; white-space: nowrap; }
+  .chip.ok { color: var(--ready); background: var(--ready-wash); border: 1px solid #a9cdbc; }
+  .chip.review { color: var(--review); background: var(--review-wash); border: 1px solid #dcc98e; }
+  .chip.neutral { color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); }
+  .rail section { padding: 10px 12px; border-bottom: 1px solid #e4e8ee; }
+  .rail section:last-child { border-bottom: 0; }
+  .rail h3 { margin: 0 0 8px; font: 600 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .kv { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; font-size: 12.5px; }
+  .kv .k { color: var(--muted); }
+  .kv .v { font-family: var(--mono); text-align: right; }
+  .steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  .steps li { counter-increment: step; display: flex; gap: 10px; align-items: baseline; padding: 5px 0; font-size: 12.5px; }
+  .steps li::before {
+    content: counter(step); flex: 0 0 18px; height: 18px; text-align: center;
+    font: 600 11px/18px var(--mono); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 2px; background: var(--accent-soft);
+  }
+  .steps li.done::before { content: "✓"; color: var(--ready); border-color: var(--ready); background: var(--ready-wash); }
+  .note { font-size: 12px; color: var(--muted); }
+  .statusbar { display: flex; gap: 22px; align-items: center; background: var(--chrome); color: #98a1ae; font: 11.5px var(--mono); padding: 5px 14px; }
+  .statusbar b { color: var(--chrome-text); font-weight: 500; }
+  .statusbar .right { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="mock-note">
+  <strong>MOCKUP 03 · Settings &rsaquo; Provider connections (/settings/providers)</strong> — Settings sections become routed task pages behind the
+  sidebar's sub-nav; only this section renders. The OpenAPI import / integration workbench is a step-wise wizard opened from
+  &ldquo;Add provider&rdquo;, not an always-rendered stack of JSON textareas. Demonstrates <strong>P7</strong> (routed task pages), with the
+  <strong>P1/P9</strong> layout applied to a settings surface. Today this content sits mid-scroll in a 6,407&thinsp;px page.
+  Companion: <strong>docs/development/web-ui-structural-improvement-proposal.md</strong>
+</div>
+
+<header class="masthead">
+  <span class="brand">Meridian <em>/ Settings</em></span>
+  <div class="palette">Go to route, action, evidence&hellip; <kbd>Ctrl K</kbd></div>
+  <span class="grow"></span>
+  <button class="status-pill"><span class="dot"></span> 1 blocked <span class="rev">&middot; 5 review</span></button>
+  <span class="mode-chip">PAPER</span>
+  <span class="session"><b>Ops Desk</b> &middot; Operator</span>
+</header>
+
+<div class="frame">
+  <nav class="sidebar">
+    <div class="group-label">Workspaces</div>
+    <a class="ws" href="#">Trading</a>
+    <a class="ws" href="#">Portfolio</a>
+    <a class="ws" href="#">Accounting</a>
+    <a class="ws" href="#">Reporting</a>
+    <a class="ws" href="#">Strategy</a>
+    <a class="ws" href="#">Data</a>
+    <a class="ws" href="#">Settings</a>
+    <a class="sub" href="#">Access</a>
+    <a class="sub active" href="#">Provider connections</a>
+    <a class="sub" href="#">Accounting systems</a>
+    <a class="sub" href="#">Data providers</a>
+    <a class="sub" href="#">Diagnostics</a>
+    <a class="sub" href="#">Feature coverage</a>
+  </nav>
+
+  <main class="route">
+    <div class="route-header">
+      <span class="crumb">settings /</span>
+      <h1>Provider connections</h1>
+      <span class="pin" title="P7 — each Settings tab is a route that renders only its own task page">P7</span>
+      <div class="actions">
+        <button class="btn">Refresh routing</button>
+        <button class="btn primary" title="Opens the guided wizard (choose provider → credentials → verify → enable) — the workbench is no longer rendered inline">+ Add provider</button>
+      </div>
+    </div>
+
+    <div class="task">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Connected providers</h2>
+          <span class="count">2 connected &middot; 1 pending</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Provider</th><th>Kind</th><th>Environment</th><th>Credential</th><th>Verification</th><th>Last heartbeat</th></tr>
+          </thead>
+          <tbody>
+            <tr class="selected">
+              <td><b>Alpaca paper</b></td><td>Brokerage</td><td class="mono">PAPER</td>
+              <td><span class="chip ok">Configured</span></td><td><span class="chip ok">Verified</span></td><td class="mono">2s ago</td>
+            </tr>
+            <tr>
+              <td><b>Robinhood</b></td><td>Brokerage (read-only)</td><td class="mono">LIVE</td>
+              <td><span class="chip ok">OAuth</span></td><td><span class="chip ok">Verified</span></td><td class="mono">41s ago</td>
+            </tr>
+            <tr>
+              <td><b>Interactive Brokers</b></td><td>Execution</td><td class="mono">PAPER</td>
+              <td><span class="chip review">Pending</span></td><td><span class="chip neutral">Not run</span></td><td class="mono">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <aside class="panel rail">
+        <section>
+          <h3>Alpaca paper <span class="pin" title="P9 — the selected connection's detail, checklist, and actions live in one rail beside the table">P9</span></h3>
+          <div class="kv">
+            <span class="k">Account</span><span class="v">PA-DEMO</span>
+            <span class="k">Auth</span><span class="v">Key + secret</span>
+            <span class="k">Trust score</span><span class="v" style="color:var(--ready)">93% healthy</span>
+            <span class="k">Affected workflows</span><span class="v">Trading, Portfolio</span>
+          </div>
+        </section>
+        <section>
+          <h3>Setup checklist</h3>
+          <ol class="steps">
+            <li class="done">Use paper endpoint</li>
+            <li class="done">Store API keys</li>
+            <li class="done">Verify account</li>
+            <li>Check readiness handoff</li>
+          </ol>
+        </section>
+        <section>
+          <h3>Next action</h3>
+          <p class="note" style="margin:0 0 10px">Open trading readiness to confirm brokerage-sync and execution-control verification.</p>
+          <button class="btn" style="width:100%">Open readiness</button>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<footer class="statusbar">
+  <span>SESSION <b>paper</b></span>
+  <span>DATA <b>demo fixtures</b></span>
+  <span>SYNC <b>up to date</b></span>
+  <span class="right">WORKSPACE <b>Settings</b></span>
+</footer>
+
+</body>
+</html>

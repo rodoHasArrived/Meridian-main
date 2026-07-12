@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 01 — Trading Orders Cockpit</title>
+<style>
+  :root {
+    --canvas: #dee3ea;
+    --panel: #ffffff;
+    --panel-2: #f3f5f8;
+    --chrome: #171a1f;
+    --chrome-text: #e6e9ee;
+    --accent: #2f6f8f;
+    --accent-soft: #e4edf2;
+    --border: #c3cbd6;
+    --border-strong: #9aa5b4;
+    --text: #1c222b;
+    --muted: #5a6675;
+    --ready: #2e7d5b;      --ready-wash: #e3efe9;
+    --review: #8a6d1f;     --review-wash: #f4ecd9;
+    --blocked: #a93b3b;    --blocked-wash: #f6e4e4;
+    --sans: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    background: var(--canvas); color: var(--text);
+    font: 14px/1.45 var(--sans);
+  }
+  .pin {
+    display: inline-block; vertical-align: middle; margin-left: 6px;
+    font: 600 10px/1 var(--mono); color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 2px;
+    padding: 2px 4px; background: var(--accent-soft); cursor: help;
+  }
+  /* ---- mock annotation bar (not part of the proposed UI) ---- */
+  .mock-note {
+    background: #fdf6dd; border-bottom: 1px solid #d8c98a;
+    padding: 6px 14px; font-size: 12px; color: #5c4d12;
+  }
+  .mock-note strong { font-family: var(--mono); }
+  /* ---- masthead ---- */
+  .masthead {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--chrome); color: var(--chrome-text);
+    padding: 8px 14px; font-size: 13px;
+  }
+  .brand { font-weight: 650; letter-spacing: .02em; }
+  .brand em { font-style: normal; color: #8fa8b8; font-weight: 400; }
+  .palette {
+    flex: 0 1 380px; display: flex; align-items: center; gap: 8px;
+    background: #23262d; border: 1px solid #3a3f49; border-radius: 2px;
+    padding: 5px 10px; color: #98a1ae; font-size: 12.5px;
+  }
+  .palette kbd {
+    margin-left: auto; font: 11px var(--mono); color: #98a1ae;
+    border: 1px solid #3a3f49; border-radius: 2px; padding: 1px 5px;
+  }
+  .masthead .grow { flex: 1; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid #6b4040; background: #2a2024; color: #e8b4b4;
+    border-radius: 2px; padding: 4px 10px; font: 500 12px var(--mono); cursor: pointer;
+  }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #d95f5f; }
+  .status-pill span.rev { color: #d9c27a; }
+  .tour-chip {
+    border: 1px solid #3a3f49; border-radius: 2px; padding: 4px 10px;
+    color: #98a1ae; font: 500 12px var(--mono); cursor: pointer;
+  }
+  .mode-chip {
+    border: 1px solid #3f5a3f; border-radius: 2px; padding: 4px 10px;
+    color: #9fd0a5; font: 600 12px var(--mono);
+  }
+  .session { color: #98a1ae; font-size: 12.5px; }
+  .session b { color: var(--chrome-text); font-weight: 600; }
+  /* ---- frame: sidebar + route ---- */
+  .frame { display: grid; grid-template-columns: 208px 1fr; min-height: 0; }
+  .sidebar {
+    background: var(--panel-2); border-right: 1px solid var(--border);
+    padding: 10px 0; overflow-y: auto; font-size: 13px;
+  }
+  .sidebar .group-label {
+    padding: 2px 14px 6px; font: 600 10px var(--mono);
+    letter-spacing: .08em; color: var(--muted); text-transform: uppercase;
+  }
+  .sidebar a {
+    display: block; padding: 6px 14px; color: var(--text); text-decoration: none;
+  }
+  .sidebar a.ws { font-weight: 600; }
+  .sidebar a.sub { padding-left: 30px; color: var(--muted); }
+  .sidebar a.active {
+    background: var(--panel); color: var(--accent); font-weight: 600;
+    border-left: 2px solid var(--accent); padding-left: 28px;
+  }
+  .sidebar a:hover { background: #e9edf2; }
+  /* ---- route ---- */
+  .route { display: grid; grid-template-rows: auto 1fr; min-height: 0; min-width: 0; }
+  .route-header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel-2);
+  }
+  .route-header h1 { font-size: 17px; font-weight: 650; margin: 0; }
+  .crumb { font: 12px var(--mono); color: var(--muted); }
+  .scope-chip {
+    font: 11.5px var(--mono); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 2px; padding: 2px 7px; background: var(--panel);
+  }
+  .stats { display: flex; gap: 18px; margin-left: auto; }
+  .stat { display: flex; align-items: baseline; gap: 6px; }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .stat .v { font: 600 14px var(--mono); }
+  .stat .v.up { color: var(--ready); }
+  .stat .v.watch { color: var(--review); }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    font: 600 12.5px var(--sans); border-radius: 2px; padding: 6px 12px;
+    border: 1px solid var(--border-strong); background: var(--panel); color: var(--text); cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.danger-ghost { color: var(--blocked); border-color: var(--blocked); background: var(--panel); }
+  /* ---- cockpit: primary surface + detail rail ---- */
+  .cockpit {
+    display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 12px;
+    padding: 12px 16px; min-height: 0;
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 2px;
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .panel-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-bottom: 1px solid var(--border);
+  }
+  .panel-head h2 { font-size: 13.5px; font-weight: 650; margin: 0; }
+  .panel-head .count { font: 12px var(--mono); color: var(--muted); }
+  .panel-head .filter {
+    margin-left: auto; font: 12px var(--sans); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 2px; padding: 3px 8px; background: var(--panel-2);
+  }
+  .blotter-scroll { overflow-y: auto; min-height: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  thead th {
+    position: sticky; top: 0; background: var(--panel-2); text-align: left;
+    font: 600 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); padding: 7px 10px; border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 7px 10px; border-bottom: 1px solid #e4e8ee; font-family: var(--mono); }
+  tbody td.sym { font-weight: 600; }
+  tbody tr:hover { background: #f0f4f7; cursor: pointer; }
+  tbody tr.selected { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent); }
+  .chip { font: 600 10.5px var(--mono); border-radius: 2px; padding: 2px 6px; }
+  .chip.working { color: var(--review); background: var(--review-wash); border: 1px solid #dcc98e; }
+  .chip.filled { color: var(--ready); background: var(--ready-wash); border: 1px solid #a9cdbc; }
+  .chip.canceled { color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); }
+  .side-buy { color: var(--ready); font-weight: 600; }
+  .side-sell { color: var(--blocked); font-weight: 600; }
+  /* ---- detail rail ---- */
+  .rail { overflow-y: auto; }
+  .rail .id { font: 600 15px var(--mono); }
+  .rail .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .rail section { padding: 10px 12px; border-bottom: 1px solid #e4e8ee; }
+  .rail h3 {
+    margin: 0 0 8px; font: 600 10.5px var(--mono); letter-spacing: .06em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .kv { display: grid; grid-template-columns: 1fr auto; row-gap: 6px; font-size: 12.5px; }
+  .kv .k { color: var(--muted); }
+  .kv .v { font-family: var(--mono); text-align: right; }
+  .evidence a { display: block; color: var(--accent); font-size: 12.5px; text-decoration: none; padding: 3px 0; }
+  .evidence a::before { content: "↗ "; font-family: var(--mono); }
+  .rail .rail-actions { display: flex; gap: 8px; padding: 12px; }
+  .rail .rail-actions .btn { flex: 1; }
+  .note { font-size: 12px; color: var(--muted); }
+  /* ---- status bar ---- */
+  .statusbar {
+    display: flex; gap: 22px; align-items: center;
+    background: var(--chrome); color: #98a1ae;
+    font: 11.5px var(--mono); padding: 5px 14px;
+  }
+  .statusbar b { color: var(--chrome-text); font-weight: 500; }
+  .statusbar .right { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="mock-note">
+  <strong>MOCKUP 01 · Trading &rsaquo; Orders cockpit</strong> — the whole route fits one viewport; the blotter scrolls internally.
+  Demonstrates <strong>P1</strong> master&ndash;detail layout, <strong>P2</strong> route-scoped view, <strong>P3</strong> status pill (replaces the global banner),
+  <strong>P5</strong> sidebar as the only route nav, <strong>P9</strong> single detail rail, <strong>P10</strong> docked tour, <strong>P11</strong> stat strip.
+  Companion: <strong>docs/development/web-ui-structural-improvement-proposal.md</strong>
+</div>
+
+<header class="masthead">
+  <span class="brand">Meridian <em>/ Trading</em></span>
+  <div class="palette">Go to route, action, evidence&hellip; <kbd>Ctrl K</kbd></div>
+  <span class="grow"></span>
+  <button class="status-pill" title="P3 — one masthead pill replaces the cross-workspace banner; opens the break queue / Daily Control Tower">
+    <span class="dot"></span> 1 blocked <span class="rev">&middot; 5 review</span>
+  </button>
+  <span class="pin" title="P3 — global decision-brief banner becomes this pill; the break itself renders only inside Accounting">P3</span>
+  <button class="tour-chip" title="P10 — onboarding tour docks here; it never floats over content">Tour 2/4</button>
+  <span class="pin" title="P10 — docked onboarding checklist, opt-in from the masthead">P10</span>
+  <span class="mode-chip">PAPER</span>
+  <span class="session"><b>Ops Desk</b> &middot; Operator</span>
+</header>
+
+<div class="frame">
+  <nav class="sidebar">
+    <div class="group-label">Workspaces <span class="pin" title="P5 — the sidebar (plus the command palette) is the only navigation system; in-page tab rows and route-card grids are retired">P5</span></div>
+    <a class="ws" href="#">Trading</a>
+    <a class="sub" href="#">Overview</a>
+    <a class="sub active" href="#">Orders</a>
+    <a class="sub" href="#">Positions</a>
+    <a class="sub" href="#">Risk</a>
+    <a class="sub" href="#">Readiness</a>
+    <a class="ws" href="#">Portfolio</a>
+    <a class="ws" href="#">Accounting</a>
+    <a class="ws" href="#">Reporting</a>
+    <a class="ws" href="#">Strategy</a>
+    <a class="ws" href="#">Data</a>
+    <a class="ws" href="#">Settings</a>
+  </nav>
+
+  <main class="route">
+    <div class="route-header">
+      <span class="crumb">trading /</span>
+      <h1>Orders</h1>
+      <span class="pin" title="P2 — /trading/orders renders the orders tool, not the whole workspace page">P2</span>
+      <span class="scope-chip">DU1009834</span>
+      <span class="scope-chip">PAPER</span>
+      <div class="stats" title="P11 — compact stat strip replaces the four-card KPI band">
+        <div class="stat"><span class="k">Net P&amp;L</span><span class="v up">+$3,100</span></div>
+        <div class="stat"><span class="k">Open</span><span class="v">4</span></div>
+        <div class="stat"><span class="k">Fills</span><span class="v">13</span></div>
+        <div class="stat"><span class="k">Risk</span><span class="v watch">Observe</span></div>
+      </div>
+      <span class="pin" title="P11 — stat strip; each stat deep-links to the surface that explains it">P11</span>
+      <div class="actions">
+        <button class="btn danger-ghost">Cancel all</button>
+        <button class="btn primary">New order</button>
+      </div>
+    </div>
+
+    <div class="cockpit">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Order blotter</h2>
+          <span class="pin" title="P1 — the tool is the page: the blotter fills the viewport and scrolls internally">P1</span>
+          <span class="count">9 orders &middot; live</span>
+          <span class="filter">Working + filled &#9662;</span>
+        </div>
+        <div class="blotter-scroll">
+          <table>
+            <thead>
+              <tr><th>Order</th><th>Symbol</th><th>Side</th><th>Type</th><th>Qty</th><th>Limit</th><th>Status</th><th>Submitted</th></tr>
+            </thead>
+            <tbody>
+              <tr class="selected"><td>PO-1</td><td class="sym">MSFT</td><td class="side-buy">Buy</td><td>Limit</td><td>20</td><td>414.20</td><td><span class="chip working">Working</span></td><td>09:42:00 ET</td></tr>
+              <tr><td>PO-2</td><td class="sym">AAPL</td><td class="side-buy">Buy</td><td>Limit</td><td>100</td><td>188.10</td><td><span class="chip filled">Filled</span></td><td>09:40:12 ET</td></tr>
+              <tr><td>PO-3</td><td class="sym">NVDA</td><td class="side-sell">Sell</td><td>Limit</td><td>10</td><td>948.20</td><td><span class="chip filled">Filled</span></td><td>09:38:51 ET</td></tr>
+              <tr><td>PO-4</td><td class="sym">SPY</td><td class="side-buy">Buy</td><td>Market</td><td>50</td><td>&mdash;</td><td><span class="chip working">Working</span></td><td>09:35:20 ET</td></tr>
+              <tr><td>PO-5</td><td class="sym">QQQ</td><td class="side-sell">Sell</td><td>Limit</td><td>25</td><td>446.75</td><td><span class="chip working">Working</span></td><td>09:31:07 ET</td></tr>
+              <tr><td>PO-6</td><td class="sym">MSFT</td><td class="side-sell">Sell</td><td>Limit</td><td>20</td><td>418.00</td><td><span class="chip canceled">Canceled</span></td><td>09:27:44 ET</td></tr>
+              <tr><td>PO-7</td><td class="sym">AAPL</td><td class="side-buy">Buy</td><td>Limit</td><td>40</td><td>187.55</td><td><span class="chip filled">Filled</span></td><td>09:21:16 ET</td></tr>
+              <tr><td>PO-8</td><td class="sym">IWM</td><td class="side-buy">Buy</td><td>Limit</td><td>60</td><td>219.30</td><td><span class="chip working">Working</span></td><td>09:18:02 ET</td></tr>
+              <tr><td>PO-9</td><td class="sym">NVDA</td><td class="side-buy">Buy</td><td>Limit</td><td>5</td><td>941.00</td><td><span class="chip canceled">Canceled</span></td><td>09:12:39 ET</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="panel rail">
+        <section>
+          <div class="id">PO-1 <span class="pin" title="P9 — one sticky detail rail owns the selected row: summary, key-values, evidence, and actions. No inline summary card, no distant detail card.">P9</span></div>
+          <div class="sub">Buy 20 MSFT &middot; Limit 414.20 &middot; <span class="chip working">Working</span></div>
+        </section>
+        <section>
+          <h3>Order</h3>
+          <div class="kv">
+            <span class="k">Quantity</span><span class="v">20</span>
+            <span class="k">Limit</span><span class="v">414.20</span>
+            <span class="k">Filled</span><span class="v">0 / 20</span>
+            <span class="k">Submitted</span><span class="v">09:42:00 ET</span>
+            <span class="k">Venue</span><span class="v">Interactive Brokers</span>
+            <span class="k">Environment</span><span class="v">PAPER</span>
+          </div>
+        </section>
+        <section>
+          <h3>Guardrails</h3>
+          <div class="kv">
+            <span class="k">Symbol limit</span><span class="v">MSFT 20,000</span>
+            <span class="k">Breaker</span><span class="v" style="color:var(--ready)">Closed</span>
+            <span class="k">Active overrides</span><span class="v">1 manual</span>
+          </div>
+        </section>
+        <section class="evidence">
+          <h3>Evidence</h3>
+          <a href="#">Execution audit &middot; promo-dev-1</a>
+          <a href="#">Risk control snapshot &middot; 09:42 ET</a>
+          <a href="#">Session replay &middot; paper-dev-42</a>
+        </section>
+        <section>
+          <h3>Next action</h3>
+          <p class="note" style="margin:0">Limit order working since 09:42 ET. Amend the limit or leave working; fill feed is healthy.</p>
+        </section>
+        <div class="rail-actions">
+          <button class="btn">Amend</button>
+          <button class="btn danger-ghost">Cancel order</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<footer class="statusbar">
+  <span>SESSION <b>paper</b></span>
+  <span>DATA <b>demo fixtures</b></span>
+  <span>SYNC <b>up to date</b></span>
+  <span class="right">WORKSPACE <b>Trading</b></span>
+</footer>
+
+</body>
+</html>
