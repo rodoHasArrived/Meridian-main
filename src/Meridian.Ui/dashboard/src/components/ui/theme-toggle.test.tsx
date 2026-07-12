@@ -4,14 +4,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { APPEARANCE_STORAGE_KEY } from "@/lib/theme";
 
-const localStorageDescriptor = Object.getOwnPropertyDescriptor(window, "localStorage");
-
 afterEach(() => {
-  if (localStorageDescriptor) {
-    Object.defineProperty(window, "localStorage", localStorageDescriptor);
-  }
+  Reflect.deleteProperty(window, "localStorage");
   document.documentElement.removeAttribute("data-theme");
-  localStorage.clear();
+  try {
+    localStorage.clear();
+  } catch {
+    // localStorage can be blocked while storage fallback behavior is under test.
+  }
   vi.restoreAllMocks();
 });
 
