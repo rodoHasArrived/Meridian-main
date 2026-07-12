@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
@@ -678,7 +679,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             expectedEvent.EventId,
             description,
             expectedEvent.EventDate,
-            Math.Abs(totalDebits - totalCredits) <= 0.000001m,
+            Math.Abs(totalDebits - totalCredits) <= LedgerToleranceConstants.Balance,
             RequiresOperatorApproval: true,
             expectedEvent.IdempotencyKey,
             lines);

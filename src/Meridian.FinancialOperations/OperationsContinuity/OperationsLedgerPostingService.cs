@@ -426,7 +426,7 @@ internal sealed class OperationsLedgerPostingService
 
         var totalDebits = candidate.Lines?.Sum(static line => line.Debit) ?? 0m;
         var totalCredits = candidate.Lines?.Sum(static line => line.Credit) ?? 0m;
-        if (Math.Abs(totalDebits - totalCredits) > 0.000001m)
+        if (Math.Abs(totalDebits - totalCredits) > LedgerToleranceConstants.Balance)
         {
             blockers.Add(CreateJournalCandidateBlocker(
                 "LEDGER_DRAFT_IMBALANCED",
