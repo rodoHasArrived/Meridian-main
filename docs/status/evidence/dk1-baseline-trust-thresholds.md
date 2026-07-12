@@ -44,7 +44,7 @@
 ### Required evidence packet per review
 
 1. Run-date parity packet from [`dk1-pilot-parity-runbook.md`](./dk1-pilot-parity-runbook.md)
-2. Threshold and calibration context from [`../../operations/provider-degradation-calibration.md`](../../operations/provider-degradation-calibration.md)
+2. Threshold and calibration context from [`archive/docs/operations/provider-degradation-calibration.md`](../../../archive/docs/operations/provider-degradation-calibration.md)
 3. Alert rationale mapping from [`dk1-trust-rationale-mapping.md`](./dk1-trust-rationale-mapping.md)
 
 ### Decision workflow

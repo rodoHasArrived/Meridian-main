@@ -13,5 +13,5 @@ Documentation for third-party integrations and language interoperability.
 ## Related
 
 - [F# AI Guide](../ai/claude/CLAUDE.fsharp.md) — AI assistant guide for F# code
-- [ADR-009: F# Interop](../adr/009-fsharp-interop.md) — Architecture decision for F# integration
+- [ADR-009: F# Interop](../../archive/docs/adr/009-fsharp-interop.md) — Architecture decision for F# integration
 - [Provider Implementation](../development/provider-implementation.md) — Adding new data providers

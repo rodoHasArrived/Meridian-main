@@ -100,6 +100,26 @@ public sealed class EtlJobOrchestratorTests : IDisposable
         sourceReader.PostProcessCalls.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task RunAsync_WhenExportReturnsFailure_DoesNotPostProcessSuccessfulSourceFile()
+    {
+        Directory.CreateDirectory(_root);
+        var sourceReader = new RecordingSourceReader();
+        var export = new RecordingExportService(Succeed: false);
+        await using var fixture = CreateOrchestratorFixture(sourceReader, new EmptyPartnerFileParser(), export);
+        var job = await fixture.Ingestion.CreateJobAsync(IngestionWorkloadType.Historical, ["AAPL"], "partner-a");
+        await fixture.DefinitionStore.SaveAsync(CreateDefinition(job.JobId, publishPortablePackage: true));
+        await fixture.Ingestion.TransitionAsync(job.JobId, IngestionJobState.Queued);
+
+        var result = await fixture.Orchestrator.RunAsync(job.JobId);
+
+        result.Success.Should().BeTrue();
+        result.ExportResult.Should().NotBeNull();
+        result.ExportResult!.Success.Should().BeFalse();
+        export.ExportCalls.Should().Be(1);
+        sourceReader.PostProcessCalls.Should().BeEmpty();
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))
@@ -235,7 +255,7 @@ public sealed class EtlJobOrchestratorTests : IDisposable
         }
     }
 
-    private sealed record RecordingExportService(bool ThrowOnExport = false) : IEtlExportService
+    private sealed record RecordingExportService(bool ThrowOnExport = false, bool Succeed = true) : IEtlExportService
     {
         public int ExportCalls { get; private set; }
 
@@ -244,6 +264,8 @@ public sealed class EtlJobOrchestratorTests : IDisposable
             ExportCalls++;
             if (ThrowOnExport)
                 throw new InvalidOperationException("export failed");
+            if (!Succeed)
+                return Task.FromResult(new EtlExportResult { Success = false, Error = "export failed" });
 
             return Task.FromResult(new EtlExportResult { Success = true });
         }

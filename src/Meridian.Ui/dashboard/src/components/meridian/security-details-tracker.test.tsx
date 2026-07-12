@@ -1,7 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { LotsTrackerPanel, SecurityDetailsPanel, type OperatorOverridesService } from "@/components/meridian/security-details-tracker";
+import {
+  LotsTrackerPanel,
+  parseStoredLots,
+  parseStoredOverrides,
+  SecurityDetailsPanel,
+  type OperatorOverridesService
+} from "@/components/meridian/security-details-tracker";
 import type { SecurityLot } from "@/components/meridian/security-details-tracker.view-model";
 import type { OperatorOverridesDto, SecurityIdentityDrillIn, SecurityMasterEntry } from "@/types";
 
@@ -70,6 +76,16 @@ const operatorOverrides: OperatorOverridesDto = {
 };
 
 describe("LotsTrackerPanel", () => {
+  it("validates persisted lots before using them", () => {
+    expect(parseStoredLots([
+      { lotId: "lot-1", tradeDate: "2026-01-02", quantity: 10, price: 20 },
+      { lotId: "bad-fees", tradeDate: "2026-01-02", quantity: 10, price: 20, fees: "wrong" },
+      { lotId: "bad-price", tradeDate: "2026-01-02", quantity: 10, price: "20" }
+    ])).toEqual([
+      { lotId: "lot-1", tradeDate: "2026-01-02", quantity: 10, price: 20, fees: 0, note: "" }
+    ]);
+  });
+
   beforeEach(() => {
     window.localStorage.clear();
     window.localStorage.setItem(lotsKey, JSON.stringify(lots));
@@ -128,6 +144,16 @@ describe("LotsTrackerPanel", () => {
 });
 
 describe("SecurityDetailsPanel", () => {
+  it("validates persisted local overrides before using them", () => {
+    expect(parseStoredOverrides({
+      marketPrice: "101.25",
+      empty: 42,
+      note: "operator note"
+    })).toEqual({ marketPrice: "101.25", note: "operator note" });
+
+    expect(parseStoredOverrides(["bad"])).toEqual({});
+  });
+
   beforeEach(() => {
     window.localStorage.clear();
   });

@@ -701,4 +701,31 @@ public sealed class TradingCalendarTests
     }
 
     #endregion
+
+    #region Concurrency
+
+    [Fact]
+    public async Task ConcurrentHolidayAccess_LazyGenerationDoesNotCorruptState()
+    {
+        var calendar = new TradingCalendar();
+
+        // Years outside the constructor-seeded window force GetHolidays to lazily mutate the
+        // shared _holidays set. Running those mutations alongside IsTradingDay reads exercises
+        // the exact read/write race the lock guards; an unsynchronized HashSet would throw or
+        // corrupt here.
+        var years = Enumerable.Range(2005, 40).ToArray();
+        var tasks = new List<Task>();
+        foreach (var year in years)
+        {
+            tasks.Add(Task.Run(() => calendar.GetHolidays(year)));
+            tasks.Add(Task.Run(() => calendar.IsTradingDay(new DateOnly(year, 7, 4))));
+        }
+
+        var act = async () => await Task.WhenAll(tasks);
+
+        await act.Should().NotThrowAsync("concurrent lazy holiday generation and reads must be synchronized");
+        calendar.GetHolidays(2010).Should().NotBeEmpty();
+    }
+
+    #endregion
 }

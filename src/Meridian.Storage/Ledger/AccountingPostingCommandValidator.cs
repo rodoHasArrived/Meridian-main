@@ -225,7 +225,10 @@ public static class AccountingPostingCommandValidator
             AccountId: GetLineDimensionTag(tags, prefix, "accountId"),
             CustomerId: GetLineDimensionTag(tags, prefix, "customerId"),
             VendorId: GetLineDimensionTag(tags, prefix, "vendorId"),
-            ProjectId: GetLineDimensionTag(tags, prefix, "projectId"));
+            ProjectId: GetLineDimensionTag(tags, prefix, "projectId"))
+        {
+            PositionId = GetLineDimensionGuidTag(tags, prefix, "positionId")
+        };
 
         return HasAnyLineDimension(dimensions) ? dimensions : null;
     }
@@ -263,6 +266,7 @@ public static class AccountingPostingCommandValidator
            || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
            || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
            || dimensions.InstrumentId.HasValue
+           || dimensions.PositionId.HasValue
            || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
            || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
            || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)

@@ -253,8 +253,13 @@ public sealed class CredentialService : ICredentialService, IDisposable
                 var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
                 File.WriteAllBytes(_vaultPath, encrypted);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Vault persistence is best-effort; disk/DPAPI failures must not crash the caller.
+                LoggingService.Instance.LogDebug(
+                    "Failed to persist credential vault.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
     }
@@ -480,8 +485,13 @@ public sealed class CredentialService : ICredentialService, IDisposable
             var json = JsonSerializer.Serialize(snapshot, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_metadataPath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Metadata persistence is best-effort; failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist credential metadata.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

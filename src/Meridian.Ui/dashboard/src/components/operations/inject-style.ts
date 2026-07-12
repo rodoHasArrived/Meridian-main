@@ -5,6 +5,12 @@
 // centralises the idempotency guard so every component doesn't re-implement the
 // `injected` boolean + document-guard boilerplate. Safe to call on every render and
 // in non-DOM (SSR / unit-test import) environments.
+//
+// Use this only for small Concrete handoff adapters under `components/data/*` and
+// `components/operations/*` where the CSS is intentionally private to one component
+// and must stay import-free for legacy bundle parity. For route screens, shell chrome,
+// reusable Meridian primitives, or styles shared by more than one component, prefer a
+// named stylesheet in `src/styles/` imported by the owning component/module instead.
 
 const injectedKeys = new Set<string>();
 

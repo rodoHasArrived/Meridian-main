@@ -298,8 +298,16 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
         issues.AddRange(ValidatePrimaryIdentifierProjection(record, activePrimaryIdentifiers));
 
+        // Provider only distinguishes ProviderSymbol identities; canonical identifiers (ISIN,
+        // FIGI, RIC, ...) are provider-independent, so a repeated canonical value must collide
+        // even when the duplicate rows carry different provider annotations. Keep this consistent
+        // with cross-record duplicate detection below.
         var duplicateInRecord = activeIdentifiers
-            .GroupBy(static identifier => IdentifierKey(identifier, includeProvider: true), StringComparer.OrdinalIgnoreCase)
+            .GroupBy(
+                static identifier => IdentifierKey(
+                    identifier,
+                    includeProvider: identifier.Kind == SecurityIdentifierKind.ProviderSymbol),
+                StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicateInRecord is not null)
         {

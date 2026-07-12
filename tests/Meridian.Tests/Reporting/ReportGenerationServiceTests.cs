@@ -123,6 +123,7 @@ public sealed class ReportGenerationServiceTests
     {
         var securityId = Guid.NewGuid();
         var instrumentId = Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8");
+        var positionId = Guid.Parse("5e78f0cb-8412-4c6e-9a88-d9a64b5c3f0d");
         var query = new StubSecurityMasterQueryService(
             detailsBySymbol: new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase)
             {
@@ -151,7 +152,10 @@ public sealed class ReportGenerationServiceTests
             AccountId: "account-investments",
             CustomerId: "customer-alpha",
             VendorId: "vendor-admin",
-            ProjectId: "project-close");
+            ProjectId: "project-close")
+        {
+            PositionId = positionId
+        };
         var ledgerBook = new FundLedgerBook("fund-1");
         ledgerBook.FundLedger.PostLines(
             new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero),
@@ -188,7 +192,10 @@ public sealed class ReportGenerationServiceTests
             AccountId: "account-investments",
             CustomerId: "customer-alpha",
             VendorId: "vendor-admin",
-            ProjectId: "project-close"));
+            ProjectId: "project-close")
+        {
+            PositionId = positionId
+        });
     }
 
     private static FundLedgerBook BuildLedgerBookWithSymbols(IReadOnlyList<string> symbols)

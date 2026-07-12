@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
@@ -72,4 +73,14 @@ public sealed record AccountingPostingCommandDto(
 {
     public IReadOnlyList<AccountingPostingEvidenceReferenceDto> Evidence { get; init; } =
         Evidence ?? [];
+
+    public AccountingBookContextDto? BookContext { get; init; }
+
+    public Guid? BookPositionId { get; init; }
+
+    public EconomicEventReferenceDto? EconomicEvent { get; init; }
+
+    public ProjectionLineageDto? ProjectionLineage { get; init; }
+
+    public AccountingRulePackReferenceDto? RulePackReference { get; init; }
 }

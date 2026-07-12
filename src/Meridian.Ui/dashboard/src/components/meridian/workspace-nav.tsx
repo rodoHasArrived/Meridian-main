@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
+import { useWorkspaceExpansion } from "@/components/meridian/use-workspace-expansion";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { meridianWorkspaceIconAssets } from "@/design-system/assets";
 import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system/primitives";
+import { FOCUS_VISIBLE_RING_CLASS } from "@/lib/focus-classes";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
-import type { WorkspaceKey } from "@/types";
 
 /**
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
@@ -44,38 +45,7 @@ export function WorkspaceNav({
   const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
   const compact = density === "compact";
   const activeWorkspaceKey = viewModel.items.find((item) => item.active)?.key ?? viewModel.items[0]?.key;
-  const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<WorkspaceKey>>(() =>
-    activeWorkspaceKey ? new Set([activeWorkspaceKey]) : new Set()
-  );
-
-  useEffect(() => {
-    if (!activeWorkspaceKey) {
-      return;
-    }
-
-    setExpandedWorkspaces((current) => {
-      if (current.has(activeWorkspaceKey)) {
-        return current;
-      }
-
-      const next = new Set(current);
-      next.add(activeWorkspaceKey);
-      return next;
-    });
-  }, [activeWorkspaceKey]);
-
-  const toggleWorkspace = (key: WorkspaceKey) => {
-    setExpandedWorkspaces((current) => {
-      const next = new Set(current);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-
-      return next;
-    });
-  };
+  const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey);
 
   return (
     <DesignSystemNavRail
@@ -105,7 +75,7 @@ export function WorkspaceNav({
                   aria-label={item.ariaLabel}
                   className={cn(
                     designSystemNavRailClasses.item,
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    FOCUS_VISIBLE_RING_CLASS,
                     item.active && designSystemNavRailClasses.itemActive
                   )}
                   onClick={onNavigate}
@@ -124,7 +94,7 @@ export function WorkspaceNav({
                     type="button"
                     className={cn(
                       designSystemNavRailClasses.expand,
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      FOCUS_VISIBLE_RING_CLASS,
                       expanded && designSystemNavRailClasses.expandExpanded
                     )}
                     aria-label={`${expanded ? "Collapse" : "Expand"} ${item.label} pages`}
@@ -153,7 +123,7 @@ export function WorkspaceNav({
                     aria-label={sub.ariaLabel}
                     className={cn(
                       designSystemNavRailClasses.subItem,
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      FOCUS_VISIBLE_RING_CLASS,
                       sub.active && designSystemNavRailClasses.itemActive
                     )}
                     onClick={onNavigate}

@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-08
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Ledger
@@ -59,6 +59,15 @@ depreciation run, mirroring `DailyPortfolioPricingDraftBuilder`.
 account level so accounting statements can follow front-office lot-relief policy.
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
 prepares balanced cash, security cost-basis, and realized gain/loss lines before durable posting.
+`LedgerTaxLot` carries an optional `SecurityId` so cost-basis lots link to Security Master
+reference data. `LedgerTaxLotBasisAdjuster` (fed via `LedgerTaxLotReliefInput.BasisAdjustments`)
+restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — corporate-action
+splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
+before relief, keeping the ledger engine free of Security Master contracts while relieving basis
+against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
+the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
+matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
+entries so cash flow projections are booked instead of remaining display-only.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
@@ -104,16 +113,25 @@ investor, or internal stakeholder delivery workflows.
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
 schedule, preserving recipients, due date, requested formats, report-pack signature, dimension
 scope, and statement totals without claiming full XBRL/iXBRL coverage.
+`JournalEntry` remains the authoritative accounting aggregate after posting and owns its balanced
+child `LedgerEntry` lines. Broader business `Transaction` and operational-event records can explain
+or initiate posting intent, but they are not aliases for the journal and do not become accounting
+truth without the governed append path.
 `JournalEntryMetadata`, `JournalEvidenceReference`, and `LedgerQuery` now carry treasury-ledger audit context for private-capital
 and payment-linked postings: effective date, idempotency key, fund event, capital account, investor,
 payment intent, settlement references, and typed retained evidence references. Keep those fields additive and metadata-owned so ledger
 consumers can reconstruct capital-call, distribution, subscription, redemption, LP-transfer, and
 management-fee postings without introducing UI- or storage-specific query forks.
 `LedgerEntry` also carries an optional `LedgerLineDimensionSet` so fund, entity, strategy,
-investor, capital-account, instrument, tax-lot, cost-center, counterparty, organization, portfolio,
-book, customer/vendor/project, and external-GL scope can live on the immutable ledger line itself
-instead of only in journal-level metadata. Storage and reporting surfaces should prefer the
-line-level dimension set when present and use metadata-derived dimensions only as legacy fallback.
+investor, capital-account, instrument, book-position, tax-lot, cost-center, counterparty,
+organization, portfolio, book, customer/vendor/project, and external-GL scope can live on the
+immutable ledger line itself instead of only in journal-level metadata. Storage and reporting
+surfaces should prefer the line-level dimension set when present and use metadata-derived dimensions
+only as legacy fallback.
+`LedgerLineDimensionSet.PositionId` is additive beside `InstrumentId` and participates in
+normalization, matching, report-pack scope, scheduled exports, and balance/report filtering. It
+identifies the book-position lineage of a line; it does not make a position projection or balance
+snapshot a second ledger.
 `LedgerQuery`, `TrialBalance`, `TrialBalanceAsOf`, and `LedgerFinancialStatementBuilder` accept
 optional `LedgerLineDimensionSet` filters so core journal, trial-balance, and statement reads can be
 scoped by fund/entity/strategy/instrument/counterparty, organization, portfolio, book, account,
@@ -122,6 +140,9 @@ reporting fork.
 Ledger-owned dimension normalization trims scope values, removes empty dimensions, and
 deduplicates external-GL fields before matching, report-pack manifests, and scheduled-export
 manifests so in-memory reporting behavior stays aligned with durable journal storage.
+This semantic extension uses existing journal and dimension envelopes. It adds no ledger aggregate,
+lineage table, balance store, or posting API; candidate and projection records remain drafts or
+rebuildable views over immutable journal facts.
 `ProjectLedgerBook` and `FundLedgerBook` propagate the same line-dimension scope through
 consolidated trial balances, point-in-time snapshots, reconciliation snapshots, account summaries,
 and consolidated journals so multi-book reporting can stay ledger-book-native without dropping

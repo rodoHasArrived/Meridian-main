@@ -884,7 +884,7 @@ describe("buildSettingsScreenViewModel", () => {
       expect.objectContaining({
         id: "audit-diagnostics",
         statusLabel: "Review",
-        actionHref: "/settings#diagnostic-endpoints"
+        actionHref: "/settings/diagnostics"
       })
     ]));
   });

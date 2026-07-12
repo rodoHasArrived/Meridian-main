@@ -5,33 +5,19 @@ import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } fro
 import { Button } from "@/components/ui/button";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { ScreenLayout } from "@/components/ui/screen-layout";
-import { KeyValueGrid, MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { KeyValueGrid, MetricCard } from "@/components/data/concrete";
 import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
+import {
+  badgeVariantToMetricTone,
+  badgeVariantToSeverityStatus,
+  readinessToneToSeverityStatus
+} from "@/lib/shared-tone-mappings";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
   trustStrip: AppShellTrustStripState;
 }
-
-// Concrete severity layer: the control tower's workflow-continuity tones
-// (ready · review · blocked · pending) resolve to the operator-readiness status
-// strings consumed by SeverityBadge / ReadinessPanel.
-type ControlTowerTone = "ready" | "review" | "blocked" | "pending";
-
-const severityStatusForTone: Record<ControlTowerTone, string> = {
-  ready: "Ready",
-  review: "ReviewRequired",
-  blocked: "Blocked",
-  pending: "Pending"
-};
-
-const badgeVariantToStatus: Record<"outline" | "success" | "warning" | "danger", string> = {
-  success: "Ready",
-  warning: "ReviewRequired",
-  danger: "Blocked",
-  outline: "Info"
-};
 
 export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
@@ -57,7 +43,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
       }
     >
       <ReadinessPanel
-        state={severityStatusForTone[model.statusTone]}
+        state={readinessToneToSeverityStatus(model.statusTone)}
         statusLabel={model.statusLabel}
         title={model.decision.title}
         detail={model.decision.summary}
@@ -91,7 +77,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
             label={item.label}
             value={item.value}
             delta={item.detail}
-            tone={metricToneForVariant(item.badgeVariant)}
+            tone={badgeVariantToMetricTone(item.badgeVariant)}
           />
         ))}
       </section>
@@ -101,7 +87,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
           <PanelSurface key={item.id} flat className="space-y-2 p-4">
             <div className="flex items-center justify-between gap-2">
               <span className="eyebrow-label">{item.label}</span>
-              <SeverityBadge status={severityStatusForTone[item.tone]} label={item.value} />
+              <SeverityBadge status={readinessToneToSeverityStatus(item.tone)} label={item.value} />
             </div>
             <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
             {item.href && item.actionLabel ? (
@@ -157,7 +143,7 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
                               {row.item.label}
                             </button>
                             <SeverityBadge
-                              status={badgeVariantToStatus[row.badgeVariant]}
+                              status={badgeVariantToSeverityStatus(row.badgeVariant)}
                               label={row.statusLabel}
                             />
                           </div>
@@ -248,19 +234,6 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
   );
 }
 
-function metricToneForVariant(variant: "outline" | "success" | "warning" | "danger"): MetricCardTone {
-  switch (variant) {
-    case "success":
-      return "success";
-    case "warning":
-      return "warning";
-    case "danger":
-      return "danger";
-    case "outline":
-      return "neutral";
-  }
-}
-
 interface SupportingListItem {
   id: string;
   label: string;
@@ -292,7 +265,7 @@ function SupportingList({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium text-foreground">{item.label}</span>
-                    <SeverityBadge status={severityStatusForTone[item.tone]} label={item.status} />
+                    <SeverityBadge status={readinessToneToSeverityStatus(item.tone)} label={item.status} />
                   </div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
                 </div>

@@ -60,6 +60,89 @@ public sealed class ProviderIntegrationSetupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveDraftAsync_AggregatesAllValidationIssuesInOneFailure()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest() with { SavedBy = " " };
+        request = request with
+        {
+            Connection = request.Connection with
+            {
+                CredentialSecretRef = "",
+                ProviderId = "provider-other",
+                Environment = "sandbox",
+                EnabledCapabilities =
+                [
+                    ProviderCapabilityKindDto.Positions,
+                    ProviderCapabilityKindDto.Transactions
+                ]
+            }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Select(issue => issue.Code).Should().BeEquivalentTo(
+        [
+            "provider-setup.saved-by-required",
+            "provider-setup.credential-secret-ref-required",
+            "provider-setup.connection-provider-mismatch",
+            "provider-setup.connection-environment-mismatch",
+            "provider-setup.connection-capability-not-declared"
+        ]);
+        assertion.Which.Issues.Should().OnlyContain(issue =>
+            !string.IsNullOrWhiteSpace(issue.Field) && !string.IsNullOrWhiteSpace(issue.Message));
+        (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_ReportsNullCapabilityCollectionsAsValidationIssues()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        request = request with
+        {
+            Manifest = request.Manifest with { Capabilities = null! },
+            Connection = request.Connection with { EnabledCapabilities = null! }
+        };
+
+        var act = () => service.SaveDraftAsync(request);
+
+        var assertion = await act.Should().ThrowAsync<ProviderIntegrationSetupValidationException>();
+        assertion.Which.Issues.Select(issue => issue.Code).Should().BeEquivalentTo(
+        [
+            "provider-setup.manifest-capabilities-required",
+            "provider-setup.connection-capabilities-required"
+        ]);
+        (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveDraftAsync_NormalizesActiveAndRetiredStatesToDraft()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationSetupService(store);
+        var request = CreateRequest();
+        request = request with
+        {
+            Manifest = request.Manifest with { State = ProviderIntegrationActivationStateDto.Active },
+            Connection = request.Connection with { State = ProviderIntegrationActivationStateDto.Retired }
+        };
+
+        var result = await service.SaveDraftAsync(request);
+
+        result.ManifestState.Should().Be(ProviderIntegrationActivationStateDto.Draft);
+        result.ConnectionState.Should().Be(ProviderIntegrationActivationStateDto.Draft);
+        result.Message.Should().Contain("reset to Draft");
+        (await store.GetManifestAsync(request.Manifest.ManifestId))!.State.Should()
+            .Be(ProviderIntegrationActivationStateDto.Draft);
+        (await store.GetConnectionAsync(request.Connection.ConnectionId))!.State.Should()
+            .Be(ProviderIntegrationActivationStateDto.Draft);
+    }
+
+    [Fact]
     public async Task SaveDraftAsync_ObservesCancellationBeforePersisting()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);

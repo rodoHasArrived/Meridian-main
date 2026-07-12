@@ -123,36 +123,39 @@ public sealed class PositionReconciliationService
                 var localPositions = localAccount?.Positions
                     ?? new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
 
-                var brokerageBySymbol = brokeragePositions.ToDictionary(
-                    static p => p.Symbol, StringComparer.OrdinalIgnoreCase);
-
                 var matched = new List<string>();
                 var divergent = new List<string>();
                 var missingLocal = new List<string>();
                 var missingBrokerage = new List<string>();
 
-                foreach (var (symbol, brokerPos) in brokerageBySymbol)
-                {
-                    if (localPositions.TryGetValue(symbol, out var localPos))
-                    {
-                        var diff = Math.Abs((decimal)localPos.Quantity - brokerPos.Quantity);
-                        var tolerance = _options.DivergenceTolerance * Math.Abs((decimal)localPos.Quantity);
+                var comparison = ReconciliationSetComparer.Compare(
+                    localPositions.Values,
+                    brokeragePositions,
+                    static position => position.Symbol,
+                    static position => position.Symbol,
+                    StringComparer.OrdinalIgnoreCase);
 
-                        if (diff <= tolerance)
-                            matched.Add(symbol);
-                        else
-                            divergent.Add(symbol);
-                    }
+                foreach (var match in comparison.Matches)
+                {
+                    var localPos = match.Local;
+                    var brokerPos = match.External;
+                    var diff = Math.Abs((decimal)localPos.Quantity - brokerPos.Quantity);
+                    var tolerance = _options.DivergenceTolerance * Math.Abs((decimal)localPos.Quantity);
+
+                    if (diff <= tolerance)
+                        matched.Add(match.Key);
                     else
-                    {
-                        missingLocal.Add(symbol);
-                    }
+                        divergent.Add(match.Key);
                 }
 
-                foreach (var symbol in localPositions.Keys)
+                foreach (var brokerPos in comparison.MissingLocal)
                 {
-                    if (!brokerageBySymbol.ContainsKey(symbol))
-                        missingBrokerage.Add(symbol);
+                    missingLocal.Add(brokerPos.Symbol);
+                }
+
+                foreach (var localPos in comparison.MissingExternal)
+                {
+                    missingBrokerage.Add(localPos.Symbol);
                 }
 
                 _consecutiveFailures = 0;

@@ -4,6 +4,15 @@ import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { openPlaidLink, type PlaidLinkSuccessMetadata } from "@/lib/plaid-link";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import {
+  buildDataLoadingState,
+  buildRouteFocusCardState,
+  resolveDataWorkstream
+} from "@/screens/data-screen.route-state";
+import type {
+  DataOperationsRouteFocusCardState,
+  DataOperationsWorkstream
+} from "@/screens/data-screen.route-state";
 import type {
   BackfillPreviewResult,
   BackfillProgressResponse,
@@ -33,6 +42,19 @@ import type {
   ProviderSetupRequest,
   ProviderSetupResult
 } from "@/types";
+
+export {
+  DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
+  buildDataLoadingState,
+  buildRouteFocusCardState,
+  resolveDataWorkstream
+} from "@/screens/data-screen.route-state";
+export type {
+  DataOperationsRouteFocusActionState,
+  DataOperationsRouteFocusCardState,
+  DataOperationsWorkstream,
+  DataWorkstationViewState
+} from "@/screens/data-screen.route-state";
 
 export interface BackfillFormState {
   provider: string;
@@ -153,23 +175,6 @@ export interface DataOperationsProviderEvidence {
 export interface DataOperationsEmptyState {
   title: string;
   description: string;
-}
-
-export interface DataOperationsRouteFocusActionState {
-  label: string;
-  href: string;
-  ariaLabel: string;
-}
-
-export interface DataOperationsRouteFocusCardState {
-  id: string;
-  role: "region" | "status";
-  ariaLabel: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  rows: DataOperationsDetailField[];
-  action: DataOperationsRouteFocusActionState | null;
 }
 
 export interface DataOperationsSectionState<T> {
@@ -1040,7 +1045,6 @@ const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
 };
 
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
-export const DATA_BACKFILL_ROUTE_FOCUS_CARD_ID = "data-backfill-route-focus";
 export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 
@@ -1836,56 +1840,10 @@ export function useDataViewModel(
   };
 }
 
-export function resolveDataWorkstream(pathname: string): "overview" | "backfills" {
-  return pathname.includes("/backfills") ? "backfills" : "overview";
-}
-
-export function buildDataLoadingState(
-  workstream: "overview" | "backfills" = "overview"
-): DataOperationsLoadingState {
-  const backfillFocus = workstream === "backfills";
-
-  return {
-    title: backfillFocus ? "Loading backfill queue" : "Loading Data workspace",
-    description: backfillFocus
-      ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
-      : "Waiting for provider posture, market data health, and export evidence.",
-    statusLabel: "Workspace data pending",
-    detail: backfillFocus
-      ? "Queued and review-required jobs will appear here as soon as workspace data is available."
-      : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
-    regionLabel: backfillFocus ? "Data backfill loading state" : "Data workspace loading state",
-    role: "status",
-    ariaLive: "polite",
-    ariaBusy: true,
-    chips: [
-      { label: "Providers", value: "Pending" },
-      { label: "Data quality", value: "Pending" },
-      { label: backfillFocus ? "Backfills" : "Exports", value: "Pending" }
-    ],
-    actions: [
-      {
-        id: "settings",
-        label: "Check provider setup",
-        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
-        ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
-        variant: "default"
-      },
-      {
-        id: "quotes",
-        label: "Open live quotes",
-        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
-        ariaLabel: "Open live quotes while Data workspace loads",
-        variant: "outline"
-      }
-    ]
-  };
-}
-
 export function buildDataPresentationState(
   data: DataWorkspaceResponse | null,
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview",
+  workstream: DataOperationsWorkstream = "overview",
   selectedProviderId: string | null = null,
   selectedExportId: string | null = null,
   providerEvidence: DataOperationsProviderEvidence = {},
@@ -2126,63 +2084,6 @@ export function resolveSelectedDataUploadTemplate(
   }
 
   return catalog.templates.find((template) => template.templateId === selectedTemplateId) ?? catalog.templates[0];
-}
-
-export function buildRouteFocusCardState({
-  workstream,
-  selectedBackfillDetail,
-  backfillDetailEmptyState
-}: {
-  workstream: "overview" | "backfills";
-  selectedBackfillDetail: DataOperationsBackfillDetailState | null;
-  backfillDetailEmptyState: DataOperationsEmptyState | null;
-}): DataOperationsRouteFocusCardState {
-  if (workstream === "backfills") {
-    if (selectedBackfillDetail) {
-      return {
-        id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
-        role: "region",
-        ariaLabel: "Backfill route focus",
-        eyebrow: "Backfill Detail",
-        title: "Backfill queue focus",
-        description: selectedBackfillDetail.description,
-        rows: selectedBackfillDetail.rows,
-        action: null
-      };
-    }
-
-    const title = backfillDetailEmptyState?.title ?? "Backfill queue focus";
-    const description = backfillDetailEmptyState?.description ?? "No backfill selected.";
-    return {
-      id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
-      role: "status",
-      ariaLabel: "Backfill route focus empty state",
-      eyebrow: "Backfill Detail",
-      title,
-      description,
-      rows: [],
-      action: null
-    };
-  }
-
-  return {
-    id: "data-route-focus-overview",
-    role: "region",
-    ariaLabel: "Data workspace route focus",
-    eyebrow: "Lane Evidence",
-    title: "Provider and export readiness",
-    description: "Keep provider recovery, backfill pressure, and export handoffs visible while Data prepares inputs for Accounting and Reporting.",
-    rows: [
-      { id: "primary-checks", label: "Primary checks", value: "Providers / backfills / exports" },
-      { id: "security-coverage", label: "Security coverage", value: "Accounting lane" },
-      { id: "operator-handoff", label: "Operator handoff", value: "Reporting export evidence" }
-    ],
-    action: {
-      label: "Open Security Master",
-      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
-      ariaLabel: "Open Security Master in Accounting"
-    }
-  };
 }
 
 export function buildProviderSection(
@@ -3344,7 +3245,7 @@ function verificationToneFromLabel(value: string): DataOperationsProviderSummary
 export function buildBackfillSection(
   backfills: DataBackfillRecord[],
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview"
+  workstream: DataOperationsWorkstream = "overview"
 ): DataOperationsBackfillSectionState {
   return {
     rows: backfills.map((backfill) => {

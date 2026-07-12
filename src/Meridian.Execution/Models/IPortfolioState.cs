@@ -32,6 +32,8 @@ public interface IPortfolioState
     /// Replaces the former <c>IReadOnlyDictionary&lt;string, ExecutionPosition&gt;</c> surface.
     /// Callers that require the concrete <see cref="ExecutionPosition"/> type (e.g. serialisation
     /// boundaries) should cast individual values: <c>portfolio.Positions.Values.Cast&lt;ExecutionPosition&gt;()</c>.
+    /// Implementations must return either an immutable snapshot or a thread-safe read-only view because
+    /// order-approval controls read this property without taking implementation-specific locks.
     /// </summary>
     IReadOnlyDictionary<string, IPosition> Positions { get; }
 }

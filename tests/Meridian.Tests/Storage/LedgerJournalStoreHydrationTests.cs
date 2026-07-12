@@ -130,6 +130,40 @@ public sealed class LedgerJournalStoreHydrationTests
     }
 
     [Fact]
+    public async Task QueryAsync_SourceEventId_ReturnsOnlyTheMatchingEconomicEvent()
+    {
+        var targetSourceEventId = Guid.NewGuid();
+        var otherSourceEventId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = DateTimeOffset.Parse("2026-03-31T12:00:00Z");
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var records = new[]
+        {
+            BuildRecord(
+                "target event",
+                timestamp,
+                periodId,
+                globalSequence: 1,
+                (cash, 75m, 0m),
+                (revenue, 0m, 75m)) with { SourceEventId = targetSourceEventId },
+            BuildRecord(
+                "other event",
+                timestamp.AddMinutes(1),
+                periodId,
+                globalSequence: 2,
+                (cash, 125m, 0m),
+                (revenue, 0m, 125m)) with { SourceEventId = otherSourceEventId }
+        };
+        var store = new QueryableLedgerJournalStore(records);
+
+        var matches = await store.QueryAsync(new LedgerJournalEntryQuery(SourceEventId: targetSourceEventId));
+
+        matches.Should().ContainSingle()
+            .Which.Entry.Description.Should().Be("target event");
+    }
+
+    [Fact]
     public async Task HydrateLedgerAsOfAsync_RejectsUnscopedLedgerBook()
     {
         var store = new QueryableLedgerJournalStore([]);
@@ -210,6 +244,11 @@ public sealed class LedgerJournalStoreHydrationTests
             if (query.PeriodId.HasValue)
             {
                 filtered = filtered.Where(record => record.PeriodId == query.PeriodId.Value);
+            }
+
+            if (query.SourceEventId.HasValue)
+            {
+                filtered = filtered.Where(record => record.SourceEventId == query.SourceEventId.Value);
             }
 
             return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(filtered.ToList());

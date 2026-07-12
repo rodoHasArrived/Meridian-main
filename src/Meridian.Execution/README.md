@@ -59,6 +59,9 @@ review. Shared `/api/execution/controls/*` endpoints expose the snapshot plus se
 the global circuit breaker, default position limit, symbol position limits, and manual override
 create/clear actions so browser and desktop clients do not need client-local execution-control
 state.
+OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
+`MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
+are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
 
 ## Diagrams
 

@@ -1,3 +1,5 @@
+using Meridian.Contracts.Ledger;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace Meridian.Ledger;
 /// </summary>
 public static class PartnershipWaterfallProjector
 {
-    private const decimal AllocationTolerance = 0.000001m;
+    private const decimal AllocationTolerance = LedgerToleranceConstants.Allocation;
 
     public static PartnershipWaterfallAllocationProjection Project(PartnershipWaterfallAllocationInput input)
     {

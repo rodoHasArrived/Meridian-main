@@ -729,6 +729,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
     {
         var tags = metadata.Tags;
         var externalGlDimensions = ExtractExternalGlDimensions(tags);
+        var positionId = Guid.TryParse(FirstTag(tags, "positionId"), out var parsedPositionId)
+            ? parsedPositionId
+            : (Guid?)null;
         var dimensionSet = new LedgerDimensionSetDto(
             FundId: FirstTag(tags, "fundId", "fundProfileId"),
             EntityId: FirstTag(tags, "entityId", "legalEntityId"),
@@ -747,7 +750,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
             CustomerId: FirstTag(tags, "customerId"),
             VendorId: FirstTag(tags, "vendorId"),
-            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"));
+            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
+        {
+            PositionId = positionId
+        };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
     }
@@ -777,7 +783,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             AccountId: dimensions.AccountId,
             CustomerId: dimensions.CustomerId,
             VendorId: dimensions.VendorId,
-            ProjectId: dimensions.ProjectId);
+            ProjectId: dimensions.ProjectId)
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
     }
@@ -793,6 +802,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         var instrumentId = Guid.TryParse(FirstTag(tags, prefix + "instrumentId"), out var parsedInstrumentId)
             ? parsedInstrumentId
+            : (Guid?)null;
+        var positionId = Guid.TryParse(FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
+            ? parsedPositionId
             : (Guid?)null;
         var dimensionSet = new LedgerDimensionSetDto(
             FundId: FirstTag(tags, prefix + "fundId"),
@@ -812,7 +824,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             AccountId: FirstTag(tags, prefix + "accountId"),
             CustomerId: FirstTag(tags, prefix + "customerId"),
             VendorId: FirstTag(tags, prefix + "vendorId"),
-            ProjectId: FirstTag(tags, prefix + "projectId"));
+            ProjectId: FirstTag(tags, prefix + "projectId"))
+        {
+            PositionId = positionId
+        };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
     }
@@ -825,6 +840,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
            || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
            || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
            || dimensions.InstrumentId.HasValue
+           || dimensions.PositionId.HasValue
            || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
            || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
            || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
@@ -925,7 +941,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var externalGl = dimensions.ExternalGlDimensions
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
-        return string.Join(
+        var key = string.Join(
             "\u001e",
             dimensions.FundId ?? string.Empty,
             dimensions.EntityId ?? string.Empty,
@@ -945,6 +961,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty,
             string.Join("\u001d", externalGl));
+
+        return dimensions.PositionId.HasValue
+            ? $"{key}\u001epositionId={dimensions.PositionId.Value:D}"
+            : key;
     }
 
     private static LedgerBookDto MapBook(LedgerBookRecord record)

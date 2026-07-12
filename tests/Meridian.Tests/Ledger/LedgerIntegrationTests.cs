@@ -1425,6 +1425,52 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerQuery_PositionDimension_DistinguishesHoldingsOfTheSameInstrument()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var instrumentId = Guid.NewGuid();
+        var firstPositionId = Guid.NewGuid();
+        var secondPositionId = Guid.NewGuid();
+        var firstPosition = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            InstrumentId: instrumentId)
+        {
+            PositionId = firstPositionId
+        };
+        var secondPosition = firstPosition with { PositionId = secondPositionId };
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T09:00:00Z"),
+            "first position fee",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)firstPosition),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)firstPosition),
+            });
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T10:00:00Z"),
+            "second position fee",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)secondPosition),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)secondPosition),
+            });
+
+        var filter = new LedgerLineDimensionSet(InstrumentId: instrumentId)
+        {
+            PositionId = firstPositionId
+        };
+
+        ledger.GetJournalEntries(new LedgerQuery(LineDimensions: filter))
+            .Select(static entry => entry.Description)
+            .Should()
+            .Equal("first position fee");
+        ledger.TrialBalance(lineDimensions: filter)[cash].Should().Be(100m);
+    }
+
+    [Fact]
     public void LedgerFinancialStatementBuilder_BuildAsOf_ShouldFilterByLineDimensions()
     {
         var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);

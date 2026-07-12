@@ -1,7 +1,11 @@
 import type {
+  AccountingBookContext,
+  AccountingRulePackReference,
+  EconomicEventReference,
   JournalEntryLifecycleTransition,
   LedgerDimensionSet,
   OperationsActionOrigin,
+  ProjectionLineage,
   ReconciliationBreakExplanation,
   ReconciliationBreakQueueStatus,
   ReconciliationCaseCommentVisibility,
@@ -1300,6 +1304,12 @@ export interface AccountingPostingCommand {
   operatorRationale?: string | null;
   evidence: AccountingPostingEvidenceReference[];
   actionOrigin: OperationsActionOrigin;
+  ledgerBookId?: string | null;
+  bookContext?: AccountingBookContext | null;
+  bookPositionId?: string | null;
+  economicEvent?: EconomicEventReference | null;
+  projectionLineage?: ProjectionLineage | null;
+  rulePackReference?: AccountingRulePackReference | null;
 }
 
 export interface PostingRuleJournalCandidateRequest {
@@ -1328,6 +1338,11 @@ export interface PostingRuleJournalCandidateRequest {
   evidenceLinks?: string[] | null;
   tenantId?: string | null;
   companyId?: string | null;
+  bookContext?: AccountingBookContext | null;
+  bookPositionId?: string | null;
+  economicEvent?: EconomicEventReference | null;
+  projectionLineage?: ProjectionLineage | null;
+  rulePackReference?: AccountingRulePackReference | null;
 }
 
 export interface PostingRuleJournalCandidateIssue {
@@ -1345,6 +1360,11 @@ export interface PostingRuleJournalCandidateResult {
   selectedRuleVersion?: string | null;
   generatedPostingLines: GeneratedPostingLine[];
   postingCommand?: AccountingPostingCommand | null;
+  bookContext?: AccountingBookContext | null;
+  bookPositionId?: string | null;
+  economicEvent?: EconomicEventReference | null;
+  projectionLineage?: ProjectionLineage | null;
+  rulePackReference?: AccountingRulePackReference | null;
   journalEntryId?: string | null;
   totalDebits: number;
   totalCredits: number;

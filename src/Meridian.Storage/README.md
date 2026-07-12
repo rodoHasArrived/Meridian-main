@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-01
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Storage
@@ -51,8 +51,8 @@ lookup paths, and evidence trails those layers rely on.
   that can play saved data back.
 - `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
   the contracts-owned `ICanonicalSymbolRegistry` over the symbol registry store.
-- `Ledger/` - accounting journal storage, tax-lot policy inputs, and guardrails for instrument
-  postings.
+- `Ledger/` - authoritative accounting journal storage, source-event queries, tax-lot policy inputs,
+  and dimension/command guardrails for instrument and book-position postings.
 - `Integrations/` - file-backed provider integration manifest, connection, raw payload,
   quarantine, quarantine-review decision, quarantine replay payload, staging-record, and
   reconciliation-handoff evidence persistence for replayable no-code provider intake.
@@ -134,6 +134,9 @@ be reconstructed from durable journal evidence. Postgres journal storage also ke
 indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
 retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
 checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period/ledger-book scope, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
+The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
+journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
+as alternate accounting facts.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -161,8 +164,11 @@ remains a compatibility fallback for older retained rows, but new dimensional ac
 should use the line property so reports, external-GL mapping, close checks, and future query
 filters do not have to infer line scope from journal-level tags. The journal store canonicalizes
 line dimensions before storage, query containment, and rehydration so fund, entity, sleeve,
-strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, external GL,
-and customer-neutral scope values use the same trimmed durable shape.
+strategy, investor, capital-account, instrument, book-position, tax-lot, cost-center, counterparty,
+external GL, and customer-neutral scope values use the same trimmed durable shape.
+`PositionId` is stored inside the existing dimensions JSONB envelope and retained through closed-
+period hydration and report filtering; it does not require a new journal column or position-balance
+table.
 `PostgresLedgerJournalStore.QueryAsync` provides the first durable journal-read seam for those
 line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
 dimension filters, and the store applies them against `journal_legs.dimensions` instead of
@@ -171,6 +177,10 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+`LedgerJournalEntryQuery.SourceEventId` also filters the existing indexed
+`journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
+journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
+schema, or new route is introduced.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before
@@ -212,6 +222,9 @@ Asset Operations persistence stays separate from `security_master`. Its default 
 `MERIDIAN_ASSET_OPERATIONS_SCHEMA`, so Direct Lending, bonds, and later asset classes can publish
 shared operational read models without moving servicing or accounting command tables into Security
 Master storage.
+Security Master continues to own canonical security identity; Asset Operations records consume that
+identity, and Storage preserves each module's records without introducing a parent Instrument Master
+or reversing the dependency into Reference Data.
 
 Fund-structure local-first persistence uses Storage-owned state stores. The JSON-backed store writes
 complete snapshots through `AtomicFileWriter`, and the in-memory store preserves the same snapshot

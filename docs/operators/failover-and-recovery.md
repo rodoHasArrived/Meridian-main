@@ -57,6 +57,6 @@ Recovery handoffs should include:
 
 ## Migration source
 
-- Legacy source: [docs/operations/failover-and-recovery-runbook.md](../operations/failover-and-recovery-runbook.md)
+- Legacy source: [archive/docs/operations/failover-and-recovery-runbook.md](../../archive/docs/operations/failover-and-recovery-runbook.md)
 - Archive copy: [archive/docs/operations/failover-and-recovery-runbook.md](../../archive/docs/operations/failover-and-recovery-runbook.md)
 
