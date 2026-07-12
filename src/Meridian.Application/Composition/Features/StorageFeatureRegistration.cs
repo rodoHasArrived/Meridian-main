@@ -288,7 +288,18 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
-            services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
+
+            // Migrate-on-read upcaster for asset-specific-terms payloads, shared by the projection
+            // store (queryable schema_version column + read normalization).
+            services.AddSingleton<
+                Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
+                Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster>();
+
+            // Durable audit/versioning spine: the golden-record conflict store and the governed
+            // revision-lifecycle store are Postgres-backed so resolutions and approval state survive
+            // process recycles and are consistent across instances.
+            services.AddSingleton<ISecurityMasterConflictService, PostgresSecurityMasterConflictService>();
+            services.AddSingleton<ISecurityMasterRevisionStore, PostgresSecurityMasterRevisionStore>();
 
             // Clearwater-model extensions: pricing hierarchy, cash flow, entitlements, data quality
             services.AddSingleton<ISecurityMasterPricingStore, PostgresSecurityMasterPricingStore>();

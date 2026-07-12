@@ -82,7 +82,7 @@ internal static class DefaultAssetClassValidators
                 "Option",
                 [
                     FieldRule.RequiredGuid("underlyingId", "SM_OPTION_UNDERLYING_REQUIRED", "Option underlying is missing", "Options must reference an underlying SecurityId."),
-                    FieldRule.RequiredAllowedString("putCall", ["Put", "Call"], "SM_OPTION_PUT_CALL_INVALID", "Option put/call flag is invalid", "Option putCall must be Put or Call."),
+                    FieldRule.RequiredAllowedString("putCall", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.OptionPutCall), "SM_OPTION_PUT_CALL_INVALID", "Option put/call flag is invalid", "Option putCall must be Put or Call."),
                     FieldRule.RequiredPositive("strike", "SM_OPTION_STRIKE_INVALID", "Option strike is invalid", "Option strike must be greater than zero."),
                     FieldRule.RequiredDate("expiry", "SM_OPTION_EXPIRY_REQUIRED", "Option expiry is missing", "Options must include an expiry date."),
                     FieldRule.RequiredPositive("multiplier", "SM_OPTION_MULTIPLIER_INVALID", "Option multiplier is invalid", "Option multiplier must be greater than zero.")
@@ -259,7 +259,7 @@ internal static class DefaultAssetClassValidators
                 "Warrant",
                 [
                     FieldRule.RequiredGuid("underlyingId", "SM_WARRANT_UNDERLYING_REQUIRED", "Warrant underlying is missing", "Warrants must reference an underlying SecurityId."),
-                    FieldRule.RequiredAllowedString("warrantType", ["Put", "Call"], "SM_WARRANT_TYPE_INVALID", "Warrant type is invalid", "Warrant type must be Put or Call."),
+                    FieldRule.RequiredAllowedString("warrantType", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.WarrantType), "SM_WARRANT_TYPE_INVALID", "Warrant type is invalid", "Warrant type must be Put or Call."),
                     FieldRule.OptionalPositive("strike", "SM_WARRANT_STRIKE_INVALID", "Warrant strike is invalid", "Warrant strike must be greater than zero when supplied."),
                     FieldRule.OptionalPositive("multiplier", "SM_WARRANT_MULTIPLIER_INVALID", "Warrant multiplier is invalid", "Warrant multiplier must be greater than zero when supplied.")
                 ]),

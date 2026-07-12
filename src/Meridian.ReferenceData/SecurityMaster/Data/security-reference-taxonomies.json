@@ -1,0 +1,32 @@
+[
+  {
+    "key": "collateral-type",
+    "label": "Collateral type",
+    "description": "Structured-credit pool or collateral classification.",
+    "values": ["MBS", "CMBS", "ABS", "CLO", "CDO", "Other"]
+  },
+  {
+    "key": "property-type",
+    "label": "Property type",
+    "description": "Real-estate holding property classification.",
+    "values": ["Office", "Industrial", "Retail", "Multifamily", "Hospitality", "Land", "Other"]
+  },
+  {
+    "key": "reporting-cadence",
+    "label": "Reporting cadence",
+    "description": "Private-vehicle reporting frequency.",
+    "values": ["Monthly", "Quarterly", "SemiAnnual", "Annual", "AdHoc"]
+  },
+  {
+    "key": "option-put-call",
+    "label": "Option put/call",
+    "description": "Listed option contract right.",
+    "values": ["Put", "Call"]
+  },
+  {
+    "key": "warrant-type",
+    "label": "Warrant type",
+    "description": "Warrant contract right.",
+    "values": ["Put", "Call"]
+  }
+]

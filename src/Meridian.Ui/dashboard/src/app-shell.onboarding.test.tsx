@@ -115,15 +115,25 @@ describe("onboarding tour rendering", () => {
   }
 
   it("auto-completes a step when its route is visited", async () => {
+    const user = userEvent.setup();
     render(<Harness initial="/data/quotes" />);
-    // The coach-mark shows overall progress; visiting /data/quotes completes "quote".
-    await waitFor(() => expect(screen.getByText(`1 / ${ONBOARDING_TOUR_STEPS.length} steps complete`)).toBeInTheDocument());
-    expect(readOnboardingState().completedStepIds).toContain("quote");
+    await waitFor(() => expect(readOnboardingState().completedStepIds).toContain("quote"));
+    // Progress is visible once the operator opens the coach mark from the ring.
+    await user.click(screen.getByRole("button", { name: /Getting started/ }));
+    expect(screen.getByText(`1 / ${ONBOARDING_TOUR_STEPS.length} steps complete`)).toBeInTheDocument();
+  });
+
+  it("stays docked to the header ring until the operator opens it", () => {
+    render(<Harness initial="/somewhere" />);
+    // The coach mark floats over route content, so it must never auto-open.
+    expect(screen.queryByRole("region", { name: "Getting started tour" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Getting started/ })).toBeInTheDocument();
   });
 
   it("dismisses permanently via Skip tour", async () => {
     const user = userEvent.setup();
     render(<Harness initial="/somewhere" />);
+    await user.click(screen.getByRole("button", { name: /Getting started/ }));
     expect(screen.getByRole("region", { name: "Getting started tour" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Skip getting-started tour" }));
     expect(screen.queryByRole("region", { name: "Getting started tour" })).not.toBeInTheDocument();
@@ -133,10 +143,11 @@ describe("onboarding tour rendering", () => {
   it("collapses to the header ring without dismissing", async () => {
     const user = userEvent.setup();
     render(<Harness initial="/somewhere" />);
+    const ring = screen.getByRole("button", { name: /Getting started/ });
+    await user.click(ring);
     await user.click(screen.getByRole("button", { name: "Collapse getting-started tour" }));
     expect(screen.queryByRole("region", { name: "Getting started tour" })).not.toBeInTheDocument();
     // Ring remains and can re-open the card.
-    const ring = screen.getByRole("button", { name: /Getting started/ });
     await user.click(ring);
     expect(screen.getByRole("region", { name: "Getting started tour" })).toBeInTheDocument();
   });

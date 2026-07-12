@@ -3313,6 +3313,8 @@ Meridian-main
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterClearwaterServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
+│   │   │   ├── PostgresSecurityMasterConflictService.cs
+│   │   │   ├── PostgresSecurityMasterRevisionStore.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
@@ -3320,6 +3322,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
+│   │   │   ├── SecurityMasterConflictDetection.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
 │   │   │   ├── SecurityMasterCostBasisAdjustmentService.cs
@@ -3708,6 +3711,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetProfiles.cs
+│   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
@@ -4840,8 +4844,11 @@ Meridian-main
 │   │   └── ScriptContext.cs
 │   ├── Meridian.ReferenceData
 │   │   ├── SecurityMaster
+│   │   │   ├── Data
+│   │   │   │   └── security-reference-taxonomies.json
 │   │   │   ├── SecurityAssetProfileCatalog.cs
-│   │   │   └── SecurityKindMapping.cs
+│   │   │   ├── SecurityKindMapping.cs
+│   │   │   └── SecurityReferenceTaxonomyCatalog.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.ReferenceData.csproj
 │   │   └── README.md
@@ -5053,12 +5060,14 @@ Meridian-main
 │   │   │   │   ├── 015_security_master_certificate_of_deposit_projection.sql
 │   │   │   │   ├── 016_security_master_normalized_identifier_lookup.sql
 │   │   │   │   ├── 017_security_master_bond_clearwater_lifecycle_fields.sql
-│   │   │   │   ├── 017_security_master_pricing_hierarchy.sql
 │   │   │   │   ├── 018_security_master_cashflow_sources.sql
 │   │   │   │   ├── 019_data_vendor_entitlements.sql
 │   │   │   │   ├── 020_data_vendor_entitlement_scope_metadata.sql
-│   │   │   │   ├── 020_security_master_quality_reports.sql
-│   │   │   │   └── 021_security_master_corp_action_lifecycle.sql
+│   │   │   │   ├── 021_security_master_corp_action_lifecycle.sql
+│   │   │   │   ├── 022_security_master_pricing_hierarchy.sql
+│   │   │   │   ├── 023_security_master_quality_reports.sql
+│   │   │   │   ├── 024_security_master_schema_version_column.sql
+│   │   │   │   └── 025_security_master_audit_stores.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -5355,6 +5364,7 @@ Meridian-main
 │   │   │   │   │   │   ├── coverage-passport-drill-in.tsx
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.test.ts
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.ts
+│   │   │   │   │   │   ├── decision-brief-pill.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
@@ -5404,6 +5414,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
+│   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
@@ -5730,6 +5741,8 @@ Meridian-main
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
 │   │   │   │   │   ├── daily-control-tower-screen.test.tsx
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
+│   │   │   │   │   ├── data-screen.analytics-status.test.tsx
+│   │   │   │   │   ├── data-screen.analytics-status.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
 │   │   │   │   │   ├── data-screen.cell-actions.test.tsx
@@ -7877,8 +7890,11 @@ Meridian-main
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
+│   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
+│   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
+│   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
@@ -7907,9 +7923,11 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryServiceProfileSearchTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
+│   │   │   ├── SecurityMasterSchemaVersionsTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
+│   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   └── SecurityValidationServiceTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs

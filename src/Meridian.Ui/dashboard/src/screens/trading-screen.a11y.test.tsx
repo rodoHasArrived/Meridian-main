@@ -118,8 +118,13 @@ const data: TradingWorkspaceResponse = {
 };
 
 describe("TradingScreen accessibility", () => {
-  it("has no basic accessibility violations in the execution cockpit", async () => {
-    const { container } = renderWithRouter(<TradingScreen data={data} />, { initialEntries: ["/trading"] });
+  it.each([
+    ["overview", "/trading"],
+    ["orders", "/trading/orders"],
+    ["positions", "/trading/positions"],
+    ["risk", "/trading/risk"]
+  ])("has no basic accessibility violations in the %s view", async (_view, route) => {
+    const { container } = renderWithRouter(<TradingScreen data={data} />, { initialEntries: [route] });
     await waitForAsyncEffects();
 
     const results = await axe(container);
