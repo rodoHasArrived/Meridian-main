@@ -570,9 +570,9 @@
       ],
       "waitForTexts": [
         "Report packs, governed exports",
-        "Reporting Hub",
+        "Reporting workbench",
         "Daily reporting cockpit",
-        "Reports by family",
+        "Report family health",
         "Open focused reporting work"
       ]
     },
@@ -694,7 +694,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Reporting Hub",
+        "Daily reporting cockpit",
         "Run a report",
         "Pick a template"
       ]

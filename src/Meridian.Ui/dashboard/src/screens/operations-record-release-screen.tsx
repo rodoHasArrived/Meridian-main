@@ -165,7 +165,10 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
 
 function OperationsRecordStatusBand({ vm }: { vm: OperationsRecordReleaseViewModel }) {
   return (
-    <div className={cn("grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]", readinessToneToPanelClass(vm.tone))}>
+    // The metrics track is clamped because an auto track would size to the
+    // metric cards' max-content (their longest unwrapped delta line), which
+    // can exceed the band width and collapse the minmax(0,1fr) title column.
+    <div className={cn("grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,33rem)]", readinessToneToPanelClass(vm.tone))}>
       <div className="min-w-0 px-1 py-1">
         <div className="eyebrow-label">{vm.eyebrow}</div>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">

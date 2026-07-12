@@ -1,6 +1,6 @@
 {
   "total_files": 576,
-  "total_lines": 95995,
+  "total_lines": 96003,
   "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2895,7 +2895,7 @@
     },
     {
       "path": "docs/screenshots/web-audit.md",
-      "line_count": 141,
+      "line_count": 149,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
