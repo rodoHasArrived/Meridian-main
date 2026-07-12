@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-25T02:00:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-07-12T00:22:01Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
 - Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | Desktop and UI Workflows | `635d1167c` (2026-06-24T16:15:05Z) | 13 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/report-writer-grid-diff-view.tsx` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.test.ts` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.ts` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/report-writer-chart-preview.tsx` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.test.ts` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.ts` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-hub.test.ts` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-hub.ts` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-periods.test.ts` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-periods.ts` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `e4921294b` (2026-06-24T15:08:16Z) | 57 |
-| `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs` | Host and Composition | `e4921294b` (2026-06-24T15:08:16Z) | 8 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | `086a1277b` (2026-07-12T00:15:29+00:00) | 1 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs` | Unmapped | `086a1277b` (2026-07-12T00:15:29+00:00) | 1 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs` | Unmapped | `086a1277b` (2026-07-12T00:15:29+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `d4e50e013` (2026-07-07T20:26:20+00:00) | 22 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs` | Desktop and UI Workflows | `d4e50e013` (2026-07-07T20:26:20+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs` | Desktop and UI Workflows | `22a88178a` (2026-07-07T19:35:43+00:00) | 1 |
+| `src/Meridian.Storage/Services/LifecyclePolicyEngine.cs` | Providers and Storage | `f40ef04fe` (2026-07-07T19:25:14+00:00) | 3 |
+| `src/Meridian.Storage/Services/TierMigrationService.cs` | Providers and Storage | `8e8991e63` (2026-07-07T19:20:40+00:00) | 9 |
+| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | `8e8991e63` (2026-07-07T19:20:40+00:00) | 5 |
+| `src/Meridian.Storage/Archival/WriteAheadLog.cs` | Providers and Storage | `8e8991e63` (2026-07-07T19:20:40+00:00) | 3 |
+| `src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs` | Providers and Storage | `e16ec867d` (2026-07-07T17:27:49+00:00) | 1 |
+| `src/Meridian.Storage/Sinks/ParquetStorageSink.cs` | Providers and Storage | `e16ec867d` (2026-07-07T17:27:49+00:00) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs` | Desktop and UI Workflows | `592c0174f` (2026-07-07T17:23:44+00:00) | 1 |
+| `src/Meridian.Application/Backfill/AutoGapRemediationService.cs` | Host and Composition | `3cdc4b287` (2026-07-07T17:18:10+00:00) | 9 |
+| `src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs` | Providers and Storage | `e2c7d1d26` (2026-07-07T16:00:34+00:00) | 4 |
 
