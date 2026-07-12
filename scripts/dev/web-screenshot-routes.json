@@ -21,7 +21,7 @@
         "Trading Controls",
         "Ops Desk",
         "Net P&L",
-        "AAPL"
+        "Paper cockpit readiness"
       ]
     },
     {
@@ -46,13 +46,13 @@
       "name": "web-trading-workspace",
       "path": "/trading",
       "docLabel": "Trading \u2014 Orders blotter",
-      "waitForText": "Trading lane",
+      "waitForText": "Trading overview",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Paper cockpit readiness"
       ]
     },
     {
@@ -60,13 +60,14 @@
       "name": "web-trading-orders",
       "path": "/trading/orders",
       "docLabel": "Trading \u2014 Orders",
-      "waitForText": "Trading lane",
+      "waitForText": "Orders blotter",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Open orders",
+        "Recent fills"
       ]
     },
     {
@@ -74,12 +75,13 @@
       "name": "web-trading-positions",
       "path": "/trading/positions",
       "docLabel": "Trading \u2014 Position book",
-      "waitForText": "Trading lane",
+      "waitForText": "Position book",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
+        "Live positions",
         "AAPL"
       ]
     },
@@ -88,13 +90,13 @@
       "name": "web-trading-risk",
       "path": "/trading/risk",
       "docLabel": "Trading \u2014 Risk guardrails",
-      "waitForText": "Trading lane",
+      "waitForText": "Risk guardrails",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Paper risk cockpit"
       ]
     },
     {

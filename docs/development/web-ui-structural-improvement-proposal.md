@@ -1,8 +1,18 @@
 # Web UI Structural Improvement Proposal
 
-**Status:** draft (proposal — no code changes shipped with this document)
+**Status:** in delivery (Phase A shipped app-wide; Phases B–C shipped for Trading)
 **Owner:** core-team
 **Reviewed:** 2026-07-12
+
+> **Delivery status (2026-07-12).** Phase A landed app-wide: the decision brief renders as a
+> masthead status pill (`DecisionBriefPill`) instead of a per-route banner, the onboarding coach
+> mark docks to the masthead ring and never auto-opens, and `StatStrip` replaces the four-card KPI
+> band on migrated routes. Phases B–C landed for Trading as the template: `/trading/orders`,
+> `/trading/positions`, and `/trading/risk` render focused master–detail views with a sticky
+> detail rail, `/trading` renders the acceptance/session overview, and the in-page tab strip
+> navigates the same sub-routes as the sidebar. Route capture heights fell from a uniform
+> 4,419 px to 1,100–1,591 px. Remaining: Phases B–C for Data, Phase D (Settings/Accounting),
+> Phase E (token polish), and rollout of `StatStrip`/route-scoping to the other workspaces.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,

@@ -338,7 +338,7 @@ describe("TradingScreen", () => {
     expect(within(loading).getByLabelText("Trading loading dependencies")).toHaveTextContent("SnapshotsPending");
   });
 
-  it("renders cockpit tables and wiring state", async () => {
+  it("renders the overview posture with the workflow strip and no blotters", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
     const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
@@ -347,26 +347,27 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByText("Live positions")).toBeInTheDocument();
+    // Route-scoped views: blotters live on their focused routes, not the overview.
+    expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
   });
 
-  it("links blotter dense-table rows to detail panels with keyboard selection", async () => {
+  it("renders the position book with wiring state on the positions route", async () => {
+    await renderTradingScreen(data, "/trading/positions");
+    expect(screen.getByText("Live positions")).toBeInTheDocument();
+    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
+  });
+
+  it("links position rows to the detail rail with keyboard selection", async () => {
     const user = userEvent.setup();
     await renderTradingScreen({
       ...data,
       positions: [
         ...data.positions,
         { symbol: "MSFT", side: "Short", quantity: "40", averagePrice: "414.20", markPrice: "410.00", dayPnl: "+$60", unrealizedPnl: "+$168", exposure: "$16,400" }
-      ],
-      openOrders: [
-        ...data.openOrders,
-        { orderId: "PO-2", symbol: "AAPL", side: "Sell", type: "Market", quantity: "10", limitPrice: "", status: "Pending Routing", submittedAt: "09:44:00 ET" }
-      ],
-      fills: [
-        ...data.fills,
-        { fillId: "FL-2", orderId: "PO-2", symbol: "AAPL", side: "Sell", quantity: "10", price: "185.40", venue: "IEX", timestamp: "09:45:11 ET" }
       ]
-    });
+    }, "/trading/positions");
 
     const msftPosition = screen.getByRole("row", { name: /inspect msft short position/i });
     expect(msftPosition).toHaveAttribute("aria-controls", "trading-position-detail");
@@ -378,6 +379,21 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(msftPosition).toHaveAttribute("aria-selected", "true"));
     expect(msftPosition).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: /position detail for msft/i })).toHaveAttribute("id", "trading-position-detail");
+  });
+
+  it("links order and fill rows to the detail rail with keyboard selection", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen({
+      ...data,
+      openOrders: [
+        ...data.openOrders,
+        { orderId: "PO-2", symbol: "AAPL", side: "Sell", type: "Market", quantity: "10", limitPrice: "", status: "Pending Routing", submittedAt: "09:44:00 ET" }
+      ],
+      fills: [
+        ...data.fills,
+        { fillId: "FL-2", orderId: "PO-2", symbol: "AAPL", side: "Sell", quantity: "10", price: "185.40", venue: "IEX", timestamp: "09:45:11 ET" }
+      ]
+    }, "/trading/orders");
 
     const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
     expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
@@ -436,7 +452,7 @@ describe("TradingScreen", () => {
   });
 
   it("fetches and renders execution controls snapshot", async () => {
-    await renderTradingScreen();
+    await renderTradingScreen(data, "/trading/risk");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
     expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Breaker Closed/i).length).toBeGreaterThan(0);
@@ -581,7 +597,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen();
+    await renderTradingScreen(data, "/trading/orders");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -602,7 +618,7 @@ describe("TradingScreen", () => {
   it("passes valid operating fund account scope when submitting an order", async () => {
     const user = userEvent.setup();
     const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
-    await renderTradingScreen(data, "/trading", fundAccountId);
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
@@ -620,7 +636,7 @@ describe("TradingScreen", () => {
   });
 
   it("renders VM-owned disabled reasons for blocked trading commands", async () => {
-    await renderTradingScreen({ ...data, openOrders: [] });
+    await renderTradingScreen({ ...data, openOrders: [] }, "/trading/orders");
 
     const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
     expect(cancelAll).toBeDisabled();
@@ -629,7 +645,7 @@ describe("TradingScreen", () => {
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen();
+    await renderTradingScreen(data, "/trading/orders");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
@@ -647,7 +663,7 @@ describe("TradingScreen", () => {
 
   it("renders the order ticket through shared labelled controls", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen();
+    await renderTradingScreen(data, "/trading/orders");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
 
@@ -667,7 +683,7 @@ describe("TradingScreen", () => {
 
   it("renders the order impact preview with notional, position effect, and warnings", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen();
+    await renderTradingScreen(data, "/trading/orders");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     const preview = await screen.findByTestId("order-preview");
@@ -841,7 +857,7 @@ describe("TradingScreen", () => {
 
   it("opens confirmation dialog when Cancel order button is clicked", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen();
+    await renderTradingScreen(data, "/trading/orders");
     await user.click(screen.getByTitle("Cancel order"));
     const dialog = screen.getByRole("dialog", { name: /cancel order PO-1/i });
     expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");

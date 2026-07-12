@@ -33,6 +33,7 @@ import {
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
+import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -480,6 +481,7 @@ function AppShell() {
         session={session}
         actions={(
           <>
+            <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
             <OnboardingHeaderProgress controller={onboardingTour} />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
