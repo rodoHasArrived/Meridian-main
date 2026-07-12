@@ -103,4 +103,4 @@ messages:
       - tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs
       - tests/Meridian.Wpf.Tests/ViewModels/StrategyRunLedgerViewModelTests.cs
       - docs/architecture/ledger-architecture.md
-      - docs/plans/ledger.md
+      - archive/docs/plans/ledger.md

@@ -6,7 +6,7 @@
       "id": 1,
       "scenario": "A",
       "description": "Scenario A — refactor with existing doc update",
-      "prompt": "Use $meridian-implementation-assurance to certify this EventPipeline refactor is complete.\n\nThe change moves bounded-channel creation to EventPipelinePolicy.Default.CreateChannel<T>() (ADR-013 compliance). The existing ADR-013 doc at docs/adr/013-bounded-channel-policy.md covers the pattern and needs a note that direct Channel.CreateBounded calls are now disallowed outside the policy helper.\n\nProvide: validation commands, doc update evidence, rubric scores.",
+      "prompt": "Use $meridian-implementation-assurance to certify this EventPipeline refactor is complete.\n\nThe change moves bounded-channel creation to EventPipelinePolicy.Default.CreateChannel<T>() (ADR-013 compliance). The existing ADR-013 doc at archive/docs/adr/013-bounded-channel-policy.md covers the pattern and needs a note that direct Channel.CreateBounded calls are now disallowed outside the policy helper.\n\nProvide: validation commands, doc update evidence, rubric scores.",
       "assertions": [
         "Must run or cite dotnet build and/or dotnet test targeting the touched project",
         "Must cite the existing ADR-013 doc and confirm it was updated in-place",

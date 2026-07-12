@@ -960,11 +960,11 @@ public sealed class MockExampleClient : IMarketDataClient
 ## Related Documentation
 
 - **Architecture and Design:**
-  - [ADR-001: Provider Abstraction](../adr/001-provider-abstraction.md) — Interface contracts for data providers
-  - [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md) — CancellationToken, IAsyncEnumerable
-  - [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
-  - [ADR-010: HttpClient Factory](../adr/010-httpclient-factory.md) — HTTP client lifecycle management
-  - [ADR-013: Bounded Channel Policy](../adr/013-bounded-channel-policy.md) — Consistent backpressure presets
+  - [ADR-001: Provider Abstraction](../../archive/docs/adr/001-provider-abstraction.md) — Interface contracts for data providers
+  - [ADR-004: Async Streaming Patterns](../../archive/docs/adr/004-async-streaming-patterns.md) — CancellationToken, IAsyncEnumerable
+  - [ADR-005: Attribute-Based Discovery](../../archive/docs/adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
+  - [ADR-010: HttpClient Factory](../../archive/docs/adr/010-httpclient-factory.md) — HTTP client lifecycle management
+  - [ADR-013: Bounded Channel Policy](../../archive/docs/adr/013-bounded-channel-policy.md) — Consistent backpressure presets
   - [Provider Capability Matrix](../reference/provider-capability-matrix.md) — Feature comparison matrix and provider catalog
 
 - **Implementation Guides:**
@@ -974,7 +974,7 @@ public sealed class MockExampleClient : IMarketDataClient
 
 - **Operations and Testing:**
   - [Provider Backfill Operations](../operators/provider-backfill-operations.md) — Historical data procedures
-  - [Performance Tuning](../operations/performance-tuning.md) — Optimization strategies
+  - [Performance Tuning](../../archive/docs/operations/performance-tuning.md) — Optimization strategies
 - [Provider onboarding guides](../operators/README.md) — Interactive Brokers, Alpaca, and related operator procedures
 
 - **AI Guides:**

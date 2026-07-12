@@ -6,9 +6,9 @@ This document describes the provider management architecture used by Meridian. I
 
 See also:
 
-- [ADR-001: Provider Abstraction](../adr/001-provider-abstraction.md)
-- [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md)
-- [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md)
+- [ADR-001: Provider Abstraction](../../archive/docs/adr/001-provider-abstraction.md)
+- [ADR-004: Async Streaming Patterns](../../archive/docs/adr/004-async-streaming-patterns.md)
+- [ADR-005: Attribute-Based Discovery](../../archive/docs/adr/005-attribute-based-discovery.md)
 - [Provider Implementation Guide](../development/provider-implementation.md)
 - [Provider Capability Matrix](../reference/provider-capability-matrix.md)
 - [Provider Backfill Operations](../operators/provider-backfill-operations.md)

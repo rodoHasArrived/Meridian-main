@@ -571,7 +571,7 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 - [Architecture Overview](../architecture/overview.md)
 - [C4 Diagrams Reference](../architecture/c4-diagrams.md)
-- [Production Status](../status/production-status.md)
+- [Production Status](../../archive/docs/status/production-status.md)
 - [Provider Management](../architecture/provider-management.md)
 
 ---
