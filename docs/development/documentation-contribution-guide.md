@@ -414,7 +414,7 @@ See `src/Meridian.Core/Config/AppConfig.cs` for implementation.
 See [ROADMAP Phase 6](../roadmap/README.md).
 
 # Reference external resources
-Based on [ADR-001](../adr/001-provider-abstraction.md).
+Based on [ADR-001](../../archive/docs/adr/001-provider-abstraction.md).
 ```
 
 ---

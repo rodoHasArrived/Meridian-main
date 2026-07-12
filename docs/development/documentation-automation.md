@@ -453,7 +453,6 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/generated/repository-structure.md` | generate-structure-docs.py | Repository file tree |
 | `docs/generated/provider-registry.md` | generate-structure-docs.py | Data provider catalog |
 | `docs/generated/workflows-overview.md` | generate-structure-docs.py | CI/CD workflow summary |
-| `docs/generated/adr-index.md` | workflow inline | ADR index table |
 | `docs/generated/configuration-schema.md` | workflow inline | Config options from appsettings |
 | `docs/generated/project-context.md` | DocGenerator (C#) | Key interfaces and services |
 | `docs/status/TODO.md` | scan-todos.py | TODO tracking |

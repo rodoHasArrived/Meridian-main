@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T00:22:01Z",
+  "generatedAt": "2026-07-12T02:50:18Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -190,7 +190,7 @@
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
         "docs/ai/navigation/README.md",
-        "docs/plans/trading-workstation-migration-blueprint.md"
+        "docs/development/wpf-web-ui-alignment-plan.md"
       ],
       "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
@@ -1095,7 +1095,7 @@
         "Meridian.Workflow"
       ],
       "relatedDocs": [
-        "docs/plans/trading-workstation-migration-blueprint.md"
+        "docs/development/wpf-web-ui-alignment-plan.md"
       ]
     },
     {
@@ -1339,8 +1339,8 @@
       ]
     },
     {
-      "path": "docs/plans/trading-workstation-migration-blueprint.md",
-      "title": "Trading workstation migration blueprint",
+      "path": "docs/development/wpf-web-ui-alignment-plan.md",
+      "title": "WPF web-UI alignment plan",
       "area": "ui",
       "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
       "keywords": [
@@ -1606,7 +1606,7 @@
         }
       ],
       "authoritativeDocs": [
-        "docs/plans/trading-workstation-migration-blueprint.md",
+        "docs/development/wpf-web-ui-alignment-plan.md",
         "docs/ai/ai-known-errors.md"
       ],
       "recommendedSkill": "meridian-blueprint",
@@ -2186,18 +2186,26 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-12T00:56:51+00:00",
+      "lastCommit": "80cd751e",
+      "lastSummary": "Fix inherited settings-screen.tsx breakage from main's WIP metric-tone refactor",
+      "touches": 18
+    },
+    {
       "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs",
       "subsystem": "Unmapped",
       "lastModified": "2026-07-12T00:15:29+00:00",
-      "lastCommit": "086a1277b",
+      "lastCommit": "086a1277",
       "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
-      "touches": 1
+      "touches": 5
     },
     {
       "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs",
       "subsystem": "Unmapped",
       "lastModified": "2026-07-12T00:15:29+00:00",
-      "lastCommit": "086a1277b",
+      "lastCommit": "086a1277",
       "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
       "touches": 1
     },
@@ -2205,305 +2213,297 @@
       "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs",
       "subsystem": "Unmapped",
       "lastModified": "2026-07-12T00:15:29+00:00",
-      "lastCommit": "086a1277b",
+      "lastCommit": "086a1277",
       "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T20:26:20+00:00",
-      "lastCommit": "d4e50e013",
-      "lastSummary": "Extract the workstation trading payload into a partial",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T20:26:20+00:00",
-      "lastCommit": "d4e50e013",
-      "lastSummary": "Extract the workstation trading payload into a partial",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T19:35:43+00:00",
-      "lastCommit": "22a88178a",
-      "lastSummary": "Extract the workstation session payload into a partial",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Services/LifecyclePolicyEngine.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T19:25:14+00:00",
-      "lastCommit": "f40ef04fe",
-      "lastSummary": "Use platform-appropriate case sensitivity for managed-root delete gate",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Services/TierMigrationService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T19:20:40+00:00",
-      "lastCommit": "8e8991e63",
-      "lastSummary": "Do not observe caller cancellation after an operation has committed",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/Archival/AtomicFileWriter.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T19:20:40+00:00",
-      "lastCommit": "8e8991e63",
-      "lastSummary": "Do not observe caller cancellation after an operation has committed",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Storage/Archival/WriteAheadLog.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T19:20:40+00:00",
-      "lastCommit": "8e8991e63",
-      "lastSummary": "Do not observe caller cancellation after an operation has committed",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T17:27:49+00:00",
-      "lastCommit": "e16ec867d",
-      "lastSummary": "Harden atomic-write and fsync durability in storage paths",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Sinks/ParquetStorageSink.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T17:27:49+00:00",
-      "lastCommit": "e16ec867d",
-      "lastSummary": "Harden atomic-write and fsync durability in storage paths",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T17:23:44+00:00",
-      "lastCommit": "592c0174f",
-      "lastSummary": "Extract reconciliation calibration sub-helpers into a partial",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Backfill/AutoGapRemediationService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T17:18:10+00:00",
-      "lastCommit": "3cdc4b287",
-      "lastSummary": "fix: honor shutdown drain timeout before disposing remediation resources",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T16:00:34+00:00",
-      "lastCommit": "e2c7d1d26",
-      "lastSummary": "fix: regenerate config schema for PipelineRuntimeConfig; harden shutdown race",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Core/Config/AppConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T07:26:40+00:00",
-      "lastCommit": "dd411f323",
-      "lastSummary": "refactor: quality hardening of provider factory, gap remediation, and pipeline config",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T07:26:40+00:00",
-      "lastCommit": "dd411f323",
-      "lastSummary": "refactor: quality hardening of provider factory, gap remediation, and pipeline config",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/DirectLendingServicerStatementService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T07:26:40+00:00",
-      "lastCommit": "dd411f323",
-      "lastSummary": "refactor: quality hardening of provider factory, gap remediation, and pipeline config",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T07:26:40+00:00",
-      "lastCommit": "dd411f323",
-      "lastSummary": "refactor: quality hardening of provider factory, gap remediation, and pipeline config",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CollateralExposure.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T07:21:03+00:00",
-      "lastCommit": "abc0a4a16",
-      "lastSummary": "Extract the Collateral Exposure snapshot into a partial",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T06:47:06+00:00",
-      "lastCommit": "1b86d0cbc",
-      "lastSummary": "Extract the Operator Inbox builders into a partial",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-07-07T05:21:16+00:00",
-      "lastCommit": "af8a80dc4",
-      "lastSummary": "Guard statement break re-keys by upstream source identity",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Commands/EtlCommands.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T05:09:20+00:00",
-      "lastCommit": "54218019c",
-      "lastSummary": "Restore Triggers on CLI command classes broken by the semantic merge",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Application/Commands/ConfigCommands.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T05:09:20+00:00",
-      "lastCommit": "54218019c",
-      "lastSummary": "Restore Triggers on CLI command classes broken by the semantic merge",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Commands/DiagnosticsCommands.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T05:09:20+00:00",
-      "lastCommit": "54218019c",
-      "lastSummary": "Restore Triggers on CLI command classes broken by the semantic merge",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Commands/PackageCommands.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T05:09:20+00:00",
-      "lastCommit": "54218019c",
-      "lastSummary": "Restore Triggers on CLI command classes broken by the semantic merge",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T05:05:18+00:00",
-      "lastCommit": "026cfc85f",
-      "lastSummary": "Point the run-status live-status test at the run-status task mode",
-      "touches": 17
-    },
-    {
       "path": "src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-07T05:02:25+00:00",
-      "lastCommit": "ef7a8abcd",
-      "lastSummary": "Fix pre-existing Sftp build break and preserve migrated audit trail",
-      "touches": 3
+      "lastModified": "2026-07-11T17:19:54-07:00",
+      "lastCommit": "29839b47",
+      "lastSummary": "wip: preserve uncommitted ETL export post-processing fix from worktree consolidation",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T04:55:36+00:00",
-      "lastCommit": "86221b6bf",
-      "lastSummary": "Migrate statement break-queue cases to the new fingerprint BreakId",
-      "touches": 3
+      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-07-11T17:19:54-07:00",
+      "lastCommit": "29839b47",
+      "lastSummary": "wip: preserve uncommitted ETL export post-processing fix from worktree consolidation",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-07-07T04:55:36+00:00",
-      "lastCommit": "86221b6bf",
-      "lastSummary": "Migrate statement break-queue cases to the new fingerprint BreakId",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-07-08T19:44:56+00:00",
+      "lastCommit": "3d60c866",
+      "lastSummary": "Address review: fix amortization rounding sign-flip and day-count details",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-07-08T19:44:56+00:00",
+      "lastCommit": "3d60c866",
+      "lastSummary": "Address review: fix amortization rounding sign-flip and day-count details",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ledger/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLot.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotReliefInput.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-07-08T19:33:38+00:00",
+      "lastCommit": "6d874a95",
+      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 27
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 24
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-08T02:12:54-07:00",
+      "lastCommit": "e7796095",
+      "lastSummary": "sfsf",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.route-state.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.workstreams.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T23:22:05-07:00",
+      "lastCommit": "603ecaef",
+      "lastSummary": "Split data workstation workstreams",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 11
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 10
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 9
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-07-07T04:42:48+00:00",
-      "lastCommit": "d343e4b36",
-      "lastSummary": "Repair provider-integration services broken by a semantic merge conflict",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-07-07T22:35:41-07:00",
+      "lastCommit": "27f0ae10",
+      "lastSummary": "Add browser workstation object shell",
+      "touches": 6
     }
   ],
   "recentChangesWindowDays": 14,

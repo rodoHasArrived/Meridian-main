@@ -85,7 +85,7 @@ def discover_projects(root: Path) -> list[ProjectInfo]:
                     frameworks.extend(item.strip() for item in node.text.split(";") if item.strip())
         references = tuple(
             sorted(
-                rel((project_path.parent / node.attrib["Include"]).resolve(), root)
+                rel((project_path.parent / node.attrib["Include"].replace("\\", "/")).resolve(), root)
                 for node in xml_root.findall(".//ProjectReference")
                 if "Include" in node.attrib
             )

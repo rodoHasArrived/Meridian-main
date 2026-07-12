@@ -6,7 +6,7 @@
 
 Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active, co-equal operator UI lane alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
-The desktop lane's immediate priority is closing web-UI parity gaps for screens that shipped browser-first while WPF was deferred (v0.24→v0.25). The prioritized gap list and closure sequence live in [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md). For historical Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md). Any desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation, so neither client forks product state.
+The desktop lane's immediate priority is closing web-UI parity gaps for screens that shipped browser-first while WPF was deferred (v0.24→v0.25). The prioritized gap list and closure sequence live in [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md). For historical Wave two-to-four acceptance lanes, use [`archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../../archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md). Any desktop change must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation, so neither client forks product state.
 
 ## Architecture
 
@@ -572,7 +572,7 @@ make desktop-test
 - [`wpf-web-ui-alignment-plan.md`](./wpf-web-ui-alignment-plan.md) — WPF ↔ web-UI parity matrix and closure sequence (`W8-WPF-PARITY-001`)
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
-- [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules
+- [`archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../../archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules
 - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) — Historical platform improvement assessment; use current engineering/operator docs and source evidence for active implementation guidance
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
 - [`docs/roadmap/README.md`](../roadmap/README.md) — Desktop items in the project roadmap

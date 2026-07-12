@@ -101,5 +101,5 @@ Preserve evidence lineage and avoid breaking promotion compatibility across brow
 
 ## Related docs
 
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`
 - `docs/source/generated/source-roadmap-traceability.md`
