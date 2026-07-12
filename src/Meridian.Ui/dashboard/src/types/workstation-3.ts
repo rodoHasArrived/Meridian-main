@@ -1428,7 +1428,7 @@ export interface AssetOperationsDetail {
   projectionLineages?: ProjectionLineage[];
 }
 
-export interface AssetOperationsProjection extends AssetOperationsDetail {}
+export type AssetOperationsProjection = AssetOperationsDetail;
 
 
 export interface StatementRunSummary {
