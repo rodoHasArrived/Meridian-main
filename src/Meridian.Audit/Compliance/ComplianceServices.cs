@@ -57,7 +57,21 @@ public sealed class ImmutableAuditLogService
 {
     private readonly ConcurrentQueue<AuditEvent> _events = new();
 
+    // The append sequence (read tail hash → compute hash → enqueue) must be atomic.
+    // ConcurrentQueue makes each individual operation thread-safe, but two concurrent
+    // callers would otherwise read the same predecessor hash and chain off it, silently
+    // forking the tamper-evident hash chain and breaking VerifyIntegrity.
+    private readonly Lock _appendLock = new();
+
     public AuditEvent Append(ActorContext actor, ComplianceActionRequest request)
+    {
+        lock (_appendLock)
+        {
+            return AppendCore(actor, request);
+        }
+    }
+
+    private AuditEvent AppendCore(ActorContext actor, ComplianceActionRequest request)
     {
         var previousHash = _events.LastOrDefault()?.Hash;
         var pending = new AuditEvent(

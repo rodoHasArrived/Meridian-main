@@ -102,6 +102,24 @@ public sealed class ImmutableAuditLogServiceTests
         audit.VerifyIntegrity().Should().BeTrue();
     }
 
+    [Fact]
+    public async Task Append_UnderConcurrentWriters_PreservesIntactHashChain()
+    {
+        var audit = new ImmutableAuditLogService();
+        var actor = CreateActor();
+        const int writers = 100;
+
+        // Concurrent appends must be serialized: if two callers read the same predecessor
+        // hash and both chain off it, the tamper-evident chain forks and VerifyIntegrity
+        // silently fails from that point on.
+        await Task.WhenAll(
+            Enumerable.Range(0, writers).Select(i =>
+                Task.Run(() => audit.Append(actor, CreateRequest($"payment-{i}")))));
+
+        audit.GetAll().Should().HaveCount(writers, "every concurrent append must be recorded once");
+        audit.VerifyIntegrity().Should().BeTrue("concurrent appends must not fork the hash chain");
+    }
+
     private static ActorContext CreateActor() => new(
         ActorId: "treasury-ops-1",
         Roles: ["TreasuryOperator"],
