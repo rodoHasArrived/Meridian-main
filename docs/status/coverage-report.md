@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**2749 / 7402** items documented (**37.1%**) &mdash; Grade: **F**
+**2752 / 7402** items documented (**37.2%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 37.1%
+[=======-------------] 37.2%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2629 | 6976 | 37.7% | F |
+| Public Classes / Interfaces | 2632 | 6976 | 37.7% | F |
 | API Endpoints | 106 | 279 | 38.0% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4347 undocumented)
+### Public Classes / Interfaces (4344 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
 | `NullDataVendorEntitlementService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:53` |
 | `NullSecurityMasterDataQualityService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:75` |
-| ... and 4297 more | |
+| ... and 4294 more | |
 
 ### API Endpoints (173 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4347 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4344 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 173 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

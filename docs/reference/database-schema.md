@@ -174,8 +174,12 @@ erDiagram
     }
 ```
 
-Asset-class reference projections are one row per security (`security_id` PK, FK to `securities`,
-cascade delete, `version` column), except the option cluster which keys on `contract_symbol`:
+Asset-class reference projections are one row per security (`security_id` PK plus a `version`
+column), except the option cluster which keys on `contract_symbol`. The earlier projections
+(`005`–`009`: bond, equity, future, fxspot) declare FK constraints to `securities` with cascade
+delete; the later ones (`010`–`015`: swap, commodity, crypto, deposit, money market fund,
+certificate of deposit) share the same `security_id` key but declare no FK constraint — the 1:1
+relationships below are logical for those tables:
 
 ```mermaid
 erDiagram
@@ -213,12 +217,12 @@ erDiagram
 | `option_alias_projection` | `(contract_symbol, alias_kind, alias_value, provider)` | `option_contract_projection` (cascade) | Provider symbol aliases with normalized lookup |
 | `future_projection` | `security_id` | `securities` (cascade) | Root symbol, contract month, expiry, roll/notice/delivery fields |
 | `fxspot_projection` | `security_id` | `securities` (cascade) | Currency pair reference (`pair_code` unique) |
-| `swap_projection` | `security_id` | — | Swap type, effective/maturity dates, lifecycle |
-| `commodity_projection` | `security_id` | — | Commodity type, denomination, contract size, delivery country |
-| `crypto_projection` | `security_id` | — | Base/quote currency and network |
-| `deposit_projection` | `security_id` | — | Deposit type, institution, rate, day count, callability |
-| `money_market_fund_projection` | `security_id` | — | Fund family, sweep eligibility, WAM, liquidity-fee eligibility |
-| `certificate_of_deposit_projection` | `security_id` | — | Issuer, maturity, coupon, callable date |
+| `swap_projection` | `security_id` | `securities` (logical, no FK) | Swap type, effective/maturity dates, lifecycle |
+| `commodity_projection` | `security_id` | `securities` (logical, no FK) | Commodity type, denomination, contract size, delivery country |
+| `crypto_projection` | `security_id` | `securities` (logical, no FK) | Base/quote currency and network |
+| `deposit_projection` | `security_id` | `securities` (logical, no FK) | Deposit type, institution, rate, day count, callability |
+| `money_market_fund_projection` | `security_id` | `securities` (logical, no FK) | Fund family, sweep eligibility, WAM, liquidity-fee eligibility |
+| `certificate_of_deposit_projection` | `security_id` | `securities` (logical, no FK) | Issuer, maturity, coupon, callable date |
 | `security_pricing_hierarchy` | `(security_id, account_id)` | `securities` | Ordered pricing-source hierarchy (jsonb `entries`) per security/account |
 | `security_raw_prices` | `(security_id, source_id)` | `securities` | Latest raw price per source (`numeric(28,10)`) |
 | `security_cashflow_source_assignments` | `security_id` | `securities` | Cash-flow source kind per security with client-override confirmation |
