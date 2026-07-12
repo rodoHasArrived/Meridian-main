@@ -63,7 +63,8 @@ import {
   type SettingsProfileAuthenticationStep,
   type SettingsProviderConnectionRow,
   type SettingsRecentEventDetail,
-  type SettingsRecentEventTableRow
+  type SettingsRecentEventTableRow,
+  type SettingsSystemItem
 } from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
@@ -407,24 +408,18 @@ function toneToSeverity(tone: SettingsBadgeVariant): string {
   return "info";
 }
 
-// Headline operator counts on the overview → Concrete MetricCard left-accent tone.
-const settingsMetricTone: Record<"default" | "success" | "warning" | "danger", MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
+// Map the view-model's `SettingsSystemItem` tone onto the Concrete MetricCard left-accent tone.
+// The overview headline metrics are sourced from `vm.systemItems` (label + value + tone) so the
+// screen never recomputes the read model's values or tone rules.
+function systemItemMetricTone(tone: SettingsSystemItem["tone"]): MetricCardTone {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "neutral";
 }
+
+// The overview MetricCard row surfaces these `vm.systemItems` labels, in this order.
+const OVERVIEW_METRIC_LABELS = ["Providers online", "Active runs", "Open positions", "Storage health"] as const;
 
 const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
 
