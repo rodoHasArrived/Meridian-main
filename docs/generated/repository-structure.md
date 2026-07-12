@@ -2003,8 +2003,10 @@ Meridian-main
 │   │   │   ├── web-data-alerts.png
 │   │   │   ├── web-data-backfills.png
 │   │   │   ├── web-data-evidence-workbench.png
+│   │   │   ├── web-data-exports.png
 │   │   │   ├── web-data-live-quotes.png
 │   │   │   ├── web-data-providers.png
+│   │   │   ├── web-data-query.png
 │   │   │   ├── web-data-watchlist.png
 │   │   │   ├── web-data-workspace.png
 │   │   │   ├── web-operator-readiness-console.png
@@ -2028,11 +2030,15 @@ Meridian-main
 │   │   │   ├── web-reporting-run-status.png
 │   │   │   ├── web-reporting-scheduled.png
 │   │   │   ├── web-reporting-workspace.png
+│   │   │   ├── web-settings-access.png
 │   │   │   ├── web-settings-alpaca-provider-setup.png
 │   │   │   ├── web-settings-backend-capability-coverage.png
 │   │   │   ├── web-settings-diagnostic-endpoints.png
+│   │   │   ├── web-settings-diagnostics.png
+│   │   │   ├── web-settings-feature-coverage.png
 │   │   │   ├── web-settings-integrations.png
 │   │   │   ├── web-settings-preferences.png
+│   │   │   ├── web-settings-providers.png
 │   │   │   ├── web-settings-workspace.png
 │   │   │   ├── web-strategy-covered-call.png
 │   │   │   ├── web-strategy-designer.png
@@ -3424,12 +3430,14 @@ Meridian-main
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
+│   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
+│   │   │   ├── SecurityMasterCostBasisAdjustmentService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterDataQualityService.cs
 │   │   │   ├── SecurityMasterDraftProposalService.cs
@@ -4099,7 +4107,8 @@ Meridian-main
 │   │   │   ├── BaseBrokerageGateway.cs
 │   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   ├── PaperTradingGateway.cs
-│   │   │   └── PaperTradingGatewayOptions.cs
+│   │   │   ├── PaperTradingGatewayOptions.cs
+│   │   │   └── PaperTradingGatewaySupport.cs
 │   │   ├── Allocation
 │   │   │   ├── AllocationResult.cs
 │   │   │   ├── AllocationRule.cs
@@ -4127,7 +4136,8 @@ Meridian-main
 │   │   │   ├── MarginCallStatus.cs
 │   │   │   ├── MarginRequirement.cs
 │   │   │   ├── PortfolioMarginModel.cs
-│   │   │   └── RegTMarginModel.cs
+│   │   │   ├── RegTMarginModel.cs
+│   │   │   └── RegTMarginOptions.cs
 │   │   ├── Models
 │   │   │   ├── AccountKind.cs
 │   │   │   ├── ExecutionFill.cs
@@ -4160,6 +4170,7 @@ Meridian-main
 │   │   │   ├── PositionLotSelector.cs
 │   │   │   ├── PositionReconciliationService.cs
 │   │   │   ├── PositionSyncOptions.cs
+│   │   │   ├── ReconciliationSetComparer.cs
 │   │   │   ├── ReplayDriftDetector.cs
 │   │   │   └── SessionTcaReporter.cs
 │   │   ├── TaxLotAccounting
@@ -4174,6 +4185,7 @@ Meridian-main
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── OrderManagementSystem.cs
+│   │   ├── OrderManagementSystemOptions.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
 │   │   ├── README.md
@@ -4191,6 +4203,7 @@ Meridian-main
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
+│   │   ├── IExecutionGatewayModeProvider.cs
 │   │   ├── IOrderManager.cs
 │   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
@@ -4233,6 +4246,8 @@ Meridian-main
 │   │   │   ├── OperationsContinuityRepositories.cs
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
+│   │   │   ├── OperationsContinuityWorkflowText.cs
+│   │   │   ├── OperationsLedgerPostingService.cs
 │   │   │   ├── OperationsStatusDerivationService.cs
 │   │   │   ├── OperationsWorkflowAuditHashing.cs
 │   │   │   └── PostgresOperationsContinuityStore.cs
@@ -4317,7 +4332,6 @@ Meridian-main
 │   │   │   ├── FundStructure.fs
 │   │   │   ├── Integrity.fs
 │   │   │   ├── MarketEvents.fs
-│   │   │   ├── SecMasterDomain.fs
 │   │   │   ├── SecurityClassification.fs
 │   │   │   ├── SecurityEconomicDefinition.fs
 │   │   │   ├── SecurityIdentifiers.fs
@@ -4726,6 +4740,9 @@ Meridian-main
 │   │   ├── LedgerScheduledReportExportPackageBuilder.cs
 │   │   ├── LedgerSnapshot.cs
 │   │   ├── LedgerTaxLot.cs
+│   │   ├── LedgerTaxLotBasisAdjuster.cs
+│   │   ├── LedgerTaxLotBasisAdjustment.cs
+│   │   ├── LedgerTaxLotBasisAdjustmentKind.cs
 │   │   ├── LedgerTaxLotReliefInput.cs
 │   │   ├── LedgerTaxLotReliefMethod.cs
 │   │   ├── LedgerTaxLotReliefProjection.cs
@@ -5504,6 +5521,7 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
+│   │   │   │   │   │   ├── use-workspace-expansion.ts
 │   │   │   │   │   │   ├── workflow-continuity-dock.test.tsx
 │   │   │   │   │   │   ├── workflow-continuity-dock.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
@@ -5516,6 +5534,8 @@ Meridian-main
 │   │   │   │   │   │   ├── workspace-nav.view-model.ts
 │   │   │   │   │   │   ├── workspace-primitives.test.tsx
 │   │   │   │   │   │   ├── workspace-primitives.tsx
+│   │   │   │   │   │   ├── workspace-workbench-shell.test.tsx
+│   │   │   │   │   │   ├── workspace-workbench-shell.tsx
 │   │   │   │   │   │   ├── workstation-status-bar.test.tsx
 │   │   │   │   │   │   ├── workstation-status-bar.tsx
 │   │   │   │   │   │   ├── workstation-topbar.test.tsx
@@ -5623,7 +5643,15 @@ Meridian-main
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── design-system
 │   │   │   │   │   ├── assets.ts
-│   │   │   │   │   └── primitives.tsx
+│   │   │   │   │   ├── badge.tsx
+│   │   │   │   │   ├── button.tsx
+│   │   │   │   │   ├── masthead.tsx
+│   │   │   │   │   ├── nav-rail.tsx
+│   │   │   │   │   ├── primitives.tsx
+│   │   │   │   │   ├── status.test.ts
+│   │   │   │   │   ├── status.tsx
+│   │   │   │   │   ├── tokens.ts
+│   │   │   │   │   └── trust-strip.tsx
 │   │   │   │   ├── features
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   └── accountingCloseModels.ts
@@ -5680,7 +5708,9 @@ Meridian-main
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── operating-scope
 │   │   │   │   │   │   ├── fund-accounts.test.ts
-│   │   │   │   │   │   └── fund-accounts.ts
+│   │   │   │   │   │   ├── fund-accounts.ts
+│   │   │   │   │   │   ├── persistence.test.ts
+│   │   │   │   │   │   └── persistence.ts
 │   │   │   │   │   ├── perf
 │   │   │   │   │   │   ├── off-thread-compute.test.tsx
 │   │   │   │   │   │   └── off-thread-compute.ts
@@ -5714,6 +5744,7 @@ Meridian-main
 │   │   │   │   │   ├── density.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── focus-classes.ts
 │   │   │   │   │   ├── format.test.ts
 │   │   │   │   │   ├── format.ts
 │   │   │   │   │   ├── fund-account-scope.ts
@@ -5732,8 +5763,12 @@ Meridian-main
 │   │   │   │   │   ├── reporting-hub.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
+│   │   │   │   │   ├── route-error-telemetry.test.ts
+│   │   │   │   │   ├── route-error-telemetry.ts
 │   │   │   │   │   ├── saved-layouts.test.ts
 │   │   │   │   │   ├── saved-layouts.ts
+│   │   │   │   │   ├── shared-tone-mappings.test.ts
+│   │   │   │   │   ├── shared-tone-mappings.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
 │   │   │   │   │   ├── theme.test.ts
@@ -5750,7 +5785,9 @@ Meridian-main
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   ├── workspace.ts
 │   │   │   │   │   ├── workstation-endpoints.test.ts
-│   │   │   │   │   └── workstation-endpoints.ts
+│   │   │   │   │   ├── workstation-endpoints.ts
+│   │   │   │   │   ├── workstation-screen-view-states.test.ts
+│   │   │   │   │   └── workstation-screen-view-states.ts
 │   │   │   │   ├── Meridian.Ui
 │   │   │   │   │   └── dashboard
 │   │   │   │   │       └── package-lock.json
@@ -5774,8 +5811,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.journal-entries.view-model.ts
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
 │   │   │   │   │   ├── accounting-screen.operator-focus.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-panels.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
+│   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.styles.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.task-modes.tsx
@@ -5816,6 +5855,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.operator-focus.ts
 │   │   │   │   │   ├── data-screen.query-panel.view-model.test.ts
 │   │   │   │   │   ├── data-screen.query-panel.view-model.ts
+│   │   │   │   │   ├── data-screen.route-state.ts
 │   │   │   │   │   ├── data-screen.security-master.ts
 │   │   │   │   │   ├── data-screen.test.tsx
 │   │   │   │   │   ├── data-screen.tone-styles.ts
@@ -5823,6 +5863,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.view-model.test.ts
 │   │   │   │   │   ├── data-screen.view-model.ts
 │   │   │   │   │   ├── data-screen.workflow-continuity.ts
+│   │   │   │   │   ├── data-screen.workstreams.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
@@ -5844,6 +5885,7 @@ Meridian-main
 │   │   │   │   │   ├── operations-continuity-screen.tsx
 │   │   │   │   │   ├── operations-continuity-screen.view-model.test.ts
 │   │   │   │   │   ├── operations-continuity-screen.view-model.ts
+│   │   │   │   │   ├── operations-record-release-screen.test.tsx
 │   │   │   │   │   ├── operations-record-release-screen.tsx
 │   │   │   │   │   ├── operations-record-release-screen.view-model.test.ts
 │   │   │   │   │   ├── operations-record-release-screen.view-model.ts
@@ -5951,7 +5993,8 @@ Meridian-main
 │   │   │   │   │   ├── workflow-continuity-dock.css
 │   │   │   │   │   ├── workspace-nav.css
 │   │   │   │   │   ├── workspace-primitives.css
-│   │   │   │   │   └── workspace-surface.css
+│   │   │   │   │   ├── workspace-surface.css
+│   │   │   │   │   └── workspace-workbench-shell.css
 │   │   │   │   ├── test
 │   │   │   │   │   ├── render.tsx
 │   │   │   │   │   └── setup.ts
@@ -6088,6 +6131,7 @@ Meridian-main
 │   │   │   ├── FormatHelpers.cs
 │   │   │   ├── FormValidationRules.cs
 │   │   │   ├── HttpClientConfiguration.cs
+│   │   │   ├── IndexConstituentCatalog.cs
 │   │   │   ├── InfoBarConstants.cs
 │   │   │   ├── IntegrityEventsService.cs
 │   │   │   ├── LeanIntegrationService.cs
@@ -6242,6 +6286,7 @@ Meridian-main
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
 │   │   │   ├── WorkstationEndpoints.AccountingCashFlow.cs
+│   │   │   ├── WorkstationEndpoints.CollateralExposure.cs
 │   │   │   ├── WorkstationEndpoints.cs
 │   │   │   ├── WorkstationEndpoints.DataProviders.cs
 │   │   │   ├── WorkstationEndpoints.DataUploads.cs
@@ -6255,14 +6300,17 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationBreaks.cs
+│   │   │   ├── WorkstationEndpoints.ReconciliationCalibration.cs
 │   │   │   ├── WorkstationEndpoints.SecurityCoverage.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterMapping.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
+│   │   │   ├── WorkstationEndpoints.Session.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
 │   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.StrategyBriefing.cs
 │   │   │   ├── WorkstationEndpoints.Stream.cs
 │   │   │   ├── WorkstationEndpoints.StructuredReportingExport.cs
+│   │   │   ├── WorkstationEndpoints.Trading.cs
 │   │   │   ├── WorkstationRiskEndpoints.cs
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
@@ -6354,6 +6402,7 @@ Meridian-main
 │   │   │   ├── OperatorRiskRuleService.cs
 │   │   │   ├── PlaidWorkstationService.cs
 │   │   │   ├── PortfolioCashLadderReadService.cs
+│   │   │   ├── PortfolioLedgerCashBalanceProvider.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusService.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
@@ -7818,6 +7867,7 @@ Meridian-main
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
+│   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
 │   │   │   └── PeriodCloseProjectorTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
@@ -7935,11 +7985,14 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
+│   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
+│   │   │   ├── SecurityMasterAmortizationLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandServiceTests.cs
+│   │   │   ├── SecurityMasterCostBasisAdjustmentServiceTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterDataQualityServiceCoverageTests.cs

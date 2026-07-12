@@ -646,6 +646,11 @@ def parse_project_references(project_file: Path) -> list[str]:
         include = item.attrib.get("Include")
         if not include:
             continue
+        # .csproj ProjectReference Include paths use Windows-style backslash separators.
+        # Normalize to forward slashes so path resolution (and .stem) works cross-platform;
+        # otherwise on non-Windows hosts the backslashes are treated as literal filename
+        # characters and .stem yields the raw "..\Name\Name" string instead of the project name.
+        include = include.replace("\\", "/")
         target = (project_file.parent / include).resolve()
         refs.append(target.stem)
     return sorted(set(refs))

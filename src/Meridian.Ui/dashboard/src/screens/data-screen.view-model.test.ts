@@ -452,6 +452,9 @@ describe("data-screen view model", () => {
 
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
+    expect(resolveDataWorkstream("/data/providers")).toBe("providers");
+    expect(resolveDataWorkstream("/data/exports")).toBe("exports");
+    expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");
     expect(resolveDataWorkstream("/data-operations/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data-operations")).toBe("overview");

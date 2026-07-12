@@ -58,6 +58,12 @@ describe("workspace metadata", () => {
     expect(workstationRoute("reportingOperationsRecord")).toBe("/reporting/operations-record");
     expect(workstationRoute("reportingExports")).toBe("/reporting/exports");
     expect(workstationRoute("reportingGovernance")).toBe("/reporting/governance");
+    expect(workstationRoute("dataExports")).toBe("/data/exports");
+    expect(workstationRoute("dataQuery")).toBe("/data/query");
+    expect(workstationRoute("settingsAccess")).toBe("/settings/access");
+    expect(workstationRoute("settingsProviders")).toBe("/settings/providers");
+    expect(workstationRoute("settingsDiagnostics")).toBe("/settings/diagnostics");
+    expect(workstationRoute("settingsFeatureCoverage")).toBe("/settings/feature-coverage");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
       "/data/quotes?symbol=BRK%2FB&provider=Alpaca"
