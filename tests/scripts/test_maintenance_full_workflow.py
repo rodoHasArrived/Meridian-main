@@ -52,9 +52,10 @@ class MaintenanceFullWorkflowTests(unittest.TestCase):
 
     def test_fsharp_maintenance_lane_matches_ci_discovery_arguments(self) -> None:
         line = next(
-            line for line in self.script.splitlines()
-            if 'run_step "dotnet-test-fsharp"' in line
+            (line for line in self.script.splitlines() if 'run_step "dotnet-test-fsharp"' in line),
+            None,
         )
+        self.assertIsNotNone(line, 'run_step "dotnet-test-fsharp" not found in maintenance-full.sh')
 
         self.assertIn('"${BUILDCTL[@]}"', line)
         self.assertIn('"${test_common_args[@]}"', line)
