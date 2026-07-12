@@ -1,11 +1,11 @@
 {
   "total_files": 576,
-  "total_lines": 95932,
+  "total_lines": 95970,
   "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 202,
-  "average_lines": 166.5,
+  "average_lines": 166.6,
   "health_score": 78,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1503,7 +1503,7 @@
     },
     {
       "path": "docs/architecture/project-structure.md",
-      "line_count": 79,
+      "line_count": 80,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2263,7 +2263,7 @@
     },
     {
       "path": "docs/operations/cleanup-and-maintenance.md",
-      "line_count": 49,
+      "line_count": 78,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2895,7 +2895,7 @@
     },
     {
       "path": "docs/screenshots/web-audit.md",
-      "line_count": 141,
+      "line_count": 149,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
