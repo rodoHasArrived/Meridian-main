@@ -11,8 +11,13 @@
 > `/trading/positions`, and `/trading/risk` render focused master–detail views with a sticky
 > detail rail, `/trading` renders the acceptance/session overview, and the in-page tab strip
 > navigates the same sub-routes as the sidebar. Route capture heights fell from a uniform
-> 4,419 px to 1,100–1,591 px. Remaining: Phases B–C for Data, Phase D (Settings/Accounting),
-> Phase E (token polish), and rollout of `StatStrip`/route-scoping to the other workspaces.
+> 4,419 px to 1,100–1,591 px. Data followed on the same pattern: the workspace header collapsed
+> to the compact route header + tab strip (its filter bar, duplicate in-page folder rail, and
+> command-deck highlight cards removed), the metric band adopted `StatStrip`, and P6 landed —
+> when two or more Data analytics reads fail together, one consolidated amber degraded state
+> (`data-screen.analytics-status.tsx`) with a retry-all action replaces the stacked per-panel
+> alarms. Remaining: Phase D (Settings/Accounting decomposition), Phase E (token polish), and
+> rollout of the same shell pattern to Portfolio/Accounting/Reporting/Strategy.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,

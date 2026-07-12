@@ -5741,6 +5741,8 @@ Meridian-main
 │   │   │   │   │   ├── covered-call-screen.view-model.ts
 │   │   │   │   │   ├── daily-control-tower-screen.test.tsx
 │   │   │   │   │   ├── daily-control-tower-screen.tsx
+│   │   │   │   │   ├── data-screen.analytics-status.test.tsx
+│   │   │   │   │   ├── data-screen.analytics-status.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
 │   │   │   │   │   ├── data-screen.cell-actions.test.tsx
