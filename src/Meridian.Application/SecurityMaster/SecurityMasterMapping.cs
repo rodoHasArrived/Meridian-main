@@ -515,23 +515,16 @@ internal static class SecurityMasterMapping
 
     private static void EnsureSupportedAssetSchemaVersion(string assetClass, JsonElement json)
     {
-        var schemaVersion = GetOptionalInt(json, "schemaVersion") ?? 1;
-        if (schemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
+        var schemaVersion = GetOptionalInt(json, "schemaVersion")
+            ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
+        var isProfileBacked = IsProfileBackedAssetPayload(assetClass, json);
+        if (SecurityMasterSchemaVersions.IsAcceptedAssetSpecificTermsVersion(schemaVersion, isProfileBacked))
         {
             return;
         }
 
-        if (schemaVersion == SecurityMasterSchemaVersions.CustomAssetProfileTerms
-            && IsProfileBackedAssetPayload(assetClass, json))
-        {
-            return;
-        }
-
-        if (schemaVersion != SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
-        {
-            throw new InvalidOperationException(
-                $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
-        }
+        throw new InvalidOperationException(
+            $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
     }
 
     private static bool IsProfileBackedAssetPayload(string assetClass, JsonElement json)

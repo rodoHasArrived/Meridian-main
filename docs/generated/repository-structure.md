@@ -3313,6 +3313,8 @@ Meridian-main
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterClearwaterServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
+│   │   │   ├── PostgresSecurityMasterConflictService.cs
+│   │   │   ├── PostgresSecurityMasterRevisionStore.cs
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
@@ -3320,6 +3322,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
+│   │   │   ├── SecurityMasterConflictDetection.cs
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterContractAliases.cs
 │   │   │   ├── SecurityMasterCostBasisAdjustmentService.cs
@@ -3708,6 +3711,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetProfiles.cs
+│   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
@@ -5056,12 +5060,14 @@ Meridian-main
 │   │   │   │   ├── 015_security_master_certificate_of_deposit_projection.sql
 │   │   │   │   ├── 016_security_master_normalized_identifier_lookup.sql
 │   │   │   │   ├── 017_security_master_bond_clearwater_lifecycle_fields.sql
-│   │   │   │   ├── 017_security_master_pricing_hierarchy.sql
 │   │   │   │   ├── 018_security_master_cashflow_sources.sql
 │   │   │   │   ├── 019_data_vendor_entitlements.sql
 │   │   │   │   ├── 020_data_vendor_entitlement_scope_metadata.sql
-│   │   │   │   ├── 020_security_master_quality_reports.sql
-│   │   │   │   └── 021_security_master_corp_action_lifecycle.sql
+│   │   │   │   ├── 021_security_master_corp_action_lifecycle.sql
+│   │   │   │   ├── 022_security_master_pricing_hierarchy.sql
+│   │   │   │   ├── 023_security_master_quality_reports.sql
+│   │   │   │   ├── 024_security_master_schema_version_column.sql
+│   │   │   │   └── 025_security_master_audit_stores.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -7880,8 +7886,11 @@ Meridian-main
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
+│   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
+│   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
+│   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
@@ -7910,6 +7919,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterQueryServiceProfileSearchTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
+│   │   │   ├── SecurityMasterSchemaVersionsTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
