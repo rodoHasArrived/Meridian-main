@@ -3233,6 +3233,7 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationSchemaDriftService.cs
 │   │   │   ├── ProviderIntegrationServiceBoundary.cs
 │   │   │   ├── ProviderIntegrationSetupService.cs
+│   │   │   ├── ProviderIntegrationSetupValidation.cs
 │   │   │   ├── ProviderIntegrationStagingDedupeValidator.cs
 │   │   │   ├── ProviderIntegrationStagingReviewService.cs
 │   │   │   ├── ProviderIntegrationSyncOrchestrationService.cs
@@ -5637,6 +5638,9 @@ Meridian-main
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
+│   │   │   │   │   ├── provider-integration-setup-validation.test.ts
+│   │   │   │   │   ├── provider-integration-setup-validation.ts
+│   │   │   │   │   ├── provider-integration-workbench.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
 │   │   │   │   │   ├── quotes-stream.ts
 │   │   │   │   │   ├── report-run-stream.test.ts

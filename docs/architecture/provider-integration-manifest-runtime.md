@@ -574,6 +574,17 @@ Operator messages should be business-readable:
 
 Raw stack traces belong in diagnostics and logs, not the non-technical setup flow.
 
+Setup-save enforces this contract end to end. `ProviderIntegrationSetupValidator`
+(`src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs`) collects every
+field-level problem in a draft — required identifiers, credential secret reference, and
+manifest/connection scope mismatches — and the setup-save endpoint returns them as one
+RFC 7807 validation problem keyed by camelCase request paths (for example
+`connection.credentialSecretRef`), so operators fix all issues in a single round trip. The
+workstation settings screen runs the same rules client-side before posting
+(`src/Meridian.Ui/dashboard/src/lib/provider-integration-setup-validation.ts`); the two rule sets
+must be kept in sync. Drafts posted in `Active` or `Retired` state are reset to `Draft`, and the
+save result message states that the reset happened.
+
 ## Existing Meridian Anchors
 
 - `docs/product/meridian-design-document.md` already defines the data and integration flow:
