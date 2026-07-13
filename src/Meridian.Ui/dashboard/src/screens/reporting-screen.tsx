@@ -17,7 +17,7 @@ import {
   VIEW_STATE_QUERY_KEY
 } from "@/lib/view-state-envelope";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { StatStrip } from "@/components/meridian/stat-strip";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -98,7 +98,6 @@ import {
   ReportingCommandStatusView,
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
-import { ReportingTaskModeLauncher } from "@/screens/reporting-screen.task-modes";
 import {
   ReportingChip,
   ReportingWorkbenchContext
@@ -1332,12 +1331,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   return (
-    <div className="space-y-8">
-      <ReportingWorkbenchContext
-        taskMode={vm.taskMode}
-        actions={vm.workbenchActions}
-        chips={vm.workbenchChips}
-      />
+    <div className="space-y-5">
+      <ReportingWorkbenchContext taskMode={vm.taskMode} actions={vm.workbenchActions} />
 
       {isDailyReportingCockpitLanding ? (
         <ReportingHub model={hubModel} />
@@ -1354,16 +1349,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         <ReportingCommandStatusView status={starterKitStatus} />
       ) : null}
 
-      {isDailyReportingCockpitLanding ? (
-        <ReportingTaskModeLauncher />
-      ) : (
+      {isDailyReportingCockpitLanding ? null : (
         <>
       {isRunStatusTaskMode && data.metrics.length > 0 ? (
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricSnapshotCard key={metric.id} {...metric} />
-        ))}
-      </section>
+        <StatStrip metrics={data.metrics} label="Reporting run-status metrics" />
       ) : null}
 
       {isGovernanceTaskMode ? (
