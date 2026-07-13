@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 namespace Meridian.Contracts.SecurityMaster;
@@ -73,7 +74,7 @@ public static class SecurityTermReader
             }
 
             if (property.ValueKind == JsonValueKind.String &&
-                decimal.TryParse(property.GetString(), out var parsed))
+                decimal.TryParse(property.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
             {
                 return parsed;
             }
@@ -94,12 +95,12 @@ public static class SecurityTermReader
             }
 
             var raw = property.GetString();
-            if (DateOnly.TryParse(raw, out var date))
+            if (DateOnly.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
             {
                 return date;
             }
 
-            if (DateTimeOffset.TryParse(raw, out var timestamp))
+            if (DateTimeOffset.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))
             {
                 return DateOnly.FromDateTime(timestamp.UtcDateTime.Date);
             }
