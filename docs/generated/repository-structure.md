@@ -3276,8 +3276,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
-│   │   │   │   ├── StructuredCashFlowTerms.cs
-│   │   │   │   └── StructuredCashFlowTermsResolver.cs
+│   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
 │   │   │   │   ├── CorporateActionCommandService.cs
 │   │   │   │   ├── CorporateActionInboxState.cs
@@ -3730,7 +3729,10 @@ Meridian-main
 │   │   │   ├── SecurityMasterPricing.cs
 │   │   │   ├── SecurityMasterSchemaVersions.cs
 │   │   │   ├── SecurityQueries.cs
-│   │   │   └── SecurityValidationDtos.cs
+│   │   │   ├── SecurityTermReader.cs
+│   │   │   ├── SecurityValidationDtos.cs
+│   │   │   ├── StructuredCashFlowTerms.cs
+│   │   │   └── StructuredCashFlowTermsResolver.cs
 │   │   ├── Services
 │   │   │   ├── IBacktestPreflightService.cs
 │   │   │   ├── IConnectivityProbeService.cs

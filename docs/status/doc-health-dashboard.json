@@ -1,6 +1,6 @@
 {
   "total_files": 577,
-  "total_lines": 96645,
+  "total_lines": 96653,
   "orphaned_count": 245,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1432,7 +1432,7 @@
     },
     {
       "path": "docs/architecture/ledger-architecture.md",
-      "line_count": 625,
+      "line_count": 631,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2192,7 +2192,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8645,
+      "line_count": 8647,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
