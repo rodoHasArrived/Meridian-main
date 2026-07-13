@@ -1680,6 +1680,7 @@ Meridian-main
 │   │   ├── desktop-workstation-screen-blueprint.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── README.md
+│   │   ├── report-writer-auto-preview-blueprint.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   └── security-master-passport-workbench.md
 │   ├── product
@@ -3273,6 +3274,10 @@ Meridian-main
 │   │   │   ├── BackfillScheduleManager.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── CashFlow
+│   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
+│   │   │   │   ├── StructuredCashFlowTerms.cs
+│   │   │   │   └── StructuredCashFlowTermsResolver.cs
 │   │   │   ├── CorporateActions
 │   │   │   │   ├── CorporateActionCommandService.cs
 │   │   │   │   ├── CorporateActionInboxState.cs
@@ -7416,7 +7421,9 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
-│   │   │   └── SecurityMasterCashFlowServiceTests.cs
+│   │   │   ├── SecurityMasterCashFlowServiceTests.cs
+│   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
+│   │   │   └── StructuredCashFlowTermsResolverTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   ├── LayerBoundaryTests.cs
@@ -7779,6 +7786,7 @@ Meridian-main
 │   │   │   ├── DimensionSignatureBackwardCompatibilityTests.cs
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
+│   │   │   ├── LedgerAccountIdentityTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
 │   │   │   └── PeriodCloseProjectorTests.cs
