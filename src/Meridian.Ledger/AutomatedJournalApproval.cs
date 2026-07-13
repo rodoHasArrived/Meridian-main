@@ -139,25 +139,25 @@ public sealed record AutomatedJournalApproval
         IReadOnlyList<string>? evidenceLinks,
         bool requireEvidence)
     {
-        if (string.IsNullOrWhiteSpace(actor))
-            throw new ArgumentException("Approval actor is required.", nameof(actor));
-        if (string.IsNullOrWhiteSpace(reason))
-            throw new ArgumentException("Approval reason is required.", nameof(reason));
-
-        var normalizedEvidence = NormalizeEvidence(evidenceLinks);
-        if (requireEvidence && normalizedEvidence.Count == 0)
-            throw new ArgumentException("Approval evidence is required for this transition.", nameof(evidenceLinks));
-        if (!IsAllowedTransition(Status, toStatus))
-            throw new InvalidOperationException($"Cannot transition automated journal approval from {Status} to {toStatus}.");
+        var (normalizedActor, normalizedReason, normalizedEvidence) = LedgerGovernedLifecycle.PrepareTransition(
+            actor,
+            reason,
+            evidenceLinks,
+            requireEvidence,
+            actorRequiredMessage: "Approval actor is required.",
+            reasonRequiredMessage: "Approval reason is required.",
+            evidenceRequiredMessage: "Approval evidence is required for this transition.",
+            transitionAllowed: IsAllowedTransition(Status, toStatus),
+            transitionNotAllowedMessage: $"Cannot transition automated journal approval from {Status} to {toStatus}.");
 
         var transitionedEvents = Events.Concat(
         [
             new AutomatedJournalApprovalEvent(
                 Status,
                 toStatus,
-                actor.Trim(),
+                normalizedActor,
                 occurredAtUtc.ToUniversalTime(),
-                reason.Trim(),
+                normalizedReason,
                 normalizedEvidence)
         ]).ToArray();
 
@@ -199,11 +199,4 @@ public sealed record AutomatedJournalApproval
             AutomatedJournalApprovalStatus.Approved => to is AutomatedJournalApprovalStatus.Posted,
             _ => false
         };
-
-    private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string>? evidenceLinks)
-        => evidenceLinks?
-            .Select(static link => link.Trim())
-            .Where(static link => link.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray() ?? [];
 }

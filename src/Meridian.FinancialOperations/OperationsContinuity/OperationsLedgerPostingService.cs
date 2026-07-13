@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
@@ -426,7 +427,7 @@ internal sealed class OperationsLedgerPostingService
 
         var totalDebits = candidate.Lines?.Sum(static line => line.Debit) ?? 0m;
         var totalCredits = candidate.Lines?.Sum(static line => line.Credit) ?? 0m;
-        if (Math.Abs(totalDebits - totalCredits) > LedgerToleranceConstants.Balance)
+        if (!LedgerJournalConstruction.IsBalanced(totalDebits, totalCredits))
         {
             blockers.Add(CreateJournalCandidateBlocker(
                 "LEDGER_DRAFT_IMBALANCED",
@@ -603,74 +604,7 @@ internal sealed class OperationsLedgerPostingService
     }
 
     private static LedgerLineDimensionSet? ToLedgerLineDimensions(LedgerDimensionSetDto? dimensions)
-    {
-        if (dimensions is null)
-        {
-            return null;
-        }
-
-        var result = new LedgerLineDimensionSet(
-            FundId: NormalizeOptional(dimensions.FundId),
-            EntityId: NormalizeOptional(dimensions.EntityId),
-            SleeveId: NormalizeOptional(dimensions.SleeveId),
-            StrategyId: NormalizeOptional(dimensions.StrategyId),
-            InvestorId: NormalizeOptional(dimensions.InvestorId),
-            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
-            InstrumentId: dimensions.InstrumentId,
-            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
-            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
-            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
-            ExternalGlDimensions: NormalizeExternalGlDimensions(dimensions.ExternalGlDimensions),
-            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
-            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
-            BookId: NormalizeOptional(dimensions.BookId),
-            AccountId: NormalizeOptional(dimensions.AccountId),
-            CustomerId: NormalizeOptional(dimensions.CustomerId),
-            VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
-
-        return HasLedgerLineDimension(result) ? result : null;
-    }
-
-    private static bool HasLedgerLineDimension(LedgerLineDimensionSet dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId)
-           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
-           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
-           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
-           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
-           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
-           || dimensions.InstrumentId.HasValue
-           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
-           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
-           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
-           || dimensions.ExternalGlDimensions.Count > 0
-           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
-           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
-           || !string.IsNullOrWhiteSpace(dimensions.BookId)
-           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
-           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
-           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
-
-    private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? dimensions)
-    {
-        if (dimensions is null || dimensions.Count == 0)
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var normalized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (key, value) in dimensions)
-        {
-            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
-            {
-                normalized[key.Trim()] = value.Trim();
-            }
-        }
-
-        return normalized;
-    }
+        => LedgerJournalConstruction.ToLedgerLineDimensions(dimensions);
 
     private static string? BuildSecurityMasterLineageTag(
         IReadOnlyList<OperationsLedgerJournalLineDto>? lines,

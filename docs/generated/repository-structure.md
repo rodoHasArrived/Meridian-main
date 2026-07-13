@@ -3663,6 +3663,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
+│   │   │   ├── LedgerCurrencyRounding.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Manifest
@@ -4130,7 +4131,8 @@ Meridian-main
 │   │   │   ├── AccountingJournalDraftService.cs
 │   │   │   ├── AccountingPolicyService.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
-│   │   │   └── AccountingPostingCandidateService.cs
+│   │   │   ├── AccountingPostingCandidateService.cs
+│   │   │   └── LedgerJournalConstruction.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── FinancialOperationsCommandCenterReadService.cs
 │   │   │   ├── OperationsApprovalPolicyMatrixService.cs
@@ -4616,7 +4618,9 @@ Meridian-main
 │   │   ├── LedgerFinancialReportPack.cs
 │   │   ├── LedgerFinancialStatementBuilder.cs
 │   │   ├── LedgerFinancialStatements.cs
+│   │   ├── LedgerGovernedLifecycle.cs
 │   │   ├── LedgerLineDimensionSet.cs
+│   │   ├── LedgerLineDimensionSetFields.cs
 │   │   ├── LedgerLineDimensionSetNormalizer.cs
 │   │   ├── LedgerQuery.cs
 │   │   ├── LedgerReportExportFormat.cs

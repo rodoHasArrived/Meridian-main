@@ -1695,121 +1695,122 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
     }
 
+    // Shared evidence-classification pattern: a link classifies as a given evidence kind when it
+    // carries one of the kind's keywords. Provenance additionally requires the same link to
+    // reference the review subject (or fall back to the workflow/period scope) and the workflow's
+    // ledger book.
+    private static readonly string[] CloseTaskSignOffEvidenceKeywords =
+        ["signoff", "sign-off", "approval", "control", "review"];
+
+    private static readonly string[] LateAdjustmentRequestEvidenceKeywords =
+        ["late-adjustment", "late adjustment"];
+
+    private static readonly string[] LateAdjustmentReviewEvidenceKeywords =
+        ["approval", "rejection", "decision", "review"];
+
+    private static readonly string[] CloseEvidenceReviewEvidenceKeywords =
+        ["close-review", "blocker", "evidence", "audit", "remediation", "review"];
+
+    private static readonly string[] ClosePlanConfigurationEvidenceKeywords =
+        ["close-plan", "close plan", "close-setup", "configuration", "materiality", "approval"];
+
+    private static readonly string[] ClosePeriodLockEvidenceKeywords =
+        ["period-lock", "close-package", "close package", "report-pack", "report package", "manifest", "certification"];
+
+    private static bool EvidenceLinkContainsAnyKeyword(string link, string[] keywords)
+        => keywords.Any(keyword => link.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasEvidenceOfKind(IReadOnlyList<string> evidenceLinks, string[] keywords)
+        => evidenceLinks.Any(link => EvidenceLinkContainsAnyKeyword(link, keywords));
+
+    private static bool HasEvidenceOfKindWithProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        string[] keywords,
+        OperationsContinuityWorkflowDto workflow,
+        Func<string, bool>? subjectMatches = null)
+        => evidenceLinks.Any(link =>
+            EvidenceLinkContainsAnyKeyword(link, keywords) &&
+            (subjectMatches?.Invoke(link) ?? EvidenceLinkContainsWorkflowScope(link, workflow)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
+
+    private static bool EvidenceLinkContainsWorkflowScope(string link, OperationsContinuityWorkflowDto workflow)
+        => EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
+           EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId);
+
     private static bool HasCloseTaskSignOffEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("control", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, CloseTaskSignOffEvidenceKeywords);
 
     private static bool HasCloseTaskSignOffEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string taskId,
         string role,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasCloseTaskSignOffEvidence([link]) &&
-            EvidenceLinkContainsIdentifierToken(link, taskId) &&
-            EvidenceLinkContainsRoleToken(link, role) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            CloseTaskSignOffEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsIdentifierToken(link, taskId) &&
+                EvidenceLinkContainsRoleToken(link, role) &&
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasLateAdjustmentRequestEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("late-adjustment", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("late adjustment", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, LateAdjustmentRequestEvidenceKeywords);
 
     private static bool HasLateAdjustmentRequestEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         Guid journalEntryId,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasLateAdjustmentRequestEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            LateAdjustmentRequestEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsGuidToken(link, journalEntryId) ||
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasLateAdjustmentReviewEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("rejection", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("decision", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, LateAdjustmentReviewEvidenceKeywords);
 
     private static bool HasLateAdjustmentReviewEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string requestId,
         LateAdjustmentRequestDto adjustment,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasLateAdjustmentReviewEvidence([link]) &&
-            (EvidenceLinkContainsIdentifierToken(link, requestId) ||
-             EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            LateAdjustmentReviewEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsIdentifierToken(link, requestId) ||
+                EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasCloseEvidenceReviewEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("close-review", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("blocker", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("evidence", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("audit", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("remediation", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, CloseEvidenceReviewEvidenceKeywords);
 
     private static bool HasCloseEvidenceReviewEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string issueCode,
         string? targetId,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasCloseEvidenceReviewEvidence([link]) &&
-            (EvidenceLinkContainsIdentifierToken(link, issueCode) ||
-             (!string.IsNullOrWhiteSpace(targetId) && EvidenceLinkContainsIdentifierToken(link, targetId)) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            CloseEvidenceReviewEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsIdentifierToken(link, issueCode) ||
+                (!string.IsNullOrWhiteSpace(targetId) && EvidenceLinkContainsIdentifierToken(link, targetId)) ||
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasClosePlanConfigurationEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("close-plan", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close plan", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close-setup", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("configuration", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("materiality", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, ClosePlanConfigurationEvidenceKeywords);
 
     private static bool HasClosePlanConfigurationEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasClosePlanConfigurationEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasClosePeriodLockEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("period-lock", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close-package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("report-pack", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("report package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("manifest", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("certification", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKindWithProvenance(evidenceLinks, ClosePlanConfigurationEvidenceKeywords, workflow);
 
     private static bool HasClosePeriodLockEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasClosePeriodLockEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(evidenceLinks, ClosePeriodLockEvidenceKeywords, workflow);
 
     private static bool EvidenceLinkContainsGuidToken(string link, Guid value)
         => EvidenceLinkContainsIdentifierToken(link, value.ToString("D")) ||

@@ -1571,7 +1571,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
            !string.IsNullOrWhiteSpace(reportOutput.RetainedManifestPath);
 
     private static bool AmountsTie(decimal left, decimal right)
-        => left == right;
+        => Math.Abs(left - right) <= LedgerToleranceConstants.Balance;
 
     private static bool IsExpenseFeeAllocationRecord(PrivateCapitalFundEventLedgerRecordDto record)
         => record.FundEvent.EntryType is ManualJournalEntryTypeDto.AccruedExpense

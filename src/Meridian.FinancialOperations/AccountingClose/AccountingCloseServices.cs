@@ -58,7 +58,7 @@ public sealed class AccountingPostingService
             {
                 var debit = currencyGroup.Where(static line => line.IsDebit).Sum(static line => line.Amount);
                 var credit = currencyGroup.Where(static line => !line.IsDebit).Sum(static line => line.Amount);
-                if (decimal.Round(debit - credit, 2, MidpointRounding.AwayFromZero) != 0m)
+                if (Math.Abs(debit - credit) > LedgerToleranceConstants.Balance)
                 {
                     rejected.Add($"Journal entry {entry.JournalEntryId:D} is out of balance for {currencyGroup.Key}: debits {debit:0.00}, credits {credit:0.00}.");
                 }
@@ -476,7 +476,7 @@ public sealed class TrialBalanceProjectionService
         var materialized = lines.ToArray();
         var totalDebit = materialized.Sum(static line => line.Debit);
         var totalCredit = materialized.Sum(static line => line.Credit);
-        return decimal.Round(totalDebit - totalCredit, 2, MidpointRounding.AwayFromZero) == 0m;
+        return Math.Abs(totalDebit - totalCredit) <= LedgerToleranceConstants.Balance;
     }
 
     public ImmutableArray<RollForwardLine> BuildRollForward(

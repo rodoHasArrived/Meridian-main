@@ -70,17 +70,21 @@ public sealed class StatementReconciliationOrchestratorTests
 
             Assert.Equal(StatementReconciliationStage.Completed, result.CurrentStage);
             Assert.Equal(2, result.ImportedRowCount);
-            Assert.Equal(1, result.MatchCount);
-            Assert.Equal(1, result.UnresolvedCount);
+            // Without internal position evidence, both the position and the dividend rows
+            // surface as unresolved breaks instead of a phantom position match.
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.UnresolvedCount);
             var evidenceLink = Assert.Single(result.EvidenceLinks!);
             Assert.Equal(result.ImportId, evidenceLink.RunId);
             Assert.Equal(2, evidenceLink.MatchSummary.StatementItemCount);
-            Assert.Equal(1, evidenceLink.MatchSummary.BreakCount);
+            Assert.Equal(2, evidenceLink.MatchSummary.BreakCount);
             Assert.Equal("A1", evidenceLink.Account);
             Assert.Equal(new DateOnly(2026, 5, 29), evidenceLink.StatementPeriodStart);
             Assert.Equal(new DateOnly(2026, 5, 30), evidenceLink.StatementPeriodEnd);
-            Assert.Single(intake.Cases);
-            var reconciliationCase = intake.Cases[0];
+            Assert.Equal(2, intake.Cases.Count);
+            var reconciliationCase = intake.Cases.Single(item =>
+                item.BreakExplanation is not null &&
+                item.BreakExplanation.ProbableCause.Contains("dividend", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("fund-ops", reconciliationCase.Owner);
             Assert.NotNull(reconciliationCase.DueAtUtc);
             Assert.Equal("NeedsInvestigation", reconciliationCase.Disposition);
@@ -92,7 +96,6 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(attachment.ContentHash, reconciliationCase.BreakExplanation?.EvidenceLinks.Last().Replace("statement-hash:", string.Empty, StringComparison.Ordinal));
             Assert.NotNull(reconciliationCase.BreakExplanation);
             Assert.Contains("broker", reconciliationCase.BreakExplanation.SourceSystems);
-            Assert.Contains("dividend", reconciliationCase.BreakExplanation.ProbableCause, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Security Master corporate-action evidence", reconciliationCase.BreakExplanation.SuggestedNextAction);
         }
         finally
@@ -175,8 +178,8 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(StatementReconciliationStage.Completed, recovered.CurrentStage);
             Assert.Equal("Completed", recovered.Status);
             Assert.Equal(1, recovered.ImportedRowCount);
-            Assert.Equal(1, recovered.MatchCount);
-            Assert.Equal(0, recovered.UnresolvedCount);
+            Assert.Equal(0, recovered.MatchCount);
+            Assert.Equal(1, recovered.UnresolvedCount);
         }
         finally
         {
