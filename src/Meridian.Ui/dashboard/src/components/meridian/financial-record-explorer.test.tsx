@@ -53,13 +53,13 @@ describe("FinancialRecordExplorerShell", () => {
 
     const row = screen.getByRole("row", { name: /revenue income aapl/i });
     expect(row).toHaveAttribute("tabindex", "0");
-    expect(row).toHaveAttribute("aria-selected", "false");
+    expect(row).toHaveAttribute("aria-current", "false");
 
     row.focus();
     await user.keyboard("{Enter}");
 
     expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-current", "true");
 
     // Space activates the same selection path (default scroll suppressed).
     await user.keyboard(" ");

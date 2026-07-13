@@ -465,7 +465,7 @@ function ExplorerGrid({
             <tr
               key={row.recordId}
               tabIndex={0}
-              aria-selected={selectedRecordId === row.recordId}
+              aria-current={selectedRecordId === row.recordId}
               className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
               onClick={() => onSelect(row.recordId)}
               onKeyDown={(event) => {
