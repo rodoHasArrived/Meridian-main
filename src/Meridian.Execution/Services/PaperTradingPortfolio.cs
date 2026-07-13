@@ -988,35 +988,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return 0m;
         }
 
-        var remaining = quantity;
+        var consumption = LotConsumption.Consume(
+            OrderLots(method, isCoveringShort),
+            quantity,
+            static lot => Math.Abs(lot.OpenQuantity));
+
         var removedCostBasis = 0m;
-
-        while (remaining > 0m)
+        foreach (var slice in consumption.Slices)
         {
-            var lot = SelectNextLot(method, isCoveringShort);
-            if (lot is null)
+            removedCostBasis += slice.Quantity * slice.Lot.EntryPrice;
+
+            if (slice.ClosesLot)
             {
-                removedCostBasis += remaining * CostBasis;
-                break;
-            }
-
-            var lotAvailable = Math.Abs(lot.OpenQuantity);
-            var consumed = Math.Min(remaining, lotAvailable);
-            removedCostBasis += consumed * lot.EntryPrice;
-            remaining -= consumed;
-
-            var newOpenQty = lot.OpenQuantity > 0m
-                ? lot.OpenQuantity - consumed
-                : lot.OpenQuantity + consumed;
-
-            if (newOpenQty == 0m)
-            {
-                _lots.Remove(lot);
+                _lots.Remove(slice.Lot);
             }
             else
             {
-                lot.OpenQuantity = newOpenQty;
+                slice.Lot.OpenQuantity = slice.Lot.OpenQuantity > 0m
+                    ? slice.Lot.OpenQuantity - slice.Quantity
+                    : slice.Lot.OpenQuantity + slice.Quantity;
             }
+        }
+
+        if (consumption.Shortfall > 0m)
+        {
+            // No matching lot records remain; carry the unmatched remainder at the
+            // position-level average cost (legacy positions without lot history).
+            removedCostBasis += consumption.Shortfall * CostBasis;
         }
 
         CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
@@ -1040,7 +1038,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         return remainingNotional / remainingQuantity;
     }
 
-    private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)
+    private IEnumerable<PositionLot> OrderLots(PositionLotSelectionMethod method, bool isCoveringShort)
     {
         var candidates = isCoveringShort
             ? _lots.Where(static lot => lot.OpenQuantity < 0m)
@@ -1048,10 +1046,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
         return method switch
         {
-            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            _ => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
+            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt),
+            _ => candidates.OrderBy(static lot => lot.OpenedAt),
         };
     }
 
