@@ -66,7 +66,7 @@ public static class TaxLotSelectors
             foreach (var lot in ordered)
             {
                 if (sliceIndex < consumption.Slices.Count
-                    && ReferenceEquals(consumption.Slices[sliceIndex].Lot, lot))
+                    && consumption.Slices[sliceIndex].Lot.LotId == lot.LotId)
                 {
                     var slice = consumption.Slices[sliceIndex++];
                     var take = (long)slice.Quantity;

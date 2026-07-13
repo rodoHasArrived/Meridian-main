@@ -9,16 +9,16 @@ public sealed class PostgresMigrationRunnerValidationTests
         string schema = "meridian_test",
         string ledgerTable = "schema_migrations",
         string ledgerKeyColumn = "filename") => new()
-    {
-        ConnectionString = "Host=localhost;Database=meridian",
-        Schema = schema,
-        ScriptsSubdirectory = Path.Combine("DoesNotExist", "Migrations"),
-        DisplayName = "Test",
-        LockScopeName = "test",
-        ConnectionStringSettingName = "TestOptions.ConnectionString",
-        LedgerTableName = ledgerTable,
-        LedgerKeyColumn = ledgerKeyColumn,
-    };
+        {
+            ConnectionString = "Host=localhost;Database=meridian",
+            Schema = schema,
+            ScriptsSubdirectory = Path.Combine("DoesNotExist", "Migrations"),
+            DisplayName = "Test",
+            LockScopeName = "test",
+            ConnectionStringSettingName = "TestOptions.ConnectionString",
+            LedgerTableName = ledgerTable,
+            LedgerKeyColumn = ledgerKeyColumn,
+        };
 
     [Theory]
     [InlineData("")]
