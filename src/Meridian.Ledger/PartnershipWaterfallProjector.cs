@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
 
 namespace Meridian.Ledger;
 
@@ -161,7 +162,4 @@ public static class PartnershipWaterfallProjector
                 throw new ArgumentException($"Waterfall tier '{tier.TierId}' allocation percentages must sum to 1.000000; actual total was {total}.", nameof(tiers));
         }
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }

@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -377,57 +379,11 @@ public static class LedgerReportPackBuilder
     }
 
     private static IEnumerable<(string Name, string Value)> BuildDimensionFields(LedgerLineDimensionSet dimensions)
-    {
-        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions)!;
-        if (HasValue(dimensions.FundId))
-            yield return ("fundId", dimensions.FundId!.Trim());
-        if (HasValue(dimensions.EntityId))
-            yield return ("entityId", dimensions.EntityId!.Trim());
-        if (HasValue(dimensions.SleeveId))
-            yield return ("sleeveId", dimensions.SleeveId!.Trim());
-        if (HasValue(dimensions.StrategyId))
-            yield return ("strategyId", dimensions.StrategyId!.Trim());
-        if (HasValue(dimensions.InvestorId))
-            yield return ("investorId", dimensions.InvestorId!.Trim());
-        if (HasValue(dimensions.CapitalAccountId))
-            yield return ("capitalAccountId", dimensions.CapitalAccountId!.Trim());
-        if (dimensions.InstrumentId is not null)
-            yield return ("instrumentId", dimensions.InstrumentId.Value.ToString("D"));
-        if (dimensions.PositionId is not null)
-            yield return ("positionId", dimensions.PositionId.Value.ToString("D"));
-        if (HasValue(dimensions.TaxLotId))
-            yield return ("taxLotId", dimensions.TaxLotId!.Trim());
-        if (HasValue(dimensions.CostCenterId))
-            yield return ("costCenterId", dimensions.CostCenterId!.Trim());
-        if (HasValue(dimensions.CounterpartyId))
-            yield return ("counterpartyId", dimensions.CounterpartyId!.Trim());
-        if (HasValue(dimensions.OrganizationId))
-            yield return ("organizationId", dimensions.OrganizationId!.Trim());
-        if (HasValue(dimensions.PortfolioId))
-            yield return ("portfolioId", dimensions.PortfolioId!.Trim());
-        if (HasValue(dimensions.BookId))
-            yield return ("bookId", dimensions.BookId!.Trim());
-        if (HasValue(dimensions.AccountId))
-            yield return ("accountId", dimensions.AccountId!.Trim());
-        if (HasValue(dimensions.CustomerId))
-            yield return ("customerId", dimensions.CustomerId!.Trim());
-        if (HasValue(dimensions.VendorId))
-            yield return ("vendorId", dimensions.VendorId!.Trim());
-        if (HasValue(dimensions.ProjectId))
-            yield return ("projectId", dimensions.ProjectId!.Trim());
-
-        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            if (HasValue(key) && HasValue(value))
-                yield return ($"externalGl.{key.Trim()}", value.Trim());
-        }
-    }
+        => LedgerLineDimensionSetFields.Enumerate(dimensions)
+            .Select(static field => (field.Name, field.Value));
 
     private static bool MatchesLineDimensions(LedgerLineDimensionSet? actual, LedgerLineDimensionSet? expected)
         => LedgerLineDimensionSetNormalizer.Matches(actual, expected);
-
-    private static bool HasValue(string? value)
-        => !string.IsNullOrWhiteSpace(value);
 
     private static string ComputeSha256(string value)
     {
@@ -437,9 +393,6 @@ public static class LedgerReportPackBuilder
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 
     private static string JsonString(string value)
         => JsonSerializer.Serialize(value);

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Audit.Compliance;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Tests.Compliance;
 
@@ -9,7 +10,7 @@ public sealed class CompliancePolicyEngineTests
     public void PaymentRelease_RequiresRoleDualApprovalAndMfa()
     {
         var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext("approver-1", ["TreasuryOperator"], "Treasury", "127.0.0.1", "dev1", MfaSatisfied: true);
+        var actor = new ActorContext("approver-1", [nameof(UserRole.Controller)], "Treasury", "127.0.0.1", "dev1", MfaSatisfied: true);
         var request = new ComplianceActionRequest(
             SensitiveAction.PaymentRelease,
             "Payment",
@@ -29,7 +30,7 @@ public sealed class CompliancePolicyEngineTests
     public void SegregationOfDuties_BlocksSelfApproval()
     {
         var policy = new CompliancePolicyEngine();
-        var actor = new ActorContext("approver-1", ["OverrideApprover"], "Risk", "127.0.0.1", "dev1", MfaSatisfied: true);
+        var actor = new ActorContext("approver-1", [nameof(UserRole.Admin)], "Risk", "127.0.0.1", "dev1", MfaSatisfied: true);
         var request = new ComplianceActionRequest(
             SensitiveAction.OverrideApproval,
             "Override",
@@ -49,7 +50,7 @@ public sealed class CompliancePolicyEngineTests
     public void AuditLog_HashChain_VerifiesIntegrity()
     {
         var audit = new ImmutableAuditLogService();
-        var actor = new ActorContext("ops-1", ["RulesAdmin"], "Ops", "10.0.0.1", "laptop", true);
+        var actor = new ActorContext("ops-1", [nameof(UserRole.Admin)], "Ops", "10.0.0.1", "laptop", true);
 
         audit.Append(actor, new ComplianceActionRequest(SensitiveAction.RuleEdit, "Rule", "rule-1", "{\"limit\":10}", "{\"limit\":15}", "corr-a", "entity-a"));
         audit.Append(actor, new ComplianceActionRequest(SensitiveAction.RuleEdit, "Rule", "rule-2", "{\"limit\":20}", "{\"limit\":25}", "corr-b", "entity-a"));
@@ -67,7 +68,7 @@ public sealed class CompliancePolicyEngineTests
     {
         var policy = new CompliancePolicyEngine();
         var actor = new ActorContext(
-            "analyst-1", ["ReadOnlyAnalyst"], "Research", "10.0.0.5", "desk-3", MfaSatisfied: true);
+            "analyst-1", [nameof(UserRole.ReadOnly)], "Research", "10.0.0.5", "desk-3", MfaSatisfied: true);
         var request = CreateRequest(
             action,
             requestedBy: "requester-1",
@@ -76,7 +77,7 @@ public sealed class CompliancePolicyEngineTests
         var result = policy.Evaluate(actor, request);
 
         result.Allowed.Should().BeFalse(
-            "every sensitive action requires its dedicated privileged role");
+            "every sensitive action requires a role granting its gating permission");
         result.Reason.Should().Be("Missing required privileged role.");
     }
 
@@ -85,7 +86,7 @@ public sealed class CompliancePolicyEngineTests
     {
         var policy = new CompliancePolicyEngine();
         var actor = new ActorContext(
-            "ops-1", ["RulesAdmin", "TreasuryOperator"], "Ops", "10.0.0.1", "laptop", MfaSatisfied: true);
+            "ops-1", [nameof(UserRole.Admin), nameof(UserRole.Controller)], "Ops", "10.0.0.1", "laptop", MfaSatisfied: true);
         var request = CreateRequest((SensitiveAction)999, requestedBy: "requester-1");
 
         var result = policy.Evaluate(actor, request);
@@ -95,8 +96,8 @@ public sealed class CompliancePolicyEngineTests
     }
 
     [Theory]
-    [InlineData(SensitiveAction.RuleEdit, "RulesAdmin")]
-    [InlineData(SensitiveAction.BreakClosure, "ReconciliationOfficer")]
+    [InlineData(SensitiveAction.RuleEdit, nameof(UserRole.Developer))]
+    [InlineData(SensitiveAction.BreakClosure, nameof(UserRole.FundAccountant))]
     public void Evaluate_NonStepUpActionWithoutMfa_Allows(SensitiveAction action, string role)
     {
         // Rule edits and break closures require the privileged role but no MFA step-up
@@ -114,8 +115,8 @@ public sealed class CompliancePolicyEngineTests
     }
 
     [Theory]
-    [InlineData(SensitiveAction.PaymentRelease, "TreasuryOperator")]
-    [InlineData(SensitiveAction.OverrideApproval, "OverrideApprover")]
+    [InlineData(SensitiveAction.PaymentRelease, nameof(UserRole.Controller))]
+    [InlineData(SensitiveAction.OverrideApproval, nameof(UserRole.Admin))]
     public void Evaluate_StepUpActionWithoutMfa_Rejects(SensitiveAction action, string role)
     {
         var policy = new CompliancePolicyEngine();
@@ -145,7 +146,7 @@ public sealed class CompliancePolicyEngineTests
     {
         var policy = new CompliancePolicyEngine();
         var actor = new ActorContext(
-            "approver-1", ["TreasuryOperator"], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: true);
+            "approver-1", [nameof(UserRole.Controller)], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: true);
         var request = CreateRequest(
             SensitiveAction.PaymentRelease,
             requestedBy: "requester-1",
@@ -164,7 +165,7 @@ public sealed class CompliancePolicyEngineTests
         // satisfy dual approval.
         var policy = new CompliancePolicyEngine();
         var actor = new ActorContext(
-            "approver-1", ["TreasuryOperator"], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: true);
+            "approver-1", [nameof(UserRole.Controller)], "Treasury", "10.0.0.1", "laptop", MfaSatisfied: true);
         var request = CreateRequest(
             SensitiveAction.PaymentRelease,
             requestedBy: "requester-1",
@@ -181,7 +182,7 @@ public sealed class CompliancePolicyEngineTests
     {
         var policy = new CompliancePolicyEngine();
         var actor = new ActorContext(
-            "Approver-1", ["OverrideApprover"], "Risk", "10.0.0.1", "laptop", MfaSatisfied: true);
+            "Approver-1", [nameof(UserRole.Admin)], "Risk", "10.0.0.1", "laptop", MfaSatisfied: true);
         var request = CreateRequest(
             SensitiveAction.OverrideApproval,
             requestedBy: "approver-1",

@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Text;
-
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -108,47 +105,6 @@ public static class PeriodCloseProjector
         LedgerLineDimensionSet? Dimensions,
         decimal NetIncome);
 
-    /// <summary>
-    /// Deterministic key for a dimensional scope, used for grouping the retained-earnings roll
-    /// and ordering journal lines. Record value equality is unreliable for the external-GL
-    /// dictionary, so this canonicalizes every field into a stable string.
-    /// </summary>
     private static string DimensionKey(LedgerLineDimensionSet? dimensions)
-    {
-        if (dimensions is null)
-            return string.Empty;
-
-        var builder = new StringBuilder();
-        builder.Append(dimensions.FundId).Append('|')
-            .Append(dimensions.EntityId).Append('|')
-            .Append(dimensions.SleeveId).Append('|')
-            .Append(dimensions.StrategyId).Append('|')
-            .Append(dimensions.InvestorId).Append('|')
-            .Append(dimensions.CapitalAccountId).Append('|')
-            .Append(dimensions.InstrumentId?.ToString("D", CultureInfo.InvariantCulture)).Append('|')
-            .Append(dimensions.TaxLotId).Append('|')
-            .Append(dimensions.CostCenterId).Append('|')
-            .Append(dimensions.CounterpartyId).Append('|')
-            .Append(dimensions.OrganizationId).Append('|')
-            .Append(dimensions.PortfolioId).Append('|')
-            .Append(dimensions.BookId).Append('|')
-            .Append(dimensions.AccountId).Append('|')
-            .Append(dimensions.CustomerId).Append('|')
-            .Append(dimensions.VendorId).Append('|')
-            .Append(dimensions.ProjectId).Append('|');
-
-        foreach (var pair in dimensions.ExternalGlDimensions.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
-        {
-            builder.Append(pair.Key).Append('=').Append(pair.Value).Append(';');
-        }
-
-        if (dimensions.PositionId.HasValue)
-        {
-            builder.Append('\u001e')
-                .Append("positionId=")
-                .Append(dimensions.PositionId.Value.ToString("D", CultureInfo.InvariantCulture));
-        }
-
-        return builder.ToString();
-    }
+        => LedgerLineDimensionSetFields.BuildScopeKey(dimensions);
 }
