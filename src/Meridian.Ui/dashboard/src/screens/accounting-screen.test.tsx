@@ -3010,11 +3010,12 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Accounting case queue" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected accounting case" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected case evidence and actions" })).toBeInTheDocument();
-    expect(screen.getByRole("searchbox", { name: "Current Accounting route" })).toHaveValue("Accounting / Close Cockpit");
-    const navigator = screen.getByRole("region", { name: "Accounting recovery navigator" });
-    expect(within(navigator).getByRole("link", { name: "Reconciliation Casework" })).toHaveAttribute("href", "/accounting/reconciliation");
-    expect(within(navigator).getByRole("link", { name: "Journal Entry" })).toHaveAttribute("href", "/accounting/journal-entries");
-    expect(within(navigator).getByRole("link", { name: "Governance" })).toHaveAttribute("href", "/accounting/configure");
+    // The recovery navigator is replaced by the route tab strip in the header.
+    const routeTabs = screen.getByRole("tablist", { name: "Accounting routes" });
+    expect(within(routeTabs).getByRole("tab", { name: "Close" })).toHaveAttribute("aria-selected", "true");
+    expect(within(routeTabs).getByRole("tab", { name: "Reconciliation" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Adjustments" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Reports" })).toBeInTheDocument();
     fireEvent.click(screen.getByText("System details"));
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
     expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
@@ -4103,7 +4104,7 @@ describe("AccountingScreen", () => {
       }
     };
 
-    await renderAccountingScreen(reportingData, "/reporting");
+    await renderAccountingScreen(reportingData, "/accounting/reporting");
 
     expect(screen.getByText("Report packet posture")).toBeInTheDocument();
     expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);
@@ -4786,5 +4787,29 @@ describe("AccountingScreen", () => {
     expect(alert).toHaveTextContent("Break action failed: Ledger write rejected");
     expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
     expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
+  });
+});
+
+describe("AccountingScreen accessibility", () => {
+  it.each([
+    ["close-cockpit landing", "/accounting"],
+    ["reconciliation", "/accounting/reconciliation"],
+    ["journal entries", "/accounting/journal-entries"],
+    ["capital accounts", "/accounting/capital-accounts"],
+    ["exceptions", "/accounting/exceptions"],
+    ["approvals", "/accounting/approvals"],
+    ["security master", "/accounting/security-master"],
+    ["configure", "/accounting/configure"],
+    ["reporting", "/accounting/reporting"]
+  ])("has no basic accessibility violations in the %s view", async (_view, route) => {
+    const { container } = await renderAccountingScreen(data, route);
+
+    const results = await axe(container);
+    expect(
+      results.violations.map((violation) => ({
+        id: violation.id,
+        targets: violation.nodes.map((node) => node.target)
+      }))
+    ).toEqual([]);
   });
 });

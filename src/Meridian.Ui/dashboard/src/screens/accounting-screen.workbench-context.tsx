@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
-import { WorkspaceFilterBar, type WorkspaceFilterBarField } from "@/components/meridian/workspace-primitives";
-import { Button } from "@/components/ui/button";
+import { useLocation, useNavigate } from "react-router-dom";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   AccountingTaskModeViewModel,
@@ -17,69 +16,66 @@ export interface AccountingWorkbenchContextProps {
   workspace: WorkspaceSummary;
   workstream: AccountingWorkstream;
   taskMode: AccountingTaskModeViewModel;
-  recoveryFields: WorkspaceFilterBarField[];
-  chips: AccountingChipViewModel[];
 }
+
+/**
+ * Route-scoped tabs for the catchall AccountingScreen task modes. Dedicated
+ * screens (Ledger, Trial Balance, Close calendar, Entity setup, Statement
+ * import, Evidence) stay sidebar-only, matching the Trading/Data pattern of
+ * one tab per in-screen route view.
+ */
+const accountingRouteTabs: { id: string; label: string; route: string; workstreams: AccountingWorkstream[] }[] = [
+  { id: "close", label: "Close", route: WORKSTATION_ROUTE_CATALOG.accounting, workstreams: ["ledger"] },
+  { id: "reconciliation", label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, workstreams: ["reconciliation"] },
+  { id: "journal-entries", label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries, workstreams: ["journal-entries"] },
+  { id: "capital-accounts", label: "Capital accounts", route: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts, workstreams: ["capital-accounts"] },
+  { id: "exceptions", label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions, workstreams: ["exceptions"] },
+  { id: "approvals", label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals, workstreams: ["approvals"] },
+  { id: "security-master", label: "Data health", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, workstreams: ["security-master"] },
+  { id: "configure", label: "Reports", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure, workstreams: ["configure", "reporting"] }
+];
 
 export function AccountingWorkbenchContext({
   workspace,
   workstream,
-  taskMode,
-  recoveryFields,
-  chips
+  taskMode
 }: AccountingWorkbenchContextProps) {
-  return (
-    <>
-      <section
-        id="accounting-overview"
-        role="region"
-        aria-label={`${workspace.label} workbench context`}
-        data-workstream={workstream}
-        data-task-mode={taskMode.id}
-        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
-      >
-        <div className="min-w-0">
-          <div className="eyebrow-label">{workspace.label} lane</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            {taskMode.label}
-          </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{taskMode.description}</p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <AccountingChip label="Task mode" value={taskMode.label} />
-          <AccountingChip label="Workstream" value={workstream} />
-          {chips.map((chip) => (
-            <AccountingChip key={chip.label} label={chip.label} value={chip.value} />
-          ))}
-        </div>
-      </section>
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  const tabs = accountingRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.workstreams.includes(workstream)
+  }));
 
-      <WorkspaceFilterBar
-        label="Accounting recovery navigator"
-        searchLabel="Current Accounting route"
-        searchValue={`${workspace.label} / ${taskMode.label}`}
-        fields={recoveryFields}
-        actions={
-          <div className="flex flex-wrap gap-2" aria-label="Accounting task-mode routes">
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accounting}>Close Cockpit</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accountingReconciliation}>Reconciliation Casework</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accountingLedger}>Ledger Explorer</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Journal Entry</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accountingConfigure}>Governance</Link>
-            </Button>
-          </div>
-        }
+  return (
+    <section
+      id="accounting-overview"
+      role="region"
+      aria-label={`${workspace.label} workbench context`}
+      data-workstream={workstream}
+      data-task-mode={taskMode.id}
+      className="flex flex-wrap items-end justify-between gap-3"
+    >
+      <div className="min-w-0">
+        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+          {taskMode.label}
+        </h2>
+        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">{taskMode.description}</p>
+      </div>
+      <WorkspaceTabStrip
+        label="Accounting routes"
+        tabs={tabs}
+        onSelect={(id) => {
+          const tab = accountingRouteTabs.find((candidate) => candidate.id === id);
+          if (tab) {
+            // Preserve the querystring: the operating scope is threaded
+            // through search params across the shell.
+            navigate({ pathname: tab.route, search });
+          }
+        }}
       />
-    </>
+    </section>
   );
 }
 
