@@ -1,10 +1,13 @@
 using System.Text.Json;
+using System.Data;
 using Meridian.Contracts.AssetOperations;
 using Npgsql;
 
 namespace Meridian.Storage.AssetOperations;
 
-public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsProjectionStore
+public sealed partial class PostgresAssetOperationsProjectionStore :
+    IAssetOperationsProjectionStore,
+    IInstrumentPositionProjectionStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -19,62 +22,46 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
     public async Task<AssetOperationsDetailDto?> GetAsync(Guid securityId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+            .ConfigureAwait(false);
 
         var subject = await ReadSingleAsync<AssetOperationSubjectDto>(
             connection,
+            transaction,
             "asset_operation_subjects",
             securityId,
             ct).ConfigureAwait(false);
         if (subject is null)
         {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
             return null;
         }
 
-        var instrumentRoles = await ReadTypedListAsync<InstrumentRoleDto>(
-            connection,
-            "instrument_role_projections",
-            "effective_from, version, role_id",
-            securityId,
-            ct).ConfigureAwait(false);
-        var bookPositions = await ReadTypedListAsync<BookPositionDto>(
-            connection,
-            "book_position_projections",
-            "effective_from, version, position_id",
-            securityId,
-            ct).ConfigureAwait(false);
-        var economicStates = await ReadTypedListAsync<PositionEconomicStateDto>(
-            connection,
-            "position_economic_state_projections",
-            "as_of_date, version, economic_state_id",
-            securityId,
-            ct).ConfigureAwait(false);
-        var projectionLineages = bookPositions
-            .Select(static position => position.ProjectionLineage)
-            .Concat(economicStates.Select(static state => state.ProjectionLineage))
-            .Where(static lineage => lineage is not null)
-            .Cast<ProjectionLineageDto>()
-            .DistinctBy(static lineage => lineage.ProjectionRunId)
-            .ToArray();
+        var typed = await ReadInstrumentSnapshotAsync(connection, transaction, securityId, null, null, ct)
+            .ConfigureAwait(false);
 
-        return new AssetOperationsDetailDto(
+        var detail = new AssetOperationsDetailDto(
             subject,
-            await ReadListAsync<AssetTermsVersionDto>(connection, "asset_terms_versions", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetLifecycleEventDto>(connection, "asset_lifecycle_events", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetCashFlowProjectionRunDto>(connection, "asset_cash_flow_projection_runs", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetProjectedCashFlowDto>(connection, "asset_projected_cash_flows", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetActualActivityDto>(connection, "asset_actual_activity", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetReconciliationRunDto>(connection, "asset_reconciliation_runs", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetReconciliationResultDto>(connection, "asset_reconciliation_results", securityId, ct).ConfigureAwait(false),
-            await ReadListAsync<AssetLedgerProjectionDto>(connection, "asset_ledger_projections", securityId, ct).ConfigureAwait(false),
-            await ReadSingleAsync<AssetOperationsReadinessDto>(connection, "asset_operations_readiness", securityId, ct).ConfigureAwait(false)
+            await ReadListAsync<AssetTermsVersionDto>(connection, transaction, "asset_terms_versions", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetLifecycleEventDto>(connection, transaction, "asset_lifecycle_events", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetCashFlowProjectionRunDto>(connection, transaction, "asset_cash_flow_projection_runs", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetProjectedCashFlowDto>(connection, transaction, "asset_projected_cash_flows", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetActualActivityDto>(connection, transaction, "asset_actual_activity", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetReconciliationRunDto>(connection, transaction, "asset_reconciliation_runs", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetReconciliationResultDto>(connection, transaction, "asset_reconciliation_results", securityId, ct).ConfigureAwait(false),
+            await ReadListAsync<AssetLedgerProjectionDto>(connection, transaction, "asset_ledger_projections", securityId, ct).ConfigureAwait(false),
+            await ReadSingleAsync<AssetOperationsReadinessDto>(connection, transaction, "asset_operations_readiness", securityId, ct).ConfigureAwait(false)
                 ?? BuildFallbackReadiness(subject),
-            await ReadListAsync<AssetLifecycleEventDto>(connection, "asset_workflow_audit", securityId, ct).ConfigureAwait(false))
+            await ReadListAsync<AssetLifecycleEventDto>(connection, transaction, "asset_workflow_audit", securityId, ct).ConfigureAwait(false))
         {
-            InstrumentRoles = instrumentRoles,
-            BookPositions = bookPositions,
-            PositionEconomicStates = economicStates,
-            ProjectionLineages = projectionLineages
+            InstrumentRoles = typed.InstrumentRoles,
+            BookPositions = typed.BookPositions,
+            PositionEconomicStates = typed.PositionEconomicStates,
+            ProjectionLineages = typed.ProjectionLineages
         };
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return detail;
     }
 
     public async Task UpsertAsync(
@@ -91,7 +78,9 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.Serializable, ct)
+            .ConfigureAwait(false);
 
         await DeleteExistingAsync(connection, transaction, projection.Subject.SecurityId, ct).ConfigureAwait(false);
         await InsertAsync(connection, transaction, "asset_operation_subjects", projection.Subject.SecurityId, "SecurityMaster", projection.Subject.SecurityId.ToString("D"), projection.Subject, ct).ConfigureAwait(false);
@@ -108,19 +97,128 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
 
         var normalizedPositions = NormalizeTypedProjections(projection);
         var normalizedStates = NormalizeEconomicStates(projection, normalizedPositions);
-        foreach (var role in projection.InstrumentRoles)
+        foreach (var position in normalizedPositions
+                     .Where(position => InstrumentPositionProjectionRules.ParticipatesInActiveOverlap(position.Status))
+                     .OrderBy(ComputeScopeLockKey))
         {
+            await AcquirePositionScopeLockAsync(connection, transaction, position, ct).ConfigureAwait(false);
+        }
+
+        var incomingLineages = projection.ProjectionLineages
+            .Concat(normalizedPositions
+                .Select(static position => position.ProjectionLineage)
+                .Where(static lineage => lineage is not null)!)
+            .Concat(normalizedStates
+                .Select(static state => state.ProjectionLineage)
+                .Where(static lineage => lineage is not null)!)
+            .Cast<ProjectionLineageDto>()
+            .ToArray();
+        var conflictingPersistedIdentity = incomingLineages
+            .GroupBy(static lineage => lineage.ProjectionRunId)
+            .FirstOrDefault(group => group.Skip(1).Any(lineage => !PayloadEquals(group.First(), lineage)));
+        if (conflictingPersistedIdentity is not null)
+        {
+            throw new InvalidOperationException(
+                $"Projection lineage '{conflictingPersistedIdentity.Key:D}' is append-only and cannot have conflicting payloads.");
+        }
+
+        foreach (var lineage in incomingLineages
+                     .DistinctBy(static lineage => lineage.ProjectionRunId)
+                     .OrderBy(static lineage => lineage.ProjectionRunId))
+        {
+            await AcquireProjectionRunLockAsync(connection, transaction, lineage.ProjectionRunId, ct)
+                .ConfigureAwait(false);
+            await ValidateProjectionLineageAppendAsync(connection, transaction, lineage, ct)
+                .ConfigureAwait(false);
+        }
+
+        foreach (var role in projection.InstrumentRoles.OrderBy(static role => role.RoleId))
+        {
+            InstrumentPositionProjectionRules.ValidateRole(role, approval);
+            var persistedRole = await ReadInstrumentRoleAsync(
+                    connection,
+                    transaction,
+                    role.RoleId,
+                    true,
+                    ct)
+                .ConfigureAwait(false);
+            ValidateCompatibilityRoleTransition(persistedRole, role);
             await UpsertInstrumentRoleAsync(connection, transaction, projection.Subject.SecurityId, role, approval, ct).ConfigureAwait(false);
         }
 
         foreach (var position in normalizedPositions)
         {
+            var role = projection.InstrumentRoles.FirstOrDefault(candidate => candidate.RoleId == position.RoleId)
+                ?? await ReadInstrumentRoleAsync(connection, transaction, position.RoleId, true, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"Book position '{position.PositionId:D}' references a missing instrument role.");
+            var state = normalizedStates
+                .Where(candidate => candidate.PositionId == position.PositionId)
+                .OrderByDescending(static candidate => candidate.AsOfDate)
+                .ThenByDescending(static candidate => candidate.Version)
+                .FirstOrDefault();
+            InstrumentPositionProjectionRules.ValidateWrite(role, position, state, 0, approval);
+            var persistedPosition = await ReadBookPositionAsync(
+                    connection,
+                    transaction,
+                    position.PositionId,
+                    true,
+                    ct)
+                .ConfigureAwait(false);
+            ValidateCompatibilityPositionTransition(persistedPosition, position);
+            ValidatePositionIdentity(persistedPosition, position);
+            await EnsureRoleCoversPositionsAsync(
+                connection,
+                transaction,
+                role,
+                position,
+                ct).ConfigureAwait(false);
+            await EnsureStatesRemainWithinPositionAsync(
+                connection,
+                transaction,
+                position,
+                ct).ConfigureAwait(false);
+            await EnsureNoOverlapAsync(connection, transaction, position, ct).ConfigureAwait(false);
             await UpsertBookPositionAsync(connection, transaction, projection.Subject.SecurityId, position, approval, ct).ConfigureAwait(false);
+        }
+
+        foreach (var role in projection.InstrumentRoles.OrderBy(static role => role.RoleId))
+        {
+            await EnsureRoleCoversPositionsAsync(
+                connection,
+                transaction,
+                role,
+                null,
+                ct).ConfigureAwait(false);
         }
 
         foreach (var state in normalizedStates)
         {
-            await AppendEconomicStateAsync(connection, transaction, projection.Subject.SecurityId, state, approval, ct).ConfigureAwait(false);
+            var position = normalizedPositions.FirstOrDefault(candidate => candidate.PositionId == state.PositionId)
+                ?? await ReadBookPositionAsync(connection, transaction, state.PositionId, true, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"Economic state '{state.EconomicStateId:D}' references a missing book position.");
+            if (position.SecurityId != projection.Subject.SecurityId)
+            {
+                throw new InvalidOperationException(
+                    "Economic states must match the Asset Operations subject Security Master identity.");
+            }
+
+            var persistedState = await ReadEconomicStateAsync(
+                    connection,
+                    transaction,
+                    state.EconomicStateId,
+                    true,
+                    ct)
+                .ConfigureAwait(false);
+            InstrumentPositionProjectionRules.ValidateEconomicState(position, state);
+            ValidateCompatibilityStateVersion(position, state);
+            await ValidateEconomicStateAppendAsync(
+                connection,
+                transaction,
+                position,
+                state,
+                persistedState,
+                ct).ConfigureAwait(false);
+            await AppendEconomicStateAsync(connection, transaction, projection.Subject.SecurityId, position, state, approval, ct).ConfigureAwait(false);
         }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
@@ -197,21 +295,24 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
 
     private async Task<T?> ReadSingleAsync<T>(
         NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         string table,
         Guid securityId,
         CancellationToken ct)
     {
-        var rows = await ReadListAsync<T>(connection, table, securityId, ct).ConfigureAwait(false);
+        var rows = await ReadListAsync<T>(connection, transaction, table, securityId, ct).ConfigureAwait(false);
         return rows.FirstOrDefault();
     }
 
     private async Task<IReadOnlyList<T>> ReadListAsync<T>(
         NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         string table,
         Guid securityId,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select payload::text
@@ -237,6 +338,7 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
 
     private async Task<IReadOnlyList<T>> ReadTypedListAsync<T>(
         NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
         string table,
         string orderBy,
         Guid securityId,
@@ -249,6 +351,7 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         }
 
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"select payload::text from {Qualified(table)} where security_id = @security_id order by {orderBy};";
         command.Parameters.AddWithValue("security_id", securityId);
@@ -305,7 +408,7 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
                 throw new InvalidOperationException($"Book position '{position.PositionId:D}' references a role that is not included in the projection write.");
             }
 
-            var state = position.CurrentEconomicState ?? projection.PositionEconomicStates
+            var state = projection.PositionEconomicStates
                 .Where(candidate => candidate.PositionId == position.PositionId)
                 .OrderByDescending(static candidate => candidate.AsOfDate)
                 .ThenByDescending(static candidate => candidate.Version)
@@ -313,10 +416,15 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
             var lineage = position.ProjectionLineage ?? projection.ProjectionLineages
                 .FirstOrDefault(candidate => candidate.BookPositionId == position.PositionId ||
                     candidate.TriggerEvent.BookPositionId == position.PositionId);
-            positions.Add(position with
+            var normalized = InstrumentPositionProjectionRules.NormalizeWrite(
+                position with
+                {
+                    ProjectionLineage = lineage
+                },
+                state);
+            positions.Add(normalized.Position with
             {
-                CurrentEconomicState = state,
-                ProjectionLineage = lineage
+                CurrentEconomicState = normalized.EconomicState
             });
         }
 
@@ -334,10 +442,26 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         }
 
         if (projection.ProjectionLineages.Any(lineage =>
-                lineage.BookPositionId is not Guid positionId ||
-                projection.BookPositions.All(position => position.PositionId != positionId)))
+                (lineage.BookPositionId ?? lineage.TriggerEvent.BookPositionId) is not Guid positionId ||
+                positions.All(position => position.PositionId != positionId)))
         {
             throw new InvalidOperationException("Projection lineage must reference a book position included in the projection write.");
+        }
+
+        foreach (var lineage in projection.ProjectionLineages)
+        {
+            var positionId = lineage.BookPositionId ?? lineage.TriggerEvent.BookPositionId;
+            var position = positions.Single(candidate => candidate.PositionId == positionId);
+            InstrumentPositionProjectionRules.ValidateStandaloneLineage(position, lineage);
+        }
+
+        var conflictingLineage = projection.ProjectionLineages
+            .GroupBy(static lineage => lineage.ProjectionRunId)
+            .FirstOrDefault(group => group.Skip(1).Any(lineage => !PayloadEquals(group.First(), lineage)));
+        if (conflictingLineage is not null)
+        {
+            throw new InvalidOperationException(
+                $"Projection lineage '{conflictingLineage.Key:D}' is append-only and cannot have conflicting payloads.");
         }
 
         return positions;
@@ -354,7 +478,11 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
             .Cast<ProjectionLineageDto>()
             .ToArray();
 
-        return projection.PositionEconomicStates
+        var states = projection.PositionEconomicStates
+            .Concat(positions
+                .Select(static position => position.CurrentEconomicState)
+                .Where(static state => state is not null)!)
+            .Cast<PositionEconomicStateDto>()
             .Select(state => state.ProjectionLineage is not null
                 ? state
                 : state with
@@ -364,6 +492,16 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
                         lineage.TriggerEvent.EventId == state.SourceEvent?.EventId)
                 })
             .ToArray();
+        var conflictingState = states
+            .GroupBy(static state => state.EconomicStateId)
+            .FirstOrDefault(group => group.Skip(1).Any(state => !PayloadEquals(group.First(), state)));
+        if (conflictingState is not null)
+        {
+            throw new InvalidOperationException(
+                $"Economic state '{conflictingState.Key:D}' is append-only and cannot have conflicting payloads.");
+        }
+
+        return states.DistinctBy(static state => state.EconomicStateId).ToArray();
     }
 
     private async Task UpsertInstrumentRoleAsync(
@@ -381,16 +519,25 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
             insert into {Qualified("instrument_role_projections")} as persisted_role (
                 role_id, security_id, owner_scope_id, owner_scope_kind, role_kind,
                 effective_from, effective_to, version, source_event_id,
-                approval_actor, approval_reference, approved_at, evidence_links, payload)
+                approval_actor, approval_reference, approval_rationale, approved_at,
+                source_domain, source_entity_id, source_content_hash, evidence_links, payload)
             values (
                 @id, @security_id, @owner_scope_id, @owner_scope_kind, @role_kind,
                 @effective_from, @effective_to, @version, @source_event_id,
-                @approval_actor, @approval_reference, @approved_at, @evidence::jsonb, @payload::jsonb)
+                @approval_actor, @approval_reference, @approval_rationale, @approved_at,
+                @source_domain, @source_entity_id, @source_content_hash, @evidence::jsonb, @payload::jsonb)
             on conflict (role_id) do update set
                 effective_from = excluded.effective_from,
                 effective_to = excluded.effective_to,
                 version = excluded.version,
                 source_event_id = excluded.source_event_id,
+                source_domain = excluded.source_domain,
+                source_entity_id = excluded.source_entity_id,
+                source_content_hash = excluded.source_content_hash,
+                approval_actor = case when excluded.version > persisted_role.version then excluded.approval_actor else persisted_role.approval_actor end,
+                approval_reference = case when excluded.version > persisted_role.version then excluded.approval_reference else persisted_role.approval_reference end,
+                approval_rationale = case when excluded.version > persisted_role.version then excluded.approval_rationale else persisted_role.approval_rationale end,
+                approved_at = case when excluded.version > persisted_role.version then excluded.approved_at else persisted_role.approved_at end,
                 evidence_links = excluded.evidence_links,
                 payload = excluded.payload,
                 updated_at = case
@@ -411,6 +558,7 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         command.Parameters.AddWithValue("role_kind", role.RoleKind);
         command.Parameters.AddWithValue("effective_from", role.EffectiveFrom);
         command.Parameters.AddWithValue("effective_to", (object?)role.EffectiveTo ?? DBNull.Value);
+        AddSourceEventParameters(command, role.OriginEvent);
         await EnsureTypedWriteAsync(command, "instrument role", role.RoleId, ct).ConfigureAwait(false);
     }
 
@@ -428,17 +576,32 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
             $"""
             insert into {Qualified("book_position_projections")} as persisted_position (
                 position_id, security_id, role_id, ledger_book_id, owner_scope_id, owner_scope_kind,
-                effective_from, effective_to, version, source_event_id,
-                approval_actor, approval_reference, approved_at, evidence_links, payload)
+                position_side, position_status, effective_from, effective_to, version, source_event_id,
+                approval_actor, approval_reference, approval_rationale, approved_at,
+                source_domain, source_entity_id, source_content_hash,
+                projection_run_id, projection_event_id, evidence_links, payload)
             values (
                 @id, @security_id, @role_id, @ledger_book_id, @owner_scope_id, @owner_scope_kind,
-                @effective_from, @effective_to, @version, @source_event_id,
-                @approval_actor, @approval_reference, @approved_at, @evidence::jsonb, @payload::jsonb)
+                @position_side, @position_status, @effective_from, @effective_to, @version, @source_event_id,
+                @approval_actor, @approval_reference, @approval_rationale, @approved_at,
+                @source_domain, @source_entity_id, @source_content_hash,
+                @projection_run_id, @projection_event_id, @evidence::jsonb, @payload::jsonb)
             on conflict (position_id) do update set
+                position_side = excluded.position_side,
+                position_status = excluded.position_status,
                 effective_from = excluded.effective_from,
                 effective_to = excluded.effective_to,
                 version = excluded.version,
                 source_event_id = excluded.source_event_id,
+                source_domain = excluded.source_domain,
+                source_entity_id = excluded.source_entity_id,
+                source_content_hash = excluded.source_content_hash,
+                projection_run_id = excluded.projection_run_id,
+                projection_event_id = excluded.projection_event_id,
+                approval_actor = case when excluded.version > persisted_position.version then excluded.approval_actor else persisted_position.approval_actor end,
+                approval_reference = case when excluded.version > persisted_position.version then excluded.approval_reference else persisted_position.approval_reference end,
+                approval_rationale = case when excluded.version > persisted_position.version then excluded.approval_rationale else persisted_position.approval_rationale end,
+                approved_at = case when excluded.version > persisted_position.version then excluded.approved_at else persisted_position.approved_at end,
                 evidence_links = excluded.evidence_links,
                 payload = excluded.payload,
                 updated_at = case
@@ -460,8 +623,12 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         command.Parameters.AddWithValue("ledger_book_id", position.BookContext.LedgerBookId);
         command.Parameters.AddWithValue("owner_scope_id", position.BookContext.FundProfileId);
         command.Parameters.AddWithValue("owner_scope_kind", position.BookContext.FundStructureNodeKind.ToString());
+        command.Parameters.AddWithValue("position_side", position.PositionSide);
+        command.Parameters.AddWithValue("position_status", position.Status);
         command.Parameters.AddWithValue("effective_from", position.EffectiveFrom);
         command.Parameters.AddWithValue("effective_to", (object?)position.EffectiveTo ?? DBNull.Value);
+        AddSourceEventParameters(command, position.OriginEvent ?? position.ProjectionLineage?.TriggerEvent);
+        AddProjectionParameters(command, position.ProjectionLineage);
         await EnsureTypedWriteAsync(command, "book position", position.PositionId, ct).ConfigureAwait(false);
     }
 
@@ -469,6 +636,7 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         Guid securityId,
+        BookPositionDto position,
         PositionEconomicStateDto state,
         AssetOperationsWriteApprovalDto approval,
         CancellationToken ct)
@@ -478,18 +646,30 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         command.CommandText =
             $"""
             insert into {Qualified("position_economic_state_projections")} as persisted_state (
-                economic_state_id, position_id, security_id, as_of_date, version, source_event_id,
-                approval_actor, approval_reference, approved_at, evidence_links, payload)
+                economic_state_id, position_id, security_id, ledger_book_id, owner_scope_id,
+                owner_scope_kind, as_of_date, version, source_event_id,
+                approval_actor, approval_reference, approval_rationale, approved_at,
+                source_domain, source_entity_id, source_content_hash,
+                projection_run_id, projection_event_id, evidence_links, payload)
             values (
-                @id, @position_id, @security_id, @as_of_date, @version, @source_event_id,
-                @approval_actor, @approval_reference, @approved_at, @evidence::jsonb, @payload::jsonb)
+                @id, @position_id, @security_id, @ledger_book_id, @owner_scope_id,
+                @owner_scope_kind, @as_of_date, @version, @source_event_id,
+                @approval_actor, @approval_reference, @approval_rationale, @approved_at,
+                @source_domain, @source_entity_id, @source_content_hash,
+                @projection_run_id, @projection_event_id, @evidence::jsonb, @payload::jsonb)
             on conflict (economic_state_id) do update set
                 economic_state_id = persisted_state.economic_state_id
             where excluded.payload = persisted_state.payload;
             """;
-        AddTypedProjectionParameters(command, securityId, state.EconomicStateId, state.Version, state.SourceEvent?.EventId, state.EvidenceLinks, state, approval);
+        var sourceEvent = state.SourceEvent ?? state.ProjectionLineage?.TriggerEvent;
+        AddTypedProjectionParameters(command, securityId, state.EconomicStateId, state.Version, sourceEvent?.EventId, state.EvidenceLinks, state, approval);
         command.Parameters.AddWithValue("position_id", state.PositionId);
+        command.Parameters.AddWithValue("ledger_book_id", position.BookContext.LedgerBookId);
+        command.Parameters.AddWithValue("owner_scope_id", position.BookContext.FundProfileId);
+        command.Parameters.AddWithValue("owner_scope_kind", position.BookContext.FundStructureNodeKind.ToString());
         command.Parameters.AddWithValue("as_of_date", state.AsOfDate);
+        AddSourceEventParameters(command, sourceEvent);
+        AddProjectionParameters(command, state.ProjectionLineage);
         await EnsureTypedWriteAsync(command, "economic state", state.EconomicStateId, ct).ConfigureAwait(false);
     }
 
@@ -509,6 +689,7 @@ public sealed class PostgresAssetOperationsProjectionStore : IAssetOperationsPro
         command.Parameters.AddWithValue("source_event_id", (object?)sourceEventId ?? DBNull.Value);
         command.Parameters.AddWithValue("approval_actor", approval.Actor);
         command.Parameters.AddWithValue("approval_reference", approval.ApprovalReference);
+        command.Parameters.AddWithValue("approval_rationale", approval.Rationale);
         command.Parameters.AddWithValue("approved_at", approval.ApprovedAt);
         command.Parameters.AddWithValue("evidence", JsonSerializer.Serialize(evidenceLinks, JsonOptions));
         command.Parameters.AddWithValue("payload", JsonSerializer.Serialize(payload, JsonOptions));

@@ -83,9 +83,11 @@ Reference Data / Security Master
 - Ledger and Storage own immutable `JournalEntry` append, balanced child `LedgerEntry` records,
   idempotency, period and basis guards, correction lineage, and durable accounting truth.
 
-These concepts are additive semantic contracts. Their introduction does not require an initial
-schema migration or immediate migration of existing Security Master, direct-lending, portfolio,
-fund-account, or position records.
+These concepts began as additive semantic contracts. Durable role, book-position, and economic-state
+projections now live in the separate Asset Operations schema with effective dating, retained source
+and approval provenance, optimistic concurrency, and append-only state history. Their adoption does
+not migrate or backfill existing Security Master, direct-lending, portfolio, fund-account, or
+asset-family records, and the projection schema never stores ledger balances.
 
 ## Expansion Notes
 

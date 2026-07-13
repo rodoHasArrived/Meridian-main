@@ -170,7 +170,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+            sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+            sp.GetService<IAssetOperationsProjectionStore>() as IInstrumentPositionProjectionStore
+            ?? sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
