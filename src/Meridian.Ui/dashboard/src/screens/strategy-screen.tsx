@@ -1,7 +1,8 @@
 import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -189,9 +190,60 @@ const plotToolObservationColumns: DenseDataTableColumn<StrategyPlotSampleRow>[] 
   }
 ];
 
+type StrategyRouteViewId = "overview" | "promotions" | "lab";
+
+/**
+ * Route-scoped tabs: the catchall Strategy sub-routes share the sidebar
+ * taxonomy. Designer, Formula Workbench, Covered call, and Quant Lab are
+ * separate screens and stay sidebar-only.
+ */
+const strategyRouteTabs: { id: StrategyRouteViewId; label: string; route: string }[] = [
+  { id: "overview", label: "Overview", route: "/strategy" },
+  { id: "promotions", label: "Promotions", route: "/strategy/promotions" },
+  { id: "lab", label: "Strategy Lab", route: "/strategy/lab" }
+];
+
+export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.includes("promotions")) {
+    return "promotions";
+  }
+
+  if (segments.includes("lab")) {
+    return "lab";
+  }
+
+  return "overview";
+}
+
+const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; description: string }> = {
+  overview: {
+    title: "Strategy overview",
+    description: "PlotTool analytics and the retained run library. Promotions and the lab have focused routes."
+  },
+  promotions: {
+    title: "Promotions",
+    description: "Retained runs, comparison evidence, and paper-promotion review."
+  },
+  lab: {
+    title: "Strategy Lab",
+    description: "PlotTool workstation: scatter analysis, notebooks, and statistics."
+  }
+};
+
 export function StrategyScreen({ data }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
+  const routeView = resolveStrategyRouteView(pathname);
+  const routeCopy = strategyRouteViewCopy[routeView];
+  const showLab = routeView === "overview" || routeView === "lab";
+  const showRuns = routeView === "overview" || routeView === "promotions";
+  const routeTabs = strategyRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.id === routeView
+  }));
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const runColumns = useMemo<DenseDataTableColumn<StrategyRunTableRow>[]>(() => [
@@ -370,11 +422,37 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   }
 
   return (
-    <div className="space-y-8">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
+    <div className="space-y-5">
+      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
+
+      <section
+        role="region"
+        aria-label="Strategy workspace context"
+        className="flex flex-wrap items-end justify-between gap-3"
+      >
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
+          </h2>
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
+          </p>
+        </div>
+        <WorkspaceTabStrip
+          label="Strategy routes"
+          tabs={routeTabs}
+          onSelect={(id) => {
+            const tab = strategyRouteTabs.find((candidate) => candidate.id === id);
+            if (tab) {
+              // Preserve the querystring: the operating scope is threaded
+              // through search params across the shell.
+              navigate({ pathname: tab.route, search });
+            }
+          }}
+        />
       </section>
 
+      {showLab ? (
       <Card>
         <CardHeader>
           <div className="eyebrow-label">{vm.plotTool.workspace.eyebrow}</div>
@@ -661,10 +739,12 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           )}
         </CardContent>
       </Card>
+      ) : null}
 
+      {showRuns ? (
+      <>
       <Card>
         <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
           <CardTitle>Strategy run library</CardTitle>
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>
@@ -939,6 +1019,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           </CardContent>
         </Card>
       )}
+      </>
+      ) : null}
 
       <Dialog open={Boolean(vm.selectedRunDetail)} onOpenChange={(open) => { if (!open) vm.closeRunDetail(); }}>
         {vm.selectedRunDetail && (

@@ -844,6 +844,37 @@ describe("StrategyScreen", () => {
   });
 });
 
+describe("StrategyScreen route views", () => {
+  it("keeps the overview route on both the lab and the run library", () => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy"] });
+
+    const tablist = screen.getByRole("tablist", { name: "Strategy routes" });
+    expect(tablist).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Strategy overview" })).toBeInTheDocument();
+    expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
+    expect(screen.getByText("Strategy run library")).toBeInTheDocument();
+  });
+
+  it("scopes /strategy/promotions to the run library and promotion evidence", () => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/promotions"] });
+
+    expect(screen.getByRole("tab", { name: "Promotions", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Promotions" })).toBeInTheDocument();
+    expect(screen.getByText("Strategy run library")).toBeInTheDocument();
+    expect(screen.queryByText("PlotTool workstation")).not.toBeInTheDocument();
+  });
+
+  it("scopes /strategy/lab to the PlotTool workstation", () => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
+
+    expect(screen.getByRole("tab", { name: "Strategy Lab", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Strategy Lab" })).toBeInTheDocument();
+    expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
+    expect(screen.queryByText("Strategy run library")).not.toBeInTheDocument();
+  });
+});
+
 function restoreApiSpy(fn: unknown) {
   const spy = fn as { mockRestore?: () => void };
   spy.mockRestore?.();
