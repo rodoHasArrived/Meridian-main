@@ -340,7 +340,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         {
             services.AddSingleton(assetOperationsOptions);
             services.AddSingleton<AssetOperationsMigrationRunner>();
-            services.AddSingleton<IAssetOperationsProjectionStore, PostgresAssetOperationsProjectionStore>();
+            services.AddSingleton<PostgresAssetOperationsProjectionStore>();
+            services.AddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -378,7 +382,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+            sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+            sp.GetService<IAssetOperationsProjectionStore>() as IInstrumentPositionProjectionStore
+            ?? sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-13
 ---
 
 # src/Meridian.Storage
@@ -230,13 +230,30 @@ Security Master continues to own canonical security identity; Asset Operations r
 identity, and Storage preserves each module's records without introducing a parent Instrument Master
 or reversing the dependency into Reference Data.
 `002_instrument_position_projections.sql` adds Security Master-keyed role and book-position payloads
-plus append-only position economic-state history. Existing aggregate writes preserve these typed
-collections when older callers send default-empty fields; the tables retain book/owner scope,
-effective dates, versions, source events, evidence, and approval metadata, but never ledger balances.
-Economic-state payloads retain their matching typed lineage, allowing every append-only factor event
-to survive a later current-position update. Role and position identities cannot move across Security
-Master, owner, role, or ledger-book boundaries, and idempotent replay preserves the original approval
-actor, reference, and timestamp.
+plus append-only position economic-state history. `IInstrumentPositionProjectionStore` exposes
+unfiltered security history, effective-dated security/book lookup, position lookup, and a
+transactional compare-and-swap write without exposing a ledger-balance API. Its PostgreSQL and
+in-memory implementations apply the same missing-role, date-window, overlap, cross-book, owner,
+dimension, provenance, and stale-version guards. The compatibility aggregate command derives the
+persisted version inside the same serializable write while preserving the legacy ability to import a
+strictly newer sparse version; exact `ExpectedVersion` compare-and-swap remains exclusive to the
+dedicated store. New dedicated writes require retained event provenance and evidence. PostgreSQL
+takes deterministic scope locks before row locks so concurrent writers cannot both establish
+overlapping active positions or lose a same-position update; multi-statement reads use a repeatable
+snapshot so position and economic-state versions cannot tear. The in-memory implementation retains
+the same approval evidence, defensively clones caller-owned payload graphs, and preserves the first
+approval on idempotent replay.
+
+`003_instrument_position_projection_guards.sql` normalizes approval rationale, source provenance,
+book/owner scope, and projection lineage identifiers used by those guarded queries. Existing
+aggregate writes preserve typed collections when older callers send default-empty fields; existing
+Security Master, direct-lending, portfolio, fund-account, and asset-family rows are not backfilled or
+migrated. Economic-state payloads retain their matching typed lineage, allowing every append-only
+factor event to survive a later current-position update. Role and position identities cannot move
+across Security Master, owner, role, or ledger-book boundaries, state versions cannot be replaced,
+and idempotent replay preserves the original approval actor, reference, rationale, and timestamp.
+Asset Operations migrations run under a schema-scoped advisory lock and a checksummed migration
+ledger, preventing concurrent first-start races and repeated DDL/history rewrites after restart.
 
 Fund-structure local-first persistence uses Storage-owned state stores. The JSON-backed store writes
 complete snapshots through `AtomicFileWriter`, and the in-memory store preserves the same snapshot

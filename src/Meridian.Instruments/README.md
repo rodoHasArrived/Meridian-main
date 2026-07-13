@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-13
 ---
 
 # src/Meridian.Instruments
@@ -43,8 +43,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AssetOperations/AssetOperationsReadService.cs` - Security Master-keyed asset operations query,
   command, and projection builder for shared terms, lifecycle, cash-flow, activity,
   reconciliation, ledger, evidence, workflow-audit, terms/obligations timeline, and readiness views,
-  plus contract-ready instrument-role, book-position, economic-state, and projection-lineage
-  collections.
+  plus durable instrument-role, book-position, economic-state, and projection-lineage collections
+  merged from the dedicated projection store without replacing existing security-scoped detail.
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
   traces, ledger-support references, and timeline variances without writing ledger facts.
@@ -146,9 +146,11 @@ services, and MMF liquidity projections are owned by `Meridian.Instruments`.
 
 The additive role, book-position, economic-state, event-reference, and projection-lineage contract
 alignment does not migrate existing Security Master, direct-lending, portfolio, fund-account, or
-asset-specific records. Slice 2 persists only the governed role, position, and append-only economic
-state needed to re-resolve typed posting candidates; it cannot create another ledger or balance
-authority.
+asset-specific records. Slice 3 adds effective-dated security/book and position lookup plus
+transactional optimistic concurrency over the Slice 2 projection tables. Asset Operations reads
+compose that durable typed history with the existing security-scoped projection instead of replacing
+terms, cash flows, reconciliation, readiness, or workflow state. These records remain rebuildable
+economic projections; they cannot create another ledger or balance authority.
 
 ## Change rules
 

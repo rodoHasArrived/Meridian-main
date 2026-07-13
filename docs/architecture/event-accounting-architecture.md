@@ -106,13 +106,19 @@ does not match server state blocks candidate creation. The compatibility Securit
 backtesting adjuster call the same calculator, but neither compatibility path establishes production
 posting authority.
 
-The Slice 1 semantic alignment is additive and transport-compatible. Slice 2 adds only the planned
+The Slice 1 semantic alignment is additive and transport-compatible. Slice 2 added only the planned
 Asset Operations role, book-position, and append-only economic-state projection tables needed for
-production candidate re-resolution. It does not migrate existing Security Master, direct-lending,
-portfolio, fund-account, or asset-family records and does not create a parallel balance store or a
-projection-event-to-journal link table. Shared read models query the immutable journal by ledger book
-plus indexed source event and expose the same lineage to the active browser and WPF workstation lanes
-without moving policy into either client.
+production candidate re-resolution. Slice 3 places a dedicated store contract over those tables:
+effective-dated security/book lookup, book-position lookup, transactional expected-version writes,
+append-only state history, and fail-closed role, overlap, cross-book, owner, and date validation.
+The shared Asset Operations read service composes durable typed history with the existing
+security-scoped projection and never treats it as a balance fact.
+
+These slices do not migrate existing Security Master, direct-lending, portfolio, fund-account, or
+asset-family records and do not create a parallel balance store or a projection-event-to-journal
+link table. Shared read models query the immutable journal by ledger book plus indexed source event
+and expose the same lineage to the active browser and WPF workstation lanes without moving policy
+into either client.
 
 ## Implementation Map
 
@@ -123,7 +129,7 @@ without moving policy into either client.
 | Instrument role, position, economic-event, and projection lineage contracts | `src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs` |
 | Instrument and Asset Operations projections | `src/Meridian.Instruments/AssetOperations` |
 | MBS factor-paydown calculator | `src/Meridian.Instruments/AssetOperations/FactorPaydownProjectionService.cs` |
-| Durable role, position, and economic-state payloads | `src/Meridian.Storage/AssetOperations/Migrations/002_instrument_position_projections.sql` |
+| Durable role, position, and economic-state projections | `src/Meridian.Storage/AssetOperations/IInstrumentPositionProjectionStore.cs`, `src/Meridian.Storage/AssetOperations/Migrations/002_instrument_position_projections.sql`, `003_instrument_position_projection_guards.sql` |
 | Journal evidence metadata | `src/Meridian.Ledger/JournalEvidenceReference.cs`, `JournalEntryMetadata.cs` |
 | Durable write validation | `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs`, `PostgresLedgerJournalStore.cs` |
 | Source-backed journal draft commands | `src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs` |
