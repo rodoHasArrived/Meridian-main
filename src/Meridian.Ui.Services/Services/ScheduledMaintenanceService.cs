@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace Meridian.Ui.Services;
 
@@ -344,7 +345,43 @@ public sealed class ScheduledMaintenanceService
         return result;
     }
 
-    private async Task<MaintenanceResult> ExecuteVerificationAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+    // Executors delegate to the real archive maintenance API (/api/admin/maintenance/run,
+    // backed by ScheduledArchiveMaintenanceService in Meridian.Storage). Task types without a
+    // server-side implementation report an honest not-executed result instead of fabricating
+    // success metrics.
+
+    private Task<MaintenanceResult> ExecuteVerificationAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+        => ExecuteArchiveMaintenanceAsync(task, dryRun, serverTaskType: "HealthCheck", ct);
+
+    private Task<MaintenanceResult> ExecuteOptimizationAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+        => ExecuteArchiveMaintenanceAsync(task, dryRun, serverTaskType: "Compression", ct);
+
+    private Task<MaintenanceResult> ExecuteCleanupAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+        => ExecuteArchiveMaintenanceAsync(task, dryRun, serverTaskType: "Cleanup", ct);
+
+    private Task<MaintenanceResult> ExecuteFullAuditAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+        => ExecuteArchiveMaintenanceAsync(task, dryRun, serverTaskType: "IntegrityCheck", ct);
+
+    private Task<MaintenanceResult> ExecuteCompressionAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+        => ExecuteArchiveMaintenanceAsync(task, dryRun, serverTaskType: "Compression", ct);
+
+    private Task<MaintenanceResult> ExecuteDeduplicationAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+        => Task.FromResult(BuildNotImplementedResult(
+            task,
+            dryRun,
+            "Deduplication has no server-side implementation. No operation was executed."));
+
+    /// <summary>
+    /// Runs a maintenance task through the real archive maintenance API and translates the
+    /// execution record into a <see cref="MaintenanceResult"/> with genuine metrics. Never
+    /// fabricates counts, durations, or savings: when the API is unreachable or reports failure,
+    /// the result honestly reports failure with the underlying error.
+    /// </summary>
+    private async Task<MaintenanceResult> ExecuteArchiveMaintenanceAsync(
+        MaintenanceTask task,
+        bool dryRun,
+        string serverTaskType,
+        CancellationToken ct)
     {
         var result = new MaintenanceResult
         {
@@ -354,137 +391,134 @@ public sealed class ScheduledMaintenanceService
             IsDryRun = dryRun
         };
 
-        // Simulate verification work
-        await Task.Delay(TimeSpan.FromSeconds(2), ct);
+        if (dryRun)
+        {
+            // The archive maintenance run endpoint does not expose a dry-run mode; report that
+            // honestly instead of inventing a preview.
+            Log.Warning(
+                "Maintenance task {TaskId} ({ServerTaskType}) requested a dry run, which the archive maintenance API does not support; no operation was executed.",
+                task.Id,
+                serverTaskType);
+            result.Success = false;
+            result.Message = "Dry run is not supported by the archive maintenance API. No operation was executed.";
+            return result;
+        }
 
-        result.Success = true;
-        result.Message = dryRun
-            ? "Dry run: Would verify 150 files in the last 7 days"
-            : "Verified 150 files. All checksums valid.";
-        result.FilesProcessed = 150;
-        result.FilesSuccessful = 150;
+        var response = await ApiClientService.Instance.PostWithResponseAsync<ArchiveMaintenanceExecutionDto>(
+            "/api/admin/maintenance/run",
+            new { taskType = serverTaskType },
+            ct);
+
+        if (!response.Success || response.Data is null)
+        {
+            Log.Warning(
+                "Maintenance task {TaskId} ({ServerTaskType}) failed: archive maintenance API returned status {StatusCode} with error {Error}.",
+                task.Id,
+                serverTaskType,
+                response.StatusCode,
+                response.ErrorMessage);
+            result.Success = false;
+            result.Message = "Archive maintenance API request failed. No maintenance result is available.";
+            result.Error = response.ErrorMessage;
+            return result;
+        }
+
+        var execution = response.Data;
+        var status = ResolveExecutionStatus(execution.Status);
+        var completed =
+            string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(status, "CompletedWithWarnings", StringComparison.OrdinalIgnoreCase);
+
+        result.Success = completed;
+        result.Message = !string.IsNullOrWhiteSpace(execution.Result?.Summary)
+            ? execution.Result!.Summary!
+            : completed
+                ? $"Archive maintenance ({serverTaskType}) completed."
+                : $"Archive maintenance ({serverTaskType}) ended with status {status ?? "unknown"}.";
+        result.Error = execution.ErrorMessage;
+        result.FilesProcessed = execution.FilesProcessed;
+        result.FilesFailed = execution.Result?.FilesFailed ?? 0;
+        result.FilesSuccessful = Math.Max(0, execution.FilesProcessed - result.FilesFailed);
+        result.BytesSaved = execution.BytesSaved;
+
+        if (!completed)
+        {
+            Log.Warning(
+                "Maintenance task {TaskId} ({ServerTaskType}) ended with status {Status}: {Error}",
+                task.Id,
+                serverTaskType,
+                status,
+                execution.ErrorMessage);
+        }
 
         return result;
     }
 
-    private async Task<MaintenanceResult> ExecuteOptimizationAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+    /// <summary>
+    /// Normalizes the execution status, which the host may serialize as either an enum name or
+    /// a numeric value depending on its JSON options.
+    /// </summary>
+    private static string? ResolveExecutionStatus(System.Text.Json.JsonElement status) => status.ValueKind switch
     {
-        var result = new MaintenanceResult
+        System.Text.Json.JsonValueKind.String => status.GetString(),
+        System.Text.Json.JsonValueKind.Number when status.TryGetInt32(out var value) => value switch
+        {
+            0 => "Pending",
+            1 => "Running",
+            2 => "Completed",
+            3 => "CompletedWithWarnings",
+            4 => "Failed",
+            5 => "Cancelled",
+            6 => "TimedOut",
+            _ => value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        },
+        _ => null
+    };
+
+    private static MaintenanceResult BuildNotImplementedResult(MaintenanceTask task, bool dryRun, string message)
+    {
+        Log.Warning(
+            "Maintenance task {TaskId} of type {TaskType} is not implemented; reporting not-executed instead of fabricating a result.",
+            task.Id,
+            task.TaskType);
+
+        return new MaintenanceResult
         {
             TaskId = task.Id,
             TaskName = task.Name,
             StartTime = DateTime.UtcNow,
-            IsDryRun = dryRun
+            IsDryRun = dryRun,
+            Success = false,
+            Message = message
         };
-
-        // Simulate optimization work
-        await Task.Delay(TimeSpan.FromSeconds(3), ct);
-
-        result.Success = true;
-        result.Message = dryRun
-            ? "Dry run: Would compress 45 files, saving approximately 12 GB"
-            : "Optimized 45 files. Saved 12 GB of storage.";
-        result.FilesProcessed = 45;
-        result.FilesSuccessful = 45;
-        result.BytesSaved = 12L * 1024 * 1024 * 1024;
-
-        return result;
     }
 
-    private async Task<MaintenanceResult> ExecuteCleanupAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+    /// <summary>
+    /// Client-side projection of the archive maintenance execution record returned by
+    /// /api/admin/maintenance/run (Meridian.Storage.Maintenance.MaintenanceExecution).
+    /// Status is kept as a raw JSON element so the payload deserializes regardless of the
+    /// host's enum serialization settings (string names or numeric values).
+    /// </summary>
+    private sealed class ArchiveMaintenanceExecutionDto
     {
-        var result = new MaintenanceResult
-        {
-            TaskId = task.Id,
-            TaskName = task.Name,
-            StartTime = DateTime.UtcNow,
-            IsDryRun = dryRun
-        };
-
-        // Simulate cleanup work
-        await Task.Delay(TimeSpan.FromSeconds(2), ct);
-
-        result.Success = true;
-        result.Message = dryRun
-            ? "Dry run: Would remove 23 expired files (5.2 GB)"
-            : "Removed 23 expired files. Freed 5.2 GB of storage.";
-        result.FilesProcessed = 23;
-        result.FilesSuccessful = 23;
-        result.BytesSaved = (long)(5.2 * 1024 * 1024 * 1024);
-
-        return result;
+        public string? ExecutionId { get; set; }
+        public System.Text.Json.JsonElement Status { get; set; }
+        public int FilesProcessed { get; set; }
+        public int IssuesFound { get; set; }
+        public int IssuesResolved { get; set; }
+        public long BytesProcessed { get; set; }
+        public long BytesSaved { get; set; }
+        public string? ErrorMessage { get; set; }
+        public ArchiveMaintenanceResultDto? Result { get; set; }
     }
 
-    private async Task<MaintenanceResult> ExecuteFullAuditAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
+    private sealed class ArchiveMaintenanceResultDto
     {
-        var result = new MaintenanceResult
-        {
-            TaskId = task.Id,
-            TaskName = task.Name,
-            StartTime = DateTime.UtcNow,
-            IsDryRun = dryRun
-        };
-
-        // Simulate full audit work
-        await Task.Delay(TimeSpan.FromSeconds(5), ct);
-
-        result.Success = true;
-        result.Message = dryRun
-            ? "Dry run: Would audit 2,450 files across all tiers"
-            : "Full audit complete. Verified 2,450 files. 2 issues found and reported.";
-        result.FilesProcessed = 2450;
-        result.FilesSuccessful = 2448;
-        result.FilesFailed = 2;
-
-        return result;
-    }
-
-    private async Task<MaintenanceResult> ExecuteCompressionAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
-    {
-        var result = new MaintenanceResult
-        {
-            TaskId = task.Id,
-            TaskName = task.Name,
-            StartTime = DateTime.UtcNow,
-            IsDryRun = dryRun
-        };
-
-        // Simulate compression work
-        await Task.Delay(TimeSpan.FromSeconds(4), ct);
-
-        result.Success = true;
-        result.Message = dryRun
-            ? "Dry run: Would recompress 120 files with ZSTD-19"
-            : "Recompressed 120 files. Improved compression ratio by 15%.";
-        result.FilesProcessed = 120;
-        result.FilesSuccessful = 120;
-        result.BytesSaved = 8L * 1024 * 1024 * 1024;
-
-        return result;
-    }
-
-    private async Task<MaintenanceResult> ExecuteDeduplicationAsync(MaintenanceTask task, bool dryRun, CancellationToken ct)
-    {
-        var result = new MaintenanceResult
-        {
-            TaskId = task.Id,
-            TaskName = task.Name,
-            StartTime = DateTime.UtcNow,
-            IsDryRun = dryRun
-        };
-
-        // Simulate deduplication work
-        await Task.Delay(TimeSpan.FromSeconds(3), ct);
-
-        result.Success = true;
-        result.Message = dryRun
-            ? "Dry run: Would remove 5 duplicate files (0.8 GB)"
-            : "Removed 5 duplicate files. Saved 0.8 GB of storage.";
-        result.FilesProcessed = 5;
-        result.FilesSuccessful = 5;
-        result.BytesSaved = (long)(0.8 * 1024 * 1024 * 1024);
-
-        return result;
+        public bool Success { get; set; }
+        public string? Summary { get; set; }
+        public int FilesProcessed { get; set; }
+        public int FilesFailed { get; set; }
+        public int FilesSkipped { get; set; }
     }
 
     private void LogExecution(MaintenanceResult result)

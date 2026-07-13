@@ -6,9 +6,10 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Collateral exposure snapshot composition for the workstation API surface: builds the
 /// counterparty/product exposure, margin, collateral-call, threshold-breach, and trend view from
-/// collateral input rows (with a demo fallback row set). Split out of the WorkstationEndpoints
-/// core partial as a behavior-preserving relocation; the inline collateral route lambda and the
-/// shared NormalizeOperatorInboxToken helper remain in core.
+/// collateral input rows. When no rows have been ingested the snapshot is honestly empty —
+/// fabricated demo rows are never substituted. Split out of the WorkstationEndpoints core partial
+/// as a behavior-preserving relocation; the inline collateral route lambda and the shared
+/// NormalizeOperatorInboxToken helper remain in core.
 /// </summary>
 public static partial class WorkstationEndpoints
 {
@@ -16,8 +17,7 @@ public static partial class WorkstationEndpoints
         CollateralExposureService service,
         IReadOnlyList<CollateralInputRow> rows)
     {
-        var sourceRows = rows.Count == 0 ? BuildFallbackCollateralRows() : rows;
-        var snapshots = service.BuildSnapshots(sourceRows);
+        var snapshots = service.BuildSnapshots(rows);
         var breaches = service.EvaluateBreaches(snapshots);
         var breachDtos = breaches.Select(static breach => new ThresholdBreachDto(
             breach.Counterparty,
@@ -61,24 +61,10 @@ public static partial class WorkstationEndpoints
 
         return new ExposureSnapshotDto(
             DateTimeOffset.UtcNow,
-            rows.Count == 0 ? "micro-batch fixture" : "micro-batch buffer",
+            rows.Count == 0 ? "micro-batch buffer (empty)" : "micro-batch buffer",
             counterpartyDtos,
             breachDtos,
             calls,
             trend);
     }
-
-    private static IReadOnlyList<CollateralInputRow> BuildFallbackCollateralRows() =>
-    [
-        new(
-            DateTimeOffset.UtcNow,
-            "Prime-A",
-            "Equity Swap",
-            1_000_000m,
-            -250_000m,
-            50_000m,
-            "cash",
-            200_000m,
-            100_000m)
-    ];
 }

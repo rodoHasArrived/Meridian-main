@@ -11,17 +11,20 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Trading workspace payload composition for the workstation API surface: builds the live trading
-/// payload (positions, orders, fills, risk, brokerage, readiness) and the fixture fallback payload /
-/// readiness. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation;
-/// the inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync,
-/// NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark,
-/// ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/
-/// FormatPercent) remain in core and are reached across the partial.
+/// payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer
+/// nor the strategy run read service is registered the builder returns null and the route responds
+/// 503 — fabricated fixture data is never served as live. The inline trading route lambda and the
+/// shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken,
+/// BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync,
+/// BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are
+/// reached across the partial.
 /// </summary>
 public static partial class WorkstationEndpoints
 {
-    // PR-03: returns typed DTO instead of anonymous object
-    private static async Task<WorkstationTradingPayload> BuildTradingPayloadAsync(HttpContext context, Guid? fundAccountId = null)
+    // PR-03: returns typed DTO instead of anonymous object.
+    // Returns null when neither the execution layer nor the strategy run read service is
+    // registered so the route can respond 503 instead of serving fabricated positions and fills.
+    private static async Task<WorkstationTradingPayload?> BuildTradingPayloadAsync(HttpContext context, Guid? fundAccountId = null)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
@@ -30,10 +33,9 @@ public static partial class WorkstationEndpoints
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
 
-        // When neither execution layer nor strategy run service is active, use fixture data
         if (portfolio is null && oms is null && readService is null)
         {
-            return BuildTradingFallbackPayload();
+            return null;
         }
 
         // Resolve the most relevant paper run (for run-level metadata)
@@ -223,100 +225,4 @@ public static partial class WorkstationEndpoints
             DrillIn: run is null ? null : BuildRunDrillInLinks(run));
     }
 
-    // PR-03: returns typed DTO
-    private static WorkstationTradingPayload BuildTradingFallbackPayload()
-    {
-        return new WorkstationTradingPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("trading-net-pnl", "Net P&L", "+$3,918", "+2.4%", "success"),
-                new WorkstationMetricCard("trading-open-orders", "Open Orders", "5", "+1", "default"),
-                new WorkstationMetricCard("trading-fills", "Fills Today", "27", "+7", "success"),
-                new WorkstationMetricCard("trading-risk-state", "Risk State", "Healthy", "0%", "success")
-            ],
-            Positions:
-            [
-                new WorkstationTradingPositionRow("AAPL", "AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
-                new WorkstationTradingPositionRow("MSFT", "MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
-            ],
-            OpenOrders:
-            [
-                new WorkstationTradingOrderRow("PO-24812", "AMZN", "Buy", "Limit", "100", "184.00", "Working", "09:35:12 ET"),
-                new WorkstationTradingOrderRow("PO-24814", "QQQ", "Sell", "Stop", "40", "442.30", "Pending Routing", "09:36:48 ET")
-            ],
-            Fills:
-            [
-                new WorkstationTradingFillRow("FL-90071", "PO-24810", "AAPL", "Buy", "50", "188.12", "NASDAQ", "09:33:04 ET"),
-                new WorkstationTradingFillRow("FL-90077", "PO-24811", "MSFT", "Sell", "25", "414.88", "IEX", "09:34:26 ET")
-            ],
-            Risk: new WorkstationTradingRiskState(
-                State: "Healthy",
-                Summary: "Portfolio and order-book exposure are within configured paper thresholds.",
-                NetExposure: "$119,010",
-                GrossExposure: "$156,432",
-                Var95: "$9,874",
-                MaxDrawdown: "-0.9%",
-                BuyingPowerUsed: "44%",
-                ActiveGuardrails:
-                [
-                    "Daily loss guard set to -$12,000.",
-                    "Max position notional guard set to $120,000.",
-                    "Kill-switch can be engaged manually from Accounting review."
-                ]),
-            Brokerage: new WorkstationTradingBrokerageState(
-                Provider: "Interactive Brokers",
-                Account: "DU1009034",
-                Environment: "paper",
-                Connection: "Connected",
-                LastHeartbeat: "1s ago",
-                OrderIngress: "healthy (p50 19ms)",
-                FillFeed: "healthy (p50 31ms)",
-                Notes: ["Paper execution routing is synchronized with run-level reconciliation wiring."]),
-            Readiness: BuildTradingFallbackReadiness(),
-            Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
-            DrillIn: null);
-    }
-
-    private static TradingOperatorReadinessDto BuildTradingFallbackReadiness()
-    {
-        var asOf = DateTimeOffset.UtcNow;
-        return new TradingOperatorReadinessDto(
-            AsOf: asOf,
-            ActiveSession: null,
-            Sessions: Array.Empty<TradingPaperSessionReadinessDto>(),
-            Replay: null,
-            Controls: new TradingControlReadinessDto(
-                CircuitBreakerOpen: false,
-                CircuitBreakerReason: null,
-                CircuitBreakerChangedBy: null,
-                CircuitBreakerChangedAt: null,
-                ManualOverrideCount: 0,
-                SymbolLimitCount: 0,
-                DefaultMaxPositionSize: null),
-            Promotion: null,
-            TrustGate: new TradingTrustGateReadinessDto(
-                GateId: "dk1-trust-gate",
-                Status: "Blocked",
-                ReadyForOperatorReview: false,
-                OperatorSignoffRequired: true,
-                OperatorSignoffStatus: "missing",
-                GeneratedAt: asOf,
-                PacketPath: null,
-                SourceSummary: null,
-                RequiredSampleCount: 0,
-                ReadySampleCount: 0,
-                ValidatedEvidenceDocumentCount: 0,
-                RequiredOwners: Array.Empty<string>(),
-                Blockers: ["Trading readiness service is unavailable in fallback mode."],
-                Detail: "Trading readiness is unavailable in fallback mode."),
-            BrokerageSync: null,
-            WorkItems: Array.Empty<OperatorWorkItemDto>(),
-            Warnings: ["Trading readiness service is unavailable in fallback mode."])
-        {
-            OverallStatus = TradingAcceptanceGateStatusDto.Blocked,
-            ReadyForPaperOperation = false,
-            SnapshotMaterializedAt = asOf,
-            SnapshotVersion = "fallback-unavailable"
-        };
-    }
 }
