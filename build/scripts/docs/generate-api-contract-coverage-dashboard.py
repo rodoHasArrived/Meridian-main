@@ -52,6 +52,10 @@ def _should_skip(path: Path) -> bool:
     return any(part in EXCLUDE_DIRS for part in path.parts)
 
 
+def _path_sort_key(path: Path) -> tuple[tuple[str, str], ...]:
+    return tuple((part.casefold(), part) for part in path.parts)
+
+
 def _iter_files(root_dir: Path, suffix: str) -> list[Path]:
     if not root_dir.is_dir():
         return []
@@ -63,7 +67,7 @@ def _iter_files(root_dir: Path, suffix: str) -> list[Path]:
         for name in files:
             if name.endswith(suffix):
                 results.append(current_path / name)
-    return sorted(results)
+    return sorted(results, key=_path_sort_key)
 
 
 def _rel(root: Path, path: Path) -> str:
@@ -144,7 +148,7 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     if not contracts_dir.is_dir():
         return contracts
 
-    for file_path in sorted(contracts_dir.glob("*.cs")):
+    for file_path in sorted(contracts_dir.glob("*.cs"), key=_path_sort_key):
         text = _read_text(file_path)
         for match in PUBLIC_CONTRACT_RE.finditer(text):
             contracts.append(
