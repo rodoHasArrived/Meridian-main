@@ -291,20 +291,18 @@ public sealed class AssetObligationProjectionService
 
     private static BondReferenceDto? BuildFixedIncomeReference(SecurityDetailDto security)
     {
-        var payload = BuildSecurityMasterTermsPayload(security);
-        if (!TryReadDate(payload, out var maturity, "maturityDate", "maturity", "legalFinalMaturity"))
+        // Fixed-income cash-flow terms (maturity, issue, par, coupon, day-count, frequency, factor)
+        // are resolved once through the shared cash-flow terms resolver instead of re-probing here.
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+        if (terms.MaturityDate is not DateOnly maturity)
         {
             return null;
         }
 
-        var issueDate = TryReadDate(payload, out var issueDateValue, "issueDate", "originationDate", "effectiveDate")
-            ? issueDateValue
-            : DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
-        _ = TryReadDecimal(payload, out var par, "par", "originalFace", "notional", "principal", "principalAmount");
-        _ = TryReadString(payload, out var paymentFrequency, "paymentFrequency", "paymentFrequencyPerYear", "couponFrequency");
-        _ = TryReadDecimal(payload, out var couponRate, "fixedCouponRate", "couponRate", "coupon", "annualRate");
-        _ = TryReadString(payload, out var dayCount, "dayCountConvention", "dayCount", "dayCountBasis");
-        _ = TryReadDecimal(payload, out var factor, "currentFactor", "factor");
+        var issueDate = terms.IssueDate ?? DateOnly.FromDateTime(security.EffectiveFrom.UtcDateTime.Date);
+
+        // Obligation-specific lifecycle/identity terms the cash-flow resolver does not model.
+        var payload = BuildSecurityMasterTermsPayload(security);
         _ = TryReadString(payload, out var issuerName, "issuerName", "issuer", "gpSponsor");
 
         return new BondReferenceDto(
@@ -322,29 +320,29 @@ public sealed class AssetObligationProjectionService
                 maturity,
                 TryReadDate(payload, out _, "callDate"),
                 security.Version,
-                par,
-                PaymentFrequency: paymentFrequency),
-            couponRate is null
+                terms.PrincipalFace,
+                PaymentFrequency: terms.PaymentFrequency),
+            terms.CouponRate is null
                 ? null
                 : new BondAccrualConventionDto(
                     security.SecurityId,
-                    dayCount,
+                    terms.DayCountConvention,
                     null,
                     null,
                     "Fixed",
-                    couponRate,
+                    terms.CouponRate,
                     null,
                     null,
                     security.Version),
             security.Version,
-            InflationLinked: factor is null
+            InflationLinked: terms.CurrentFactor is null
                 ? null
                 : new BondInflationLinkedDto(
                     security.SecurityId,
                     null,
                     null,
                     null,
-                    factor,
+                    terms.CurrentFactor,
                     TryReadDate(payload, out var factorDate, "factorDate", "currentFactorDate") ? factorDate : null,
                     null,
                     security.Version));
@@ -792,95 +790,26 @@ public sealed class AssetObligationProjectionService
         };
     }
 
+    // Obligation-term probing shares the coercion rules with the cash-flow resolver via
+    // SecurityTermReader; only the payload-source walk (which spans the wrapped Security Master
+    // payload) is local to this projection.
     private static bool TryReadString(JsonElement payload, out string? value, params string[] propertyNames)
     {
-        foreach (var candidate in EnumerateTermSources(payload))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(candidate, propertyName, out var property))
-                {
-                    continue;
-                }
-
-                if (property.ValueKind == JsonValueKind.String)
-                {
-                    value = property.GetString();
-                    return !string.IsNullOrWhiteSpace(value);
-                }
-
-                if (property.ValueKind is JsonValueKind.Number or JsonValueKind.True or JsonValueKind.False)
-                {
-                    value = property.ToString();
-                    return true;
-                }
-            }
-        }
-
-        value = null;
-        return false;
+        value = SecurityTermReader.ReadString(EnumerateTermSources(payload), propertyNames);
+        return value is not null;
     }
 
     private static bool TryReadDecimal(JsonElement payload, out decimal? value, params string[] propertyNames)
     {
-        foreach (var candidate in EnumerateTermSources(payload))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(candidate, propertyName, out var property))
-                {
-                    continue;
-                }
-
-                if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
-                {
-                    value = number;
-                    return true;
-                }
-
-                if (property.ValueKind == JsonValueKind.String &&
-                    decimal.TryParse(property.GetString(), out var parsed))
-                {
-                    value = parsed;
-                    return true;
-                }
-            }
-        }
-
-        value = null;
-        return false;
+        value = SecurityTermReader.ReadDecimal(EnumerateTermSources(payload), propertyNames);
+        return value is not null;
     }
 
     private static bool TryReadDate(JsonElement payload, out DateOnly value, params string[] propertyNames)
     {
-        foreach (var candidate in EnumerateTermSources(payload))
-        {
-            foreach (var propertyName in propertyNames)
-            {
-                if (!TryGetProperty(candidate, propertyName, out var property))
-                {
-                    continue;
-                }
-
-                if (property.ValueKind == JsonValueKind.String)
-                {
-                    var raw = property.GetString();
-                    if (DateOnly.TryParse(raw, out value))
-                    {
-                        return true;
-                    }
-
-                    if (DateTimeOffset.TryParse(raw, out var timestamp))
-                    {
-                        value = DateOnly.FromDateTime(timestamp.UtcDateTime.Date);
-                        return true;
-                    }
-                }
-            }
-        }
-
-        value = default;
-        return false;
+        var resolved = SecurityTermReader.ReadDate(EnumerateTermSources(payload), propertyNames);
+        value = resolved ?? default;
+        return resolved is not null;
     }
 
     private static IEnumerable<JsonElement> EnumerateTermSources(JsonElement payload)
@@ -891,43 +820,22 @@ public sealed class AssetObligationProjectionService
         }
 
         yield return payload;
-        if (TryGetProperty(payload, "assetSpecificTerms", out var assetSpecificTerms) &&
+        if (SecurityTermReader.TryGetProperty(payload, "assetSpecificTerms", out var assetSpecificTerms) &&
             assetSpecificTerms.ValueKind == JsonValueKind.Object)
         {
             yield return assetSpecificTerms;
-            if (TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields) &&
+            if (SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields) &&
                 profileFields.ValueKind == JsonValueKind.Object)
             {
                 yield return profileFields;
             }
         }
 
-        if (TryGetProperty(payload, "commonTerms", out var commonTerms) &&
+        if (SecurityTermReader.TryGetProperty(payload, "commonTerms", out var commonTerms) &&
             commonTerms.ValueKind == JsonValueKind.Object)
         {
             yield return commonTerms;
         }
-    }
-
-    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
-    {
-        if (element.ValueKind != JsonValueKind.Object)
-        {
-            value = default;
-            return false;
-        }
-
-        foreach (var property in element.EnumerateObject())
-        {
-            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                value = property.Value;
-                return true;
-            }
-        }
-
-        value = default;
-        return false;
     }
 
     private static string BuildVarianceSummary(AssetReconciliationResultDto result)
