@@ -46,20 +46,11 @@ public sealed class StructuredCashFlowLedgerBridge : IStructuredCashFlowLedgerBr
             ? null
             : financialAccountId.Trim();
 
-        // Staleness is a hard gate here, not the advisory log line the projection path used to emit.
-        if (projection.Staleness == StructuredCashFlowStaleness.Stale)
+        // Freshness and scenario gates are shared with the posting bridge so neither path can route a
+        // stale source or a rate-shocked what-if projection to the general ledger.
+        if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blockReason)
         {
-            return StructuredCashFlowLedgerPostingResult.Blocked(
-                projection.SecurityId,
-                "Cash flow source is stale; refresh the source before posting accruals to the ledger.");
-        }
-
-        // Rate-shocked scenarios are what-if projections for analysis, never postable to the GL.
-        if (projection.Scenario != StructuredCashFlowScenario.Base)
-        {
-            return StructuredCashFlowLedgerPostingResult.Blocked(
-                projection.SecurityId,
-                $"Only base-scenario projections are postable; '{projection.Scenario}' is a what-if scenario.");
+            return StructuredCashFlowLedgerPostingResult.Blocked(projection.SecurityId, blockReason);
         }
 
         var carryingValueAccount = LedgerAccounts.Securities(normalizedSymbol, normalizedFinancialAccountId);
