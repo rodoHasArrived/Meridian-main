@@ -2306,6 +2306,103 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void MultiCurrencyLedgerTranslator_DoesNotTreatEquityTickerSymbolsAsCurrencies()
+    {
+        var ibm = LedgerAccounts.Securities("IBM", "broker-1");
+        var gld = LedgerAccounts.Securities("GLD", "broker-1");
+        var spy = LedgerAccounts.Securities("SPY", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [ibm] = 10_000m,
+            [gld] = 5_000m,
+            [spy] = 2_500m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m });
+
+        translation.Exposures.Should().OnlyContain(exposure =>
+            exposure.LocalCurrency == "USD" && exposure.FxRateToBase == 1m);
+        translation.TranslatedTrialBalance[ibm].Should().Be(10_000m);
+        translation.TranslatedTrialBalance[gld].Should().Be(5_000m);
+        translation.TranslatedTrialBalance[spy].Should().Be(2_500m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_KeepsInstrumentAccountsInBaseCurrencyWhenTickerCollidesWithIsoCode()
+    {
+        // "TRY" and "CUP" are valid ISO-4217 codes, but on per-symbol instrument accounts the
+        // symbol is a ticker, so the balances must stay in the base currency untranslated.
+        var tryTicker = LedgerAccounts.Securities("TRY", "broker-1");
+        var cupTicker = LedgerAccounts.ShortSecuritiesPayable("CUP", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [tryTicker] = 1_000m,
+            [cupTicker] = 400m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["TRY"] = 0.03m, ["CUP"] = 0.04m });
+
+        translation.Exposures.Should().OnlyContain(exposure => exposure.LocalCurrency == "USD");
+        translation.TranslatedTrialBalance[tryTicker].Should().Be(1_000m);
+        translation.TranslatedTrialBalance[cupTicker].Should().Be(400m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_ConfiguredAccountCurrencyOverridesInstrumentSymbolContext()
+    {
+        var eurDenominatedHolding = LedgerAccounts.Securities("SAP", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [eurDenominatedHolding] = 1_000m,
+        };
+        var accountCurrencies = new Dictionary<LedgerAccount, string>
+        {
+            [eurDenominatedHolding] = "EUR",
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m },
+            accountCurrencies);
+
+        translation.Exposures.Single().LocalCurrency.Should().Be("EUR");
+        translation.TranslatedTrialBalance[eurDenominatedHolding].Should().Be(1_100m);
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_StillInfersIsoCurrenciesFromAccountSymbols()
+    {
+        var eurCash = LedgerAccounts.CashInCurrency("EUR", "broker-1");
+        var jpyCash = LedgerAccounts.CashInCurrency("JPY", "broker-1");
+        var gbpCapital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity, Symbol: "GBP", FinancialAccountId: "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [eurCash] = 1_000m,
+            [jpyCash] = 200_000m,
+            [gbpCapital] = 1_000m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m, ["JPY"] = 0.0065m, ["GBP"] = 1.27m });
+
+        translation.Exposures.Single(exposure => exposure.Account == eurCash).LocalCurrency.Should().Be("EUR");
+        translation.Exposures.Single(exposure => exposure.Account == jpyCash).LocalCurrency.Should().Be("JPY");
+        translation.Exposures.Single(exposure => exposure.Account == gbpCapital).LocalCurrency.Should().Be("GBP");
+        translation.TranslatedTrialBalance[eurCash].Should().Be(1_100m);
+        translation.TranslatedTrialBalance[jpyCash].Should().Be(1_300m);
+        translation.TranslatedTrialBalance[gbpCapital].Should().Be(1_270m);
+    }
+
+    [Fact]
     public void FixedIncomeAmortizationProjector_ProjectsCouponAndDiscountAccretionLines()
     {
         var carryingAccount = LedgerAccounts.Securities("corp2029", "broker-1");

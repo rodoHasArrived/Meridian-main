@@ -306,7 +306,51 @@ module Reconciliation =
                             let severity = classifyTimingSeverity maxAsOfDriftMinutes driftMinutes |> BreakSeverity.asString
                             "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false, severity
                 else
-                    "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
+                    // Partially-populated check data. Compare whatever both sides actually carry;
+                    // a check with one-sided evidence must never classify as a full match.
+                    let amountRequested = check.HasExpectedAmount || check.HasActualAmount
+                    let amountsComparable = check.HasExpectedAmount && check.HasActualAmount
+                    let timingComparable = check.HasExpectedAsOf && check.HasActualAsOf
+                    let timingPartial = check.HasExpectedAsOf <> check.HasActualAsOf
+
+                    if amountsComparable then
+                        // Amounts exist on both sides, but as-of evidence is incomplete
+                        // (the fully-populated case is handled by the branch above).
+                        let variancePct = amountVariancePct check.ExpectedAmount check.ActualAmount
+                        if variancePct > max 0m amountTolerance then
+                            let expectedAmountForSeverity =
+                                if check.ExpectedAmount <> 0m then
+                                    abs check.ExpectedAmount
+                                elif check.ActualAmount <> 0m then
+                                    abs check.ActualAmount
+                                else
+                                    1m
+
+                            let severity =
+                                LedgerBreakClassification.severity expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount))
+                                |> BreakSeverity.asString
+                            "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, severity
+                        elif timingPartial then
+                            "partial_match", "partial_match", "unknown", "Amounts agree, but as-of evidence exists on only one side; timing could not be verified.", false, BreakSeverity.asString BreakSeverity.Low
+                        else
+                            "matched", "matched", "unknown", "Amounts agree within tolerance; no timing comparison was requested.", true, BreakSeverity.asString BreakSeverity.Info
+                    elif amountRequested then
+                        // Amount evidence exists on only one side: the amount comparison cannot
+                        // be completed, so this check can at best be a partial match.
+                        if timingComparable then
+                            let driftMinutes = timingDriftMinutes check.ExpectedAsOf check.ActualAsOf
+                            if driftMinutes > float (max 0 maxAsOfDriftMinutes) then
+                                let severity = classifyTimingSeverity maxAsOfDriftMinutes driftMinutes |> BreakSeverity.asString
+                                "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance and amount evidence exists on only one side.", false, severity
+                            else
+                                "partial_match", "partial_match", "unknown", "Amount evidence exists on only one side; only timing could be verified.", false, BreakSeverity.asString BreakSeverity.Low
+                        else
+                            "missing_data", "open", "unknown", "Amount evidence exists on only one side and no timing evidence is comparable; the check could not be verified.", false, BreakSeverity.asString BreakSeverity.Medium
+                    else
+                        // No amount data was supplied on either side: this is a pure
+                        // coverage/classification check, and presence plus classification
+                        // were already compared by the branches above.
+                        "matched", "matched", "unknown", "Coverage and classification agree; no amount comparison was requested.", true, BreakSeverity.asString BreakSeverity.Info
 
             {
                 CheckId = check.CheckId

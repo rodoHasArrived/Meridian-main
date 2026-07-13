@@ -11,7 +11,7 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     [Fact]
-    public async Task MapWorkstationEndpoints_CollateralExposure_ShouldReturnSnapshotWithThresholdsAndCalls()
+    public async Task MapWorkstationEndpoints_CollateralExposure_WithoutIngestedRows_ShouldReturnHonestlyEmptySnapshot()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -24,9 +24,13 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var payload = await response.Content.ReadFromJsonAsync<ExposureSnapshotDto>(ServerJsonOptions);
         payload.Should().NotBeNull();
-        payload!.Counterparties.Should().NotBeEmpty();
-        payload.Breaches.Should().NotBeEmpty();
+
+        // No collateral rows have been ingested, so the snapshot must not invent counterparties,
+        // breaches, or collateral calls. The ingestion-mode label states that the buffer is empty.
+        payload!.Counterparties.Should().BeEmpty();
+        payload.Breaches.Should().BeEmpty();
+        payload.CollateralCalls.Should().BeEmpty();
         payload.Trend.Should().HaveCount(12);
-        payload.IngestionMode.Should().StartWith("micro-batch");
+        payload.IngestionMode.Should().Be("micro-batch buffer (empty)");
     }
 }
