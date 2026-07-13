@@ -167,6 +167,13 @@ receivable and credits coupon income. Discount accretion increases the carrying-
 credits coupon income. Premium amortization debits coupon income and credits the carrying-value
 asset, reducing interest income over the amortization period.
 
+Structured cash flow projections reach this projector through
+`StructuredCashFlowLedgerBridge` (see
+[Structured cash flow → ledger bridge](#structured-cash-flow--ledger-bridge)), which maps a fresh,
+base-scenario projection's per-period interest into coupon-accrual inputs. The bridge is the
+production caller for the coupon-accrual path; discount/premium amortization inputs remain available
+for callers that carry cost-basis evidence.
+
 ### `LedgerAccountTaxLotPolicyBook`
 
 `LedgerAccountTaxLotPolicyBook` resolves tax-lot relief policy at the `LedgerAccount` boundary.
@@ -344,6 +351,32 @@ resolved economic definitions are available. When the adapter supplies Security 
 inputs, the run detail carries expected accounting events, accrual calculations, balanced journal
 previews, and structured Security Master accounting issues alongside the existing matches, breaks,
 coverage issues, and classification map.
+
+## Structured cash flow → ledger bridge
+
+Structured cash flow projections (`StructuredCashFlowProjectionDto`) were historically display-only:
+the projection math probed instrument terms by fuzzy JSON key aliases, treated the factor schedule
+as a free-text field, logged staleness without enforcing it, and served only the workstation UI. The
+cash flow projection path now closes those gaps:
+
+- **Typed term resolution.** `StructuredCashFlowTermsResolver` resolves a security's raw term JSON
+  into a strongly typed `StructuredCashFlowTerms` once, up front. All vendor key aliases (for
+  example `par` / `originalFace` / `notional`) live in one documented, unit-tested place instead of
+  being re-probed inline in the amortization math.
+- **Typed factor schedule.** The resolver parses a `factorSchedule` array into typed
+  `StructuredFactorScheduleEntry` points and seeds outstanding balance from the factor in effect on
+  the projection date (`StructuredCashFlowTerms.FactorAsOf`), falling back to the scalar current
+  factor. The typed schedule is surfaced on the projection DTO rather than remaining free text.
+- **Staleness as a gate.** Each projection carries a typed `StructuredCashFlowStaleness` status
+  computed from the source's last-updated timestamp. The status is advisory for UI display (stale
+  projections are still returned, but flagged) and a hard gate for posting.
+- **Ledger wiring.** `StructuredCashFlowLedgerBridge` converts a fresh, base-scenario projection's
+  per-period interest into `FixedIncomeAmortizationProjector` coupon-accrual inputs and returns
+  balanced `StructuredCashFlowLedgerPostingResult` journal postings. It refuses to post when the
+  source is stale or the scenario is a rate-shocked what-if, mirroring the operator-approved,
+  never-auto-post posture used elsewhere in the ledger. `ISecurityMasterCashFlowService.BuildLedgerPostingsAsync`
+  is the reachable entry point; `StructuredCashFlowLedgerBridge` is registered in the Security Master
+  service graph and is the production caller for the coupon-accrual projector path.
 
 ## Operations continuity workflow
 

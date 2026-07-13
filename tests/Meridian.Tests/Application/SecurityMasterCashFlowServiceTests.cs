@@ -100,6 +100,173 @@ public sealed class SecurityMasterCashFlowServiceTests
         projection.Schedule.First().InterestAmount.Should().BeGreaterThan(0m);
     }
 
+    [Fact]
+    public async Task GetProjectionAsync_StaleSource_ShouldFlagStalenessButStillReturnForDisplay()
+    {
+        var securityId = Guid.Parse("33333333-cccc-cccc-cccc-333333333333");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow.AddDays(-30),
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360"
+                })));
+        var service = BuildService(store, query);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.Staleness.Should().Be(StructuredCashFlowStaleness.Stale);
+        projection.SourceLastUpdatedUtc.Should().NotBeNull();
+        // Stale projections are still returned so the UI can render a flagged view.
+        projection.Schedule.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetProjectionAsync_WithTypedFactorSchedule_ShouldExposeScheduleAndSeedOutstanding()
+    {
+        var securityId = Guid.Parse("44444444-dddd-dddd-dddd-444444444444");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedSinker,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    originalFace = 120m,
+                    couponRate = 0.12m,
+                    paymentFrequency = "Quarterly",
+                    dayCountConvention = "ACT/360",
+                    factorSchedule = new[]
+                    {
+                        new { asOfDate = new DateOnly(2020, 1, 1), factor = 0.5m }
+                    }
+                })));
+        var service = BuildService(store, query);
+
+        var projection = await service.GetProjectionAsync(securityId, StructuredCashFlowScenario.Base);
+
+        projection.Should().NotBeNull();
+        projection!.FactorSchedule.Should().NotBeNull();
+        projection.FactorSchedule!.Should().ContainSingle(entry => entry.Factor == 0.5m);
+        // Outstanding seeded from the 0.5 factor: 120 * 0.5 = 60 amortized across the sinker schedule.
+        projection.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(60m);
+    }
+
+    [Fact]
+    public async Task BuildLedgerPostingsAsync_FreshBaseProjection_ShouldProduceBalancedCouponAccruals()
+    {
+        var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow,
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360"
+                })));
+        var service = BuildService(store, query);
+
+        var result = await service.BuildLedgerPostingsAsync(securityId);
+
+        result.IsPostable.Should().BeTrue();
+        result.BlockedReason.Should().BeNull();
+        result.Postings.Should().HaveCount(2);
+        result.Postings.Should().OnlyContain(posting =>
+            posting.IsBalanced && posting.TotalDebits == 3m && posting.TotalCredits == 3m);
+        result.Postings[0].Lines.Should().Contain(line =>
+            line.Account == "Accrued Interest Receivable" && line.Debit == 3m && line.Credit == 0m);
+        result.Postings[0].Lines.Should().Contain(line =>
+            line.Account == "Coupon Income" && line.Credit == 3m && line.Debit == 0m);
+    }
+
+    [Fact]
+    public async Task BuildLedgerPostingsAsync_StaleSource_ShouldBlockPostingAsAGate()
+    {
+        var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityCashFlowSourceDto(
+                securityId,
+                StructuredCashFlowSourceKind.CalculatedBullet,
+                DateTimeOffset.UtcNow.AddDays(-30),
+                false,
+                null,
+                null));
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate = asOf,
+                    maturityDate = asOf.AddYears(1),
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360"
+                })));
+        var service = BuildService(store, query);
+
+        var result = await service.BuildLedgerPostingsAsync(securityId);
+
+        result.IsPostable.Should().BeFalse();
+        result.BlockedReason.Should().Contain("stale");
+        result.Postings.Should().BeEmpty();
+    }
+
+    private static SecurityMasterCashFlowService BuildService(
+        ISecurityMasterCashFlowStore store,
+        SecurityMasterQueryContract query)
+        => new(
+            store,
+            Array.Empty<IStructuredCashFlowProvider>(),
+            query,
+            NullLogger<SecurityMasterCashFlowService>.Instance);
+
     private static SecurityDetailDto BuildSecurity(Guid securityId, JsonElement assetSpecificTerms)
         => new(
             securityId,
