@@ -1,4 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+/* Monospace resolves through the local Cascadia Mono @font-face below and the
+   system `ui-monospace` stack — no external font fetch. A render-blocking
+   external Google Fonts import for JetBrains Mono was removed: it failed under
+   offline / air-gapped / strict-CSP operator deployments and leaked the client
+   IP + User-Agent for a font that is only ever a mid-stack fallback. A locally
+   installed JetBrains Mono is still picked up by name where present. Do not
+   re-add an external font import; self-host the WOFF2 as a bundled @font-face
+   if the exact face is required. */
 
 @font-face {
   font-family: "Segoe UI Variable Display";
@@ -730,7 +737,11 @@
 
   .panel-state-detail {
     margin: 0;
-    color: var(--fg-muted);
+    /* Light muted to pair with the near-white .panel-state-title on this dark
+       panel variant. (workspace-surface.css currently overrides .panel-state to
+       a light surface; this keeps the dark variant AA-legible if it ever wins,
+       instead of dark --fg-muted on a dark panel.) */
+    color: rgba(246, 251, 255, 0.72);
     font-size: 0.75rem;
     line-height: 1.45;
   }
@@ -787,7 +798,9 @@
 
   .workspace-section-summary {
     margin: 0.125rem 0 0;
-    color: var(--fg-muted);
+    /* Light muted to pair with the near-white .workspace-section-title on this
+       dark subheader variant. (See .panel-state-detail note above.) */
+    color: rgba(246, 251, 255, 0.72);
     font-size: 0.75rem;
     line-height: 1.35;
   }
