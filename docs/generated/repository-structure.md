@@ -4576,6 +4576,7 @@ Meridian-main
 │   │   │   ├── OptionProjectionService.cs
 │   │   │   └── OptionsChainService.cs
 │   │   ├── DesignModule.cs
+│   │   ├── InstrumentProjectionServiceBase.cs
 │   │   ├── Meridian.Instruments.csproj
 │   │   └── README.md
 │   ├── Meridian.Ledger
