@@ -8,8 +8,8 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
-using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.Store;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -89,31 +89,35 @@ public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDr
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
-public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftStore
+public sealed class FileManualJournalEntryDraftStore :
+    JsonFileSnapshotStore<FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot>,
+    IManualJournalEntryDraftStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
 
-    private readonly string _snapshotPath;
-    private readonly SemaphoreSlim _gate = new(1, 1);
-
     public FileManualJournalEntryDraftStore(string snapshotPath)
+        : base(
+            string.IsNullOrWhiteSpace(snapshotPath)
+                ? throw new ArgumentException("Manual journal entry draft snapshot path is required.", nameof(snapshotPath))
+                : snapshotPath,
+            JsonOptions)
     {
-        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
-            ? throw new ArgumentException("Manual journal entry draft snapshot path is required.", nameof(snapshotPath))
-            : snapshotPath;
     }
+
+    protected override ManualJournalEntryDraftSnapshot CreateEmptySnapshot() => new([]);
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
     {
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Drafts
-            .Select(static item => NormalizeFundProfileId(item.FundProfileId))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(static item => item, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Drafts
+                .Select(static item => NormalizeFundProfileId(item.FundProfileId))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static item => item, StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
@@ -126,15 +130,16 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var normalizedTenantId = NormalizeOptional(tenantId);
         var normalizedCompanyId = NormalizeOptional(companyId);
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Drafts
-            .Where(item => string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
-            .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
-            .Where(item => normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
-            .Where(item => normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(item => item.UpdatedAtUtc)
-            .ThenBy(item => item.JournalEntryId)
-            .ToArray();
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Drafts
+                .Where(item => string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+                .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+                .Where(item => normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+                .Where(item => normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(item => item.UpdatedAtUtc)
+                .ThenBy(item => item.JournalEntryId)
+                .ToArray(),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<ManualJournalEntryDraftDto?> GetAsync(
@@ -147,74 +152,42 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var normalizedTenantId = NormalizeOptional(tenantId);
         var normalizedCompanyId = NormalizeOptional(companyId);
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Drafts.FirstOrDefault(item =>
-            item.JournalEntryId == journalEntryId &&
-            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) &&
-            (normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase)) &&
-            (normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase)));
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Drafts.FirstOrDefault(item =>
+                item.JournalEntryId == journalEntryId &&
+                string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                (normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase)) &&
+                (normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))),
+            ct).ConfigureAwait(false);
     }
 
     public async Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(draft);
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var normalizedFundProfileId = NormalizeFundProfileId(draft.FundProfileId);
-            var normalizedTenantId = NormalizeOptional(draft.TenantId);
-            var normalizedCompanyId = NormalizeOptional(draft.CompanyId);
-            var drafts = snapshot.Drafts
-                .Where(item => item.JournalEntryId != draft.JournalEntryId ||
-                               !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
-                               !string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase) ||
-                               !string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
-                .Append(draft with
-                {
-                    FundProfileId = normalizedFundProfileId,
-                    TenantId = normalizedTenantId,
-                    CompanyId = normalizedCompanyId
-                })
-                .OrderByDescending(item => item.UpdatedAtUtc)
-                .ThenBy(item => item.JournalEntryId)
-                .ToArray();
+        var normalizedFundProfileId = NormalizeFundProfileId(draft.FundProfileId);
+        var normalizedTenantId = NormalizeOptional(draft.TenantId);
+        var normalizedCompanyId = NormalizeOptional(draft.CompanyId);
+        await UpdateSnapshotAsync(
+            snapshot =>
+            {
+                var drafts = snapshot.Drafts
+                    .Where(item => item.JournalEntryId != draft.JournalEntryId ||
+                                   !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                                   !string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase) ||
+                                   !string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+                    .Append(draft with
+                    {
+                        FundProfileId = normalizedFundProfileId,
+                        TenantId = normalizedTenantId,
+                        CompanyId = normalizedCompanyId
+                    })
+                    .OrderByDescending(item => item.UpdatedAtUtc)
+                    .ThenBy(item => item.JournalEntryId)
+                    .ToArray();
 
-            var next = new ManualJournalEntryDraftSnapshot(drafts);
-            var json = JsonSerializer.Serialize(next, JsonOptions);
-            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<ManualJournalEntryDraftSnapshot> ReadSnapshotAsync(CancellationToken ct)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<ManualJournalEntryDraftSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new ManualJournalEntryDraftSnapshot([]);
-        }
-
-        await using var stream = File.OpenRead(_snapshotPath);
-        return await JsonSerializer
-            .DeserializeAsync<ManualJournalEntryDraftSnapshot>(stream, JsonOptions, ct)
-            .ConfigureAwait(false) ?? new ManualJournalEntryDraftSnapshot([]);
+                return new ManualJournalEntryDraftSnapshot(drafts);
+            },
+            ct).ConfigureAwait(false);
     }
 
     private static string NormalizeFundProfileId(string value)
@@ -223,5 +196,5 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
+    public sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
 }
