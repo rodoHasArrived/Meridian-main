@@ -3,6 +3,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -680,6 +681,97 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_RecalculatesPersistedProjectionBeforeDrafting()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeFalse();
+        result.PostingCommand.Should().NotBeNull();
+        result.PostingCommand!.EconomicEvent!.EventId.Should().Be(harness.Request.SourceEventId!.Value);
+        result.TotalDebits.Should().Be(1_750m);
+        result.TotalCredits.Should().Be(1_750m);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_TamperedAmountFailsClosedAgainstServerCalculation()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request with { EventAmount = 1m });
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.factor-paydown-amount-mismatch" && issue.BlocksCandidate);
+        result.DryRunResult.GeneratedPostingLines.Should().OnlyContain(line => Math.Abs(line.Amount) == 1_750m);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_MissingHolderRoleFailsClosed()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        harness.AssetOperations.Detail = harness.AssetOperations.Detail! with { InstrumentRoles = [] };
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.instrument-holder-role-required" && issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_OmittedLineageCannotBypassAuthoritativeRecalculation()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request with
+        {
+            EventAmount = 1m,
+            ProjectionLineage = null
+        });
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.instrument-factor-lineage-required" && issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_ClientSelectedModelCannotBypassAuthoritativeRecalculation()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request with
+        {
+            EventAmount = 1m,
+            ProjectionLineage = harness.Request.ProjectionLineage! with { ModelKey = "client-selected-model" }
+        });
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.instrument-factor-lineage-required" && issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_MissingRulePackReferenceFailsClosed()
+    {
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+
+        var result = await harness.Service.BuildCandidateAsync(harness.Request with
+        {
+            RulePackReference = null
+        });
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.rule-pack-reference-required" && issue.BlocksCandidate);
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_ApprovedGeneratedCandidateAppendsDurableLedgerWrite()
     {
         var ledgerBookId = Guid.NewGuid();
@@ -733,6 +825,151 @@ public sealed class AccountingPostingCandidateServiceTests
             line.Dimensions.CustomerId == "customer-custodian" &&
             line.Dimensions.VendorId == "vendor-bny" &&
             line.Dimensions.ProjectId == "project-interest-accrual");
+    }
+
+    [Fact]
+    public void NormalizeAndValidate_TypedInstrumentCommand_StampsDurableJournalProofMetadata()
+    {
+        var bookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var securityId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var journalId = Guid.NewGuid();
+        var timestamp = DateTimeOffset.Parse("2026-05-31T12:00:00Z");
+        var economicEvent = new EconomicEventReferenceDto(
+            eventId,
+            FactorPaydownProjectionService.EventType,
+            1,
+            new DateOnly(2026, 5, 31),
+            timestamp,
+            "SecurityMaster",
+            "factor-row-2026-05",
+            SourceContentHash: "sha256:factor-row",
+            EvidenceLinks: ["evidence://factor/2026-05"])
+        {
+            SecurityId = securityId,
+            BookPositionId = positionId
+        };
+        var lineage = new ProjectionLineageDto(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            FactorPaydownProjectionService.ModelKey,
+            FactorPaydownProjectionService.ModelVersion,
+            FactorPaydownProjectionService.EngineVersion,
+            "Base",
+            economicEvent.EffectiveDate,
+            timestamp,
+            "AssetOperations",
+            positionId.ToString("D"),
+            economicEvent)
+        {
+            BookPositionId = positionId
+        };
+        var command = new AccountingPostingCommandDto(
+            commandId,
+            bookId,
+            periodId,
+            economicEvent.EffectiveDate,
+            timestamp,
+            $"{bookId:N}:{eventId:N}",
+            SourceEventId: eventId,
+            CorrelationId: Guid.NewGuid(),
+            CausationId: eventId,
+            SourceEventType: economicEvent.EventType,
+            ApprovalState: AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: "approval-mbs-2026-05",
+            Evidence:
+            [
+                new AccountingPostingEvidenceReferenceDto(
+                    "factor-evidence-2026-05",
+                    "evidence://factor/2026-05",
+                    AccountingPostingEvidenceKindDto.Source,
+                    "SecurityMaster",
+                    timestamp,
+                    "controller@meridian.local")
+            ],
+            LedgerBookId: bookId)
+        {
+            BookPositionId = positionId,
+            EconomicEvent = economicEvent,
+            ProjectionLineage = lineage,
+            RulePackReference = new AccountingRulePackReferenceDto(
+                "gaap-mbs-rules",
+                "v1",
+                "posting.mbs-factor-paydown",
+                "v1")
+        };
+        var entry = new JournalEntry(
+            journalId,
+            timestamp,
+            "MBS principal paydown",
+            [
+                new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Cash, 1_750m, 0m, "MBS principal paydown"),
+                new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Securities("FNPOOL1"), 0m, 1_750m, "MBS principal paydown")
+            ],
+            new JournalEntryMetadata());
+        var write = new LedgerJournalEntryWrite(
+            entry,
+            bookId,
+            periodId,
+            commandId,
+            command.CorrelationId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-mbs-v1",
+            "v1",
+            "posting.mbs-factor-paydown",
+            "v1",
+            eventId,
+            PostingCommand: command,
+            LedgerBookId: bookId);
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        normalized.Entry.Metadata.SecurityId.Should().Be(securityId);
+        normalized.Entry.Metadata.Tags.Should().Contain(new Dictionary<string, string>
+        {
+            ["postingCommandId"] = commandId.ToString("D"),
+            ["approvalId"] = "approval-mbs-2026-05",
+            ["approvalState"] = "Approved",
+            ["sourceEventId"] = eventId.ToString("D"),
+            ["securityId"] = securityId.ToString("D"),
+            ["bookPositionId"] = positionId.ToString("D"),
+            ["projectionRunId"] = lineage.ProjectionRunId.ToString("D"),
+            ["projectionModelKey"] = FactorPaydownProjectionService.ModelKey,
+            ["rulePackId"] = "gaap-mbs-rules",
+            ["selectedRuleId"] = "posting.mbs-factor-paydown"
+        });
+        normalized.Entry.Lines.Should().OnlyContain(line =>
+            line.Dimensions != null &&
+            line.Dimensions.InstrumentId == securityId &&
+            line.Dimensions.PositionId == positionId);
+        normalized.Entry.IsBalanced.Should().BeTrue();
+
+        var firstLine = entry.Lines[0];
+        var conflictingEntry = new JournalEntry(
+            entry.JournalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            [
+                new LedgerEntry(
+                    firstLine.EntryId,
+                    firstLine.JournalEntryId,
+                    firstLine.Timestamp,
+                    firstLine.Account,
+                    firstLine.Debit,
+                    firstLine.Credit,
+                    firstLine.Description,
+                    new LedgerLineDimensionSet(InstrumentId: Guid.NewGuid()) { PositionId = positionId }),
+                entry.Lines[1]
+            ],
+            entry.Metadata);
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write with { Entry = conflictingEntry });
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*instrument dimension conflicts*");
     }
 
     [Fact]
@@ -1242,7 +1479,7 @@ public sealed class AccountingPostingCandidateServiceTests
         var lineage = new ProjectionLineageDto(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "mbs-factor-paydown",
+            "typed-contract-test-projection",
             "v1",
             "v1",
             "Actual",
@@ -1285,6 +1522,202 @@ public sealed class AccountingPostingCandidateServiceTests
             policyService);
 
         return new TypedCandidateHarness(service, configurationService, draftService, request);
+    }
+
+    private static async Task<AuthoritativeFactorHarness> CreateAuthoritativeFactorHarnessAsync()
+    {
+        var ledgerBookId = Guid.Parse("c1000000-0000-4000-8000-000000000001");
+        var periodId = Guid.Parse("c1000000-0000-4000-8000-000000000002");
+        var ownerNodeId = Guid.Parse("c1000000-0000-4000-8000-000000000003");
+        var securityId = Guid.Parse("c1000000-0000-4000-8000-000000000004");
+        var roleId = Guid.Parse("c1000000-0000-4000-8000-000000000005");
+        var positionId = Guid.Parse("c1000000-0000-4000-8000-000000000006");
+        var correlationId = Guid.Parse("c1000000-0000-4000-8000-000000000007");
+        var effectiveDate = new DateOnly(2026, 5, 31);
+        const string evidence = "evidence://factor/mbs-2026-05";
+        var dimensions = new LedgerDimensionSetDto(
+            "fund-alpha",
+            "entity-master",
+            InstrumentId: securityId,
+            BookId: ledgerBookId.ToString("D"))
+        {
+            PositionId = positionId
+        };
+        var bookContext = new AccountingBookContextDto(
+            ledgerBookId,
+            "fund-alpha",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Fund Alpha GAAP",
+            "USD",
+            AccountingBasisKindDto.Gaap,
+            "gaap-mbs-v1",
+            "v1",
+            periodId,
+            dimensions);
+        var projector = new FactorPaydownProjectionService();
+        var projection = projector.Project(new FactorPaydownProjectionRequest(
+            securityId,
+            positionId,
+            4,
+            4,
+            100_000m,
+            0.9800m,
+            0.9625m,
+            "USD",
+            effectiveDate,
+            DateTimeOffset.Parse("2026-05-31T00:00:00Z"),
+            "SecurityMaster",
+            "mbs-factor-row-2026-05",
+            "sha256:mbs-factor-row-2026-05",
+            [evidence],
+            correlationId));
+        var role = new InstrumentRoleDto(
+            roleId,
+            securityId,
+            "fund-alpha",
+            "Fund",
+            InstrumentRoleKinds.Holder,
+            InstrumentAccountingSides.Debit,
+            InstrumentEconomicSides.Asset,
+            new DateOnly(2026, 1, 1),
+            Version: 2,
+            EvidenceLinks: [evidence]);
+        var position = new BookPositionDto(
+            positionId,
+            securityId,
+            roleId,
+            bookContext,
+            BookPositionSides.Long,
+            "Active",
+            new DateOnly(2026, 1, 1),
+            Version: 4,
+            CurrentEconomicState: projection.EconomicState,
+            ProjectionLineage: projection.Lineage,
+            EvidenceLinks: [evidence]);
+        var subject = new AssetOperationSubjectDto(
+            securityId,
+            "MortgageBackedSecurity",
+            "Agency MBS Pool",
+            "FNPOOL1",
+            ["FactorProcessing"]);
+        var readiness = new AssetOperationsReadinessDto(
+            securityId,
+            "Ready",
+            [],
+            [],
+            [],
+            [],
+            DateTimeOffset.Parse("2026-05-31T01:00:00Z"),
+            "AssetOperations",
+            positionId.ToString("D"));
+        var detail = new AssetOperationsDetailDto(subject, [], [], [], [], [], [], [], [], readiness, [])
+        {
+            InstrumentRoles = [role],
+            BookPositions = [position],
+            PositionEconomicStates = [projection.EconomicState!],
+            ProjectionLineages = [projection.Lineage!]
+        };
+
+        var configurationService = new AccountingConfigurationService(
+            new InMemoryAccountingConfigurationStore(),
+            new InMemoryAccountingActionAuditStore());
+        await SeedCandidateConfigurationAsync(
+            configurationService,
+            ledgerBookId,
+            ruleId: "posting.mbs-factor-paydown",
+            generatedLineDimensions: dimensions,
+            sourceEventType: FactorPaydownProjectionService.EventType);
+        var policyService = new AccountingPolicyService();
+        await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
+            AccountingBasisKindDto.Gaap,
+            "gaap-mbs-v1",
+            "v1",
+            "GAAP MBS factor treatment",
+            new DateOnly(2026, 1, 1),
+            RulePack: new AccountingPolicyRulePackDto(
+                "gaap-mbs-rules",
+                "v1",
+                [
+                    new AccountingPolicyRuleDto(
+                        "posting.mbs-factor-paydown",
+                        AccountingTreatmentKindDto.Amortization,
+                        "v1",
+                        FactorPaydownProjectionService.EventType,
+                        RequiresEvidence: true,
+                        RequiresApproval: true,
+                        AllowsAutoPosting: false)
+                ])));
+        var ledgerBook = new LedgerBookDto(
+            ledgerBookId,
+            "fund-alpha",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Fund Alpha GAAP",
+            "USD",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-mbs-v1",
+            AccountingPolicyVersion: "v1");
+        var period = new LedgerPeriodDto(
+            periodId,
+            ledgerBookId,
+            2026,
+            5,
+            "May 2026",
+            new DateOnly(2026, 5, 1),
+            effectiveDate,
+            LedgerPeriodStatusDto.Open,
+            DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
+            null,
+            1,
+            AccountingBasisKindDto.Gaap,
+            "gaap-mbs-v1",
+            "v1");
+        var request = new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            FactorPaydownProjectionService.EventType,
+            1_750m,
+            "USD",
+            effectiveDate,
+            "preparer@meridian.local",
+            ledgerBookId,
+            periodId,
+            DateTimeOffset.Parse("2026-05-31T12:00:00Z"),
+            "MBS factor principal paydown",
+            AccountingBasisKindDto.Gaap,
+            ledgerBookId,
+            dimensions,
+            InstrumentSymbol: "FNPOOL1",
+            CorrelationId: correlationId,
+            SourceEventId: projection.EconomicEvent!.EventId,
+            PolicyId: "gaap-mbs-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Amortization,
+            EvidenceLinks: [evidence])
+        {
+            BookContext = bookContext,
+            BookPositionId = positionId,
+            EconomicEvent = projection.EconomicEvent,
+            ProjectionLineage = projection.Lineage,
+            RulePackReference = new AccountingRulePackReferenceDto(
+                "gaap-mbs-rules",
+                "v1",
+                "posting.mbs-factor-paydown",
+                "v1")
+        };
+        var assetOperations = new StaticAssetOperationsQueryService { Detail = detail };
+        var draftService = new AccountingJournalDraftService(
+            policyService,
+            new AccountingBasisProjectionService(policyService));
+        var service = new AccountingPostingCandidateService(
+            configurationService,
+            draftService,
+            new StaticLedgerBookService(ledgerBook, period),
+            policyService,
+            assetOperations,
+            projector);
+        return new AuthoritativeFactorHarness(service, request, assetOperations);
     }
 
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
@@ -1394,7 +1827,8 @@ public sealed class AccountingPostingCandidateServiceTests
         string creditAccountPath = "income/interest",
         string creditNodeId = "interest-income",
         string costCenterId = "income-review",
-        LedgerDimensionSetDto? generatedLineDimensions = null)
+        LedgerDimensionSetDto? generatedLineDimensions = null,
+        string sourceEventType = "CustodianInterestAccrual")
     {
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
@@ -1423,7 +1857,7 @@ public sealed class AccountingPostingCandidateServiceTests
             new PostingRuleDto(
                 ruleId,
                 "Custodian interest accrual",
-                "CustodianInterestAccrual",
+                sourceEventType,
                 TemplateId: "generated",
                 RuleVersion: "v1",
                 EffectiveFrom: new DateOnly(2026, 1, 1),
@@ -1735,6 +2169,28 @@ public sealed class AccountingPostingCandidateServiceTests
         AccountingConfigurationService ConfigurationService,
         IAccountingJournalDraftService DraftService,
         PostingRuleJournalCandidateRequestDto Request);
+
+    private sealed record AuthoritativeFactorHarness(
+        AccountingPostingCandidateService Service,
+        PostingRuleJournalCandidateRequestDto Request,
+        StaticAssetOperationsQueryService AssetOperations);
+
+    private sealed class StaticAssetOperationsQueryService : IAssetOperationsQueryService
+    {
+        public AssetOperationsDetailDto? Detail { get; set; }
+
+        public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(Detail?.Subject.SecurityId == securityId ? Detail : null);
+        }
+
+        public Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(Detail?.Subject.SecurityId == securityId ? Detail.Readiness : null);
+        }
+    }
 
     private sealed class StaticLedgerBookService(
         LedgerBookDto book,

@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Ui.Shared
@@ -110,6 +110,12 @@ presentation code renders it.
 The existing explorer route now renders the retained `PositionId` dimension as a shared Position
 field when present. Browser and WPF clients consume the same server-built field and proof graph; no
 instrument-accounting-specific explorer route or client-side ledger query is added.
+For typed factor events the shared explorer queries `ILedgerJournalStore` with the exact ledger book,
+book aggregate, and indexed source event, then renders factor evidence -> holder role/book position
+-> economic projection -> posting candidate -> independent approval -> immutable `JournalEntry` ->
+ledger/report evidence. The identities are present in shared selected-record fields and
+relationships as well as the proof graph, so the browser and WPF generic explorers remain thin and
+show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the

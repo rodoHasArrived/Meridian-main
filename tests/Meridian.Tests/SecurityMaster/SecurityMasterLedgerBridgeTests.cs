@@ -234,7 +234,11 @@ public sealed class SecurityMasterLedgerBridgeTests
         var bridge = BuildBridge(queryService);
         var ledger = new Meridian.Ledger.Ledger();
 
-        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 100_000m));
 
         ledger.Journal.Should().ContainSingle();
         var entry = ledger.Journal[0];
@@ -244,8 +248,22 @@ public sealed class SecurityMasterLedgerBridgeTests
         entry.Metadata.SecurityId.Should().Be(SecurityId);
         entry.Metadata.LedgerView.Should().Be(LedgerViewKind.SecurityMaster);
 
-        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0.0085m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-0.0085m);
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(850m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-850m);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_PrincipalPaydownWithoutHeldFace_ShouldFailClosed()
+    {
+        var paydown = MakePrincipalPaydown(0.0085m, new DateOnly(2026, 5, 25));
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { paydown });
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await BuildBridge(queryService).PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+
+        ledger.Journal.Should().BeEmpty();
     }
 
     [Fact]

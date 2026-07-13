@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.FinancialOperations
@@ -442,6 +442,13 @@ Security Master remains the canonical source of instrument identity, Instruments
 own economic projections, and this module owns the governed candidate/approval handoff. These
 optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
 posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
+For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
+position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
+the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
+drift, event/lineage drift, a missing or mismatched authoritative rule-pack reference, or a
+client-supplied amount mismatch blocks the candidate before approval. Factor detection is anchored
+to the canonical event type as well as projection lineage, so omitting or relabeling a client field
+cannot bypass server recalculation.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target

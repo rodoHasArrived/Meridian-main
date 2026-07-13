@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**2778 / 7443** items documented (**37.3%**) &mdash; Grade: **F**
+**2779 / 7449** items documented (**37.3%**) &mdash; Grade: **F**
 
 ```text
 [=======-------------] 37.3%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2658 | 7017 | 37.9% | F |
+| Public Classes / Interfaces | 2659 | 7023 | 37.9% | F |
 | API Endpoints | 106 | 279 | 38.0% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4359 undocumented)
+### Public Classes / Interfaces (4364 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,7 +77,7 @@
 | `CorporateActionSupersedeRestatementTrigger` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:54` |
 | `PositionCorporateActionAdjustment` | `src/Meridian.Application/SecurityMaster/CorporateActions/ILivePositionCorporateActionAdjuster.cs:6` |
 | `RecordTickerChangeRequest` | `src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:10` |
-| ... and 4309 more | |
+| ... and 4314 more | |
 
 ### API Endpoints (173 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4359 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4364 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 173 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 

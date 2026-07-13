@@ -1,6 +1,7 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Ledger;
@@ -29,17 +30,23 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
     private readonly IAccountingJournalDraftService _journalDraftService;
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly IAccountingPolicyService? _accountingPolicyService;
+    private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
+    private readonly IFactorPaydownProjectionService? _factorPaydownProjector;
 
     public AccountingPostingCandidateService(
         IAccountingConfigurationService configurationService,
         IAccountingJournalDraftService journalDraftService,
         ILedgerBookService? ledgerBookService = null,
-        IAccountingPolicyService? accountingPolicyService = null)
+        IAccountingPolicyService? accountingPolicyService = null,
+        IAssetOperationsQueryService? assetOperationsQueryService = null,
+        IFactorPaydownProjectionService? factorPaydownProjector = null)
     {
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _journalDraftService = journalDraftService ?? throw new ArgumentNullException(nameof(journalDraftService));
         _ledgerBookService = ledgerBookService;
         _accountingPolicyService = accountingPolicyService;
+        _assetOperationsQueryService = assetOperationsQueryService;
+        _factorPaydownProjector = factorPaydownProjector;
     }
 
     public async Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
@@ -54,11 +61,17 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
 
+        var typedProjectionIssues = new List<PostingRuleJournalCandidateIssueDto>();
+        var authoritativeEventAmount = await ResolveTypedInstrumentProjectionAsync(
+            request,
+            typedProjectionIssues,
+            ct).ConfigureAwait(false);
+
         var dryRun = await _configurationService.DryRunPostingRuleAsync(
                 new RuleDryRunRequestDto(
                     request.FundProfileId,
                     request.SourceEventType,
-                    request.EventAmount,
+                    authoritativeEventAmount ?? request.EventAmount,
                     request.Currency,
                     request.EffectiveDate,
                     request.Actor,
@@ -75,6 +88,7 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
         var issues = dryRun.ValidationIssues
             .Select(ToCandidateIssue)
             .ToList();
+        issues.AddRange(typedProjectionIssues);
         var selectedRuleVersion = dryRun.RuleMatches
             .Where(match => match.IsMatched)
             .Where(match => string.Equals(match.RuleId, dryRun.SelectedRuleId, StringComparison.OrdinalIgnoreCase))
@@ -280,6 +294,280 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
                 RulePackReference = request.RulePackReference
             },
             write);
+    }
+
+    private async Task<decimal?> ResolveTypedInstrumentProjectionAsync(
+        PostingRuleJournalCandidateRequestDto request,
+        List<PostingRuleJournalCandidateIssueDto> issues,
+        CancellationToken ct)
+    {
+        var requestedLineage = request.ProjectionLineage;
+        if (!IsFactorPaydownRequest(request))
+        {
+            return null;
+        }
+
+        if (request.EconomicEvent is null)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-economic-event-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "MBS factor-paydown candidates require a typed economic event.",
+                "economicEvent",
+                "Attach the server-produced factor-paydown economic event before creating the candidate."));
+            return null;
+        }
+
+        if (requestedLineage is null ||
+            !TextEquals(requestedLineage.ModelKey, FactorPaydownProjectionService.ModelKey))
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-factor-lineage-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "MBS factor-paydown candidates require lineage from the registered factor-paydown projection model.",
+                "projectionLineage.modelKey",
+                "Attach the authoritative Asset Operations factor-paydown lineage; client-selected model keys are not accepted."));
+            return null;
+        }
+
+        if (!TextEquals(request.EconomicEvent.EventType, FactorPaydownProjectionService.EventType) ||
+            !TextEquals(request.SourceEventType, FactorPaydownProjectionService.EventType))
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-factor-event-type-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Factor-paydown lineage may only be used with the canonical MBS factor-paydown event type.",
+                "economicEvent.eventType",
+                "Use the event type emitted by the registered factor-paydown projector."));
+            return null;
+        }
+
+        if (_assetOperationsQueryService is null || _factorPaydownProjector is null)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-projection-resolver-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Typed factor-paydown candidates require authoritative Asset Operations and projection resolvers.",
+                "projectionLineage.modelKey",
+                "Register IAssetOperationsQueryService and IFactorPaydownProjectionService before accepting typed instrument events."));
+            return null;
+        }
+
+        var requestedEvent = request.EconomicEvent;
+        if (requestedEvent?.SecurityId is not Guid securityId || securityId == Guid.Empty)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-security-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Typed factor-paydown candidates require a Security Master identity.",
+                "economicEvent.securityId",
+                "Attach the persisted Security Master identity to the economic event."));
+            return null;
+        }
+
+        if (request.BookPositionId is not Guid positionId || positionId == Guid.Empty)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-position-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Typed factor-paydown candidates require a persisted book-position identity.",
+                "bookPositionId",
+                "Attach the persisted Asset Operations book position."));
+            return null;
+        }
+
+        AssetOperationsDetailDto? detail;
+        try
+        {
+            detail = await _assetOperationsQueryService.GetOperationsAsync(securityId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-projection-resolution-failed",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Authoritative Asset Operations projection resolution failed: {ex.Message}",
+                securityId.ToString("D"),
+                "Restore Asset Operations projection resolution before creating the candidate."));
+            return null;
+        }
+
+        if (detail is null)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-projection-not-found",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"No Asset Operations projection exists for Security Master identity '{securityId:D}'.",
+                securityId.ToString("D"),
+                "Publish the governed role, position, economic state, and lineage before creating the candidate."));
+            return null;
+        }
+
+        var matchingPositions = detail.BookPositions
+            .Where(candidate => candidate.PositionId == positionId)
+            .ToArray();
+        if (matchingPositions.Length != 1)
+        {
+            issues.Add(Issue(
+                matchingPositions.Length == 0
+                    ? "posting-candidate.instrument-position-not-found"
+                    : "posting-candidate.instrument-position-ambiguous",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                matchingPositions.Length == 0
+                    ? $"Book position '{positionId:D}' was not found in Asset Operations."
+                    : $"Book position '{positionId:D}' resolves to multiple Asset Operations projections.",
+                "bookPositionId",
+                "Use a persisted position owned by the selected Security Master record and ledger book."));
+            return null;
+        }
+
+        var position = matchingPositions[0];
+
+        var matchingRoles = detail.InstrumentRoles
+            .Where(candidate => candidate.RoleId == position.RoleId)
+            .ToArray();
+        var role = matchingRoles.Length == 1 ? matchingRoles[0] : null;
+        if (role is null || !TextEquals(role.RoleKind, InstrumentRoleKinds.Holder))
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-holder-role-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Book position '{positionId:D}' does not resolve to an active holder role.",
+                "bookPosition.roleId",
+                "Publish an effective holder role for the book position before creating the candidate."));
+            return null;
+        }
+
+        var state = detail.PositionEconomicStates
+            .Where(candidate => candidate.PositionId == positionId && candidate.AsOfDate == requestedEvent.EffectiveDate)
+            .OrderByDescending(static candidate => candidate.Version)
+            .FirstOrDefault() ?? position.CurrentEconomicState;
+        if (state is null)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-economic-state-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Book position '{positionId:D}' has no factor economic state for {requestedEvent.EffectiveDate:yyyy-MM-dd}.",
+                "bookPosition.currentEconomicState",
+                "Persist the factor economic-state projection before creating the candidate."));
+            return null;
+        }
+
+        var persistedLineage = detail.ProjectionLineages
+            .FirstOrDefault(candidate => candidate.ProjectionRunId == requestedLineage.ProjectionRunId) ??
+            position.ProjectionLineage;
+        if (persistedLineage is null)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lineage-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Book position '{positionId:D}' has no persisted projection lineage matching the candidate.",
+                "projectionLineage.projectionRunId",
+                "Persist the typed projection lineage before creating the candidate."));
+            return null;
+        }
+
+        ValidatePersistedInstrumentAssertions(request, position, role, state, persistedLineage, issues);
+        if (issues.Any(static issue => issue.BlocksCandidate))
+        {
+            return null;
+        }
+
+        var heldFace = state.OriginalFaceAmount ?? state.ParAmount ?? state.NotionalAmount ?? state.Quantity;
+        if (heldFace is null || state.PriorFactor is null || state.CurrentFactor is null)
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-factor-state-incomplete",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Persisted factor-paydown economic state is missing held face or factor values.",
+                "bookPosition.currentEconomicState",
+                "Rebuild the position economic state from retained factor evidence."));
+            return null;
+        }
+
+        var projection = _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
+            securityId,
+            positionId,
+            position.Version,
+            position.Version,
+            heldFace.Value,
+            state.PriorFactor.Value,
+            state.CurrentFactor.Value,
+            state.Currency,
+            requestedEvent.EffectiveDate,
+            persistedLineage.TriggerEvent.OccurredAtUtc,
+            persistedLineage.TriggerEvent.SourceDomain,
+            persistedLineage.TriggerEvent.SourceEntityId ?? string.Empty,
+            persistedLineage.TriggerEvent.SourceContentHash ?? string.Empty,
+            persistedLineage.TriggerEvent.EvidenceLinks,
+            persistedLineage.TriggerEvent.CorrelationId,
+            persistedLineage.TriggerEvent.CausationId,
+            persistedLineage.GeneratedAtUtc));
+        if (!projection.ProducesPostingCandidate)
+        {
+            foreach (var projectionIssue in projection.Issues)
+            {
+                issues.Add(Issue(
+                    $"posting-candidate.{projectionIssue.Code}",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    projectionIssue.Message,
+                    "projectionLineage",
+                    "Rebuild the governed factor-paydown projection from valid persisted inputs."));
+            }
+
+            return null;
+        }
+
+        AddMismatch(
+            issues,
+            projection.EconomicEvent!.EventId == requestedEvent.EventId,
+            "posting-candidate.instrument-event-id-mismatch",
+            "The submitted economic event does not match the server-recalculated factor event.",
+            "economicEvent.eventId");
+        AddMismatch(
+            issues,
+            projection.Lineage!.ProjectionRunId == requestedLineage.ProjectionRunId &&
+            projection.Lineage.ProjectionEventId == requestedLineage.ProjectionEventId &&
+            TextEquals(projection.Lineage.ModelVersion, requestedLineage.ModelVersion) &&
+            TextEquals(projection.Lineage.EngineVersion, requestedLineage.EngineVersion),
+            "posting-candidate.instrument-lineage-mismatch",
+            "The submitted projection lineage does not match the server-recalculated lineage.",
+            "projectionLineage");
+        AddMismatch(
+            issues,
+            projection.PrincipalPaydown == request.EventAmount,
+            "posting-candidate.factor-paydown-amount-mismatch",
+            "The submitted event amount does not match the server-calculated principal paydown.",
+            "eventAmount");
+
+        return projection.PrincipalPaydown;
+    }
+
+    private static void ValidatePersistedInstrumentAssertions(
+        PostingRuleJournalCandidateRequestDto request,
+        BookPositionDto position,
+        InstrumentRoleDto role,
+        PositionEconomicStateDto state,
+        ProjectionLineageDto lineage,
+        List<PostingRuleJournalCandidateIssueDto> issues)
+    {
+        var economicEvent = request.EconomicEvent!;
+        var requestedLineage = request.ProjectionLineage!;
+        AddMismatch(issues, position.SecurityId == economicEvent.SecurityId, "posting-candidate.instrument-position-security-mismatch", "Persisted position Security Master identity must match the economic event.", "bookPosition.securityId");
+        AddMismatch(issues, role.SecurityId == position.SecurityId, "posting-candidate.instrument-role-security-mismatch", "Persisted holder role Security Master identity must match the position.", "bookPosition.roleId");
+        AddMismatch(issues, request.LedgerBookId == position.BookContext.LedgerBookId, "posting-candidate.instrument-position-book-mismatch", "Persisted position must belong to the candidate ledger book.", "bookPosition.bookContext.ledgerBookId");
+        AddMismatch(issues, TextEquals(request.Currency, state.Currency), "posting-candidate.instrument-position-currency-mismatch", "Persisted economic-state currency must match the candidate.", "bookPosition.currentEconomicState.currency");
+        AddMismatch(issues, state.PositionId == position.PositionId, "posting-candidate.instrument-economic-state-position-mismatch", "Persisted economic state must belong to the selected position.", "bookPosition.currentEconomicState.positionId");
+        AddMismatch(issues, state.AsOfDate == economicEvent.EffectiveDate, "posting-candidate.instrument-economic-state-date-mismatch", "Persisted factor state must be effective on the economic-event date.", "bookPosition.currentEconomicState.asOfDate");
+        AddMismatch(issues, state.Version == position.Version + 1, "posting-candidate.instrument-economic-state-version-stale", "Persisted factor state must be the next version derived from the current position.", "bookPosition.currentEconomicState.version");
+        AddMismatch(issues, TextEquals(position.Status, "Active"), "posting-candidate.instrument-position-inactive", "Persisted position must be active before a posting candidate can be created.", "bookPosition.status");
+        AddMismatch(issues, position.EffectiveFrom <= economicEvent.EffectiveDate && (position.EffectiveTo is null || position.EffectiveTo >= economicEvent.EffectiveDate), "posting-candidate.instrument-position-not-effective", "Persisted position is not effective on the economic-event date.", "bookPosition.effectiveFrom");
+        AddMismatch(issues, role.EffectiveFrom <= economicEvent.EffectiveDate && (role.EffectiveTo is null || role.EffectiveTo >= economicEvent.EffectiveDate), "posting-candidate.instrument-role-not-effective", "Persisted holder role is not effective on the economic-event date.", "instrumentRole.effectiveFrom");
+        AddMismatch(issues, lineage.ProjectionRunId == requestedLineage.ProjectionRunId && lineage.ProjectionEventId == requestedLineage.ProjectionEventId, "posting-candidate.instrument-persisted-lineage-mismatch", "Candidate projection identity must match persisted Asset Operations lineage.", "projectionLineage.projectionRunId");
+        AddMismatch(issues, EventsMatch(lineage.TriggerEvent, economicEvent), "posting-candidate.instrument-trigger-event-mismatch", "Persisted projection trigger must match the candidate economic event.", "projectionLineage.triggerEvent");
+        var persistedEvidence = NormalizeEvidence(lineage.TriggerEvent.EvidenceLinks);
+        var candidateEvidence = NormalizeEvidence(request.EvidenceLinks);
+        AddMismatch(issues, persistedEvidence.Count > 0 && persistedEvidence.All(candidateEvidence.Contains), "posting-candidate.instrument-evidence-mismatch", "Candidate evidence must retain every source link used by the persisted projection.", "evidenceLinks");
     }
 
     private static PostingRuleJournalCandidateResultDto BuildBlockedResult(
@@ -739,6 +1027,16 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
         var reference = request.RulePackReference;
         if (reference is null)
         {
+            if (IsFactorPaydownRequest(request))
+            {
+                issues.Add(Issue(
+                    "posting-candidate.rule-pack-reference-required",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "Typed MBS factor-paydown candidates require an authoritative rule-pack and selected-rule reference.",
+                    "rulePackReference",
+                    "Attach the rule pack and rule version selected by Rules Studio before creating the candidate."));
+            }
+
             return;
         }
 
@@ -837,6 +1135,11 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
         AddMismatch(issues, request.EffectiveDate == eventReference.EffectiveDate, "posting-candidate.economic-event-date-mismatch", "Typed economic-event effective date must match the candidate effective date.", $"{target}.effectiveDate");
         AddMismatch(issues, request.CorrelationId == eventReference.CorrelationId, "posting-candidate.economic-event-correlation-mismatch", "Typed economic-event correlation id must match the candidate correlation id.", $"{target}.correlationId");
     }
+
+    private static bool IsFactorPaydownRequest(PostingRuleJournalCandidateRequestDto request)
+        => TextEquals(request.SourceEventType, FactorPaydownProjectionService.EventType)
+           || TextEquals(request.EconomicEvent?.EventType, FactorPaydownProjectionService.EventType)
+           || TextEquals(request.ProjectionLineage?.ModelKey, FactorPaydownProjectionService.ModelKey);
 
     private static void ValidateDimensionBook(
         Guid ledgerBookId,
