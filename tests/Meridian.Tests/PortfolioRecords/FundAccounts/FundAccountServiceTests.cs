@@ -255,7 +255,7 @@ public sealed class FundAccountServiceTests
     // ── Reconciliation ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ReconcileAccount_WithBalanceSnapshot_ReturnsMatchedRun()
+    public async Task ReconcileAccount_WithBalanceSnapshotOnly_ReturnsUnverifiedRun()
     {
         var svc = CreateService();
         var acct = await svc.CreateAccountAsync(MakeBankRequest());
@@ -267,10 +267,42 @@ public sealed class FundAccountServiceTests
         var run = await svc.ReconcileAccountAsync(
             new ReconcileAccountRequest(acct.AccountId, today, "test-user"));
 
+        // A snapshot with no independent counterpart (no ingested bank statement closing
+        // balance) cannot be verified, so the run must not claim "Matched".
+        Assert.NotNull(run);
+        Assert.Equal("Unverified", run.Status);
+        Assert.Equal(0, run.TotalBreaks);
+        Assert.Equal(0, run.TotalMatched);
+        Assert.True(run.TotalChecks > 0);
+    }
+
+    [Fact]
+    public async Task ReconcileAccount_WithMatchingBankClosingBalance_ReturnsMatchedRun()
+    {
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var batchId = Guid.NewGuid();
+
+        await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            acct.AccountId, today, "USD", 500_000m, "BankStatement", "test"));
+        await svc.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, acct.AccountId, today, "JPMorgan", null,
+            new List<BankStatementLineDto>
+            {
+                new(Guid.NewGuid(), batchId, acct.AccountId, today, today,
+                    -50_000m, "USD", "Wire", "Payment to broker", null, 500_000m)
+            },
+            "loader"));
+
+        var run = await svc.ReconcileAccountAsync(
+            new ReconcileAccountRequest(acct.AccountId, today, "test-user"));
+
         Assert.NotNull(run);
         Assert.Equal("Matched", run.Status);
         Assert.Equal(0, run.TotalBreaks);
         Assert.True(run.TotalChecks > 0);
+        Assert.Equal(run.TotalChecks, run.TotalMatched);
     }
 
     [Fact]

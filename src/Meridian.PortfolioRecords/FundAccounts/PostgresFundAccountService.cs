@@ -224,6 +224,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
 
         var snapshots = await _store.GetBalanceHistoryAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false);
         var positions = await _store.GetCustodianPositionsAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false);
+        var custodianBatches = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false);
+        var bankLines = await _store.GetBankStatementLinesAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false);
 
         var snapshot = snapshots.OrderByDescending(s => s.RecordedAt).FirstOrDefault();
 
@@ -231,53 +233,22 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         var results = new List<AccountReconciliationResultDto>();
         var now = DateTimeOffset.UtcNow;
 
-        if (snapshot is not null)
+        var cashCheck = AccountReconciliationChecks.BuildCashBalanceCheck(runId, snapshot, bankLines);
+        if (cashCheck is not null)
         {
-            results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(),
-                runId,
-                CheckLabel: "CashBalance",
-                IsMatch: true,
-                Category: "Cash",
-                Status: "Matched",
-                ExpectedAmount: snapshot.CashBalance,
-                ActualAmount: snapshot.CashBalance,
-                Variance: 0m,
-                Reason: "Cash balance matches internal ledger"));
+            results.Add(cashCheck);
         }
 
         await AddContinuityCheckResultsAsync(runId, request.AsOfDate, results, request.AccountId, ct).ConfigureAwait(false);
 
-        if (positions.Count > 0)
+        var positionCheck = AccountReconciliationChecks.BuildPositionCountCheck(runId, positions, custodianBatches);
+        if (positionCheck is not null)
         {
-            results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(),
-                runId,
-                CheckLabel: $"PositionCount ({positions.Count} lines)",
-                IsMatch: true,
-                Category: "Positions",
-                Status: "Matched",
-                ExpectedAmount: positions.Count,
-                ActualAmount: positions.Count,
-                Variance: 0m,
-                Reason: "Custodian position lines ingested successfully"));
+            results.Add(positionCheck);
         }
 
-        var breaks = results.Count(r => !r.IsMatch);
-        var run = new AccountReconciliationRunDto(
-            runId,
-            request.AccountId,
-            request.AsOfDate,
-            Status: breaks == 0 ? "Matched" : "Breaks",
-            TotalChecks: results.Count,
-            TotalMatched: results.Count - breaks,
-            TotalBreaks: breaks,
-            BreakAmountTotal: results
-                .Where(r => !r.IsMatch && r.Variance.HasValue)
-                .Sum(r => Math.Abs(r.Variance!.Value)),
-            RequestedAt: now,
-            CompletedAt: now,
-            request.RequestedBy);
+        var run = AccountReconciliationChecks.BuildRunSummary(
+            runId, request.AccountId, request.AsOfDate, request.RequestedBy, now, results);
 
         await _store.InsertReconciliationRunAsync(run, results, ct).ConfigureAwait(false);
         return run;
@@ -300,7 +271,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         {
             var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
             breaks.AddRange(results
-                .Where(r => !r.IsMatch
+                .Where(r => AccountReconciliationChecks.IsBreak(r)
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
@@ -326,7 +297,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         {
             var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
             breaks.AddRange(results
-                .Where(r => !r.IsMatch && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Where(r => AccountReconciliationChecks.IsBreak(r) && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
@@ -439,7 +410,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         foreach (var run in reconciliationRuns)
         {
             var runResults = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
-            openBreakCount += runResults.Count(r => !r.IsMatch);
+            openBreakCount += runResults.Count(AccountReconciliationChecks.IsBreak);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -592,7 +563,7 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             {
                 var results = await _store.GetReconciliationResultsAsync(run.ReconciliationRunId, ct).ConfigureAwait(false);
                 views.AddRange(results
-                    .Where(static r => !r.IsMatch)
+                    .Where(static r => AccountReconciliationChecks.IsBreak(r))
                     .Select(r => new AccountOpenBreakView(
                         account.AccountId, r.ReconciliationRunId, r.ResultId,
                         r.CheckLabel, r.Category, r.Variance, r.Reason)));
