@@ -47,6 +47,25 @@ describe("FinancialRecordExplorerShell", () => {
     );
   });
 
+  it("opens row proof detail via keyboard activation", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const row = screen.getByRole("row", { name: /revenue income aapl/i });
+    expect(row).toHaveAttribute("tabindex", "0");
+    expect(row).toHaveAttribute("aria-current", "false");
+
+    row.focus();
+    await user.keyboard("{Enter}");
+
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-current", "true");
+
+    // Space activates the same selection path (default scroll suppressed).
+    await user.keyboard(" ");
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+  });
+
   it("requires an operator name before saving a material view change", async () => {
     const user = userEvent.setup();
     const onSaveView = vi.fn().mockResolvedValue(undefined);
