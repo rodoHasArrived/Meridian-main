@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,9 @@ import {
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard, EmptyState } from "@/components/data/concrete";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import {
   EquityCurve,
@@ -35,7 +37,7 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
+import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   resolveBrokerageAccountFilterKeyCommand,
@@ -54,7 +56,6 @@ import type {
   FinancialRecordExplorerDto,
   EquityCurveSummary,
   FinancialRecordExplorerSavedViewSaveRequestDto,
-  MetricSnapshot,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -281,6 +282,40 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
   }
 ];
 
+type PortfolioRouteViewId = "overview" | "attribution" | "brokerage-sync";
+
+const portfolioRouteTabs: { id: PortfolioRouteViewId; label: string; route: string }[] = [
+  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.portfolio },
+  { id: "attribution", label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
+  { id: "brokerage-sync", label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync }
+];
+
+export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewId {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.includes("attribution")) {
+    return "attribution";
+  }
+  if (segments.includes("brokerage-sync")) {
+    return "brokerage-sync";
+  }
+  return "overview";
+}
+
+const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; description: string }> = {
+  overview: {
+    title: "Execution-linked holdings",
+    description: "Open holdings, cash posture, and the record explorer stay aligned with the active paper workflow."
+  },
+  attribution: {
+    title: "Attribution",
+    description: "Run-linked equity evidence: comparison signals, drill-ins, and per-run attribution detail."
+  },
+  "brokerage-sync": {
+    title: "Brokerage sync",
+    description: "Live brokerage portfolio, connection trust, and multi-asset coverage posture."
+  }
+};
+
 export function PortfolioScreen({
   portfolio,
   trading,
@@ -292,6 +327,17 @@ export function PortfolioScreen({
   refreshStatus
 }: PortfolioScreenProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const routeView = resolvePortfolioRouteView(location.pathname);
+  const routeCopy = portfolioRouteViewCopy[routeView];
+  const showOverview = routeView === "overview";
+  const showAttribution = routeView === "attribution";
+  const showBrokerageSync = routeView === "brokerage-sync";
+  const routeTabs = portfolioRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.id === routeView
+  }));
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
   const drillInRequestId = useRef(0);
@@ -496,19 +542,23 @@ export function PortfolioScreen({
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
+      <StatStrip
+        metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
+        label="Portfolio headline metrics"
+      />
+
       <section
         role="region"
         aria-label="Portfolio workbench context"
-        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+        className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <div className="eyebrow-label">Portfolio lane</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            Execution-linked holdings
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Holdings, run evidence, and cash posture stay aligned with the active paper workflow.
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -517,9 +567,6 @@ export function PortfolioScreen({
               {...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace")}
             />
           ) : null}
-          {vm.headerChips.map((chip) => (
-            <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
-          ))}
           <Button asChild variant="outline" size="sm">
             <Link
               to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
@@ -529,6 +576,18 @@ export function PortfolioScreen({
               Cash Ladder
             </Link>
           </Button>
+          <WorkspaceTabStrip
+            label="Portfolio routes"
+            tabs={routeTabs}
+            onSelect={(id) => {
+              const tab = portfolioRouteTabs.find((candidate) => candidate.id === id);
+              if (tab) {
+                // Preserve the querystring: the operating scope is threaded
+                // through search params across the shell.
+                navigate({ pathname: tab.route, search: location.search });
+              }
+            }}
+          />
         </div>
       </section>
 
@@ -606,7 +665,7 @@ export function PortfolioScreen({
         </section>
       ) : null}
 
-      {vm.multiAssetCoveragePanel ? (
+      {showBrokerageSync && vm.multiAssetCoveragePanel ? (
         <Card className={cn("panel-surface border", cashFlowBorderClass[vm.multiAssetCoveragePanel.statusTone])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -757,6 +816,7 @@ export function PortfolioScreen({
         </Card>
       ) : null}
 
+      {showBrokerageSync ? (
       <Card className={cn("panel-surface border", cashFlowBorderClass[vm.brokerageConnectionTone])}>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1000,16 +1060,9 @@ export function PortfolioScreen({
           )}
         </CardContent>
       </Card>
+      ) : null}
 
-      <section
-        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-        aria-label="Portfolio headline metrics"
-      >
-        {(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats).map((metric) => (
-          <PortfolioMetricCard key={metric.id} metric={metric} />
-        ))}
-      </section>
-
+      {showOverview || showAttribution ? (
       <FinancialRecordExplorerShell
         explorerLabel="Financial Record Explorer"
         title="Portfolio Explorer"
@@ -1023,10 +1076,10 @@ export function PortfolioScreen({
         explorer={portfolioExplorer}
         onSaveView={savePortfolioExplorerView}
       >
+        {showOverview ? (
         <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
           <Card className="panel-surface">
             <CardHeader>
-              <div className="eyebrow-label">Portfolio Lane</div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
@@ -1131,7 +1184,9 @@ export function PortfolioScreen({
             )}
           </aside>
         </section>
+        ) : null}
 
+        {showAttribution ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1334,9 +1389,11 @@ export function PortfolioScreen({
             )}
           </CardContent>
         </Card>
+        ) : null}
       </FinancialRecordExplorerShell>
+      ) : null}
 
-      {vm.cashFlowSummary ? (
+      {showOverview && vm.cashFlowSummary ? (
         <Card className={cn("panel-surface border", cashFlowBorderClass[vm.cashFlowTone])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1463,17 +1520,6 @@ function PortfolioDrillInPointEvidence({
         {(-Math.abs(point.drawdownFromPeakPercent * 100)).toFixed(2)}%
       </span>
     </div>
-  );
-}
-
-function PortfolioMetricCard({ metric }: { metric: MetricSnapshot }) {
-  return (
-    <MetricCard
-      label={metric.label}
-      value={metric.value}
-      delta={metric.delta ?? undefined}
-      tone={semanticToneToMetricCardTone(metric.tone)}
-    />
   );
 }
 
