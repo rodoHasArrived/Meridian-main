@@ -4,6 +4,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Polly;
 using Serilog;
 
@@ -774,16 +775,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     }
 
     private TimeSpan CalculateReconnectDelay(int attempt)
-    {
-        // Exponential backoff with jitter
-        var baseDelay = _config.RetryBaseDelay.TotalMilliseconds;
-        var maxDelay = _config.MaxRetryDelay.TotalMilliseconds;
-        var delay = Math.Min(baseDelay * Math.Pow(2, attempt - 1), maxDelay);
-
-        // Add jitter (±20%)
-        var jitter = delay * 0.2 * (Random.Shared.NextDouble() * 2 - 1);
-        return TimeSpan.FromMilliseconds(delay + jitter);
-    }
+        => Backoff.ExponentialDelay(attempt, _config.RetryBaseDelay, _config.MaxRetryDelay, jitterFraction: 0.2);
 
 }
 

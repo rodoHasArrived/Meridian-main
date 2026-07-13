@@ -1,4 +1,5 @@
 using Meridian.Core.Exceptions;
+using Meridian.Core.Resilience;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Resilience;
 using Microsoft.Extensions.Logging;
@@ -280,9 +281,8 @@ public abstract class PollingProviderBase
 
     /// <summary>Exponential backoff (capped at 30s) applied after consecutive failed poll cycles.</summary>
     private static TimeSpan CalculatePollBackoff(int consecutiveFailures)
-    {
-        var attempt = Math.Clamp(consecutiveFailures, 1, 5);
-        var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt - 1));
-        return delay > TimeSpan.FromSeconds(30) ? TimeSpan.FromSeconds(30) : delay;
-    }
+        => Backoff.ExponentialDelay(
+            Math.Clamp(consecutiveFailures, 1, 5),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(30));
 }

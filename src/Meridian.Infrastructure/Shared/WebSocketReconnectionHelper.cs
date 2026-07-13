@@ -1,5 +1,6 @@
 using Meridian.Core.Logging;
 using Meridian.Core.Monitoring;
+using Meridian.Core.Resilience;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
 
@@ -153,15 +154,7 @@ public sealed class WebSocketReconnectionHelper
     /// Calculates delay with exponential backoff and ±20% jitter.
     /// </summary>
     private TimeSpan CalculateDelay(int attempt)
-    {
-        var exponentialDelay = _baseDelay * Math.Pow(2, attempt - 1);
-        var cappedDelay = TimeSpan.FromMilliseconds(
-            Math.Min(exponentialDelay.TotalMilliseconds, _maxDelay.TotalMilliseconds));
-
-        // Add ±20% jitter to prevent thundering herd
-        var jitterFactor = 0.8 + (Random.Shared.NextDouble() * 0.4);
-        return TimeSpan.FromMilliseconds(cappedDelay.TotalMilliseconds * jitterFactor);
-    }
+        => Backoff.ExponentialDelay(attempt, _baseDelay, _maxDelay, jitterFraction: 0.2);
 }
 
 /// <summary>

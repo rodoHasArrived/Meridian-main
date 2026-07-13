@@ -10,6 +10,7 @@ using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Core.Monitoring;
+using Meridian.Core.Resilience;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -519,11 +520,14 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             Log.Information("NYSE reconnection attempt {Attempt}/{Max}", attempt, _options.MaxReconnectAttempts);
 
             // Exponential backoff with ±15% jitter; cap at 60 s [P3]
-            var jitter = Random.Shared.NextDouble() * 0.3 + 0.85;
-            var delaySecs = Math.Min(_options.ReconnectDelaySeconds * Math.Pow(2, attempt - 1) * jitter, 60.0);
+            var delay = Backoff.ExponentialDelay(
+                attempt,
+                TimeSpan.FromSeconds(_options.ReconnectDelaySeconds),
+                TimeSpan.FromSeconds(60),
+                jitterFraction: 0.15);
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(delaySecs), reconnectCt).ConfigureAwait(false);
+                await Task.Delay(delay, reconnectCt).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
