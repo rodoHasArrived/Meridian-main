@@ -101,6 +101,50 @@ public sealed class OrderManagementSystemReportStreamTests
         portfolio.Cash.Should().Be(100_000m - 1_500m);
     }
 
+    [Fact]
+    public async Task CumulativePartialFills_ApplyOnlyTheIncrementToPortfolio()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        // Gateways report cumulative filled quantities: 5 filled, then 10 filled in total.
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.PartiallyFilled, ExecutionReportType.PartialFill, filledQty: 5m, fillPrice: 150m));
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 150m));
+
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the completion report must reach tracked order state");
+
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10,
+            because: "cumulative reports must apply as increments (5 + 5), never summed (5 + 10)");
+        portfolio.Cash.Should().Be(100_000m - 1_500m);
+
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var first = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        var second = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        first.FilledQuantity.Should().Be(5m);
+        second.FilledQuantity.Should().Be(5m,
+            because: "published fills must carry the increment, not the cumulative quantity");
+    }
+
     private static ExecutionReport BuildReport(
         string orderId,
         OrderStatus status,

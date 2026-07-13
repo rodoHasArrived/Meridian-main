@@ -260,10 +260,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
             // Merge against the latest tracked state: the async report pump may already
             // have applied a fill for this order before the submit ack is processed here.
+            var previousFilledQuantity = 0m;
             var updatedState = _orders.AddOrUpdate(
                 orderId,
-                _ => ApplyReport(orderState, report),
-                (_, existing) => ApplyReport(existing, report));
+                _ =>
+                {
+                    previousFilledQuantity = orderState.FilledQuantity;
+                    return ApplyReport(orderState, report);
+                },
+                (_, existing) =>
+                {
+                    previousFilledQuantity = existing.FilledQuantity;
+                    return ApplyReport(existing, report);
+                });
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, safeRequest.Symbol, safeRequest.Side, safeRequest.Quantity, updatedState.Status);
@@ -298,7 +307,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             // consumers can subscribe without coupling directly to the gateway.
             if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
             {
-                await ProcessFillReportAsync(sessionId, report, ct).ConfigureAwait(false);
+                await ProcessFillReportAsync(sessionId, report, previousFilledQuantity, ct).ConfigureAwait(false);
             }
 
             return new OrderResult
@@ -512,8 +521,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// <summary>
     /// Provides a read-only view of fill and partial-fill execution reports for consumption
     /// by portfolio trackers and audit subscribers.  Reports are published as each order
-    /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>.
-    /// Consumers must drain this reader promptly to avoid backpressure.
+    /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>,
+    /// with <see cref="ExecutionReport.FilledQuantity"/> normalised to the fill increment
+    /// (gateways report cumulative quantities). Consumers must drain this reader promptly
+    /// to avoid backpressure.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
 
@@ -600,11 +611,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         var orderId = report.ClientOrderId ?? report.OrderId;
 
         OrderState? updatedState = null;
+        var previousFilledQuantity = 0m;
         while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
         {
             var merged = ApplyReport(existing, report);
             if (_orders.TryUpdate(orderId, merged, existing))
             {
+                previousFilledQuantity = existing.FilledQuantity;
                 updatedState = merged;
                 break;
             }
@@ -624,7 +637,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
         {
             var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
-            await ProcessFillReportAsync(sessionId, report, ct).ConfigureAwait(false);
+            await ProcessFillReportAsync(sessionId, report, previousFilledQuantity, ct).ConfigureAwait(false);
         }
     }
 
@@ -634,12 +647,30 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// the submit ack on the report stream as well, so fills are deduplicated to avoid
     /// double-applying them to the portfolio.
     /// </summary>
-    private async Task ProcessFillReportAsync(string? sessionId, ExecutionReport report, CancellationToken ct)
+    private async Task ProcessFillReportAsync(
+        string? sessionId,
+        ExecutionReport report,
+        decimal previousFilledQuantity,
+        CancellationToken ct)
     {
         if (!TryMarkFillProcessed(report))
         {
             return;
         }
+
+        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+        // Alpaca filled_qty) while fill consumers treat each report as a discrete
+        // trade, so only the increment since the last tracked fill may be forwarded —
+        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
+        var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
+        if (incrementQuantity <= 0m)
+        {
+            return;
+        }
+
+        var fillIncrement = incrementQuantity == report.FilledQuantity
+            ? report
+            : report with { FilledQuantity = incrementQuantity };
 
         // Only fills for orders this OMS placed may mutate the paper portfolio;
         // stream reports for external/untracked orders are still published below
@@ -649,17 +680,17 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             && !string.IsNullOrWhiteSpace(orderId)
             && _orders.ContainsKey(orderId))
         {
-            paperPortfolio.ApplyFill(report);
+            paperPortfolio.ApplyFill(fillIncrement);
         }
 
-        await RecordSessionFillAsync(sessionId, report, ct).ConfigureAwait(false);
+        await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
 
-        if (!_executionChannel.Writer.TryWrite(report))
+        if (!_executionChannel.Writer.TryWrite(fillIncrement))
         {
             var dropped = Interlocked.Increment(ref _droppedExecutionReports);
             _logger.LogError(
                 "Execution report channel full; dropped fill report for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); {DroppedCount} dropped in total — ExecutionReports consumers must drain faster",
-                report.OrderId, report.Symbol, report.FilledQuantity, report.FillPrice, dropped);
+                fillIncrement.OrderId, fillIncrement.Symbol, fillIncrement.FilledQuantity, fillIncrement.FillPrice, dropped);
         }
     }
 
