@@ -218,22 +218,29 @@ public static class NyseNationalTradesCsvParser
     }
 
     /// <summary>
-    /// Builds a US Eastern zone from the statutory post-2007 DST rules (second Sunday in March
-    /// 02:00 to first Sunday in November 02:00), so hosts without a time-zone database still
-    /// resolve EDT sessions to -04:00 instead of silently applying fixed EST.
+    /// Builds a US Eastern zone from the statutory DST rules, so hosts without a time-zone
+    /// database still resolve EDT sessions to -04:00 instead of silently applying fixed EST.
+    /// Two eras are modeled: 1987-2006 (first Sunday in April 02:00 to last Sunday in October
+    /// 02:00) and 2007 onward (second Sunday in March 02:00 to first Sunday in November 02:00).
+    /// That covers every year TAQ data exists; earlier dates fall back to the pre-2007 rule.
     /// </summary>
     internal static TimeZoneInfo CreateEasternFallbackZone()
     {
-        var dstStart = TimeZoneInfo.TransitionTime.CreateFloatingDateRule(
-            new DateTime(1, 1, 1, 2, 0, 0), month: 3, week: 2, DayOfWeek.Sunday);
-        var dstEnd = TimeZoneInfo.TransitionTime.CreateFloatingDateRule(
-            new DateTime(1, 1, 1, 2, 0, 0), month: 11, week: 1, DayOfWeek.Sunday);
-        var adjustment = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+        var twoAm = new DateTime(1, 1, 1, 2, 0, 0);
+
+        var pre2007 = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
             DateTime.MinValue.Date,
+            new DateTime(2006, 12, 31),
+            TimeSpan.FromHours(1),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 4, week: 1, DayOfWeek.Sunday),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 10, week: 5, DayOfWeek.Sunday));
+
+        var post2007 = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+            new DateTime(2007, 1, 1),
             DateTime.MaxValue.Date,
             TimeSpan.FromHours(1),
-            dstStart,
-            dstEnd);
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 3, week: 2, DayOfWeek.Sunday),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(twoAm, month: 11, week: 1, DayOfWeek.Sunday));
 
         return TimeZoneInfo.CreateCustomTimeZone(
             "Meridian US Eastern Fallback",
@@ -241,7 +248,7 @@ public static class NyseNationalTradesCsvParser
             "US Eastern (built-in DST fallback)",
             "US Eastern Standard Time",
             "US Eastern Daylight Time",
-            new[] { adjustment });
+            new[] { pre2007, post2007 });
     }
 
     /// <summary>

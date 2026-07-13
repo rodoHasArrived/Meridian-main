@@ -403,6 +403,14 @@ public sealed class NyseNationalTradesCsvParserTests
             because: "DST starts the second Sunday of March at 02:00");
         zone.GetUtcOffset(new DateTime(2024, 11, 3, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
             because: "DST ends the first Sunday of November at 02:00");
+
+        // Pre-2007 era used the April-October window: the post-2007 rules must not leak backward.
+        zone.GetUtcOffset(new DateTime(2006, 3, 20, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "March 2006 was standard time; DST did not start until the first Sunday of April");
+        zone.GetUtcOffset(new DateTime(2006, 7, 3, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-4),
+            because: "July 2006 was daylight time");
+        zone.GetUtcOffset(new DateTime(2006, 10, 30, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "DST ended the last Sunday of October (2006-10-29) under pre-2007 rules");
     }
 
     [Fact]
