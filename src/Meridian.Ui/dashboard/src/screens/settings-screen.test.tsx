@@ -551,8 +551,10 @@ describe("SettingsScreen", () => {
       initialEntries: ["/settings#diagnostic-endpoints"]
     });
 
+    // The route header is route-scoped: the diagnostics hash resolves to the
+    // Diagnostics task view, so the header carries that view's copy.
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Operator control posture"
+      "Diagnostics"
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
@@ -571,12 +573,14 @@ describe("SettingsScreen", () => {
   });
 
   it("renders profile authentication posture with authority handoffs", () => {
+    // The profile/system row is scoped to the Access view.
     renderWithRouter(
       <SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
-      />
+      />,
+      { initialEntries: ["/settings/access"] }
     );
 
     const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
