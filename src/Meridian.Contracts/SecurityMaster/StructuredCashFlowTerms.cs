@@ -1,6 +1,4 @@
-using Meridian.Contracts.SecurityMaster;
-
-namespace Meridian.Application.SecurityMaster.CashFlow;
+namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
 /// Strongly typed economic terms resolved once from a security's raw term JSON, replacing the

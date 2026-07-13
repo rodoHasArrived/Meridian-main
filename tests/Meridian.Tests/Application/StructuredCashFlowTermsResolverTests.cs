@@ -1,6 +1,5 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Tests.Application;
