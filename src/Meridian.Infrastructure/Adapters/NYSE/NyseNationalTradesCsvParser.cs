@@ -183,10 +183,30 @@ public static class NyseNationalTradesCsvParser
     // Time parsing
     // -------------------------------------------------------------------------
 
+    // NYSE TAQ timestamps are Eastern Time wall-clock values; resolve the zone once so each
+    // parsed trade carries the session's real EST/EDT offset instead of a fake UTC label.
+    private static readonly TimeZoneInfo EasternTimeZone = ResolveEasternTimeZone();
+
+    private static TimeZoneInfo ResolveEasternTimeZone()
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            // Windows hosts without ICU-based IANA mapping expose the zone under its legacy id.
+            return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        }
+    }
+
     /// <summary>
     /// Parses a NYSE TAQ time string with nanosecond precision.
     /// Format: HH:MM:SS.nnnnnnnnn
     /// Clips nanoseconds to .NET's 100-nanosecond tick resolution.
+    /// The time is interpreted as Eastern Time (per the TAQ specification), so the returned
+    /// <see cref="DateTimeOffset"/> keeps the exchange wall-clock time with the correct
+    /// EST/EDT offset for <paramref name="sessionDate"/>.
     /// </summary>
     public static bool TryParseNanosecondTime(string timeStr, DateOnly sessionDate, out DateTimeOffset result)
     {
@@ -220,14 +240,12 @@ public static class NyseNationalTradesCsvParser
 
         try
         {
-            // NYSE TAQ timestamps are Eastern Time (ET); use UTC offset of -5 (EST) or -4 (EDT)
-            // For simplicity, record as unspecified local time. Callers must apply timezone.
             var dt = new DateTime(
                 sessionDate.Year, sessionDate.Month, sessionDate.Day,
                 hours, minutes, seconds,
                 DateTimeKind.Unspecified).AddTicks(ticks);
 
-            result = new DateTimeOffset(dt, TimeSpan.Zero);
+            result = new DateTimeOffset(dt, EasternTimeZone.GetUtcOffset(dt));
             return true;
         }
         catch (ArgumentOutOfRangeException)

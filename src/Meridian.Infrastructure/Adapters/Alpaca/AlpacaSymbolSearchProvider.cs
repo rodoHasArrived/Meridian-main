@@ -10,20 +10,15 @@ using Serilog;
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 
 /// <summary>
-/// Refactored symbol search provider using Alpaca Markets API, now extending BaseSymbolSearchProvider.
+/// Symbol search provider using the Alpaca Markets API.
 /// Provides asset search for US equities with trading status information.
 /// </summary>
 /// <remarks>
-/// This refactored version eliminates ~150 lines of boilerplate code by leveraging
-/// the BaseSymbolSearchProvider abstract class for common functionality.
-///
-/// Key differences from original:
-/// - Uses base class for HTTP client, rate limiting, and disposal
-/// - Cleaner separation between API-specific and common logic
-/// - Consistent error handling via base class
+/// Extends <see cref="BaseSymbolSearchProvider"/> for HTTP client management,
+/// rate limiting, disposal, and consistent error handling.
 /// </remarks>
 [ImplementsAdr("ADR-001", "Alpaca symbol search provider implementation")]
-public sealed class AlpacaSymbolSearchProviderRefactored : BaseSymbolSearchProvider
+public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
 {
     private readonly string? _secretKey;
 
@@ -43,7 +38,7 @@ public sealed class AlpacaSymbolSearchProviderRefactored : BaseSymbolSearchProvi
     public override IReadOnlyList<string> SupportedAssetTypes => new[] { "us_equity", "crypto" };
     public override IReadOnlyList<string> SupportedExchanges => new[] { "NASDAQ", "NYSE", "ARCA", "AMEX", "BATS" };
 
-    public AlpacaSymbolSearchProviderRefactored(
+    public AlpacaSymbolSearchProvider(
         string? keyId = null,
         string? secretKey = null,
         HttpClient? httpClient = null,

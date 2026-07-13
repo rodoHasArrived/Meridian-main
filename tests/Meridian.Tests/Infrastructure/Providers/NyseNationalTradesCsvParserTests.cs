@@ -348,6 +348,47 @@ public sealed class NyseNationalTradesCsvParserTests
     }
 
     [Fact]
+    public void TryParseNanosecondTime_SummerSessionDate_CarriesEdtOffsetAndCorrectUtcInstant()
+    {
+        // 2023-10-02 is during Eastern Daylight Time (UTC-4).
+        var ok = NyseNationalTradesCsvParser.TryParseNanosecondTime(
+            "09:31:56.104292761", SessionDate, out var result);
+
+        ok.Should().BeTrue();
+        result.Offset.Should().Be(TimeSpan.FromHours(-4),
+            because: "TAQ times are Eastern Time and October 2023 is in daylight saving time");
+        result.UtcDateTime.Hour.Should().Be(13,
+            because: "09:31 EDT is 13:31 UTC — the timestamp must not be mislabeled as UTC");
+        result.UtcDateTime.Minute.Should().Be(31);
+    }
+
+    [Fact]
+    public void TryParseNanosecondTime_WinterSessionDate_CarriesEstOffset()
+    {
+        // 2024-01-15 is during Eastern Standard Time (UTC-5).
+        var ok = NyseNationalTradesCsvParser.TryParseNanosecondTime(
+            "09:31:56.104292761", new DateOnly(2024, 1, 15), out var result);
+
+        ok.Should().BeTrue();
+        result.Offset.Should().Be(TimeSpan.FromHours(-5),
+            because: "January is Eastern Standard Time");
+        result.UtcDateTime.Hour.Should().Be(14, because: "09:31 EST is 14:31 UTC");
+    }
+
+    [Fact]
+    public void ParseTradeLine_RegularHoursClassification_UsesEasternWallClock()
+    {
+        // The wall-clock time (and therefore IsRegularHours) must be unaffected by the
+        // offset correction: 09:31 ET stays 09:31 in the record's local representation.
+        var record = NyseNationalTradesCsvParser.ParseTradeLine(AaplRegularMarket, SessionDate)!;
+
+        record.Timestamp.TimeOfDay.Should().BeGreaterThan(new TimeSpan(9, 30, 0));
+        record.IsRegularHours.Should().BeTrue();
+        record.Timestamp.ToUniversalTime().Hour.Should().Be(13,
+            because: "the underlying instant is 4 hours after the Eastern wall clock during EDT");
+    }
+
+    [Fact]
     public void TryParseNanosecondTime_InvalidFormat_ReturnsFalse()
     {
         NyseNationalTradesCsvParser.TryParseNanosecondTime("not-a-time", SessionDate, out _)
