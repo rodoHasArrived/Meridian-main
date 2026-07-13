@@ -846,7 +846,15 @@ export function SettingsScreen({
   });
   const routePathTaskView = resolveSettingsTaskViewIdFromPath(location.pathname);
   const routeHashTaskView = location.hash ? resolveSettingsTaskViewId(location.hash) : null;
-  const activeTaskView = routePathTaskView ?? routeHashTaskView ?? hashTaskView ?? inferredTaskView;
+  // The bare /settings entry point lands on Access & profile like the other
+  // workspace roots land on their overview; data-driven inference only picks
+  // the view for legacy paths that neither the path nor a hash resolves.
+  const isBareSettingsRoute = /\/settings\/?$/i.test(location.pathname);
+  const activeTaskView =
+    routePathTaskView ??
+    routeHashTaskView ??
+    hashTaskView ??
+    (isBareSettingsRoute ? "overview" : inferredTaskView);
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");

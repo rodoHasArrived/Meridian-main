@@ -546,6 +546,38 @@ describe("SettingsScreen", () => {
     apiMocks.activateProviderIntegration.mockReset();
   });
 
+  it("lands the bare /settings route on the Access & profile view", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Access & profile"
+    );
+    expect(screen.getByRole("tab", { name: "Access", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Profile and authentication posture" })).toBeInTheDocument();
+  });
+
+  it("keeps hash deep links winning over the bare-route Access default", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings#alpaca-provider-setup"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Provider connections"
+    );
+  });
+
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings#diagnostic-endpoints"]
