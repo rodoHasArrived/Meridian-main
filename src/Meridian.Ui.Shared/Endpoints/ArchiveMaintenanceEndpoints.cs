@@ -38,7 +38,7 @@ public static class ArchiveMaintenanceEndpoints
             string scheduleId,
             UpdateMaintenanceScheduleRequest req) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var schedule = scheduleManager.GetSchedule(scheduleId);
                 if (schedule is null)
@@ -77,40 +77,29 @@ public static class ArchiveMaintenanceEndpoints
 
                 schedule = await scheduleManager.UpdateScheduleAsync(schedule);
                 return Results.Json(schedule, JsonOptions);
-            }
-            catch (ArgumentException ex)
+            },
+            "Failed to update schedule",
+            mapException: ex => ex switch
             {
-                return Results.BadRequest(ex.Message);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to update schedule: {ex.Message}");
-            }
+                ArgumentException aex => Results.BadRequest(aex.Message),
+                _ => null
+            },
+            includeExceptionMessage: true);
         });
 
         app.MapDelete("/api/maintenance/schedules/{scheduleId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             string scheduleId) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var deleted = await scheduleManager.DeleteScheduleAsync(scheduleId);
                 return deleted
                     ? Results.Ok(new { message = $"Schedule '{scheduleId}' deleted" })
                     : Results.NotFound($"Schedule '{scheduleId}' not found");
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to delete schedule: {ex.Message}");
-            }
+            },
+            "Failed to delete schedule",
+            includeExceptionMessage: true);
         });
 
         // ==================== SCHEDULE CONTROL ====================
@@ -121,23 +110,18 @@ public static class ArchiveMaintenanceEndpoints
             ScheduledArchiveMaintenanceService maintenanceService,
             string scheduleId) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var execution = await maintenanceService.TriggerScheduleAsync(scheduleId);
                 return Results.Json(execution, JsonOptions);
-            }
-            catch (KeyNotFoundException)
+            },
+            "Failed to trigger schedule",
+            mapException: ex => ex switch
             {
-                return Results.NotFound($"Schedule '{scheduleId}' not found");
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to trigger schedule: {ex.Message}");
-            }
+                KeyNotFoundException => Results.NotFound($"Schedule '{scheduleId}' not found"),
+                _ => null
+            },
+            includeExceptionMessage: true);
         });
 
         // ==================== IMMEDIATE EXECUTION ====================
@@ -146,7 +130,7 @@ public static class ArchiveMaintenanceEndpoints
             ScheduledArchiveMaintenanceService maintenanceService,
             ExecuteMaintenanceRequest req) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 if (!Enum.TryParse<MaintenanceTaskType>(req.TaskType, true, out var taskType))
                     return Results.BadRequest($"Invalid task type: {req.TaskType}");
@@ -159,163 +143,115 @@ public static class ArchiveMaintenanceEndpoints
                     req.TargetPaths);
 
                 return Results.Json(execution, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Maintenance execution failed: {ex.Message}");
-            }
+            },
+            "Maintenance execution failed",
+            includeExceptionMessage: true);
         });
 
         app.MapPost("/api/maintenance/executions/{executionId}/cancel", async (
             ScheduledArchiveMaintenanceService maintenanceService,
             string executionId) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var cancelled = await maintenanceService.CancelExecutionAsync(executionId);
                 return cancelled
                     ? Results.Ok(new { message = $"Execution '{executionId}' cancelled" })
                     : Results.NotFound($"Execution '{executionId}' not found or not running");
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to cancel execution: {ex.Message}");
-            }
+            },
+            "Failed to cancel execution",
+            includeExceptionMessage: true);
         });
 
         // ==================== EXECUTION HISTORY ====================
 
-        app.MapGet("/api/maintenance/executions", (
+        app.MapGet("/api/maintenance/executions", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             int? limit) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var executions = scheduleManager.ExecutionHistory.GetRecentExecutions(limit ?? 50);
                 return Results.Json(executions, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get executions: {ex.Message}");
-            }
+            },
+            "Failed to get executions",
+            includeExceptionMessage: true);
         });
 
-        app.MapGet("/api/maintenance/executions/{executionId}", (
+        app.MapGet("/api/maintenance/executions/{executionId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             string executionId) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var execution = scheduleManager.ExecutionHistory.GetExecution(executionId);
                 return execution is null
                     ? Results.NotFound($"Execution '{executionId}' not found")
                     : Results.Json(execution, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get execution: {ex.Message}");
-            }
+            },
+            "Failed to get execution",
+            includeExceptionMessage: true);
         });
 
-        app.MapGet("/api/maintenance/schedules/{scheduleId}/executions", (
+        app.MapGet("/api/maintenance/schedules/{scheduleId}/executions", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             string scheduleId,
             int? limit) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var executions = scheduleManager.ExecutionHistory.GetExecutionsForSchedule(scheduleId, limit ?? 50);
                 return Results.Json(executions, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get schedule executions: {ex.Message}");
-            }
+            },
+            "Failed to get schedule executions",
+            includeExceptionMessage: true);
         });
 
-        app.MapGet("/api/maintenance/executions/failed", (
+        app.MapGet("/api/maintenance/executions/failed", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             int? limit) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var executions = scheduleManager.ExecutionHistory.GetFailedExecutions(limit ?? 50);
                 return Results.Json(executions, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get failed executions: {ex.Message}");
-            }
+            },
+            "Failed to get failed executions",
+            includeExceptionMessage: true);
         });
 
         // ==================== STATISTICS & SUMMARIES ====================
 
-        app.MapGet("/api/maintenance/schedules/summary", (ArchiveMaintenanceScheduleManager scheduleManager) =>
+        app.MapGet("/api/maintenance/schedules/summary", async (ArchiveMaintenanceScheduleManager scheduleManager) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var summary = scheduleManager.GetStatusSummary();
                 return Results.Json(summary, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get schedule summary: {ex.Message}");
-            }
+            },
+            "Failed to get schedule summary",
+            includeExceptionMessage: true);
         });
 
-        app.MapGet("/api/maintenance/schedules/{scheduleId}/summary", (
+        app.MapGet("/api/maintenance/schedules/{scheduleId}/summary", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             string scheduleId,
             int? recentCount) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var summary = scheduleManager.ExecutionHistory.GetScheduleSummary(scheduleId, recentCount ?? 10);
                 return Results.Json(summary, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get schedule summary: {ex.Message}");
-            }
+            },
+            "Failed to get schedule summary",
+            includeExceptionMessage: true);
         });
 
-        app.MapGet("/api/maintenance/statistics", (
+        app.MapGet("/api/maintenance/statistics", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             int? hours) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var period = hours.HasValue ? TimeSpan.FromHours(hours.Value) : (TimeSpan?)null;
                 var stats = scheduleManager.ExecutionHistory.GetStatistics(period);
@@ -331,41 +267,29 @@ public static class ArchiveMaintenanceEndpoints
                 };
 
                 return Results.Json(enrichedStats, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get statistics: {ex.Message}");
-            }
+            },
+            "Failed to get statistics",
+            includeExceptionMessage: true);
         });
 
         // ==================== SERVICE STATUS ====================
 
-        app.MapGet("/api/maintenance/status", (ScheduledArchiveMaintenanceService maintenanceService) =>
+        app.MapGet("/api/maintenance/status", async (ScheduledArchiveMaintenanceService maintenanceService) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var status = maintenanceService.GetStatus();
                 return Results.Json(status, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get service status: {ex.Message}");
-            }
+            },
+            "Failed to get service status",
+            includeExceptionMessage: true);
         });
 
         // ==================== CRON VALIDATION ====================
 
-        app.MapPost("/api/maintenance/validate-cron", (ValidateMaintenanceCronRequest req) =>
+        app.MapPost("/api/maintenance/validate-cron", async (ValidateMaintenanceCronRequest req) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 if (string.IsNullOrWhiteSpace(req.CronExpression))
                     return Results.BadRequest("Cron expression is required");
@@ -391,26 +315,21 @@ public static class ArchiveMaintenanceEndpoints
                     description,
                     nextExecution
                 }, JsonOptions);
-            }
-            catch (TimeZoneNotFoundException)
+            },
+            "Validation failed",
+            mapException: ex => ex switch
             {
-                return Results.BadRequest($"Invalid timezone: {req.TimeZoneId}");
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Validation failed: {ex.Message}");
-            }
+                TimeZoneNotFoundException => Results.BadRequest($"Invalid timezone: {req.TimeZoneId}"),
+                _ => null
+            },
+            includeExceptionMessage: true);
         });
 
         // ==================== PRESETS ====================
 
-        app.MapGet("/api/maintenance/presets", () =>
+        app.MapGet("/api/maintenance/presets", async () =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var presets = new[]
                 {
@@ -457,22 +376,16 @@ public static class ArchiveMaintenanceEndpoints
                 };
 
                 return Results.Json(presets, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get presets: {ex.Message}");
-            }
+            },
+            "Failed to get presets",
+            includeExceptionMessage: true);
         });
 
         // ==================== TASK TYPES ====================
 
-        app.MapGet("/api/maintenance/task-types", () =>
+        app.MapGet("/api/maintenance/task-types", async () =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var taskTypes = Enum.GetValues<MaintenanceTaskType>()
                     .Select(t => new
@@ -484,15 +397,9 @@ public static class ArchiveMaintenanceEndpoints
                     .ToArray();
 
                 return Results.Json(taskTypes, JsonOptions);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to get task types: {ex.Message}");
-            }
+            },
+            "Failed to get task types",
+            includeExceptionMessage: true);
         });
 
         // ==================== CLEANUP ====================
@@ -501,7 +408,7 @@ public static class ArchiveMaintenanceEndpoints
             ArchiveMaintenanceScheduleManager scheduleManager,
             CleanupHistoryRequest? req) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var maxAgeDays = req?.MaxAgeDays ?? 90;
                 var deletedCount = await scheduleManager.ExecutionHistory.CleanupOldRecordsAsync(maxAgeDays);
@@ -510,15 +417,9 @@ public static class ArchiveMaintenanceEndpoints
                     message = $"Cleaned up {deletedCount} old execution records",
                     deletedCount
                 });
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to cleanup history: {ex.Message}");
-            }
+            },
+            "Failed to cleanup history",
+            includeExceptionMessage: true);
         });
     }
 
