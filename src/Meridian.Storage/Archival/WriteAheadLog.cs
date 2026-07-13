@@ -588,16 +588,21 @@ public sealed class WriteAheadLog : IAsyncDisposable
         using var reader = new StreamReader(stream);
 
         // Skip header
-        var header = await reader.ReadLineAsync();
+        var header = await reader.ReadLineAsync(ct);
         if (header == null || !header.StartsWith(WalMagic))
         {
             _log.Warning("Invalid WAL header in {File}", walFile);
             yield break;
         }
 
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        while (!reader.EndOfStream)
         {
-            var line = await reader.ReadLineAsync();
+            // Cancellation must throw rather than silently end the enumeration: callers
+            // treat a completed scan as a full read of the file — TruncateAsync deletes
+            // files and sequence recovery picks the next sequence number based on it.
+            ct.ThrowIfCancellationRequested();
+
+            var line = await reader.ReadLineAsync(ct);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 

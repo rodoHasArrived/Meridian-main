@@ -164,6 +164,45 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task FlushAsync_TwiceOnSameDay_PreservesEventsFromEarlierFlush()
+    {
+        // Two flushes for the same symbol/type/day target the same deterministic file;
+        // the second must append a row group, not replace the file.
+        _sink = CreateSink(bufferSize: 10000);
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+
+        var parquetFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories)
+            .Should().ContainSingle("same-day flushes must share one deterministic day file")
+            .Subject;
+
+        (await CountRowsAsync(parquetFile)).Should().Be(2,
+            "the second same-day flush must not erase events written by the first");
+    }
+
+    [Fact]
+    public async Task FlushAsync_WhenExistingDayFileIsUnreadable_QuarantinesItInsteadOfOverwriting()
+    {
+        _sink = CreateSink(bufferSize: 10000);
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+
+        var parquetFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories).Single();
+        await File.WriteAllTextAsync(parquetFile, "not a parquet file");
+
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+
+        Directory.GetFiles(TestDataRoot, "*.corrupt-*", SearchOption.AllDirectories)
+            .Should().ContainSingle("the unreadable day file must be preserved for recovery, never destroyed");
+        (await CountRowsAsync(parquetFile)).Should().Be(1,
+            "a fresh day file should hold the newly flushed event");
+    }
+
+    [Fact]
     public async Task AppendAsync_AfterDispose_ThrowsObjectDisposedException()
     {
         // Arrange
@@ -284,6 +323,20 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
                 Venue: "NASDAQ"),
             seq: 2,
             source: "test");
+
+    private static async Task<long> CountRowsAsync(string parquetPath)
+    {
+        await using var stream = File.OpenRead(parquetPath);
+        using var reader = await ParquetReader.CreateAsync(stream);
+        var rows = 0L;
+        for (var i = 0; i < reader.RowGroupCount; i++)
+        {
+            using var rowGroup = reader.OpenRowGroupReader(i);
+            rows += rowGroup.RowCount;
+        }
+
+        return rows;
+    }
 
     private static async Task<string[]> ReadStringColumnAsync(string parquetPath, string columnName)
     {
