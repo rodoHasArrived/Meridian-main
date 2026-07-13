@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Banking;
 
 namespace Meridian.Contracts.Workstation;
@@ -216,7 +217,14 @@ public sealed record ExpectedAccountingEventDto(
     string Currency,
     string IdempotencyKey,
     string Provenance,
-    AccrualInputSnapshotDto InputSnapshot);
+    AccrualInputSnapshotDto InputSnapshot)
+{
+    public EconomicEventReferenceDto? EconomicEvent { get; init; }
+
+    public ProjectionLineageDto? ProjectionLineage { get; init; }
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } = [];
+}
 
 /// <summary>
 /// Preview line for a balanced journal candidate generated from an expected event.

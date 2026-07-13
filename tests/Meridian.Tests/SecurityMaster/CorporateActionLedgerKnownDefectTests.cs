@@ -51,18 +51,6 @@ public sealed class CorporateActionLedgerKnownDefectTests
     }
 
     [Fact]
-    public async Task FactorPaydown_CurrentBehavior_RatioBookedAsCash_CA_DEF_003()
-    {
-        // TARGET (Idea #3): cash = factor delta x face value of held lots
-        // (0.007125 x 100,000 face = 712.50), not the raw ratio.
-        var (_, ledger) = await PostAsync("mbs-factor-paydown");
-
-        var entry = ledger.Journal.Should().ContainSingle().Subject;
-        entry.Lines.Single(static line => line.Account == LedgerAccounts.Cash).Debit.Should().Be(0.007125m,
-            "CURRENT defective behavior: the dimensionless factor delta posts as literal cash");
-    }
-
-    [Fact]
     public async Task BondCall_CurrentBehavior_PercentOfParBookedAsCash_CA_DEF_005()
     {
         // TARGET (Idea #3): cash = 101.5% x par x 50,000 face quantity, with position

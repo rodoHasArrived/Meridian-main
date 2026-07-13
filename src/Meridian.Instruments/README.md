@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Instruments
@@ -48,6 +48,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
   traces, ledger-support references, and timeline variances without writing ledger facts.
+- `AssetOperations/FactorPaydownProjectionService.cs` - deterministic MBS factor-paydown projector
+  that validates retained evidence, held face, factor bounds, currency rounding, and optimistic
+  position version before producing typed event, economic-state, and projection-lineage records.
 - `Indicators/TechnicalIndicatorService.cs` - live and historical technical indicator calculations
   over market trades, quotes, and OHLCV bars using Skender.Stock.Indicators.
 
@@ -89,6 +92,10 @@ candidate and approval workflow. Ledger and Storage remain responsible for balan
 `JournalEntry` append and its child ledger entries. Candidate journals, projected economic events,
 position state, and balance snapshots remain drafts or rebuildable read models rather than a second
 accounting truth.
+The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
+no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
+unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay
+of the same retained factor row produces the same ledger-book/source-event idempotency key.
 Technical indicator calculation lives here because moving-average, oscillator, volatility, VWAP,
 and volume-derived analytics are instrument-market analytics rather than application orchestration.
 The service keeps per-symbol streaming state bounded by `IndicatorConfiguration.MaxQuotesHistory`
@@ -138,9 +145,9 @@ Master-keyed operational readiness projections, technical indicators, option-cha
 services, and MMF liquidity projections are owned by `Meridian.Instruments`.
 
 The additive role, book-position, economic-state, event-reference, and projection-lineage contract
-alignment requires no initial schema migration or migration of existing Security Master,
-direct-lending, portfolio, fund-account, or asset-specific records. Durable persistence changes, if
-later required, remain separate reviewed migrations and cannot create another ledger or balance
+alignment does not migrate existing Security Master, direct-lending, portfolio, fund-account, or
+asset-specific records. Slice 2 persists only the governed role, position, and append-only economic
+state needed to re-resolve typed posting candidates; it cannot create another ledger or balance
 authority.
 
 ## Change rules

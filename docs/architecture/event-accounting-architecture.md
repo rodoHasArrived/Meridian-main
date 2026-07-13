@@ -2,7 +2,7 @@
 
 **Owner:** Accounting and Ledger
 **Scope:** Event-backed accounting postings, durable journal writes, and audit evidence
-**Last updated:** 2026-07-10
+**Last updated:** 2026-07-12
 
 ## Purpose
 
@@ -30,6 +30,10 @@ and is not an alias for a posted journal.
   `PositionEconomicStateDto`, `EconomicEventReferenceDto`, and `ProjectionLineageDto` records.
   Posting candidates may reference this typed lineage while retaining legacy source-event fields for
   compatibility; when both shapes are present, they must agree.
+- `FactorPaydownProjectionService` in Instruments is the single calculator for factor-driven
+  principal economics. It requires retained factor evidence, validates held face, factors,
+  currency rounding, and position version, and derives a deterministic source event from Security
+  Master identity, book position, effective date, factors, and source-content hash.
 - `LedgerJournalEntryWrite.PostingCommand` is optional for legacy-compatible callers, but when it is
   supplied `AccountingPostingCommandValidator` normalizes and validates the write before it reaches
   `PostgresLedgerJournalStore`.
@@ -83,10 +87,32 @@ Reference Data / Security Master
 - Ledger and Storage validate and append balanced `JournalEntry` aggregates with child
   `LedgerEntry` records. The immutable journal is authoritative after posting.
 
-The initial semantic alignment is additive and transport-compatible. It does not require a database
-schema migration, replace existing Security Master, direct-lending, portfolio, fund-account, or
-position stores, or create a parallel balance store. Shared read models expose the same lineage to
-the active browser and WPF workstation lanes without moving policy into either client.
+The governed MBS proof follows one path:
+
+```text
+factor evidence
+-> holder role / book position
+-> factor-paydown economic projection
+-> Rules Studio posting candidate
+-> independent human approval
+-> immutable JournalEntry
+-> ledger and report evidence
+```
+
+For typed factor events, Financial Operations re-reads the persisted Asset Operations role,
+position, economic state, and projection lineage and recalculates the principal before Rules Studio
+drafting. A submitted amount, event identity, book, position version, evidence set, or lineage that
+does not match server state blocks candidate creation. The compatibility Security Master bridge and
+backtesting adjuster call the same calculator, but neither compatibility path establishes production
+posting authority.
+
+The Slice 1 semantic alignment is additive and transport-compatible. Slice 2 adds only the planned
+Asset Operations role, book-position, and append-only economic-state projection tables needed for
+production candidate re-resolution. It does not migrate existing Security Master, direct-lending,
+portfolio, fund-account, or asset-family records and does not create a parallel balance store or a
+projection-event-to-journal link table. Shared read models query the immutable journal by ledger book
+plus indexed source event and expose the same lineage to the active browser and WPF workstation lanes
+without moving policy into either client.
 
 ## Implementation Map
 
@@ -96,6 +122,8 @@ the active browser and WPF workstation lanes without moving policy into either c
 | Accounting book and rule-pack references | `src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs` |
 | Instrument role, position, economic-event, and projection lineage contracts | `src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs` |
 | Instrument and Asset Operations projections | `src/Meridian.Instruments/AssetOperations` |
+| MBS factor-paydown calculator | `src/Meridian.Instruments/AssetOperations/FactorPaydownProjectionService.cs` |
+| Durable role, position, and economic-state payloads | `src/Meridian.Storage/AssetOperations/Migrations/002_instrument_position_projections.sql` |
 | Journal evidence metadata | `src/Meridian.Ledger/JournalEvidenceReference.cs`, `JournalEntryMetadata.cs` |
 | Durable write validation | `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs`, `PostgresLedgerJournalStore.cs` |
 | Source-backed journal draft commands | `src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs` |
@@ -103,6 +131,7 @@ the active browser and WPF workstation lanes without moving policy into either c
 | Direct-lending event postings | `src/Meridian.Application/DirectLending/LoanAccountingProjector.cs` |
 | Private-capital fund-event projection | `src/Meridian.Ledger/PrivateCapitalFundEventLedgerProjector.cs` |
 | Operations Continuity candidate gate | `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` |
+| Shared instrument-to-journal proof | `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs` |
 
 ## Validation
 
@@ -112,5 +141,8 @@ Focused coverage lives in:
 - `LedgerJournalStoreTests.PostingCommand_PendingReviewerState_RejectsBeforeAppend`
 - `AccountingJournalDraftServiceTests.Scenario_AccountingClose_SourceBackedAccrualDraft_ReturnsGovernedWrite`
 - `LedgerIntegrationTests.AutomatedJournalDraftProjector_PreservesEventAccountingMetadataAndTypedEvidence`
+- `FactorPaydownProjectionServiceTests.Project_ShouldCalculateGoldenMbsPrincipalAndTypedLineage`
+- `AccountingPostingCandidateServiceTests.BuildCandidateAsync_MbsFactorPaydown_RecalculatesPersistedProjectionBeforeDrafting`
+- `WorkstationEndpointsTests.MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExposePassportOperationsAndReportUsage`
 
 Use the narrow test filter for this slice before broader ledger or Financial Operations validation.

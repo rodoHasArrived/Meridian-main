@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
 using DomainLedger = Meridian.Ledger.Ledger;
@@ -39,13 +40,16 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 {
     private readonly ISecurityMasterQueryService _queryService;
     private readonly ILogger<SecurityMasterLedgerBridge> _logger;
+    private readonly IFactorPaydownProjectionService _factorPaydownProjector;
 
     public SecurityMasterLedgerBridge(
         ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterLedgerBridge> logger)
+        ILogger<SecurityMasterLedgerBridge> logger,
+        IFactorPaydownProjectionService? factorPaydownProjector = null)
     {
         _queryService = queryService;
         _logger = logger;
+        _factorPaydownProjector = factorPaydownProjector ?? new FactorPaydownProjectionService();
     }
 
     /// <inheritdoc />
@@ -177,7 +181,18 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     break;
 
                 case CorporateActionLedgerPostingKind.FactorPaydown when action.DistributionRatio.HasValue:
-                    PostFactorPaydown(ledger, action, normalizedTicker, ts, meta);
+                    var projection = ProjectFactorPaydown(action, normalizedTicker, postingContext, ts);
+                    if (!projection.ProducesPostingCandidate)
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge skipped factor paydown {CorporateActionId} for {Ticker}: {Issues}",
+                            action.CorpActId,
+                            normalizedTicker,
+                            string.Join("; ", projection.Issues.Select(static issue => issue.Message)));
+                        break;
+                    }
+
+                    PostFactorPaydown(ledger, action, normalizedTicker, ts, meta, projection.PrincipalPaydown!.Value);
                     posted++;
                     break;
 
@@ -360,10 +375,10 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         CorporateActionDto action,
         string ticker,
         DateTimeOffset ts,
-        JournalEntryMetadata meta)
+        JournalEntryMetadata meta,
+        decimal amount)
     {
-        var amount = action.DistributionRatio!.Value;
-        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {amount:N6}";
+        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {action.DistributionRatio!.Value:N6}";
 
         var entry = new JournalEntry(
             action.CorpActId,
@@ -378,6 +393,45 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             meta);
 
         ledger.Post(entry);
+    }
+
+    private FactorPaydownProjectionResult ProjectFactorPaydown(
+        CorporateActionDto action,
+        string ticker,
+        CorporateActionLedgerPostingContext context,
+        DateTimeOffset occurredAtUtc)
+    {
+        var factorDelta = action.DistributionRatio!.Value;
+        var positionId = DeriveJournalId(action.SecurityId, $"factor-position:{ticker}");
+        return _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
+            action.SecurityId,
+            positionId,
+            PositionVersion: 1,
+            ExpectedPositionVersion: 1,
+            HeldFace: context.PositionQuantity,
+            PriorFactor: 1m,
+            CurrentFactor: 1m - factorDelta,
+            Currency: action.Currency ?? string.Empty,
+            EffectiveDate: action.ExDate,
+            OccurredAtUtc: occurredAtUtc,
+            SourceDomain: "SecurityMaster",
+            SourceEntityId: action.CorpActId.ToString("D"),
+            SourceContentHash: HashCorporateAction(action),
+            EvidenceLinks: [$"security-master://corporate-actions/{action.CorpActId:D}"]));
+    }
+
+    private static string HashCorporateAction(CorporateActionDto action)
+    {
+        var source = string.Join(
+            '|',
+            action.CorpActId.ToString("N"),
+            action.SecurityId.ToString("N"),
+            action.EventType,
+            action.ExDate.ToString("yyyy-MM-dd"),
+            action.DistributionRatio?.ToString("G29", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            action.Currency ?? string.Empty,
+            action.LifecycleState ?? string.Empty);
+        return $"sha256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source))).ToLowerInvariant()}";
     }
 
     private static void PostRedemptionMemo(

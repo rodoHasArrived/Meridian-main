@@ -94,6 +94,8 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command requires approved or not-required reviewer state before append.");
         }
 
+        ValidateTypedAssertions(command);
+
         var entry = NormalizeEntryMetadata(write.Entry, command);
         return write with
         {
@@ -112,6 +114,39 @@ public static class AccountingPostingCommandValidator
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
 
+    private static void ValidateTypedAssertions(AccountingPostingCommandDto command)
+    {
+        if (command.EconomicEvent is { } economicEvent)
+        {
+            if (command.SourceEventId != economicEvent.EventId ||
+                !string.Equals(command.SourceEventType?.Trim(), economicEvent.EventType.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                command.EffectiveDate != economicEvent.EffectiveDate)
+            {
+                throw new LedgerValidationException("Typed economic-event identity must match the accounting posting command source event.");
+            }
+
+            if (command.BookPositionId.HasValue && economicEvent.BookPositionId != command.BookPositionId)
+            {
+                throw new LedgerValidationException("Typed economic-event book position must match the accounting posting command book position.");
+            }
+        }
+
+        if (command.ProjectionLineage is { } lineage)
+        {
+            if (command.EconomicEvent is null || lineage.TriggerEvent.EventId != command.EconomicEvent.EventId)
+            {
+                throw new LedgerValidationException("Projection lineage trigger must match the typed economic event.");
+            }
+
+            if (command.BookPositionId.HasValue &&
+                (lineage.BookPositionId != command.BookPositionId ||
+                 lineage.TriggerEvent.BookPositionId != command.BookPositionId))
+            {
+                throw new LedgerValidationException("Projection lineage book position must match the accounting posting command book position.");
+            }
+        }
+    }
+
     private static JournalEntry NormalizeEntryMetadata(JournalEntry entry, AccountingPostingCommandDto command)
     {
         var metadata = entry.Metadata;
@@ -128,9 +163,17 @@ public static class AccountingPostingCommandValidator
                 item.ContentHash,
                 item.Description))
             .ToArray();
+        var typedSecurityId = command.EconomicEvent?.SecurityId;
+        if (metadata.SecurityId.HasValue && typedSecurityId.HasValue && metadata.SecurityId != typedSecurityId)
+        {
+            throw new LedgerValidationException("Journal metadata Security Master identity conflicts with the accounting posting command economic event.");
+        }
+
+        var tags = MergeCommandTags(metadata.Tags, BuildCommandTags(command));
 
         var normalizedMetadata = metadata with
         {
+            SecurityId = metadata.SecurityId ?? typedSecurityId,
             EffectiveDate = metadata.EffectiveDate ?? treasury?.EffectiveDate ?? command.EffectiveDate,
             LedgerBook = FirstText(metadata.LedgerBook, command.LedgerBookId?.ToString("D")),
             IdempotencyKey = FirstText(metadata.IdempotencyKey, treasury?.IdempotencyKey, command.IdempotencyKey),
@@ -140,10 +183,15 @@ public static class AccountingPostingCommandValidator
             InvestorId = FirstText(metadata.InvestorId, treasury?.InvestorId),
             PaymentIntentId = FirstText(metadata.PaymentIntentId, treasury?.PaymentIntentId),
             SettlementReference = FirstText(metadata.SettlementReference, treasury?.SettlementReference),
-            EvidenceReferences = MergeEvidence(metadata.EvidenceReferences, evidence)
+            EvidenceReferences = MergeEvidence(metadata.EvidenceReferences, evidence),
+            Tags = tags
         };
 
-        var lines = NormalizeLineDimensions(entry.Lines, normalizedMetadata.Tags);
+        var lines = NormalizeLineDimensions(
+            entry.Lines,
+            normalizedMetadata.Tags,
+            typedSecurityId,
+            command.BookPositionId ?? command.EconomicEvent?.BookPositionId);
         return new JournalEntry(
             entry.JournalEntryId,
             entry.Timestamp,
@@ -152,11 +200,81 @@ public static class AccountingPostingCommandValidator
             normalizedMetadata);
     }
 
+    private static IReadOnlyDictionary<string, string> BuildCommandTags(AccountingPostingCommandDto command)
+    {
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["postingCommandId"] = command.CommandId.ToString("D"),
+            ["approvalState"] = command.ApprovalState.ToString()
+        };
+
+        AddTag(tags, "approvalId", command.ApprovalId);
+        AddTag(tags, "sourceEventId", (command.EconomicEvent?.EventId ?? command.SourceEventId)?.ToString("D"));
+        AddTag(tags, "sourceEventType", command.EconomicEvent?.EventType ?? command.SourceEventType);
+        AddTag(tags, "sourceEventVersion", command.EconomicEvent?.EventVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddTag(tags, "sourceEventDomain", command.EconomicEvent?.SourceDomain);
+        AddTag(tags, "sourceEventEntityId", command.EconomicEvent?.SourceEntityId);
+        AddTag(tags, "sourceEventContentHash", command.EconomicEvent?.SourceContentHash);
+        AddTag(tags, "securityId", command.EconomicEvent?.SecurityId?.ToString("D"));
+        AddTag(tags, "bookPositionId", (command.BookPositionId ?? command.EconomicEvent?.BookPositionId)?.ToString("D"));
+        AddTag(tags, "projectionRunId", command.ProjectionLineage?.ProjectionRunId.ToString("D"));
+        AddTag(tags, "projectionEventId", command.ProjectionLineage?.ProjectionEventId?.ToString("D"));
+        AddTag(tags, "projectionModelKey", command.ProjectionLineage?.ModelKey);
+        AddTag(tags, "projectionModelVersion", command.ProjectionLineage?.ModelVersion);
+        AddTag(tags, "projectionEngineVersion", command.ProjectionLineage?.EngineVersion);
+        AddTag(tags, "projectionScenario", command.ProjectionLineage?.Scenario);
+        AddTag(tags, "rulePackId", command.RulePackReference?.RulePackId);
+        AddTag(tags, "rulePackVersion", command.RulePackReference?.RulePackVersion);
+        AddTag(tags, "selectedRuleId", command.RulePackReference?.SelectedRuleId);
+        AddTag(tags, "selectedRuleVersion", command.RulePackReference?.SelectedRuleVersion);
+        return tags;
+    }
+
+    private static void AddTag(IDictionary<string, string> tags, string key, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            tags[key] = value.Trim();
+        }
+    }
+
+    private static IReadOnlyDictionary<string, string> MergeCommandTags(
+        IReadOnlyDictionary<string, string>? existing,
+        IReadOnlyDictionary<string, string> commandOwned)
+    {
+        var merged = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (existing is not null)
+        {
+            foreach (var pair in existing)
+            {
+                merged[pair.Key] = pair.Value;
+            }
+        }
+
+        foreach (var pair in commandOwned)
+        {
+            if (merged.TryGetValue(pair.Key, out var current) &&
+                !string.Equals(current?.Trim(), pair.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new LedgerValidationException(
+                    $"Journal metadata tag '{pair.Key}' conflicts with the accounting posting command.");
+            }
+
+            merged[pair.Key] = pair.Value;
+        }
+
+        return merged;
+    }
+
     private static IReadOnlyList<LedgerEntry> NormalizeLineDimensions(
         IReadOnlyList<LedgerEntry> lines,
-        IReadOnlyDictionary<string, string>? tags)
+        IReadOnlyDictionary<string, string>? tags,
+        Guid? typedInstrumentId,
+        Guid? typedPositionId)
     {
-        if (tags is null || tags.Count == 0)
+        if ((tags is null || tags.Count == 0) &&
+            !typedInstrumentId.HasValue &&
+            !typedPositionId.HasValue)
         {
             return lines;
         }
@@ -165,13 +283,36 @@ public static class AccountingPostingCommandValidator
         for (var index = 0; index < lines.Count; index++)
         {
             var line = lines[index];
-            if (line.Dimensions is not null)
+            var dimensions = line.Dimensions ??
+                (tags is null ? null : BuildLineDimensions(line.EntryId, tags));
+
+            if (dimensions?.InstrumentId is Guid instrumentId &&
+                typedInstrumentId.HasValue &&
+                instrumentId != typedInstrumentId.Value)
             {
-                continue;
+                throw new LedgerValidationException(
+                    $"Ledger line '{line.EntryId:D}' instrument dimension conflicts with the typed economic event.");
             }
 
-            var dimensions = BuildLineDimensions(line.EntryId, tags);
-            if (dimensions is null)
+            if (dimensions?.PositionId is Guid positionId &&
+                typedPositionId.HasValue &&
+                positionId != typedPositionId.Value)
+            {
+                throw new LedgerValidationException(
+                    $"Ledger line '{line.EntryId:D}' position dimension conflicts with the typed book position.");
+            }
+
+            var normalizedDimensions = dimensions;
+            if (typedInstrumentId.HasValue || typedPositionId.HasValue)
+            {
+                normalizedDimensions = (dimensions ?? new LedgerLineDimensionSet()) with
+                {
+                    InstrumentId = dimensions?.InstrumentId ?? typedInstrumentId,
+                    PositionId = dimensions?.PositionId ?? typedPositionId
+                };
+            }
+
+            if (normalizedDimensions is null)
             {
                 continue;
             }
@@ -185,7 +326,7 @@ public static class AccountingPostingCommandValidator
                 line.Debit,
                 line.Credit,
                 line.Description,
-                dimensions);
+                normalizedDimensions);
         }
 
         return normalized ?? lines;

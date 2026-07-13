@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Storage
@@ -181,6 +181,10 @@ or export consumers.
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
 schema, or new route is introduced.
+Approved typed posting commands stamp command, approval, source-event, Security Master, book
+position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
+metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned
+tags fail before append.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before
@@ -225,6 +229,14 @@ Master storage.
 Security Master continues to own canonical security identity; Asset Operations records consume that
 identity, and Storage preserves each module's records without introducing a parent Instrument Master
 or reversing the dependency into Reference Data.
+`002_instrument_position_projections.sql` adds Security Master-keyed role and book-position payloads
+plus append-only position economic-state history. Existing aggregate writes preserve these typed
+collections when older callers send default-empty fields; the tables retain book/owner scope,
+effective dates, versions, source events, evidence, and approval metadata, but never ledger balances.
+Economic-state payloads retain their matching typed lineage, allowing every append-only factor event
+to survive a later current-position update. Role and position identities cannot move across Security
+Master, owner, role, or ledger-book boundaries, and idempotent replay preserves the original approval
+actor, reference, and timestamp.
 
 Fund-structure local-first persistence uses Storage-owned state stores. The JSON-backed store writes
 complete snapshots through `AtomicFileWriter`, and the in-memory store preserves the same snapshot

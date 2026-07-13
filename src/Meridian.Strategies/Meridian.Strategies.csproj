@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />
     <ProjectReference Include="..\Meridian.FSharp.Trading\Meridian.FSharp.Trading.fsproj" />
     <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
+    <ProjectReference Include="..\Meridian.Instruments\Meridian.Instruments.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,10 @@ using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
@@ -277,8 +280,15 @@ public sealed class ReconciliationRunServiceTests
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             Securities: [new SecurityMasterAccountingSecurity(securityId, "MBS1", "MortgageBacked", "USD", new SecurityFixedIncomeTerms(0.03m, "Fixed", "30/360", 12, CurrentFactor: 1.00m, RequiresFactorSchedule: true), new SecurityAccountingRule("AvailableForSale", "GAAP"))],
-            Positions: [new SecurityMasterAccountingPosition("MBS1", securityId, "acct-1", 100_000m)],
-            FactorSchedule: [new SecurityFactorScheduleEntry(securityId, new DateOnly(2026, 1, 15), 1.00m, 0.99m, "test")]);
+            Positions: [new SecurityMasterAccountingPosition("MBS1", securityId, "acct-1", 100_000m, PositionId: Guid.Parse("55555555-3333-4333-8333-333333333334"))],
+            FactorSchedule: [new SecurityFactorScheduleEntry(
+                securityId,
+                new DateOnly(2026, 1, 15),
+                1.00m,
+                0.99m,
+                "test",
+                "evidence://factor/test",
+                "sha256:test-factor")]);
 
         var service = CreateService(
             store,
@@ -343,6 +353,7 @@ public sealed class ReconciliationRunServiceTests
             SubType: "CorporateBond"));
 
         var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("44444444-4444-4444-8444-444444444445");
         securityMasterQuery.Register(CreateEconomicDefinition(
             securityId,
             "AAPL",
@@ -356,7 +367,9 @@ public sealed class ReconciliationRunServiceTests
             bankTransactionSource: null,
             securityValidationGate: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
-            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-accounting"));
 
@@ -388,6 +401,7 @@ public sealed class ReconciliationRunServiceTests
             SubType: "MortgageBackedSecurity"));
 
         var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("44444444-4444-4444-8444-444444444446");
         securityMasterQuery.Register(CreateEconomicDefinition(
             securityId,
             "AAPL",
@@ -410,7 +424,9 @@ public sealed class ReconciliationRunServiceTests
             bankTransactionSource: null,
             securityValidationGate: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
-            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-factor-schedule"));
 
@@ -422,7 +438,8 @@ public sealed class ReconciliationRunServiceTests
             item.SecurityId == securityId &&
             item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
             item.PrincipalAmount == 0.30m &&
-            item.Provenance.Contains("factor-source:custodian-factor-file", StringComparison.Ordinal));
+            item.Provenance.Contains("factor-source:custodian-factor-file", StringComparison.Ordinal) &&
+            item.EconomicEvent!.BookPositionId == positionId);
         detail.ExpectedJournalPreviews.Should().Contain(preview =>
             preview.IsBalanced &&
             preview.Lines.Any(line => line.AccountName == "Cash" && line.Debit == 0.30m));
@@ -446,6 +463,7 @@ public sealed class ReconciliationRunServiceTests
             SubType: "Mbs"));
 
         var securityMasterQuery = new StubSecurityMasterQueryService();
+        var positionId = Guid.Parse("55555555-5555-4555-8555-555555555556");
         securityMasterQuery.Register(CreateEconomicDefinition(
             securityId,
             "AAPL",
@@ -472,7 +490,9 @@ public sealed class ReconciliationRunServiceTests
             bankTransactionSource: null,
             securityValidationGate: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
-            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(
+                securityMasterQuery,
+                CreateAssetOperationsQueryService(securityId, positionId)));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-mbs-factor"));
 
@@ -1002,6 +1022,74 @@ public sealed class ReconciliationRunServiceTests
         detail.Breaks.Should().Contain(b =>
             b.CheckId == "bank-ledger-coverage-missing" &&
             b.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
+    }
+
+    private static IAssetOperationsQueryService CreateAssetOperationsQueryService(
+        Guid securityId,
+        Guid positionId)
+    {
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+        var ownerNodeId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+        var roleId = Guid.Parse("cccccccc-cccc-4ccc-8ccc-cccccccccccc");
+        var bookContext = new AccountingBookContextDto(
+            ledgerBookId,
+            "fund-reconciliation",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Reconciliation GAAP",
+            "USD",
+            AccountingBasisKindDto.Gaap,
+            "gaap-reconciliation-v1",
+            "v1");
+        var subject = new AssetOperationSubjectDto(
+            securityId,
+            "MortgageBackedSecurity",
+            "Reconciliation MBS",
+            "AAPL",
+            ["FactorProcessing"]);
+        var readiness = new AssetOperationsReadinessDto(
+            securityId,
+            "Ready",
+            [],
+            [],
+            [],
+            [],
+            DateTimeOffset.Parse("2026-03-21T16:30:00Z"),
+            "AssetOperations",
+            positionId.ToString("D"));
+        var position = new BookPositionDto(
+            positionId,
+            securityId,
+            roleId,
+            bookContext,
+            BookPositionSides.Long,
+            "Active",
+            new DateOnly(2026, 1, 1),
+            Version: 7,
+            PrimaryAccountId: "unscoped-account");
+        var detail = new AssetOperationsDetailDto(subject, [], [], [], [], [], [], [], [], readiness, [])
+        {
+            BookPositions = [position]
+        };
+        return new StaticAssetOperationsQueryService(detail);
+    }
+
+    private sealed class StaticAssetOperationsQueryService(AssetOperationsDetailDto detail)
+        : IAssetOperationsQueryService
+    {
+        public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<AssetOperationsDetailDto?>(
+                detail.Subject.SecurityId == securityId ? detail : null);
+        }
+
+        public Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<AssetOperationsReadinessDto?>(
+                detail.Subject.SecurityId == securityId ? detail.Readiness : null);
+        }
     }
 
     private static class TestRunFactory

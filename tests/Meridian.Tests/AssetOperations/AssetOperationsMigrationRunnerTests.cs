@@ -65,6 +65,21 @@ public sealed class AssetOperationsMigrationRunnerTests : IAsyncLifetime
 
         var count = (long)(await command.ExecuteScalarAsync() ?? 0L);
         count.Should().Be(44);
+
+        await using var typedCommand = connection.CreateCommand();
+        typedCommand.CommandText =
+            """
+            select count(*)
+            from information_schema.tables
+            where table_schema = @schema
+              and table_name in (
+                'instrument_role_projections',
+                'book_position_projections',
+                'position_economic_state_projections');
+            """;
+        typedCommand.Parameters.AddWithValue("schema", _options.Schema);
+        var typedTableCount = (long)(await typedCommand.ExecuteScalarAsync() ?? 0L);
+        typedTableCount.Should().Be(3);
     }
 
 }

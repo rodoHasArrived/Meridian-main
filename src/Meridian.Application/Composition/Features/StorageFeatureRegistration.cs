@@ -382,6 +382,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
 
         if (DirectLendingStartup.IsConfigured())
         {

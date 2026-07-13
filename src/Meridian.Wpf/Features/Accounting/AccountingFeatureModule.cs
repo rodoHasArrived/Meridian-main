@@ -12,6 +12,7 @@ using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.Instruments.AssetOperations;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
@@ -129,6 +130,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>

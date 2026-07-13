@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Contracts
@@ -1043,6 +1043,14 @@ canonical Security Master identity. Posting-candidate and command contracts may 
 typed references alongside legacy source-event fields; populated representations must agree. The
 types remain transport-safe and default-empty where they extend existing detail/projection payloads,
 so older JSON and existing browser/WPF constructors remain compatible.
+Security Master reconciliation events can additionally expose their typed
+`EconomicEventReferenceDto`, `ProjectionLineageDto`, and retained evidence links. Older JSON and
+positional callers remain valid; typed factor events use these fields to carry deterministic event
+and projection identity into the existing posting-candidate route without accepting journal rows
+from a client.
+Append-only `PositionEconomicStateDto` rows may retain their typed `ProjectionLineageDto` so an
+older factor event remains reconstructable after a later position update; older payloads default
+that optional property to `null`.
 Manual journal drafts, workbench reads, lifecycle requests, and evidence-attachment requests also
 carry optional tenant/company scope so shared endpoints can stamp the authenticated accounting
 context, resolve the tenant-scoped chart, and retain scoped lifecycle audit rows without trusting
