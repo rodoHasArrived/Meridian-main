@@ -5,17 +5,17 @@
 
 ## Overall Coverage
 
-**2766 / 7426** items documented (**37.2%**) &mdash; Grade: **F**
+**2776 / 7437** items documented (**37.3%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 37.2%
+[=======-------------] 37.3%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2646 | 7000 | 37.8% | F |
+| Public Classes / Interfaces | 2656 | 7011 | 37.9% | F |
 | API Endpoints | 106 | 279 | 38.0% | F |
 | Configuration Options | 3 | 136 | 2.2% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4354 undocumented)
+### Public Classes / Interfaces (4355 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -59,6 +59,7 @@
 | `BackfillSchedulePresets` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:213` |
 | `ScheduleStatusSummary` | `src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:413` |
 | `ScheduledBackfillOptions` | `src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:630` |
+| `IStructuredCashFlowLedgerBridge` | `src/Meridian.Application/SecurityMaster/CashFlow/StructuredCashFlowLedgerBridge.cs:13` |
 | `ICorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:6` |
 | `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:17` |
 | `CorporateActionInboxApplyRequest` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionInboxState.cs:6` |
@@ -76,8 +77,7 @@
 | `RestatementCandidateResult` | `src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:44` |
 | `SecurityMasterRevisionRecord` | `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:52` |
 | `NullSecurityMasterPricingService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:10` |
-| `NullSecurityMasterCashFlowService` | `src/Meridian.Application/SecurityMaster/NullSecurityMasterClearwaterServices.cs:37` |
-| ... and 4304 more | |
+| ... and 4305 more | |
 
 ### API Endpoints (173 undocumented)
 
@@ -193,7 +193,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4354 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 4355 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 173 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 133 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
