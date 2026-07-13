@@ -499,6 +499,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         _reportPumpCts.Cancel();
         _executionChannel.Writer.TryComplete();
+
+        // Dispose the CTS only after the pump has finished using its token.
+        _reportPumpTask.ContinueWith(
+            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
+            _reportPumpCts,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     /// <summary>

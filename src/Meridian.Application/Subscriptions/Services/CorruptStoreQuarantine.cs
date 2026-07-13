@@ -15,9 +15,18 @@ internal static class CorruptStoreQuarantine
     /// </summary>
     /// <param name="path">Path of the store file that failed to load.</param>
     /// <param name="loadFailure">The exception that caused the load to fail.</param>
-    /// <returns>The quarantine path the unreadable file was preserved at.</returns>
-    public static string PreserveOrThrow(string path, Exception loadFailure)
+    /// <returns>
+    /// The quarantine path the unreadable file was preserved at, or <see langword="null"/>
+    /// when the file no longer exists (e.g. removed between the failed read and the
+    /// quarantine attempt) — nothing is left to preserve, so the empty fallback is safe.
+    /// </returns>
+    public static string? PreserveOrThrow(string path, Exception loadFailure)
     {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
         var quarantinePath = $"{path}.corrupt-{DateTime.UtcNow:yyyyMMddHHmmss}";
         try
         {

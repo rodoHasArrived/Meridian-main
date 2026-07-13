@@ -222,10 +222,14 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var snapshots = await _store.GetBalanceHistoryAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false);
-        var positions = await _store.GetCustodianPositionsAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false);
-        var custodianBatches = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false);
-        var bankLines = await _store.GetBankStatementLinesAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false);
+        var snapshots = await _store.GetBalanceHistoryAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<AccountBalanceSnapshotDto>();
+        var positions = await _store.GetCustodianPositionsAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<CustodianPositionLineDto>();
+        var custodianBatches = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<CustodianStatementBatchDto>();
+        var bankLines = await _store.GetBankStatementLinesAsync(request.AccountId, request.AsOfDate, request.AsOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<BankStatementLineDto>();
 
         var snapshot = snapshots.OrderByDescending(s => s.RecordedAt).FirstOrDefault();
 
