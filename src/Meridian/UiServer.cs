@@ -65,6 +65,7 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="port">HTTP port to listen on.</param>
     /// <param name="lifecycle">Optional process lifecycle coordinator used by local shutdown endpoints.</param>
+    /// <param name="apiHostOptions">Optional pre-resolved host options; when omitted they are read from configuration.</param>
     public UiServer(
         string configPath,
         int port = 8080,
@@ -113,6 +114,10 @@ public sealed class UiServer : IAsyncDisposable
                         .AllowCredentials());
             });
         }
+
+        // ADR-019: declare the typed deployment posture before feature composition so the
+        // production registration policy and the host resolve the same production answer.
+        builder.Services.DeclareMeridianDeploymentPosture(_apiHostOptions.ToDeploymentPosture());
 
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };

@@ -1210,6 +1210,7 @@ Meridian-main
 │   ├── adr
 │   │   ├── 017-modular-operational-monolith.md
 │   │   ├── 018-declarative-statement-mapping-profiles.md
+│   │   ├── 019-production-support-matrix-and-deployment-posture.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -3176,7 +3177,9 @@ Meridian-main
 │   │   │   ├── HostAdapters.cs
 │   │   │   ├── HostStartup.cs
 │   │   │   ├── LedgerStartup.cs
+│   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
+│   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
 │   │   │   └── ServiceCompositionRoot.cs
@@ -7309,6 +7312,7 @@ Meridian-main
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── PipelineFeatureRegistrationTests.cs
+│   │   │   │   ├── ProductionRegistrationGuardServiceTests.cs
 │   │   │   │   ├── ProductionServiceRegistrationPolicyTests.cs
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
@@ -8095,6 +8099,7 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs
+│   │   │   ├── ApiHostOptionsDeploymentModeTests.cs
 │   │   │   ├── AuditTrailExplorerServiceTests.cs
 │   │   │   ├── AutomatedJournalDraftIntakeServiceTests.cs
 │   │   │   ├── AutomatedJournalEventProducerTests.cs

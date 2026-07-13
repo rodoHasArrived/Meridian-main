@@ -1,10 +1,10 @@
 {
-  "total_files": 577,
-  "total_lines": 96653,
+  "total_files": 578,
+  "total_lines": 96830,
   "orphaned_count": 245,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 202,
+  "todo_count": 204,
   "average_lines": 167.5,
   "health_score": 78,
   "orphaned_files": [
@@ -991,6 +991,14 @@
       "stale": false
     },
     {
+      "path": "docs/adr/019-production-support-matrix-and-deployment-posture.md",
+      "line_count": 171,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/adr/_template.md",
       "line_count": 94,
       "has_heading": true,
@@ -1000,7 +1008,7 @@
     },
     {
       "path": "docs/adr/README.md",
-      "line_count": 19,
+      "line_count": 20,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2192,7 +2200,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8647,
+      "line_count": 8652,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

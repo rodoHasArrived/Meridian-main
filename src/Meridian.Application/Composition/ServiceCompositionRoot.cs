@@ -126,6 +126,10 @@ public static class ServiceCompositionRoot
 
         ProductionServiceRegistrationPolicy.Validate(services);
 
+        // ADR-019: composition-time validation alone cannot see registrations added after this
+        // call, so the guard re-validates the final graph as the first hosted service at startup.
+        services.AddProductionRegistrationGuard();
+
         // Backtesting services are registered by the host project (Meridian.Backtesting references
         // Meridian.Application, so registration here would create a circular dependency).
 
