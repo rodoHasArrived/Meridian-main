@@ -1,6 +1,6 @@
 {
   "total_files": 576,
-  "total_lines": 96003,
+  "total_lines": 96023,
   "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1903,7 +1903,7 @@
     },
     {
       "path": "docs/development/web-ui-structural-improvement-proposal.md",
-      "line_count": 373,
+      "line_count": 393,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

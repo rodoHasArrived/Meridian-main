@@ -5718,6 +5718,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.styles.ts
+│   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.task-modes.tsx
 │   │   │   │   │   ├── accounting-screen.test.tsx
@@ -5834,7 +5835,6 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.schedule-management.tsx
 │   │   │   │   │   ├── reporting-screen.shared-components.tsx
 │   │   │   │   │   ├── reporting-screen.task-mode-view-model.ts
-│   │   │   │   │   ├── reporting-screen.task-modes.tsx
 │   │   │   │   │   ├── reporting-screen.template-lifecycle.tsx
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
