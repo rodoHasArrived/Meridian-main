@@ -291,11 +291,13 @@ const portfolioRouteTabs: { id: PortfolioRouteViewId; label: string; route: stri
 ];
 
 export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewId {
+  // Match the segment right after /portfolio so a dynamic parameter deeper in
+  // the path can never collide with a view keyword.
   const segments = pathname.split("/").filter(Boolean);
-  if (segments.includes("attribution")) {
+  if (segments[1] === "attribution") {
     return "attribution";
   }
-  if (segments.includes("brokerage-sync")) {
+  if (segments[1] === "brokerage-sync") {
     return "brokerage-sync";
   }
   return "overview";

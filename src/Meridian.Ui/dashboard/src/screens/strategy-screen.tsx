@@ -204,12 +204,14 @@ const strategyRouteTabs: { id: StrategyRouteViewId; label: string; route: string
 ];
 
 export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId {
+  // Match the segment right after /strategy so a dynamic parameter deeper in
+  // the path can never collide with a view keyword.
   const segments = pathname.split("/").filter(Boolean);
-  if (segments.includes("promotions")) {
+  if (segments[1] === "promotions") {
     return "promotions";
   }
 
-  if (segments.includes("lab")) {
+  if (segments[1] === "lab") {
     return "lab";
   }
 
