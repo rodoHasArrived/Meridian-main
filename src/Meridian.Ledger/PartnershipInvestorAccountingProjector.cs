@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
 
 namespace Meridian.Ledger;
 
@@ -116,7 +117,4 @@ public static class PartnershipInvestorAccountingProjector
         if (Math.Abs(total - 1m) > AllocationTolerance)
             throw new ArgumentException($"Investor allocation percentages must sum to 1.000000; actual total was {total}.", nameof(investors));
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }

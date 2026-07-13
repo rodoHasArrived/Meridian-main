@@ -1,3 +1,5 @@
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -67,7 +69,4 @@ public static class DailyPortfolioPricingProjector
 
         return journalLines;
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }
