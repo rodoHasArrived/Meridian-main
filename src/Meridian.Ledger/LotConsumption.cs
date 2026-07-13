@@ -28,13 +28,12 @@ public static class LotConsumption
         var slices = new List<LotSlice<TLot>>();
         var remaining = quantity;
 
-        foreach (var lot in orderedLots)
+        // Check remaining before advancing so lazy lot sequences (e.g. specific-id selectors that
+        // throw on unknown ids) are never enumerated past the point where the quantity is filled.
+        using var lots = orderedLots.GetEnumerator();
+        while (remaining > 0m && lots.MoveNext())
         {
-            if (remaining <= 0m)
-            {
-                break;
-            }
-
+            var lot = lots.Current;
             var available = openQuantity(lot);
             if (available <= 0m)
             {
