@@ -4106,6 +4106,12 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(reportingData, "/accounting/reporting");
 
+    // The reporting workstream has its own tab: the configure "Reports" tab
+    // must not claim selection here, since activating it would navigate to
+    // /accounting/configure and hide this reporting-profile band.
+    expect(screen.getByRole("tab", { name: "Delivery evidence", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Reports", selected: false })).toBeInTheDocument();
+
     expect(screen.getByText("Report packet posture")).toBeInTheDocument();
     expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Inspect reporting profile Excel for Excel Xlsx" })).toHaveAttribute("aria-pressed", "true");

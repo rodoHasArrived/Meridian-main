@@ -32,7 +32,11 @@ const accountingRouteTabs: { id: string; label: string; route: string; workstrea
   { id: "exceptions", label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions, workstreams: ["exceptions"] },
   { id: "approvals", label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals, workstreams: ["approvals"] },
   { id: "security-master", label: "Data health", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, workstreams: ["security-master"] },
-  { id: "configure", label: "Reports", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure, workstreams: ["configure", "reporting"] }
+  { id: "configure", label: "Reports", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure, workstreams: ["configure"] },
+  // The reporting workstream owns the showReporting-gated profile band, so it
+  // gets its own tab: a "Reports" tab that navigated to /accounting/configure
+  // while selected for /accounting/reporting would hide that band on click.
+  { id: "reporting", label: "Delivery evidence", route: `${WORKSTATION_ROUTE_CATALOG.accounting}/reporting`, workstreams: ["reporting"] }
 ];
 
 export function AccountingWorkbenchContext({
