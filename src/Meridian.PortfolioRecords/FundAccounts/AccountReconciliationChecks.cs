@@ -29,8 +29,10 @@ internal static class AccountReconciliationChecks
 
     /// <summary>
     /// Compares the internally recorded balance-snapshot cash balance (source A) against the
-    /// external bank-statement closing balance ingested for the same as-of date (source B).
-    /// When either side is missing, the check reports <see cref="StatusUnverified"/> because no
+    /// external bank-statement closing balance ingested for the same as-of date and the same
+    /// currency (source B) — a USD snapshot must never match or break against, say, an EUR
+    /// closing balance. When either side is missing (including when only foreign-currency
+    /// closing balances exist), the check reports <see cref="StatusUnverified"/> because no
     /// independent comparison was possible. Returns <c>null</c> when neither side has any data.
     /// </summary>
     internal static AccountReconciliationResultDto? BuildCashBalanceCheck(
@@ -38,21 +40,20 @@ internal static class AccountReconciliationChecks
         AccountBalanceSnapshotDto? snapshot,
         IReadOnlyList<BankStatementLineDto> bankLinesForDate)
     {
-        var bankClosingBalance = bankLinesForDate
-            .Where(static line => line.ClosingBalance.HasValue)
-            .OrderBy(static line => line.ValueDate)
-            .ThenBy(static line => line.LineId)
-            .Select(static line => line.ClosingBalance)
-            .LastOrDefault();
+        var closingBalanceInSnapshotCurrency = snapshot is null
+            ? null
+            : LatestClosingBalance(bankLinesForDate.Where(line =>
+                string.Equals(line.Currency, snapshot.Currency, StringComparison.OrdinalIgnoreCase)));
+        var closingBalanceAnyCurrency = LatestClosingBalance(bankLinesForDate);
 
-        if (snapshot is null && bankClosingBalance is null)
+        if (snapshot is null && closingBalanceAnyCurrency is null)
         {
             return null;
         }
 
-        if (snapshot is not null && bankClosingBalance is not null)
+        if (snapshot is not null && closingBalanceInSnapshotCurrency is not null)
         {
-            var variance = bankClosingBalance.Value - snapshot.CashBalance;
+            var variance = closingBalanceInSnapshotCurrency.Value - snapshot.CashBalance;
             return new AccountReconciliationResultDto(
                 Guid.NewGuid(),
                 runId,
@@ -61,7 +62,7 @@ internal static class AccountReconciliationChecks
                 Category: "Cash",
                 Status: variance == 0m ? StatusMatched : StatusBreak,
                 ExpectedAmount: snapshot.CashBalance,
-                ActualAmount: bankClosingBalance.Value,
+                ActualAmount: closingBalanceInSnapshotCurrency.Value,
                 Variance: variance,
                 Reason: variance == 0m
                     ? "Recorded cash balance agrees with the bank statement closing balance."
@@ -80,7 +81,9 @@ internal static class AccountReconciliationChecks
                 ExpectedAmount: snapshot.CashBalance,
                 ActualAmount: null,
                 Variance: null,
-                Reason: "No independent source was available to verify the recorded cash balance: no bank statement closing balance exists for the as-of date.");
+                Reason: closingBalanceAnyCurrency is null
+                    ? "No independent source was available to verify the recorded cash balance: no bank statement closing balance exists for the as-of date."
+                    : $"No independent source was available to verify the recorded cash balance: bank statement closing balances exist for the as-of date, but none in the snapshot currency ({snapshot.Currency}).");
         }
 
         return new AccountReconciliationResultDto(
@@ -91,10 +94,18 @@ internal static class AccountReconciliationChecks
             Category: "Cash",
             Status: StatusUnverified,
             ExpectedAmount: null,
-            ActualAmount: bankClosingBalance,
+            ActualAmount: closingBalanceAnyCurrency,
             Variance: null,
             Reason: "A bank statement closing balance exists, but no internally recorded balance snapshot was available for the as-of date.");
     }
+
+    private static decimal? LatestClosingBalance(IEnumerable<BankStatementLineDto> lines) =>
+        lines
+            .Where(static line => line.ClosingBalance.HasValue)
+            .OrderBy(static line => line.ValueDate)
+            .ThenBy(static line => line.LineId)
+            .Select(static line => line.ClosingBalance)
+            .LastOrDefault();
 
     /// <summary>
     /// Compares the custodian statement's declared line count (source A, batch header metadata
