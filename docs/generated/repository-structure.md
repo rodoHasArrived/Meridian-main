@@ -4901,11 +4901,16 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_asset_operations.sql
-│   │   │   │   └── 002_instrument_position_projections.sql
+│   │   │   │   ├── 002_instrument_position_projections.sql
+│   │   │   │   └── 003_instrument_position_projection_guards.sql
 │   │   │   ├── AssetOperationsMigrationRunner.cs
 │   │   │   ├── IAssetOperationsProjectionStore.cs
+│   │   │   ├── IInstrumentPositionProjectionStore.cs
 │   │   │   ├── InMemoryAssetOperationsProjectionStore.cs
-│   │   │   └── PostgresAssetOperationsProjectionStore.cs
+│   │   │   ├── InMemoryAssetOperationsProjectionStore.InstrumentPositions.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.InstrumentPositions.cs
+│   │   │   └── PostgresAssetOperationsProjectionStore.Locks.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   └── BackfillStatusStoreJsonContext.cs
@@ -7442,6 +7447,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
+│   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   └── PortfolioCashLadderReadServiceTests.cs
