@@ -195,9 +195,31 @@ public static class NyseNationalTradesCsvParser
         }
         catch (TimeZoneNotFoundException)
         {
+        }
+        catch (InvalidTimeZoneException)
+        {
+        }
+
+        try
+        {
             // Windows hosts without ICU-based IANA mapping expose the zone under its legacy id.
             return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
         }
+        catch (TimeZoneNotFoundException)
+        {
+        }
+        catch (InvalidTimeZoneException)
+        {
+        }
+
+        // Hosts without any time-zone database (e.g. minimal containers missing tzdata) would
+        // otherwise fail type initialization; a fixed EST offset keeps parsing alive at the cost
+        // of a one-hour skew during daylight saving time.
+        return TimeZoneInfo.CreateCustomTimeZone(
+            "Meridian Eastern Fallback",
+            TimeSpan.FromHours(-5),
+            "US Eastern (fixed EST fallback)",
+            "US Eastern (fixed EST fallback)");
     }
 
     /// <summary>

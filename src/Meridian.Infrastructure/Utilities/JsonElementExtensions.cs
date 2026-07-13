@@ -253,12 +253,15 @@ public static class JsonElementExtensions
     /// <returns>True when a property with the given name (any casing) exists.</returns>
     public static bool TryGetPropertyIgnoreCase(this JsonElement element, string propertyName, out JsonElement value)
     {
-        foreach (var prop in element.EnumerateObject())
+        if (element.ValueKind == JsonValueKind.Object)
         {
-            if (string.Equals(prop.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            foreach (var prop in element.EnumerateObject())
             {
-                value = prop.Value;
-                return true;
+                if (string.Equals(prop.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = prop.Value;
+                    return true;
+                }
             }
         }
 
