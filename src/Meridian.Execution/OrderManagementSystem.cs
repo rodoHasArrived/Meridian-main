@@ -31,7 +31,16 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly CancellationTokenSource _reportPumpCts = new();
+    private readonly Task _reportPumpTask;
+    private readonly ConcurrentDictionary<ExecutionReport, byte> _processedFillReports = new();
+    private readonly ConcurrentQueue<ExecutionReport> _processedFillReportOrder = new();
     private int _orderSequence;
+    private long _droppedExecutionReports;
+
+    private const int MaxTrackedFillReports = 4096;
+    private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan MaxReportStreamRetryDelay = TimeSpan.FromSeconds(60);
 
     public OrderManagementSystem(
         IExecutionGateway gateway,
@@ -68,6 +77,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _executionChannel = executionPolicy.CreateChannel<ExecutionReport>(
             singleReader: true,
             singleWriter: false);
+
+        // Consume the gateway's asynchronous execution report stream so partial fills,
+        // rejects, and cancels that arrive after the synchronous submit ack still reach
+        // order state, session persistence, and downstream fill consumers.
+        _reportPumpTask = Task.Run(() => PumpGatewayExecutionReportsAsync(_reportPumpCts.Token));
     }
 
     /// <inheritdoc />
@@ -244,8 +258,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
-            var updatedState = ApplyReport(orderState, report);
-            _orders[orderId] = updatedState;
+            // Merge against the latest tracked state: the async report pump may already
+            // have applied a fill for this order before the submit ack is processed here.
+            var updatedState = _orders.AddOrUpdate(
+                orderId,
+                _ => ApplyReport(orderState, report),
+                (_, existing) => ApplyReport(existing, report));
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, safeRequest.Symbol, safeRequest.Side, safeRequest.Quantity, updatedState.Status);
@@ -280,13 +298,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             // consumers can subscribe without coupling directly to the gateway.
             if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
             {
-                if (_portfolioState is PaperTradingPortfolio paperPortfolio)
-                {
-                    paperPortfolio.ApplyFill(report);
-                }
-
-                await RecordSessionFillAsync(sessionId, report, ct).ConfigureAwait(false);
-                _executionChannel.Writer.TryWrite(report);
+                await ProcessFillReportAsync(sessionId, report, ct).ConfigureAwait(false);
             }
 
             return new OrderResult
@@ -375,8 +387,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             };
         }
 
-        var updated = ApplyReport(state, report);
-        _orders[orderId] = updated;
+        var updated = _orders.AddOrUpdate(
+            orderId,
+            _ => ApplyReport(state, report),
+            (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
             action: "OrderCancelled",
@@ -413,8 +427,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
-        var updated = ApplyReport(state, report);
-        _orders[orderId] = updated;
+        var updated = _orders.AddOrUpdate(
+            orderId,
+            _ => ApplyReport(state, report),
+            (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
             action: report.OrderStatus is OrderStatus.Rejected ? "OrderModifyRejected" : "OrderModified",
@@ -481,6 +497,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     public void Dispose()
     {
+        _reportPumpCts.Cancel();
         _executionChannel.Writer.TryComplete();
     }
 
@@ -500,13 +517,165 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)
     {
+        // A replayed or late non-terminal report (e.g. the submit ack racing the async
+        // report stream) must not regress an order that already reached a terminal status.
+        var status = IsTerminal(current.Status) && !IsTerminal(report.OrderStatus)
+            ? current.Status
+            : report.OrderStatus;
+
         return current with
         {
-            Status = report.OrderStatus,
-            FilledQuantity = report.FilledQuantity > 0 ? report.FilledQuantity : current.FilledQuantity,
+            Status = status,
+            FilledQuantity = Math.Max(report.FilledQuantity, current.FilledQuantity),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
+    }
+
+    private static bool IsTerminal(OrderStatus status) =>
+        status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
+
+    /// <summary>
+    /// Long-running consumer of <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>.
+    /// Applies asynchronous reports (partial fills, rejects, cancels from a live broker) to
+    /// tracked order state and routes fills through the same funnel as the synchronous
+    /// submit path. Retries with capped backoff if the stream faults; stops when the stream
+    /// completes normally or the OMS is disposed.
+    /// </summary>
+    private async Task PumpGatewayExecutionReportsAsync(CancellationToken ct)
+    {
+        var retryDelay = InitialReportStreamRetryDelay;
+
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await foreach (var report in _gateway.StreamExecutionReportsAsync(ct).ConfigureAwait(false))
+                {
+                    retryDelay = InitialReportStreamRetryDelay;
+                    await ProcessGatewayReportAsync(report, ct).ConfigureAwait(false);
+                }
+
+                // Stream completed normally: the gateway has no more asynchronous reports
+                // (synchronous-only gateways complete immediately; live gateways complete
+                // on their own disposal).
+                return;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Execution report stream from gateway {GatewayId} faulted; retrying in {RetryDelay}",
+                    _gateway.GatewayId, retryDelay);
+
+                try
+                {
+                    await Task.Delay(retryDelay, ct).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                retryDelay = retryDelay >= MaxReportStreamRetryDelay
+                    ? MaxReportStreamRetryDelay
+                    : TimeSpan.FromTicks(Math.Min(retryDelay.Ticks * 2, MaxReportStreamRetryDelay.Ticks));
+            }
+        }
+    }
+
+    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
+    {
+        var orderId = report.ClientOrderId ?? report.OrderId;
+
+        OrderState? updatedState = null;
+        while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
+        {
+            var merged = ApplyReport(existing, report);
+            if (_orders.TryUpdate(orderId, merged, existing))
+            {
+                updatedState = merged;
+                break;
+            }
+        }
+
+        if (updatedState is not null)
+        {
+            await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
+                report.OrderId, report.ReportType, report.OrderStatus);
+        }
+
+        if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
+        {
+            var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
+            await ProcessFillReportAsync(sessionId, report, ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Single funnel for fill side-effects, shared by the synchronous submit path and the
+    /// asynchronous report pump. Gateways derived from <c>BaseBrokerageGateway</c> publish
+    /// the submit ack on the report stream as well, so fills are deduplicated to avoid
+    /// double-applying them to the portfolio.
+    /// </summary>
+    private async Task ProcessFillReportAsync(string? sessionId, ExecutionReport report, CancellationToken ct)
+    {
+        if (!TryMarkFillProcessed(report))
+        {
+            return;
+        }
+
+        // Only fills for orders this OMS placed may mutate the paper portfolio;
+        // stream reports for external/untracked orders are still published below
+        // for observers but must not corrupt tracked positions.
+        var orderId = report.ClientOrderId ?? report.OrderId;
+        if (_portfolioState is PaperTradingPortfolio paperPortfolio
+            && !string.IsNullOrWhiteSpace(orderId)
+            && _orders.ContainsKey(orderId))
+        {
+            paperPortfolio.ApplyFill(report);
+        }
+
+        await RecordSessionFillAsync(sessionId, report, ct).ConfigureAwait(false);
+
+        if (!_executionChannel.Writer.TryWrite(report))
+        {
+            var dropped = Interlocked.Increment(ref _droppedExecutionReports);
+            _logger.LogError(
+                "Execution report channel full; dropped fill report for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); {DroppedCount} dropped in total — ExecutionReports consumers must drain faster",
+                report.OrderId, report.Symbol, report.FilledQuantity, report.FillPrice, dropped);
+        }
+    }
+
+    /// <summary>
+    /// Marks a fill report as processed; returns <see langword="false"/> when the identical
+    /// report was already handled via the other path (sync ack vs. report stream).
+    /// <see cref="ExecutionReport"/> is a record, so value equality identifies the replayed
+    /// ack; distinct fills always differ in timestamp and cumulative filled quantity.
+    /// </summary>
+    private bool TryMarkFillProcessed(ExecutionReport report)
+    {
+        if (!_processedFillReports.TryAdd(report, 0))
+        {
+            return false;
+        }
+
+        _processedFillReportOrder.Enqueue(report);
+        while (_processedFillReportOrder.Count > MaxTrackedFillReports
+            && _processedFillReportOrder.TryDequeue(out var oldest))
+        {
+            _processedFillReports.TryRemove(oldest, out _);
+        }
+
+        return true;
     }
 
     private static OrderState CreateRejectedState(
