@@ -3663,6 +3663,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── LedgerBookDtos.cs
+│   │   │   ├── LedgerCurrencyRounding.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Manifest
@@ -4130,7 +4131,8 @@ Meridian-main
 │   │   │   ├── AccountingJournalDraftService.cs
 │   │   │   ├── AccountingPolicyService.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
-│   │   │   └── AccountingPostingCandidateService.cs
+│   │   │   ├── AccountingPostingCandidateService.cs
+│   │   │   └── LedgerJournalConstruction.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── FinancialOperationsCommandCenterReadService.cs
 │   │   │   ├── OperationsApprovalPolicyMatrixService.cs
@@ -4616,7 +4618,9 @@ Meridian-main
 │   │   ├── LedgerFinancialReportPack.cs
 │   │   ├── LedgerFinancialStatementBuilder.cs
 │   │   ├── LedgerFinancialStatements.cs
+│   │   ├── LedgerGovernedLifecycle.cs
 │   │   ├── LedgerLineDimensionSet.cs
+│   │   ├── LedgerLineDimensionSetFields.cs
 │   │   ├── LedgerLineDimensionSetNormalizer.cs
 │   │   ├── LedgerQuery.cs
 │   │   ├── LedgerReportExportFormat.cs
@@ -5718,6 +5722,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.styles.ts
+│   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.task-modes.tsx
 │   │   │   │   │   ├── accounting-screen.test.tsx
@@ -5798,6 +5803,7 @@ Meridian-main
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
 │   │   │   │   │   ├── operator-readiness-console.view-model.ts
 │   │   │   │   │   ├── portfolio-screen.a11y.test.tsx
+│   │   │   │   │   ├── portfolio-screen.evidence-timeline.test.ts
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.ts
 │   │   │   │   │   ├── portfolio-screen.linked-context.ts
 │   │   │   │   │   ├── portfolio-screen.operator-focus.ts
@@ -5834,7 +5840,6 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.schedule-management.tsx
 │   │   │   │   │   ├── reporting-screen.shared-components.tsx
 │   │   │   │   │   ├── reporting-screen.task-mode-view-model.ts
-│   │   │   │   │   ├── reporting-screen.task-modes.tsx
 │   │   │   │   │   ├── reporting-screen.template-lifecycle.tsx
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx

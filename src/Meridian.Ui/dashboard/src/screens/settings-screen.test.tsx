@@ -546,13 +546,47 @@ describe("SettingsScreen", () => {
     apiMocks.activateProviderIntegration.mockReset();
   });
 
+  it("lands the bare /settings route on the Access & profile view", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Access & profile"
+    );
+    expect(screen.getByRole("tab", { name: "Access", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Profile and authentication posture" })).toBeInTheDocument();
+  });
+
+  it("keeps hash deep links winning over the bare-route Access default", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings#alpaca-provider-setup"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Provider connections"
+    );
+  });
+
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings#diagnostic-endpoints"]
     });
 
+    // The route header is route-scoped: the diagnostics hash resolves to the
+    // Diagnostics task view, so the header carries that view's copy.
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Operator control posture"
+      "Diagnostics"
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
@@ -571,12 +605,14 @@ describe("SettingsScreen", () => {
   });
 
   it("renders profile authentication posture with authority handoffs", () => {
+    // The profile/system row is scoped to the Access view.
     renderWithRouter(
       <SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
-      />
+      />,
+      { initialEntries: ["/settings/access"] }
     );
 
     const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -1329,8 +1330,8 @@ function AccountingCaseWorkbench({
             ) : (
               <div role="list" aria-label="Accounting case queue rows" className="grid gap-2">
                 {breakRows.slice(0, 6).map((row) => (
+                  <div role="listitem" key={row.breakId} className="grid">
                   <button
-                    key={row.breakId}
                     type="button"
                     className={cn(
                       "rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -1344,6 +1345,7 @@ function AccountingCaseWorkbench({
                       {row.strategyName} · {row.varianceLabel} · {row.ownerLabel}
                     </span>
                   </button>
+                  </div>
                 ))}
                 {selectedBlocker ? (
                   <Link
@@ -1470,6 +1472,12 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
+  // On the reconciliation route the casework band stays primary; break
+  // actions and history collapse unless they are the route's own workstream
+  // (exceptions) or a hash deep-link targets them.
+  const reconciliationActionsExpanded =
+    workstream === "exceptions" ||
+    ["accounting-actions", "accounting-history", "reconciliation-break-queue"].includes(hash.replace(/^#/, ""));
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
@@ -1992,33 +2000,15 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
   const focus = taskMode;
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
-  const accountingRecoveryFields = [
-    { id: "task-mode", label: "Task mode", value: taskMode.label },
-    { id: "workstream", label: "Workstream", value: workstream },
-    { id: "queue", label: "Queue", value: `${data.reconciliationQueue.length} runs` },
-    { id: "breaks", label: "Breaks", value: `${data.breakQueue.length} open` },
-    { id: "close", label: "Close", value: closeCommandCenter?.statusLabel ?? "Loading" },
-    {
-      id: "external-gl",
-      label: "External GL",
-      value: accountingSystemReconciliation
-        ? `${accountingSystemReconciliation.matchedCount} matched / ${accountingSystemReconciliation.breakCount} breaks`
-        : accountingSystemLoading ? "Loading" : "Not loaded"
-    }
-  ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
+      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+
       <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
-        recoveryFields={accountingRecoveryFields}
-        chips={[
-          { label: "Queue", value: String(data.reconciliationQueue.length) },
-          { label: "Breaks", value: String(data.breakQueue.length) },
-          { label: "Profiles", value: String(data.reporting.profileCount) }
-        ]}
       />
 
       {sectionVisibility.showCloseCockpitLanding ? (
@@ -2179,12 +2169,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           </div>
           <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
         </div>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricSnapshotCard key={metric.id} {...metric} />
-        ))}
-      </section>
 
       {data.controlCenter ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
@@ -2888,6 +2872,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </FinancialRecordExplorerShell>
       ) : null}
 
+      {sectionVisibility.showReporting ? (
       <section id="accounting-reporting" className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
         {workstream !== "reconciliation" ? (
           <ReconciliationQueueSummaryCard view={reconciliation.queuePanelView} />
@@ -2957,7 +2942,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               </div>
             </div>
 
-            <aside
+            <div
+              role="region"
+              aria-label="Selected reporting profile detail"
               id={reporting.detailId}
               aria-live="polite"
               data-testid="reporting-profile-detail"
@@ -2986,10 +2973,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   </dl>
                 </div>
               ) : null}
-            </aside>
+            </div>
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {sectionVisibility.showSecurityMaster && (
@@ -3474,6 +3462,14 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             </div>
             <a className="workspace-section-jump" href="#accounting-history">History</a>
           </div>
+        <details
+          className="panel-surface rounded-lg border border-border/70 px-4 py-3"
+          open={reconciliationActionsExpanded}
+        >
+          <summary className="cursor-pointer text-sm font-semibold text-foreground">
+            Break resolution actions and history
+          </summary>
+          <div className="mt-3">
         <section
           id={reconciliation.detailActions?.breakChecklistTargetId ?? "reconciliation-break-queue"}
           aria-label="Reconciliation break checklist"
@@ -3625,6 +3621,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
           <CalibrationSummaryPanel view={reconciliation.calibrationView} />
         </section>
+          </div>
+        </details>
         </section>
       )}
         </>
@@ -5453,7 +5451,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
-        <aside className="space-y-4">
+        <div className="space-y-4">
           <section className="accounting-draft-rail" data-appearance="light" aria-label="Manual journal draft queue">
             <div className="accounting-reference-heading">
               <div>
@@ -5486,7 +5484,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
           </section>
 
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
-        </aside>
+        </div>
 
         <div className="space-y-4">
           <section className="accounting-reference-panel accounting-journal-panel" data-appearance="light" aria-label="Manual journal entry - balanced double-entry">
@@ -5547,7 +5545,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                     <th>Debit</th>
                     <th>Credit</th>
                     <th>Support</th>
-                    <th aria-label="Line actions" />
+                    <th><span className="sr-only">Line actions</span></th>
                   </tr>
                 </thead>
                 <tbody>

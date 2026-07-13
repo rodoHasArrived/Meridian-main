@@ -1,10 +1,10 @@
 # Web UI Structural Improvement Proposal
 
-**Status:** in delivery (Phase A shipped app-wide; Phases B–C shipped for Trading)
+**Status:** in delivery (Phases A–D shipped; shell pattern rolled out to every workspace)
 **Owner:** core-team
-**Reviewed:** 2026-07-12
+**Reviewed:** 2026-07-13
 
-> **Delivery status (2026-07-12).** Phase A landed app-wide: the decision brief renders as a
+> **Delivery status (2026-07-13).** Phase A landed app-wide: the decision brief renders as a
 > masthead status pill (`DecisionBriefPill`) instead of a per-route banner, the onboarding coach
 > mark docks to the masthead ring and never auto-opens, and `StatStrip` replaces the four-card KPI
 > band on migrated routes. Phases B–C landed for Trading as the template: `/trading/orders`,
@@ -16,8 +16,16 @@
 > command-deck highlight cards removed), the metric band adopted `StatStrip`, and P6 landed —
 > when two or more Data analytics reads fail together, one consolidated amber degraded state
 > (`data-screen.analytics-status.tsx`) with a retry-all action replaces the stacked per-panel
-> alarms. Remaining: Phase D (Settings/Accounting decomposition), Phase E (token polish), and
-> rollout of the same shell pattern to Portfolio/Accounting/Reporting/Strategy.
+> alarms. Phase D plus the shell rollout landed next: Settings gained the compact route header,
+> route-navigating tab strip, and an access-scoped profile row; Accounting gained a
+> `showReporting` visibility flag (the reporting band no longer rides every route), the same
+> compact header + tab strip over its task modes, and a disclosure-collapsed break-actions band
+> on reconciliation; Strategy, Portfolio, and Reporting adopted route-scoped views
+> (`resolveStrategyRouteView`, `resolvePortfolioRouteView`, and the Reporting task-mode tab
+> strip), with the Reporting task-mode launcher card grid retired in favor of the tab strip.
+> Remaining: Phase E (token/chart/density polish); the deferred Accounting
+> configuration-panel extraction and reconciliation master–detail follow-ups are recorded
+> under the phase table in section 5.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,
@@ -338,6 +346,18 @@ pipeline (`npm run screenshots` → `scripts/dev/capture-web-screenshots.mjs`, v
 Validation per phase: targeted vitest suites (including the per-screen `*.a11y.test.tsx` axe
 suites), `npm --prefix src/Meridian.Ui/dashboard run build`, screenshot regeneration for touched
 routes, and a re-grade of the affected rows in `docs/screenshots/web-audit.md`.
+
+**Phase D deferred scope (recorded 2026-07-13).** Four Accounting items were intentionally left
+out of the Phase D delivery and remain open follow-ups: extracting the ~730-line inline
+`AccountingConfigurationPanel` from `accounting-screen.tsx` into its own module, converting the
+reconciliation comparison/casework band to the full master–detail rail, resolving the latent
+`showLedgerExplorer` branch that is only reachable via hash deep link (document-or-remove
+decision), and scoping the shared workflow/posture/external-GL/multi-asset-coverage tail that
+still renders on every non-landing Accounting route (`showWorkflowDetails`, `showPosture`,
+`showExternalGl`, and `showMultiAssetCoverage` are all `!isCloseCockpitLanding` today) — that
+tail is why the deep Accounting routes remain 10–12k px after the Phase D reporting-band gating
+(−11–22%) while the close-cockpit landing sits at one viewport. None of these change
+operator-visible behavior shipped in Phase D.
 
 ## 6. Success metrics
 

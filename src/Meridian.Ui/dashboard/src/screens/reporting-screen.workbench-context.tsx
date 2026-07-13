@@ -1,39 +1,57 @@
 import { Network } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   ReportingChipViewModel,
   ReportingWorkbenchAction
 } from "@/screens/reporting-screen.view-model";
-import type { ReportingTaskModeViewModel } from "@/screens/reporting-screen.task-mode-view-model";
+import type {
+  ReportingTaskModeId,
+  ReportingTaskModeViewModel
+} from "@/screens/reporting-screen.task-mode-view-model";
 
 export interface ReportingWorkbenchContextProps {
   taskMode: ReportingTaskModeViewModel;
   actions: ReportingWorkbenchAction[];
-  chips: ReportingChipViewModel[];
 }
 
-export function ReportingWorkbenchContext({
-  taskMode,
-  actions,
-  chips
-}: ReportingWorkbenchContextProps) {
+const reportingRouteTabs: { id: ReportingTaskModeId; label: string; route: string }[] = [
+  { id: "daily-reporting-cockpit", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting },
+  { id: "report-builder", label: "Report Builder", route: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder },
+  { id: "run-status", label: "Run Status", route: WORKSTATION_ROUTE_CATALOG.reportingRunStatus },
+  { id: "report-pack-approval", label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
+  { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports },
+  { id: "governance", label: "Governance", route: WORKSTATION_ROUTE_CATALOG.reportingGovernance }
+];
+
+export function ReportingWorkbenchContext({ taskMode, actions }: ReportingWorkbenchContextProps) {
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  const routeTabs = reportingRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected:
+      tab.id === taskMode.id ||
+      (tab.id === "report-pack-approval" && taskMode.id === "delivery-evidence")
+  }));
+
   return (
     <section
       role="region"
       aria-label="Reporting workbench context"
-      className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      className="flex flex-wrap items-end justify-between gap-3"
     >
       <div className="min-w-0">
-        <div className="eyebrow-label">Reporting lane</div>
-        <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
           {taskMode.label}
         </h2>
-        <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{taskMode.description}</p>
+        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          {taskMode.description}
+        </p>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <ReportingChip label="Task mode" value={taskMode.label} />
-        <span className="sr-only">{taskMode.description}</span>
         {actions.map((action) => (
           <Button key={action.id} asChild variant="outline" size="sm">
             <Link to={action.href} aria-label={action.ariaLabel}>
@@ -42,9 +60,18 @@ export function ReportingWorkbenchContext({
             </Link>
           </Button>
         ))}
-        {chips.map((chip) => (
-          <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
-        ))}
+        <WorkspaceTabStrip
+          label="Reporting routes"
+          tabs={routeTabs}
+          onSelect={(id) => {
+            const tab = reportingRouteTabs.find((candidate) => candidate.id === id);
+            if (tab) {
+              // Preserve the querystring: the operating scope is threaded
+              // through search params across the shell.
+              navigate({ pathname: tab.route, search });
+            }
+          }}
+        />
       </div>
     </section>
   );

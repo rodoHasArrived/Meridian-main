@@ -365,6 +365,29 @@ describe("PortfolioScreen", () => {
     vi.restoreAllMocks();
   });
 
+  it("navigates between portfolio route views from the tab strip", async () => {
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio"]
+    });
+
+    const tablist = screen.getByRole("tablist", { name: "Portfolio routes" });
+    expect(within(tablist).getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Execution-linked holdings" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: /open positions/i })).toBeDefined();
+    expect(screen.queryByText(/live brokerage portfolio/i)).toBeNull();
+    expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+
+    const user = userEvent.setup();
+    await user.click(within(tablist).getByRole("tab", { name: "Attribution" }));
+    expect(screen.getByRole("heading", { name: "Attribution" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
+    expect(screen.queryByRole("treegrid", { name: /open positions/i })).toBeNull();
+
+    await user.click(within(tablist).getByRole("tab", { name: "Brokerage sync" }));
+    expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+  });
+
   it("renders position table with trading data", async () => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
@@ -406,7 +429,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders positions and runs from the Portfolio workspace payload when available", async () => {
-    await renderPortfolioScreen(
+    const { unmount } = await renderPortfolioScreen(
       <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />
     );
 
@@ -414,8 +437,14 @@ describe("PortfolioScreen", () => {
     expect(within(positionsTable).getByText("NVDA")).toBeDefined();
     expect(within(positionsTable).queryByText("AAPL")).toBeNull();
     expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("row", { name: /inspect portfolio endpoint run run evidence/i })).toBeDefined();
     expect(screen.getByText(/portfolio endpoint cash posture/i)).toBeDefined();
+    unmount();
+
+    await renderPortfolioScreen(
+      <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />,
+      { initialEntries: ["/portfolio/attribution"] }
+    );
+    expect(screen.getByRole("row", { name: /inspect portfolio endpoint run run evidence/i })).toBeDefined();
   });
 
   it("renders a broad Portfolio readiness handoff with direct next routes", async () => {
@@ -440,7 +469,9 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders run-linked equity table with strategy data", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio/attribution"]
+    });
     expect(screen.getByRole("treegrid", { name: /run-linked equity/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect mean reversion run evidence/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: /mean reversion run detail/i })).toBeDefined();
@@ -454,7 +485,9 @@ describe("PortfolioScreen", () => {
   });
 
   it("shows empty text when strategy is null", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={null} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={null} accounting={accounting} />, {
+      initialEntries: ["/portfolio/attribution"]
+    });
     expect(screen.getByText(/strategy workspace data unavailable/i)).toBeDefined();
   });
 
@@ -472,10 +505,11 @@ describe("PortfolioScreen", () => {
         accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
-      />
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
     );
 
-    expect(screen.getByText(/live brokerage portfolio/i)).toBeDefined();
+    expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
     expect(within(trustSnapshot).getByText(/household synced/i)).toBeInTheDocument();
     expect(within(trustSnapshot).getAllByText("May 7, 12:00 UTC").length).toBeGreaterThan(0);
@@ -515,7 +549,8 @@ describe("PortfolioScreen", () => {
         accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
-      />
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
     );
 
     const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
@@ -530,7 +565,9 @@ describe("PortfolioScreen", () => {
   });
 
   it("offers a provider setup handoff when brokerage portfolio sync is unavailable", async () => {
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio/brokerage-sync"]
+    });
 
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
     expect(within(trustSnapshot).getByText(/provider setup needed/i)).toBeInTheDocument();
@@ -560,7 +597,8 @@ describe("PortfolioScreen", () => {
         accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={warningPortfolio}
-      />
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
     );
 
     const warningSummary = screen.getByRole("status", { name: "2 brokerage warnings" });
@@ -584,7 +622,8 @@ describe("PortfolioScreen", () => {
         accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
-      />
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
     );
 
     expect(screen.queryByRole("tablist", { name: /alpaca paper account filter/i })).toBeNull();
@@ -632,7 +671,8 @@ describe("PortfolioScreen", () => {
         accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
-      />
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
     );
 
     const taxableRow = screen.getByRole("row", { name: /filter brokerage positions to brokerage account/i });
@@ -732,7 +772,9 @@ describe("PortfolioScreen", () => {
       ]
     };
 
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={researchWithTwoRuns} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={researchWithTwoRuns} accounting={accounting} />, {
+      initialEntries: ["/portfolio/attribution"]
+    });
 
     const comparison = screen.getByLabelText("Portfolio run comparison summary");
     expect(comparison).toHaveTextContent("2 strategy runs compared across 2 modes and 2 engines.");
@@ -804,7 +846,9 @@ describe("PortfolioScreen", () => {
     });
     const user = userEvent.setup();
 
-    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
+      initialEntries: ["/portfolio/attribution"]
+    });
 
     await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
 

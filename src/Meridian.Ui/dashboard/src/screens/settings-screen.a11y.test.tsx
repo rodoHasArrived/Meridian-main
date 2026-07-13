@@ -75,4 +75,18 @@ describe("SettingsScreen accessibility", () => {
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });
+
+  it.each([
+    ["access", "/settings/access"],
+    ["providers", "/settings/providers"],
+    ["diagnostics", "/settings/diagnostics"],
+    ["feature-coverage", "/settings/feature-coverage"]
+  ])("has no basic accessibility violations in the %s route view", async (_view, route) => {
+    const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: [route]
+    });
+
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
+  });
 });

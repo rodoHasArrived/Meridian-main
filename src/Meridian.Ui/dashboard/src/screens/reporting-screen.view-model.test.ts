@@ -11,7 +11,6 @@ import {
   useReportingScreenViewModel,
   type ReportingRunStatusRow
 } from "@/screens/reporting-screen.view-model";
-import { reportingTaskModeLauncherLinks } from "@/screens/reporting-screen.task-mode-view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
 
 const reporting: GovernanceReportingSummary = {
@@ -305,18 +304,10 @@ describe("useReportingScreenViewModel", () => {
     const taskModeSource = readFileSync(resolve(process.cwd(), "src/screens/reporting-screen.task-mode-view-model.ts"), "utf8");
 
     expect(taskModeSource).toContain("const reportingTaskModeDefinitions");
-    expect(taskModeSource).toContain("export const reportingTaskModeLauncherLinks");
     expect(taskModeSource).toContain("export function buildReportingTaskMode");
     expect(taskModeSource).toContain("export function isReportPackRoute");
     expect(viewModelSource).not.toContain("const reportingTaskModeDefinitions");
     expect(viewModelSource).not.toContain("function normalizeReportingPathname");
-    expect(reportingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
-      ["report-builder", "/reporting/report-builder"],
-      ["run-status", "/reporting/run-status"],
-      ["delivery-evidence", "/reporting/report-packs"],
-      ["exports", "/reporting/exports"],
-      ["governance", "/reporting/governance"]
-    ]);
   });
 
   it("returns profile rows from reporting data", () => {

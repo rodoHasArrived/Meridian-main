@@ -17,13 +17,6 @@ export interface ReportingTaskModeViewModel {
   ariaLabel: string;
 }
 
-export interface ReportingTaskModeLinkViewModel {
-  id: Exclude<ReportingTaskModeId, "daily-reporting-cockpit" | "report-pack-approval">;
-  label: string;
-  description: string;
-  href: string;
-}
-
 const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskModeViewModel> = {
   "daily-reporting-cockpit": {
     id: "daily-reporting-cockpit",
@@ -75,38 +68,6 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     ariaLabel: "Reporting task mode delivery evidence"
   }
 };
-
-const reportingTaskModeLauncherOrder: ReportingTaskModeLinkViewModel["id"][] = [
-  "report-builder",
-  "run-status",
-  "delivery-evidence",
-  "exports",
-  "governance"
-];
-
-const reportingTaskModeRoutes: Record<ReportingTaskModeLinkViewModel["id"], string> = {
-  "report-builder": WORKSTATION_ROUTE_CATALOG.reportingReportBuilder,
-  "run-status": WORKSTATION_ROUTE_CATALOG.reportingRunStatus,
-  "delivery-evidence": WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
-  exports: WORKSTATION_ROUTE_CATALOG.reportingExports,
-  governance: WORKSTATION_ROUTE_CATALOG.reportingGovernance
-};
-
-const reportingTaskModeLauncherDescriptions: Record<ReportingTaskModeLinkViewModel["id"], string> = {
-  "report-builder": "Design governed templates, report-writer grids, schedules, branding, and delivery history.",
-  "run-status": "Review report-run queue posture, retries, generated grids, and approval blockers.",
-  "delivery-evidence": "Inspect report-pack recipients, proof bundles, publication support, and report-line provenance.",
-  exports: "Run governed exports, inspect generated artifacts, and retain manifest evidence.",
-  governance: "Audit access scope, approval posture, lifecycle decisions, and retained controls."
-};
-
-export const reportingTaskModeLauncherLinks: readonly ReportingTaskModeLinkViewModel[] =
-  reportingTaskModeLauncherOrder.map((id) => ({
-    id,
-    label: reportingTaskModeDefinitions[id].label,
-    description: reportingTaskModeLauncherDescriptions[id],
-    href: reportingTaskModeRoutes[id]
-  }));
 
 export function buildReportingTaskMode(pathname: string): ReportingTaskModeViewModel {
   const normalizedPathname = normalizeReportingPathname(pathname);
