@@ -48,8 +48,8 @@ internal static class LedgerEvidenceLinks
 {
     internal static IReadOnlyList<string> Normalize(IReadOnlyList<string>? evidenceLinks)
         => evidenceLinks?
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
-            .Where(static link => link.Length > 0)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
 }

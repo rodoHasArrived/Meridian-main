@@ -80,11 +80,13 @@ internal static class LedgerJournalConstruction
             || dimensions.ProjectId is not null;
 
     private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
-        IReadOnlyDictionary<string, string> dimensions)
-        => dimensions
-            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
-            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static pair => pair.Key.Trim(), static pair => pair.Value.Trim(), StringComparer.OrdinalIgnoreCase);
+        IReadOnlyDictionary<string, string>? dimensions)
+        => dimensions is null || dimensions.Count == 0
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : dimensions
+                .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static pair => pair.Key.Trim(), static pair => pair.Value.Trim(), StringComparer.OrdinalIgnoreCase);
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

@@ -874,7 +874,14 @@ public sealed class StatementReconciliationService
             return links;
         }
 
-        var positionRule = StatementToleranceProfile.Default.PositionRules[0];
+        // Fail closed if the default profile ever ships without a position rule: no rule means no
+        // engine matches, so every position row surfaces as a break case for operator review.
+        var positionRule = StatementToleranceProfile.Default.PositionRules.FirstOrDefault();
+        if (positionRule is null)
+        {
+            return links;
+        }
+
         var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
             statementPositions,
             StatementCashBalances: [],
