@@ -213,13 +213,35 @@ public static class NyseNationalTradesCsvParser
         }
 
         // Hosts without any time-zone database (e.g. minimal containers missing tzdata) would
-        // otherwise fail type initialization; a fixed EST offset keeps parsing alive at the cost
-        // of a one-hour skew during daylight saving time.
+        // otherwise fail type initialization.
+        return CreateEasternFallbackZone();
+    }
+
+    /// <summary>
+    /// Builds a US Eastern zone from the statutory post-2007 DST rules (second Sunday in March
+    /// 02:00 to first Sunday in November 02:00), so hosts without a time-zone database still
+    /// resolve EDT sessions to -04:00 instead of silently applying fixed EST.
+    /// </summary>
+    internal static TimeZoneInfo CreateEasternFallbackZone()
+    {
+        var dstStart = TimeZoneInfo.TransitionTime.CreateFloatingDateRule(
+            new DateTime(1, 1, 1, 2, 0, 0), month: 3, week: 2, DayOfWeek.Sunday);
+        var dstEnd = TimeZoneInfo.TransitionTime.CreateFloatingDateRule(
+            new DateTime(1, 1, 1, 2, 0, 0), month: 11, week: 1, DayOfWeek.Sunday);
+        var adjustment = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+            DateTime.MinValue.Date,
+            DateTime.MaxValue.Date,
+            TimeSpan.FromHours(1),
+            dstStart,
+            dstEnd);
+
         return TimeZoneInfo.CreateCustomTimeZone(
-            "Meridian Eastern Fallback",
+            "Meridian US Eastern Fallback",
             TimeSpan.FromHours(-5),
-            "US Eastern (fixed EST fallback)",
-            "US Eastern (fixed EST fallback)");
+            "US Eastern (built-in DST fallback)",
+            "US Eastern Standard Time",
+            "US Eastern Daylight Time",
+            new[] { adjustment });
     }
 
     /// <summary>

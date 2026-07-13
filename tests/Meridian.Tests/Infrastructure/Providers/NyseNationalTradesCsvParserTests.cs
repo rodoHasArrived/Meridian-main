@@ -389,6 +389,23 @@ public sealed class NyseNationalTradesCsvParserTests
     }
 
     [Fact]
+    public void CreateEasternFallbackZone_AppliesDaylightSavingRules()
+    {
+        // The tzdata-less fallback zone must still distinguish EDT from EST, otherwise
+        // summer sessions on minimal hosts would be stamped one hour late in UTC.
+        var zone = NyseNationalTradesCsvParser.CreateEasternFallbackZone();
+
+        zone.GetUtcOffset(new DateTime(2023, 10, 2, 9, 31, 0)).Should().Be(TimeSpan.FromHours(-4),
+            because: "October 2 is inside US daylight saving time");
+        zone.GetUtcOffset(new DateTime(2024, 1, 15, 9, 31, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "mid-January is standard time");
+        zone.GetUtcOffset(new DateTime(2024, 3, 10, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-4),
+            because: "DST starts the second Sunday of March at 02:00");
+        zone.GetUtcOffset(new DateTime(2024, 11, 3, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "DST ends the first Sunday of November at 02:00");
+    }
+
+    [Fact]
     public void TryParseNanosecondTime_InvalidFormat_ReturnsFalse()
     {
         NyseNationalTradesCsvParser.TryParseNanosecondTime("not-a-time", SessionDate, out _)
