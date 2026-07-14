@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import {
-  DesignSystemButton,
-  type DesignSystemButtonProps
-} from "@/design-system/primitives";
-
-export type ButtonProps = DesignSystemButtonProps;
-=======
 import { DesignSystemButton, type DesignSystemButtonProps } from "@/design-system/primitives";
 
 /**
@@ -22,5 +14,4 @@ import { DesignSystemButton, type DesignSystemButtonProps } from "@/design-syste
  */
 export type ButtonProps = DesignSystemButtonProps;
 
->>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
 export const Button = DesignSystemButton;

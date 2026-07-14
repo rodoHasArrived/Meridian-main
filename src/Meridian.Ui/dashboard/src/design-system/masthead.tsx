@@ -43,7 +43,7 @@ export function DesignSystemMasthead({
   actions
 }: DesignSystemMastheadProps) {
   return (
-    <header className="workstation-masthead">
+    <header className="workstation-masthead mds-masthead" data-design-system-component="Masthead">
       <div className="workstation-brand-group">
         <button
           type="button"
@@ -69,7 +69,7 @@ export function DesignSystemMasthead({
 
       <button
         type="button"
-        className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="workstation-search mds-masthead__search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={onOpenCommandPalette}
         aria-label={commandTrigger.label}
         aria-controls={commandTrigger.controlsId}

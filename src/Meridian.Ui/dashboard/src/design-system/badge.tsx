@@ -41,13 +41,15 @@ export function DesignSystemBadge({ children, className, dot = false, variant = 
   return (
     <span
       className={cn(
+        "mds-badge",
         "inline-flex min-h-6 items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]",
         badgeVariantClasses[variant],
         className
       )}
+      data-design-system-component="Badge"
       {...props}
     >
-      {dot ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" /> : null}
+      {dot ? <span aria-hidden="true" className="mds-badge__dot h-1.5 w-1.5 rounded-full bg-current" /> : null}
       {children}
     </span>
   );
