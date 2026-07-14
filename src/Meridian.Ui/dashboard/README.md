@@ -11,6 +11,11 @@ last_reviewed: 2026-07-10
 
 # src/Meridian.Ui/dashboard
 
+First launch is browser-primary. `/setup` renders the first-run concierge while the
+shared first-run API remains the source of truth for starter kits, sample safety labels,
+recommendations, and completed activation outcomes. Sample mode stays offline-capable
+and visibly labelled `SAMPLE · PAPER` throughout the shell.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.
@@ -929,7 +934,12 @@ inputs.
 The browser `DataScreen` owns the canonical Data workspace module under `src/screens/data-screen*`.
 Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
 workspace navigation and command-palette discovery surface `/data/providers` as the canonical
-provider catalog and onboarding lane, alongside watchlist, quotes, alerts, and backfill queues.
+provider catalog and onboarding lane. `/data/operations` is the Ingestion Operations Center for
+durable job state, checkpoints, retries, failures, transitions, and Evidence Vault receipts;
+`/data/backfills` is a compatibility redirect. `/data/assurance` combines storage health, quality,
+canonicalization parity, capacity, and guarded maintenance. Maintenance stays shared-service owned:
+React can request a short-lived preview and submit rationale plus exact typed confirmation, but it
+cannot choose arbitrary paths or bypass candidate fingerprint revalidation.
 The same screen renders the shared data-upload intake panel from the `WorkstationDataPayload`
 template catalog. React builds CSV downloads and submits selected files to the shared preview
 endpoint only; validation, retained source evidence, and any downstream reconciliation or approval

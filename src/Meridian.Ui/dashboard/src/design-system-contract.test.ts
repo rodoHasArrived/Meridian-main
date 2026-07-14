@@ -34,6 +34,10 @@ function readAccountingViewModel() {
   return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
 }
 
+function readAccountingSecurityMasterPanels() {
+  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.security-master-panels.tsx"), "utf8");
+}
+
 function readDesignSystemPrimitives() {
   return readFileSync(resolve(process.cwd(), "src/design-system/primitives.tsx"), "utf8");
 }
@@ -444,13 +448,19 @@ describe("dashboard design-system contract", () => {
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     const badge = readDesignSystemPrimitives();
 =======
+=======
+>>>>>>> fd56968ac52a0e15075f728e2d70bc9c54cc6d60
     // The badge variant vocabulary now lives in the design-system primitive adapter that
     // `@/components/ui/badge` re-exports, so assert the semantic tones at their source.
     const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
     const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
+<<<<<<< HEAD
 >>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
+=======
+>>>>>>> fd56968ac52a0e15075f728e2d70bc9c54cc6d60
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");

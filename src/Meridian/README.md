@@ -11,6 +11,11 @@ last_reviewed: 2026-06-02
 
 # src/Meridian
 
+Consumer releases start this host through the installed Meridian launcher. The launcher
+owns dynamic loopback-port selection, first-account bootstrap, data-root separation,
+readiness polling, and browser launch. Direct host commands remain developer/operator
+surfaces, not end-user installation instructions.
+
 ## Purpose
 
 Meridian host is the application host, CLI entrypoint, and runtime composition root.

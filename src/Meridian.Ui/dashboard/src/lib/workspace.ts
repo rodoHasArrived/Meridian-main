@@ -75,6 +75,8 @@ export const WORKSTATION_ROUTE_CATALOG = {
   dataAlerts: "/data/alerts",
   dataEvidence: "/data/evidence",
   dataBackfills: "/data/backfills",
+  dataOperations: "/data/operations",
+  dataAssurance: "/data/assurance",
   dataExports: "/data/exports",
   dataQuery: "/data/query",
   dataSecurityMasterLegacy: "/data/security-master",
@@ -125,7 +127,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   FundStructureSetup: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
   OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
   Backtest: WORKSTATION_ROUTE_CATALOG.strategy,
-  Backfill: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+  Backfill: WORKSTATION_ROUTE_CATALOG.dataOperations,
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   DataShell: WORKSTATION_ROUTE_CATALOG.data,
   DataOperationsShell: WORKSTATION_ROUTE_CATALOG.data,
@@ -399,6 +401,16 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
   if (firstSegment === "data" && pathSegments(pathname)[1] === "security-master") {
     const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataSecurityMasterLegacy.length);
     return `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "backfills") {
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataBackfills.length);
+    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data-operations" && pathSegments(pathname)[1] === "backfills") {
+    const suffix = pathname.slice("/data-operations/backfills".length);
+    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
   }
 
   if (firstSegment === "overview") {

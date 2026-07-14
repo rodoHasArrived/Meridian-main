@@ -358,6 +358,24 @@ public sealed class PaperTradingPortfolioCorporateActionTests
     }
 
     [Fact]
+    public async Task ApplyCorporateActionsAsync_SellThroughSplitPosition_RealisesAgainstRescaledLots()
+    {
+        var adjuster = new StubCorporateActionAdjuster(splitRatio: 2m);
+        var portfolio = new PaperTradingPortfolio(100_000m, ledger: null, corporateActionAdjuster: adjuster);
+        portfolio.ApplyFill(BuildFill("TSLA", OrderSide.Buy, 10, 300m));
+
+        await portfolio.ApplyCorporateActionsAsync("TSLA", DateTimeOffset.UtcNow.AddDays(-30));
+
+        // Sell the full post-split position: basis is 20 x 150 = 3,000; proceeds 20 x 160 = 3,200.
+        portfolio.ApplyFill(BuildFill("TSLA", OrderSide.Sell, 20, 160m));
+
+        portfolio.RealisedPnl.Should().Be(200m,
+            "the lot book must be rescaled by the split so realized P&L uses the 150/share basis, " +
+            "not the pre-split 300/share lots plus a fabricated shortfall remainder");
+        portfolio.Positions.Should().NotContainKey("TSLA");
+    }
+
+    [Fact]
     public async Task ApplyCorporateActionsAsync_SymbolNotHeld_IsNoOp()
     {
         var adjuster = new StubCorporateActionAdjuster(splitRatio: 2m);

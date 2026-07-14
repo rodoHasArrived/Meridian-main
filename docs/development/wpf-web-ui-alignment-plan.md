@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-06
+**Reviewed:** 2026-07-13
 
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
@@ -33,6 +33,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | --- | --- | --- |
 | accounting-screen | `Views/AccountingWorkspaceShellPage.xaml` + `Views/AccountingClosePage.xaml` + `Views/FundLedgerPage.xaml` | Full |
 | data-screen | `Features/Data/Shell/DataWorkspaceShellPage.xaml` + `Views/DataBrowserPage.xaml` + `Views/SecurityMasterPage.xaml` | Full |
+| data-operations-assurance-workstreams | shared contracts/endpoints only | **Gap** — browser Ingestion Operations Center and Storage & Data Assurance shipped first |
 | trading-screen | `Features/Trading/Shell/TradingWorkspaceShellPage.xaml` + `Views/PositionBlotterPage.xaml` + `Views/OrderBookPage.xaml` | Full |
 | strategy-screen | `Views/StrategyWorkspaceShellPage.xaml` + `Views/StrategyRunsPage.xaml` | Full |
 | reporting-screen | `Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml` + `Views/AnalysisExportPage.xaml` + `Views/ScheduleManagerPage.xaml` | Full |
@@ -80,7 +81,11 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 5. **covered-call-screen** — a staged covered-call income-strategy workflow (chain preview, trade
    timeline, run history). WPF `OptionsPage` is a read-only chain viewer. Web source:
    `screens/covered-call-screen.tsx` + `.view-model.ts`.
-6. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
+6. **data-operations-assurance-workstreams** — add Data workspace pages for the browser-first
+   Ingestion Operations Center and Storage & Data Assurance. Consume
+   `DataOperationsAssuranceDtos` and the shared workstation endpoints; do not reconstruct job
+   transitions, maintenance permissions, preview fingerprints, or assurance summaries in WPF.
+7. **strategy-designer-screen** (borderline) — a visual strategy builder (cells, legs, payoff chart).
    WPF covers authoring via `QuantScriptPage`/`BacktestPage` but has no designer canvas.
 
 ## Closure Sequence
@@ -127,6 +132,15 @@ view model must consume the same shared read model the browser screen consumes.
   view over the existing dashboard/decision-queue state.
 - `strategy-designer-screen` remains optional pending a decision on whether the desktop lane needs a
   visual designer canvas beyond `QuantScriptPage`/`BacktestPage`.
+
+### Wave P5 — Data operations and assurance parity
+
+- Add Ingestion Operations and Storage Assurance pages under the WPF Data workspace using the
+  shared DTOs and `/api/workstation/data/*` endpoints introduced by the browser slice.
+- Preserve the same permission, preview/execute, typed-confirmation, evidence-link, and
+  copy-only-migration semantics; WPF owns presentation only.
+- Tests: route registration, job-action availability, permission-disabled maintenance actions,
+  and preview confirmation projection.
 
 ## Validation
 

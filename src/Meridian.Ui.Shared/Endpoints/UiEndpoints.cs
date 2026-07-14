@@ -237,9 +237,11 @@ public static class UiEndpoints
 
         // Authentication endpoints (login page, login API, logout API)
         app.MapAuthEndpoints();
+        app.MapInitialAccountBootstrapEndpoints();
 
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
+        app.MapFirstRunEndpoints();
         app.MapEvidenceEndpoints(jsonOptions);
 
         // Paper trading cockpit endpoints

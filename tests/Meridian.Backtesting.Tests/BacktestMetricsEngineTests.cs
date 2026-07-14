@@ -211,6 +211,90 @@ public sealed class BacktestMetricsEngineTests
         return Math.Sqrt(variance);
     }
 
+    [Fact]
+    public void Compute_Attribution_HonoursLifoLotSelection()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 101m], startDate);
+        var t0 = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+        var account = FinancialAccount.CreateDefaultBrokerage(100_000m, 0.05, 0.02) with
+        {
+            Rules = new FinancialAccountRules(LotSelection: LotSelectionMethod.Lifo)
+        };
+
+        var request = new BacktestRequest(
+            From: startDate,
+            To: startDate.AddDays(1),
+            InitialCash: 100_000m,
+            Accounts: [account]);
+
+        var fills = new List<FillEvent>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 100m, 0m, t0),
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 120m, 0m, t0.AddHours(1)),
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 130m, 0m, t0.AddHours(2)),
+        };
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], fills, request);
+
+        // LIFO relieves the 120 lot: 10 x (130 - 120). FIFO would report 300.
+        metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(100m);
+    }
+
+    [Fact]
+    public void Compute_Attribution_RealisesShortCovers()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 101m], startDate);
+        var t0 = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+        var request = new BacktestRequest(
+            From: startDate,
+            To: startDate.AddDays(1),
+            InitialCash: 100_000m);
+
+        var fills = new List<FillEvent>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 100m, 0m, t0),
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 90m, 0m, t0.AddHours(1)),
+        };
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], fills, request);
+
+        // Short 10 @ 100 covered @ 90: realized +100 (previously ignored by the long-only matcher).
+        metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(100m);
+    }
+
+    [Fact]
+    public void Compute_Attribution_MatchesLotsPerAccount()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 101m], startDate);
+        var t0 = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+        var accountA = FinancialAccount.CreateDefaultBrokerage(100_000m, 0.05, 0.02);
+        var accountB = accountA with { AccountId = "acct-b" };
+
+        var request = new BacktestRequest(
+            From: startDate,
+            To: startDate.AddDays(1),
+            InitialCash: 100_000m,
+            Accounts: [accountA, accountB]);
+
+        var fills = new List<FillEvent>
+        {
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 100m, 0m, t0, accountA.AccountId),
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 120m, 0m, t0.AddHours(1), accountB.AccountId),
+            new(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 130m, 0m, t0.AddHours(2), accountB.AccountId),
+        };
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], fills, request);
+
+        // Account B's sell relieves account B's 120 lot; account A's 100 lot stays open.
+        metrics.SymbolAttribution["SPY"].RealizedPnl.Should().Be(100m);
+    }
+
     private static IReadOnlyList<PortfolioSnapshot> BuildSnapshots(
         IEnumerable<decimal> equityValues,
         DateOnly startDate)
