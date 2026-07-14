@@ -1584,11 +1584,23 @@ public sealed class LedgerIntegrationTests
                 new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m),
             ]));
 
+        // A wash-sale-deferred loss: 10 @ 100 sold at 80 (loss 200) with a matching replacement
+        // purchase in the window, so the whole loss is disallowed and recognized loss is zero.
+        var washSaleProjection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            aaplSecurity,
+            new DateOnly(2026, 5, 20),
+            quantitySold: 10m,
+            salePrice: 80m,
+            LedgerTaxLotReliefMethod.Fifo,
+            [new LedgerTaxLot("lot-wash", new DateOnly(2026, 1, 5), 10m, 100m)],
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacementAcquisitions: [new WashSaleReplacementAcquisition("lot-rep", new DateOnly(2026, 5, 22), 10m)]));
+
         var pack = LedgerReportPackBuilder.Build(
             ledger,
             request,
             chart,
-            taxLotReliefProjections: [taxLotProjection]);
+            taxLotReliefProjections: [taxLotProjection, washSaleProjection]);
 
         pack.IsBalanced.Should().BeTrue();
         pack.Status.Should().Be(LedgerReportPackLifecycleStatus.Draft);
@@ -1634,7 +1646,11 @@ public sealed class LedgerIntegrationTests
         provenanceArtifact.Content.Should().Contain("reconciliation:run-2026-05");
         var taxArtifact = pack.Artifacts.Single(artifact => artifact.Name == "tax-lot-realized-gains.csv");
         taxArtifact.Content.Should().Contain("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId");
-        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100");
+        taxArtifact.Content.Should().Contain("RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
+        // Non-wash-sale row still nets recognized == realized (100), with zero disallowed.
+        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100,0,100");
+        // Wash-sale row: full 200 loss disallowed, recognized loss zero.
+        taxArtifact.Content.Should().Contain("2026-05-20,Assets:Investments:AAPL,AAPL,broker-1,Fifo,lot-wash,2026-01-05,10,100,800,1000,-200,200,0");
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");

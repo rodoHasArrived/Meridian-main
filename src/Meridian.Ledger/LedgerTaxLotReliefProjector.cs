@@ -111,14 +111,16 @@ public static class LedgerTaxLotReliefProjector
             .Select(slice =>
             {
                 // Average cost relieves every share at the pooled unit cost; lot-discrete methods
-                // relieve at the lot's own cost. Store whichever was used so the selection's unit
-                // cost and cost basis stay consistent for reporting.
-                var unitCost = averageUnitCost ?? slice.Lot.UnitCost;
-                return new LedgerTaxLotReliefSelection(
-                    slice.Lot,
-                    slice.Quantity,
-                    RoundCurrency(slice.Quantity * unitCost),
-                    unitCost);
+                // relieve at the lot's own cost.
+                var relievedUnitCost = averageUnitCost ?? slice.Lot.UnitCost;
+                var costBasis = RoundCurrency(slice.Quantity * relievedUnitCost);
+                // For average cost, report the unit cost implied by the rounded pooled basis so the
+                // realized-gain export ties (QuantityRelieved * UnitCost == CostBasis); discrete
+                // methods report the lot's own recorded unit cost.
+                var reportedUnitCost = averageUnitCost is not null && slice.Quantity != 0m
+                    ? costBasis / slice.Quantity
+                    : relievedUnitCost;
+                return new LedgerTaxLotReliefSelection(slice.Lot, slice.Quantity, costBasis, reportedUnitCost);
             })
             .ToList();
     }

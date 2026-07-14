@@ -102,6 +102,26 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         projection.CostBasis.Should().Be(18_000m); // 150 shares @ pooled 120
     }
 
+    [Fact]
+    public void AverageCost_SingleShareFromUnevenPool_TiesUnitCostToRoundedBasis()
+    {
+        // A 3-share pool at 100/3 per share has a repeating average; a 1-share sale rounds the basis
+        // to currency precision, and the reported unit cost must tie so QuantityRelieved * UnitCost
+        // equals the reported CostBasis rather than exposing the raw repeating decimal.
+        var input = new LedgerTaxLotReliefInput(
+            Account,
+            new DateOnly(2026, 3, 1),
+            quantitySold: 1m,
+            salePrice: 40m,
+            LedgerTaxLotReliefMethod.AverageCost,
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 3m, 100m / 3m, SecurityId)]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        var selection = projection.Selections.Single();
+        (selection.QuantityRelieved * selection.UnitCost).Should().Be(selection.CostBasis);
+    }
+
     // -------------------------------------------------------------------------
     // Wash sale — no deferral paths (behaviour preservation)
     // -------------------------------------------------------------------------
