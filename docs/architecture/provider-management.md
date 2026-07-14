@@ -240,11 +240,11 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 
 | Provider | Class | Filterable | Exchanges | Rate Limit |
 |----------|-------|------------|-----------|------------|
-| Alpaca | `AlpacaSymbolSearchProviderRefactored` | Yes | US, Crypto | 200/min |
+| Alpaca | `AlpacaSymbolSearchProvider` | Yes | US, Crypto | 200/min |
 | Alpha Vantage | `AlphaVantageSymbolSearchProvider` | Yes | Region-scoped global keyword results | 5/min |
 | Tiingo | `TiingoSymbolSearchProvider` | Yes | Tiingo utilities search results with client-side asset/exchange filtering | 50/hour |
 | Twelve Data | `TwelveDataSymbolSearchProvider` | Yes | `/symbol_search` results with client-side asset/exchange filtering | 8/min |
-| Finnhub | `FinnhubSymbolSearchProviderRefactored` | Yes | US, International | 60/min |
+| Finnhub | `FinnhubSymbolSearchProvider` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
 | OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
 | StockSharp | `StockSharpSymbolSearchProvider` | No | Multi-exchange | Varies |

@@ -3,54 +3,31 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.CryptoCurrency;
 
-public sealed class CryptoProjectionService : ICryptoReferenceService
+public sealed class CryptoProjectionService
+    : InstrumentProjectionServiceBase<CryptoProjectionRow, CryptoReferenceDto>, ICryptoReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly ICryptoReferenceProjectionStore _projectionStore;
 
     public CryptoProjectionService(
         ISecurityMasterStore securityMasterStore,
         ICryptoReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<CryptoReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "CryptoCurrency", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "CryptoCurrency";
 
-        var row = await _projectionStore.GetCryptoAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<CryptoProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetCryptoAsync(securityId, ct);
 
-    public async Task<IReadOnlyList<CryptoReferenceDto>> GetByNetworkAsync(string network, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(network))
-        {
-            return Array.Empty<CryptoReferenceDto>();
-        }
+    public Task<IReadOnlyList<CryptoReferenceDto>> GetByNetworkAsync(string network, CancellationToken ct = default)
+        => QueryByTermAsync(network, _projectionStore.GetByNetworkAsync, ct);
 
-        var rows = await _projectionStore.GetByNetworkAsync(network.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
+    public Task<IReadOnlyList<CryptoReferenceDto>> GetByBaseCurrencyAsync(string baseCurrency, CancellationToken ct = default)
+        => QueryByTermAsync(baseCurrency, _projectionStore.GetByBaseCurrencyAsync, ct, toUpperInvariant: true);
 
-    public async Task<IReadOnlyList<CryptoReferenceDto>> GetByBaseCurrencyAsync(string baseCurrency, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(baseCurrency))
-        {
-            return Array.Empty<CryptoReferenceDto>();
-        }
-
-        var rows = await _projectionStore.GetByBaseCurrencyAsync(baseCurrency.Trim().ToUpperInvariant(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
-
-    private static CryptoReferenceDto MapRow(CryptoProjectionRow row)
+    protected override CryptoReferenceDto MapRow(CryptoProjectionRow row)
         => new(
             row.SecurityId,
             row.DisplayName,

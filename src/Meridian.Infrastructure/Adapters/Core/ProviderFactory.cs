@@ -101,77 +101,151 @@ public sealed class ProviderFactory
     }
 
     /// <summary>
+    /// One registration row per provider, covering every capability the factory can construct
+    /// for it. Declaring the backfill and symbol-search factories side by side keeps the two
+    /// capability lists from drifting apart as providers are added or retired.
+    /// </summary>
+    /// <remarks>
+    /// Row order matters: providers with equal <c>Priority</c> keep their row order after the
+    /// stable sort in <see cref="CreateProviders{T}"/>, which drives failover order downstream.
+    /// New adapters should be added here; the reflection-based <c>IProviderModule</c> registry in
+    /// <c>Meridian.ProviderSdk</c> currently serves the workstation provider-module surface, not
+    /// this composition root.
+    /// </remarks>
+    private sealed record ProviderRegistration(
+        string Label,
+        Func<IHistoricalDataProvider?>? Backfill = null,
+        Func<ISymbolSearchProvider?>? Search = null);
+
+    private IReadOnlyList<ProviderRegistration> BuildProviderRegistrations()
+    {
+        var providersCfg = _config.Backfill?.Providers;
+
+        return new[]
+        {
+            // Synthetic offline dataset / reference universe (opt-in)
+            new ProviderRegistration(
+                "synthetic",
+                () => CreateSyntheticBackfillProvider(providersCfg?.Synthetic),
+                () => CreateSyntheticSearchProvider(providersCfg?.Synthetic)),
+
+            // Interactive Brokers native historical path (or guidance-only stub in non-IBAPI builds)
+            new ProviderRegistration(
+                "interactive-brokers",
+                () => CreateIbBackfillProvider(_config.IB)),
+
+            // Alpaca Markets (highest priority when configured); search reuses backfill credentials
+            new ProviderRegistration(
+                "alpaca",
+                () => CreateAlpacaBackfillProvider(providersCfg?.Alpaca),
+                () => CreateAlpacaSearchProvider(providersCfg?.Alpaca)),
+
+            // Yahoo Finance (broad free coverage)
+            new ProviderRegistration(
+                "yahoo",
+                () => CreateYahooBackfillProvider(providersCfg?.Yahoo)),
+
+            // Tiingo
+            new ProviderRegistration(
+                "tiingo",
+                () => CreateTiingoBackfillProvider(providersCfg?.Tiingo),
+                () => CreateTiingoSearchProvider(providersCfg?.Tiingo)),
+
+            // Polygon.io
+            new ProviderRegistration(
+                "polygon",
+                () => CreatePolygonBackfillProvider(providersCfg?.Polygon),
+                () => CreatePolygonSearchProvider(providersCfg?.Polygon)),
+
+            // Twelve Data
+            new ProviderRegistration(
+                "twelvedata",
+                CreateTwelveDataBackfillProvider,
+                CreateTwelveDataSearchProvider),
+
+            // Finnhub
+            new ProviderRegistration(
+                "finnhub",
+                () => CreateFinnhubBackfillProvider(providersCfg?.Finnhub),
+                () => CreateFinnhubSearchProvider(providersCfg?.Finnhub)),
+
+            // Stooq
+            new ProviderRegistration(
+                "stooq",
+                () => CreateStooqBackfillProvider(providersCfg?.Stooq)),
+
+            // Alpha Vantage (opt-in: severely rate-limited free tier)
+            new ProviderRegistration(
+                "alphavantage",
+                () => CreateAlphaVantageBackfillProvider(providersCfg?.AlphaVantage),
+                () => CreateAlphaVantageSearchProvider(providersCfg?.AlphaVantage)),
+
+            // FRED economic data
+            new ProviderRegistration(
+                "fred",
+                () => CreateFredBackfillProvider(providersCfg?.Fred),
+                () => CreateFredSearchProvider(providersCfg?.Fred)),
+
+            // Nasdaq Data Link
+            new ProviderRegistration(
+                "nasdaq",
+                () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq),
+                () => CreateNasdaqSearchProvider(providersCfg?.Nasdaq)),
+
+            // Robinhood historical bars (unofficial API, explicitly enabled)
+            new ProviderRegistration(
+                "robinhood",
+                () => CreateRobinhoodBackfillProvider(providersCfg?.Robinhood)),
+        };
+    }
+
+    /// <summary>
     /// Creates all configured backfill providers.
     /// </summary>
     public IReadOnlyList<IHistoricalDataProvider> CreateBackfillProviders()
+        => CreateProviders(static r => r.Backfill, static p => p.Priority, "backfill");
+
+    /// <summary>
+    /// Creates all configured symbol search providers.
+    /// Symbol search uses the same credentials as backfill providers.
+    /// </summary>
+    public IReadOnlyList<ISymbolSearchProvider> CreateSymbolSearchProviders()
+        => CreateProviders(static r => r.Search, static p => p.Priority, "symbol search");
+
+    private IReadOnlyList<T> CreateProviders<T>(
+        Func<ProviderRegistration, Func<T?>?> capability,
+        Func<T, int> priority,
+        string providerKind)
+        where T : class
     {
-        var providers = new List<IHistoricalDataProvider>();
-        var backfillCfg = _config.Backfill;
-        var providersCfg = backfillCfg?.Providers;
-
-        // Synthetic offline dataset
-        TryAddBackfillProvider(providers, "synthetic", () => CreateSyntheticBackfillProvider(providersCfg?.Synthetic));
-
-        // Interactive Brokers native historical path (or guidance-only stub in non-IBAPI builds)
-        TryAddBackfillProvider(providers, "interactive-brokers", () => CreateIbBackfillProvider(_config.IB));
-
-        // Alpaca Markets (highest priority when configured)
-        TryAddBackfillProvider(providers, "alpaca", () => CreateAlpacaBackfillProvider(providersCfg?.Alpaca));
-
-        // Yahoo Finance (broad free coverage)
-        TryAddBackfillProvider(providers, "yahoo", () => CreateYahooBackfillProvider(providersCfg?.Yahoo));
-
-        // Polygon.io
-        TryAddBackfillProvider(providers, "polygon", () => CreatePolygonBackfillProvider(providersCfg?.Polygon));
-
-        // Tiingo
-        TryAddBackfillProvider(providers, "tiingo", () => CreateTiingoBackfillProvider(providersCfg?.Tiingo));
-
-        // Twelve Data
-        TryAddBackfillProvider(providers, "twelvedata", CreateTwelveDataBackfillProvider);
-
-        // Finnhub
-        TryAddBackfillProvider(providers, "finnhub", () => CreateFinnhubBackfillProvider(providersCfg?.Finnhub));
-
-        // Stooq
-        TryAddBackfillProvider(providers, "stooq", () => CreateStooqBackfillProvider(providersCfg?.Stooq));
-
-        // Alpha Vantage
-        TryAddBackfillProvider(providers, "alphavantage", () => CreateAlphaVantageBackfillProvider(providersCfg?.AlphaVantage));
-
-        // FRED economic data
-        TryAddBackfillProvider(providers, "fred", () => CreateFredBackfillProvider(providersCfg?.Fred));
-
-        // Nasdaq Data Link
-        TryAddBackfillProvider(providers, "nasdaq", () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq));
-
-        // Robinhood historical bars (unofficial API, explicitly enabled)
-        TryAddBackfillProvider(providers, "robinhood", () => CreateRobinhoodBackfillProvider(providersCfg?.Robinhood));
-
-        return providers
-            .OrderBy(p => p.Priority)
-            .ToList();
-    }
-
-    private void TryAddBackfillProvider(
-        List<IHistoricalDataProvider> providers,
-        string providerLabel,
-        Func<IHistoricalDataProvider?> factory)
-    {
-        try
+        var providers = new List<T>();
+        foreach (var registration in BuildProviderRegistrations())
         {
-            var provider = factory();
-            if (provider != null)
+            var factory = capability(registration);
+            if (factory is null)
+                continue;
+
+            try
             {
-                providers.Add(provider);
+                var provider = factory();
+                if (provider != null)
+                {
+                    providers.Add(provider);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Isolate one provider's construction failure so the rest still register, but name the
+                // provider and surface the exception so configuration/credential errors are not silent.
+                _log.Warning(
+                    ex,
+                    "Failed to create {ProviderKind} provider {Provider}; skipping it for this run",
+                    providerKind,
+                    registration.Label);
             }
         }
-        catch (Exception ex)
-        {
-            // Isolate one provider's construction failure so the rest still register, but name the
-            // provider and surface the exception so configuration/credential errors are not silent.
-            _log.Warning(ex, "Failed to create backfill provider {Provider}; skipping it for this run", providerLabel);
-        }
+
+        return providers.OrderBy(priority).ToList();
     }
 
 
@@ -316,69 +390,6 @@ public sealed class ProviderFactory
                 priority: cfg!.Priority,
                 log: _log));
 
-    /// <summary>
-    /// Creates all configured symbol search providers.
-    /// Symbol search uses the same credentials as backfill providers.
-    /// </summary>
-    public IReadOnlyList<ISymbolSearchProvider> CreateSymbolSearchProviders()
-    {
-        var providers = new List<ISymbolSearchProvider>();
-        var backfillProviders = _config.Backfill?.Providers;
-
-        // Synthetic reference universe search
-        TryAddSearchProvider(providers, "synthetic", () => CreateSyntheticSearchProvider(backfillProviders?.Synthetic));
-
-        // Alpaca Symbol Search (uses same credentials as Alpaca backfill)
-        TryAddSearchProvider(providers, "alpaca", () => CreateAlpacaSearchProvider(backfillProviders?.Alpaca));
-
-        // Finnhub Symbol Search (uses same credentials as Finnhub backfill)
-        TryAddSearchProvider(providers, "finnhub", () => CreateFinnhubSearchProvider(backfillProviders?.Finnhub));
-
-        // Tiingo Symbol Search (uses same credentials as Tiingo backfill)
-        TryAddSearchProvider(providers, "tiingo", () => CreateTiingoSearchProvider(backfillProviders?.Tiingo));
-
-        // Alpha Vantage Symbol Search (uses same credentials as Alpha Vantage backfill)
-        TryAddSearchProvider(providers, "alphavantage", () => CreateAlphaVantageSearchProvider(backfillProviders?.AlphaVantage));
-
-        // Twelve Data Symbol Search (uses same credentials as Twelve Data backfill)
-        TryAddSearchProvider(providers, "twelvedata", CreateTwelveDataSearchProvider);
-
-        // FRED Symbol Search (uses same credentials as FRED backfill)
-        TryAddSearchProvider(providers, "fred", () => CreateFredSearchProvider(backfillProviders?.Fred));
-
-        // Nasdaq Data Link Symbol Search (uses same credentials as Nasdaq Data Link backfill)
-        TryAddSearchProvider(providers, "nasdaq", () => CreateNasdaqSearchProvider(backfillProviders?.Nasdaq));
-
-        // Polygon Symbol Search (uses same credentials as Polygon backfill)
-        TryAddSearchProvider(providers, "polygon", () => CreatePolygonSearchProvider(backfillProviders?.Polygon));
-
-        return providers
-            .OrderBy(p => p.Priority)
-            .ToList();
-    }
-
-    private void TryAddSearchProvider(
-        List<ISymbolSearchProvider> providers,
-        string providerLabel,
-        Func<ISymbolSearchProvider?> factory)
-    {
-        try
-        {
-            var provider = factory();
-            if (provider != null)
-            {
-                providers.Add(provider);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Isolate one provider's construction failure so the rest still register, but name the
-            // provider and surface the exception so configuration/credential errors are not silent.
-            _log.Warning(ex, "Failed to create symbol search provider {Provider}; skipping it for this run", providerLabel);
-        }
-    }
-
-
     private ISymbolSearchProvider? CreateSyntheticSearchProvider(SyntheticMarketDataConfig? cfg)
     {
         if (!EnabledWhenOptedIn(cfg?.Enabled))
@@ -401,7 +412,7 @@ public sealed class ProviderFactory
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
-        return new AlpacaSymbolSearchProviderRefactored(keyId, secretKey, httpClient: null, log: _log);
+        return new AlpacaSymbolSearchProvider(keyId, secretKey, httpClient: null, log: _log);
     }
 
     private ISymbolSearchProvider? CreateFinnhubSearchProvider(FinnhubBackfillConfig? cfg)
@@ -409,7 +420,7 @@ public sealed class ProviderFactory
             EnabledByDefault(cfg?.Enabled),
             "FINNHUB_API_KEY",
             cfg?.ApiKey,
-            apiKey => new FinnhubSymbolSearchProviderRefactored(apiKey, httpClient: null, log: _log));
+            apiKey => new FinnhubSymbolSearchProvider(apiKey, httpClient: null, log: _log));
 
     private ISymbolSearchProvider? CreateTiingoSearchProvider(TiingoBackfillConfig? cfg)
         => CreateCredentialGatedSearchProvider<TiingoHistoricalDataProvider>(
