@@ -306,40 +306,10 @@ public sealed class BackfillWorkerService : IDisposable
                     activity?.SetTag("backfill.outcome", "cancelled");
                     throw;
                 }
-                catch (RateLimitException rle) when (request.AssignedProvider != null)
-                {
-                    // Typed rate limit exception with RetryAfter from HTTP headers
-                    _requestQueue.RecordProviderRateLimitHit(request.AssignedProvider);
-
-                    if (retryAttempt < MaxRetryAttemptsPerRequest)
-                    {
-                        retryAttempt++;
-                        var providerDelay = rle.RetryAfter;
-                        var delay = providerDelay ?? CalculateBackoff(retryAttempt, RateLimitBaseDelay, RateLimitMaxDelay);
-
-                        activity?.SetTag("backfill.retry_count", retryAttempt);
-                        scopedLog.Information(
-                            "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
-                            request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
-                            providerDelay.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
-                            retryAttempt, MaxRetryAttemptsPerRequest);
-                        await Task.Delay(delay, ct).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    scopedLog.Warning(
-                        "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
-                        request.Symbol, request.AssignedProvider, retryAttempt);
-
-                    MarketDataTracing.RecordError(activity, rle);
-                    activity?.SetTag("backfill.outcome", "rate_limit_exhausted");
-                    await _requestQueue.CompleteRequestAsync(request, false, rle.Message, ct).ConfigureAwait(false);
-                    await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
-                    _progressTracker.MarkFailed(request.Symbol, rle.Message);
-                    return;
-                }
                 catch (Exception ex)
                 {
+                    // Typed RateLimitException (thrown directly or wrapped in aggregate/inner chains)
+                    // is located here, so a dedicated typed catch would duplicate this path.
                     var rateLimit = FindRateLimitException(ex);
                     var retryAfter = rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex);
                     var isRateLimited = rateLimit is not null ||
@@ -402,11 +372,6 @@ public sealed class BackfillWorkerService : IDisposable
     }
 
     /// <summary>
-    /// Extracts Retry-After delay from an exception chain.
-    /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
-    /// as defined in RFC 7231 Section 7.1.3.
-    /// </summary>
-    /// <summary>
     /// Find a typed <see cref="RateLimitException"/> anywhere in the exception chain,
     /// including inside <see cref="AggregateException"/> trees thrown by the composite provider.
     /// </summary>
@@ -429,6 +394,11 @@ public sealed class BackfillWorkerService : IDisposable
         return ex.InnerException is { } innerException ? FindRateLimitException(innerException) : null;
     }
 
+    /// <summary>
+    /// Extracts Retry-After delay from an exception chain.
+    /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
+    /// as defined in RFC 7231 Section 7.1.3.
+    /// </summary>
     internal static TimeSpan? TryExtractRetryAfter(Exception ex)
     {
         // Walk the exception chain looking for HttpRequestException with Retry-After info

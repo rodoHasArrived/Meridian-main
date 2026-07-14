@@ -3,49 +3,35 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.MoneyMarketFunds;
 
-public sealed class MoneyMarketFundProjectionService : IMoneyMarketFundReferenceService
+public sealed class MoneyMarketFundProjectionService
+    : InstrumentProjectionServiceBase<MoneyMarketFundProjectionRow, MoneyMarketFundReferenceDto>,
+      IMoneyMarketFundReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly IMoneyMarketFundReferenceProjectionStore _projectionStore;
 
     public MoneyMarketFundProjectionService(
         ISecurityMasterStore securityMasterStore,
         IMoneyMarketFundReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<MoneyMarketFundReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "MoneyMarketFund", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "MoneyMarketFund";
 
-        var row = await _projectionStore.GetMoneyMarketFundAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<MoneyMarketFundProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetMoneyMarketFundAsync(securityId, ct);
 
-    public async Task<IReadOnlyList<MoneyMarketFundReferenceDto>> GetByFundFamilyAsync(string fundFamily, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(fundFamily))
-        {
-            return Array.Empty<MoneyMarketFundReferenceDto>();
-        }
-
-        var rows = await _projectionStore.GetByFundFamilyAsync(fundFamily.Trim(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
+    public Task<IReadOnlyList<MoneyMarketFundReferenceDto>> GetByFundFamilyAsync(string fundFamily, CancellationToken ct = default)
+        => QueryByTermAsync(fundFamily, _projectionStore.GetByFundFamilyAsync, ct);
 
     public async Task<IReadOnlyList<MoneyMarketFundReferenceDto>> GetBySweepEligibilityAsync(bool sweepEligible, CancellationToken ct = default)
     {
         var rows = await _projectionStore.GetBySweepEligibilityAsync(sweepEligible, ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
+        return MapRows(rows);
     }
 
-    private static MoneyMarketFundReferenceDto MapRow(MoneyMarketFundProjectionRow row)
+    protected override MoneyMarketFundReferenceDto MapRow(MoneyMarketFundProjectionRow row)
         => new(
             row.SecurityId,
             row.DisplayName,

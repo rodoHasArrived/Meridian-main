@@ -7,7 +7,7 @@ using Meridian.Tests.TestHelpers;
 namespace Meridian.Tests.Infrastructure.Providers;
 
 /// <summary>
-/// Unit tests for <see cref="FinnhubSymbolSearchProviderRefactored"/> symbol-search behavior.
+/// Unit tests for <see cref="FinnhubSymbolSearchProvider"/> symbol-search behavior.
 /// All HTTP calls are stubbed; no live Finnhub token or network access is required.
 /// </summary>
 [Trait("Category", "Unit")]
@@ -56,7 +56,7 @@ public sealed class FinnhubSymbolSearchProviderTests
             return JsonResponse(SearchResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync("AAPL", 2, CancellationToken.None);
 
@@ -84,7 +84,7 @@ public sealed class FinnhubSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync(
             "AAPL",
@@ -104,7 +104,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Blank queries should not call Finnhub."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync("   ", 10, CancellationToken.None);
 
@@ -118,7 +118,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Credential-gated search should not call Finnhub."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(string.Empty, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(string.Empty, httpClient);
 
         var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
@@ -132,7 +132,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.TooManyRequests));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
@@ -146,7 +146,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         await cts.CancelAsync();
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         Func<Task> act = () => provider.SearchAsync("AAPL", 10, cts.Token);
 

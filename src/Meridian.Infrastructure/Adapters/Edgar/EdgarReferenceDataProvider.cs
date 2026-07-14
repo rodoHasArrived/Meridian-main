@@ -666,7 +666,7 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
             for (var i = 0; i < fields.Count && i < values.Count; i++)
             {
                 if (aliases.Any(alias => string.Equals(fields[i], alias, StringComparison.OrdinalIgnoreCase)))
-                    return JsonElementToString(values[i]);
+                    return values[i].GetScalarStringOrNull();
             }
 
             return null;
@@ -949,7 +949,7 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
     {
         if (!root.TryGetProperty("addresses", out var addresses) ||
             addresses.ValueKind != JsonValueKind.Object ||
-            !TryGetProperty(addresses, addressKind, out var address) ||
+            !addresses.TryGetPropertyIgnoreCase(addressKind, out var address) ||
             address.ValueKind != JsonValueKind.Object)
             return null;
 
@@ -999,7 +999,7 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
 
     private static IReadOnlyList<string> GetStringArray(JsonElement root, string propertyName)
     {
-        if (!TryGetProperty(root, propertyName, out var node))
+        if (!root.TryGetPropertyIgnoreCase(propertyName, out var node))
             return Array.Empty<string>();
 
         if (node.ValueKind == JsonValueKind.String)
@@ -1014,7 +1014,7 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
         var values = new List<string>();
         foreach (var item in node.EnumerateArray())
         {
-            var value = JsonElementToString(item);
+            var value = item.GetScalarStringOrNull();
             if (!string.IsNullOrWhiteSpace(value))
                 values.Add(value);
         }
@@ -1024,13 +1024,13 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
 
     private static IReadOnlyList<long?> GetLongArray(JsonElement root, string propertyName)
     {
-        if (!TryGetProperty(root, propertyName, out var node) || node.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetPropertyIgnoreCase(propertyName, out var node) || node.ValueKind != JsonValueKind.Array)
             return Array.Empty<long?>();
 
         var values = new List<long?>();
         foreach (var item in node.EnumerateArray())
         {
-            values.Add(GetLong(item));
+            values.Add(item.GetInt64OrNull());
         }
 
         return values;
@@ -1038,79 +1038,32 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
 
     private static IReadOnlyList<bool?> GetBoolArray(JsonElement root, string propertyName)
     {
-        if (!TryGetProperty(root, propertyName, out var node) || node.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetPropertyIgnoreCase(propertyName, out var node) || node.ValueKind != JsonValueKind.Array)
             return Array.Empty<bool?>();
 
         var values = new List<bool?>();
         foreach (var item in node.EnumerateArray())
         {
-            values.Add(GetBool(item));
+            values.Add(item.GetBoolOrNull());
         }
 
         return values;
     }
 
-    private static string? GetString(JsonElement root, string propertyName)
-    {
-        if (!TryGetProperty(root, propertyName, out var node))
-            return null;
+    // EDGAR documents vary property casing between files, so all scalar lookups route through
+    // the shared case-insensitive helpers in JsonElementExtensions.
 
-        return JsonElementToString(node);
-    }
+    private static string? GetString(JsonElement root, string propertyName)
+        => root.TryGetPropertyIgnoreCase(propertyName, out var node) ? node.GetScalarStringOrNull() : null;
 
     private static int? GetInt(JsonElement root, string propertyName)
-    {
-        if (!TryGetProperty(root, propertyName, out var node))
-            return null;
-
-        return GetInt(node);
-    }
-
-    private static int? GetInt(JsonElement node)
-    {
-        if (node.ValueKind == JsonValueKind.Number && node.TryGetInt32(out var value))
-            return value;
-
-        return int.TryParse(JsonElementToString(node), out var parsed) ? parsed : null;
-    }
-
-    private static long? GetLong(JsonElement node)
-    {
-        if (node.ValueKind == JsonValueKind.Number && node.TryGetInt64(out var value))
-            return value;
-
-        return long.TryParse(JsonElementToString(node), out var parsed) ? parsed : null;
-    }
+        => root.TryGetPropertyIgnoreCase(propertyName, out var node) ? node.GetInt32OrNull() : null;
 
     private static bool? GetBool(JsonElement root, string propertyName)
-    {
-        if (!TryGetProperty(root, propertyName, out var node))
-            return null;
-
-        return GetBool(node);
-    }
-
-    private static bool? GetBool(JsonElement node)
-        => node.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            JsonValueKind.Number when node.TryGetInt32(out var value) => value != 0,
-            JsonValueKind.String when bool.TryParse(node.GetString(), out var value) => value,
-            JsonValueKind.String when int.TryParse(node.GetString(), out var value) => value != 0,
-            _ => null
-        };
+        => root.TryGetPropertyIgnoreCase(propertyName, out var node) ? node.GetBoolOrNull() : null;
 
     private static decimal? GetDecimal(JsonElement root, string propertyName)
-    {
-        if (!TryGetProperty(root, propertyName, out var node))
-            return null;
-
-        if (node.ValueKind == JsonValueKind.Number && node.TryGetDecimal(out var value))
-            return value;
-
-        return decimal.TryParse(JsonElementToString(node), out var parsed) ? parsed : null;
-    }
+        => root.TryGetPropertyIgnoreCase(propertyName, out var node) ? node.GetDecimalOrNull() : null;
 
     private static DateOnly? GetDateOnly(JsonElement root, string propertyName)
     {
@@ -1123,7 +1076,7 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
 
     private static string? GetRawScalar(JsonElement root, string propertyName)
     {
-        if (!TryGetProperty(root, propertyName, out var node) ||
+        if (!root.TryGetPropertyIgnoreCase(propertyName, out var node) ||
             node.ValueKind is JsonValueKind.Object or JsonValueKind.Array or JsonValueKind.Null or JsonValueKind.Undefined)
             return null;
 
@@ -1132,31 +1085,6 @@ public sealed class EdgarReferenceDataProvider : IEdgarReferenceDataProvider, ID
 
     private static string NormalizeTicker(string? ticker)
         => string.IsNullOrWhiteSpace(ticker) ? string.Empty : ticker.Trim().ToUpperInvariant();
-
-    private static bool TryGetProperty(JsonElement root, string propertyName, out JsonElement value)
-    {
-        foreach (var prop in root.EnumerateObject())
-        {
-            if (string.Equals(prop.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                value = prop.Value;
-                return true;
-            }
-        }
-
-        value = default;
-        return false;
-    }
-
-    private static string? JsonElementToString(JsonElement element)
-        => element.ValueKind switch
-        {
-            JsonValueKind.String => element.GetString(),
-            JsonValueKind.Number => element.GetRawText(),
-            JsonValueKind.True => "true",
-            JsonValueKind.False => "false",
-            _ => null
-        };
 
     private static bool IsDirectory(ZipArchiveEntry entry)
         => string.IsNullOrEmpty(entry.Name);

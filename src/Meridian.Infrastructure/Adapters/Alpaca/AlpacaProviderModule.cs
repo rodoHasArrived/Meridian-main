@@ -74,11 +74,11 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // ----------------------------------------------------------------
         // Symbol search provider
         // ----------------------------------------------------------------
-        services.AddSingleton<AlpacaSymbolSearchProviderRefactored>(_ =>
-            new AlpacaSymbolSearchProviderRefactored(keyId: keyId, secretKey: secretKey));
+        services.AddSingleton<AlpacaSymbolSearchProvider>(_ =>
+            new AlpacaSymbolSearchProvider(keyId: keyId, secretKey: secretKey));
 
         services.AddSingleton<ISymbolSearchProvider>(sp =>
-            sp.GetRequiredService<AlpacaSymbolSearchProviderRefactored>());
+            sp.GetRequiredService<AlpacaSymbolSearchProvider>());
 
         // ----------------------------------------------------------------
         // Streaming market data client
