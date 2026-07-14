@@ -98,7 +98,9 @@ public sealed class PostgresMigrationRunner
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText = $"drop schema if exists {QuoteIdentifier(_options.Schema)} cascade;";
+        // Render with the same quoting migrations use: an unquoted mixed-case name case-folds in
+        // PostgreSQL, so quoting here would drop a different schema than migrations created.
+        command.CommandText = $"drop schema if exists {RenderedSchema} cascade;";
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
