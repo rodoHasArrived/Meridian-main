@@ -26,7 +26,10 @@ public static class InitialAccountBootstrapEndpoints
             var secure = CookieCsrfProtection.ShouldUseSecureCookies(context);
             context.Response.Cookies.Append(LoginSessionMiddleware.SessionCookieName, session, new CookieOptions
             {
-                HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = secure, Path = "/",
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Secure = secure,
+                Path = "/",
                 Expires = DateTimeOffset.UtcNow + LoginSessionService.SessionDuration
             });
             CookieCsrfProtection.IssueCsrfCookie(context, secure, LoginSessionService.SessionDuration);

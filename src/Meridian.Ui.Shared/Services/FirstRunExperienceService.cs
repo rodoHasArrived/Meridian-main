@@ -118,7 +118,8 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
     private async Task<FirstRunState> ReadAsync(string username, CancellationToken ct)
     {
         var path = StatePath(username);
-        if (!File.Exists(path)) return FirstRunState.Empty;
+        if (!File.Exists(path))
+            return FirstRunState.Empty;
         try
         {
             await using var stream = File.OpenRead(path);
@@ -164,7 +165,10 @@ public sealed class FirstRunExperienceService(ConfigStore configStore)
     private static string SafeSegment(string value) => string.Concat(value.Trim().ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_' ? ch : '-'));
     private static string NormalizeDataChoice(string value) => value?.Trim().ToLowerInvariant() switch
     {
-        "upload" => "upload", "provider" => "provider", "sample" => "sample", "skip" => "skip",
+        "upload" => "upload",
+        "provider" => "provider",
+        "sample" => "sample",
+        "skip" => "skip",
         _ => throw new ArgumentException("Choose upload, provider, sample, or skip.", nameof(value))
     };
 
