@@ -171,6 +171,29 @@ public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
         wal.LastRecoveryEventCount.Should().Be(0);
     }
 
+    // ── Non-empty WAL file with an invalid header ─────────────────────────
+
+    [Fact]
+    public async Task Recovery_InvalidHeaderWalFile_ThrowsInsteadOfScanningAsEmpty()
+    {
+        // A non-empty file with the wrong magic may still hold records; scanning it as
+        // empty would let TruncateAsync delete it and recovery skip its contents.
+        var walPath = Path.Combine(TestDataRoot, "20260101T000000Z_001.wal");
+        await File.WriteAllTextAsync(
+            walPath,
+            "NOTAWAL|garbage\n1|2026-01-01T00:00:00Z|trade|deadbeef|{\"p\":1}\n");
+
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Skip
+        });
+        var act = async () => await wal.InitializeAsync();
+
+        await act.Should().ThrowAsync<InvalidDataException>(
+            "an unreadable header must halt recovery instead of masquerading as an empty log");
+    }
+
     // ── RepairAsync with partial writes ──────────────────────────────────
 
     [Fact]

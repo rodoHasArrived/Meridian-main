@@ -273,6 +273,8 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
     const trigger = screen.getByRole("button", { name: "Open workstation command palette (Ctrl K)" });
 
+    expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
+    expect(trigger).toHaveClass("mds-masthead__search");
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-controls", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "false");
@@ -388,6 +390,8 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/data/providers"] });
 
+    expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
+    expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Workstation build, mode, data source, and provider posture" });
     expect(within(strip).getByLabelText("Build 0.1.0. Current Meridian web release.")).toHaveTextContent("Buildv0.1.0");
     expect(within(strip).getByLabelText("Mode Paper. Session Ops Desk is operating in paper mode.")).toHaveTextContent("ModePaper");
@@ -479,7 +483,7 @@ describe("App", () => {
     );
     expect(screen.getByRole("link", { name: "Validate, current primary operator workflow step, Current" })).toHaveAttribute(
       "href",
-      "/data/backfills?symbol=MSFT"
+      "/data/operations?symbol=MSFT"
     );
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
       "href",
@@ -894,6 +898,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Open workspace navigation" }));
     const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
     expect(navigationDialog).toBeInTheDocument();
+    expect(within(navigationDialog).getByLabelText("Meridian navigation")).toHaveAttribute("data-design-system-component", "NavRail");
     expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Review")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));

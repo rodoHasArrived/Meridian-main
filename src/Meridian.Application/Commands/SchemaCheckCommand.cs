@@ -1,7 +1,7 @@
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Platform.Results;
-using Meridian.Application.Services;
 using Serilog;
 
 namespace Meridian.Application.Commands;
@@ -31,7 +31,6 @@ internal sealed class SchemaCheckCommand : ICliCommand
 
         var schemaOptions = new SchemaValidationOptions
         {
-            EnableVersionTracking = true,
             MaxFilesToCheck = CliArguments.GetInt(args, "--max-files", 100),
             FailOnFirstIncompatibility = CliArguments.HasFlag(args, "--fail-fast")
         };

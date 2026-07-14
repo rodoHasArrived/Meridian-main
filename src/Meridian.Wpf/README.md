@@ -11,6 +11,10 @@ last_reviewed: 2026-07-12
 
 # src/Meridian.Wpf
 
+The desktop workstation is installed as part of the single Meridian product and opened
+on demand from the browser workstation. It is not a separate end-user package or Start
+Menu product.
+
 ## Purpose
 
 WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside

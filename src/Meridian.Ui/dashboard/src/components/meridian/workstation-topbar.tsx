@@ -7,6 +7,9 @@ import {
 
 export type WorkstationTopbarCommandTrigger = DesignSystemMastheadCommandTrigger;
 export type WorkstationTopbarProps = DesignSystemMastheadProps;
+<<<<<<< HEAD
+export const WorkstationTopbar = DesignSystemMasthead;
+=======
 
 /**
  * Compatibility wrapper over the dashboard design-system {@link DesignSystemMasthead}
@@ -18,4 +21,5 @@ export function WorkstationTopbar(props: WorkstationTopbarProps) {
   return <DesignSystemMasthead {...props} />;
 }
 
+>>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
 export const WorkstationTrustStrip = DesignSystemTrustStrip;

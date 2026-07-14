@@ -339,6 +339,32 @@ public static class LedgerAccounts
     public static LedgerAccount DepreciationExpenseFor(string assetId) =>
         CreateScoped("Depreciation Expense", LedgerAccountType.Expense, assetId);
 
+    /// <summary>
+    /// Account names produced by the per-symbol factories in this class, where
+    /// <see cref="LedgerAccount.Symbol"/> identifies a traded instrument (ticker) rather than a
+    /// currency denomination. Keep in sync with those factory methods.
+    /// </summary>
+    private static readonly HashSet<string> InstrumentSymbolAccountNames = new(StringComparer.Ordinal)
+    {
+        "Securities",
+        "Dividend Receivable",
+        "Accrued Interest Receivable",
+        "Corporate Action Distribution",
+        "Short Securities Payable",
+        "Option Premium Asset",
+        "Option Premium Liability",
+        "Futures MTM Settlement",
+    };
+
+    /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="account"/> is one of the per-symbol
+    /// instrument accounts (e.g. <see cref="Securities"/>) whose <see cref="LedgerAccount.Symbol"/>
+    /// is a ticker rather than a currency code, so currency inference must not read the symbol as
+    /// a denomination.
+    /// </summary>
+    internal static bool UsesInstrumentSymbol(LedgerAccount account)
+        => account.Symbol is not null && InstrumentSymbolAccountNames.Contains(account.Name);
+
     private static LedgerAccount CreateScoped(string name, LedgerAccountType accountType, string financialAccountId)
         => new(name, accountType, FinancialAccountId: NormalizeAccountId(financialAccountId));
 

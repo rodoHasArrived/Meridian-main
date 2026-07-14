@@ -9,9 +9,9 @@
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  background: var(--ws-page-bg, #DEE3EA);
-  color: var(--ws-text, #22272E);
-  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+  background: var(--theme-bg-canvas, var(--ws-page-bg, #DEE3EA));
+  color: var(--theme-primary-text, var(--ws-text, #22272E));
+  font-family: var(--theme-font-body, var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif));
 }
 
 /* Skip link -------------------------------------------------------------------- */
@@ -23,8 +23,8 @@
   transform: translateY(-150%);
   border: 1px solid var(--ws-accent, #2F6F8F);
   border-radius: var(--radius-button, 2px);
-  background: var(--ws-masthead-bg, #171A1F);
-  color: var(--ws-masthead-fg, #F4F6F8);
+  background: var(--theme-topbar-bg, var(--ws-masthead-bg, #171A1F));
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -45,9 +45,9 @@
   gap: 0.75rem;
   align-items: center;
   padding: 0 1rem;
-  background: var(--ws-masthead-bg, #171A1F);
+  background: var(--theme-topbar-bg, var(--ws-masthead-bg, #171A1F));
   border-bottom: 1px solid var(--topbar-border, #262B31);
-  color: var(--ws-masthead-fg, #F4F6F8);
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
 }
 
 .workstation-brand-group {
@@ -78,10 +78,10 @@
 }
 
 .workstation-brand .name {
-  font-family: var(--font-display, "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif);
+  font-family: var(--theme-font-display, var(--font-display, "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif));
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ws-masthead-fg, #F4F6F8);
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
   white-space: nowrap;
 }
 
@@ -117,7 +117,7 @@
 
 .workstation-nav-toggle:hover {
   border-color: #3A424B;
-  color: var(--ws-masthead-fg, #F4F6F8);
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
 }
 
 /* The rail is always visible on desktop, so the drawer toggle collapses away there. */
@@ -347,7 +347,7 @@ a.workstation-trust-item:focus-visible {
   min-height: 0;
   display: grid;
   grid-template-columns: 14rem minmax(0, 1fr);
-  background: var(--ws-page-bg, #DEE3EA);
+  background: var(--theme-bg-canvas, var(--ws-page-bg, #DEE3EA));
 }
 
 .workstation-nav-sheet-dialog {
@@ -358,7 +358,7 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: var(--ws-page-bg, #DEE3EA);
+  background: var(--theme-bg-canvas, var(--ws-page-bg, #DEE3EA));
 }
 
 .workbench-scroll {

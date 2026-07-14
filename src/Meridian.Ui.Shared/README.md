@@ -11,6 +11,12 @@ last_reviewed: 2026-07-12
 
 # src/Meridian.Ui.Shared
 
+The shared workstation graph owns first-run state, the curated starter catalog,
+versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
+clients consume these endpoints instead of defining client-only setup policy. Initial
+local-account creation reuses the governed identity store through a loopback-only,
+one-use bootstrap token.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
@@ -1447,6 +1453,16 @@ Retained vault bundles are also first-class Evidence Workbench subjects through 
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
 linkage for browser/WPF parity.
+
+The Data workstation exposes shared operational surfaces at
+`/api/workstation/data/ingestion-operations` and
+`/api/workstation/data/storage-assurance`. `IngestionOperationsService` projects the durable
+`IngestionJobService` state/checkpoint/retry model and retains every operator transition as a
+canonical Evidence Vault `run`. `StorageAssuranceService` aggregates storage health, quality,
+canonicalization, capacity, tiers, and alerts. Its mutation boundary is preview-first: cleanup is
+limited to temporary/partial files, every candidate is root-confined and fingerprinted, execute
+revalidates the preview and typed confirmation, and tier migration is copy-only with checksum
+verification. Endpoint permission checks happen before service execution.
 The shared Audit Trail Explorer service projects retained execution, promotion, order, control, and
 Operations Continuity close/reconciliation/approval timeline records into contract-owned timeline rows and exposes `/api/execution/audit/search` with
 server-side text, run, actor, symbol, action, outcome, correlation, normalized object, related

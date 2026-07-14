@@ -336,9 +336,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             // Attempt reconnection with exponential backoff
             while (!_disposed && _reconnectBackoff.CanRetry)
             {
+                ct.ThrowIfCancellationRequested();
                 Interlocked.Increment(ref _reconnectAttempts);
 
-                await _reconnectBackoff.WaitAsync().ConfigureAwait(false);
+                await _reconnectBackoff.WaitAsync(ct).ConfigureAwait(false);
 
                 try
                 {
@@ -359,6 +360,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                     _log.Debug(ex, "Reconnection attempt {Attempt} failed", Interlocked.Read(ref _reconnectAttempts));
                 }
             }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Reconnection was cancelled; this method runs fire-and-forget, so the
+            // cancellation must not surface as an unobserved task exception.
         }
         finally
         {

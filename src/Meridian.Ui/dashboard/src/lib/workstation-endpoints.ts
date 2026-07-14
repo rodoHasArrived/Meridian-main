@@ -19,6 +19,12 @@ export const WORKSTATION_API_ENDPOINTS = {
   dataQuery: UI_API_ROUTES.WorkstationDataQuery,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
+  ingestionOperations: UI_API_ROUTES.WorkstationIngestionOperations,
+  ingestionOperation: UI_API_ROUTES.WorkstationIngestionOperationById,
+  ingestionOperationAction: UI_API_ROUTES.WorkstationIngestionOperationAction,
+  storageAssurance: UI_API_ROUTES.WorkstationStorageAssurance,
+  storageMaintenancePreview: UI_API_ROUTES.WorkstationStorageMaintenancePreview,
+  storageMaintenanceExecute: UI_API_ROUTES.WorkstationStorageMaintenanceExecute,
   accounting: UI_API_ROUTES.WorkstationAccounting,
   ledgerBooks: UI_API_ROUTES.LedgerBooks,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
@@ -86,6 +92,18 @@ export const WORKSTATION_API_ENDPOINTS = {
   evidenceVaultDocuments: UI_API_ROUTES.WorkstationEvidenceVaultDocuments,
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
+
+export function workstationIngestionOperationEndpoint(jobId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperation, "jobId", jobId);
+}
+
+export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {
+  return routeWithParam(
+    routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperationAction, "jobId", jobId),
+    "action",
+    action
+  );
+}
 
 export const AUTH_API_ENDPOINTS = {
   roles: UI_API_ROUTES.AuthApiRoles,

@@ -5,6 +5,26 @@ import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { renderWithRouter } from "@/test/render";
 
 describe("WorkspaceNav", () => {
+  it("renders the seven root workspaces through the design-system rail contract", () => {
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const rail = screen.getByLabelText("Meridian navigation");
+    expect(rail).toHaveAttribute("data-design-system-component", "NavRail");
+    expect(rail).toHaveClass("mds-nav-rail");
+    expect(rail).toHaveClass("op-rail");
+    expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    [
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ].forEach((label) => expect(screen.getByText(label)).toBeInTheDocument());
+    expect(screen.getByText("Review · Current")).toBeInTheDocument();
+  });
+
   it("announces the current workspace route", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/reconciliation"] });
 
@@ -45,7 +65,8 @@ describe("WorkspaceNav", () => {
 
     expect(dataSections).toHaveAttribute("aria-hidden", "false");
     expect(screen.getByLabelText("Providers, current page")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Open Backfill queues")).toHaveAttribute("href", "/data/backfills");
+    expect(screen.getByLabelText("Open Ingestion operations")).toHaveAttribute("href", "/data/operations");
+    expect(screen.getByLabelText("Open Storage assurance")).toHaveAttribute("href", "/data/assurance");
   });
 
   it("renders exactly the seven root workspaces and shows status pills only in detailed mode", () => {

@@ -10,6 +10,10 @@ function readWorkspaceSurfaceStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/workspace-surface.css"), "utf8");
 }
 
+function readWorkspaceNavStyles() {
+  return readFileSync(resolve(process.cwd(), "src/styles/workspace-nav.css"), "utf8");
+}
+
 function readDashboardEntry() {
   return readFileSync(resolve(process.cwd(), "src/main.tsx"), "utf8");
 }
@@ -28,6 +32,14 @@ function readAccountingSecurityMasterPanels() {
 
 function readAccountingViewModel() {
   return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
+}
+
+function readAccountingSecurityMasterPanels() {
+  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.security-master-panels.tsx"), "utf8");
+}
+
+function readDesignSystemPrimitives() {
+  return readFileSync(resolve(process.cwd(), "src/design-system/primitives.tsx"), "utf8");
 }
 
 function readReferenceWorkbenchPreview() {
@@ -100,14 +112,22 @@ describe("dashboard design-system contract", () => {
     };
     const componentNames = new Set(manifest.components.map((component) => component.name));
     const bridge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts");
+    const primitives = readDesignSystemPrimitives();
+    const button = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/ui/button.tsx");
+    const badge = readDesignSystemPrimitives();
     const topbar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-topbar.tsx");
+    const nav = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.tsx");
     const statusBar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-status-bar.tsx");
     const trialBalance = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/accounting/TrialBalanceTable.tsx");
     const aging = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/accounting/AgingTable.tsx");
     const reconciliation = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/accounting/ReconciliationComparisonPanel.tsx");
 
     const liveComponentNames = [
+      "Button",
+      "Badge",
+      "NavRail",
       "WorkstationTopbar",
+      "TrustStrip",
       "StatusBar",
       "SessionControls",
       "TrialBalance",
@@ -121,7 +141,21 @@ describe("dashboard design-system contract", () => {
 
     expect(bridge).toContain("DESIGN_SYSTEM_MANIFEST_FILE");
     expect(bridge).toContain("DESIGN_SYSTEM_SHELL_ASSET_MAPPINGS");
-    expect(topbar).toContain("export function WorkstationTopbar");
+    expect(bridge).toContain("DESIGN_SYSTEM_CORE_COMPONENTS");
+    expect(primitives).toContain("export const DESIGN_SYSTEM_TOKEN_METADATA");
+    expect(primitives).toContain("export const DesignSystemButton");
+    expect(primitives).toContain("export function DesignSystemBadge");
+    expect(primitives).toContain("export function DesignSystemStatus");
+    expect(primitives).toContain("export function DesignSystemMasthead");
+    expect(primitives).toContain("export function DesignSystemNavRail");
+    expect(primitives).toContain('"workstation-masthead", "mds-masthead", "ws-masthead"');
+    expect(primitives).toContain('"operator-rail", "mds-nav-rail", "op-rail"');
+    expect(button).toContain("DesignSystemButton");
+    expect(badge).toContain("DesignSystemBadge");
+    expect(topbar).toContain("DesignSystemMasthead");
+    expect(nav).toContain("DesignSystemNavRail");
+    expect(nav).toContain("meridianWorkspaceIconAssets[item.key]");
+    expect(primitives).not.toContain("../../../Meridian Design System/components");
     expect(statusBar).toContain("export function WorkstationStatusBar");
     expect(trialBalance).toContain("export function TrialBalanceTable");
     expect(aging).toContain("export function AgingTable");
@@ -139,8 +173,11 @@ describe("dashboard design-system contract", () => {
     expect(bridge).toContain('import strategyIconUrl from "@/assets/icons/strategy-builder.svg"');
     expect(bridge).toContain("satisfies Record<WorkspaceKey, string>");
     expect(app).toContain('import { meridianBrandAssets } from "@/design-system/assets"');
+    expect(app).toContain('import { DesignSystemMasthead } from "@/design-system/primitives"');
+    expect(app).toContain("<DesignSystemMasthead");
     expect(app).toContain("meridianBrandAssets.markLight");
     expect(nav).toContain('import { meridianWorkspaceIconAssets } from "@/design-system/assets"');
+    expect(nav).toContain('import { DesignSystemNavRail } from "@/design-system/primitives"');
     expect(nav).toContain("meridianWorkspaceIconAssets[item.key]");
 
     expect(existsSync(resolveDashboardAsset("app.ico"))).toBe(true);
@@ -240,7 +277,9 @@ describe("dashboard design-system contract", () => {
 
     expect(styles).not.toContain("Final cascade for the light-first Institutional Ops system");
     expect(surface).toContain("Final cascade for the light-first Institutional Ops system");
-    expect(surface).toContain("background: var(--ws-page-bg)");
+    expect(surface).toContain("--mds-workspace-bg: var(--theme-bg-canvas, var(--ws-page-bg))");
+    expect(surface).toContain("background: var(--mds-workspace-bg, var(--ws-page-bg))");
+    expect(surface).toContain("--mds-workspace-accent: var(--theme-accent, var(--ws-accent))");
     expect(surface).toContain(".workspace-table-inspector-layout");
     expect(entry.indexOf('import "@/styles/index.css";')).toBeLessThan(
       entry.indexOf('import "@/styles/workspace-surface.css";')
@@ -254,6 +293,7 @@ describe("dashboard design-system contract", () => {
 
   it("exposes sidebar tokens aligned with the Concrete institutional rail", () => {
     const styles = readDashboardStyles();
+    const navStyles = readWorkspaceNavStyles();
     const tailwindConfig = readTailwindConfig();
 
     // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
@@ -263,6 +303,9 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--sidebar-border: 212 20% 83%");
     expect(styles).toContain("--sidebar-ring: 200 51% 37%");
     expect(styles).toContain("[data-appearance=\"light\"]");
+    expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
+    expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
+    expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #E1EAF2))");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("sidebar: {");
@@ -404,10 +447,20 @@ describe("dashboard design-system contract", () => {
   });
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    const badge = readDesignSystemPrimitives();
+=======
+=======
+>>>>>>> fd56968ac52a0e15075f728e2d70bc9c54cc6d60
     // The badge variant vocabulary now lives in the design-system primitive adapter that
     // `@/components/ui/badge` re-exports, so assert the semantic tones at their source.
     const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
     const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
+<<<<<<< HEAD
+>>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
+=======
+>>>>>>> fd56968ac52a0e15075f728e2d70bc9c54cc6d60
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");

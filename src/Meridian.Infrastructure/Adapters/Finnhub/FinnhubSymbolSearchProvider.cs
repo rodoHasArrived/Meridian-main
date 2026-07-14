@@ -11,19 +11,19 @@ using Serilog;
 namespace Meridian.Infrastructure.Adapters.Finnhub;
 
 /// <summary>
-/// Refactored symbol search provider using Finnhub API, now extending BaseSymbolSearchProvider.
+/// Symbol search provider using the Finnhub API.
 /// Provides symbol search and company profiles with generous free tier (60 calls/min).
 /// </summary>
 /// <remarks>
-/// This refactored version eliminates ~200 lines of boilerplate code by leveraging
-/// the BaseSymbolSearchProvider abstract class for common functionality.
+/// Extends <see cref="BaseSymbolSearchProvider"/> for HTTP client management,
+/// rate limiting, disposal, and consistent error handling.
 /// </remarks>
 [DataSource("finnhub-symbols", "Finnhub (Symbol Search)", DataSourceType.Reference, DataSourceCategory.Free,
     Priority = 10, Description = "Symbol search and lookup via Finnhub API")]
 [ImplementsAdr("ADR-001", "Finnhub symbol search provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class FinnhubSymbolSearchProviderRefactored : BaseSymbolSearchProvider
+public sealed class FinnhubSymbolSearchProvider : BaseSymbolSearchProvider
 {
     public override string Name => "finnhub";
     public override string DisplayName => "Finnhub";
@@ -49,7 +49,7 @@ public sealed class FinnhubSymbolSearchProviderRefactored : BaseSymbolSearchProv
         "LSE", "TSX", "FRA", "XETRA", "ASX", "NSE", "BSE", "SGX", "HKEX", "TSE"
     };
 
-    public FinnhubSymbolSearchProviderRefactored(
+    public FinnhubSymbolSearchProvider(
         string? apiKey = null,
         HttpClient? httpClient = null,
         ILogger? log = null)

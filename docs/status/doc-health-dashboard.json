@@ -1,11 +1,11 @@
 {
   "total_files": 578,
-  "total_lines": 96962,
+  "total_lines": 97113,
   "orphaned_count": 245,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 204,
-  "average_lines": 167.8,
+  "average_lines": 168.0,
   "health_score": 78,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1824,7 +1824,7 @@
     },
     {
       "path": "docs/development/refactor-map.md",
-      "line_count": 290,
+      "line_count": 420,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2200,7 +2200,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8664,
+      "line_count": 8685,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
