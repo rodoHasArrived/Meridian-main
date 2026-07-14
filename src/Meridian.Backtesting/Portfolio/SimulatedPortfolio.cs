@@ -823,9 +823,20 @@ internal sealed class SimulatedPortfolio
 
     private static decimal ComputeAvgCost(AccountState account, string symbol)
     {
-        if (!account.Lots.TryGetValue(symbol, out var lots) || lots.Count == 0)
-            return 0m;
+        // Long and short lots never coexist for a symbol (covers consume short lots
+        // before a residual buy opens long lots), so a net-short position's average
+        // cost is the weighted average short entry price — not zero.
+        if (account.Lots.TryGetValue(symbol, out var lots) && lots.Count > 0)
+            return WeightedAverageEntryPrice(lots);
 
+        if (account.ShortLots.TryGetValue(symbol, out var shortLots) && shortLots.Count > 0)
+            return WeightedAverageEntryPrice(shortLots);
+
+        return 0m;
+    }
+
+    private static decimal WeightedAverageEntryPrice(LinkedList<OpenLot> lots)
+    {
         var totalQty = 0L;
         var totalCost = 0m;
         foreach (var lot in lots)

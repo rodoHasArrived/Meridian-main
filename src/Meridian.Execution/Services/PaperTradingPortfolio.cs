@@ -128,9 +128,24 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Uses signed market values so short positions reduce portfolio value as the
+    /// liability they are, and adds back short margin collateral held at the broker
+    /// (deducted from cash at short entry but still owned by the trader).
+    /// </remarks>
     public decimal PortfolioValue
     {
-        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue) - a.MarginBalance); } }
+        get
+        {
+            lock (_lock)
+            {
+                return _accounts.Values.Sum(static a =>
+                    a.Cash
+                    + a.Positions.Values.Sum(static p => p.SignedMarketValue)
+                    - a.MarginBalance
+                    + a.ShortMarginCollateral);
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -532,14 +547,35 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Positions[symbol] = pos;
         }
 
+        // A fill that crosses through zero closes the existing side first, then opens
+        // the residual on the opposite side — the residual must not be dropped.
+        // Commission is charged once, on the closing leg.
         if (signedQty > 0 && pos.Quantity < 0)
-            ApplyCoverShort(account, pos, symbol, signedQty, price, commission, ts);
+        {
+            var coverQty = Math.Min(signedQty, -pos.Quantity);
+            ApplyCoverShort(account, pos, symbol, coverQty, price, commission, ts);
+
+            var residualQty = signedQty - coverQty;
+            if (residualQty > 0m)
+                ApplyBuy(account, pos, symbol, residualQty, price, 0m, ts);
+        }
         else if (signedQty > 0)
+        {
             ApplyBuy(account, pos, symbol, signedQty, price, commission, ts);
+        }
         else if (signedQty < 0 && pos.Quantity > 0)
-            ApplySellLong(account, pos, symbol, -signedQty, price, commission, ts);
+        {
+            var closeQty = Math.Min(-signedQty, pos.Quantity);
+            ApplySellLong(account, pos, symbol, closeQty, price, commission, ts);
+
+            var residualQty = -signedQty - closeQty;
+            if (residualQty > 0m)
+                ApplyShortSell(account, pos, symbol, residualQty, price, 0m, ts);
+        }
         else if (signedQty < 0)
+        {
             ApplyShortSell(account, pos, symbol, -signedQty, price, commission, ts);
+        }
 
         if (commission > 0)
             PostCommissionEntry(symbol, commission, ts);
@@ -957,11 +993,18 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// </summary>
     public decimal MarginBorrowed { get; set; }
 
+    /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
-    public decimal UnrealisedPnl => Quantity > 0
-        ? (MarketPrice - CostBasis) * Quantity
-        : 0m; // short unrealised P&L tracked separately
+    /// <summary>Signed market value: positive for longs, negative for shorts (a liability).</summary>
+    public decimal SignedMarketValue => Quantity * MarketPrice;
+
+    /// <summary>
+    /// Unrealised P&amp;L for longs and shorts alike: with a signed quantity,
+    /// (price − cost) × qty yields (cost − price) × |qty| for shorts, where
+    /// <see cref="CostBasis"/> is the weighted-average short entry price.
+    /// </summary>
+    public decimal UnrealisedPnl => (MarketPrice - CostBasis) * Quantity;
 
     public IReadOnlyList<PositionLotEntry> GetLots() => _lots
         .Select(static lot => new PositionLotEntry(

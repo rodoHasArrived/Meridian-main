@@ -588,16 +588,31 @@ public sealed class WriteAheadLog : IAsyncDisposable
         using var reader = new StreamReader(stream);
 
         // Skip header
-        var header = await reader.ReadLineAsync();
-        if (header == null || !header.StartsWith(WalMagic))
+        var header = await reader.ReadLineAsync(ct);
+        if (header == null)
         {
-            _log.Warning("Invalid WAL header in {File}", walFile);
+            // Zero-byte file from a crash immediately after creation: nothing to recover.
+            _log.Warning("Empty WAL file {File}", walFile);
             yield break;
         }
 
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        if (!header.StartsWith(WalMagic))
         {
-            var line = await reader.ReadLineAsync();
+            // A non-empty file with the wrong magic may still hold records. Treating it
+            // as empty would let TruncateAsync delete it and recovery skip its contents.
+            throw new InvalidDataException(
+                $"Invalid WAL header in '{walFile}'; refusing to treat the file as empty. " +
+                "Inspect the file or run RepairAsync before recovery can proceed.");
+        }
+
+        while (!reader.EndOfStream)
+        {
+            // Cancellation must throw rather than silently end the enumeration: callers
+            // treat a completed scan as a full read of the file — TruncateAsync deletes
+            // files and sequence recovery picks the next sequence number based on it.
+            ct.ThrowIfCancellationRequested();
+
+            var line = await reader.ReadLineAsync(ct);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 

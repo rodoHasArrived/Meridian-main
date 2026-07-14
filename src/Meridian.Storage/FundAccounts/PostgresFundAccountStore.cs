@@ -539,6 +539,37 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         return results;
     }
 
+    public async Task<IReadOnlyList<CustodianStatementBatchDto>> GetCustodianStatementBatchesAsync(
+        Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"""
+            SELECT batch_id, account_id, as_of_date, custodian_name, source_format, line_count, ingested_at, loaded_by
+            FROM {Qualified("custodian_statement_batch")}
+            WHERE account_id = @account_id AND as_of_date = @as_of_date
+            ORDER BY ingested_at
+            """;
+        cmd.Parameters.AddWithValue("account_id", accountId);
+        cmd.Parameters.AddWithValue("as_of_date", asOfDate);
+
+        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var results = new List<CustodianStatementBatchDto>();
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            results.Add(new CustodianStatementBatchDto(
+                BatchId: reader.GetGuid(reader.GetOrdinal("batch_id")),
+                AccountId: reader.GetGuid(reader.GetOrdinal("account_id")),
+                AsOfDate: reader.GetFieldValue<DateOnly>(reader.GetOrdinal("as_of_date")),
+                CustodianName: reader.GetString(reader.GetOrdinal("custodian_name")),
+                SourceFormat: reader.GetString(reader.GetOrdinal("source_format")),
+                LineCount: reader.GetInt32(reader.GetOrdinal("line_count")),
+                IngestedAt: reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ingested_at")),
+                LoadedBy: reader.GetString(reader.GetOrdinal("loaded_by"))));
+        }
+        return results;
+    }
+
     public async Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(
         Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default)
     {
