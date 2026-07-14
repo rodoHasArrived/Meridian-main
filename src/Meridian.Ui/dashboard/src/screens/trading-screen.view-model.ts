@@ -1288,6 +1288,7 @@ export interface ExecutionAuditRow {
   outcomeTone: ExecutionEvidenceTone;
   message: string;
   metadataText: string;
+  technicalMetadataText: string | null;
   ariaLabel: string;
 }
 
@@ -1463,16 +1464,19 @@ export function buildExecutionEvidenceState({
 
 function buildExecutionAuditRow(entry: ExecutionAuditEntry): ExecutionAuditRow {
   const metadataText = formatExecutionAuditMetadata(entry);
+  const technicalMetadataText = formatExecutionAuditTechnicalMetadata(entry);
   const message = entry.message?.trim() || "No operator message recorded.";
+  const action = formatExecutionAuditAction(entry.action);
 
   return {
     id: entry.auditId,
-    action: entry.action,
+    action,
     outcome: entry.outcome,
     outcomeTone: mapExecutionOutcomeTone(entry.outcome),
     message,
     metadataText,
-    ariaLabel: `${entry.action} ${entry.outcome}. ${message} ${metadataText}`.trim()
+    technicalMetadataText,
+    ariaLabel: `${action} ${entry.outcome}. ${message} ${metadataText}`.trim()
   };
 }
 
@@ -1512,6 +1516,24 @@ function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot): Execut
 }
 
 function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
+  const occurredAt = new Date(entry.occurredAt);
+  if (Number.isNaN(occurredAt.getTime())) {
+    return "Recorded time unavailable";
+  }
+
+  return `Recorded ${new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+    timeZoneName: "short"
+  }).format(occurredAt).replace("24:", "00:")}`;
+}
+
+function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {
   const parts = [
     entry.occurredAt,
     entry.metadata?.sessionId ? `session ${entry.metadata.sessionId}` : null,
@@ -1520,7 +1542,21 @@ function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
     entry.runId ? `run ${entry.runId}` : null
   ].filter(Boolean);
 
-  return parts.join(" · ");
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+function formatExecutionAuditAction(action: string): string {
+  const normalized = action.trim();
+  if (normalized === "ReplayPaperSession") {
+    return "Paper session replay";
+  }
+
+  const words = normalized
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Execution activity";
 }
 
 function mapExecutionOutcomeTone(outcome: string): ExecutionEvidenceTone {
@@ -2919,6 +2955,7 @@ export interface TradingConfirmDialogState {
   statusAnnouncement: string;
   cancelButtonLabel: string;
   confirmButtonLabel: string;
+  confirmButtonVariant: "default" | "destructive";
   closeButtonLabel: string;
   confirmAriaLabel: string;
   closeAriaLabel: string;
@@ -3051,6 +3088,7 @@ export function buildTradingConfirmDialogState(state: TradingConfirmState): Trad
     statusAnnouncement: buildTradingConfirmStatusAnnouncement({ title, busy: state.busy, result: state.result, error: state.error }),
     cancelButtonLabel: "Cancel",
     confirmButtonLabel: state.busy ? "Processing..." : "Confirm",
+    confirmButtonVariant: isDestructiveTradingAction(state.action) ? "destructive" : "default",
     closeButtonLabel: "Close",
     confirmAriaLabel: title ? `Confirm ${title.toLowerCase()}` : "Confirm trading action",
     closeAriaLabel: title ? `Close ${title.toLowerCase()} confirmation` : "Close trading action confirmation",
@@ -3069,6 +3107,13 @@ export function buildTradingConfirmDialogState(state: TradingConfirmState): Trad
     resultPanel,
     errorPanel
   };
+}
+
+function isDestructiveTradingAction(action: TradingConfirmAction | null): boolean {
+  return action?.kind === "cancel-order"
+    || action?.kind === "cancel-all"
+    || action?.kind === "close-position"
+    || action?.kind === "stop-strategy";
 }
 
 function buildTradingConfirmDisabledReason(state: TradingConfirmState, isCompleted: boolean): string | null {

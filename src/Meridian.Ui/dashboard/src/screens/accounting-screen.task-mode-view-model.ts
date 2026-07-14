@@ -6,6 +6,7 @@ export type AccountingWorkstream =
   | "journal-entries"
   | "capital-accounts"
   | "reconciliation"
+  | "external-gl"
   | "exceptions"
   | "security-master"
   | "approvals"
@@ -15,9 +16,14 @@ export type GovernanceWorkstream = AccountingWorkstream;
 export type AccountingTaskModeId =
   | "close-cockpit"
   | "reconciliation-casework"
+  | "external-gl-reconciliation"
   | "ledger-explorer"
   | "journal-entry"
   | "capital-accounts"
+  | "exceptions"
+  | "security-master"
+  | "approvals"
+  | "configure"
   | "delivery-evidence"
   | "governance";
 
@@ -73,6 +79,13 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     routeLabel: "Reconciliation Casework",
     href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
+  "external-gl-reconciliation": {
+    id: "external-gl-reconciliation",
+    label: "External GL Reconciliation",
+    description: "Provider imports, account mappings, tie-out evidence, and guarded export packages stay in one focused external-ledger workflow.",
+    routeLabel: "External GL Reconciliation",
+    href: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
+  },
   "ledger-explorer": {
     id: "ledger-explorer",
     label: "Ledger Explorer",
@@ -94,6 +107,34 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
     routeLabel: "Capital Accounts",
     href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
   },
+  exceptions: {
+    id: "exceptions",
+    label: "Exceptions",
+    description: "Material accounting exceptions, ownership, evidence, and resolution actions stay in one focused review queue.",
+    routeLabel: "Exceptions",
+    href: WORKSTATION_ROUTE_CATALOG.accountingExceptions
+  },
+  "security-master": {
+    id: "security-master",
+    label: "Security Master",
+    description: "Search governed instrument identity, inspect conflicts, and review the evidence supporting each security record.",
+    routeLabel: "Security Master",
+    href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
+  },
+  approvals: {
+    id: "approvals",
+    label: "Approvals",
+    description: "Review exactly what is awaiting approval, why it is ready, its retained evidence, and the effect of each decision.",
+    routeLabel: "Approvals",
+    href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+  },
+  configure: {
+    id: "configure",
+    label: "Configure",
+    description: "Set up ledger books and posting controls, verify readiness, and activate only configurations that pass governed checks.",
+    routeLabel: "Configure",
+    href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
+  },
   "delivery-evidence": {
     id: "delivery-evidence",
     label: "Delivery Evidence",
@@ -112,18 +153,20 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
 
 const accountingWorkstreamTaskModes: Record<AccountingWorkstream, AccountingTaskModeId> = {
   ledger: "ledger-explorer",
-  configure: "governance",
+  configure: "configure",
   "journal-entries": "journal-entry",
   "capital-accounts": "capital-accounts",
   reconciliation: "reconciliation-casework",
-  exceptions: "reconciliation-casework",
-  "security-master": "governance",
-  approvals: "close-cockpit",
+  "external-gl": "external-gl-reconciliation",
+  exceptions: "exceptions",
+  "security-master": "security-master",
+  approvals: "approvals",
   reporting: "delivery-evidence"
 };
 
 const accountingTaskModeLauncherOrder: AccountingTaskModeId[] = [
   "reconciliation-casework",
+  "external-gl-reconciliation",
   "ledger-explorer",
   "journal-entry",
   "capital-accounts",
@@ -143,6 +186,10 @@ export const accountingTaskModeLauncherLinks: readonly AccountingTaskModeLinkVie
   });
 
 export function resolveAccountingWorkstream(pathname: string): AccountingWorkstream {
+  if (pathname.includes("/reconciliation/external-gl")) {
+    return "external-gl";
+  }
+
   if (pathname.startsWith(`${WORKSTATION_ROUTE_CATALOG.accounting}/reporting`)) {
     return "reporting";
   }
@@ -195,15 +242,15 @@ export function buildAccountingSectionVisibility(
   const isCloseCockpitLanding = taskMode.id === "close-cockpit" && taskMode.workstream === "ledger";
   const visibility: AccountingSectionVisibilityViewModel = {
     showCloseCockpitLanding: isCloseCockpitLanding,
-    showWorkflowDetails: !isCloseCockpitLanding,
-    showMultiAssetCoverage: !isCloseCockpitLanding,
-    showExternalGl: !isCloseCockpitLanding,
+    showWorkflowDetails: false,
+    showMultiAssetCoverage: false,
+    showExternalGl: taskMode.workstream === "external-gl",
     showConfiguration: taskMode.workstream === "configure",
     showJournalEntries: taskMode.workstream === "journal-entries",
     showCapitalAccounts: taskMode.workstream === "capital-accounts",
     showApprovals: taskMode.workstream === "approvals",
     showExceptionWorkbench: taskMode.workstream === "exceptions",
-    showPosture: !isCloseCockpitLanding,
+    showPosture: false,
     showReconciliation: taskMode.workstream === "reconciliation",
     showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding,
     showSecurityMaster: taskMode.workstream === "security-master",
@@ -243,6 +290,8 @@ export function accountingWorkstreamHref(workstream: AccountingWorkstream): stri
       return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
     case "reconciliation":
       return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
+    case "external-gl":
+      return WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation;
     case "exceptions":
       return WORKSTATION_ROUTE_CATALOG.accountingExceptions;
     case "security-master":

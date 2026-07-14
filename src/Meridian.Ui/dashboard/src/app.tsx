@@ -681,9 +681,7 @@ function AppShell() {
 
       <WorkstationStatusBar
         items={buildWorkstationStatusItems({
-          session,
           workspaceLabel: headerWorkspace.label,
-          usingDevelopmentFixtures,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error)
         })}

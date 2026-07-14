@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Menu, Search } from "lucide-react";
-import { DesignSystemBadge } from "@/design-system/badge";
 import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
 import type { SessionInfo } from "@/types";
@@ -92,7 +91,7 @@ export function DesignSystemMasthead({
             role="group"
             aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
           >
-            <DesignSystemBadge variant={session.environment} dot>{session.environment}</DesignSystemBadge>
+            <span className="sr-only">{session.environment}</span>
             <span className="workstation-session-name">{session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>

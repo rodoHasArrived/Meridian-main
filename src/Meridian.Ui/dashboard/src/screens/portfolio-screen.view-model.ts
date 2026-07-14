@@ -13,6 +13,7 @@ import type {
   BrokerageHouseholdAccount,
   BrokerageHouseholdPortfolio,
   BrokerageHouseholdPosition,
+  FinancialRecordExplorerDto,
   GovernanceCashFlowSummary,
   AccountingWorkspaceResponse,
   MetricSnapshot,
@@ -379,6 +380,7 @@ export interface PortfolioBrokeragePositionDetail {
   statusBadgeLabel: string;
   statusBadgeVariant: "outline" | "success" | "warning" | "danger";
   fields: PortfolioDetailField[];
+  technicalFields: PortfolioDetailField[];
 }
 
 export interface PortfolioBrokerageAccountDetail {
@@ -464,6 +466,72 @@ export interface PortfolioScreenViewModel {
   cashVarianceLabel: string | null;
   cashFlowTone: "default" | "success" | "warning" | "danger";
   openPositionCount: number;
+}
+
+export function buildPortfolioExplorerPresentation(
+  explorer: FinancialRecordExplorerDto | null,
+  {
+    sourceLabel,
+    runLabel
+  }: {
+    sourceLabel: string;
+    runLabel: string;
+  }
+): FinancialRecordExplorerDto | null {
+  if (!explorer) {
+    return null;
+  }
+
+  const rawSourceCopy = [
+    explorer.description,
+    explorer.sourceState,
+    ...explorer.scopeItems
+      .filter((item) => item.label.trim().toLowerCase() === "source")
+      .map((item) => item.value)
+  ].join(" ");
+  const usesDemoData = /\b(?:demo|fixture|no-host)\b/i.test(rawSourceCopy);
+  const operatorSourceLabel = usesDemoData ? "Demo portfolio data" : sourceLabel.trim() || "Portfolio records";
+  const operatorRunLabel = runLabel.trim() || "Linked strategy run";
+  const presentFilter = (filter: FinancialRecordExplorerDto["filters"][number]) => {
+    const filterKind = (filter.label || filter.filterId).trim().toLowerCase();
+    if (filterKind === "source") {
+      return { ...filter, value: operatorSourceLabel };
+    }
+    if (filterKind === "run" || filterKind === "run id") {
+      return { ...filter, value: operatorRunLabel };
+    }
+    return filter;
+  };
+
+  return {
+    ...explorer,
+    description: "Explore retained account and aggregate position records.",
+    sourceState: usesDemoData
+      ? `Demo portfolio data and ${operatorRunLabel} evidence are ready for review.`
+      : `${operatorSourceLabel} records and ${operatorRunLabel} evidence are ready for review.`,
+    scopeItems: explorer.scopeItems.map((item) => {
+      switch (item.label.trim().toLowerCase()) {
+        case "source":
+          return { ...item, value: operatorSourceLabel };
+        case "run":
+        case "run id":
+          return { ...item, value: operatorRunLabel };
+        case "as of":
+          return { ...item, value: formatDateTime(item.value) };
+        default:
+          return item;
+      }
+    }),
+    filters: explorer.filters.map(presentFilter),
+    recordGraph: {
+      ...explorer.recordGraph,
+      nodes: explorer.recordGraph.nodes.map((node) =>
+        node.nodeType.trim().toLowerCase() === "run"
+          ? { ...node, label: operatorRunLabel }
+          : node
+      )
+    }
+  };
 }
 
 export function buildPortfolioScreenViewModel({
@@ -1719,8 +1787,10 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Market value", value: formatCurrency(position.marketValue), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
-      { label: "Position ID", value: position.positionId ?? "Unavailable", tone: position.positionId ? "muted" : "warning" },
       { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
+    ],
+    technicalFields: [
+      { label: "Position ID", value: position.positionId ?? "Unavailable", tone: position.positionId ? "muted" : "warning" }
     ]
   };
 }

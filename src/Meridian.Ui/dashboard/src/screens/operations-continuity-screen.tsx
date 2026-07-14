@@ -18,6 +18,7 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { readinessToneToBadgeVariant, readinessToneToPanelClass } from "@/lib/shared-tone-mappings";
 import {
   useOperationsContinuityScreenViewModel,
@@ -100,10 +101,15 @@ const gateColumns: DenseDataTableColumn<OperationsContinuityGateRow>[] = [
     id: "completed",
     label: "Completion",
     render: (row) => (
-      <span className="block text-xs leading-5">
+      <div className="text-xs leading-5">
         <span className="block text-foreground">{row.blockerCountLabel}</span>
         <span className="block text-muted-foreground">{row.completedLabel}</span>
-      </span>
+        {row.completedByTechnicalLabel ? (
+          <TechnicalDetails label="Completion identity" className="mt-1" contentClassName="py-2">
+            <p className="font-mono text-xs text-muted-foreground">Actor ID: {row.completedByTechnicalLabel}</p>
+          </TechnicalDetails>
+        ) : null}
+      </div>
     )
   }
 ];
@@ -342,11 +348,16 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
     id: "work-item",
     label: "Work item",
     render: (row) => (
-      <span className="block min-w-0">
+      <div className="min-w-0">
         <span className="eyebrow-label">{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
-      </span>
+        {row.technicalCode ? (
+          <TechnicalDetails label="System details" className="mt-2" contentClassName="py-2">
+            <p className="font-mono text-xs text-muted-foreground">Rule code: {row.technicalCode}</p>
+          </TechnicalDetails>
+        ) : null}
+      </div>
     )
   },
   {
@@ -1523,6 +1534,13 @@ export function OperationsContinuityScreen() {
     [approvalDecisionCommand.pending, runApprovalDecisionCommand]
   );
 
+  const selectedWorkflowOperationalMetadata = vm.selectedDetail?.metadata.filter(
+    (field) => !["Workflow", "Fund account", "Version", "Security Master", "Report pack", "Close package", "Latest audit"].includes(field.label)
+  ) ?? [];
+  const selectedWorkflowTechnicalMetadata = vm.selectedDetail?.metadata.filter(
+    (field) => ["Workflow", "Fund account", "Version", "Security Master", "Report pack", "Close package", "Latest audit"].includes(field.label)
+  ) ?? [];
+
   return (
     <div className="space-y-6">
       <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
@@ -1592,7 +1610,11 @@ export function OperationsContinuityScreen() {
           </CardContent>
         </Card>
 
-        <Card className={cn("border", readinessToneToPanelClass(vm.nextAction.statusTone))}>
+        <Card
+          className={cn("border", readinessToneToPanelClass(vm.nextAction.statusTone))}
+          role="region"
+          aria-label="Recommended next action"
+        >
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1603,7 +1625,7 @@ export function OperationsContinuityScreen() {
                 <CardDescription>{vm.nextAction.detail}</CardDescription>
               </div>
               <Badge variant={readinessToneToBadgeVariant(vm.nextAction.statusTone)}>
-                {vm.nextAction.disabled ? "Unavailable" : "Ready"}
+                {vm.nextAction.statusLabel}
               </Badge>
             </div>
           </CardHeader>
@@ -1641,7 +1663,7 @@ export function OperationsContinuityScreen() {
               description={vm.selectedDetail.description}
               ariaLabel={vm.selectedDetail.ariaLabel}
               status={<Badge variant={readinessToneToBadgeVariant(vm.selectedDetail.statusTone)}>{vm.selectedDetail.statusLabel}</Badge>}
-              fields={vm.selectedDetail.metadata}
+              fields={selectedWorkflowOperationalMetadata}
             />
             <div className="px-4 pb-4">
               {vm.detailErrorText ? (
@@ -1649,6 +1671,18 @@ export function OperationsContinuityScreen() {
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                   {vm.detailErrorText}
                 </p>
+              ) : null}
+              {selectedWorkflowTechnicalMetadata.length > 0 ? (
+                <TechnicalDetails label="Workflow system details" className="mt-3">
+                  <dl className="grid gap-3 text-xs leading-5 sm:grid-cols-2">
+                    {selectedWorkflowTechnicalMetadata.map((field) => (
+                      <div key={field.label}>
+                        <dt className="eyebrow-label">{field.label}</dt>
+                        <dd className="break-words font-mono text-foreground">{field.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
               ) : null}
             </div>
           </div>

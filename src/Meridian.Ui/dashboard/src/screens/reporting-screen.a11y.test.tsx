@@ -64,6 +64,7 @@ describe("ReportingScreen accessibility", () => {
 
   it.each([
     ["report-builder", "/reporting/report-builder"],
+    ["scheduled", "/reporting/scheduled"],
     ["run-status", "/reporting/run-status"],
     ["report-packs", "/reporting/report-packs"],
     ["exports", "/reporting/exports"],

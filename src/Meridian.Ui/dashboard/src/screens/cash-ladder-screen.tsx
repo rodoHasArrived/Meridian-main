@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -10,6 +11,8 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
 import {
   buildCashLadderChart,
+  formatCashLadderDate,
+  formatCashLadderThreshold,
   selectActiveScenario,
   selectBucketContributions,
   selectScenarioOptions,
@@ -133,6 +136,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
   const [selectedBucket, setSelectedBucket] = useState<number | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const requestId = useRef(0);
+  const minimumCashDirty = useRef(false);
 
   useEffect(() => {
     const currentRequest = ++requestId.current;
@@ -141,6 +145,9 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
       .then((response) => {
         if (requestId.current === currentRequest) {
           setLadder(response);
+          if (!minimumCashDirty.current) {
+            setMinimumCashInput(String(response.minimumCashThreshold));
+          }
           setStatus("ready");
         }
       })
@@ -162,6 +169,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
 
   function applyMinimumCash() {
     const parsed = Number(minimumCashInput);
+    minimumCashDirty.current = false;
     setAppliedMinimumCash(minimumCashInput.trim() !== "" && Number.isFinite(parsed) ? parsed : undefined);
   }
 
@@ -205,8 +213,10 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
               className="w-28 rounded border bg-background px-2 py-1 text-sm text-foreground"
               placeholder="0"
               value={minimumCashInput}
-              onChange={(event) => setMinimumCashInput(event.target.value)}
-              onBlur={applyMinimumCash}
+              onChange={(event) => {
+                minimumCashDirty.current = true;
+                setMinimumCashInput(event.target.value);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   applyMinimumCash();
@@ -215,6 +225,9 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
               aria-label="Minimum cash balance threshold"
             />
           </label>
+          <Button type="button" size="sm" variant="outline" onClick={applyMinimumCash}>
+            Apply threshold
+          </Button>
           <Link
             to={WORKSTATION_ROUTE_CATALOG.portfolio}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -257,7 +270,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
                   <CardTitle>Projected cash by bucket</CardTitle>
                   <CardDescription>
                     {ladder
-                      ? `${ladder.horizonDays}-day horizon from ${ladder.asOfDate} · scenario: ${activeScenario?.displayName ?? ladder.scenarioId}`
+                      ? `${ladder.horizonDays}-day horizon from ${formatCashLadderDate(ladder.asOfDate)} · scenario: ${activeScenario?.displayName ?? ladder.scenarioId}`
                       : "Loading projection…"}
                   </CardDescription>
                 </div>
@@ -276,6 +289,12 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
                     <span className="inline-block h-0.5 w-4" style={{ backgroundColor: CUMULATIVE }} aria-hidden />
                     Cumulative cash
                   </span>
+                  {ladder ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-block h-0.5 w-4 border-t border-dashed" style={{ borderColor: THRESHOLD }} aria-hidden />
+                      Minimum balance · {formatCashLadderThreshold(ladder.minimumCashThreshold, ladder.baseCurrency)}
+                    </span>
+                  ) : null}
                 </div>
               </div>
             </CardHeader>
@@ -416,6 +435,21 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
                   compact
                 />
               )}
+              {chart ? (
+                <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Cash ladder bucket values">
+                  {chart.bars.map((bar) => (
+                    <div key={bar.index} className="rounded border border-border/60 bg-secondary/15 px-3 py-2">
+                      <dt className="text-xs font-semibold text-foreground">{bar.label}</dt>
+                      <dd className="mt-1 text-xs text-muted-foreground">
+                        <span className="block">Net {bar.netFlowLabel}</span>
+                        <span className={cn("block", bar.breachesMinimumBalance ? "font-semibold text-warning" : "")}>
+                          Cash {bar.cumulativeLabel}{bar.breachesMinimumBalance ? " · below minimum" : ""}
+                        </span>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
             </CardContent>
           </Card>
 

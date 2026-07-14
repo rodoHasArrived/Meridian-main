@@ -268,6 +268,7 @@ export interface DataOperationsProviderRow {
   note: string;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
+  reasonLabelText: string;
   reasonCodeText: string;
   recommendedActionText: string;
   gateImpactText: string;
@@ -332,6 +333,7 @@ export interface DataOperationsProviderDetailState {
   tabs: DataOperationsProviderTabState[];
   verifyAction: DataOperationsProviderVerifyActionState;
   actionText: string;
+  reasonLabelText: string;
   reasonCodeText: string;
   gateImpactText: string;
 }
@@ -397,6 +399,9 @@ export interface DataOperationsExportDetailState {
   statusVariant: "success" | "warning" | "paper";
   fields: DataOperationsDetailField[];
   actionText: string;
+  actionHref: string;
+  actionLabel: string;
+  actionAriaLabel: string;
 }
 
 export interface DataOperationsPresentationState {
@@ -2098,9 +2103,10 @@ export function buildProviderSection(
   const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
   const rows = records.map((record) => buildProviderRow(record, selectedRowId));
   const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
-  const blockedCount = evidence.providerReadiness?.blockedProviders ?? rows.filter((row) => row.status === "Blocked").length;
-  const degradedCount = evidence.providerReadiness?.degradedProviders ?? rows.filter((row) => row.status === "Degraded").length;
-  const reviewCount = evidence.providerReadiness?.reviewProviders ?? rows.filter((row) => row.statusTone === "warning").length;
+  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
+  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
+  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
+  const readyCount = rows.filter((row) => row.statusTone === "success").length;
   const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
   const statusLabel = rows.length === 0
     ? "No providers"
@@ -2122,7 +2128,13 @@ export function buildProviderSection(
   return {
     title: "Provider Management",
     subtitle: "Configure, verify, monitor, and route market-data and brokerage providers used by Meridian.",
-    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, rows.length),
+    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, {
+      rowCount: rows.length,
+      readyCount,
+      reviewCount,
+      degradedCount,
+      blockedCount
+    }),
     statusLabel,
     statusTone,
     commandActions: [
@@ -2216,7 +2228,7 @@ export function buildProviderRow(
   const bindings = record.bindings;
   const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
   const trustScoreText = trust
-    ? `${Math.round(trust.score)}% · ${trust.healthStatus}`
+    ? `${normalizeProviderTrustScore(trust.score)}% · ${trust.healthStatus}`
     : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
       ? `${Math.round((1 - readiness.degradationScore) * 100)}% · readiness`
       : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
@@ -2228,6 +2240,7 @@ export function buildProviderRow(
   const reasonCodeText = readiness
     ? `READINESS_${readiness.status.toUpperCase()}`
     : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
+  const reasonLabelText = formatProviderReasonLabel(reasonCodeText);
   const recommendedActionText = readiness?.recommendedAction
     ?? (record.routingConnection
       ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
@@ -2288,6 +2301,7 @@ export function buildProviderRow(
         value: gateImpactText
       }
     ],
+    reasonLabelText,
     reasonCodeText,
     recommendedActionText,
     gateImpactText,
@@ -2310,6 +2324,13 @@ export function buildProviderRow(
       ? `Selected provider ${record.displayName}; the provider detail panel is expanded for this row.`
       : `Inspect provider ${record.displayName}; activation updates the shared provider detail panel.`
   };
+}
+
+function joinProviderDetailSentences(...values: Array<string | null | undefined>): string {
+  const sentences = values
+    .map((value) => value?.trim().replace(/[.\s]+$/g, "") ?? "")
+    .filter(Boolean);
+  return sentences.length > 0 ? `${sentences.join(". ")}.` : "No provider detail is available.";
 }
 
 export function buildSelectedProviderDetail(
@@ -2338,7 +2359,7 @@ export function buildSelectedProviderDetail(
     providerId: selected.providerId,
     title: selected.displayName,
     subtitle: row.capability,
-    description: `${row.note} ${row.gateImpactText}.`,
+    description: joinProviderDetailSentences(row.note, row.gateImpactText),
     ariaLabel: `Provider detail for ${selected.displayName}: ${row.status}. ${row.capability}. ${row.recommendedActionText}`,
     status: row.status,
     statusTone: row.statusTone,
@@ -2361,9 +2382,37 @@ export function buildSelectedProviderDetail(
       ariaLabel: `Provider verification unavailable for ${selected.displayName}`
     },
     actionText: row.recommendedActionText,
+    reasonLabelText: row.reasonLabelText,
     reasonCodeText: row.reasonCodeText,
     gateImpactText: row.gateImpactText
   };
+}
+
+const PROVIDER_REASON_ACRONYMS = new Set(["api", "dk", "id", "ok", "sla"]);
+
+export function formatProviderReasonLabel(reasonCode: string): string {
+  const trimmed = reasonCode.trim();
+  if (trimmed.length === 0) {
+    return "Reason not reported";
+  }
+
+  const isEnumCode = /^[A-Z0-9]+(?:[_-][A-Z0-9]+)+$/.test(trimmed);
+  if (!isEnumCode) {
+    return trimmed;
+  }
+
+  return trimmed
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((token, index) => {
+      const lower = token.toLowerCase();
+      if (PROVIDER_REASON_ACRONYMS.has(lower)) {
+        return lower.toUpperCase();
+      }
+
+      return index === 0 ? `${lower.charAt(0).toUpperCase()}${lower.slice(1)}` : lower;
+    })
+    .join(" ");
 }
 
 export interface DataOperationsProviderCenterRecord {
@@ -2468,7 +2517,21 @@ function buildProviderCenterRecords(
   for (const provider of providers) {
     const providerKey = normalizeProviderToken(provider.providerId ?? provider.provider);
     if (!matchedWorkspace.has(providerKey)) {
-      records.push(buildProviderCenterRecordFromWorkspace(provider));
+      const routingConnection = findRoutingConnectionForWorkspaceProvider(provider, routingConnections);
+      if (routingConnection) {
+        matchedRouting.add(normalizeProviderToken(routingConnection.connectionId));
+      }
+
+      records.push(buildProviderCenterRecord({
+        providerId: provider.providerId ?? provider.provider,
+        displayName: provider.displayName ?? provider.provider,
+        workspaceProvider: provider,
+        connection: provider.connectionSummary ?? null,
+        readiness: null,
+        routingConnection,
+        routingBindings,
+        trustSnapshots
+      }));
     }
   }
 
@@ -2602,6 +2665,24 @@ function findRoutingConnectionForReadiness(
       routingName === displayName ||
       connectionId.includes(providerId) ||
       providerId.includes(familyId);
+  }) ?? null;
+}
+
+function findRoutingConnectionForWorkspaceProvider(
+  provider: DataProviderRecord,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderToken(provider.providerId ?? provider.provider);
+  const displayName = normalizeProviderToken(provider.displayName ?? provider.provider);
+  const providerName = normalizeProviderToken(provider.provider);
+  return routingConnections.find((routingConnection) => {
+    const connectionId = normalizeProviderToken(routingConnection.connectionId);
+    const familyId = normalizeProviderToken(routingConnection.providerFamilyId);
+    const routingName = normalizeProviderToken(routingConnection.displayName);
+    return connectionId === providerId ||
+      familyId === providerId ||
+      routingName === displayName ||
+      routingName === providerName;
   }) ?? null;
 }
 
@@ -2775,21 +2856,36 @@ function buildProviderSummaryCards(
 
 function buildProviderReadinessSummaryText(
   readiness: ProviderReadinessSummary | null | undefined,
-  rowCount: number
+  counts: {
+    rowCount: number;
+    readyCount: number;
+    reviewCount: number;
+    degradedCount: number;
+    blockedCount: number;
+  }
 ): string {
+  const displayedCounts = [
+    `${counts.readyCount} ready`,
+    `${counts.reviewCount} review`,
+    `${counts.degradedCount} degraded`,
+    `${counts.blockedCount} blocked`
+  ].join(" / ");
+
   if (!readiness) {
-    return rowCount > 0
-      ? "Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable."
+    return counts.rowCount > 0
+      ? `Displayed posture: ${displayedCounts}. Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable.`
       : "Provider readiness will appear after the shared provider setup, validation, degradation, and evidence data loads.";
   }
 
-  const counts = [
-    `${readiness.readyProviders} ready`,
-    `${readiness.reviewProviders} review`,
-    `${readiness.degradedProviders} degraded`,
-    `${readiness.blockedProviders} blocked`
-  ].join(" / ");
-  return `${readiness.summary} ${counts}. Next action: ${readiness.recommendedAction}`;
+  const coverage = readiness.totalProviders === counts.rowCount
+    ? ""
+    : ` Shared readiness covers ${readiness.totalProviders} of ${counts.rowCount} displayed providers.`;
+  return `${readiness.summary} Displayed posture: ${displayedCounts}.${coverage} Next action: ${readiness.recommendedAction}`;
+}
+
+export function normalizeProviderTrustScore(score: number): number {
+  const percentage = score >= 0 && score <= 1 ? score * 100 : score;
+  return Math.round(Math.min(100, Math.max(0, percentage)));
 }
 
 function buildProviderOverviewFields(
@@ -3410,7 +3506,10 @@ export function buildSelectedExportDetail(
       { id: "rows", label: "Rows", value: selected.rows },
       { id: "updated", label: "Updated", value: selected.updatedAt }
     ],
-    actionText
+    actionText,
+    actionHref: workstationRouteWithQuery("reportingExports", { exportId: selected.exportId }),
+    actionLabel: "Open Reporting exports",
+    actionAriaLabel: `Open Reporting exports for ${selected.exportId}`
   };
 }
 

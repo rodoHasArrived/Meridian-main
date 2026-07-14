@@ -42,7 +42,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--surface web", self.web_workflow)
         self.assertIn("--require-fresh", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
-        self.assertIn("uses: peter-evans/create-pull-request@v7", self.web_workflow)
+        self.assertIn("uses: peter-evans/create-pull-request@v8", self.web_workflow)
         self.assertIn("continue-on-error: true", self.web_workflow)
         self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
         self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
@@ -96,6 +96,11 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
         compatibility_redirect_routes = {
             "dataSecurityMasterLegacy",
+            "settingsIntegrations",
+            "settingsFeatureCoverage",
+            "settingsAlpacaProviderSetup",
+            "settingsBackendCapabilityCoverage",
+            "settingsDiagnosticEndpoints",
         }
         expected_paths = {
             self.screenshot_coverage_path(path)
@@ -163,6 +168,231 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             fixture_routes["/api/workstation/strategy/designer/templates"][0]["document"]["documentId"],
         )
 
+    def test_asset_detail_capture_auto_opens_an_exact_fixture_match(self) -> None:
+        captures = self.web_screenshot_routes.get("captures", [])
+        asset_capture = next(
+            (capture for capture in captures if capture.get("id") == "W02D"),
+            None,
+        )
+
+        self.assertIsNotNone(asset_capture)
+        assert asset_capture is not None
+        self.assertEqual("/portfolio/asset-detail?symbol=AAPL", asset_capture.get("path"))
+
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        for fixture_path in (
+            "/api/workstation/security-master/securities",
+            "/api/workstation/security-master/securities/sec-dev-001",
+            "/api/workstation/security-master/securities/sec-dev-001/identity",
+            "/api/security-master/sec-dev-001/corporate-actions",
+            "/api/security-master/sec-dev-001/trading-parameters",
+        ):
+            self.assertIn(fixture_path, fixture_routes)
+            self.assertIn(fixture_path, asset_capture.get("requiredApiRoutes", []))
+
+        self.assertEqual(
+            "sec-dev-001",
+            fixture_routes["/api/workstation/security-master/securities"][0]["securityId"],
+        )
+        self.assertEqual(
+            "AAPL",
+            fixture_routes["/api/workstation/security-master/securities"][0]["classification"]["primaryIdentifierValue"],
+        )
+
+        accounting_asset_capture = next(
+            (capture for capture in captures if capture.get("id") == "W03B1"),
+            None,
+        )
+        self.assertIsNotNone(accounting_asset_capture)
+        assert accounting_asset_capture is not None
+        self.assertEqual(
+            "/accounting/security-master/detail?symbol=AAPL",
+            accounting_asset_capture.get("path"),
+        )
+        self.assertTrue(
+            set(asset_capture.get("requiredApiRoutes", [])).issubset(
+                set(accounting_asset_capture.get("requiredApiRoutes", []))
+            )
+        )
+
+    def test_accounting_journal_and_capital_captures_use_workbench_fixtures(self) -> None:
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        journal_fixture_path = "/api/ledger/journal-entry-workbench"
+        capital_fixture_path = "/api/ledger/private-capital/capital-account-workbench"
+
+        self.assertIn(journal_fixture_path, fixture_routes)
+        self.assertIn(capital_fixture_path, fixture_routes)
+        self.assertIn(journal_fixture_path, captures["W03J"].get("requiredApiRoutes", []))
+        self.assertIn(journal_fixture_path, captures["W03J1"].get("requiredApiRoutes", []))
+        self.assertIn(capital_fixture_path, captures["W03K"].get("requiredApiRoutes", []))
+        self.assertEqual(
+            "/accounting/journal-entries/detail?journalEntryId=manual-je-fixture",
+            captures["W03J1"].get("path"),
+        )
+        self.assertEqual(
+            "manual-je-fixture",
+            fixture_routes[journal_fixture_path]["drafts"][0]["journalEntryId"],
+        )
+        self.assertEqual(1, fixture_routes[capital_fixture_path]["investorAccountCount"])
+        self.assertEqual(1, len(fixture_routes[capital_fixture_path]["investorAccounts"]))
+
+    def test_accounting_detail_and_close_captures_use_typed_fixtures(self) -> None:
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        trial_balance_path = "/api/workstation/runs/run-42/ledger/trial-balance"
+        close_calendar_path = "/api/workstation/operations/continuity/close-calendar"
+
+        self.assertIn(trial_balance_path, fixture_routes)
+        self.assertIn(close_calendar_path, fixture_routes)
+        self.assertIn(trial_balance_path, captures["W03I1"].get("requiredApiRoutes", []))
+        self.assertIn(close_calendar_path, captures["W03I3"].get("requiredApiRoutes", []))
+        self.assertEqual("acct-cash", fixture_routes[trial_balance_path][0]["financialAccountId"])
+        self.assertEqual("workflow-close-1", fixture_routes[close_calendar_path]["items"][0]["workflowId"])
+        self.assertEqual(
+            "Pending review",
+            fixture_routes["/api/workstation/accounting"]["closePlans"][0]["approvals"][0]["status"],
+        )
+        self.assertIn("Open source journal entry", captures["W03I1"].get("waitForTexts", []))
+        self.assertIn("Open Operations Continuity", captures["W03I3"].get("waitForTexts", []))
+        self.assertEqual(
+            "Month-end investment income adjustment",
+            captures["W03J1"].get("waitForText"),
+        )
+        self.assertIn("Retained posting evidence 1", captures["W03J1"].get("waitForTexts", []))
+        self.assertIn("Evidence reference ready for inspection", captures["W03I5"].get("waitForTexts", []))
+        self.assertIn("Ready to inspect", captures["W03I5"].get("waitForTexts", []))
+
+    def test_accounting_capture_contracts_use_current_operator_labels(self) -> None:
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+
+        self.assertEqual("Close Cockpit", captures["W03"].get("waitForText"))
+        self.assertEqual("Reconciliation Casework", captures["W03A"].get("waitForText"))
+        self.assertEqual("Approval queue and audit gate", captures["W03C"].get("waitForText"))
+        self.assertEqual("External GL Reconciliation", captures["W03D"].get("waitForText"))
+        self.assertIn("Read-only import ready", captures["W03D"].get("waitForTexts", []))
+        self.assertEqual("Configure", captures["W03F"].get("waitForText"))
+        self.assertEqual(["Activation checklist"], captures["W03F"].get("waitForTexts"))
+        readiness_path = "/api/accounting-system/production-readiness"
+        self.assertIn(readiness_path, captures["W03F"].get("requiredApiRoutes", []))
+        self.assertEqual("Ready", self.web_screenshot_fixtures["routes"][readiness_path]["status"])
+        self.assertEqual(100, self.web_screenshot_fixtures["routes"][readiness_path]["score"])
+
+    def test_reporting_capture_contracts_use_visible_governed_states(self) -> None:
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+
+        self.assertEqual("Report Packs", captures["W04A"].get("waitForText"))
+        self.assertIn("Governed export queue", captures["W04C"].get("waitForTexts", []))
+        self.assertNotIn("Run a governed report now", captures["W04C"].get("waitForTexts", []))
+        self.assertIn("Review approval details", captures["W04E"].get("waitForTexts", []))
+        self.assertNotIn("report-run-board-202605", captures["W04E"].get("waitForTexts", []))
+        self.assertIn("Generated artifact references", captures["W04I2"].get("waitForTexts", []))
+
+    def test_data_import_and_settings_captures_use_canonical_task_routes(self) -> None:
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        captured_paths = {
+            capture.get("path")
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+
+        self.assertEqual(75, len(captures))
+        self.assertEqual("/data/import", captures["W06I"].get("path"))
+        self.assertIn("Governed file import", captures["W06I"].get("waitForTexts", []))
+        self.assertIn("Selected Backfill", captures["W06C"].get("waitForTexts", []))
+        self.assertEqual("/settings/accounting-systems", captures["W07B"].get("path"))
+        self.assertEqual("/settings/providers/alpaca/setup", captures["W07C"].get("path"))
+        self.assertEqual("/settings/diagnostics/advanced", captures["W07D"].get("path"))
+        self.assertEqual(
+            "/settings/diagnostics/advanced#diagnostic-endpoints",
+            captures["W07E"].get("path"),
+        )
+        self.assertEqual(
+            "/settings/diagnostics/advanced#runtime-feature-capabilities",
+            captures["W07I"].get("path"),
+        )
+        self.assertEqual("/settings/providers/alpaca/advanced", captures["W07J"].get("path"))
+        self.assertEqual([], captures["W07E"].get("waitForAbsentTexts", []))
+        self.assertEqual([], captures["W07I"].get("waitForAbsentTexts", []))
+        self.assertTrue({"W07B1", "W07C0", "W07D0"}.isdisjoint(captures))
+
+        legacy_paths = {
+            "/settings/integrations",
+            "/settings#alpaca-provider-setup",
+            "/settings#backend-capability-coverage",
+            "/settings#diagnostic-endpoints",
+            "/settings/feature-coverage",
+        }
+        self.assertTrue(legacy_paths.isdisjoint(captured_paths))
+
+    def test_data_capture_uses_fixture_owned_import_and_diagnostics(self) -> None:
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        data_fixture = fixture_routes["/api/workstation/data"]
+        upload_catalog = data_fixture.get("uploadTemplates", {})
+
+        self.assertEqual([".csv"], upload_catalog.get("acceptedFileExtensions"))
+        self.assertEqual(
+            "broker-execution-import",
+            upload_catalog.get("templates", [])[0].get("templateId"),
+        )
+        self.assertIn("Broker execution import", captures["W06I"].get("waitForTexts", []))
+
+        diagnostic_routes = {
+            "/api/quality/dashboard",
+            "/api/providers/capability-matrix",
+            "/api/security-master/corporate-actions/inbox",
+            "/api/security-master/quality-report/latest",
+        }
+        self.assertTrue(diagnostic_routes.issubset(fixture_routes))
+        self.assertTrue(diagnostic_routes.issubset(captures["W06"].get("requiredApiRoutes", [])))
+        self.assertEqual([], fixture_routes["/api/providers/capability-matrix"]["discoveryFailures"])
+        self.assertEqual([], fixture_routes["/api/security-master/corporate-actions/inbox"]["errors"])
+        self.assertEqual(0, fixture_routes["/api/security-master/quality-report/latest"]["violationCount"])
+
+        provider_connections = fixture_routes["/api/providers/connections"]
+        alpaca = next(connection for connection in provider_connections if connection.get("providerId") == "alpaca")
+        self.assertEqual(
+            "/workstation/settings/providers/alpaca/setup",
+            alpaca.get("actionHref"),
+        )
+        self.assertEqual("Verified", alpaca.get("verificationState"))
+        self.assertEqual("LocalEncryptedStore", alpaca.get("credentialSource"))
+        self.assertTrue(str(alpaca.get("lastVerifiedAt", "")).startswith("2026-07-13"))
+
+        routing_trust = fixture_routes["/api/provider-routing/trust-snapshots"][0]
+        self.assertEqual(0.92, routing_trust.get("score"))
+        self.assertTrue(routing_trust.get("isCertificationFresh"))
+        self.assertTrue(str(fixture_routes["/api/status"].get("lastHeartbeatUtc", "")).startswith("2026-07-13"))
+
+    def test_reporting_capture_fixture_has_coherent_readiness_schedule_and_scope(self) -> None:
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        reporting_fixture = fixture_routes["/api/workstation/reporting"]
+        reporting_summary = reporting_fixture["reporting"]
+
+        self.assertEqual(1, reporting_fixture["reconciliationQueue"][0]["openBreakCount"])
+        self.assertEqual(1, len(reporting_fixture["breakQueue"]))
+        self.assertEqual("Active", reporting_summary["schedules"][0]["state"])
+        self.assertEqual(1, reporting_summary["accessAudit"]["visibleScheduleCount"])
+        self.assertEqual([], reporting_summary["accessAudit"]["denialReasons"])
+
     def test_web_screenshot_routes_require_fixture_coverage_for_each_capture(self) -> None:
         captures = self.web_screenshot_routes.get("captures", [])
         fixture_routes = self.web_screenshot_fixtures.get("routes", {})
@@ -186,6 +416,28 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
                     f"{capture_name} requires fixture route '{required_route}' that is missing from web-screenshot-fixtures.json",
                 )
 
+    def test_web_screenshot_routes_do_not_reuse_an_unqualified_route_state(self) -> None:
+        captures_by_path: dict[str, list[dict]] = {}
+        for capture in self.web_screenshot_routes.get("captures", []):
+            route_path = str(capture.get("path", "")).strip()
+            if route_path:
+                captures_by_path.setdefault(route_path, []).append(capture)
+
+        ambiguous_paths: list[str] = []
+        for route_path, captures in captures_by_path.items():
+            if len(captures) < 2:
+                continue
+
+            variants = [str(capture.get("variant", "")).strip() for capture in captures]
+            if not all(variants) or len(set(variants)) != len(variants):
+                ambiguous_paths.append(route_path)
+
+        self.assertEqual(
+            [],
+            sorted(ambiguous_paths),
+            "Duplicate screenshot paths must declare distinct non-empty variant values",
+        )
+
     def test_web_screenshot_api_mocks_do_not_intercept_vite_source_modules(self) -> None:
         self.assertIn('await page.route("**/api/**"', self.web_screenshot_capture_script)
         self.assertIn('if (!pathname.startsWith("/api/"))', self.web_screenshot_capture_script)
@@ -198,8 +450,18 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         )
         self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
         self.assertIn("screenshotCoveragePath", self.web_screenshot_capture_script)
-        self.assertIn("dataSecurityMasterLegacy", self.web_screenshot_capture_script)
+        for compatibility_route_key in (
+            "dataSecurityMasterLegacy",
+            "settingsIntegrations",
+            "settingsFeatureCoverage",
+            "settingsAlpacaProviderSetup",
+            "settingsBackendCapabilityCoverage",
+            "settingsDiagnosticEndpoints",
+        ):
+            self.assertIn(compatibility_route_key, self.web_screenshot_capture_script)
         self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+        self.assertIn("assertCaptureRouteStateIdentity(allCaptures)", self.web_screenshot_capture_script)
+        self.assertIn("must use a unique route state", self.web_screenshot_capture_script)
 
     def test_web_screenshot_capture_script_supports_targeted_capture_filters(self) -> None:
         self.assertIn('valueLists.get("capture")', self.web_screenshot_capture_script)
@@ -215,6 +477,32 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("Maximum update depth exceeded", self.web_screenshot_capture_script)
         self.assertIn("Meridian workstation route failed to render", self.web_screenshot_capture_script)
         self.assertIn("hit a browser render error", self.web_screenshot_capture_script)
+        self.assertIn("error.stack ?? error.message", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_waits_for_transitional_states_to_clear(self) -> None:
+        self.assertIn("collectCaptureWaitForAbsentTexts(capture)", self.web_screenshot_capture_script)
+        self.assertIn("waiting for transitional text", self.web_screenshot_capture_script)
+
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        expected_absent_text = {
+            "W01C": "Refreshing risk controls",
+            "W01D": "Awaiting readiness payload",
+            "W05C": "Scanning source for runtime parameters",
+            "W06A": "Loading symbols…",
+        }
+        for capture_id, text in expected_absent_text.items():
+            self.assertIn(text, captures[capture_id].get("waitForAbsentTexts", []))
+
+        fixture_routes = self.web_screenshot_fixtures.get("routes", {})
+        for fixture_path in (
+            "/api/risk/rules",
+            "/api/risk/rules/DrawdownCircuitBreaker/config",
+        ):
+            self.assertIn(fixture_path, fixture_routes)
+            self.assertIn(fixture_path, captures["W01C"].get("requiredApiRoutes", []))
 
     def test_web_screenshot_capture_script_disables_vite_hmr(self) -> None:
         self.assertIn('MERIDIAN_SCREENSHOT_CAPTURE: "true"', self.web_screenshot_capture_script)

@@ -9,6 +9,7 @@ import type {
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
   FinancialRecordExplorerDto,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
@@ -191,6 +192,17 @@ const brokeragePortfolio: BrokerageHouseholdPortfolio = {
       currency: "USD"
     }
   ]
+};
+
+const multiAssetCoverage: MultiAssetCoverageSummary = {
+  fundAccountId: "all",
+  entity: "portfolio",
+  asOfUtc: "2026-06-02T00:00:00Z",
+  metrics: [],
+  assetClasses: [],
+  drillThroughRoutes: {
+    coverage: "/api/workstation/portfolio/multi-asset-coverage"
+  }
 };
 
 const portfolio: PortfolioWorkspaceResponse = {
@@ -403,7 +415,46 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
 
-  it("shows a workspace freshness chip when a refresh status is provided", async () => {
+  it("presents raw explorer fixture metadata as operator-facing portfolio labels", async () => {
+    const explorer = createPortfolioFinancialRecordExplorer();
+    explorer.description = "Explore retained portfolio records from no-host development fixtures.";
+    explorer.sourceState = "Development fixture portfolio projection from run portfolio-run-dev-1.";
+    explorer.scopeItems = [
+      { label: "Workstream", value: "Portfolio", tone: "Info" },
+      { label: "Source", value: "Development fixture portfolio", tone: "Default" },
+      { label: "Run", value: "portfolio-run-dev-1", tone: "Info" },
+      { label: "As of", value: "2026-04-28T18:14:30Z", tone: "Default" }
+    ];
+    explorer.filters = [
+      { filterId: "run", label: "Run", value: "portfolio-run-dev-1", operator: "equals", tone: "Info" },
+      { filterId: "source", label: "Source", value: "development fixture", operator: "equals", tone: "Default" }
+    ];
+    explorer.recordGraph.nodes.unshift({
+      nodeId: "portfolio-run-dev-1",
+      label: "portfolio-run-dev-1",
+      nodeType: "run",
+      tone: "Info",
+      href: "/api/workstation/portfolio"
+    });
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue(explorer);
+
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
+
+    const scope = screen.getByLabelText("Explorer scope");
+    expect(scope).toHaveTextContent("Demo portfolio data");
+    expect(scope).toHaveTextContent("Mean Reversion");
+    expect(scope).toHaveTextContent("Apr 28, 18:14 UTC");
+    const filters = screen.getByLabelText("Applied explorer filters");
+    expect(filters).toHaveTextContent("Demo portfolio data");
+    expect(filters).toHaveTextContent("Mean Reversion");
+    expect(screen.getByLabelText("Record graph")).toHaveTextContent("Mean Reversion");
+    expect(screen.queryByText(/development fixture/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("portfolio-run-dev-1")).not.toBeInTheDocument();
+    expect(screen.queryByText("2026-04-28T18:14:30Z")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open evidence packet" })).toHaveAttribute("href", "/reporting/evidence");
+  });
+
+  it("shows source, scope, freshness, and completeness in one operational summary", async () => {
     await renderPortfolioScreen(
       <PortfolioScreen
         trading={trading}
@@ -425,7 +476,38 @@ describe("PortfolioScreen", () => {
       />
     );
 
-    expect(screen.getByLabelText(/Portfolio workspace updated/)).toBeInTheDocument();
+    const summary = screen.getByLabelText("Portfolio data confidence");
+    expect(summary).toHaveTextContent("Trading workspace");
+    expect(summary).toHaveTextContent("Freshness");
+    expect(summary).toHaveTextContent("Holdings and run evidence loaded");
+  });
+
+  it("uses loaded snapshot evidence when the refresh lifecycle has no success timestamp", async () => {
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        brokeragePortfolio={brokeragePortfolio}
+        refreshStatus={{
+          operation: "portfolio refresh",
+          phase: "idle",
+          inFlight: false,
+          version: 0,
+          message: "Not refreshed yet.",
+          error: null,
+          startedAt: null,
+          settledAt: null,
+          lastSucceededAt: null,
+          staleDiscardCount: 0,
+          backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+        }}
+      />
+    );
+
+    const summary = screen.getByLabelText("Portfolio data confidence");
+    expect(summary).toHaveTextContent("Latest brokerage portfolio snapshot");
+    expect(summary).not.toHaveTextContent("No data");
   });
 
   it("renders positions and runs from the Portfolio workspace payload when available", async () => {
@@ -526,6 +608,14 @@ describe("PortfolioScreen", () => {
     const defaultDetail = screen.getByRole("region", { name: /aapl brokerage position detail/i });
     expect(within(defaultDetail).getByText(/brokerage position inspector/i)).toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
+    const positionIdentity = within(defaultDetail).getByText("Technical position identity").closest("details");
+    expect(positionIdentity).not.toBeNull();
+    const positionId = within(positionIdentity!).getByText("pos-aapl");
+    expect(positionIdentity).not.toHaveAttribute("open");
+    expect(positionId).not.toBeVisible();
+    await user.click(within(positionIdentity!).getByText("Technical position identity"));
+    expect(positionIdentity).toHaveAttribute("open");
+    expect(positionId).toBeVisible();
 
     const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
     expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-position-detail");
@@ -538,6 +628,30 @@ describe("PortfolioScreen", () => {
     expect(within(updatedDetail).getByText("$1,750")).toBeInTheDocument();
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("keeps the raw multi-asset coverage endpoint behind technical disclosure", async () => {
+    const user = userEvent.setup();
+    await renderPortfolioScreen(
+      <PortfolioScreen
+        trading={trading}
+        strategy={strategy}
+        accounting={accounting}
+        multiAssetCoverage={multiAssetCoverage}
+      />,
+      { initialEntries: ["/portfolio/brokerage-sync"] }
+    );
+
+    const coverageDetails = screen.getByText("Coverage source details").closest("details");
+    expect(coverageDetails).not.toBeNull();
+    const endpointLink = within(coverageDetails!).getByRole("link", { hidden: true });
+    expect(coverageDetails).not.toHaveAttribute("open");
+    expect(endpointLink).not.toBeVisible();
+    await user.click(within(coverageDetails!).getByText("Coverage source details"));
+    expect(coverageDetails).toHaveAttribute("open");
+    expect(endpointLink).toBeVisible();
+    expect(endpointLink).toHaveTextContent("GET /api/workstation/portfolio/multi-asset-coverage");
+    expect(endpointLink).toHaveAttribute("href", "/api/workstation/portfolio/multi-asset-coverage");
   });
 
   it("selects live brokerage positions from the row with keyboard activation", async () => {

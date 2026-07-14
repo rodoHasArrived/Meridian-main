@@ -9,6 +9,7 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
@@ -71,6 +72,7 @@ export interface OperationsContinuityGateRow {
   requiredLabel: string;
   blockerCountLabel: string;
   completedLabel: string;
+  completedByTechnicalLabel: string | null;
   ariaLabel: string;
 }
 
@@ -304,6 +306,7 @@ export interface FinancialOperationsOperatorQueueRow {
   id: string;
   kindLabel: string;
   title: string;
+  technicalCode?: string | null;
   detail: string;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
@@ -569,6 +572,7 @@ export interface OperationsContinuityNextActionViewModel {
   disabled: boolean;
   disabledReason: string | null;
   ariaLabel: string;
+  statusLabel: string;
   statusTone: OperationsContinuityTone;
 }
 
@@ -1097,12 +1101,13 @@ function buildDetailPanel(
     id: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
     ariaLabel: `Operations continuity detail for ${summary.periodId} close workflow`,
     title: `${summary.periodId} close workflow`,
-    subtitle: `Fund ${summary.fundAccountId} from ${summary.brokerSource || "broker source pending"}.`,
+    subtitle: `Broker source: ${formatWorkflowSourceLabel(summary.brokerSource)}.`,
     description: "Selected close-lane evidence, gate progress, Security Master snapshot, and blocker count.",
     statusLabel: statusLabel(summary.status),
     statusTone: statusTone(summary.status),
     metadata: [
       { label: "Workflow", value: summary.workflowId },
+      { label: "Fund account", value: summary.fundAccountId },
       { label: "Version", value: String(detail?.version ?? summary.version) },
       { label: "Updated", value: formatDate(summary.updatedAtUtc) },
       { label: "Security Master", value: summary.securityMasterSnapshotId ?? "Snapshot pending" },
@@ -1331,7 +1336,8 @@ function buildNextActionViewModel({
   loading: boolean;
   detailError: string | null;
 }): OperationsContinuityNextActionViewModel {
-  const rawAction = selectHighestValueAction(workflow, gates);
+  const selectedAction = selectHighestValueAction(workflow, gates);
+  const rawAction = selectedAction?.action ?? null;
   const href = normalizeLocalWorkstationRoute(rawAction?.route) ?? null;
   const disabledReason = loading
     ? "Wait for the selected workflow to finish loading before taking the next action."
@@ -1347,6 +1353,8 @@ function buildNextActionViewModel({
             ? "The server did not provide a local workstation route for this action."
             : null;
 
+  const status = buildNextActionStatus(selectedAction?.gateStatus ?? null, workflow, rawAction);
+
   return {
     title: rawAction?.label ?? "No action available",
     detail: rawAction?.gate ? `Recommended by the ${gateLabel(rawAction.gate)} gate.` : "Server-derived recommendation for the selected close workflow.",
@@ -1355,14 +1363,20 @@ function buildNextActionViewModel({
     disabled: disabledReason !== null,
     disabledReason,
     ariaLabel: rawAction ? `Open operations continuity next action: ${rawAction.label}` : "Operations continuity next action unavailable",
-    statusTone: disabledReason ? "neutral" : "ready"
+    statusLabel: status.label,
+    statusTone: status.tone
   };
+}
+
+interface SelectedOperationsNextAction {
+  action: OperationsNextAction;
+  gateStatus: OperationsGateStatus;
 }
 
 function selectHighestValueAction(
   workflow: OperationsContinuityWorkflow | OperationsContinuityWorkflowSummary | null,
   gates: OperationsGate[]
-): OperationsNextAction | null {
+): SelectedOperationsNextAction | null {
   if (!workflow) {
     return null;
   }
@@ -1377,7 +1391,44 @@ function selectHighestValueAction(
   ];
 
   allActions.sort((left, right) => gateStatusPriority(right.gateStatus) - gateStatusPriority(left.gateStatus));
-  return allActions.find((entry) => entry.action.label.trim())?.action ?? null;
+  return allActions.find((entry) => entry.action.label.trim()) ?? null;
+}
+
+function buildNextActionStatus(
+  gateStatus: OperationsGateStatus | null,
+  workflow: OperationsContinuityWorkflow | OperationsContinuityWorkflowSummary | null,
+  action: OperationsNextAction | null
+): { label: string; tone: OperationsContinuityTone } {
+  if (!action) {
+    return { label: "Unavailable", tone: "neutral" };
+  }
+
+  switch (gateStatus) {
+    case "Blocked":
+      return { label: "Blocked", tone: "blocked" };
+    case "ReviewRequired":
+      return { label: "Review required", tone: "review" };
+    case "InProgress":
+      return { label: "In progress", tone: "review" };
+    case "NotStarted":
+      return { label: "Pending", tone: "review" };
+    case "Passed":
+      return { label: "Ready", tone: "ready" };
+    default:
+      break;
+  }
+
+  const workflowTone = workflow ? statusTone(workflow.status) : "neutral";
+  if (workflowTone === "blocked") {
+    return { label: "Blocked", tone: workflowTone };
+  }
+  if (workflowTone === "review") {
+    return { label: "Review required", tone: workflowTone };
+  }
+  if (workflowTone === "ready") {
+    return { label: "Ready", tone: workflowTone };
+  }
+  return { label: "Available", tone: "neutral" };
 }
 
 function mapWorkflowRow(
@@ -1390,7 +1441,7 @@ function mapWorkflowRow(
   return {
     id: workflow.workflowId,
     title: `${workflow.periodId} close`,
-    subtitle: `${workflow.brokerSource || "Broker source pending"} / ${workflow.fundAccountId}`,
+    subtitle: `${formatWorkflowSourceLabel(workflow.brokerSource)} source`,
     statusLabel: statusLabel(workflow.status),
     statusTone: tone,
     gatesLabel: `${passedGateCount}/${workflow.gates.length} gates passed`,
@@ -1417,6 +1468,7 @@ function workflowRowClassName(tone: OperationsContinuityTone): OperationsContinu
 }
 
 function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {
+  const completionActor = gate.completedBy?.trim() || null;
   return {
     id: gate.gateKey,
     gateKey: gate.gateKey,
@@ -1426,7 +1478,10 @@ function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {
     statusTone: gateTone(gate.status),
     requiredLabel: gate.isRequired ? "Required" : "Optional",
     blockerCountLabel: gate.blockers.length === 0 ? "No blockers" : `${gate.blockers.length} blocker${gate.blockers.length === 1 ? "" : "s"}`,
-    completedLabel: gate.completedAtUtc ? `${formatDate(gate.completedAtUtc)} by ${gate.completedBy ?? "unknown"}` : "Not completed",
+    completedLabel: gate.completedAtUtc
+      ? `${formatDate(gate.completedAtUtc)} by ${formatOperatorDisplayName(completionActor)}`
+      : "Not completed",
+    completedByTechnicalLabel: gate.completedAtUtc ? completionActor : null,
     ariaLabel: `${gate.displayName || gateLabel(gate.gateKey)} gate, ${gateStatusLabel(gate.status)}, ${gate.blockers.length} blockers`
   };
 }
@@ -2247,7 +2302,8 @@ function mapWorkflowBlockerQueueRow(row: OperationsContinuityBlockerRow): Financ
   return {
     id: `workflow-blocker:${row.id}`,
     kindLabel: "Workflow blocker",
-    title: row.code,
+    title: humanizeOperationsCode(row.code),
+    technicalCode: row.code,
     detail: `${row.gateLabel}: ${row.message}`,
     statusLabel: row.severityLabel,
     statusTone: row.severityTone,
@@ -2259,6 +2315,11 @@ function mapWorkflowBlockerQueueRow(row: OperationsContinuityBlockerRow): Financ
     routeLabel,
     ariaLabel: `Financial Operations workflow blocker ${row.ariaLabel}`
   };
+}
+
+function humanizeOperationsCode(code: string): string {
+  const normalized = /^[A-Z0-9_-]+$/.test(code) ? code.toLowerCase() : code;
+  return humanizeStatus(normalized);
 }
 
 function mapReconciliationLaneQueueRow(
@@ -3994,6 +4055,24 @@ function splitEnumLabel(value: string): string {
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function formatWorkflowSourceLabel(value: string | null | undefined): string {
+  const label = splitEnumLabel(value?.trim() || "broker source pending");
+  return label.replace(/^\w/, (character) => character.toUpperCase());
+}
+
+function formatOperatorDisplayName(value: string | null): string {
+  if (!value) {
+    return "Unknown operator";
+  }
+
+  const label = splitEnumLabel(value)
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.toLowerCase() === "ops" ? "Operations" : part.toLowerCase())
+    .join(" ");
+  return label.replace(/^\w/, (character) => character.toUpperCase());
 }
 
 function formatDate(value: string | null | undefined): string {

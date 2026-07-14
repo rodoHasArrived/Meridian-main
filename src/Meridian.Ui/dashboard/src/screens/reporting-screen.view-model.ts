@@ -11,6 +11,10 @@ import {
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
 import {
+  hasRetainedReportingAsOfDateValue,
+  reportingRunRequiresPeriodConfirmation
+} from "@/lib/reporting-periods";
+import {
   buildReportingTaskMode,
   isReportPackRoute,
   type ReportingTaskModeViewModel
@@ -46,6 +50,143 @@ const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
   timeZoneName: "short"
 });
+
+const reportingDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC"
+});
+
+const reportingStatusLabels: Record<string, string> = {
+  active: "Active",
+  approved: "Approved",
+  awaitingapproval: "Awaiting approval",
+  blocked: "Blocked",
+  complete: "Complete",
+  completed: "Completed",
+  draft: "Draft",
+  failed: "Failed",
+  inreview: "In review",
+  paused: "Paused",
+  pending: "Pending",
+  pendingapproval: "Pending approval",
+  published: "Published",
+  ready: "Ready",
+  rejected: "Rejected",
+  released: "Released",
+  reviewrequired: "Review required",
+  running: "Running",
+  superseded: "Superseded"
+};
+
+export function presentReportingStatusLabel(status: string | null | undefined): string {
+  const value = status?.trim() ?? "";
+  if (!value) {
+    return "Status unavailable";
+  }
+
+  const compact = value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const known = reportingStatusLabels[compact];
+  if (known) {
+    return known;
+  }
+
+  const spaced = value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+  return `${spaced.charAt(0).toUpperCase()}${spaced.slice(1)}`;
+}
+
+export function presentReportingIdentifier(
+  identifier: string | null | undefined,
+  fallback = "Report"
+): string {
+  const value = identifier?.trim() ?? "";
+  if (!value) {
+    return fallback;
+  }
+
+  const compactIdentifierLabels: Record<string, string> = {
+    boardpack: "Board pack",
+    investorstatement: "Investor statement"
+  };
+  const compactValue = value.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const compactLabel = compactIdentifierLabels[compactValue];
+  if (compactLabel) {
+    return compactLabel;
+  }
+
+  const words = value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ");
+
+  return words.map((word, index) => {
+    if (/^[A-Z]{2,4}$/.test(word)) {
+      return word;
+    }
+
+    const lower = word.toLowerCase();
+    return index === 0 ? `${lower.charAt(0).toUpperCase()}${lower.slice(1)}` : lower;
+  }).join(" ");
+}
+
+function presentReportingPersonLabel(value: string | null | undefined, fallback: string): string {
+  return presentReportingIdentifier(value?.replace(/\./g, "-") ?? null, fallback);
+}
+
+function presentReportingSignOffContext(value: string | null | undefined): string {
+  const context = value?.trim();
+  if (!context) {
+    return "No sign-off context retained";
+  }
+
+  return context
+    .replace(/actor '([^']+)'/gi, (_match, actor: string) => `actor '${presentReportingPersonLabel(actor, actor)}'`)
+    .replace(/\bHumanOperator\b/g, "Human operator");
+}
+
+export function hasRetainedReportingAsOfDate(value: string | null | undefined): boolean {
+  return hasRetainedReportingAsOfDateValue(value);
+}
+
+export function presentReportingAsOfDate(value: string | null | undefined): string {
+  if (!hasRetainedReportingAsOfDate(value)) {
+    return "No as-of date retained";
+  }
+
+  const retained = value!.trim();
+  const isoDate = retained.match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
+  if (!isoDate) {
+    return retained;
+  }
+
+  const parsed = new Date(`${isoDate}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? retained : reportingDateFormatter.format(parsed);
+}
+
+export function presentReportingRunStatusLabel(
+  status: string | null | undefined,
+  asOfDate: string | null | undefined
+): string {
+  return reportingRunRequiresPeriodConfirmation(status, asOfDate)
+    ? "Period confirmation required"
+    : presentReportingStatusLabel(status);
+}
+
+export function resolveReportingRunSeverityStatus(
+  status: string | null | undefined,
+  asOfDate: string | null | undefined
+): string {
+  return reportingRunRequiresPeriodConfirmation(status, asOfDate)
+    ? "ReviewRequired"
+    : status?.trim() || "StatusUnavailable";
+}
 
 export interface ReportingProfileBadge {
   label: string;
@@ -152,6 +293,7 @@ export interface ReportingAccessAuditCountRow {
 }
 
 export interface ReportingAccessAuditViewModel {
+  isAvailable: boolean;
   evaluationScope: string;
   summary: string;
   principalScopes: string[];
@@ -873,12 +1015,12 @@ export function useReportingScreenViewModel(
   const packTargets: ReportingPackTargetRow[] = distributions.map((distribution) => ({
     id: distribution.distributionId,
     label: distribution.recipient,
-    recipientRole: distribution.recipientRole,
+    recipientRole: presentReportingIdentifier(distribution.recipientRole, "Recipient"),
     channel: distribution.channel,
     stateLabel: distribution.state,
     pendingItemsLabel: `${distribution.pendingItems} pending`,
     pendingSummary: distribution.pendingSummary,
-    ownerLabel: distribution.owner,
+    ownerLabel: presentReportingPersonLabel(distribution.owner, "Unassigned"),
     dueLabel: formatReportPackDistributionDue(distribution.dueAtUtc),
     lastSentLabel: distribution.lastSentAtUtc ? formatReportPackDistributionDue(distribution.lastSentAtUtc) : "Not sent",
     href: distribution.route,
@@ -893,7 +1035,7 @@ export function useReportingScreenViewModel(
     pathname
   });
   const templateRows = buildTemplateRows(reporting.templates ?? []);
-  const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
+  const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? [], reporting.templates ?? []);
   const scheduleRows = buildScheduleRows(reporting.schedules ?? [], reporting.reportWriterDatasetSources ?? []);
   const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
   const accessAudit = buildReportingAccessAudit(reporting);
@@ -968,8 +1110,8 @@ export function buildRestatementReviewPanel(records: ReportingWorkflowRecord[] =
   const changedLines = selected?.restatement?.changedLines ?? [];
   const evidenceCount = countRestatementEvidence(selected, changedLines);
   const statusLabel = selected?.state ?? "No restatements";
-  const approver = selected?.restatement?.approver?.trim() || "approval pending";
-  const reason = selected?.restatement?.reasonCode?.trim() || "No restatement reason captured";
+  const approver = presentReportingPersonLabel(selected?.restatement?.approver, "Approval pending");
+  const reason = presentReportingIdentifier(selected?.restatement?.reasonCode, "No restatement reason captured");
 
   return {
     regionLabel: "Report-pack restatement review",
@@ -1009,11 +1151,11 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
   const publication = selected?.publication ?? null;
   const evidenceCount = publication?.evidenceLinks?.length ?? 0;
   const lineProvenance = selected?.lineProvenance ?? [];
-  const signedOffBy = publication?.signedOffBy?.trim() || "signer pending";
-  const signedOffRole = publication?.signedOffRole?.trim() || "role pending";
+  const signedOffBy = presentReportingPersonLabel(publication?.signedOffBy, "Signer pending");
+  const signedOffRole = presentReportingIdentifier(publication?.signedOffRole, "Role pending");
   const signOffReason = publication?.signOffReason?.trim() || "No sign-off reason retained";
-  const signOffContext = publication?.signOffContext?.trim() || "No sign-off context retained";
-  const actionOrigin = publication?.actionOrigin?.trim() || "HumanOperator";
+  const signOffContext = presentReportingSignOffContext(publication?.signOffContext);
+  const actionOrigin = presentReportingIdentifier(publication?.actionOrigin, "Human operator");
   const publicationTime = publication?.signedOffAt?.trim() || "Publication time pending";
 
   return {
@@ -1023,7 +1165,7 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
     statusLabel: selected?.state ?? "No publication",
     statusVariant: selected ? "success" : "outline",
     summaryText: publication
-      ? `${publication.manifestId} signed off by ${signedOffBy} at ${publicationTime}.`
+      ? `Publication signed off by ${signedOffBy} on ${formatTimestamp(publicationTime)}.`
       : "No report-pack publication record is loaded for this approval packet.",
     fields: [
       buildReportingDetailField("Workflow records", String(records.length), records.length > 0 ? "default" : "muted"),
@@ -1214,7 +1356,7 @@ export function buildTemplateRows(templates: ReportingTemplateMetadata[]): Repor
       version: template.version,
       versionNumber,
       sectionSummary: `${sectionLabel}${gridLabel}`,
-      statusLabel: lifecycleStatus,
+      statusLabel: presentReportingStatusLabel(lifecycleStatus),
       statusVariant: templateStatusVariant(template.lifecycleStatus),
       sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
       approvalSummary: template.approvalSummary ?? (
@@ -1745,7 +1887,7 @@ export function deriveRestatementSeriesJobId(
 export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): ReportingRunStatusRow[] {
   const latest = new Map<string, ReportingRunStatusRow>();
   for (const run of rows) {
-    if (run.status !== "Released") {
+    if (run.status !== "Released" || !hasRetainedReportingAsOfDate(run.asOfDateLabel)) {
       continue;
     }
 
@@ -1758,7 +1900,11 @@ export function latestReleasedRunsPerSeries(rows: ReportingRunStatusRow[]): Repo
   return Array.from(latest.values());
 }
 
-export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
+export function buildRunStatusRows(
+  runs: ReportingRunStatusProjection[],
+  templates: ReportingTemplateMetadata[] = []
+): ReportingRunStatusRow[] {
+  const templateNames = new Map(templates.map((template) => [template.templateId, template.name]));
   return runs.map((run) => {
     const drilldownLinks = buildRunLinkRows(run);
     const nextActions = buildRunActionRows(run);
@@ -1774,7 +1920,7 @@ export function buildRunStatusRows(runs: ReportingRunStatusProjection[]): Report
       runAttemptOrdinal: run.runAttemptOrdinal ?? 1,
       isLatestGenerated: Boolean(run.isLatestGenerated),
       isLatestApproved: Boolean(run.isLatestApproved),
-      templateLabel: run.templateId,
+      templateLabel: templateNames.get(run.templateId) ?? presentReportingIdentifier(run.templateId),
       asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
       restatementJobId: deriveRestatementSeriesJobId(run.runSeriesId, run.runId, run.asOfDate),
       restatementAsOfDate: run.asOfDate?.trim() ?? "",
@@ -1942,20 +2088,29 @@ function buildRunLinkRows(run: ReportingRunStatusProjection): ReportingRunLinkRo
 }
 
 function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActionRow[] {
-  return (run.nextActions ?? []).map((action) => ({
-    id: action.id,
-    kind: action.kind,
-    label: action.label,
-    href: action.href,
-    method: action.method,
-    isEnabled: action.isEnabled,
-    disabledReason: action.disabledReason,
-    isBrowserNavigable: action.isBrowserNavigable,
-    interactionLabel: action.isBrowserNavigable ? "Open service" : "Service reference",
-    ariaLabel: action.isEnabled
-      ? `${action.label} service reference retained for diagnostics`
-      : `${action.label} unavailable${action.disabledReason ? `: ${action.disabledReason}` : ""}`
-  }));
+  return (run.nextActions ?? []).map((action) => {
+    const disabledReason = action.isEnabled
+      ? action.disabledReason
+      : action.disabledReason
+        ?? (action.kind === "approve"
+          ? "Approval is unavailable until reviewer authority and required evidence are confirmed."
+          : "This action is unavailable for the current run state.");
+
+    return {
+      id: action.id,
+      kind: action.kind,
+      label: action.label,
+      href: action.href,
+      method: action.method,
+      isEnabled: action.isEnabled,
+      disabledReason,
+      isBrowserNavigable: action.isBrowserNavigable,
+      interactionLabel: action.isBrowserNavigable ? "Open service" : "Service reference",
+      ariaLabel: action.isEnabled
+        ? `${action.label} service reference retained for diagnostics`
+        : `${action.label} unavailable${disabledReason ? `: ${disabledReason}` : ""}`
+    };
+  });
 }
 
 function buildScheduleRows(
@@ -1969,7 +2124,7 @@ function buildScheduleRows(
     stateVariant: schedule.state === "Active" ? "success" : schedule.state === "Paused" ? "warning" : "outline",
     cronLabel: schedule.cronExpression,
     dueLabel: formatTimestamp(schedule.dueAtUtc),
-    nextAsOfLabel: schedule.nextAsOfDate,
+    nextAsOfLabel: presentReportingAsOfDate(schedule.nextAsOfDate),
     lastRunLabel: schedule.lastRunAtUtc ? formatTimestamp(schedule.lastRunAtUtc) : "Not run",
     runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
     description: schedule.description?.trim() || "No schedule note",
@@ -2004,7 +2159,7 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     readinessSummary: plan.readinessSummary,
     readinessVariant: plan.isReady ? "success" : "warning",
     dueLabel: formatTimestamp(plan.dueAtUtc),
-    nextAsOfLabel: plan.nextAsOfDate,
+    nextAsOfLabel: presentReportingAsOfDate(plan.nextAsOfDate),
     ownerLabel: plan.owner,
     route: plan.route,
     note: plan.note,
@@ -2272,14 +2427,15 @@ function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null)
   const audit = reporting?.accessAudit ?? null;
   if (!audit) {
     return {
+      isAvailable: false,
       evaluationScope: "Unavailable",
       summary: "Reporting access audit evidence is not available for this report view.",
       principalScopes: ["scope:unavailable"],
       scopeLabel: "scope:unavailable",
-      hiddenTotalLabel: "0 hidden",
+      hiddenTotalLabel: "Counts unavailable",
       postureLabel: "Unknown",
       postureVariant: "outline",
-      countRows: buildAccessAuditCountRows(),
+      countRows: [],
       denialReasons: ["Access-audit counts are not available for this Reporting view."],
       hasDenialReasons: true,
       ariaLabel: "Reporting access audit unavailable"
@@ -2296,6 +2452,7 @@ function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null)
   const postureLabel = hiddenTotal > 0 ? "Scoped" : "Fully visible";
 
   return {
+    isAvailable: true,
     evaluationScope: audit.evaluationScope,
     summary: audit.summary,
     principalScopes,
@@ -2379,8 +2536,7 @@ function buildWorkflowTaskPanel({
     chips: [
       { label: "Recipients", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
-      { label: "Ready profiles", value: String(readyProfiles) },
-      { label: "Export service", value: EXPORT_API_ENDPOINTS.reportPacks }
+      { label: "Ready profiles", value: String(readyProfiles) }
     ],
     targetsLabel: "Report-pack distribution recipients",
     targets: packTargets,

@@ -13,6 +13,7 @@ import { cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-f
 import { createReportTemplateDraft, renderReportTemplate } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
+import { presentReportingIdentifier } from "@/screens/reporting-screen.view-model";
 import type { ReportingWriterGridRow, ReportingWriterToken } from "@/screens/reporting-screen.view-model";
 import type { ReportingCommandStatus } from "@/screens/reporting-screen.shared-components";
 import type {
@@ -933,7 +934,7 @@ export function ReportWriterDesignerGrid({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
-          <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{grid.templateId} · v{grid.templateVersion}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{presentReportingIdentifier(grid.templateId)} · v{grid.templateVersion}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">{settings.gridKind}</Badge>

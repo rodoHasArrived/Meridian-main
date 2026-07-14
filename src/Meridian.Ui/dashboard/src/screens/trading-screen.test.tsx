@@ -490,7 +490,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Restore required")).toBeInTheDocument();
     expect(screen.getByText("Verify required")).toBeInTheDocument();
     expect(screen.getByText(/recent execution audit entry is visible/i)).toBeInTheDocument();
-    expect(screen.getByText(/Approved by operator-7: Meets risk constraints\. Audit audit-promo-1\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Approved by Operator 7: Meets risk constraints\. Audit evidence retained\./i)).toBeInTheDocument();
   });
 
   it("uses server acceptance gates when the readiness contract provides them", async () => {
@@ -502,7 +502,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Brokerage: No account sync")).toBeInTheDocument();
     expect(screen.getByText("As of: Apr 26, 16:00 UTC")).toBeInTheDocument();
     expect(screen.getByText("Replay verified")).toBeInTheDocument();
-    expect(screen.getByText("Blocked")).toBeInTheDocument();
+    expect(screen.getAllByText("Blocked").length).toBeGreaterThan(0);
     expect(screen.getByText("Replay mismatch in server gate.")).toBeInTheDocument();
     expect(screen.getByText("DK1 trust gate")).toBeInTheDocument();
     expect(screen.getAllByText("Review required")).toHaveLength(2);
@@ -872,7 +872,7 @@ describe("TradingScreen", () => {
     expect(screen.getByRole("status", { name: /replay verification matched current state for sess-1/i })).toHaveTextContent(/Matched current state/i);
     expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
     expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
-    expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
+    expect(screen.getByText(/Paper session replay/i)).toBeInTheDocument();
     await screen.findByText("4/4 ready");
   });
 
@@ -887,6 +887,16 @@ describe("TradingScreen", () => {
     expect(confirmButton).toHaveAttribute("title", "Review and acknowledge the trading action before confirming.");
     await user.click(screen.getByRole("checkbox", { name: /I reviewed this trading action/i }));
     expect(confirmButton).toBeEnabled();
+    expect(confirmButton).toHaveClass("text-danger");
+  });
+
+  it("marks financially destructive blotter actions before confirmation", async () => {
+    await renderTradingScreen(data, "/trading/orders");
+
+    expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
+    expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
+    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("positions");
+    expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
   });
 
   it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {
@@ -1006,19 +1016,18 @@ describe("TradingScreen", () => {
     await user.click(verifyButton);
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalled());
 
-    // 3. Close session if visible after restore
-    const closeButton = screen.queryByRole("button", { name: /close session/i });
-    if (closeButton) {
-      await user.click(closeButton);
-      await waitFor(() => expect(api.closePaperSession).toHaveBeenCalled());
-    } else {
-      // Restore session first to make close available
-      const restoreButton = screen.queryByRole("button", { name: /restore paper session/i });
-      if (restoreButton) {
-        await user.click(restoreButton);
-        await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalled());
-      }
-    }
+    // 3. Closing is destructive: review exposure and explicitly confirm first.
+    await user.click(await screen.findByRole("button", { name: "Close paper session sess-new" }));
+    expect(api.closePaperSession).not.toHaveBeenCalled();
+
+    const closeDialog = screen.getByRole("dialog", { name: "Close paper session sess-new" });
+    expect(within(closeDialog).getByText(/does not cancel working orders or flatten open positions/i)).toBeInTheDocument();
+    const confirmClose = within(closeDialog).getByRole("button", { name: "Confirm close paper session sess-new" });
+    expect(confirmClose).toBeDisabled();
+
+    await user.click(within(closeDialog).getByRole("checkbox", { name: /I reviewed open orders and positions/i }));
+    await user.click(confirmClose);
+    await waitFor(() => expect(api.closePaperSession).toHaveBeenCalledWith("sess-new"));
 
     // Verify the session list was refreshed (session was added)
     await waitFor(() => expect(api.createPaperSession).toHaveBeenCalledWith("strat-1", null, 100000));

@@ -32,7 +32,9 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant={model.dailyWork.length > 0 ? "warning" : "success"}>{model.dailyWorkSummaryLabel}</Badge>
+          <Badge variant={model.dailyWork.length > 0 || model.attentionCount > 0 ? "warning" : "success"}>
+            {model.dailyWorkSummaryLabel}
+          </Badge>
           {model.cards.length > 0 ? (
             <Badge variant={model.attentionCount > 0 ? "warning" : "success"}>{model.summaryLabel}</Badge>
           ) : null}
@@ -55,13 +57,13 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                   <li key={item.workItemId} aria-label={item.ariaLabel} className={cn("grid gap-3 px-3 py-3 lg:grid-cols-[minmax(0,1fr)_auto]", index === 0 && "bg-primary/5")}>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[11px] font-semibold uppercase text-muted-foreground">{item.kindLabel}</span>
+                        <span className="text-xs font-semibold text-muted-foreground">{item.kindLabel}</span>
                         {index === 0 ? <Badge variant="outline">Selected</Badge> : null}
                         {item.dueLabel ? <Badge variant="outline">{item.dueLabel}</Badge> : null}
                       </div>
                       <div className="mt-1 break-words text-sm font-semibold text-foreground">{item.title}</div>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                      <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-5" aria-label={`${item.title} decision facts`}>
+                      <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${item.title} decision facts`}>
                         <ReportingHubFact label="Blocked" value={item.blockedLabel} tone={item.tone} />
                         <ReportingHubFact label="Owner" value={item.owner} />
                         <ReportingHubFact label="Output" value={item.affectedOutputLabel} />
@@ -88,17 +90,19 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
               </ul>
             ) : (
               <div className="px-3 py-4 text-sm text-muted-foreground">
-                No due packages, approvals, delivery failures, restatements, or evidence gaps are queued.
+                {model.attentionCount > 0
+                  ? `No dedicated daily work items are loaded. ${model.attentionCount} report ${model.attentionCount === 1 ? "family still needs" : "families still need"} review in the organizer below.`
+                  : "No due packages, approvals, delivery failures, restatements, or evidence gaps are queued."}
               </div>
             )}
           </section>
 
           {model.cards.length > 0 ? (
-            <section className="rounded-md border border-border/70 bg-background/75" aria-label="Report family health">
+            <section className="rounded-md border border-border/70 bg-background/75" aria-label="Report family organizer">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-3 py-2">
                 <div className="flex items-center gap-2">
                   <TableProperties className="h-4 w-4 text-primary" aria-hidden="true" />
-                  <h3 className="text-sm font-semibold text-foreground">Report family health</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Report family organizer</h3>
                 </div>
                 <Badge variant="outline">{model.summaryLabel}</Badge>
               </div>
@@ -115,7 +119,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                   </thead>
                   <tbody>
                     {model.cards.map((card) => (
-                      <tr key={card.family} aria-label={card.ariaLabel} className="border-t border-border/70">
+                      <tr key={card.familyKey} aria-label={card.ariaLabel} className="border-t border-border/70">
                         <td className="px-3 py-2 font-semibold text-foreground">{card.family}</td>
                         <td className="px-3 py-2">
                           <SeverityBadge status={badgeVariantToSeverityStatus(card.badgeVariant)} label={card.statusLabel} />
@@ -131,17 +135,13 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                           ) : null}
                         </td>
                         <td className="px-3 py-2">
-                          {card.openHref ? (
-                            <Button asChild variant="outline" size="sm">
-                              <a href={card.openHref} aria-label={`${card.openLabel} for ${card.family}`}>
-                                <FileText className="h-4 w-4" aria-hidden="true" />
-                                {card.openLabel}
-                                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                              </a>
-                            </Button>
-                          ) : (
-                            <span className="text-[11px] italic text-muted-foreground">No output to open yet</span>
-                          )}
+                          <Button asChild variant={card.needsAttention ? "default" : "outline"} size="sm">
+                            <a href={card.nextActionHref} aria-label={`${card.nextActionLabel} for ${card.family}`}>
+                              <FileText className="h-4 w-4" aria-hidden="true" />
+                              {card.nextActionLabel}
+                              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            </a>
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -206,7 +206,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
             </div>
           ) : (
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              No reporting work is selected. Report family health remains available for routine review.
+              No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output.
             </p>
           )}
         </aside>
@@ -226,8 +226,8 @@ function ReportingHubFact({
 }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/50 px-2.5 py-2">
-      <dt className="text-[11px] uppercase text-muted-foreground">{label}</dt>
-      <dd className={cn("mt-1 break-words font-mono text-[11px]", semanticToneToTextClass(tone))}>{value}</dd>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className={cn("mt-1 break-words text-xs leading-5", semanticToneToTextClass(tone))}>{value}</dd>
     </div>
   );
 }

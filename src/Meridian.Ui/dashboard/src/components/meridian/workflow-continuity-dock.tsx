@@ -18,6 +18,7 @@ export function WorkflowContinuityDock({
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
 }) {
   const decision = viewModel.decisionBrief;
+  const routePathLabel = viewModel.routeLabel.split(/[?#]/, 1)[0] || "/";
   const scopeSummary = viewModel.operatingScope.items.map((item) => `${item.label} ${item.value}`).join(", ");
   const isDimensionInEffect = (id: string) =>
     !scopeDimensionsInEffect || scopeDimensionsInEffect.includes(id as AppShellOperatingScopeQueryKey);
@@ -31,7 +32,7 @@ export function WorkflowContinuityDock({
       aria-describedby="workflow-continuity-screenreader-summary"
     >
       <p id="workflow-continuity-screenreader-summary" className="sr-only">
-        {viewModel.title}. {viewModel.summary} Current route {viewModel.routeLabel}. Next action: {viewModel.nextActionLabel}.
+        {viewModel.title}. {viewModel.summary} Current route {routePathLabel}. Next action: {viewModel.nextActionLabel}.
       </p>
       <div className="workflow-continuity-context">
         <div className="flex min-w-0 items-center gap-2">
@@ -42,9 +43,9 @@ export function WorkflowContinuityDock({
           </div>
         </div>
         <p className="sr-only">{viewModel.summary}</p>
-        <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
+        <div className="workflow-continuity-meta" aria-label={`Current route ${routePathLabel}`}>
           <span>{viewModel.contextValue}</span>
-          <span>{viewModel.routeLabel}</span>
+          <span>{routePathLabel}</span>
           {onEditOperatingContext ? (
             <button
               type="button"
@@ -124,6 +125,10 @@ export function WorkflowContinuityDock({
             <p className="workflow-continuity-expanded-flow">
               <span>{viewModel.primaryOperatorFlowLabel}</span>
               <span>{viewModel.primaryOperatorFlowSummary}</span>
+            </p>
+            <p className="workflow-continuity-expanded-flow">
+              <span>Technical route</span>
+              <span>{viewModel.routeLabel}</span>
             </p>
             <div className="workflow-continuity-expanded-decision" aria-label={`${decision.label} detail`}>
               <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>

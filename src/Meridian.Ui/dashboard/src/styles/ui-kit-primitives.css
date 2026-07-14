@@ -331,6 +331,14 @@
   box-shadow: var(--ws-shadow);
 }
 
+.entity-summary-field dt {
+  color: var(--ws-text-muted);
+}
+
+.entity-summary-field dd {
+  color: var(--ws-text);
+}
+
 .dense-data-table-wrap {
   border-color: var(--ws-border);
   border-radius: 2px;

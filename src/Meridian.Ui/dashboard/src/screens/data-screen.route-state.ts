@@ -25,7 +25,7 @@ export interface DataOperationsRouteFocusCardState {
   action: DataOperationsRouteFocusActionState | null;
 }
 
-export type DataOperationsWorkstream = "overview" | "providers" | "backfills" | "exports" | "query";
+export type DataOperationsWorkstream = "overview" | "providers" | "import" | "backfills" | "exports" | "query";
 
 export interface DataWorkstationViewState {
   workstream: DataOperationsWorkstream;
@@ -33,6 +33,10 @@ export interface DataWorkstationViewState {
 }
 
 export function resolveDataWorkstream(pathname: string): DataOperationsWorkstream {
+  if (pathname.includes("/import")) {
+    return "import";
+  }
+
   if (pathname.includes("/providers")) {
     return "providers";
   }
@@ -57,26 +61,31 @@ export function buildDataLoadingState(
 ): DataOperationsLoadingState {
   const backfillFocus = workstream === "backfills";
   const providersFocus = workstream === "providers";
+  const importFocus = workstream === "import";
   const exportsFocus = workstream === "exports";
   const queryFocus = workstream === "query";
   const focusedTitle = backfillFocus
     ? "Loading backfill queue"
     : providersFocus
       ? "Loading Data providers"
-      : exportsFocus
-        ? "Loading Data exports"
-        : queryFocus
-          ? "Loading SQL query workspace"
-          : "Loading Data workspace";
+      : importFocus
+        ? "Loading Data import"
+        : exportsFocus
+          ? "Loading Data exports"
+          : queryFocus
+            ? "Loading SQL query workspace"
+            : "Loading Data workspace";
   const focusedDescription = backfillFocus
     ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
     : providersFocus
       ? "Waiting for provider status, credential posture, and setup evidence."
-      : exportsFocus
-        ? "Waiting for retained export records and handoff readiness."
-        : queryFocus
-          ? "Waiting for the read-only query workspace and catalog posture."
-          : "Waiting for provider posture, market data health, and export evidence.";
+      : importFocus
+        ? "Waiting for governed upload templates and retained-file preview readiness."
+        : exportsFocus
+          ? "Waiting for retained export records and handoff readiness."
+          : queryFocus
+            ? "Waiting for the read-only query workspace and catalog posture."
+            : "Waiting for provider posture, market data health, and export evidence.";
 
   return {
     title: focusedTitle,
@@ -86,19 +95,25 @@ export function buildDataLoadingState(
       ? "Queued and review-required jobs will appear here as soon as workspace data is available."
       : providersFocus
         ? "Provider health, credential verification, and routing posture will appear when workspace data is available."
-        : exportsFocus
-          ? "Export packages and selected export details will appear when workspace data is available."
-          : queryFocus
-            ? "Saved query, recent query, and result controls will appear when the workspace is ready."
-            : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
-    regionLabel: backfillFocus ? "Data backfill loading state" : "Data workspace loading state",
+        : importFocus
+          ? "Upload templates, field guidance, and retained-source preview controls will appear when workspace data is available."
+          : exportsFocus
+            ? "Export packages and selected export details will appear when workspace data is available."
+            : queryFocus
+              ? "Saved query, recent query, and result controls will appear when the workspace is ready."
+              : "Provider health, data-quality handoffs, and export readiness will appear when workspace data is available.",
+    regionLabel: backfillFocus
+      ? "Data backfill loading state"
+      : importFocus
+        ? "Data import loading state"
+        : "Data workspace loading state",
     role: "status",
     ariaLive: "polite",
     ariaBusy: true,
     chips: [
       { label: "Providers", value: "Pending" },
       { label: "Data quality", value: "Pending" },
-      { label: backfillFocus ? "Backfills" : "Exports", value: "Pending" }
+      { label: backfillFocus ? "Backfills" : importFocus ? "Upload templates" : "Exports", value: "Pending" }
     ],
     actions: [
       {
@@ -168,6 +183,23 @@ export function buildRouteFocusCardState({
         { id: "provider-status", label: "Provider status", value: "Catalog and readiness" },
         { id: "credentials", label: "Credentials", value: "Masked and auditable" },
         { id: "routing", label: "Routing", value: "Backup and trust snapshots" }
+      ],
+      action: null
+    };
+  }
+
+  if (workstream === "import") {
+    return {
+      id: "data-route-focus-import",
+      role: "region",
+      ariaLabel: "Data import route focus",
+      eyebrow: "File Intake",
+      title: "Governed file import",
+      description: "Choose a server-provided template, preview a retained source file, and review validation evidence before downstream handoff.",
+      rows: [
+        { id: "template", label: "Template", value: "Server-owned catalog" },
+        { id: "preview", label: "Preview", value: "Retained source evidence" },
+        { id: "handoff", label: "Handoff", value: "Validation and reconciliation" }
       ],
       action: null
     };

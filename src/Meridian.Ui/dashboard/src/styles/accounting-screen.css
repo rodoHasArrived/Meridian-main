@@ -527,3 +527,21 @@
     box-shadow: 0 0 0 0 transparent;
   }
 }
+
+/* Disabled accounting actions remain visibly unavailable without dropping
+   labels below the contrast needed to understand the gate they represent. */
+.workspace-section-band button:disabled,
+.accounting-reference-panel button:disabled,
+.configure-activation-rail button:disabled,
+.row-detail-panel button:disabled {
+  color: var(--ws-text-muted, #59636f);
+  opacity: 0.76;
+}
+
+.workspace-section-band input:disabled,
+.workspace-section-band select:disabled,
+.accounting-reference-panel input:disabled,
+.accounting-reference-panel select:disabled {
+  color: var(--ws-text-muted, #59636f);
+  opacity: 0.82;
+}

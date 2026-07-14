@@ -20,6 +20,7 @@ import {
   buildDataLoadingState,
   buildDataPresentationState,
   buildExportSection,
+  formatProviderReasonLabel,
   buildProviderRow,
   buildProviderSection,
   buildPlaidInstitutionSearchState,
@@ -453,6 +454,7 @@ describe("data-screen view model", () => {
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data/providers")).toBe("providers");
+    expect(resolveDataWorkstream("/data/import")).toBe("import");
     expect(resolveDataWorkstream("/data/exports")).toBe("exports");
     expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");
@@ -489,6 +491,17 @@ describe("data-screen view model", () => {
       label: "Open Security Master",
       href: "/accounting/security-master",
       ariaLabel: "Open Security Master in Accounting"
+    });
+
+    const importFocus = buildRouteFocusCardState({
+      workstream: "import",
+      selectedBackfillDetail: null,
+      backfillDetailEmptyState: null
+    });
+    expect(importFocus).toMatchObject({
+      ariaLabel: "Data import route focus",
+      eyebrow: "File Intake",
+      title: "Governed file import"
     });
   });
 
@@ -1101,6 +1114,43 @@ describe("data-screen view model", () => {
       label: "Allowed environments",
       value: "Sandbox, Development, Production"
     });
+  });
+
+  it("merges workspace and routing providers while normalizing trust and readiness coverage", () => {
+    const alpacaRoutingConnection: ProviderRoutingConnection = {
+      ...polygonRoutingConnection,
+      connectionId: "alpaca",
+      providerFamilyId: "alpaca",
+      displayName: "Alpaca"
+    };
+    const alpacaTrustSnapshot: ProviderRoutingTrustSnapshot = {
+      ...polygonTrustSnapshot,
+      connectionId: "alpaca",
+      providerFamilyId: "alpaca",
+      score: 0.92,
+      isHealthy: true,
+      healthStatus: "Healthy"
+    };
+
+    const providerSection = buildProviderSection(
+      [...providers, alpacaProvider],
+      "provider-row-alpaca",
+      {
+        providerReadiness,
+        providerConnections: [polygonConnection],
+        providerRoutingConnections: [polygonRoutingConnection, alpacaRoutingConnection],
+        providerRoutingTrustSnapshots: [polygonTrustSnapshot, alpacaTrustSnapshot]
+      }
+    );
+
+    expect(providerSection.rows.filter((row) => row.provider === "Alpaca")).toHaveLength(1);
+    expect(providerSection.rows.find((row) => row.provider === "Alpaca")?.trustFields).toContainEqual({
+      id: "trust-score",
+      label: "Trust score",
+      value: "92% · Healthy"
+    });
+    expect(providerSection.readinessSummary).toContain("Displayed posture: 2 ready / 0 review / 0 degraded / 1 blocked.");
+    expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
   });
 
   it("surfaces verification command state without mutating provider rows", () => {
@@ -1750,7 +1800,16 @@ describe("data-screen view model", () => {
       value: "Trust score not reported"
     });
     expect(row.gateImpactText).toBe("Blocks provider trust gate");
+    expect(row.reasonLabelText).toBe("Checkpoint delay");
+    expect(row.reasonCodeText).toBe("CHECKPOINT_DELAY");
     expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
+  });
+
+  it("presents provider reason enums as operator labels while preserving non-code copy", () => {
+    expect(formatProviderReasonLabel("READINESS_BLOCKED")).toBe("Readiness blocked");
+    expect(formatProviderReasonLabel("TRUST_OK")).toBe("Trust OK");
+    expect(formatProviderReasonLabel("LATENCY_ELEVATED")).toBe("Latency elevated");
+    expect(formatProviderReasonLabel("Reason code not reported")).toBe("Reason code not reported");
   });
 
   it("derives selected backfill detail panel state with stable linkage ids", () => {

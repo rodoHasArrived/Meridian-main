@@ -11,6 +11,7 @@ import type {
   ReconciliationBreakQueueItem,
   WorkspaceWorkflowSummary
 } from "@/types";
+import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 
 export interface AccountingOperatorFocusInput {
   accounting: AccountingWorkspaceResponse | null;
@@ -112,7 +113,7 @@ function buildOperatorFocusCandidateFromBreak(
 
   return buildOperatorFocusCandidate({
     id: `break:${item.breakId}`,
-    label: `${item.category} break ${item.status === "Open" ? "open" : "in review"}`,
+    label: financeBreakLabel(item.category),
     detail: item.recommendedAction ?? item.explainabilitySummary ?? item.reason,
     route: normalizeLocalWorkstationRoute(item.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     workspaceLabel: "Accounting",

@@ -1085,6 +1085,12 @@ export interface SecurityMasterPageMetricViewModel {
   tone: SecurityMasterPageMetricTone;
 }
 
+export interface SecurityMasterCoveragePostureViewModel {
+  label: "Ready" | "Review required" | "Verification pending" | "Select a record";
+  detail: string;
+  tone: SecurityMasterPageMetricTone;
+}
+
 export interface SecurityMasterDetailSectionViewModel {
   id: "overview" | "reference" | "schedules" | "lots" | "controls" | "audit";
   label: string;
@@ -1097,6 +1103,7 @@ export interface SecurityMasterPageViewState {
   eyebrow: string;
   title: string;
   description: string;
+  coveragePosture: SecurityMasterCoveragePostureViewModel;
   metrics: SecurityMasterPageMetricViewModel[];
   detailEyebrow: string;
   detailTitle: string;
@@ -1881,6 +1888,7 @@ export type CapitalAccountWorkbenchFundEventCommandRowViewModel =
 export interface CapitalAccountWorkbenchViewModel {
   title: string;
   description: string;
+  available: boolean;
   loading: boolean;
   errorText: string | null;
   statusLabel: string;
@@ -1904,6 +1912,7 @@ export interface CapitalAccountWorkbenchViewModel {
 export interface ManualJournalEntryWorkbenchViewModel {
   title: string;
   description: string;
+  available: boolean;
   loading: boolean;
   errorText: string | null;
   statusLabel: string;
@@ -1938,6 +1947,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   submitBusy: boolean;
   attachEvidenceBusy: boolean;
   attachEvidenceStatusText: string | null;
+  validationIsCurrent: boolean;
   canSubmit: boolean;
   submitDisabledReason: string | null;
   refresh: () => Promise<void>;
@@ -4446,6 +4456,42 @@ const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
 
 export const SECURITY_IDENTITY_DETAIL_PANEL_ID = "security-master-identity-detail";
 
+interface ReferenceDataRoutePostureCounts {
+  totalCount: number;
+  readyCount: number;
+  reviewCount: number;
+  deferredCount: number;
+  blockedCount: number;
+  deferredOrBlockedCount: number;
+}
+
+function summarizeReferenceDataRoutes(endpoints: ReferenceDataEndpointProbeResult[]): ReferenceDataRoutePostureCounts {
+  return endpoints.reduce<ReferenceDataRoutePostureCounts>((counts, endpoint) => {
+    counts.totalCount += 1;
+    if (endpoint.status === "Ready") {
+      counts.readyCount += 1;
+    } else if (endpoint.status === "Deferred") {
+      counts.deferredCount += 1;
+      counts.deferredOrBlockedCount += 1;
+    } else if (endpoint.status === "Blocked") {
+      counts.blockedCount += 1;
+      counts.deferredOrBlockedCount += 1;
+    } else {
+      // Empty, Missing, and Error all require operator review. Treat unknown
+      // runtime statuses the same way so the visible buckets always reconcile.
+      counts.reviewCount += 1;
+    }
+    return counts;
+  }, {
+    totalCount: 0,
+    readyCount: 0,
+    reviewCount: 0,
+    deferredCount: 0,
+    blockedCount: 0,
+    deferredOrBlockedCount: 0
+  });
+}
+
 export function buildSecurityMasterPageViewState({
   query,
   results,
@@ -4496,15 +4542,15 @@ export function buildSecurityMasterPageViewState({
   const hasQuery = query.trim().length > 0;
   const resultCount = results?.length ?? 0;
   const openConflictCount = countOpenSecurityConflicts(conflicts);
-  const selectedName = selectedDisplayName?.trim() || selectedSecurityId || "None selected";
+  const selectedName = selectedDisplayName?.trim() || (selectedSecurityId ? "Selected security" : "None selected");
   const selectedClass = selectedAssetClass?.trim() || "Unclassified";
   const statusLabel = selectedStatus?.trim() || (selectedSecurityId ? "Pending" : "No selection");
   const identifiersLabel = identity
-    ? formatCount(identity.identifiers.length, "identifier")
+    ? formatCount(identity.identifiers?.length ?? 0, "identifier")
     : identityLoading
       ? "Loading identifiers"
       : "No identifiers loaded";
-  const aliasesLabel = identity ? formatCount(identity.aliases.length, "alias") : "No aliases loaded";
+  const aliasesLabel = identity ? formatCount(identity.aliases?.length ?? 0, "alias") : "No aliases loaded";
   const corporateActionLabel = corporateActions
     ? formatCount(corporateActions.length, "corporate action")
     : selectedSecurityId
@@ -4516,20 +4562,17 @@ export function buildSecurityMasterPageViewState({
     : referenceDataLoading
       ? "Loading"
       : referenceDataCoverage
-        ? formatCount(referenceDataCoverage.endpoints.length, "route")
+        ? formatCount(referenceDataCoverage.endpoints?.length ?? 0, "route")
         : selectedSecurityId
           ? "Pending"
           : "No selection";
-  const readyReferenceRoutes = referenceDataCoverage?.endpoints.filter((endpoint) => endpoint.status === "Ready").length ?? 0;
-  const reviewReferenceRoutes = referenceDataCoverage?.endpoints.filter((endpoint) => (
-    endpoint.status === "Blocked" || endpoint.status === "Error" || endpoint.status === "Missing"
-  )).length ?? 0;
+  const referenceRouteCounts = summarizeReferenceDataRoutes(referenceDataCoverage?.endpoints ?? []);
   const referenceDataDetail = referenceDataError
     ? "Reference coverage could not be loaded."
     : referenceDataLoading
       ? "Refreshing endpoint coverage for the selected record."
       : referenceDataCoverage
-        ? `${formatCount(readyReferenceRoutes, "ready route")} and ${formatCount(reviewReferenceRoutes, "route")} needing review.`
+        ? `${referenceRouteCounts.readyCount.toLocaleString()} ready · ${referenceRouteCounts.reviewCount.toLocaleString()} need review · ${referenceRouteCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${referenceRouteCounts.totalCount.toLocaleString()} total.`
         : selectedSecurityId
           ? "Reference coverage is queued for the selected record."
           : "Select a security to inspect source coverage.";
@@ -4543,19 +4586,21 @@ export function buildSecurityMasterPageViewState({
     : trustSnapshotLoading
       ? "Loading"
       : openLotReadModel
-        ? formatCount(openLotReadModel.lots.length, "lot")
+        ? formatCount(openLotReadModel.lots?.length ?? 0, "lot")
         : selectedSecurityId
           ? "No lots"
           : "No selection";
   const operationsReadiness = instrumentPassport?.operationsWorkbench?.readiness ?? [];
   const readyOperationCount = operationsReadiness.filter((item) => item.status === "Ready" || item.status === "Complete").length;
   const totalOperationCount = operationsReadiness.length;
+  const passportTrustSummary = instrumentPassport?.trustPosture?.summary?.trim() || "Passport evidence incomplete";
+  const passportTrustTone = instrumentPassport?.trustPosture?.tone?.trim().toLowerCase() || "unknown";
   const passportControlLabel = normalizedPassportError
     ? "Error"
     : instrumentPassportLoading
       ? "Loading"
       : instrumentPassport
-        ? instrumentPassport.trustPosture.summary
+        ? passportTrustSummary
         : tradingParameters
           ? "Controls set"
           : selectedSecurityId
@@ -4568,32 +4613,106 @@ export function buildSecurityMasterPageViewState({
       : instrumentPassport
         ? totalOperationCount > 0
           ? `${readyOperationCount}/${totalOperationCount} operations checks ready; trading controls ${tradingParameters ? "loaded" : "pending"}.`
-          : `Trust posture ${instrumentPassport.trustPosture.summary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
+          : `Trust posture ${passportTrustSummary}; trading controls ${tradingParameters ? "loaded" : "pending"}.`
         : selectedSecurityId
           ? "Passport and control readiness are queued for the selected record."
           : "Select a security to inspect passport and control readiness.";
   const passportControlTone: SecurityMasterPageMetricTone = normalizedPassportError || instrumentPassportLoading
     ? "warning"
     : instrumentPassport
-      ? instrumentPassport.trustPosture.tone.toLowerCase() === "success" || instrumentPassport.trustPosture.tone.toLowerCase() === "ready"
+      ? passportTrustTone === "success" || passportTrustTone === "ready" || passportTrustTone === "trusted"
         ? "success"
         : "warning"
       : tradingParameters
         ? "success"
         : "default";
+  const passportOperationsReady = operationsReadiness.length > 0
+    && operationsReadiness.every((item) => item.status === "Ready" || item.status === "Complete");
+  const passportEvidenceReady = Boolean(instrumentPassport)
+    && (passportTrustTone === "success" || passportTrustTone === "ready" || passportTrustTone === "trusted")
+    && passportOperationsReady;
+  const coverageDetails: string[] = [];
+  let coverageHasIssue = false;
+  let coverageHasPendingCheck = false;
+
+  if (conflictsLoading || conflicts === null) {
+    coverageDetails.push("conflict checks are pending");
+    coverageHasPendingCheck = true;
+  } else if (openConflictCount > 0) {
+    coverageDetails.push(formatCount(openConflictCount, "open conflict"));
+    coverageHasIssue = true;
+  }
+
+  if (referenceDataError) {
+    coverageDetails.push("reference-route coverage is unavailable");
+    coverageHasIssue = true;
+  } else if (referenceDataLoading || referenceDataCoverage === null) {
+    coverageDetails.push("reference-route checks are pending");
+    coverageHasPendingCheck = true;
+  } else if (referenceRouteCounts.totalCount === 0) {
+    coverageDetails.push("no reference routes returned coverage evidence");
+    coverageHasIssue = true;
+  } else {
+    if (referenceRouteCounts.reviewCount > 0) {
+      coverageDetails.push(`${formatCount(referenceRouteCounts.reviewCount, "route")} ${referenceRouteCounts.reviewCount === 1 ? "needs" : "need"} review`);
+      coverageHasIssue = true;
+    }
+    if (referenceRouteCounts.deferredOrBlockedCount > 0) {
+      coverageDetails.push(`${formatCount(referenceRouteCounts.deferredOrBlockedCount, "route")} ${referenceRouteCounts.deferredOrBlockedCount === 1 ? "is" : "are"} deferred or blocked`);
+      coverageHasIssue ||= referenceRouteCounts.blockedCount > 0;
+    }
+  }
+
+  if (normalizedPassportError) {
+    coverageDetails.push("passport evidence is unavailable");
+    coverageHasIssue = true;
+  } else if (instrumentPassportLoading) {
+    coverageDetails.push("passport checks are pending");
+    coverageHasPendingCheck = true;
+  } else if (!passportEvidenceReady) {
+    coverageDetails.push(instrumentPassport ? "passport evidence is incomplete" : "passport evidence is missing");
+    coverageHasIssue = true;
+  }
+
+  const coveragePosture: SecurityMasterCoveragePostureViewModel = !selectedSecurityId
+    ? {
+        label: "Select a record",
+        detail: "Select a security before relying on conflicts, reference coverage, or passport evidence.",
+        tone: "default"
+      }
+    : coverageHasIssue
+      ? {
+          label: "Review required",
+          detail: `${coverageDetails.join("; ")}.`,
+          tone: "warning"
+        }
+      : coverageHasPendingCheck
+        ? {
+            label: "Verification pending",
+            detail: `${coverageDetails.join("; ")}.`,
+            tone: "warning"
+          }
+        : {
+            label: "Ready",
+            detail: referenceRouteCounts.deferredCount > 0
+              ? `No open conflicts; all probed reference routes are ready; passport evidence is trusted; ${formatCount(referenceRouteCounts.deferredCount, "write-capable route")} intentionally deferred.`
+              : "No open conflicts; all reference routes are ready; passport evidence is trusted.",
+            tone: "success"
+          };
 
   return {
     ariaLabel: "Security Master command deck",
     eyebrow: "Security Master",
     title: "Security Master command deck",
     description: "Search, inspect, and reconcile trusted security reference records from one dense master-detail page.",
+    coveragePosture,
     metrics: [
       {
         id: "selected",
         label: "Selected record",
         value: selectedName,
         detail: selectedSecurityId
-          ? `Security ID ${selectedSecurityId}; ${selectedClass}; ${statusLabel}.`
+          ? `${selectedClass} · ${statusLabel}.`
           : hasQuery
             ? `${formatCount(resultCount, "security")} returned. Select a row to open the record.`
             : "Search by ticker, ISIN, CUSIP, FIGI, or display name.",
@@ -4615,7 +4734,15 @@ export function buildSecurityMasterPageViewState({
         label: "Reference coverage",
         value: referenceDataLabel,
         detail: referenceDataDetail,
-        tone: referenceDataError || referenceDataLoading || reviewReferenceRoutes > 0 ? "warning" : referenceDataCoverage ? "success" : "default"
+        tone: referenceDataError
+          || referenceDataLoading
+          || referenceRouteCounts.reviewCount > 0
+          || referenceRouteCounts.blockedCount > 0
+          || (referenceDataCoverage !== null && referenceRouteCounts.totalCount === 0)
+          ? "warning"
+          : referenceDataCoverage
+            ? "success"
+            : "default"
       },
       {
         id: "passport",
@@ -4627,7 +4754,7 @@ export function buildSecurityMasterPageViewState({
     ],
     detailEyebrow: "Security detail",
     detailTitle: "Security detail page",
-    detailSubtitle: selectedSecurityId ? `${selectedSecurityId} · ${selectedClass}` : "Select a security",
+    detailSubtitle: selectedSecurityId ? `${selectedClass} · ${statusLabel}` : "Select a security",
     detailDescription: selectedSecurityId
       ? `${selectedName} reference data, schedules, trading controls, lots, and audit evidence are grouped below the selected master row.`
       : "Select a security from the master table to inspect its reference record.",
@@ -4794,7 +4921,7 @@ export function buildSecurityIdentityDrillInState(
   return {
     panelId: SECURITY_IDENTITY_DETAIL_PANEL_ID,
     title: `Identity drill-in · ${identity.displayName}`,
-    subtitle: `${identity.securityId} · v${identity.version} · ${identity.assetClass || "—"}`,
+    subtitle: `${identity.assetClass || "Unclassified"} · ${identity.status || "Status unavailable"}`,
     description: `${formatCount(identifiers.length, "identifier")} · ${formatCount(aliases.length, "alias")} · effective ${effectiveRange}`,
     ariaLabel: `Security identity detail for ${identity.displayName}`,
     statusLabel: identity.status || "Unknown",
@@ -4836,7 +4963,7 @@ export function buildSecurityConflictRows(
       statusTone: isOpen ? "warning" : "neutral",
       isOpen,
       isResolving,
-      fieldLabel: conflict.fieldPath,
+      fieldLabel: formatSecurityConflictField(conflict.fieldPath),
       providerASummary,
       providerBSummary,
       detectedLabel: `Detected ${formatConflictDate(conflict.detectedAt)}`,
@@ -5119,7 +5246,7 @@ export function buildAccountingTrialBalanceViewState({
   error: string | ApiErrorDisplay | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
-  const runLabel = runId ?? "selected run";
+  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
@@ -5200,7 +5327,7 @@ export function buildAccountingLedgerJournalEvidenceViewState({
   rows: LedgerJournalLine[];
   dimensionFilter?: string | null;
 }): AccountingLedgerJournalEvidenceViewState {
-  const runLabel = runId ?? "selected run";
+  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
   const normalizedFilter = normalizeLedgerAccountFilter(dimensionFilter);
   const journalRows = rows
     .map(buildLedgerJournalEvidenceRow)
@@ -5469,7 +5596,7 @@ function buildTrialBalanceDetail(
   return {
     eyebrow: "Trial-balance detail",
     title: line.accountLabel,
-    subtitle: `${line.accountTypeLabel} · ${financialAccountId}`,
+    subtitle: `${line.accountTypeLabel} · ${line.basisLabel}`,
     description: `${line.accountLabel} contributes ${line.balanceLabel} across ${line.entryCountLabel} ledger entr${line.entryCount === 1 ? "y" : "ies"} for ${runLabel}. Source events and approvals stay attached for audit drill-through.`,
     statusLabel,
     statusVariant,
@@ -5488,7 +5615,7 @@ function buildTrialBalanceDetail(
       { label: "Approvals", value: approvalIds.length > 0 ? approvalIds.join(", ") : "No approvals linked" },
       { label: "Run", value: runLabel }
     ],
-    auditDrillThroughLabel: firstSourceEventId ? `Open source event ${firstSourceEventId}` : "No source-event drill-through available",
+    auditDrillThroughLabel: firstSourceEventId ? "Open source evidence" : "No source-event drill-through available",
     auditDrillThroughHref,
     approvalDrillThroughHref,
     ledgerLinesTitle: "Ledger lines for selected account",
@@ -5522,7 +5649,7 @@ function buildLedgerLineRows(
   const debit = line.balance >= 0 ? line.balance : 0;
   const credit = line.balance < 0 ? Math.abs(line.balance) : 0;
   const evidenceLabel = sourceEventIds.length > 0
-    ? `Source ${sourceEventIds[0]}`
+    ? "Source evidence"
     : "No source event linked";
   const evidenceHref = sourceEventIds[0]
     ? `/accounting/audit?sourceEventId=${encodeURIComponent(sourceEventIds[0])}`
@@ -5561,7 +5688,7 @@ function buildSupportingDocumentRows({
     rows.push({
       id: `${line.rowId}-review-packet`,
       label: "Run review packet",
-      detail: `Ledger, reconciliation, and evidence packet for ${runId}.`,
+      detail: "Ledger, reconciliation, and evidence packet for the selected run.",
       href: getRunReviewPacketPath(runId),
       ariaLabel: `Open run review packet for ${line.accountLabel}`
     });
@@ -5570,7 +5697,7 @@ function buildSupportingDocumentRows({
   for (const sourceEventId of sourceEventIds) {
     rows.push({
       id: `${line.rowId}-source-${sourceEventId}`,
-      label: `Source event ${sourceEventId}`,
+      label: "Source event evidence",
       detail: "Source transaction, provider activity, or retained event evidence.",
       href: `/accounting/audit?sourceEventId=${encodeURIComponent(sourceEventId)}`,
       ariaLabel: `Open source event ${sourceEventId} for ${line.accountLabel}`
@@ -5580,7 +5707,7 @@ function buildSupportingDocumentRows({
   for (const journalEntryId of sourceJournalEntryIds) {
     rows.push({
       id: `${line.rowId}-journal-${journalEntryId}`,
-      label: `Journal entry ${journalEntryId}`,
+      label: "Journal entry evidence",
       detail: "Posting support and ledger entry lineage.",
       href: `/accounting/ledger?journalEntryId=${encodeURIComponent(journalEntryId)}`,
       ariaLabel: `Open journal entry ${journalEntryId} for ${line.accountLabel}`
@@ -5590,7 +5717,7 @@ function buildSupportingDocumentRows({
   for (const approvalId of approvalIds) {
     rows.push({
       id: `${line.rowId}-approval-${approvalId}`,
-      label: `Approval ${approvalId}`,
+      label: "Approval evidence",
       detail: "Controller approval and maker/checker evidence.",
       href: `/accounting/approvals?approvalId=${encodeURIComponent(approvalId)}`,
       ariaLabel: `Open approval ${approvalId} for ${line.accountLabel}`
@@ -5970,7 +6097,7 @@ function buildSecurityConflictAction(
 function buildSecurityIdentityIdentifierRow(
   identifier: SecurityIdentifierEntry
 ): SecurityIdentityIdentifierRowViewModel {
-  const providerLabel = valueOrDash(identifier.provider);
+  const providerLabel = presentSecurityProvider(identifier.provider);
   const primaryLabel = identifier.isPrimary ? "Primary" : "Secondary";
   const validRangeLabel = formatSecurityDateRange(identifier.validFrom, identifier.validTo);
 
@@ -5986,7 +6113,7 @@ function buildSecurityIdentityIdentifierRow(
 }
 
 function buildSecurityIdentityAliasRow(alias: SecurityAliasEntry): SecurityIdentityAliasRowViewModel {
-  const providerLabel = valueOrDash(alias.provider);
+  const providerLabel = presentSecurityProvider(alias.provider);
   const enabledLabel = alias.isEnabled ? "Enabled" : "Disabled";
   const validRangeLabel = formatSecurityDateRange(alias.validFrom, alias.validTo);
 
@@ -6027,21 +6154,45 @@ function formatSecurityDate(value: string | null | undefined): string {
     return "—";
   }
 
-  const match = /^\d{4}-\d{2}-\d{2}/.exec(value);
-  return match?.[0] ?? value;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
 function formatSecurityDateRange(from: string | null | undefined, to: string | null | undefined): string {
-  return `${formatSecurityDate(from)} -> ${to ? formatSecurityDate(to) : "active"}`;
+  return `${formatSecurityDate(from)} – ${to ? formatSecurityDate(to) : "active"}`;
+}
+
+function presentSecurityProvider(value: string | null | undefined): string {
+  const provider = value?.trim();
+  if (!provider) {
+    return "—";
+  }
+
+  return /fixture|screenshot/i.test(provider) ? "Meridian demo data" : provider;
 }
 
 function formatConflictDate(value: string): string {
-  const match = /^\d{4}-\d{2}-\d{2}/.exec(value);
-  return match?.[0] ?? value;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
-function valueOrDash(value: string | null | undefined): string {
-  return value?.trim() || "—";
+function formatSecurityConflictField(value: string): string {
+  const segments = value.split(".").filter(Boolean);
+  const fieldName = segments.at(-1) ?? value;
+  if (segments[0]?.toLowerCase() === "identifiers") {
+    return `${fieldName.toUpperCase()} identifier`;
+  }
+
+  const words = fieldName
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim()
+    .toLowerCase();
+  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Identifier conflict";
 }
 
 function buildSecurityStatusAnnouncement({
@@ -6582,10 +6733,7 @@ export function buildReferenceDataWorkbenchViewState({
     ? selectedRowId
     : rows[0]?.rowId ?? null;
   const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
-  const readyCount = rows.filter((row) => row.status === "Ready").length;
-  const reviewCount = rows.filter((row) => row.status === "Empty" || row.status === "Missing" || row.status === "Blocked" || row.status === "Error").length;
-  const deferredCount = rows.filter((row) => row.status === "Deferred").length;
-  const routeCount = rows.length;
+  const routeCounts = summarizeReferenceDataRoutes(rows);
   const displaySecurityId = securityId ?? "selected security";
 
   return {
@@ -6598,30 +6746,37 @@ export function buildReferenceDataWorkbenchViewState({
       {
         id: "routes",
         label: "Mapped routes",
-        value: routeCount > 0 ? routeCount.toLocaleString() : "Pending",
-        detail: routeCount > 0 ? `${formatCount(routeCount, "reference data source")} catalogued for this selection.` : "Select a security to build reference data checks.",
-        tone: routeCount > 0 ? "default" : "warning"
+        value: routeCounts.totalCount > 0 ? routeCounts.totalCount.toLocaleString() : "Pending",
+        detail: routeCounts.totalCount > 0
+          ? `${routeCounts.readyCount.toLocaleString()} ready · ${routeCounts.reviewCount.toLocaleString()} need review · ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked · ${routeCounts.totalCount.toLocaleString()} total.`
+          : "Select a security to build reference data checks.",
+        tone: routeCounts.totalCount > 0 ? "default" : "warning"
       },
       {
         id: "ready",
         label: "Ready data",
-        value: readyCount.toLocaleString(),
-        detail: readyCount > 0 ? `${formatCount(readyCount, "reference route")} returned data.` : "No reference route has returned data yet.",
-        tone: readyCount > 0 ? "success" : "default"
+        value: routeCounts.readyCount.toLocaleString(),
+        detail: routeCounts.readyCount > 0 ? `${formatCount(routeCounts.readyCount, "reference route")} returned data.` : "No reference route has returned data yet.",
+        tone: routeCounts.readyCount > 0 ? "success" : "default"
       },
       {
         id: "review",
         label: "Needs review",
-        value: reviewCount.toLocaleString(),
-        detail: reviewCount > 0 ? `${formatCount(reviewCount, "data source")} returned empty, missing, blocked, or error status.` : "No checked data source is flagged for review.",
-        tone: reviewCount > 0 ? "warning" : "success"
+        value: routeCounts.reviewCount.toLocaleString(),
+        detail: routeCounts.reviewCount > 0 ? `${formatCount(routeCounts.reviewCount, "data source")} returned empty, missing, or error status.` : "No checked data source is flagged for review.",
+        tone: routeCounts.reviewCount > 0 ? "warning" : "success"
       },
       {
         id: "deferred",
-        label: "Deferred mutations",
-        value: deferredCount.toLocaleString(),
-        detail: deferredCount > 0 ? `${formatCount(deferredCount, "write-capable source")} catalogued without invocation.` : "No write-capable source is present in the catalog.",
-        tone: deferredCount > 0 ? "warning" : "default"
+        label: "Deferred / blocked",
+        value: routeCounts.deferredOrBlockedCount.toLocaleString(),
+        detail: routeCounts.deferredOrBlockedCount > 0
+          ? [
+              routeCounts.deferredCount > 0 ? `${formatCount(routeCounts.deferredCount, "write-capable source")} intentionally deferred.` : null,
+              routeCounts.blockedCount > 0 ? `${formatCount(routeCounts.blockedCount, "data source")} blocked.` : null
+            ].filter((detail): detail is string => detail !== null).join(" ")
+          : "No reference route is deferred or blocked.",
+        tone: routeCounts.deferredOrBlockedCount > 0 ? "warning" : "default"
       }
     ],
     rows,
@@ -6639,11 +6794,11 @@ export function buildReferenceDataWorkbenchViewState({
     errorDetails: normalizedError?.details ?? [],
     hasRows: rows.length > 0,
     statusAnnouncement: errorText
-      ? `Reference data workbench error: ${errorText}`
+        ? `Reference data workbench error: ${errorText}`
       : loading
         ? `Loading multi-asset reference data coverage for ${displaySecurityId}.`
         : rows.length > 0
-          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${formatCount(readyCount, "source")} ready.`
+          ? `${formatCount(rows.length, "reference data source")} loaded for ${displaySecurityId}; ${routeCounts.readyCount.toLocaleString()} ready, ${routeCounts.reviewCount.toLocaleString()} need review, and ${routeCounts.deferredOrBlockedCount.toLocaleString()} deferred or blocked.`
           : ""
   };
 }
@@ -6795,10 +6950,10 @@ export function buildInstrumentPassportViewState({
   const errorText = normalizedError?.summary ?? null;
   const displaySecurityId = securityId ?? passport?.securityId ?? "selected security";
   const providerRows = buildInstrumentPassportProviderRows(passport);
-  const trustTone = passport?.trustPosture.tone?.trim() || "Unknown";
-  const trustSummary = passport?.trustPosture.summary?.trim() || "Trust posture is unavailable.";
-  const identifierSummary = passport?.identifierSummary.summary?.trim() || "Identifier summary is unavailable.";
-  const usageSummary = passport?.usage.summary?.trim() || "Downstream usage is unavailable.";
+  const trustTone = passport?.trustPosture?.tone?.trim() || "Unknown";
+  const trustSummary = passport?.trustPosture?.summary?.trim() || "Trust posture is unavailable.";
+  const identifierSummary = passport?.identifierSummary?.summary?.trim() || "Identifier summary is unavailable.";
+  const usageSummary = passport?.usage?.summary?.trim() || "Downstream usage is unavailable.";
   const pricingStatus = passport?.pricing?.status?.trim() || "Unknown";
   const pricingSummary = passport?.pricing?.summary?.trim() || "Pricing and trading controls are unavailable.";
   const operatingModel = passport?.operatingModel ?? null;
@@ -6809,7 +6964,7 @@ export function buildInstrumentPassportViewState({
     value: `${stage.status}: ${stage.summary} Evidence ${stage.evidenceCount}; blockers ${stage.blockingIssueCount}.`,
     tone: stage.status.toLowerCase() === "ready" ? "success" as const : "warning" as const
   }));
-  const mostSpecificEntitlements = operatingModel?.entitlementApplicability.filter((row) => row.isApplicable && row.isMostSpecific) ?? [];
+  const mostSpecificEntitlements = operatingModel?.entitlementApplicability?.filter((row) => row.isApplicable && row.isMostSpecific) ?? [];
   const approvalPosture = operatingModel?.manualChangeApproval ?? null;
   const referenceDataWorkbench = passport?.referenceDataWorkbench ?? null;
   const referenceDataWorkbenchStatus = referenceDataWorkbench?.status?.trim() || "Unavailable";
@@ -6850,8 +7005,8 @@ export function buildInstrumentPassportViewState({
         }
       ]
     : [];
-  const enabledHandoffs = referenceDataWorkbench?.operationsHandoffs.filter((handoff) => handoff.isEnabled).length ?? 0;
-  const totalHandoffs = referenceDataWorkbench?.operationsHandoffs.length ?? 0;
+  const enabledHandoffs = referenceDataWorkbench?.operationsHandoffs?.filter((handoff) => handoff.isEnabled).length ?? 0;
+  const totalHandoffs = referenceDataWorkbench?.operationsHandoffs?.length ?? 0;
   const operationsWorkbench = passport?.operationsWorkbench ?? null;
   const operationsWorkbenchStatus = operationsWorkbench?.status?.trim() || "Unavailable";
   const operationsReadiness = buildInstrumentPassportOperationsReadinessRows(passport);
@@ -6867,14 +7022,14 @@ export function buildInstrumentPassportViewState({
     securityId: displaySecurityId,
     title: "Instrument passport",
     description: passport
-      ? `${passport.identity.displayName} passport combines identifiers, provider confidence, lifecycle, pricing, and downstream usage evidence.`
+      ? `${passport.identity?.displayName ?? "Selected security"} passport combines identifiers, provider confidence, lifecycle, pricing, and downstream usage evidence.`
       : `Instrument passport evidence for ${displaySecurityId}.`,
     statusLabel: trustTone,
     statusBadgeVariant,
     fields: [
       { label: "Security ID", value: passport?.securityId ?? displaySecurityId },
-      { label: "Display name", value: passport?.identity.displayName ?? "-" },
-      { label: "Asset class", value: passport?.identity.assetClass ?? "-" },
+      { label: "Display name", value: passport?.identity?.displayName ?? "-" },
+      { label: "Asset class", value: passport?.identity?.assetClass ?? "-" },
       ...classificationFields,
       { label: "Trust", value: trustSummary, tone: statusBadgeVariant === "success" ? "success" : statusBadgeVariant === "warning" ? "warning" : "default" },
       { label: "Identifiers", value: identifierSummary },

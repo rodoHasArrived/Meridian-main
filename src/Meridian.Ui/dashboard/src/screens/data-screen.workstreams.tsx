@@ -1,4 +1,5 @@
 import { ClipboardCopy, Download, Save, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
@@ -215,91 +216,99 @@ export function DataQueryWorkstream({
             aria-label="SQL statement"
             className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
           />
-          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Recent queries
-              <select
-                className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
-                aria-label="Recent SQL query history"
-                defaultValue=""
-                onChange={(event) => {
-                  if (event.currentTarget.value) {
-                    queryPanel.loadQuery(event.currentTarget.value);
-                    event.currentTarget.value = "";
-                  }
-                }}
-              >
-                <option value="">Select a recent query</option>
-                {queryPanel.history.map((entry) => (
-                  <option key={`${entry.lastUsedAt}-${entry.sql}`} value={entry.sql}>
-                    {entry.sql}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="grid gap-1">
-              <label
-                htmlFor="data-query-save-name"
-                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-              >
-                Save query
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  id="data-query-save-name"
-                  type="text"
-                  value={savedQueryName}
-                  onChange={(event) => setSavedQueryName(event.currentTarget.value)}
-                  placeholder="Query name"
-                  aria-label="Saved SQL query name"
-                  className="min-h-9 flex-1 rounded-md border border-border/70 bg-background px-2 py-1 text-sm text-foreground"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    queryPanel.saveCurrentQuery(savedQueryName);
-                    setSavedQueryName("");
+          <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
+            <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+              Query library
+            </summary>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Load recent SQL or save the current read-only statement without crowding the editor and run controls.
+            </p>
+            <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Recent queries
+                <select
+                  className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
+                  aria-label="Recent SQL query history"
+                  defaultValue=""
+                  onChange={(event) => {
+                    if (event.currentTarget.value) {
+                      queryPanel.loadQuery(event.currentTarget.value);
+                      event.currentTarget.value = "";
+                    }
                   }}
-                  disabled={savedQueryName.trim().length === 0 || queryPanel.sql.trim().length === 0}
                 >
-                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
-                  Save
-                </Button>
+                  <option value="">Select a recent query</option>
+                  {queryPanel.history.map((entry) => (
+                    <option key={`${entry.lastUsedAt}-${entry.sql}`} value={entry.sql}>
+                      {entry.sql}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="grid gap-1">
+                <label
+                  htmlFor="data-query-save-name"
+                  className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  Save query
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    id="data-query-save-name"
+                    type="text"
+                    value={savedQueryName}
+                    onChange={(event) => setSavedQueryName(event.currentTarget.value)}
+                    placeholder="Query name"
+                    aria-label="Saved SQL query name"
+                    className="min-h-9 flex-1 rounded-md border border-border/70 bg-background px-2 py-1 text-sm text-foreground"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      queryPanel.saveCurrentQuery(savedQueryName);
+                      setSavedQueryName("");
+                    }}
+                    disabled={savedQueryName.trim().length === 0 || queryPanel.sql.trim().length === 0}
+                  >
+                    <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                    Save
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-          {queryPanel.savedQueries.length > 0 ? (
-            <div className="flex flex-wrap gap-2" aria-label="Saved SQL queries">
-              {queryPanel.savedQueries.map((savedQuery) => (
-                <span
-                  key={savedQuery.id}
-                  className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2 py-1"
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => queryPanel.loadQuery(savedQuery.sql)}
-                    aria-label={`Load saved SQL query ${savedQuery.name}`}
+            {queryPanel.savedQueries.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2" aria-label="Saved SQL queries">
+                {queryPanel.savedQueries.map((savedQuery) => (
+                  <span
+                    key={savedQuery.id}
+                    className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-background/40 px-2 py-1"
                   >
-                    {savedQuery.name}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => queryPanel.deleteSavedQuery(savedQuery.id)}
-                    aria-label={`Delete saved SQL query ${savedQuery.name}`}
-                    title={`Delete ${savedQuery.name}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                </span>
-              ))}
-            </div>
-          ) : null}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => queryPanel.loadQuery(savedQuery.sql)}
+                      aria-label={`Load saved SQL query ${savedQuery.name}`}
+                    >
+                      {savedQuery.name}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => queryPanel.deleteSavedQuery(savedQuery.id)}
+                      aria-label={`Delete saved SQL query ${savedQuery.name}`}
+                      title={`Delete ${savedQuery.name}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </details>
           <div className="flex flex-wrap items-center gap-3">
             <Button type="button" onClick={() => void queryPanel.run()} disabled={queryPanel.busy}>
               {queryPanel.busy ? "Running..." : "Run query"}
@@ -480,6 +489,9 @@ function ExportDetailPanel({
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Next action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
+        <Button asChild variant="outline" size="sm" className="mt-3">
+          <Link to={detail.actionHref} aria-label={detail.actionAriaLabel}>{detail.actionLabel}</Link>
+        </Button>
       </div>
     </aside>
   );

@@ -1,6 +1,7 @@
 import { ArrowRight, DatabaseZap, FileCheck2, Landmark, Network } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { WorkspaceFilterBar } from "@/components/meridian/workspace-primitives";
 import { WorkspaceInspectorHost } from "@/components/meridian/workspace-primitives";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
@@ -20,7 +21,11 @@ import {
 } from "@/lib/view-state-envelope";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useOperationsContinuityScreenViewModel } from "@/screens/operations-continuity-screen.view-model";
-import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
+import {
+  presentReportingIdentifier,
+  presentReportingStatusLabel,
+  useReportingScreenViewModel
+} from "@/screens/reporting-screen.view-model";
 import {
   OPERATIONS_RECORD_RELEASE_VIEW_STATE_SCREEN,
   buildOperationsRecordReleaseViewModel,
@@ -86,7 +91,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
       <WorkspaceFilterBar
         label="Operations record release route context"
         searchLabel="Release route"
-        searchValue={vm.routePathLabel}
+        searchValue="Source data to accounting record to report pack"
         options={vm.steps.map((step) => ({
           id: step.id,
           label: step.label,
@@ -220,9 +225,9 @@ function OperationsRecordContextRail({
           </li>
         ))}
       </ol>
-      <p className="break-all rounded-md border border-border/70 bg-secondary/20 px-2 py-2 font-mono text-[11px] leading-5 text-muted-foreground">
-        {vm.routePathLabel}
-      </p>
+      <TechnicalDetails label="Release route details">
+        <p className="break-all font-mono text-[11px] leading-5 text-muted-foreground">{vm.routePathLabel}</p>
+      </TechnicalDetails>
     </div>
   );
 }
@@ -262,13 +267,15 @@ function SelectedReleaseStepInspector({
 
         <section className="rounded-md border border-border/70 bg-background px-3 py-3" aria-label="Selected release step route">
           <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Route</h3>
-          <p className="mt-2 break-all font-mono text-xs leading-5 text-foreground">{step.href}</p>
           <Button asChild variant="outline" size="sm" className="mt-3 w-full justify-center">
             <Link to={step.href} aria-label={`Open route for ${step.label}`}>
               Open step route
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </Button>
+          <TechnicalDetails label="Step route details" className="mt-2">
+            <p className="break-all font-mono text-xs leading-5 text-muted-foreground">{step.href}</p>
+          </TechnicalDetails>
         </section>
 
         <section aria-label="Selected release step evidence">
@@ -363,12 +370,18 @@ function OperationsRecordEvidenceDrawer({ vm }: { vm: OperationsRecordReleaseVie
           {vm.recentRuns.length > 0 ? vm.recentRuns.slice(0, 4).map((run) => (
             <div key={run.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="break-all font-mono text-xs font-semibold text-foreground">{run.id}</span>
-                <SeverityBadge status={run.status} label={run.status} />
+                <span className="text-xs font-semibold text-foreground">{run.templateLabel}</span>
+                <SeverityBadge status={run.status} label={presentReportingStatusLabel(run.status)} />
               </div>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                {run.family} - {run.lineageSummary} - {run.auditSummary}
+                {presentReportingIdentifier(run.family, "Report")} - {run.lineageSummary}
               </p>
+              <TechnicalDetails label="Run audit details" className="mt-2">
+                <dl className="grid gap-1 text-xs text-muted-foreground">
+                  <div><dt className="inline font-medium">Run ID:</dt> <dd className="inline break-all font-mono">{run.id}</dd></div>
+                  <div><dt className="inline font-medium">Audit:</dt> <dd className="inline">{run.auditSummary}</dd></div>
+                </dl>
+              </TechnicalDetails>
             </div>
           )) : (
             <p role="status" className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning">

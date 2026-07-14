@@ -1,42 +1,18 @@
 import { Network } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   ReportingChipViewModel,
   ReportingWorkbenchAction
 } from "@/screens/reporting-screen.view-model";
-import type {
-  ReportingTaskModeId,
-  ReportingTaskModeViewModel
-} from "@/screens/reporting-screen.task-mode-view-model";
+import type { ReportingTaskModeViewModel } from "@/screens/reporting-screen.task-mode-view-model";
 
 export interface ReportingWorkbenchContextProps {
   taskMode: ReportingTaskModeViewModel;
   actions: ReportingWorkbenchAction[];
 }
 
-const reportingRouteTabs: { id: ReportingTaskModeId; label: string; route: string }[] = [
-  { id: "daily-reporting-cockpit", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting },
-  { id: "report-builder", label: "Report Builder", route: WORKSTATION_ROUTE_CATALOG.reportingReportBuilder },
-  { id: "run-status", label: "Run Status", route: WORKSTATION_ROUTE_CATALOG.reportingRunStatus },
-  { id: "report-pack-approval", label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
-  { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports },
-  { id: "governance", label: "Governance", route: WORKSTATION_ROUTE_CATALOG.reportingGovernance }
-];
-
 export function ReportingWorkbenchContext({ taskMode, actions }: ReportingWorkbenchContextProps) {
-  const navigate = useNavigate();
-  const { search } = useLocation();
-  const routeTabs = reportingRouteTabs.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected:
-      tab.id === taskMode.id ||
-      (tab.id === "report-pack-approval" && taskMode.id === "delivery-evidence")
-  }));
-
   return (
     <section
       role="region"
@@ -60,18 +36,6 @@ export function ReportingWorkbenchContext({ taskMode, actions }: ReportingWorkbe
             </Link>
           </Button>
         ))}
-        <WorkspaceTabStrip
-          label="Reporting routes"
-          tabs={routeTabs}
-          onSelect={(id) => {
-            const tab = reportingRouteTabs.find((candidate) => candidate.id === id);
-            if (tab) {
-              // Preserve the querystring: the operating scope is threaded
-              // through search params across the shell.
-              navigate({ pathname: tab.route, search });
-            }
-          }}
-        />
       </div>
     </section>
   );

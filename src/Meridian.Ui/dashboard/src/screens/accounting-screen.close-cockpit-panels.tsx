@@ -26,6 +26,7 @@ const accountingWorkflowStepIcons: Record<AccountingWorkflowLaunchViewState["ste
   "journal-entries": BookCheck,
   "capital-accounts": WalletCards,
   reconciliation: Network,
+  "external-gl": Network,
   exceptions: AlertCircle,
   "security-master": ShieldCheck,
   approvals: UserCheck,

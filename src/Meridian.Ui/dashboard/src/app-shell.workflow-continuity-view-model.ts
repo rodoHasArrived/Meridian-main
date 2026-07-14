@@ -77,7 +77,7 @@ export function buildWorkflowContinuityViewModel(
   const operatingScope = buildOperatingScopeFromSearch(search, {
     ...(operatingContextScope ?? {}),
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
-  });
+  }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
   const currentRoute = `${pathname}${search}${hash}`;
   const trail = selectWorkflowContinuityTrail(pathname, hash);
@@ -429,7 +429,10 @@ function buildDecisionBriefViewModel({
   if (focusItem) {
     return {
       label: "Decision brief",
-      title: `Resolve ${focusItem.label}`,
+      // The masthead pill already behaves as the action. Keep its visible title to the
+      // operator-owned issue so common labels remain readable at the supported desktop
+      // viewport instead of truncating a redundant "Resolve" prefix.
+      title: focusItem.label,
       summary: `${focusItem.workspaceLabel} is the highest-priority loaded issue. ${operatorFocus.summary}`,
       reasonLabel: "Why now",
       reason: focusItem.detail,

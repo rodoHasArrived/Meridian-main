@@ -264,6 +264,7 @@ export interface StrategyRunInlineDetailState {
   evidenceAction: StrategyEvidenceAction;
   openDetailLabel: string;
   fields: StrategyRunDetailSummaryRow[];
+  technicalFields: StrategyRunDetailSummaryRow[];
 }
 
 export interface StrategyRunDetailState {
@@ -278,6 +279,7 @@ export interface StrategyRunDetailState {
   modeBadgeVariant: StrategyRunDetailBadgeVariant;
   summaryLabel: string;
   summaryRows: StrategyRunDetailSummaryRow[];
+  technicalRows: StrategyRunDetailSummaryRow[];
   notesLabel: string;
   notesText: string;
   closeButtonLabel: string;
@@ -2763,11 +2765,13 @@ export function buildRunDetail(run: StrategyRunRecord): StrategyRunDetailState {
     modeBadgeVariant: modeBadgeVariantFor(run.mode),
     summaryLabel: "Selected strategy run evidence",
     summaryRows: [
-      { id: "run-id", label: "Run ID", value: formatText(run.id) },
       { id: "status", label: "Status", value: statusText },
       { id: "pnl", label: "P&L", value: formatText(run.pnl) },
       { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
       { id: "updated", label: "Updated", value: formatText(run.lastUpdated) }
+    ],
+    technicalRows: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) }
     ],
     notesLabel: "Operator notes",
     notesText: formatOptionalNotes(run.notes),
@@ -2794,12 +2798,14 @@ export function buildInlineRunDetail(run: StrategyRunRecord, panelId = STRATEGY_
     evidenceAction: buildStrategyEvidenceAction(run)!,
     openDetailLabel: `Open ${title} run detail dialog`,
     fields: [
-      { id: "run-id", label: "Run ID", value: formatText(run.id) },
       { id: "status", label: "Status", value: statusText },
       { id: "pnl", label: "P&L", value: formatText(run.pnl) },
       { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
       { id: "updated", label: "Updated", value: formatText(run.lastUpdated) },
       { id: "notes", label: "Notes", value: formatOptionalNotes(run.notes) }
+    ],
+    technicalFields: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) }
     ]
   };
 }

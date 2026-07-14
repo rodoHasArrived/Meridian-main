@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAssetDetailOverviewViewState } from "@/screens/asset-detail-screen.view-model";
+import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry } from "@/types";
 
 const entry: SecurityMasterEntry = {
@@ -65,10 +65,13 @@ describe("buildAssetDetailOverviewViewState", () => {
     expect(view.fields).toEqual(
       expect.arrayContaining([
         { label: "Asset class", value: "Equity" },
-        { label: "Currency", value: "USD" },
-        { label: "Version", value: "3" }
+        { label: "Currency", value: "USD" }
       ])
     );
+    expect(view.technicalFields).toEqual([
+      { label: "Security ID", value: "sec-aapl" },
+      { label: "Version", value: "3" }
+    ]);
     expect(view.hasCorporateActions).toBe(false);
   });
 
@@ -103,6 +106,18 @@ describe("buildAssetDetailOverviewViewState", () => {
   it("shows Unknown for the version field when identity is unavailable", () => {
     const view = buildAssetDetailOverviewViewState({ entry, identity: null, corporateActions: [] });
 
-    expect(view.fields).toEqual(expect.arrayContaining([{ label: "Version", value: "Unknown" }]));
+    expect(view.technicalFields).toEqual(expect.arrayContaining([{ label: "Version", value: "Unknown" }]));
+  });
+});
+
+describe("selectExactSecuritySearchResult", () => {
+  it("returns the unique exact identifier match case-insensitively", () => {
+    expect(selectExactSecuritySearchResult("aapl", [entry])).toBe("sec-aapl");
+    expect(selectExactSecuritySearchResult("SEC-AAPL", [entry])).toBe("sec-aapl");
+  });
+
+  it("does not auto-select broad or ambiguous results", () => {
+    expect(selectExactSecuritySearchResult("apple", [entry])).toBeNull();
+    expect(selectExactSecuritySearchResult("AAPL", [entry, { ...entry, securityId: "sec-aapl-duplicate" }])).toBeNull();
   });
 });

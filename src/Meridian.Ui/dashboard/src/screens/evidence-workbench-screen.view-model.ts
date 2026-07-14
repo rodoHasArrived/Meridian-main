@@ -93,6 +93,7 @@ export interface EvidenceNodeRowViewModel {
   artifactRows: EvidenceNodeArtifactRowViewModel[];
   workItemRows: EvidenceNodeWorkItemRowViewModel[];
   fields: EvidenceLineageDetailFieldViewModel[];
+  technicalFields: EvidenceLineageDetailFieldViewModel[];
 }
 
 export interface EvidenceNodeArtifactRowViewModel {
@@ -124,6 +125,7 @@ export interface EvidenceNodeDetailViewModel {
   freshnessTone: EvidenceStatusTone;
   ariaLabel: string;
   fields: EvidenceLineageDetailFieldViewModel[];
+  technicalFields: EvidenceLineageDetailFieldViewModel[];
   artifactRows: EvidenceNodeArtifactRowViewModel[];
   artifactEmptyText: string;
   workItemRows: EvidenceNodeWorkItemRowViewModel[];
@@ -139,8 +141,10 @@ export interface EvidenceNodeSelectionViewModel {
 export interface EvidenceLineageRowViewModel {
   id: string;
   fromId: string;
+  fromLabel: string;
   relationshipLabel: string;
   toId: string;
+  toLabel: string;
   reason: string;
   ariaLabel: string;
   selectAriaLabel: string;
@@ -173,7 +177,7 @@ export interface EvidenceLineageDetailViewModel {
   subtitle: string;
   description: string;
   ariaLabel: string;
-  fields: EvidenceLineageDetailFieldViewModel[];
+  technicalFields: EvidenceLineageDetailFieldViewModel[];
 }
 
 export interface EvidenceLineageSelectionViewModel {
@@ -464,10 +468,12 @@ export interface EvidenceVaultDocumentAuditRowViewModel {
 export interface EvidenceWorkbenchViewModel {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  selectedSubjectLabel: string;
   title: string;
   subtitle: string;
   loading: boolean;
   error: EvidenceWorkbenchErrorState | null;
+  packetError: EvidenceWorkbenchErrorState | null;
   showSubjectPicker: boolean;
   hasSelection: boolean;
   hasPacket: boolean;
@@ -622,17 +628,22 @@ export function useEvidenceWorkbenchViewModel(
   services: EvidenceWorkbenchServices = defaultServices
 ): EvidenceWorkbenchViewModel {
   const params = useMemo(() => new URLSearchParams(search), [search]);
-  const selectedSubjectKind = params.get("subjectKind");
-  const selectedSubjectId = params.get("subjectId");
+  const requestedSubjectKind = params.get("subjectKind");
+  const requestedSubjectId = params.get("subjectId");
+  const hasRequestedSelection = Boolean(requestedSubjectKind && requestedSubjectId);
   const requestListFamily = normalizeRequestListFamilyFilter(params.get("requestListFamily"));
   const documentClassification = normalizeDocumentClassificationFilter(params.get("documentClassification"));
   const documentReviewStatus = normalizeDocumentReviewStatusFilter(params.get("documentReviewStatus"));
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
+  const [defaultSubject, setDefaultSubject] = useState<EvidenceSubject | null>(null);
+  const selectedSubjectKind = hasRequestedSelection ? requestedSubjectKind : defaultSubject?.subjectKind ?? null;
+  const selectedSubjectId = hasRequestedSelection ? requestedSubjectId : defaultSubject?.subjectId ?? null;
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
   const [requestLists, setRequestLists] = useState<EvidenceVaultRequestListEntry[]>([]);
   const [documents, setDocuments] = useState<EvidenceVaultDocumentEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
+  const [packetError, setPacketError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
   const [exportResult, setExportResult] = useState<EvidencePacketExportResponse | null>(null);
   const [intakeBusy, setIntakeBusy] = useState(false);
@@ -669,6 +680,7 @@ export function useEvidenceWorkbenchViewModel(
     loadAbortRef.current = controller;
     setLoading(true);
     setError(null);
+    setPacketError(null);
     setPacket(null);
     setRequestLists([]);
     setDocuments([]);
@@ -681,31 +693,59 @@ export function useEvidenceWorkbenchViewModel(
 
     const load = async () => {
       try {
-        const requestListQuery = buildEvidenceVaultRequestListQuery(selectedSubjectKind, selectedSubjectId, requestListFamily);
-        const documentQuery = buildEvidenceVaultDocumentQuery(selectedSubjectKind, selectedSubjectId, documentClassification, documentReviewStatus);
         const listRequestLists: NonNullable<EvidenceWorkbenchServices["listRequestLists"]> =
           services.listRequestLists ?? (() => Promise.resolve([]));
         const listDocuments: NonNullable<EvidenceWorkbenchServices["listDocuments"]> =
           services.listDocuments ?? (() => Promise.resolve([]));
-        const [subjectList, requestListEntries, documentEntries] = await Promise.all([
-          services.getSubjects({ signal: controller.signal }),
+        const subjectList = await services.getSubjects({ signal: controller.signal });
+        if (requestRevisionRef.current !== revision) {
+          return;
+        }
+
+        const fallbackSubject = !hasRequestedSelection ? subjectList[0] ?? null : null;
+        const effectiveSubjectKind = hasRequestedSelection ? requestedSubjectKind : fallbackSubject?.subjectKind ?? null;
+        const effectiveSubjectId = hasRequestedSelection ? requestedSubjectId : fallbackSubject?.subjectId ?? null;
+        const requestListQuery = buildEvidenceVaultRequestListQuery(effectiveSubjectKind, effectiveSubjectId, requestListFamily);
+        const documentQuery = buildEvidenceVaultDocumentQuery(effectiveSubjectKind, effectiveSubjectId, documentClassification, documentReviewStatus);
+        const loadPacket = async (): Promise<{
+          packet: EvidencePacket | null;
+          error: EvidenceWorkbenchErrorState | null;
+        }> => {
+          if (!effectiveSubjectKind || !effectiveSubjectId) {
+            return { packet: null, error: null };
+          }
+
+          try {
+            return {
+              packet: await services.getPacket(effectiveSubjectKind, effectiveSubjectId, { signal: controller.signal }),
+              error: null
+            };
+          } catch (packetLoadError) {
+            if (isAbortError(packetLoadError)) {
+              throw packetLoadError;
+            }
+
+            return {
+              packet: null,
+              error: buildEvidenceWorkbenchError(packetLoadError, "Evidence packet failed to load.")
+            };
+          }
+        };
+        const [requestListEntries, documentEntries, packetLoad] = await Promise.all([
           listRequestLists(requestListQuery, { signal: controller.signal }),
-          listDocuments(documentQuery, { signal: controller.signal })
+          listDocuments(documentQuery, { signal: controller.signal }),
+          loadPacket()
         ]);
         if (requestRevisionRef.current !== revision) {
           return;
         }
+
         setSubjects(subjectList);
+        setDefaultSubject(fallbackSubject);
         setRequestLists(requestListEntries);
         setDocuments(documentEntries);
-
-        if (selectedSubjectKind && selectedSubjectId) {
-          const nextPacket = await services.getPacket(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
-          if (requestRevisionRef.current !== revision) {
-            return;
-          }
-          setPacket(nextPacket);
-        }
+        setPacket(packetLoad.packet);
+        setPacketError(packetLoad.error);
       } catch (loadError) {
         if (requestRevisionRef.current === revision && !isAbortError(loadError)) {
           setError(buildEvidenceWorkbenchError(loadError, "Evidence workbench failed to load."));
@@ -734,7 +774,7 @@ export function useEvidenceWorkbenchViewModel(
       intakeCommandRevisionRef.current += 1;
       reviewCommandRevisionRef.current += 1;
     };
-  }, [documentClassification, documentReviewStatus, reloadRevision, requestListFamily, selectedSubjectId, selectedSubjectKind, services]);
+  }, [documentClassification, documentReviewStatus, hasRequestedSelection, reloadRevision, requestListFamily, requestedSubjectId, requestedSubjectKind, services]);
 
   const exportCommand = async () => {
     if (!selectedSubjectKind || !selectedSubjectId) {
@@ -906,9 +946,11 @@ export function useEvidenceWorkbenchViewModel(
   return buildEvidenceWorkbenchViewModel({
     selectedSubjectKind,
     selectedSubjectId,
+    showSubjectPicker: !hasRequestedSelection,
     operatingScope,
     loading,
     error,
+    packetError,
     subjects,
     packet,
     requestLists,
@@ -936,9 +978,11 @@ export function useEvidenceWorkbenchViewModel(
 export function buildEvidenceWorkbenchViewModel(input: {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  showSubjectPicker?: boolean;
   operatingScope?: AppShellOperatingScopeState | null;
   loading: boolean;
   error: EvidenceWorkbenchErrorState | null;
+  packetError?: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
   requestLists?: EvidenceVaultRequestListEntry[];
@@ -961,8 +1005,12 @@ export function buildEvidenceWorkbenchViewModel(input: {
   const completeness = input.validationResult ?? input.packet?.completeness ?? null;
   const hasSelection = Boolean(input.selectedSubjectKind && input.selectedSubjectId);
   const subject = input.packet?.subject ?? null;
-  const sourceWorkflowHref = resolveSourceWorkflowHref(subject, operatingScope);
-  const subjectLabel = subject?.label ?? "selected evidence subject";
+  const subjectFromList = input.subjects.find((candidate) =>
+    candidate.subjectKind === input.selectedSubjectKind && candidate.subjectId === input.selectedSubjectId
+  ) ?? null;
+  const sourceSubject = subject ?? subjectFromList;
+  const sourceWorkflowHref = resolveSourceWorkflowHref(sourceSubject, operatingScope);
+  const subjectLabel = subject?.label ?? subjectFromList?.label ?? "selected evidence subject";
   const reloadCommand = buildReloadCommand(
     input.loading,
     hasSelection,
@@ -999,15 +1047,17 @@ export function buildEvidenceWorkbenchViewModel(input: {
   return {
     selectedSubjectKind: input.selectedSubjectKind,
     selectedSubjectId: input.selectedSubjectId,
-    title: input.packet?.subject.label ?? "Evidence Workbench",
+    selectedSubjectLabel: hasSelection ? subjectLabel : "No subject selected",
+    title: input.packet?.subject.label ?? (hasSelection ? subjectLabel : "Evidence Workbench"),
     subtitle: input.packet
       ? `${input.packet.subject.workspace} evidence packet`
       : hasSelection
-        ? `${input.selectedSubjectKind}/${input.selectedSubjectId}`
+        ? `${subjectLabel} is selected, but packet evidence is not available.`
         : "Choose a workflow subject to inspect packet completeness and lineage.",
     loading: input.loading,
     error: input.error,
-    showSubjectPicker: !hasSelection && input.error === null,
+    packetError: input.packetError ?? null,
+    showSubjectPicker: (input.showSubjectPicker ?? !hasSelection) && input.error === null,
     hasSelection,
     hasPacket: input.packet !== null,
     hasSubjects: input.subjects.length > 0,
@@ -1015,8 +1065,8 @@ export function buildEvidenceWorkbenchViewModel(input: {
       ? `Loading evidence packet for ${input.selectedSubjectKind}/${input.selectedSubjectId}.`
       : "Loading evidence subjects.",
     sourceWorkflowHref,
-    sourceWorkflowLabel: sourceWorkflowHref && subject ? `Open ${subject.workspace} workflow` : null,
-    sourceWorkflowAriaLabel: sourceWorkflowHref && subject ? `Open source workflow for ${subject.label}` : null,
+    sourceWorkflowLabel: sourceWorkflowHref && sourceSubject ? `Open ${sourceSubject.workspace} workflow` : null,
+    sourceWorkflowAriaLabel: sourceWorkflowHref && sourceSubject ? `Open source workflow for ${sourceSubject.label}` : null,
     subjectsRegionLabel: "Evidence subjects available for packet inspection",
     subjectsSummaryLabel: input.subjects.length === 1 ? "1 subject" : `${input.subjects.length} subjects`,
     subjectEmptyTitle: "No evidence subjects returned",
@@ -1041,13 +1091,15 @@ export function buildEvidenceWorkbenchViewModel(input: {
       input.requestLists ?? [],
       hasSelection,
       input.selectedSubjectKind,
-      input.selectedSubjectId
+      input.selectedSubjectId,
+      subjectLabel
     ),
     documentPanel: buildEvidenceVaultDocumentIndexPanel(
       input.documents ?? [],
       hasSelection,
       input.selectedSubjectKind,
       input.selectedSubjectId,
+      subjectLabel,
       input.reviewBusyDocumentId ?? null,
       input.reviewDocument
     ),
@@ -1120,11 +1172,12 @@ function buildEvidenceVaultRequestListIndexPanel(
   entries: EvidenceVaultRequestListEntry[],
   hasSelection: boolean,
   selectedSubjectKind: string | null,
-  selectedSubjectId: string | null
+  selectedSubjectId: string | null,
+  selectedSubjectLabel: string
 ): EvidenceVaultRequestListIndexPanelViewModel {
-  const rows = entries.map(buildVaultRequestListIndexRow);
+  const rows = entries.map((entry) => buildVaultRequestListIndexRow(entry, selectedSubjectLabel));
   const scopeLabel = hasSelection && selectedSubjectKind && selectedSubjectId
-    ? `${formatKind(selectedSubjectKind)} ${selectedSubjectId}`
+    ? selectedSubjectLabel
     : "All evidence subjects";
   const summaryLabel = rows.length === 0
     ? "No open request lists"
@@ -1146,7 +1199,10 @@ function buildEvidenceVaultRequestListIndexPanel(
   };
 }
 
-function buildVaultRequestListIndexRow(entry: EvidenceVaultRequestListEntry): EvidenceVaultRequestListIndexRowViewModel {
+function buildVaultRequestListIndexRow(
+  entry: EvidenceVaultRequestListEntry,
+  selectedSubjectLabel: string
+): EvidenceVaultRequestListIndexRowViewModel {
   const base = buildVaultRequestListRow(entry);
   const manifestHref = normalizeManifestRoute(entry.manifestRoute);
   const supportRequestRows = (entry.supportRequests ?? []).map(buildVaultSupportRequestRow);
@@ -1161,12 +1217,12 @@ function buildVaultRequestListIndexRow(entry: EvidenceVaultRequestListEntry): Ev
     retainedLabel: `Retained ${formatDate(entry.retainedAt)}`,
     manifestHref,
     manifestLabel: manifestHref ? "Open manifest" : null,
-    manifestAriaLabel: manifestHref ? `Open retained manifest for request list ${entry.requestListId}` : null,
+    manifestAriaLabel: manifestHref ? `Open retained manifest for ${selectedSubjectLabel} request list` : null,
     supportRequestSummaryLabel: supportRequestRows.length === 1
       ? "1 support request"
       : `${supportRequestRows.length} support requests`,
     supportRequestRows,
-    ariaLabel: `${base.ariaLabel}. ${openRequestCountLabel}; vault ${entry.vaultId}; subject ${entry.subjectKind}/${entry.subjectId}`
+    ariaLabel: `${base.requestListKindLabel} ${base.requestListFamilyLabel} for ${selectedSubjectLabel}, ${base.highestSeverityLabel}, ${base.statusLabel}. ${openRequestCountLabel}. ${base.summary}`
   };
 }
 
@@ -1175,12 +1231,13 @@ function buildEvidenceVaultDocumentIndexPanel(
   hasSelection: boolean,
   selectedSubjectKind: string | null,
   selectedSubjectId: string | null,
+  selectedSubjectLabel: string,
   reviewBusyDocumentId: string | null = null,
   reviewDocument?: (vaultId: string, documentId: string, status: EvidenceVaultDocumentReviewRequest["status"]) => Promise<void>
 ): EvidenceVaultDocumentIndexPanelViewModel {
-  const rows = entries.map((entry) => buildVaultDocumentIndexRow(entry, reviewBusyDocumentId, reviewDocument));
+  const rows = entries.map((entry) => buildVaultDocumentIndexRow(entry, selectedSubjectLabel, reviewBusyDocumentId, reviewDocument));
   const scopeLabel = hasSelection && selectedSubjectKind && selectedSubjectId
-    ? `${formatKind(selectedSubjectKind)} ${selectedSubjectId}`
+    ? selectedSubjectLabel
     : "All evidence subjects";
   const reviewCount = rows.filter((row) => row.reviewTone !== "success").length;
   const summaryLabel = rows.length === 0
@@ -1205,6 +1262,7 @@ function buildEvidenceVaultDocumentIndexPanel(
 
 function buildVaultDocumentIndexRow(
   entry: EvidenceVaultDocumentEntry,
+  selectedSubjectLabel: string,
   reviewBusyDocumentId: string | null = null,
   reviewDocument?: (vaultId: string, documentId: string, status: EvidenceVaultDocumentReviewRequest["status"]) => Promise<void>
 ): EvidenceVaultDocumentIndexRowViewModel {
@@ -1271,7 +1329,8 @@ function buildVaultDocumentIndexRow(
     { label: "Actor", value: document.actor || "No actor" },
     { label: "Tenant/scope", value: tenantScopeLabel },
     { label: "Vault", value: entry.vaultId },
-    { label: "Subject", value: `${formatKind(entry.subjectKind)} ${entry.subjectId}` },
+    { label: "Subject", value: selectedSubjectLabel },
+    { label: "Subject identifier", value: `${entry.subjectKind}/${entry.subjectId}` },
     { label: "Artifact", value: document.artifactId || "No artifact id" },
     { label: "Storage", value: formatKind(entry.storageKind) },
     { label: "Retained", value: formatDate(entry.retainedAt) },
@@ -1281,7 +1340,7 @@ function buildVaultDocumentIndexRow(
   const detail: EvidenceVaultDocumentDetailViewModel = {
     id: `${entry.vaultId}:${document.documentId}:detail`,
     title: document.fileName,
-    subtitle: `${classificationLabel} retained for ${formatKind(entry.subjectKind)} ${entry.subjectId}`,
+    subtitle: `${classificationLabel} retained for ${selectedSubjectLabel}`,
     ariaLabel: `Selected Evidence Vault document: ${document.fileName}`,
     statusLabel: `${extractionLabel} / ${reviewLabel}`,
     statusTone: reviewTone === "success" && extractionTone === "success" ? "success" : reviewTone === "danger" || extractionTone === "danger" ? "danger" : "warning",
@@ -1316,7 +1375,7 @@ function buildVaultDocumentIndexRow(
     actorLabel: document.actor || "No actor",
     tenantScopeLabel,
     hashLabel: document.sourceHashSha256,
-    subjectLabel: `${formatKind(entry.subjectKind)} ${entry.subjectId}`,
+    subjectLabel: selectedSubjectLabel,
     vaultLabel: entry.vaultId,
     receivedLabel: `Received ${formatDate(document.receivedAt)}`,
     objectLinksLabel,
@@ -1324,7 +1383,7 @@ function buildVaultDocumentIndexRow(
     manifestHref,
     manifestLabel: manifestHref ? "Open manifest" : null,
     manifestAriaLabel: manifestHref ? `Open retained manifest for document ${document.fileName}` : null,
-    ariaLabel: `${document.fileName}, ${classificationLabel}, ${extractionLabel}, ${reviewLabel}. ${objectLinksLabel}. Vault ${entry.vaultId}.`,
+    ariaLabel: `${document.fileName}, ${classificationLabel}, ${extractionLabel}, ${reviewLabel}.`,
     detail
   };
 }
@@ -1526,7 +1585,7 @@ function buildSlaAssessmentRow(assessment: EvidenceSlaAssessment): EvidenceSlaAs
     breached: assessment.isBreached,
     tone,
     message: assessment.message,
-    ariaLabel: `${policyLabel} for ${assessment.evidenceId}, ${assessment.isBreached ? "breached" : "fresh"}. ${assessment.message}`
+    ariaLabel: `${policyLabel}, ${assessment.isBreached ? "breached" : "fresh"}. ${assessment.message}`
   };
 }
 
@@ -1547,14 +1606,18 @@ export function buildEvidenceLineagePanel(
   const subjectLabel = subject?.label ?? "selected evidence subject";
   const rows = edges.map((edge, index) => {
     const relationshipLabel = formatRelationship(edge.relationship);
+    const fromLabel = formatEvidenceNodeLabel(edge.fromId);
+    const toLabel = formatEvidenceNodeLabel(edge.toId);
     return {
       id: `${edge.fromId}:${edge.relationship}:${edge.toId}:${index}`,
       fromId: edge.fromId,
+      fromLabel,
       relationshipLabel,
       toId: edge.toId,
+      toLabel,
       reason: edge.reason,
-      ariaLabel: `${relationshipLabel} from ${edge.fromId} to ${edge.toId}. ${edge.reason}`,
-      selectAriaLabel: `Inspect lineage edge: ${relationshipLabel} from ${edge.fromId} to ${edge.toId}`
+      ariaLabel: `${relationshipLabel} from ${fromLabel} to ${toLabel}. ${edge.reason}`,
+      selectAriaLabel: `Inspect lineage edge: ${relationshipLabel} from ${fromLabel} to ${toLabel}`
     };
   });
 
@@ -1602,12 +1665,11 @@ export function buildEvidenceLineageDetail(
     id: row.id,
     eyebrow: "Selected lineage edge",
     title: row.relationshipLabel,
-    subtitle: `${row.fromId} to ${row.toId}`,
+    subtitle: `${row.fromLabel} to ${row.toLabel}`,
     description: row.reason,
     ariaLabel: `Selected lineage edge: ${row.relationshipLabel}`,
-    fields: [
+    technicalFields: [
       { label: "From node", value: row.fromId },
-      { label: "Relationship", value: row.relationshipLabel },
       { label: "To node", value: row.toId },
       { label: "Edge ID", value: row.id }
     ]
@@ -1668,7 +1730,7 @@ export function buildEvidenceNodeDetail(row: EvidenceNodeRowViewModel): Evidence
     id: row.id,
     eyebrow: "Selected evidence node",
     title: row.kindLabel,
-    subtitle: row.evidenceId,
+    subtitle: row.subjectLabel,
     description: row.summary,
     statusLabel: row.statusLabel,
     statusTone: row.statusTone,
@@ -1676,6 +1738,7 @@ export function buildEvidenceNodeDetail(row: EvidenceNodeRowViewModel): Evidence
     freshnessTone: row.freshnessTone,
     ariaLabel: `Selected evidence node: ${row.kindLabel}`,
     fields: row.fields,
+    technicalFields: row.technicalFields,
     artifactRows: row.artifactRows,
     artifactEmptyText: "No retained artifact references are attached to this node.",
     workItemRows: row.workItemRows,
@@ -1692,7 +1755,7 @@ function buildEvidenceNodeRow(node: EvidenceNode): EvidenceNodeRowViewModel {
   const workItemRows = Array.from(new Set(node.relatedWorkItemIds.filter(Boolean))).map((id) => ({
     id,
     label: id,
-    ariaLabel: `Related work item ${id}`
+    ariaLabel: "Related operator work item identifier"
   }));
   const subjectLabel = node.subject.label;
 
@@ -1710,16 +1773,18 @@ function buildEvidenceNodeRow(node: EvidenceNode): EvidenceNodeRowViewModel {
     workItemCountLabel: formatCount(workItemRows.length, "work item"),
     subjectLabel,
     ariaLabel: `${kindLabel} evidence node for ${subjectLabel}. ${statusLabel}. ${freshness.label}.`,
-    selectAriaLabel: `Inspect evidence node ${kindLabel} ${node.evidenceId}`,
+    selectAriaLabel: `Inspect ${kindLabel} evidence for ${subjectLabel}`,
     artifactRows,
     workItemRows,
     fields: [
-      { label: "Evidence ID", value: node.evidenceId },
-      { label: "Subject", value: `${node.subject.subjectKind}/${node.subject.subjectId}` },
       { label: "Source", value: node.sourceSystem || "Unknown source" },
       { label: "Status", value: statusLabel },
       { label: "Freshness", value: freshness.label },
       ...(node.freshness.reason ? [{ label: "Freshness reason", value: node.freshness.reason }] : [])
+    ],
+    technicalFields: [
+      { label: "Evidence ID", value: node.evidenceId },
+      { label: "Subject identifier", value: `${node.subject.subjectKind}/${node.subject.subjectId}` }
     ]
   };
 }
@@ -1735,7 +1800,7 @@ function buildEvidenceArtifactRow(artifact: EvidenceNode["artifactRefs"][number]
     retainedLabel: artifact.retained ? "Retained" : "Transient",
     hashLabel: artifact.hash ?? "No hash",
     canonicalSubjectLabel,
-    ariaLabel: `${formatKind(artifact.kind)} artifact ${artifact.artifactId}, ${artifact.retained ? "retained" : "transient"}${canonicalSubjectLabel ? `, ${canonicalSubjectLabel}` : ""}`
+    ariaLabel: `${formatKind(artifact.kind)} artifact, ${artifact.retained ? "retained" : "transient"}, generated ${formatDate(artifact.generatedAt)}`
   };
 }
 
@@ -1977,7 +2042,7 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
     summaryLabel: `${nodeLabel}, ${warningLabel}${vaultSummaryParts.length > 0 ? `, ${vaultSummaryParts.join(", ")}` : ""}`,
     routeHref,
     routeLabel: routeHref ? "Open manifest" : null,
-    routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null,
+    routeAriaLabel: routeHref ? "Open retained evidence manifest" : null,
     vaultIdLabel: result.vaultIdentity?.vaultId ?? null,
     storageKindLabel: result.vaultIdentity ? formatKind(result.vaultIdentity.storageKind) : null,
     manifestPackageFamilyLabel,
@@ -2006,7 +2071,7 @@ function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportRespons
     captureLabel,
     extractionLabel,
     retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
-    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}, ${captureLabel}, ${extractionLabel}`
+    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact, ${formatBytes(artifact.sizeBytes)}, ${extractionLabel}`
   };
 }
 
@@ -2077,7 +2142,7 @@ function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVau
     evidenceKindsLabel,
     blockedOutputsLabel,
     summary: requestList.summary,
-    ariaLabel: `${requestListKindLabel} ${requestListFamilyLabel} for ${targetLabel}, ${highestSeverityLabel}, ${requestList.status}. ${requestList.summary}`
+    ariaLabel: `${requestListKindLabel} ${requestListFamilyLabel}, ${highestSeverityLabel}, ${requestList.status}. ${requestList.summary}`
   };
 }
 
@@ -2102,7 +2167,7 @@ function buildVaultSupportRequestRow(
     sourceLabel,
     workItemLabel,
     blockedOutputLabel,
-    ariaLabel: `${requestKindLabel} support request for ${request.evidenceId}, ${severityLabel}, ${request.status}. ${request.summary}`
+    ariaLabel: `${requestKindLabel} support request, ${severityLabel}, ${request.status}. ${request.summary}`
   };
 }
 
@@ -2170,6 +2235,15 @@ function mapWorkflowActionTone(tone: string): EvidencePacketActionTone {
     default:
       return "muted";
   }
+}
+
+function formatEvidenceNodeLabel(nodeId: string) {
+  const parts = nodeId.split(":").filter(Boolean);
+  if (parts.length <= 1) {
+    return formatKind(nodeId);
+  }
+
+  return `${formatKind(parts[0])} ${formatKind(parts[parts.length - 1])}`;
 }
 
 function formatKind(kind: string) {

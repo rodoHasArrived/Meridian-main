@@ -213,7 +213,11 @@ export function buildOperationsRecordReleaseViewModel({
 
 function buildStatusDetail(blockedCount: number, reviewCount: number, neutralCount: number): string {
   if (blockedCount > 0) {
-    return `${blockedCount} release step${blockedCount === 1 ? "" : "s"} blocked; keep the demo path visible but do not call it closed.`;
+    const attentionCount = reviewCount + neutralCount;
+    const attentionDetail = attentionCount > 0
+      ? ` · ${attentionCount} still ${attentionCount === 1 ? "needs" : "need"} review`
+      : "";
+    return `${blockedCount} release step${blockedCount === 1 ? "" : "s"} blocked${attentionDetail}; keep the demo path visible but do not call it closed.`;
   }
 
   const attentionCount = reviewCount + neutralCount;

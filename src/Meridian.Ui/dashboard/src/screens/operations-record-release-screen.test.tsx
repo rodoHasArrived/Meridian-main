@@ -67,6 +67,7 @@ describe("OperationsRecordReleaseScreen", () => {
     expect(screen.getByRole("region", { name: "Operations record release workbench work surface" })).toHaveTextContent(
       "Source data to report pack"
     );
+    expect(screen.getByText("Release route details").closest("details")).not.toHaveAttribute("open");
 
     const sourceStep = screen.getByRole("button", { name: /Select release step Source data/i });
     expect(sourceStep).toHaveAttribute("aria-pressed", "true");
@@ -81,6 +82,7 @@ describe("OperationsRecordReleaseScreen", () => {
     const inspector = screen.getByRole("region", { name: "Selected release step inspector" });
     expect(inspector).toHaveTextContent("Reconcile");
     expect(inspector).toHaveTextContent("/accounting/reconciliation");
+    expect(within(inspector).getByText("Step route details").closest("details")).not.toHaveAttribute("open");
     expect(within(inspector).getByRole("link", { name: "Open route for Reconcile" })).toHaveAttribute(
       "href",
       "/accounting/reconciliation"

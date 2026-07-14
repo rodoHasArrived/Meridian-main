@@ -3123,7 +3123,7 @@ export function buildCloseCommandCenterViewState({
   const blockerRows = [
     ...closeBlockers.map((blocker) => ({
       id: blocker.code,
-      label: blocker.category ? `${blocker.category} - ${blocker.code}` : blocker.code,
+      label: blocker.category?.trim() || humanizeCloseBlockerCode(blocker.code),
       detail: blocker.message,
       tone: closeCommandCenterSeverityTone(blocker.severity),
       href: blocker.routeHint ?? closeCommandCenterGateRoute(blocker.gate),
@@ -3204,6 +3204,19 @@ export function buildCloseCommandCenterViewState({
     errorText: workflowError,
     liveRegionText: `Close command center ${status}. ${readinessLabel}. ${formatCount(blockerRows.length, "visible blocker")}.`
   };
+}
+
+function humanizeCloseBlockerCode(code: string): string {
+  const normalized = code.trim();
+  if (!normalized) {
+    return "Close control blocker";
+  }
+
+  return normalized
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .toLowerCase()
+    .replace(/^\w/, (character) => character.toUpperCase());
 }
 
 function buildSharedFinancialOperationsCommandCenterViewState(

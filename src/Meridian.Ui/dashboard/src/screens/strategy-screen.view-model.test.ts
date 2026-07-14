@@ -255,6 +255,8 @@ describe("strategy-screen view model", () => {
       ariaLabel: "Selected strategy run detail for Mean Reversion FX",
       title: "Mean Reversion FX"
     });
+    expect(state.inspectedRunDetail?.fields).not.toContainEqual(expect.objectContaining({ label: "Run ID" }));
+    expect(state.inspectedRunDetail?.technicalFields).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
     expect(state.runTable.rows[0]).toMatchObject({
       selectedForComparison: true,
       detailExpanded: true,
@@ -563,7 +565,8 @@ describe("strategy-screen view model", () => {
     expect(detail.description).toBe("Mean Reversion FX is Running in PAPER mode.");
     expect(detail.modeBadgeLabel).toBe("PAPER");
     expect(detail.modeBadgeVariant).toBe("paper");
-    expect(detail.summaryRows).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
+    expect(detail.summaryRows).not.toContainEqual(expect.objectContaining({ label: "Run ID" }));
+    expect(detail.technicalRows).toContainEqual({ id: "run-id", label: "Run ID", value: "run-1" });
     expect(detail.notesText).toBe("No operator notes were recorded for this run.");
     expect(detail.closeButtonAriaLabel).toBe("Close Mean Reversion FX run detail");
   });

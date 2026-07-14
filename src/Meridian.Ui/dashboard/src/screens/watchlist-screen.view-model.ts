@@ -278,13 +278,17 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const quoteInFlightRef = useRef(false);
   const pendingQuoteSymbolsRef = useRef<readonly string[] | null>(null);
 
-  useEffect(() => () => {
-    mountedRef.current = false;
-    refreshRevisionRef.current += 1;
-    refreshAbortRef.current?.abort();
-    quoteAbortRef.current?.abort();
-    currentQuoteSymbolsKeyRef.current = "";
-    pendingQuoteSymbolsRef.current = null;
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      refreshRevisionRef.current += 1;
+      refreshAbortRef.current?.abort();
+      quoteAbortRef.current?.abort();
+      currentQuoteSymbolsKeyRef.current = "";
+      pendingQuoteSymbolsRef.current = null;
+    };
   }, []);
 
   const refresh = useCallback(async () => {

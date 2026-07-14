@@ -13,6 +13,29 @@ function formatLadderAmount(value: number, currency: string): string {
   return formatCurrency(value, { currency, minimumFractionDigits: 0 });
 }
 
+export function formatCashLadderThreshold(value: number, currency: string): string {
+  return formatLadderAmount(value, currency);
+}
+
+export function formatCashLadderDate(value: string): string {
+  const normalized = value.trim();
+  if (!normalized) {
+    return "Date unavailable";
+  }
+
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(normalized)
+    ? new Date(`${normalized}T00:00:00Z`)
+    : new Date(normalized);
+  return Number.isNaN(date.getTime())
+    ? normalized
+    : date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC"
+      });
+}
+
 function formatLadderSigned(value: number, currency: string): string {
   if (!Number.isFinite(value)) {
     return "—";
@@ -273,8 +296,8 @@ export function selectBucketContributions(
   const bucket = ladder.buckets[bucketIndex];
   return ladder.contributions
     .filter((row) => row.dueDate >= bucket.bucketStart && row.dueDate <= bucket.bucketEnd)
-    .map((row) => toDrillRow(row))
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.instrument.localeCompare(b.instrument));
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.displayName.localeCompare(b.displayName))
+    .map((row) => toDrillRow(row));
 }
 
 function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
@@ -284,7 +307,7 @@ function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
     assetClass: row.assetClass,
     flowType: row.flowType,
     sourceLane: row.sourceLane,
-    dueDate: row.dueDate,
+    dueDate: formatCashLadderDate(row.dueDate),
     amountLabel: formatLadderSigned(row.amount, row.currency),
     amountTone: row.amount >= 0 ? "success" : "danger",
     currency: row.currency,
@@ -323,7 +346,7 @@ export function selectSummaryCards(ladder: PortfolioCashLadder | null): CashLadd
       label: "Opening cash",
       value: formatLadderAmount(ladder.openingCash, currency),
       tone: "default",
-      detail: `${ladder.baseCurrency} · as of ${ladder.asOfDate}`
+      detail: `${ladder.baseCurrency} · as of ${formatCashLadderDate(ladder.asOfDate)}`
     },
     {
       id: "projected-inflows",

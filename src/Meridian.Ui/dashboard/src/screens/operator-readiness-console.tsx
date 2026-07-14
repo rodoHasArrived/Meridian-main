@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
 import { MetricCard } from "@/components/data/concrete";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import {
   readinessToneToSeverityPanelClass,
@@ -54,7 +55,6 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.id}</span>
       </span>
     )
   },
@@ -69,9 +69,6 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-medium text-foreground">{row.action?.label ?? "Review item"}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
-          {row.action?.route ?? row.meta}
-        </span>
       </span>
     )
   }
@@ -84,7 +81,6 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.id}</span>
       </span>
     )
   },
@@ -97,11 +93,6 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
     id: "detail",
     label: "Detail",
     render: (row) => <span className="block min-w-[12rem] text-xs leading-5 text-foreground/80">{row.detail}</span>
-  },
-  {
-    id: "source",
-    label: "Source",
-    render: (row) => <span className="block min-w-[10rem] break-words font-mono text-[11px] text-muted-foreground">{row.meta}</span>
   }
 ];
 
@@ -224,18 +215,16 @@ export function OperatorReadinessConsole({
           ) : null}
         </ReadinessPanel>
 
-        <Card aria-labelledby="api-contract-coverage-title" className="panel-surface">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="eyebrow-label">API Contract Coverage</div>
-                <CardTitle id="api-contract-coverage-title">Shared sources</CardTitle>
-                <CardDescription>Local API payload health for readiness review.</CardDescription>
-              </div>
-              <ConsoleChip label="Sources" value={String(vm.apiSources.length)} />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2" role="list" aria-label={vm.apiSourcesLabel}>
+        <TechnicalDetails
+          label="Technical source health"
+          description="API contract coverage and endpoint-level diagnostics for support review."
+          className="panel-surface h-fit"
+        >
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-foreground">Shared sources</span>
+            <ConsoleChip label="Sources" value={String(vm.apiSources.length)} />
+          </div>
+          <div className="space-y-2" role="list" aria-label={vm.apiSourcesLabel}>
             {vm.apiSources.map((source) => (
               <div
                 key={source.id}
@@ -250,8 +239,8 @@ export function OperatorReadinessConsole({
                 <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </TechnicalDetails>
       </section>
 
       <section
@@ -374,19 +363,11 @@ function SelectedWorkItemDetail({
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <p className="mt-2 break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
         </div>
-        <dl className="mt-3 grid gap-2">
-          {detail.fields.map((field) => (
-            <div
-              key={field.label}
-              className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-            >
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <TechnicalDetails label="Audit details" className="mt-3">
+          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <DetailFieldList fields={detail.fields} />
+        </TechnicalDetails>
         {detail.action ? (
           <div className="mt-3">
             <Button asChild variant={detail.action.variant} size="sm">
@@ -440,7 +421,9 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
           <div className="eyebrow-label">Primary next action</div>
           <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
-          <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+          <TechnicalDetails label="Action context" className="mt-2">
+            <p className="break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+          </TechnicalDetails>
         </div>
         {actionButton}
       </div>
@@ -523,19 +506,11 @@ function SelectedEvidenceDetail({
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <p className="mt-2 break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
         </div>
-        <dl className="mt-3 grid gap-2">
-          {detail.fields.map((field) => (
-            <div
-              key={field.label}
-              className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-            >
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <TechnicalDetails label="Audit details" className="mt-3">
+          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <DetailFieldList fields={detail.fields} />
+        </TechnicalDetails>
         {detail.action ? (
           <div className="mt-3">
             <Button asChild variant={detail.action.variant} size="sm">
@@ -569,8 +544,26 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
         </Button>
       ) : null}
     >
-      <p className="break-words font-mono text-xs text-muted-foreground">{row.meta}</p>
+      <TechnicalDetails label="Evidence details">
+        <p className="break-words font-mono text-xs text-muted-foreground">{row.meta}</p>
+      </TechnicalDetails>
     </ReadinessPanel>
+  );
+}
+
+function DetailFieldList({ fields }: { fields: ReadinessConsoleSelectedWorkItemDetail["fields"] }) {
+  return (
+    <dl className="mt-3 grid gap-2">
+      {fields.map((field) => (
+        <div
+          key={field.label}
+          className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+        >
+          <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+          <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

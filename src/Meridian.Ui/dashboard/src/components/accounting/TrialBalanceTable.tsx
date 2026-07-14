@@ -140,7 +140,6 @@ export function TrialBalanceTable({
                   >
                     <td className="tbl__acct">
                       <span className="block font-semibold">{row.accountLabel}</span>
-                      <span className="tbl__code mt-1 block font-mono text-[11px]">{row.financialAccountId ?? "Unassigned"}</span>
                       <span className="tbl__code mt-1 block break-words font-mono text-[11px]">{row.dimensionLabel}</span>
                     </td>
                     <td className="tbl__code">{row.accountTypeLabel}</td>

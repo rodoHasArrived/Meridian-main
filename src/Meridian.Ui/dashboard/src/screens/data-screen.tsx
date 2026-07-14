@@ -30,6 +30,7 @@ import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHead
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
@@ -114,27 +115,23 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     )
   },
   {
-    id: "credential",
-    label: "Credential",
-    render: (provider) => <span className="text-xs text-muted-foreground">{provider.credentialText}</span>
-  },
-  {
-    id: "verification",
-    label: "Verification",
-    render: (provider) => <span className="text-xs text-muted-foreground">{provider.verificationText}</span>
-  },
-  {
-    id: "latency",
-    label: "Last good",
-    render: (provider) => <span className="font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
-  },
-  {
-    id: "trust",
-    label: "Trust",
+    id: "credential-posture",
+    label: "Credential posture",
     render: (provider) => (
       <span className="block min-w-0">
+        <span className="block text-xs text-foreground">{provider.credentialText}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{provider.verificationText}</span>
+      </span>
+    )
+  },
+  {
+    id: "trust-latency",
+    label: "Trust / last good",
+    render: (provider) => (
+      <span className="block min-w-[8rem]">
         <span className="block font-mono text-xs text-foreground">{provider.trustScoreText}</span>
-        <span className="mt-1 block truncate text-xs text-muted-foreground">{provider.signalSourceText}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{provider.signalSourceText}</span>
       </span>
     )
   },
@@ -147,7 +144,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     id: "action",
     label: "Next Action",
     render: (provider) => (
-      <span className="block max-w-[15rem] truncate text-xs font-medium text-foreground" title={provider.recommendedActionText}>
+      <span className="block min-w-[7rem] whitespace-nowrap text-xs font-medium text-foreground" title={provider.recommendedActionText}>
         {provider.actionLabel}
       </span>
     )
@@ -162,6 +159,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
 const dataRouteTabs = [
   { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, workstream: "overview" },
   { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
+  { id: "import", label: "Import", route: WORKSTATION_ROUTE_CATALOG.dataImport, workstream: "import" },
   { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
   { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
   { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
@@ -174,7 +172,11 @@ const dataRouteViewCopy: Record<string, { title: string; description: string }> 
   },
   providers: {
     title: "Provider catalog",
-    description: "Source health, credentials, upload intake, and recovery actions."
+    description: "Source health, credentials, routing trust, verification, and recovery actions."
+  },
+  import: {
+    title: "Data import",
+    description: "Template-led retained-file preview, validation evidence, and downstream handoff."
   },
   backfills: {
     title: "Backfill queue",
@@ -234,6 +236,7 @@ export function DataScreen({
   const activeWorkstream = vm.workstream;
   const showHealthMonitoring = activeWorkstream === "overview";
   const showProviderWorkstream = activeWorkstream === "providers";
+  const showImportWorkstream = activeWorkstream === "import";
   const showBackfillWorkstream = activeWorkstream === "backfills";
   const showExportWorkstream = activeWorkstream === "exports";
   const showQueryWorkstream = activeWorkstream === "query";
@@ -286,33 +289,63 @@ export function DataScreen({
               }
             }}
           />
-          <Button type="button" size="sm" onClick={vm.openProviderSetup} aria-label="Import a data source">
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">Import source</span>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              if (showProviderWorkstream) {
+                vm.openProviderSetup();
+                return;
+              }
+
+              navigate({
+                pathname: showImportWorkstream ? WORKSTATION_ROUTE_CATALOG.dataProviders : WORKSTATION_ROUTE_CATALOG.dataImport,
+                search
+              });
+            }}
+            aria-label={showProviderWorkstream ? "Add a provider connection" : showImportWorkstream ? "Review provider connections" : "Import a retained data file"}
+          >
+            {showProviderWorkstream ? <Plus className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
+            <span className="ml-1.5">
+              {showProviderWorkstream ? "Add provider" : showImportWorkstream ? "Review providers" : "Import file"}
+            </span>
           </Button>
         </div>
       </section>
 
       {showHealthMonitoring ? (
-        <>
-          {analyticsDegraded ? <DataAnalyticsDegradedRegion vm={analyticsDegraded} /> : null}
+        <div className="space-y-4">
+          <DataOverviewHub vm={vm} degradedPanelCount={analyticsUnavailable.size} />
+          <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+            <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+              Review data diagnostics
+            </summary>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Open detailed quality, capability, corporate-action, and coverage evidence after choosing the next Data task.
+            </p>
+            <div className="mt-4 space-y-4">
+              {analyticsDegraded ? <DataAnalyticsDegradedRegion vm={analyticsDegraded} /> : null}
 
-          {!analyticsUnavailable.has("data-quality") ? <DataQualityRegion panel={qualityPanel} /> : null}
+              {!analyticsUnavailable.has("data-quality") ? <DataQualityRegion panel={qualityPanel} /> : null}
 
-          {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
+              {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
 
-          {!analyticsUnavailable.has("corporate-actions") ? <CorporateActionInboxRegion panel={corporateActionInboxPanel} /> : null}
+              {!analyticsUnavailable.has("corporate-actions") ? <CorporateActionInboxRegion panel={corporateActionInboxPanel} /> : null}
 
-          {!analyticsUnavailable.has("coverage-gaps") ? <CoverageGapsRegion panel={coverageGapsPanel} /> : null}
-        </>
+              {!analyticsUnavailable.has("coverage-gaps") ? <CoverageGapsRegion panel={coverageGapsPanel} /> : null}
+            </div>
+          </details>
+        </div>
       ) : null}
 
       <section className="data-management-main" aria-label="Data workstreams">
-        <RouteFocusCard
-          state={vm.routeFocusCard}
-        />
+        {activeWorkstream !== "overview" && !showBackfillWorkstream ? (
+          <RouteFocusCard
+            state={vm.routeFocusCard}
+          />
+        ) : null}
 
-        {showProviderWorkstream ? (
+        {showImportWorkstream ? (
           <DataUploadIntakePanel
             state={vm.uploadPanelState}
             onTemplateSelect={vm.selectUploadTemplate}
@@ -387,7 +420,7 @@ export function DataScreen({
                     <ProviderSummaryCard key={card.id} card={card} />
                   ))}
                 </div>
-              <div className="workspace-table-inspector-layout">
+              <div className="data-provider-table-detail-layout workspace-table-stack">
                 <div className="workspace-table-stack">
                   <label htmlFor="configured-provider-selector" className="workspace-inline-select">
                     <span>Configured Provider</span>
@@ -458,6 +491,99 @@ export function DataScreen({
 
 type DataOperationsVm = ReturnType<typeof useDataViewModel>;
 
+function DataOverviewHub({
+  vm,
+  degradedPanelCount
+}: {
+  vm: DataOperationsVm;
+  degradedPanelCount: number;
+}) {
+  const routes = [
+    {
+      id: "providers",
+      title: "Provider connections",
+      description: "Review credentials, connection health, routing trust, and recovery actions.",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+      status: `${vm.providerSection.rows.length} configured`
+    },
+    {
+      id: "import",
+      title: "Import retained files",
+      description: "Choose a governed template and preview a retained source before validation handoff.",
+      href: WORKSTATION_ROUTE_CATALOG.dataImport,
+      status: `${vm.uploadPanelState.templateOptions.length} templates`
+    },
+    {
+      id: "backfills",
+      title: "Backfill queue",
+      description: "Inspect historical repair pressure and selected job evidence.",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+      status: `${vm.backfillSection.rows.length} jobs`
+    },
+    {
+      id: "exports",
+      title: "Export packages",
+      description: "Review retained export records and downstream handoff posture.",
+      href: WORKSTATION_ROUTE_CATALOG.dataExports,
+      status: `${vm.exportSection.rows.length} packages`
+    },
+    {
+      id: "query",
+      title: "SQL query",
+      description: "Run read-only discovery queries against the workstation store.",
+      href: WORKSTATION_ROUTE_CATALOG.dataQuery,
+      status: "Read only"
+    },
+    {
+      id: "evidence",
+      title: "Evidence workbench",
+      description: "Inspect retained documents, request lists, lineage, and completeness.",
+      href: WORKSTATION_ROUTE_CATALOG.dataEvidence,
+      status: "Governed"
+    }
+  ];
+
+  return (
+    <section aria-labelledby="data-overview-hub-title" className="space-y-4">
+      <Card className="border-border/80 bg-secondary/15">
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Data command center</div>
+              <CardTitle id="data-overview-hub-title" className="mt-2">Choose the next Data task</CardTitle>
+              <CardDescription className="mt-2 max-w-3xl">
+                Provider management, file intake, historical repair, exports, and querying stay in focused workspaces. Detailed diagnostics remain available below.
+              </CardDescription>
+            </div>
+            <Badge variant={degradedPanelCount > 0 ? "warning" : "success"}>
+              {degradedPanelCount > 0 ? `${degradedPanelCount} diagnostics unavailable` : "Diagnostics ready"}
+            </Badge>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Data task routes">
+        {routes.map((route) => (
+          <Card key={route.id} className="h-full border-border/70">
+            <CardHeader>
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle className="text-base">{route.title}</CardTitle>
+                <Badge variant="outline">{route.status}</Badge>
+              </div>
+              <CardDescription>{route.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link to={route.href}>Open {route.title}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ProviderCommandIcon({
   actionId,
   busy
@@ -483,8 +609,8 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
   return (
     <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
       <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</div>
-      <div className="mt-1 truncate text-sm font-semibold text-foreground" title={card.value}>{card.value}</div>
-      <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+      <div className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">{card.value}</div>
+      <p className="mt-0.5 break-words text-xs leading-5 text-muted-foreground">{card.detail}</p>
     </div>
   );
 }
@@ -839,7 +965,7 @@ function ProviderDetailTabPanel({
   if (activeTab === "credentials") {
     return (
       <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-credentials`} role="tabpanel" className="mt-3">
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {detail.credentialFields.map((field) => (
             <FieldTile key={field.id} field={field} />
           ))}
@@ -902,7 +1028,7 @@ function ProviderDetailTabPanel({
 
   return (
     <div id={`${DATA_PROVIDER_DETAIL_PANEL_ID}-overview`} role="tabpanel" className="mt-3">
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {detail.overviewFields.map((field) => (
           <FieldTile key={field.id} field={field} />
         ))}
@@ -910,8 +1036,20 @@ function ProviderDetailTabPanel({
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Recommended action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
-        <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {detail.reasonCodeText}</p>
-        <p className="mt-1 font-mono text-[11px] text-muted-foreground">Gate: {detail.gateImpactText}</p>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">Reason: {detail.reasonLabelText}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">Gate: {detail.gateImpactText}</p>
+        {detail.reasonLabelText !== detail.reasonCodeText ? (
+          <TechnicalDetails
+            label="System details"
+            description="Raw provider status retained for diagnostics and support handoff."
+            className="mt-3"
+          >
+            <div className="grid gap-1 text-xs">
+              <span className="text-muted-foreground">Reason code</span>
+              <code className="break-all text-foreground">{detail.reasonCodeText}</code>
+            </div>
+          </TechnicalDetails>
+        ) : null}
       </div>
     </div>
   );

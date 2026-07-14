@@ -5,6 +5,7 @@ import { AccountTree, type AccountNode } from "@/components/accounting/AccountTr
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,8 @@ import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
+import { StatusBanner } from "@/components/ui/status-banner";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { getRunLedgerJournal } from "@/lib/api";
@@ -33,11 +36,12 @@ type TrialBalanceViewMode = "table" | "hierarchy";
 export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<TrialBalanceViewMode>("table");
-  const [entityScope, setEntityScope] = useState("All entities");
-  const [ledgerBook, setLedgerBook] = useState("Primary GL");
-  const [period, setPeriod] = useState("Current period");
+  const entityScope = "All entities";
+  const ledgerBook = "Primary GL";
+  const period = "Current period";
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
+  const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
   const reconciliation = useAccountingReconciliationViewModel(data, "ledger");
   const { reconciliationQueue, selectedReconciliation, selectRun } = reconciliation;
 
@@ -66,11 +70,13 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
     const runId = selectedReconciliation?.runId;
     if (!runId) {
       setJournalLines([]);
+      setJournalErrorText(null);
       return;
     }
 
     let cancelled = false;
     setJournalLoading(true);
+    setJournalErrorText(null);
 
     getRunLedgerJournal(runId)
       .then((lines) => {
@@ -81,6 +87,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
       .catch(() => {
         if (!cancelled) {
           setJournalLines([]);
+          setJournalErrorText("Journal-entry lineage could not be loaded for this run. Trial-balance balances remain available, but posting drill-through is unavailable.");
         }
       })
       .finally(() => {
@@ -158,14 +165,15 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
 
   const selectedBasisLabel =
     reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "—";
+  const trialBalanceVariance = reconciliation.trialBalanceView.rows.reduce((total, row) => total + row.balance, 0);
+  const isTrialBalanceOutOfBalance = reconciliation.trialBalanceView.hasRows && Math.abs(trialBalanceVariance) > 0.005;
 
   // Focus zone — ≤4 signals of "what needs my attention on this run right now".
   const focusSignals: FocusSignal[] = [
     {
       id: "run",
       label: "Selected run",
-      value: selectedReconciliation?.strategyName ?? "—",
-      hint: selectedReconciliation?.runId
+      value: selectedReconciliation?.strategyName ?? "—"
     },
     { id: "basis", label: "Accounting basis", value: selectedBasisLabel },
     { id: "accounts", label: "Accounts in view", value: reconciliation.trialBalanceView.filteredRowCountLabel },
@@ -192,7 +200,7 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
           >
             {reconciliationQueue.map((item) => (
               <option key={item.runId} value={item.runId}>
-                {item.strategyName} ({item.runId})
+                {item.strategyName}
               </option>
             ))}
           </Select>
@@ -209,8 +217,20 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
       }
       contextOpen={Boolean(reconciliation.trialBalanceView.selectedDetail)}
       contextLabel="Trial-balance detail"
+      contextScrollLabel="Scroll account detail for ledger lines and supporting documents"
       onContextClose={() => reconciliation.selectTrialBalanceRow(null)}
     >
+      <OperationalTrustSummary
+        source={{ value: "Run trial balance", tone: reconciliation.trialBalanceView.state === "error" ? "blocked" : "ready" }}
+        scope={{ value: selectedReconciliation?.strategyName ?? "No run selected", detail: selectedBasisLabel, tone: selectedReconciliation ? "ready" : "unknown" }}
+        freshness={{ value: reconciliation.trialBalanceView.state === "loading" ? "Loading" : "Needs review", detail: reconciliation.trialBalanceView.state === "loading" ? undefined : "No trial-balance as-of timestamp was retained.", tone: "review" }}
+        completeness={{ value: isTrialBalanceOutOfBalance ? `${reconciliation.trialBalanceView.filteredRowCountLabel} · out by ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.abs(trialBalanceVariance))}` : reconciliation.trialBalanceView.filteredRowCountLabel, tone: reconciliation.trialBalanceView.hasRows && !isTrialBalanceOutOfBalance ? "ready" : "review" }}
+        blocker={reconciliation.trialBalanceView.errorText
+          ? { value: "Trial balance unavailable", detail: reconciliation.trialBalanceView.errorText, tone: "blocked" }
+          : isTrialBalanceOutOfBalance
+            ? { value: "Trial balance out of balance", detail: "Resolve the remaining debit and credit variance before approval or reporting.", tone: "blocked" }
+            : undefined}
+      />
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Trial balance scope</CardTitle>
@@ -221,30 +241,39 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
             <Input
               id="trial-balance-entity-scope"
               value={entityScope}
-              onChange={(event) => setEntityScope(event.target.value)}
+              readOnly
+              aria-readonly="true"
             />
           </FormRow>
           <FormRow label="Book" labelFor="trial-balance-book">
             <Input
               id="trial-balance-book"
               value={ledgerBook}
-              onChange={(event) => setLedgerBook(event.target.value)}
+              readOnly
+              aria-readonly="true"
             />
           </FormRow>
           <FormRow label="Period" labelFor="trial-balance-period">
             <Input
               id="trial-balance-period"
               value={period}
-              onChange={(event) => setPeriod(event.target.value)}
+              readOnly
+              aria-readonly="true"
             />
           </FormRow>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline">Compare prior period</Button>
-            <Button type="button" size="sm" variant="outline">Export</Button>
+            <Button type="button" size="sm" variant="outline" disabled disabledReason="Prior-period comparison requires a retained comparison run.">Compare prior period</Button>
+            <Button type="button" size="sm" variant="outline" disabled disabledReason="Exports are generated through Report Preview and Validation.">Export</Button>
             <Button asChild size="sm" variant="outline">
               <Link to={WORKSTATION_ROUTE_CATALOG.reportingPreviewValidation}>Jump to report preview</Link>
             </Button>
           </div>
+          <TechnicalDetails label="System details" className="mt-3">
+            <dl className="grid gap-2 text-xs sm:grid-cols-2">
+              <div><dt className="text-muted-foreground">Run ID</dt><dd className="font-mono text-foreground">{selectedReconciliation?.runId ?? "Not supplied"}</dd></div>
+              <div><dt className="text-muted-foreground">Selected row ID</dt><dd className="font-mono text-foreground">{reconciliation.trialBalanceView.selectedRowId ?? "No row selected"}</dd></div>
+            </dl>
+          </TechnicalDetails>
         </CardContent>
       </Card>
 
@@ -378,6 +407,8 @@ export function TrialBalanceScreen({ data }: TrialBalanceScreenProps) {
         <CardContent>
           {journalLoading ? (
             <p className="text-sm text-muted-foreground">Loading journal entries for this run.</p>
+          ) : journalErrorText ? (
+            <StatusBanner role="alert" tone="warning" title="Journal lineage unavailable" detail={journalErrorText} />
           ) : journalEvidence.hasRows ? (
             <ul className="space-y-2" aria-label={journalEvidence.title}>
               {journalEvidence.rows.map((row) => (

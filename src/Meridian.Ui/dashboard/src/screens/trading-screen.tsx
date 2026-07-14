@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import {
   Sheet,
   SheetBody,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/sheet";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { SeverityBadge } from "@/components/operations";
@@ -285,15 +287,15 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
       srLabel: "Row actions",
       align: "right",
       render: (position) => (
-        <button
-          type="button"
+        <Button
+          size="sm"
+          variant="destructive"
           onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
-          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={position.closeAriaLabel}
           title={position.closeTitleLabel}
         >
           {position.closeActionLabel}
-        </button>
+        </Button>
       )
     }
   ];
@@ -360,15 +362,15 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
       srLabel: "Row actions",
       align: "right",
       render: (order) => (
-        <button
-          type="button"
+        <Button
+          size="sm"
+          variant="destructive"
           onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
-          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={order.cancelAriaLabel}
           title={order.cancelTitleLabel}
         >
           {order.cancelActionLabel}
-        </button>
+        </Button>
       )
     }
   ];
@@ -523,6 +525,34 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const promotionGate = usePromotionGateViewModel();
   const navigate = useNavigate();
   const routeView = resolveTradingRouteView(pathname);
+  const [sessionCloseTarget, setSessionCloseTarget] = React.useState<string | null>(null);
+  const [sessionCloseAcknowledged, setSessionCloseAcknowledged] = React.useState(false);
+  const sessionCloseBusy = paperSessions.busyCommand?.kind === "closing"
+    && paperSessions.busyCommand.sessionId === sessionCloseTarget;
+
+  function openSessionCloseConfirmation(sessionId: string) {
+    setSessionCloseTarget(sessionId);
+    setSessionCloseAcknowledged(false);
+  }
+
+  function cancelSessionCloseConfirmation() {
+    if (sessionCloseBusy) {
+      return;
+    }
+
+    setSessionCloseTarget(null);
+    setSessionCloseAcknowledged(false);
+  }
+
+  async function confirmSessionClose() {
+    if (!sessionCloseTarget || !sessionCloseAcknowledged || sessionCloseBusy) {
+      return;
+    }
+
+    await paperSessions.closeSession(sessionCloseTarget);
+    setSessionCloseTarget(null);
+    setSessionCloseAcknowledged(false);
+  }
 
   async function refreshSessionEvidence() {
     await Promise.all([
@@ -557,6 +587,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const showPositions = routeView === "positions";
   const showRisk = routeView === "risk";
   const routeCopy = tradingRouteViewCopy[routeView];
+  const readinessStatus = tradingReadiness.readiness?.overallStatus ?? null;
+  const sourceTone: OperationalTrustTone = data.brokerage.connection === "Connected"
+    ? "ready"
+    : data.brokerage.connection === "Degraded"
+      ? "review"
+      : "blocked";
+  const completenessCount = data.positions.length + data.openOrders.length + data.fills.length;
+  const readinessTone: OperationalTrustTone = readinessStatus === "Ready"
+    ? "ready"
+    : readinessStatus === "Blocked"
+      ? "blocked"
+      : readinessStatus
+        ? "review"
+        : "unknown";
 
   return (
     <div className="space-y-5">
@@ -589,6 +633,35 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           }}
         />
       </section>
+
+      <OperationalTrustSummary
+        label="Trading data confidence"
+        source={{
+          value: `${data.brokerage.provider} · ${data.brokerage.environment}`,
+          detail: data.brokerage.connection,
+          tone: sourceTone
+        }}
+        scope={{
+          value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
+          detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
+          tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
+        }}
+        freshness={{
+          value: data.brokerage.lastHeartbeat || "Unavailable",
+          detail: "Latest brokerage heartbeat",
+          tone: sourceTone
+        }}
+        completeness={{
+          value: `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
+          detail: `${completenessCount} execution records loaded`,
+          tone: completenessCount > 0 ? "ready" : "review"
+        }}
+        blocker={readinessStatus ? {
+          value: formatReadinessStatusValue(readinessStatus),
+          detail: "Operator readiness posture",
+          tone: readinessTone
+        } : undefined}
+      />
 
       {showOverview ? (
       <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
@@ -702,17 +775,19 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 </p>
               )}
               {executionEvidence.controlsPanel ? (
-                <dl
-                  aria-label={executionEvidence.controlsPanel.ariaLabel}
-                  className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
-                >
-                  {executionEvidence.controlsPanel.rows.map((row) => (
-                    <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
-                      <dt>{row.label}:</dt>
-                      <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
+                <TechnicalDetails label="Audit details">
+                  <dl
+                    aria-label={executionEvidence.controlsPanel.ariaLabel}
+                    className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
+                  >
+                    {executionEvidence.controlsPanel.rows.map((row) => (
+                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
+                        <dt>{row.label}:</dt>
+                        <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
               ) : (
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
@@ -803,7 +878,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <div className="panel-action-zone">
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="destructive"
                   onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
                   disabled={blotterVm.cancelAllDisabled}
                   disabledReason={blotterVm.cancelAllDisabledReason}
@@ -1231,8 +1306,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                       {session.isActive && (
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => { void paperSessions.closeSession(session.sessionId); }}
+                          variant="destructive"
+                          onClick={() => openSessionCloseConfirmation(session.sessionId)}
                           disabled={!session.canClose}
                           disabledReason={session.closeDisabledReason}
                           aria-label={session.closeAriaLabel}
@@ -1290,6 +1365,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{entry.message}</p>
                       <p className="mt-1 font-mono text-[11px] text-muted-foreground">{entry.metadataText}</p>
+                      {entry.technicalMetadataText ? (
+                        <TechnicalDetails label="Execution references" className="mt-2">
+                          <p className="break-all font-mono text-[11px] text-muted-foreground">
+                            {entry.technicalMetadataText}
+                          </p>
+                        </TechnicalDetails>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -1350,7 +1432,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="destructive"
                 aria-label={strategyLifecycle.stopAriaLabel}
                 onClick={strategyLifecycle.openStopConfirm}
                 disabled={!strategyLifecycle.canStop}
@@ -1770,6 +1852,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       </Sheet>
 
       <ConfirmActionDialog vm={confirmVm} />
+      <SessionCloseConfirmationDialog
+        sessionId={sessionCloseTarget}
+        acknowledged={sessionCloseAcknowledged}
+        busy={sessionCloseBusy}
+        onAcknowledgedChange={setSessionCloseAcknowledged}
+        onCancel={cancelSessionCloseConfirmation}
+        onConfirm={confirmSessionClose}
+      />
     </div>
   );
 }
@@ -1914,7 +2004,7 @@ function buildCockpitAcceptance({
       ? {
           label: "Promotion review",
           value: "Ready",
-          detail: `${readinessPromotion!.approvalStatus} by ${readinessPromotion!.approvedBy}: ${readinessPromotion!.reason}. Audit ${readinessPromotion!.auditReference}.`,
+          detail: `${readinessPromotion!.approvalStatus} by ${formatTradingOperatorLabel(readinessPromotion!.approvedBy)}: ${readinessPromotion!.reason}. Audit evidence retained.`,
           level: "ready"
         }
       : readinessPromotion
@@ -1941,7 +2031,7 @@ function buildCockpitAcceptance({
         ? {
             label: "Promotion review",
             value: "Ready",
-            detail: `${latestPromotion!.decision} by ${latestPromotion!.approvedBy}: ${latestPromotion!.approvalReason ?? latestPromotion!.reviewNotes}. Audit ${latestPromotion!.auditReference}.`,
+            detail: `${latestPromotion!.decision} by ${formatTradingOperatorLabel(latestPromotion!.approvedBy)}: ${latestPromotion!.approvalReason ?? latestPromotion!.reviewNotes}. Audit evidence retained.`,
             level: "ready"
           }
         : latestPromotion && latestPromotionHasRationale
@@ -1958,6 +2048,23 @@ function buildCockpitAcceptance({
           level: "review"
         }
   ];
+}
+
+function formatTradingOperatorLabel(value: string | null | undefined): string {
+  const normalized = value?.trim() ?? "";
+  if (!normalized) {
+    return "Unknown operator";
+  }
+
+  if (/^fixture[-_:]/i.test(normalized)) {
+    return "Paper operator";
+  }
+
+  const words = normalized.replace(/[._:-]+/g, " ").replace(/\s+/g, " ").trim();
+  return words
+    .split(" ")
+    .map((word) => word ? `${word.charAt(0).toUpperCase()}${word.slice(1)}` : word)
+    .join(" ");
 }
 
 function mapAcceptanceGate(gate: TradingAcceptanceGate): CockpitAcceptanceItem {
@@ -2331,6 +2438,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 {vm.cancelButtonLabel}
               </Button>
               <Button
+                variant={vm.confirmButtonVariant}
                 onClick={() => { void vm.executeConfirm(); }}
                 disabled={!vm.canConfirm}
                 disabledReason={vm.confirmDisabledReason}
@@ -2349,6 +2457,76 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
             </Button>
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SessionCloseConfirmationDialog({
+  sessionId,
+  acknowledged,
+  busy,
+  onAcknowledgedChange,
+  onCancel,
+  onConfirm
+}: {
+  sessionId: string | null;
+  acknowledged: boolean;
+  busy: boolean;
+  onAcknowledgedChange: (acknowledged: boolean) => void;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const titleId = "paper-session-close-title";
+  const descriptionId = "paper-session-close-description";
+  const acknowledgementId = "paper-session-close-acknowledgement";
+
+  return (
+    <Dialog open={sessionId !== null} onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <DialogContent
+        className="sm:max-w-md"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+      >
+        <DialogHeader>
+          <DialogTitle id={titleId}>Close paper session {sessionId}</DialogTitle>
+          <DialogDescription id={descriptionId}>
+            Closing stops further execution for this paper session. It does not cancel working orders or flatten open positions.
+          </DialogDescription>
+        </DialogHeader>
+        <label
+          htmlFor={acknowledgementId}
+          className="flex items-start gap-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-3 text-sm"
+        >
+          <input
+            id={acknowledgementId}
+            type="checkbox"
+            checked={acknowledged}
+            disabled={busy}
+            onChange={(event) => onAcknowledgedChange(event.target.checked)}
+            className="mt-1 h-4 w-4 accent-danger"
+          />
+          <span>
+            <span className="block font-medium text-foreground">I reviewed open orders and positions</span>
+            <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+              Confirm any remaining exposure is intentional before closing the session.
+            </span>
+          </span>
+        </label>
+        <div className="panel-action-zone pt-2">
+          <Button variant="outline" onClick={onCancel} disabled={busy}>Keep session open</Button>
+          <Button
+            variant="destructive"
+            onClick={() => { void onConfirm(); }}
+            disabled={!acknowledged || busy}
+            disabledReason={!acknowledged ? "Review open orders and positions before closing this session." : undefined}
+            busy={busy}
+            busyLabel="Closing paper session"
+            aria-label={sessionId ? `Confirm close paper session ${sessionId}` : "Confirm close paper session"}
+          >
+            Close session
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
