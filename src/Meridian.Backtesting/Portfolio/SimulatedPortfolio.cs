@@ -852,8 +852,9 @@ internal sealed class SimulatedPortfolio
     /// Realizes P&amp;L for a long position close using the account's configured lot selection method.
     /// <para>
     /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>,
-    /// which re-implements the same FIFO lot logic for attribution. If you change this method,
-    /// update the metrics counterpart in parallel.
+    /// which re-derives realized P&amp;L from the fill stream (honoring the same lot-selection
+    /// method) for attribution. If you change this method, update the metrics counterpart in
+    /// parallel.
     /// </para>
     /// </summary>
     private static decimal RealiseLots(
