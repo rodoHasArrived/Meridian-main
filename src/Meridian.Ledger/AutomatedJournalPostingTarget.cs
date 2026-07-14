@@ -55,13 +55,8 @@ public sealed record AutomatedJournalPostingContext
     private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string> evidenceLinks)
     {
         ArgumentNullException.ThrowIfNull(evidenceLinks);
-        var normalized = evidenceLinks
-            .Select(static link => link.Trim())
-            .Where(static link => link.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        if (normalized.Length == 0)
+        var normalized = LedgerEvidenceLinks.Normalize(evidenceLinks);
+        if (normalized.Count == 0)
         {
             throw new ArgumentException("Posting evidence is required.", nameof(evidenceLinks));
         }

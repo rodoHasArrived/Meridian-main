@@ -180,7 +180,7 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         var finnhub = descriptorsById["finnhub"];
         finnhub.Historical.Should().Be(typeof(FinnhubHistoricalDataProvider));
-        finnhub.Search.Should().Be(typeof(FinnhubSymbolSearchProviderRefactored));
+        finnhub.Search.Should().Be(typeof(FinnhubSymbolSearchProvider));
         finnhub.CorporateActions.Should().Be(typeof(FinnhubCorporateActionProvider));
         finnhub.Streaming.Should().BeNull(
             "Finnhub has no dedicated streaming provider implementation in the runtime catalog");

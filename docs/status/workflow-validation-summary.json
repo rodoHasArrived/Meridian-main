@@ -6,6 +6,7 @@
       "desktop-test-operator-inbox-route"
     ],
     "scriptPaths": [
+      "build/scripts/ci/dispatch-targeted-test.py",
       "build/scripts/docs/generate-workflow-manifest.py",
       "build/scripts/docs/run-docs-automation.py",
       "scripts/dev/build-ibapi-smoke.ps1",

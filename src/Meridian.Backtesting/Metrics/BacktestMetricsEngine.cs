@@ -1,3 +1,5 @@
+using Meridian.Ledger;
+
 namespace Meridian.Backtesting.Metrics;
 
 /// <summary>
@@ -207,14 +209,15 @@ internal static class BacktestMetricsEngine
                 {
                     // Exit — consume lots FIFO and compute round-trip P&L
                     var closeQty = Math.Abs(order.Quantity);
-                    var remaining = closeQty;
                     var roundTripPnl = 0m;
 
-                    while (remaining > 0 && lots.Count > 0)
+                    var consumption = LotConsumption.Consume(
+                        EnumerateNodes(lots), closeQty, static node => node.Value.qty);
+
+                    foreach (var slice in consumption.Slices)
                     {
-                        var node = lots.First!;
-                        var (lotQty, lotPrice, lotCommission) = node.Value;
-                        var consumed = Math.Min(lotQty, remaining);
+                        var (lotQty, lotPrice, lotCommission) = slice.Lot.Value;
+                        var consumed = (long)slice.Quantity;
 
                         // Allocate entry and exit commission proportionally to consumed quantity
                         var entryCommForConsumed = lotQty > 0 ? lotCommission * consumed / lotQty : 0m;
@@ -222,24 +225,20 @@ internal static class BacktestMetricsEngine
 
                         roundTripPnl += consumed * (order.Price - lotPrice)
                             - entryCommForConsumed - exitCommForConsumed;
-                        remaining -= consumed;
 
-                        if (consumed >= lotQty)
+                        if (slice.ClosesLot)
                         {
-                            lots.RemoveFirst();
+                            lots.Remove(slice.Lot);
                         }
                         else
                         {
-                            // Partial lot: remove front and prepend reduced entry. O(1) time;
-                            // avoids reallocating the entire collection that the old Queue required.
                             var leftoverCommission = lotQty > 0 ? lotCommission * (lotQty - consumed) / lotQty : 0m;
-                            lots.RemoveFirst();
-                            lots.AddFirst((lotQty - consumed, lotPrice, leftoverCommission));
+                            slice.Lot.Value = (lotQty - consumed, lotPrice, leftoverCommission);
                         }
                     }
 
                     // Only record a completed round-trip if at least some lots were consumed
-                    if (remaining < closeQty)
+                    if (consumption.Slices.Count > 0)
                     {
                         if (roundTripPnl > 0)
                         { grossWins += roundTripPnl; wins++; }
@@ -293,7 +292,7 @@ internal static class BacktestMetricsEngine
     /// </summary>
     private static decimal ComputeRealisedPnl(IReadOnlyList<FillEvent> fills)
     {
-        // Use LinkedList so partial-lot updates are O(1) AddFirst — no new collection per split.
+        // Use LinkedList so partial-lot updates are O(1) in-place — no new collection per split.
         var lots = new LinkedList<(long qty, decimal price)>();
         var realised = 0m;
 
@@ -305,30 +304,28 @@ internal static class BacktestMetricsEngine
             }
             else
             {
-                var closeQty = Math.Abs(fill.FilledQuantity);
-                while (closeQty > 0 && lots.Count > 0)
+                var consumption = LotConsumption.Consume(
+                    EnumerateNodes(lots), Math.Abs(fill.FilledQuantity), static node => node.Value.qty);
+
+                foreach (var slice in consumption.Slices)
                 {
-                    var node = lots.First!;
-                    var (lotQty, lotPrice) = node.Value;
-                    if (lotQty <= closeQty)
-                    {
-                        realised += lotQty * (fill.FillPrice - lotPrice);
-                        closeQty -= lotQty;
-                        lots.RemoveFirst();
-                    }
+                    var (lotQty, lotPrice) = slice.Lot.Value;
+                    realised += slice.Quantity * (fill.FillPrice - lotPrice);
+
+                    if (slice.ClosesLot)
+                        lots.Remove(slice.Lot);
                     else
-                    {
-                        realised += closeQty * (fill.FillPrice - lotPrice);
-                        // Partial lot: remove front and prepend reduced entry. O(1) time;
-                        // avoids reallocating the entire collection that the old Queue required.
-                        lots.RemoveFirst();
-                        lots.AddFirst((lotQty - closeQty, lotPrice));
-                        closeQty = 0;
-                    }
+                        slice.Lot.Value = (lotQty - (long)slice.Quantity, lotPrice);
                 }
             }
         }
         return realised;
+    }
+
+    private static IEnumerable<LinkedListNode<T>> EnumerateNodes<T>(LinkedList<T> list)
+    {
+        for (var node = list.First; node is not null; node = node.Next)
+            yield return node;
     }
 
     private static double ComputeXirr(

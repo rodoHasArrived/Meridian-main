@@ -106,7 +106,9 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("filter", " ".join(targeted["requiredPrerequisites"]).lower())
         self.assertIn("mode", " ".join(targeted["requiredPrerequisites"]).lower())
         self.assertIn("artifacts/test-results/targeted-dotnet", targeted["expectedArtifacts"])
-        self.assertIn("gh workflow run targeted-test.yml", targeted["executionCommands"][0]["command"])
+        commands = [entry["command"] for entry in targeted["executionCommands"]]
+        self.assertTrue(any("dispatch-targeted-test.py" in command for command in commands))
+        self.assertTrue(any("gh workflow run targeted-test.yml" in command for command in commands))
 
 
 if __name__ == "__main__":

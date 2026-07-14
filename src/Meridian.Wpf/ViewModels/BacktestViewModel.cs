@@ -403,7 +403,13 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
             await Task.Delay(500, cancellationToken).ConfigureAwait(false);
             await RefreshCoverageAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Backtest operation cancelled.",
+                ("view", nameof(BacktestViewModel)));
+        }
     }
 
     private async Task RefreshCoverageAsync(CancellationToken cancellationToken)
@@ -467,7 +473,13 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
                 IsCoverageLoading = false;
             });
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Backtest operation cancelled.",
+                ("view", nameof(BacktestViewModel)));
+        }
     }
 
     private async Task FixGapsAsync(CancellationToken cancellationToken = default)
@@ -516,6 +528,10 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(BacktestViewModel)));
         }
 
         cts.Dispose();

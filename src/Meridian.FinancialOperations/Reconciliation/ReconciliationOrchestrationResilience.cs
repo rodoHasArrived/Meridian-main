@@ -1,3 +1,5 @@
+using Meridian.Core.Resilience;
+
 namespace Meridian.FinancialOperations.Reconciliation;
 
 public sealed record ReconciliationOrchestrationResilienceOptions(
@@ -9,10 +11,7 @@ public sealed record ReconciliationOrchestrationResilienceOptions(
     public TimeSpan RetryBaseDelay { get; init; } = RetryBaseDelay == default ? TimeSpan.FromSeconds(2) : RetryBaseDelay;
 
     public TimeSpan GetRetryDelay(int attempt)
-    {
-        var normalizedAttempt = Math.Clamp(attempt, 1, MaxRetries);
-        return TimeSpan.FromMilliseconds(RetryBaseDelay.TotalMilliseconds * Math.Pow(2, normalizedAttempt - 1));
-    }
+        => Backoff.ExponentialDelay(Math.Clamp(attempt, 1, MaxRetries), RetryBaseDelay);
 
     public bool ShouldDeadLetter(int attempt, Exception _) => DeadLetterEnabled && attempt >= MaxRetries;
 }

@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
@@ -80,6 +81,16 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             _logger.LogDebug(
                 "SecurityMasterAmortizationLedgerBridge: no cash flow projection for {SecurityId} under scenario {Scenario}.",
                 securityId, postingContext.Scenario);
+            return 0;
+        }
+
+        // Shared freshness/scenario gate: never post a stale source or a rate-shocked what-if
+        // projection to the general ledger, matching the preview bridge's posting rules.
+        if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blockReason)
+        {
+            _logger.LogWarning(
+                "SecurityMasterAmortizationLedgerBridge: cash flow projection for {SecurityId} is not postable ({Reason}); no ledger entries posted.",
+                securityId, blockReason);
             return 0;
         }
 

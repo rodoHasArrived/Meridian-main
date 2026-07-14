@@ -700,11 +700,16 @@ async function main() {
     // browser build the pinned Playwright version would download.
     const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
     browser = await chromium.launch(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {});
-    const page = await browser.newPage();
-    await setupApiMocking(page, fixtureRoutes);
-    pageErrors = createPageErrorTracker(page);
 
     for (const capture of captures) {
+      // Each capture renders in a fresh browser context so it shows the
+      // route's default first-load state. The app shell persists
+      // workflow-continuity, activity, and focus state across navigations,
+      // so a shared context makes capture results depend on visit order.
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await setupApiMocking(page, fixtureRoutes);
+      pageErrors = createPageErrorTracker(page);
       try {
         const result = await captureRoute(
           page,
@@ -731,6 +736,10 @@ async function main() {
         };
         results.push(failed);
         throw error;
+      } finally {
+        pageErrors.dispose();
+        pageErrors = null;
+        await context.close();
       }
     }
 

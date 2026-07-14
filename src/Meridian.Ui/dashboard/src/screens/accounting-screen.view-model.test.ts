@@ -2482,9 +2482,10 @@ describe("accounting-screen view model", () => {
       detailStatusBadgeVariant: "success"
     });
     expect(state.metrics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "results", value: "1", tone: "success" }),
-      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Security ID sec-1" }),
-      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" })
+      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Security ID sec-1; Equity; Active.", tone: "success" }),
+      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" }),
+      expect.objectContaining({ id: "reference", value: "Pending", tone: "default" }),
+      expect.objectContaining({ id: "passport", value: "Controls set", tone: "success" })
     ]));
     expect(state.detailSections).toEqual(expect.arrayContaining([
       { id: "overview", label: "Overview", value: "1 identifier", active: true },

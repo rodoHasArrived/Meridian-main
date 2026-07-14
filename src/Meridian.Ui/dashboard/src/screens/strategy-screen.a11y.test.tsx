@@ -55,4 +55,20 @@ describe("StrategyScreen accessibility", () => {
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });
+
+  it.each([
+    ["overview", "/strategy"],
+    ["promotions", "/strategy/promotions"],
+    ["lab", "/strategy/lab"]
+  ])("has no basic accessibility violations on the %s route", async (_view, pathname) => {
+    const { container } = renderWithRouter(<StrategyScreen data={twoRuns} />, {
+      initialEntries: [pathname]
+    });
+
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target)
+    }))).toEqual([]);
+  });
 });

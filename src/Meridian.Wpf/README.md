@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-06
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Wpf
@@ -186,6 +186,11 @@ report-line drill-throughs stay route-compatible with the browser workstation. R
 provenance rows also carry shared instrument, position or transaction, reconciliation, journal,
 report-line, evidence, and audit-link actions that WPF maps through the same view-model route
 resolver instead of desktop-local lineage rules.
+The generic selected-record field and relationship surfaces also carry factor evidence, holder
+role/book position, economic projection, posting command, approval, immutable journal, and
+ledger/report evidence identities resolved by UI Shared. WPF registers the shared factor projector
+for independent desktop composition but does not calculate factor economics or query the journal in
+the view model.
 
 The desktop shell includes a first-launch and Settings entry point for a sample-data Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` demo mode, selects the connected sample scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global demo banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
 

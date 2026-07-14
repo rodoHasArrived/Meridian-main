@@ -415,7 +415,13 @@ public sealed partial class WorkstationEndpointsTests
     public async Task ManualJournalEntryWorkbenchEndpoints_SaveValidateAndSubmitDraft()
     {
         await using var app = await CreateAppAsync(
-            RegisterAccountingConfigurationServices,
+            services =>
+            {
+                // The accounting/reporting workspace endpoints require the strategy run read
+                // service; without it they return 503 instead of fabricated fallback data.
+                RegisterRunReadServices(services);
+                RegisterAccountingConfigurationServices(services);
+            },
             currentUserPermissions: UserPermission.AdminMaintenance,
             currentUserCompanyId: "company-alpha");
         var client = app.GetTestClient();

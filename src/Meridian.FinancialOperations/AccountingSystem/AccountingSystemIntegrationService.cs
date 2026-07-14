@@ -1269,7 +1269,7 @@ public sealed class AccountingSystemIntegrationService
         var externalGl = dimensions.ExternalGlDimensions
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
-        return string.Join(
+        var signature = string.Join(
             "\u001e",
             dimensions.FundId ?? string.Empty,
             dimensions.EntityId ?? string.Empty,
@@ -1289,6 +1289,10 @@ public sealed class AccountingSystemIntegrationService
             dimensions.CustomerId ?? string.Empty,
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty);
+
+        return dimensions.PositionId.HasValue
+            ? $"{signature}\u001epositionId={dimensions.PositionId.Value:D}"
+            : signature;
     }
 
     private static AccountingSystemImportDetailDto NormalizeImportedDetail(

@@ -53,6 +53,7 @@ export interface AccountingSectionVisibilityViewModel {
   showLedgerExplorer: boolean;
   showSecurityMaster: boolean;
   showReconciliationActions: boolean;
+  showReporting: boolean;
 }
 
 type AccountingTaskModeDefinition = Omit<AccountingTaskModeViewModel, "workstream" | "ariaLabel">;
@@ -206,7 +207,8 @@ export function buildAccountingSectionVisibility(
     showReconciliation: taskMode.workstream === "reconciliation",
     showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding,
     showSecurityMaster: taskMode.workstream === "security-master",
-    showReconciliationActions: taskMode.workstream === "reconciliation" || taskMode.workstream === "exceptions"
+    showReconciliationActions: taskMode.workstream === "reconciliation" || taskMode.workstream === "exceptions",
+    showReporting: taskMode.workstream === "reporting"
   };
 
   const targetId = normalizeAccountingHashTarget(hash);
@@ -279,7 +281,8 @@ const accountingSectionHashVisibility: Record<string, Partial<AccountingSectionV
   "manual-je-balance-impact-heading": { showJournalEntries: true },
   "accounting-configure-heading": { showConfiguration: true },
   "security-master-search": { showSecurityMaster: true },
-  "security-detail-page-title": { showSecurityMaster: true }
+  "security-detail-page-title": { showSecurityMaster: true },
+  "accounting-reporting": { showReporting: true }
 };
 
 function buildAccountingTaskModeViewModel(

@@ -7,4 +7,7 @@
     <RootNamespace>Meridian.Audit</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />
+  </ItemGroup>
 </Project>

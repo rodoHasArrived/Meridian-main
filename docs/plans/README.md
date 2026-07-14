@@ -20,15 +20,24 @@ This folder is retained for historical and implementation planning references wh
 
 ## Migration Summary
 
-Recent planning content has been migrated to archive stubs in this folder. Use this index for replacement routing and context:
+Legacy planning content has been migrated to [`../../archive/docs/plans/`](../../archive/docs/plans/),
+and the archive-migration stubs that previously mirrored each archived plan in this folder have been
+removed. Use [`../../archive/docs/plans/README.md`](../../archive/docs/plans/README.md) for the full
+historical index; migration batch evidence is captured in `docs/documentation-inventory.md` as
+`archive` action rows.
 
-- All markdown files in `docs/plans/` now point to canonical planning owners:
-  - [`docs/product/README.md`](../product/README.md)
-  - [`docs/engineering/README.md`](../engineering/README.md)
-  - [`docs/roadmap/README.md`](../roadmap/README.md)
-  - [`../../archive/docs/plans/`](../../archive/docs/plans/)
-- Historical rationale for each archived document is maintained in [`../../archive/docs/plans/README.md`](../../archive/docs/plans/README.md).
-- Migration batch evidence is captured in `docs/documentation-inventory.md` as `archive` action rows.
+The files still present here stay because they are active or consumed by tooling at these paths:
+
+- [security-master-passport-workbench.md](security-master-passport-workbench.md) — active plan.
+- [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) and
+  [desktop-workstation-screen-blueprint.checklist.json](desktop-workstation-screen-blueprint.checklist.json)
+  — consumed by `scripts/dev/desktop_screen_blueprint_checklist.py` and its tests.
+- [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) —
+  evidence input for the pilot-readiness and paper-replay dashboard generators.
+- [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) — referenced by the
+  meridian-archive-organizer skill evaluation fixtures (`must_exist`).
+- [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md)
+  — referenced by the meridian-simulated-user-panel skill evaluation manifests.
 
 ## Migration Rules
 

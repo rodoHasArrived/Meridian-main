@@ -84,17 +84,12 @@ public static class SymbolEndpoints
             if (searchService is null)
                 return Results.Json(new { count = 0, symbols = Array.Empty<string>(), message = "Storage search service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
                 var symbols = catalog.Symbols?.Select(s => s.Symbol).ToArray() ?? Array.Empty<string>();
                 return Results.Json(new { count = symbols.Length, symbols }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to discover archived symbols");
-                return Results.Problem("Failed to discover archived symbols.");
-            }
+            }, "Failed to discover archived symbols.", logger);
         })
         .WithName("GetArchivedSymbols")
         .Produces(200);

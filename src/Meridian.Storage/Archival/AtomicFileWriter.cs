@@ -234,10 +234,13 @@ public static partial class AtomicFileWriter
 
         try
         {
+            // ReadWrite (not Write) so writeAction can read back bytes it copied into the
+            // temp stream — required by formats that merge existing content in place,
+            // such as Parquet row-group appends.
             await using (var tempStream = new FileStream(
                 tempPath,
                 FileMode.Create,
-                FileAccess.Write,
+                FileAccess.ReadWrite,
                 FileShare.None,
                 bufferSize: 65536,
                 FileOptions.Asynchronous))

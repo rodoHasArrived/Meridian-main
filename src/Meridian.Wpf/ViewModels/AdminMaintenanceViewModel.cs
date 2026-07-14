@@ -1,3 +1,4 @@
+using System;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -509,9 +510,13 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                 RunTierMigration = ops.Contains("tiermigration");
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Use defaults
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Loading maintenance schedule failed; using defaults.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -1111,9 +1116,13 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Leave empty
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Loading maintenance history failed; leaving list empty.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

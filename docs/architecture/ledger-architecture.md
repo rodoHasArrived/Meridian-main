@@ -167,6 +167,13 @@ receivable and credits coupon income. Discount accretion increases the carrying-
 credits coupon income. Premium amortization debits coupon income and credits the carrying-value
 asset, reducing interest income over the amortization period.
 
+Structured cash flow projections reach this projector through
+`StructuredCashFlowLedgerBridge` (see
+[Structured cash flow → ledger bridge](#structured-cash-flow--ledger-bridge)), which maps a fresh,
+base-scenario projection's per-period interest into coupon-accrual inputs. The bridge is the
+production caller for the coupon-accrual path; discount/premium amortization inputs remain available
+for callers that carry cost-basis evidence.
+
 ### `LedgerAccountTaxLotPolicyBook`
 
 `LedgerAccountTaxLotPolicyBook` resolves tax-lot relief policy at the `LedgerAccount` boundary.
@@ -345,6 +352,38 @@ inputs, the run detail carries expected accounting events, accrual calculations,
 previews, and structured Security Master accounting issues alongside the existing matches, breaks,
 coverage issues, and classification map.
 
+## Structured cash flow → ledger bridge
+
+Structured cash flow projections (`StructuredCashFlowProjectionDto`) were historically display-only:
+the projection math probed instrument terms by fuzzy JSON key aliases, treated the factor schedule
+as a free-text field, logged staleness without enforcing it, and served only the workstation UI. The
+cash flow projection path now closes those gaps:
+
+- **Typed term resolution.** `StructuredCashFlowTermsResolver` resolves a security's raw term JSON
+  into a strongly typed `StructuredCashFlowTerms` once, up front. All vendor key aliases (for
+  example `par` / `originalFace` / `notional`) live in one documented, unit-tested place instead of
+  being re-probed inline in the amortization math. The resolver and the shared `SecurityTermReader`
+  probing primitives live in `Meridian.Contracts` so both the cash-flow projection (Application) and
+  the asset-obligation projection (`AssetObligationProjectionService`, Instruments) resolve
+  fixed-income terms through the same code rather than each carrying a private copy of the probing.
+- **Typed factor schedule.** The resolver parses a `factorSchedule` array into typed
+  `StructuredFactorScheduleEntry` points and seeds outstanding balance from the factor in effect on
+  the projection date (`StructuredCashFlowTerms.FactorAsOf`), falling back to the scalar current
+  factor. The typed schedule is surfaced on the projection DTO rather than remaining free text.
+- **Staleness as a gate.** Each projection carries a typed `StructuredCashFlowStaleness` status
+  computed from the source's last-updated timestamp. The status is advisory for UI display (stale
+  projections are still returned, but flagged) and a hard gate for posting.
+- **Ledger wiring.** `StructuredCashFlowLedgerBridge` converts a fresh, base-scenario projection's
+  per-period interest into `FixedIncomeAmortizationProjector` coupon-accrual inputs and returns
+  balanced `StructuredCashFlowLedgerPostingResult` journal postings (preview). The heavier
+  `SecurityMasterAmortizationLedgerBridge` posts one balanced accrual/amortization entry per period —
+  coupon accrual plus straight-line premium/discount when a position is supplied — and a separate
+  principal-paydown entry, into a live ledger. Both bridges consult a single
+  `StructuredCashFlowLedgerGate`, so neither the preview nor the posting path can route a stale source
+  or a rate-shocked what-if scenario to the general ledger. `ISecurityMasterCashFlowService.BuildLedgerPostingsAsync`
+  is the reachable preview entry point; both bridges are registered in the Security Master service
+  graph and are the production callers for the coupon-accrual projector path.
+
 ## Operations continuity workflow
 
 `OperationsContinuityWorkflow` is the Financial Operations aggregate for the account-period
@@ -509,7 +548,7 @@ Two predefined rules are provided:
 
 ### Portfolio ↔ ledger reconciliation
 
-`LedgerInterop.ReconcilePortfolioLedgerChecks` compares portfolio-level aggregates (cash, equity, positions) to their ledger counterparts and produces `PortfolioLedgerCheckResult` records. Categories include `matched`, `amount_mismatch`, `missing_ledger_coverage`, `missing_portfolio_coverage`, `classification_gap`, `timing_mismatch`, and `partial_match`.
+`LedgerInterop.ReconcilePortfolioLedgerChecks` compares portfolio-level aggregates (cash, equity, positions) to their ledger counterparts and produces `PortfolioLedgerCheckResult` records. Categories include `matched`, `amount_mismatch`, `missing_ledger_coverage`, `missing_portfolio_coverage`, `classification_gap`, `timing_mismatch`, `partial_match`, and `missing_data`. A check only classifies as `matched` when every value both sides supplied was actually compared and agreed; one-sided amount evidence classifies as `partial_match`, `timing_mismatch`, or `missing_data` (never a full match).
 
 Portfolio ↔ ledger checks are evaluated directly inside the F# kernel rather than being coerced through the day-based cash-flow matching rules. This keeps `MaxAsOfDriftMinutes` minute-granular, preserves `partial_match` as an explicit status/category at the interop boundary, and ensures the severity exposed to workstation/governance consumers comes from the F# classification result instead of being recomputed in C#.
 

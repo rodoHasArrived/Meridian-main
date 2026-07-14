@@ -5,10 +5,14 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +23,9 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     private static readonly Guid FinancialRecordExplorerAaplSecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid FinancialRecordExplorerLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111112");
+    private static readonly Guid FinancialRecordExplorerPositionId = Guid.Parse("11111111-1111-1111-1111-111111111113");
+    private static readonly Guid FinancialRecordExplorerEventId = Guid.Parse("11111111-1111-1111-1111-111111111114");
 
     [Theory]
     [InlineData("ledger")]
@@ -310,6 +317,13 @@ public sealed partial class WorkstationEndpointsTests
                 "Ledger Projection",
                 "Ledger / Journal Impact",
                 "Reconciliation",
+                "Factor Evidence",
+                "Role / Position",
+                "Economic Projection",
+                "Posting Candidate",
+                "Approval",
+                "Immutable JournalEntry",
+                "Ledger / Report Evidence",
                 "Report Usage",
                 "Evidence",
                 "Audit Trail"
@@ -331,7 +345,13 @@ public sealed partial class WorkstationEndpointsTests
                 "Projected cash flows",
                 "Reconciliation",
                 "Ledger projection",
-                "Journal",
+                "Immutable JournalEntry",
+                "Factor evidence",
+                "Role / position",
+                "Economic projection",
+                "Posting candidate",
+                "Independent approval",
+                "Ledger / report evidence",
                 "Report line",
                 "Evidence",
                 "Audit event"
@@ -349,8 +369,7 @@ public sealed partial class WorkstationEndpointsTests
         actions["open-reconciliation"].IsEnabled.Should().BeTrue();
         actions["open-reconciliation"].Href.Should().Contain("/api/workstation/reconciliation/runs/recon-run-aapl");
         actions["open-journal-impact"].IsEnabled.Should().BeTrue();
-        actions["open-journal-impact"].Href.Should().Contain("/api/workstation/runs/financial-record-explorer-security-run/ledger/journal");
-        actions["open-journal-impact"].Href.Should().Contain("ledgerEntryId=ledger-aapl-position");
+        actions["open-journal-impact"].Href.Should().Contain("ledgerEntryId=11111111-1111-1111-1111-111111111120");
         actions["open-report-line-provenance"].IsEnabled.Should().BeTrue();
         actions["open-report-line-provenance"].Href.Should().Contain("/api/workstation/financial-record-explorers/report-line-provenance");
         actions["open-report-line-provenance"].Href.Should().Contain("lineKey=holdings.aapl.market-value");
@@ -360,9 +379,15 @@ public sealed partial class WorkstationEndpointsTests
         actions["open-audit-trail"].Href.Should().Contain($"/api/workstation/evidence/subjects/security-instrument/{FinancialRecordExplorerAaplSecurityId:D}/graph");
 
         explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
-            ["Apple Inc.", "Position / transaction", "Reconciliation", "Journal", "Report line", "Evidence", "Audit event"]);
+            ["Apple Inc.", "Position / transaction", "Reconciliation", "Immutable JournalEntry", "Factor evidence", "Role / position", "Economic projection", "Posting candidate", "Independent approval", "Ledger / report evidence", "Report line", "Evidence", "Audit event"]);
         explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
-            ["referenced by", "reconciles", "posts", "reports", "retains evidence", "audits"]);
+            ["referenced by", "reconciles", "posts", "reports", "supports", "projects", "proposes", "requires", "authorizes", "proves", "retains evidence", "audits"]);
+
+        var journalStore = app.Services.GetRequiredService<FinancialRecordExplorerJournalStore>();
+        journalStore.LastQuery.Should().Be(new LedgerJournalEntryQuery(
+            LedgerBookId: FinancialRecordExplorerLedgerBookId,
+            AggregateId: FinancialRecordExplorerLedgerBookId,
+            SourceEventId: FinancialRecordExplorerEventId));
     }
 
     [Fact]
@@ -591,6 +616,8 @@ public sealed partial class WorkstationEndpointsTests
             new FinancialRecordExplorerSecurityMasterWorkbenchQueryService(FinancialRecordExplorerAaplSecurityId));
         services.AddSingleton<IAssetOperationsQueryService>(
             new FinancialRecordExplorerAssetOperationsQueryService(FinancialRecordExplorerAaplSecurityId));
+        services.AddSingleton<FinancialRecordExplorerJournalStore>();
+        services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<FinancialRecordExplorerJournalStore>());
         services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(_ =>
             new FileFinancialRecordExplorerSavedViewStore(
                 savedViewRoot,
@@ -790,7 +817,7 @@ public sealed partial class WorkstationEndpointsTests
             var readiness = CreateReadiness();
             var projectionRunId = Guid.Parse("22222222-2222-2222-2222-222222222222");
             var reconciliationRunId = Guid.Parse("33333333-3333-3333-3333-333333333333");
-            return new AssetOperationsDetailDto(
+            var detail = new AssetOperationsDetailDto(
                 new AssetOperationSubjectDto(
                     securityId,
                     AssetClass: "Equity",
@@ -895,6 +922,103 @@ public sealed partial class WorkstationEndpointsTests
                         SourceEntityId: "audit-aapl",
                         Summary: "Projection, reconciliation, and journal proof chain reviewed.")
                 ]);
+            var roleId = Guid.Parse("11111111-1111-1111-1111-111111111115");
+            var economicEvent = new EconomicEventReferenceDto(
+                FinancialRecordExplorerEventId,
+                "MbsFactorPaydown",
+                1,
+                new DateOnly(2026, 3, 22),
+                _now,
+                "SecurityMaster",
+                "factor-row-aapl",
+                SourceContentHash: "sha256:factor-row-aapl",
+                EvidenceLinks: ["/evidence/factor-row-aapl"])
+            {
+                SecurityId = securityId,
+                BookPositionId = FinancialRecordExplorerPositionId
+            };
+            var lineage = new ProjectionLineageDto(
+                Guid.Parse("11111111-1111-1111-1111-111111111116"),
+                Guid.Parse("11111111-1111-1111-1111-111111111117"),
+                "mbs-factor-paydown",
+                "1.0.0",
+                "factor-paydown-projection-v1",
+                "Base",
+                economicEvent.EffectiveDate,
+                _now,
+                "AssetOperations",
+                FinancialRecordExplorerPositionId.ToString("D"),
+                economicEvent,
+                EvidenceLinks: economicEvent.EvidenceLinks)
+            {
+                BookPositionId = FinancialRecordExplorerPositionId
+            };
+            var dimensions = new LedgerDimensionSetDto(
+                "northwind-income",
+                "entity-book",
+                InstrumentId: securityId,
+                BookId: FinancialRecordExplorerLedgerBookId.ToString("D"))
+            {
+                PositionId = FinancialRecordExplorerPositionId
+            };
+            var bookContext = new AccountingBookContextDto(
+                FinancialRecordExplorerLedgerBookId,
+                "northwind-income",
+                Guid.Parse("11111111-1111-1111-1111-111111111118"),
+                FundStructureNodeKindDto.Fund,
+                "Northwind GAAP",
+                "USD",
+                AccountingBasisKindDto.Gaap,
+                "gaap-mbs-v1",
+                "v1",
+                Dimensions: dimensions);
+            var state = new PositionEconomicStateDto(
+                Guid.Parse("11111111-1111-1111-1111-111111111119"),
+                FinancialRecordExplorerPositionId,
+                economicEvent.EffectiveDate,
+                "USD",
+                5,
+                ParAmount: 100_000m,
+                OriginalFaceAmount: 100_000m,
+                CurrentFaceAmount: 96_250m,
+                PriorFactor: 0.9800m,
+                CurrentFactor: 0.9625m,
+                SourceEvent: economicEvent,
+                EvidenceLinks: economicEvent.EvidenceLinks);
+            return detail with
+            {
+                InstrumentRoles =
+                [
+                    new InstrumentRoleDto(
+                        roleId,
+                        securityId,
+                        "northwind-income",
+                        "Fund",
+                        InstrumentRoleKinds.Holder,
+                        InstrumentAccountingSides.Debit,
+                        InstrumentEconomicSides.Asset,
+                        new DateOnly(2026, 1, 1),
+                        Version: 2,
+                        EvidenceLinks: ["/evidence/position-aapl"])
+                ],
+                BookPositions =
+                [
+                    new BookPositionDto(
+                        FinancialRecordExplorerPositionId,
+                        securityId,
+                        roleId,
+                        bookContext,
+                        BookPositionSides.Long,
+                        "Active",
+                        new DateOnly(2026, 1, 1),
+                        Version: 4,
+                        CurrentEconomicState: state,
+                        ProjectionLineage: lineage,
+                        EvidenceLinks: ["/evidence/position-aapl"])
+                ],
+                PositionEconomicStates = [state],
+                ProjectionLineages = [lineage]
+            };
         }
 
         private AssetOperationsReadinessDto CreateReadiness()
@@ -908,5 +1032,64 @@ public sealed partial class WorkstationEndpointsTests
                 EvaluatedAt: _now,
                 SourceDomain: "asset-operations",
                 SourceEntityId: "aapl-readiness");
+    }
+
+    private sealed class FinancialRecordExplorerJournalStore : ILedgerJournalStore
+    {
+        public LedgerJournalEntryQuery? LastQuery { get; private set; }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+            LedgerJournalEntryQuery query,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            LastQuery = query;
+            var journalId = Guid.Parse("11111111-1111-1111-1111-111111111120");
+            var timestamp = DateTimeOffset.Parse("2026-03-22T16:00:00Z");
+            var entry = new JournalEntry(
+                journalId,
+                timestamp,
+                "MBS principal paydown",
+                [
+                    new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Cash, 1_750m, 0m, "MBS principal paydown"),
+                    new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Securities("AAPL"), 0m, 1_750m, "MBS principal paydown")
+                ],
+                new JournalEntryMetadata(
+                    ActivityType: "MbsFactorPaydown",
+                    SecurityId: FinancialRecordExplorerAaplSecurityId,
+                    LedgerBook: FinancialRecordExplorerLedgerBookId.ToString("D"),
+                    Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["approvalId"] = "approval-aapl-factor",
+                        ["approvalState"] = "Approved"
+                    }));
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+            [
+                new LedgerJournalEntryRecord(
+                    entry,
+                    FinancialRecordExplorerLedgerBookId,
+                    Guid.Parse("11111111-1111-1111-1111-111111111121"),
+                    Guid.Parse("11111111-1111-1111-1111-111111111122"),
+                    null,
+                    42,
+                    timestamp,
+                    AccountingBasisKindDto.Gaap,
+                    "gaap-mbs-v1",
+                    "v1",
+                    "posting.mbs-factor-paydown",
+                    "v1",
+                    FinancialRecordExplorerEventId)
+            ]);
+        }
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) => throw new NotSupportedException();
     }
 }

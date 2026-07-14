@@ -21,7 +21,7 @@
         "Trading Controls",
         "Ops Desk",
         "Net P&L",
-        "AAPL"
+        "Paper cockpit readiness"
       ]
     },
     {
@@ -46,13 +46,13 @@
       "name": "web-trading-workspace",
       "path": "/trading",
       "docLabel": "Trading \u2014 Orders blotter",
-      "waitForText": "Trading lane",
+      "waitForText": "Trading overview",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Paper cockpit readiness"
       ]
     },
     {
@@ -60,13 +60,14 @@
       "name": "web-trading-orders",
       "path": "/trading/orders",
       "docLabel": "Trading \u2014 Orders",
-      "waitForText": "Trading lane",
+      "waitForText": "Orders blotter",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Open orders",
+        "Recent fills"
       ]
     },
     {
@@ -74,12 +75,13 @@
       "name": "web-trading-positions",
       "path": "/trading/positions",
       "docLabel": "Trading \u2014 Position book",
-      "waitForText": "Trading lane",
+      "waitForText": "Position book",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
+        "Live positions",
         "AAPL"
       ]
     },
@@ -88,13 +90,13 @@
       "name": "web-trading-risk",
       "path": "/trading/risk",
       "docLabel": "Trading \u2014 Risk guardrails",
-      "waitForText": "Trading lane",
+      "waitForText": "Risk guardrails",
       "requiredApiRoutes": [
         "/api/workstation/trading"
       ],
       "waitForTexts": [
         "Net P&L",
-        "AAPL"
+        "Paper risk cockpit"
       ]
     },
     {
@@ -117,12 +119,12 @@
       "name": "web-portfolio-workspace",
       "path": "/portfolio",
       "docLabel": "Portfolio",
-      "waitForText": "Portfolio lane",
+      "waitForText": "Execution-linked holdings",
       "requiredApiRoutes": [
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total Equity",
+        "Total exposure",
         "VTI"
       ]
     },
@@ -131,13 +133,13 @@
       "name": "web-portfolio-attribution",
       "path": "/portfolio/attribution",
       "docLabel": "Portfolio \u2014 Attribution",
-      "waitForText": "Portfolio lane",
+      "waitForText": "Run-linked equity",
       "requiredApiRoutes": [
         "/api/workstation/portfolio"
       ],
       "waitForTexts": [
-        "Total Equity",
-        "VTI"
+        "Total exposure",
+        "Mean Reversion FX"
       ]
     },
     {
@@ -159,7 +161,7 @@
       "name": "web-portfolio-brokerage-sync",
       "path": "/portfolio/brokerage-sync",
       "docLabel": "Portfolio \u2014 Brokerage Sync",
-      "waitForText": "Portfolio lane",
+      "waitForText": "Live brokerage portfolio",
       "requiredApiRoutes": [
         "/api/workstation/portfolio",
         "/api/portfolio/household",
@@ -204,7 +206,7 @@
       "name": "web-accounting-workspace",
       "path": "/accounting",
       "docLabel": "Accounting \u2014 Ledger",
-      "waitForText": "Accounting lane",
+      "waitForText": "Close Cockpit",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -212,7 +214,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Ledger Explorer"
+        "Accounting case workbench"
       ]
     },
     {
@@ -220,7 +222,7 @@
       "name": "web-accounting-reconciliation",
       "path": "/accounting/reconciliation",
       "docLabel": "Accounting \u2014 Reconciliation",
-      "waitForText": "Accounting lane",
+      "waitForText": "Reconciliation Casework",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -239,7 +241,7 @@
       "name": "web-accounting-security-master",
       "path": "/accounting/security-master",
       "docLabel": "Accounting \u2014 Security Master",
-      "waitForText": "Accounting lane",
+      "waitForText": "Security & Instrument Explorer",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -247,10 +249,7 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open breaks",
-        "Intraday Vol Carry",
-        "Security Master",
-        "Security Governance"
+        "Security Master instruments"
       ]
     },
     {
@@ -271,7 +270,7 @@
       "name": "web-accounting-approvals",
       "path": "/accounting/approvals",
       "docLabel": "Accounting \u2014 Approvals",
-      "waitForText": "Accounting lane",
+      "waitForText": "Close Cockpit",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -280,9 +279,7 @@
       ],
       "waitForTexts": [
         "Approval queue",
-        "Close approvals",
-        "Report-pack readiness",
-        "CFO / Controller close command center"
+        "Close approvals"
       ]
     },
     {
@@ -350,8 +347,7 @@
       ],
       "waitForTexts": [
         "Books, posting controls",
-        "Workstream",
-        "Configure"
+        "Activation checklist"
       ]
     },
     {
@@ -568,10 +564,9 @@
       ],
       "waitForTexts": [
         "Report packs, governed exports",
-        "Reporting Hub",
+        "Reporting workbench",
         "Daily reporting cockpit",
-        "Reports by family",
-        "Open focused reporting work"
+        "Report family health"
       ]
     },
     {
@@ -579,7 +574,7 @@
       "name": "web-reporting-report-packs",
       "path": "/reporting/report-packs",
       "docLabel": "Reporting \u2014 Report Packs",
-      "waitForText": "Reporting lane",
+      "waitForText": "Delivery Evidence",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
@@ -692,7 +687,7 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Reporting Hub",
+        "Daily reporting cockpit",
         "Run a report",
         "Pick a template"
       ]
@@ -775,7 +770,7 @@
       "name": "web-strategy-promotions",
       "path": "/strategy/promotions",
       "docLabel": "Strategy \u2014 Promotions",
-      "waitForText": "Strategy Lane",
+      "waitForText": "Strategy run library",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],
@@ -794,7 +789,7 @@
         "/api/workstation/strategy"
       ],
       "waitForTexts": [
-        "Mean Reversion FX",
+        "PlotTool workstation",
         "Promotions"
       ]
     },
@@ -863,13 +858,12 @@
       "name": "web-data-workspace",
       "path": "/data",
       "docLabel": "Data",
-      "waitForText": "Data Lane",
+      "waitForText": "Data overview",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Data command deck",
-        "Data Quality",
+        "Data analytics services degraded",
         "Provider and export readiness"
       ]
     },
@@ -992,7 +986,7 @@
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "Settings lane",
+      "waitForText": "Accounting Systems",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1006,8 +1000,8 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Operator control posture",
-        "Profile and access posture"
+        "Provider Connections",
+        "Feature Coverage"
       ]
     },
     {
@@ -1015,7 +1009,7 @@
       "name": "web-settings-preferences",
       "path": "/settings/preferences",
       "docLabel": "Settings \u2014 Preferences",
-      "waitForText": "Settings lane",
+      "waitForText": "Accounting Systems",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1029,8 +1023,8 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Operator control posture",
-        "Provider Connection Center"
+        "Provider Connections",
+        "Diagnostics"
       ]
     },
     {
@@ -1038,7 +1032,7 @@
       "name": "web-settings-integrations",
       "path": "/settings/integrations",
       "docLabel": "Settings \u2014 Integrations",
-      "waitForText": "Settings lane",
+      "waitForText": "Accounting systems",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1052,7 +1046,6 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Operator control posture",
         "Fund operations control center"
       ]
     },
@@ -1061,7 +1054,7 @@
       "name": "web-settings-alpaca-provider-setup",
       "path": "/settings#alpaca-provider-setup",
       "docLabel": "Settings \u2014 Provider Setup",
-      "waitForText": "Settings Workstation",
+      "waitForText": "Alpaca paper API keys",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1079,8 +1072,7 @@
       ],
       "waitForTexts": [
         "Provider setup",
-        "Alpaca paper API keys",
-        "Operator control posture"
+        "Alpaca paper API keys"
       ]
     },
     {
@@ -1088,7 +1080,7 @@
       "name": "web-settings-backend-capability-coverage",
       "path": "/settings#backend-capability-coverage",
       "docLabel": "Settings \u2014 Capability Coverage",
-      "waitForText": "Settings Workstation",
+      "waitForText": "Capability coverage",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1106,7 +1098,6 @@
       ],
       "waitForTexts": [
         "Capability coverage",
-        "Operator control posture",
         "All surfaced"
       ]
     },
@@ -1115,7 +1106,7 @@
       "name": "web-settings-diagnostic-endpoints",
       "path": "/settings#diagnostic-endpoints",
       "docLabel": "Settings \u2014 Diagnostic Endpoints",
-      "waitForText": "Settings Workstation",
+      "waitForText": "Event posture",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1133,7 +1124,6 @@
       ],
       "waitForTexts": [
         "Diagnostic services",
-        "Operator control posture",
         "All reachable"
       ]
     },
@@ -1142,7 +1132,7 @@
       "name": "web-settings-access",
       "path": "/settings/access",
       "docLabel": "Settings \u2014 Access",
-      "waitForText": "Settings lane",
+      "waitForText": "Access & profile",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1159,7 +1149,6 @@
         "#settings-overview"
       ],
       "waitForTexts": [
-        "Operator control posture",
         "Profile and access posture"
       ]
     },
@@ -1168,7 +1157,7 @@
       "name": "web-settings-providers",
       "path": "/settings/providers",
       "docLabel": "Settings \u2014 Providers",
-      "waitForText": "Settings lane",
+      "waitForText": "Provider connections",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1193,7 +1182,7 @@
       "name": "web-settings-diagnostics",
       "path": "/settings/diagnostics",
       "docLabel": "Settings \u2014 Diagnostics",
-      "waitForText": "Settings lane",
+      "waitForText": "Diagnostics",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",
@@ -1210,7 +1199,7 @@
         "#diagnostic-endpoints"
       ],
       "waitForTexts": [
-        "Operator control posture"
+        "Diagnostic services"
       ]
     },
     {
@@ -1218,7 +1207,7 @@
       "name": "web-settings-feature-coverage",
       "path": "/settings/feature-coverage",
       "docLabel": "Settings \u2014 Feature Coverage",
-      "waitForText": "Settings lane",
+      "waitForText": "Feature coverage",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status",

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Meridian.Application.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
@@ -267,7 +268,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
 
                 if (attempt <= _config.RetryCount)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt)), ct);
+                    await Task.Delay(RetryDelay(attempt), ct);
                 }
             }
             catch (TaskCanceledException) when (ct.IsCancellationRequested)
@@ -278,7 +279,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
             {
                 _log.Warning(ex, "Webhook delivery attempt {Attempt} failed for {WebhookName}, retrying...",
                     attempt, webhook.Name);
-                await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt)), ct);
+                await Task.Delay(RetryDelay(attempt), ct);
             }
         }
 
@@ -291,6 +292,9 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
             SentAt: sentAt
         );
     }
+
+    private static TimeSpan RetryDelay(int attempt)
+        => Backoff.ExponentialDelay(attempt + 1, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(2));
 
     private static string FormatPayload(WebhookType type, DailySummary summary)
     {

@@ -1,6 +1,8 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
@@ -267,7 +269,4 @@ public sealed class FeeScheduleAccrualEventProducer
 
         return new AutomatedJournalEventProduction(events, []);
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }

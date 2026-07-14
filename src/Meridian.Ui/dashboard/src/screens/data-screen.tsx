@@ -14,13 +14,13 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
-  WorkspaceFilterBar,
-  WorkspaceInspectorHost
+  WorkspaceInspectorHost,
+  WorkspaceTabStrip
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,11 @@ import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-supp
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { workspaceForPath } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import {
+  buildDataAnalyticsDegradedViewModel,
+  DataAnalyticsDegradedRegion
+} from "@/screens/data-screen.analytics-status";
 import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
 import { useDataQualityPanel } from "@/screens/data-screen.data-quality.view-model";
 import {
@@ -150,6 +154,42 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   }
 ];
 
+/**
+ * Route-scoped views: each Data sub-route renders its focused workstream and
+ * the workspace root renders the health/analytics overview. The tab strip and
+ * the sidebar sub-navigation share this taxonomy.
+ */
+const dataRouteTabs = [
+  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, workstream: "overview" },
+  { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
+  { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
+  { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
+  { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
+] as const;
+
+const dataRouteViewCopy: Record<string, { title: string; description: string }> = {
+  overview: {
+    title: "Data overview",
+    description: "Provider posture, data quality, and analytics posture. Providers, backfills, exports, and SQL have focused routes."
+  },
+  providers: {
+    title: "Provider catalog",
+    description: "Source health, credentials, upload intake, and recovery actions."
+  },
+  backfills: {
+    title: "Backfill queue",
+    description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
+  },
+  exports: {
+    title: "Export packages",
+    description: "Governed export runs and downstream handoff evidence."
+  },
+  query: {
+    title: "SQL query",
+    description: "Read-only SQL workbench over the workstation store."
+  }
+};
+
 export function DataScreen({
   data,
   providerConnections = null,
@@ -161,8 +201,8 @@ export function DataScreen({
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
-  const { pathname } = useLocation();
-  const workspace = workspaceForPath(pathname);
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
@@ -202,112 +242,72 @@ export function DataScreen({
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
   }
 
+  const routeCopy = dataRouteViewCopy[activeWorkstream] ?? dataRouteViewCopy.overview;
+  const routeTabs = dataRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.workstream === activeWorkstream
+  }));
+  const analyticsDegraded = buildDataAnalyticsDegradedViewModel([
+    { id: "data-quality", label: "Data quality", error: qualityPanel.error, loading: qualityPanel.loading, refresh: qualityPanel.refresh },
+    { id: "capability-matrix", label: "Provider capability matrix", error: capabilityMatrixPanel.error, loading: capabilityMatrixPanel.loading, refresh: capabilityMatrixPanel.refresh },
+    { id: "corporate-actions", label: "Corporate action inbox", error: corporateActionInboxPanel.error, loading: corporateActionInboxPanel.loading, refresh: corporateActionInboxPanel.refresh },
+    { id: "coverage-gaps", label: "Security-master coverage", error: coverageGapsPanel.error, loading: coverageGapsPanel.loading, refresh: coverageGapsPanel.refresh }
+  ]);
+  const analyticsUnavailable = analyticsDegraded?.affectedIds ?? new Set<string>();
+
   return (
     <div className="workspace-screen data-workspace-screen">
-      <WorkspaceFilterBar
-        label="Data workspace filters"
-        searchValue={`Provider: ${vm.providerSection.selectedDetail?.title ?? "All providers"}`}
-        options={[
-          { id: "health", label: "Health", count: String(data.metrics.length), active: showHealthMonitoring },
-          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: showProviderWorkstream },
-          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length), active: showBackfillWorkstream },
-          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length), active: showExportWorkstream },
-          { id: "query", label: "SQL", count: "Read only", active: showQueryWorkstream }
-        ]}
-        fields={[
-          { id: "sync", label: "Sync", value: vm.providerSection.statusLabel },
-          { id: "route", label: "Route", value: workspace.label }
-        ]}
-        actions={(
-          <>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/data/quotes" aria-label="Open live quotes and order book viewer">
-              <RadioTower className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Live quotes</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/data/watchlist" aria-label="Open symbol watchlist">
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Watchlist</span>
-            </Link>
-          </Button>
+      <StatStrip metrics={data.metrics} label="Data headline metrics" />
+
+      <section
+        role="region"
+        aria-label="Data workspace context"
+        className="flex flex-wrap items-end justify-between gap-3"
+      >
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
+          </h2>
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <WorkspaceTabStrip
+            label="Data routes"
+            tabs={routeTabs}
+            onSelect={(id) => {
+              const tab = dataRouteTabs.find((candidate) => candidate.id === id);
+              if (tab) {
+                // Preserve the querystring: the operating scope is threaded
+                // through search params across the shell.
+                navigate({ pathname: tab.route, search });
+              }
+            }}
+          />
           <Button type="button" size="sm" onClick={vm.openProviderSetup} aria-label="Import a data source">
             <Plus className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">Import source</span>
           </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href="#data-upload-intake-title" aria-label="Open data upload templates">
-              <FileUp className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Upload file</span>
-            </a>
-          </Button>
-          </>
-        )}
-      />
+        </div>
+      </section>
 
       {showHealthMonitoring ? (
         <>
-          <section className="workspace-metric-strip">
-            {data.metrics.map((metric) => <MetricSnapshotCard key={metric.id} {...metric} />)}
-          </section>
+          {analyticsDegraded ? <DataAnalyticsDegradedRegion vm={analyticsDegraded} /> : null}
 
-          <DataQualityRegion panel={qualityPanel} />
+          {!analyticsUnavailable.has("data-quality") ? <DataQualityRegion panel={qualityPanel} /> : null}
 
-          <CapabilityMatrixRegion panel={capabilityMatrixPanel} />
+          {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
 
-          <CorporateActionInboxRegion panel={corporateActionInboxPanel} />
+          {!analyticsUnavailable.has("corporate-actions") ? <CorporateActionInboxRegion panel={corporateActionInboxPanel} /> : null}
 
-          <CoverageGapsRegion panel={coverageGapsPanel} />
+          {!analyticsUnavailable.has("coverage-gaps") ? <CoverageGapsRegion panel={coverageGapsPanel} /> : null}
         </>
       ) : null}
 
-      <section className="data-management-frame">
-        <nav className="workspace-directory-rail" aria-label="Data folders">
-          <div className="operator-rail-section">Data folders</div>
-          <Link to="/data" aria-current={showHealthMonitoring ? "page" : undefined}>Health monitoring</Link>
-          <Link to="/data/providers" aria-current={showProviderWorkstream ? "page" : undefined}>Provider catalog</Link>
-          <Link to="/data/backfills" aria-current={showBackfillWorkstream ? "page" : undefined}>Backfill queue</Link>
-          <Link to="/data/exports" aria-current={showExportWorkstream ? "page" : undefined}>Export packages</Link>
-          <Link to="/data/query" aria-current={showQueryWorkstream ? "page" : undefined}>SQL query</Link>
-          <Link to="/data/watchlist">Watchlist</Link>
-          <Link to="/data/quotes">Live quotes</Link>
-        </nav>
-
-        <div className="data-management-main">
-        {showHealthMonitoring ? (
-        <section className="workspace-region workspace-region-compact">
-          <CardHeader>
-            <div className="eyebrow-label">{workspace.label} Lane</div>
-            <CardTitle className="flex items-center gap-2">
-              <DatabaseZap className="h-5 w-5 text-primary" />
-              Data command deck
-            </CardTitle>
-            <CardDescription>
-              Monitor provider posture, historical repairs, and export readiness from the Data workspace.
-              Security Master coverage now routes through Accounting where reconciliation and reporting evidence are reviewed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <DataHighlight
-              icon={FileSpreadsheet}
-              title="Upload intake"
-              description="Start trade, transaction, asset, and entity source files from governed templates before validation."
-            />
-            <DataHighlight
-              icon={RadioTower}
-              title="Provider posture"
-              description="Track source health, trust evidence, and recovery actions before downstream workflows depend on the feed."
-            />
-            <DataHighlight
-              icon={TimerReset}
-              title="Backfill repair"
-              description="Preview and run historical repair jobs with operator-visible status, ranges, and result evidence."
-            />
-          </CardContent>
-        </section>
-        ) : null}
-
+      <section className="data-management-main" aria-label="Data workstreams">
         <RouteFocusCard
           state={vm.routeFocusCard}
         />
@@ -448,7 +448,6 @@ export function DataScreen({
             setSavedQueryName={setSavedQueryName}
           />
         ) : null}
-        </div>
       </section>
 
       <ProviderSetupDialog vm={vm} />
@@ -1751,16 +1750,6 @@ function RouteFocusCard({
   );
 }
 
-
-function DataHighlight({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/30 p-4">
-      <Icon className="mb-3 h-5 w-5 text-primary" />
-      <div className="font-semibold">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (

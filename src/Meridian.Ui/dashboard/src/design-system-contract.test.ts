@@ -397,10 +397,14 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"JetBrains Mono\"");
   });
 
-  it("loads JetBrains Mono and declares local Segoe/Cascadia faces", () => {
+  it("declares local Segoe/Cascadia faces and fetches no external fonts", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("family=JetBrains+Mono");
+    // Operator workstation must render offline / under strict CSP: no external
+    // font fetch. Monospace resolves via the local Cascadia @font-face plus the
+    // system ui-monospace stack (JetBrains Mono only if locally installed).
+    expect(styles).not.toContain("googleapis.com");
+    expect(styles).not.toMatch(/@import\s+url\(\s*["']?https?:/i);
     expect(styles).toContain("font-family: \"Segoe UI Variable Display\"");
     expect(styles).toContain("font-family: \"Segoe UI Variable Text\"");
     expect(styles).toContain("font-family: \"Cascadia Mono\"");

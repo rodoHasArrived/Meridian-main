@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Instruments.AssetOperations;
 
 namespace Meridian.Strategies.Services;
 
@@ -64,7 +66,9 @@ public sealed record SecurityMasterAccountingPosition(
     Guid? SecurityId,
     string AccountId,
     decimal ParAmount,
-    decimal? CarryingPrice = null);
+    decimal? CarryingPrice = null,
+    Guid? PositionId = null,
+    long PositionVersion = 1);
 
 public sealed record SecurityFactorScheduleEntry(
     Guid SecurityId,
@@ -72,7 +76,8 @@ public sealed record SecurityFactorScheduleEntry(
     decimal PriorFactor,
     decimal CurrentFactor,
     string Source,
-    string? EvidenceLink = null);
+    string? EvidenceLink = null,
+    string? SourceContentHash = null);
 
 internal sealed record FactorScheduleCoverageIssue(string Code, Func<string, string> Message)
 {
@@ -119,6 +124,13 @@ public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMa
 
 public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccountingEventService
 {
+    private readonly IFactorPaydownProjectionService _factorPaydownProjector;
+
+    public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null)
+    {
+        _factorPaydownProjector = factorPaydownProjector ?? new FactorPaydownProjectionService();
+    }
+
     public SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -197,7 +209,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 continue;
             }
 
-            GenerateFactorPaydownEvents(request, security, position, events, previews);
+            GenerateFactorPaydownEvents(request, security, position, events, previews, issues);
         }
 
         ReconcileActualActivity(request, events, issues);
@@ -422,33 +434,72 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         }
     }
 
-    private static void GenerateFactorPaydownEvents(
+    private void GenerateFactorPaydownEvents(
         SecurityMasterAccountingEventRequest request,
         SecurityMasterAccountingSecurity security,
         SecurityMasterAccountingPosition position,
         List<ExpectedAccountingEventDto> events,
-        List<ExpectedJournalPreviewDto> previews)
+        List<ExpectedJournalPreviewDto> previews,
+        List<SecurityMasterAccountingIssueDto> issues)
     {
-        foreach (var factor in (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
+        var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
             .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate <= request.PeriodEnd)
-            .OrderBy(static entry => entry.AsOfDate))
+            .OrderBy(static entry => entry.AsOfDate)
+            .ToArray();
+        var positionId = position.PositionId.GetValueOrDefault();
+        if (factors.Length > 0 && positionId == Guid.Empty)
         {
-            if (factor.CurrentFactor >= factor.PriorFactor)
+            issues.Add(CreateIssue(
+                "FACTOR_PAYDOWN_POSITION_REQUIRED",
+                "security-master",
+                security.Symbol,
+                position.AccountId,
+                "Factor-paydown events require a durable Asset Operations book-position identity.",
+                ReconciliationBreakSeverity.High));
+            return;
+        }
+
+        var projectedPositionVersion = position.PositionVersion;
+        foreach (var factor in factors)
+        {
+            var projection = _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
+                security.SecurityId,
+                positionId,
+                projectedPositionVersion,
+                projectedPositionVersion,
+                position.ParAmount,
+                factor.PriorFactor,
+                factor.CurrentFactor,
+                security.Currency,
+                factor.AsOfDate,
+                new DateTimeOffset(factor.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                "SecurityMaster",
+                $"{security.SecurityId:N}:{factor.AsOfDate:yyyy-MM-dd}",
+                factor.SourceContentHash ?? string.Empty,
+                string.IsNullOrWhiteSpace(factor.EvidenceLink) ? [] : [factor.EvidenceLink]));
+            if (!projection.ProducesPostingCandidate)
             {
+                foreach (var projectionIssue in projection.Issues)
+                {
+                    issues.Add(CreateIssue(
+                        projectionIssue.Code.Replace('-', '_').Replace('.', '_').ToUpperInvariant(),
+                        "security-master",
+                        security.Symbol,
+                        position.AccountId,
+                        projectionIssue.Message,
+                        ReconciliationBreakSeverity.High));
+                }
+
                 continue;
             }
 
-            var reduction = factor.PriorFactor - factor.CurrentFactor;
-            var expectedPrincipal = RoundMoney(position.ParAmount * reduction);
-            if (expectedPrincipal <= 0m)
-            {
-                continue;
-            }
+            projectedPositionVersion = projection.EconomicState!.Version;
 
             var snapshot = CreateSnapshot(request, security, position, factor.PriorFactor, factor.CurrentFactor);
-            var eventId = BuildDeterministicId("factor-paydown", snapshot.SourceHash, factor.AsOfDate.ToString("yyyy-MM-dd"));
+            var economicEvent = projection.EconomicEvent!;
+            var expectedPrincipal = projection.PrincipalPaydown!.Value;
             var expectedEvent = CreateExpectedEvent(
-                eventId,
+                economicEvent.EventId.ToString("N"),
                 ExpectedAccountingEventKindDto.RecognizePrincipalPaydown,
                 security,
                 position,
@@ -457,7 +508,13 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 principalAmount: expectedPrincipal,
                 incomeAmount: 0m,
                 snapshot,
-                provenanceSuffix: $"factor-source:{factor.Source}");
+                provenanceSuffix: $"factor-source:{factor.Source};factor-evidence:{factor.EvidenceLink}") with
+            {
+                IdempotencyKey = $"{security.SecurityId:N}:{positionId:N}:{economicEvent.EventId:N}",
+                EconomicEvent = economicEvent,
+                ProjectionLineage = projection.Lineage,
+                EvidenceLinks = economicEvent.EvidenceLinks
+            };
             events.Add(expectedEvent);
             previews.Add(CreatePrincipalPaydownPreview(security, position, expectedEvent));
         }
@@ -678,7 +735,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             expectedEvent.EventId,
             description,
             expectedEvent.EventDate,
-            Math.Abs(totalDebits - totalCredits) <= 0.000001m,
+            Math.Abs(totalDebits - totalCredits) <= LedgerToleranceConstants.Balance,
             RequiresOperatorApproval: true,
             expectedEvent.IdempotencyKey,
             lines);

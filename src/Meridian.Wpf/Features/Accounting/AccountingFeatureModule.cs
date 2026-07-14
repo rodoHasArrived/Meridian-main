@@ -12,6 +12,7 @@ using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.Instruments.AssetOperations;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
@@ -129,6 +130,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
@@ -186,9 +188,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
                 return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
             }
-            catch
+            catch (Exception ex)
             {
                 // Fall through to the user-local path so accounting drafts remain durable even before config initialization.
+                global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                    "Accounting data directory resolution from config failed; using user-local path.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 

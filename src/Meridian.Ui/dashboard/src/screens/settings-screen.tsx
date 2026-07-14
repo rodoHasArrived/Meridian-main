@@ -2,7 +2,8 @@ import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, 
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StatStrip } from "@/components/meridian/stat-strip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,10 +14,9 @@ import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { MetricCard } from "@/components/data/concrete";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { SeverityBadge } from "@/components/operations";
-import { badgeVariantToOperatorSeverity, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
+import { badgeVariantToOperatorSeverity } from "@/lib/shared-tone-mappings";
 import {
   activateProviderIntegration,
   approveSecurityAssetProfile,
@@ -57,6 +57,21 @@ import {
   verifyProviderConnection
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import {
+  formatProviderIntegrationSetupDraftIssues,
+  validateProviderIntegrationSetupDraft
+} from "@/lib/provider-integration-setup-validation";
+import {
+  parseProviderIntegrationStringRecord,
+  parseProviderIntegrationWorkbenchJson,
+  providerIntegrationCredentialReference,
+  providerIntegrationFormatJson,
+  providerIntegrationNormalizedId,
+  providerIntegrationReadinessDetails,
+  providerIntegrationSampleCsv,
+  providerIntegrationWorkbenchEvidenceId,
+  providerIntegrationWorkbenchSyncRunId
+} from "@/lib/provider-integration-workbench";
 import { cn } from "@/lib/utils";
 import {
   buildSettingsScreenViewModel,
@@ -397,7 +412,7 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
-// Storage-health headline metric tone - mirrors the view-model's storage tone mapping so the
+// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
 // MetricCard accent matches the "Storage health" system item.
 function settingsStorageHealthTone(
   health: SystemOverviewResponse["storageHealth"] | undefined
@@ -555,6 +570,46 @@ const settingsTaskViews: SettingsTaskView[] = [
   }
 ];
 
+/**
+ * Route-scoped tabs: one entry per real settings route, matching the sidebar
+ * sub-navigation. The `data-providers` task view has no route of its own —
+ * its section renders under the providers view, so it has no tab.
+ */
+const settingsRouteTabs = [
+  { id: "overview", label: "Access", route: "/settings/access", views: ["overview"] },
+  { id: "operations", label: "Accounting Systems", route: "/settings/integrations", views: ["operations"] },
+  { id: "providers", label: "Provider Connections", route: "/settings/providers", views: ["providers", "data-providers"] },
+  { id: "diagnostics", label: "Diagnostics", route: "/settings/diagnostics", views: ["diagnostics"] },
+  { id: "runtime", label: "Feature Coverage", route: "/settings/feature-coverage", views: ["runtime"] }
+] as const;
+
+const settingsRouteViewCopy: Record<SettingsTaskViewId, { title: string; description: string }> = {
+  overview: {
+    title: "Access & profile",
+    description: "Operator session, scoped access, and appearance preferences."
+  },
+  operations: {
+    title: "Accounting systems",
+    description: "External general-ledger connections and asset-profile governance."
+  },
+  providers: {
+    title: "Provider connections",
+    description: "Brokerage and market-data credentials, verification, and runtime evidence."
+  },
+  "data-providers": {
+    title: "Provider connections",
+    description: "Brokerage and market-data credentials, verification, and runtime evidence."
+  },
+  diagnostics: {
+    title: "Diagnostics",
+    description: "Recent workspace events and diagnostic endpoint reachability."
+  },
+  runtime: {
+    title: "Feature coverage",
+    description: "Runtime feature capabilities and backend coverage posture."
+  }
+};
+
 function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   const normalizedHash = hash.replace(/^#/, "");
   if (normalizedHash === "backend-capability-coverage") {
@@ -702,6 +757,7 @@ export function SettingsScreen({
   workspaceErrors = {}
 }: SettingsScreenProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
@@ -790,7 +846,15 @@ export function SettingsScreen({
   });
   const routePathTaskView = resolveSettingsTaskViewIdFromPath(location.pathname);
   const routeHashTaskView = location.hash ? resolveSettingsTaskViewId(location.hash) : null;
-  const activeTaskView = routePathTaskView ?? routeHashTaskView ?? hashTaskView ?? inferredTaskView;
+  // The bare /settings entry point lands on Access & profile like the other
+  // workspace roots land on their overview; data-driven inference only picks
+  // the view for legacy paths that neither the path nor a hash resolves.
+  const isBareSettingsRoute = /\/settings\/?$/i.test(location.pathname);
+  const activeTaskView =
+    routePathTaskView ??
+    routeHashTaskView ??
+    hashTaskView ??
+    (isBareSettingsRoute ? "overview" : inferredTaskView);
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -952,19 +1016,25 @@ export function SettingsScreen({
     () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, providerRiskScore(row)])),
     [allProviderRows]
   );
-  const settingsTaskTabItems = settingsTaskViews.map((view) => ({
-    id: view.id,
-    label: view.label,
-    selected: activeTaskView === view.id,
-    panelId: view.sectionId,
-    href: view.href
+  const settingsTaskTabItems = settingsRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: (tab.views as readonly string[]).includes(activeTaskView)
   }));
-  const settingsTaskFields = [
-    { id: "providers", label: "Provider connections", value: String(allProviderRows.length) },
-    { id: "access", label: "Profile access", value: String(scopedAccessAssignments.length) },
-    { id: "operations", label: "Accounting systems", value: vm.operationsControlCenter.loadedCountLabel },
-    { id: "profiles", label: "Data profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
-    { id: "diagnostics", label: "System details", value: vm.diagnosticCounts.loadedLabel }
+  const routeCopy = settingsRouteViewCopy[activeTaskView];
+  const settingsStatMetrics = [
+    {
+      id: "providers-online",
+      label: "Providers online",
+      value: overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—",
+      delta: "",
+      tone: overview
+        ? overview.providersOnline === overview.providersTotal ? "success" as const : "warning" as const
+        : "default" as const
+    },
+    { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
+    { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
+    { id: "storage-health", label: "Storage health", value: overview?.storageHealth ?? "—", delta: "", tone: settingsStorageHealthTone(overview?.storageHealth) }
   ];
   const showAccessSection = activeTaskView === "overview";
   const showOperationsSection = activeTaskView === "operations";
@@ -2660,73 +2730,38 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
+      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
+
       <section
         id="settings-overview"
         role="region"
         aria-label="Settings workbench context"
-        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+        className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <div className="eyebrow-label">Settings lane</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            Operator control posture
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Session context, bootstrap health, and diagnostic reachability stay visible from one operator-facing
-            control surface.
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {vm.headerChips.map((chip) => (
-            <SettingsChip key={chip.label} label={chip.label} value={chip.value} />
-          ))}
-        </div>
-      </section>
-
-      <section
-        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-        aria-label="Operator control posture metrics"
-      >
-        <MetricCard
-          label="Providers online"
-          value={overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—"}
-          tone={
-            overview
-              ? semanticToneToMetricCardTone(overview.providersOnline === overview.providersTotal ? "success" : "warning")
-              : "neutral"
-          }
-        />
-        <MetricCard
-          label="Active runs"
-          value={overview ? String(overview.activeRuns) : "—"}
-          tone={semanticToneToMetricCardTone("default")}
-        />
-        <MetricCard
-          label="Open positions"
-          value={overview ? String(overview.openPositions) : "—"}
-          tone={semanticToneToMetricCardTone("default")}
-        />
-        <MetricCard
-          label="Storage health"
-          value={overview?.storageHealth ?? "—"}
-          tone={semanticToneToMetricCardTone(settingsStorageHealthTone(overview?.storageHealth))}
+        <WorkspaceTabStrip
+          label="Settings routes"
+          tabs={settingsTaskTabItems}
+          onSelect={(id) => {
+            const tab = settingsRouteTabs.find((candidate) => candidate.id === id);
+            if (tab) {
+              // Preserve the querystring: the operating scope is threaded
+              // through search params across the shell.
+              navigate({ pathname: tab.route, search: location.search });
+            }
+          }}
         />
       </section>
 
-      <WorkspaceFilterBar
-        label="Settings task navigator"
-        searchLabel="Settings tasks"
-        searchValue={settingsTaskViews.find((view) => view.id === activeTaskView)?.label ?? "Overview"}
-        fields={settingsTaskFields}
-        actions={
-          <WorkspaceTabStrip
-            label="Settings sub-task screens"
-            tabs={settingsTaskTabItems}
-          />
-        }
-      />
-
+      {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <Card
           id="profile-authentication"
@@ -2854,6 +2889,7 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
       {showAccessSection ? (
       <Card
@@ -6166,6 +6202,17 @@ function ProviderIntegrationWorkbenchPanel({
       return;
     }
 
+    const validationIssues = validateProviderIntegrationSetupDraft(manifestDraft.value, connectionDraft.value);
+    if (validationIssues.length > 0) {
+      setState((current) => ({
+        ...current,
+        message: "Provider integration setup draft failed validation. Fix the reported fields and save again.",
+        details: formatProviderIntegrationSetupDraftIssues(validationIssues),
+        tone: "warning"
+      }));
+      return;
+    }
+
     const savedAt = new Date().toISOString();
     setState((current) => ({ ...current, busyAction: "save", message: "Saving provider integration setup draft.", details: [], tone: "default" }));
     try {
@@ -7114,76 +7161,6 @@ function providerIntegrationWorkbenchDraftDetails(manifest: ProviderIntegrationM
   ];
 }
 
-function providerIntegrationReadinessDetails(readiness: ProviderIntegrationActivationReadiness | null): string[] {
-  if (!readiness) {
-    return [];
-  }
-
-  return [
-    ...readiness.requiredEvidence.map((evidence) => `Evidence required: ${evidence}`),
-    ...readiness.issues.map((issue) => `${issue.severity}: ${issue.message}`)
-  ];
-}
-
-function providerIntegrationFormatJson(value: unknown): string {
-  return JSON.stringify(value, null, 2);
-}
-
-function parseProviderIntegrationWorkbenchJson<T>(
-  value: string,
-  label: string
-): { ok: true; value: T } | { ok: false; error: string } {
-  try {
-    return { ok: true, value: JSON.parse(value) as T };
-  } catch (error) {
-    return { ok: false, error: `${label}: ${error instanceof Error ? error.message : "Invalid JSON"}` };
-  }
-}
-
-function parseProviderIntegrationStringRecord(
-  value: string,
-  label: string
-): { ok: true; value: Record<string, string> } | { ok: false; error: string } {
-  const parsed = parseProviderIntegrationWorkbenchJson<unknown>(value || "{}", label);
-  if (parsed.ok === false) {
-    return { ok: false, error: parsed.error };
-  }
-  if (!parsed.value || typeof parsed.value !== "object" || Array.isArray(parsed.value)) {
-    return { ok: false, error: `${label}: expected a JSON object.` };
-  }
-
-  return {
-    ok: true,
-    value: Object.fromEntries(Object.entries(parsed.value).map(([key, item]) => [key, String(item)]))
-  };
-}
-
-function providerIntegrationCredentialReference(row: Pick<SettingsProviderConnectionRow, "providerId" | "sourceLabel">): string {
-  return `provider-credential:${providerIntegrationNormalizedId(row.providerId)}:${providerIntegrationNormalizedId(row.sourceLabel || "local")}`;
-}
-
-function providerIntegrationWorkbenchSyncRunId(connectionId: string, mode: string, requestedAt: Date): string {
-  return `settings-${mode}-${providerIntegrationNormalizedId(connectionId || "connection")}-${providerIntegrationTimestampSuffix(requestedAt)}`;
-}
-
-function providerIntegrationWorkbenchEvidenceId(connectionId: string, purpose: string, requestedAt: Date): string {
-  return `settings-provider-${purpose}-${providerIntegrationNormalizedId(connectionId || "connection")}-${providerIntegrationTimestampSuffix(requestedAt)}`;
-}
-
-function providerIntegrationTimestampSuffix(value: Date): string {
-  return value.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
-}
-
-function providerIntegrationNormalizedId(value: string): string {
-  return (value || "provider").replace(/[^0-9A-Za-z-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "provider";
-}
-
-function providerIntegrationSampleCsv(capability: ProviderIntegrationCapabilityKind): string {
-  if (capability === "Transactions") {
-    return "transactionId,accountId,amount,currency,postedAt\ntxn-1,acct-1,125.00,USD,2026-06-01";
-  }
-  return "positionId,accountId,symbol,quantity,asOfDate\npos-1,acct-1,MSFT,10,2026-06-01";
-}
 function createProviderOpenApiImportState(row: SettingsProviderConnectionRow): ProviderOpenApiImportState {
   const normalizedProvider = (row.providerId || row.integrationConnectionId || "provider")
     .replace(/[^0-9A-Za-z-]/g, "-")

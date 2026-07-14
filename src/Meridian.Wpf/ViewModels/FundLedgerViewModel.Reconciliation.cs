@@ -941,6 +941,10 @@ public sealed partial class FundLedgerViewModel
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(FundLedgerViewModel)));
         }
         finally
         {

@@ -1,3 +1,5 @@
+using Meridian.Contracts.Ledger;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -126,7 +128,7 @@ public sealed record PrivateCapitalFundEventIssue(
 /// </summary>
 public static class PrivateCapitalFundEventLedgerProjector
 {
-    private const decimal BalanceTolerance = 0.000001m;
+    private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
 
     private sealed record CapitalAccountImpactLine(
         string CapitalAccountId,

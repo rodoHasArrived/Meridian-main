@@ -112,6 +112,24 @@ public sealed class CorporateActionGoldenAdjustmentTests
             "a cancelled chain must contribute no adjustment");
     }
 
+    [Fact]
+    public async Task AdjustPositionAsync_MbsFactorPaydown_ReducesTotalBasisByProjectedPrincipal()
+    {
+        var (scenario, service) = CreateServiceFor("mbs-factor-paydown");
+
+        var adjustment = await service.AdjustPositionAsync(
+            scenario.Ticker,
+            quantity: 100_000m,
+            costBasis: 99.5m,
+            positionOpenedAt: new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero));
+
+        adjustment.ActionCount.Should().Be(1);
+        adjustment.AdjustedQuantity.Should().Be(100_000m);
+        adjustment.AdjustedCostBasis.Should().Be(99.492875m);
+        (adjustment.OriginalQuantity * adjustment.OriginalCostBasis -
+         adjustment.AdjustedQuantity * adjustment.AdjustedCostBasis).Should().Be(712.50m);
+    }
+
     // ── Alias normalization end-to-end ────────────────────────────────────────
 
     [Fact]

@@ -170,9 +170,15 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+            sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+            sp.GetService<IAssetOperationsProjectionStore>() as IInstrumentPositionProjectionStore
+            ?? sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
         services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
@@ -435,7 +441,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
-            new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
+            new SecurityMasterAccountingEventSourceAdapter(
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                sp.GetService<IAssetOperationsQueryService>()));
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));

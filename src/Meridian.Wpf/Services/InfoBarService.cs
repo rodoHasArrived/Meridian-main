@@ -98,7 +98,11 @@ public sealed class InfoBarService
                 await Task.Delay(durationMs, cancellationToken);
                 NotificationRequested?.Invoke(this, new InfoBarNotificationEventArgs { IsOpen = false });
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException)
+            {
+                // Auto-dismiss timer was cancelled (e.g. a newer notification replaced this one); benign.
+                LoggingService.Instance.LogDebug("Info bar auto-dismiss delay cancelled.");
+            }
         }
     }
 

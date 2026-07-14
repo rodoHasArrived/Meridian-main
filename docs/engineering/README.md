@@ -90,6 +90,17 @@ gh workflow run targeted-test.yml --ref <branch> `
   -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```
 
+Prefer the validated dispatcher when using the CLI from a local branch:
+
+```powershell
+python build/scripts/ci/dispatch-targeted-test.py `
+  --ref <branch> `
+  --mode dotnet-filtered `
+  --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj `
+  --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" `
+  --wait
+```
+
 ### Most common default lanes
 
 ```powershell

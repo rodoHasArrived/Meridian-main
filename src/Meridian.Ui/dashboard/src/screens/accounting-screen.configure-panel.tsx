@@ -158,7 +158,8 @@ export function ConfigureActivationRail({ view }: { view: AccountingConfiguratio
   );
 
   return (
-    <aside
+    <section
+      role="region"
       aria-label="Accounting configuration activation checklist"
       className="configure-activation-rail flex h-fit flex-col gap-3 rounded-lg border border-border/70 bg-secondary/15 p-3 xl:sticky xl:top-16"
     >
@@ -210,7 +211,7 @@ export function ConfigureActivationRail({ view }: { view: AccountingConfiguratio
       >
         {view.activateButtonLabel}
       </Button>
-    </aside>
+    </section>
   );
 }
 

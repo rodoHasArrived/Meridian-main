@@ -23,7 +23,7 @@ messages:
       - `CLAUDE.md`
       - `.codex/skills/_shared/project-context.md`
       - `docs/ai/generated/repo-navigation.md`
-      - `docs/plans/trading-workstation-migration-blueprint.md`
+      - `archive/docs/plans/trading-workstation-migration-blueprint.md`
       - `src/Meridian.Wpf/App.xaml`
       - `src/Meridian.Wpf/Views/MainPage.xaml`
       - `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`

@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
@@ -212,13 +211,12 @@ public sealed class SecurityValidationService : ISecurityValidationService
         }
 
         var isProfileBackedRecord = IsProfileBackedRecord(record);
-        var isSupportedSchemaVersion = schemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
-            || (isProfileBackedRecord && schemaVersion == SecurityMasterSchemaVersions.CustomAssetProfileTerms);
+        var isSupportedSchemaVersion = SecurityMasterSchemaVersions.IsAcceptedAssetSpecificTermsVersion(
+            schemaVersion, isProfileBackedRecord);
         if (!isSupportedSchemaVersion)
         {
-            var supportedVersions = isProfileBackedRecord
-                ? $"{SecurityMasterSchemaVersions.LegacyAssetSpecificTerms} or {SecurityMasterSchemaVersions.CustomAssetProfileTerms}"
-                : SecurityMasterSchemaVersions.LegacyAssetSpecificTerms.ToString(CultureInfo.InvariantCulture);
+            var supportedVersions = SecurityMasterSchemaVersions.DescribeAcceptedAssetSpecificTermsVersions(
+                isProfileBackedRecord);
             issues.Add(SecurityValidationIssueFactory.Create(
                 SecurityValidationSeverityDto.Error,
                 "SM_ASSET_SPECIFIC_SCHEMA_VERSION_UNSUPPORTED",

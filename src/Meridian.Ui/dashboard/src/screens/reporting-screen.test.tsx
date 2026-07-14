@@ -1591,19 +1591,13 @@ describe("ReportingScreen", () => {
     const cockpit = screen.getByRole("region", { name: "Daily reporting cockpit" });
     expect(within(cockpit).getByLabelText("Board portal package failed decision facts")).toHaveTextContent("fund-controller");
     expect(within(cockpit).getByLabelText("Board portal package failed decision facts")).toHaveTextContent("1 evidence gap");
-    const taskModes = screen.getByRole("navigation", { name: "Reporting task modes" });
-    expect(within(taskModes).getByRole("link", { name: "Open Report Builder reporting task mode" })).toHaveAttribute(
-      "href",
-      "/reporting/report-builder"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Run Status reporting task mode" })).toHaveAttribute(
-      "href",
-      "/reporting/run-status"
-    );
-    expect(within(taskModes).getByRole("link", { name: "Open Delivery Evidence reporting task mode" })).toHaveAttribute(
-      "href",
-      "/reporting/report-packs"
-    );
+    const routeTabs = screen.getByRole("tablist", { name: "Reporting routes" });
+    expect(within(routeTabs).getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Report Builder" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Run Status" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Report packs" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Exports" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Governance" })).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: /generic reporting metric/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Reporting access audit" })).not.toBeInTheDocument();
   });
@@ -5307,7 +5301,7 @@ describe("ReportingScreen", () => {
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(task).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Delivery Evidence" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Task mode Delivery Evidence")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Report packs", selected: true })).toBeInTheDocument();
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Selected report-pack export actions" })).toBeInTheDocument();

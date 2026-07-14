@@ -5,11 +5,12 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed class FinancialRecordExplorerReadService
+public sealed partial class FinancialRecordExplorerReadService
 {
     public const string LedgerExplorerId = "ledger";
     public const string PortfolioExplorerId = "portfolio";
@@ -32,6 +33,7 @@ public sealed class FinancialRecordExplorerReadService
     private readonly ISecurityMasterWorkbenchQueryService? _securityMasterWorkbenchQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
     private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
 
     public FinancialRecordExplorerReadService(
         IFinancialRecordExplorerSavedViewStore savedViewStore,
@@ -40,7 +42,8 @@ public sealed class FinancialRecordExplorerReadService
         ReportPackDeliveryService? reportPackDeliveryService = null,
         ISecurityMasterWorkbenchQueryService? securityMasterWorkbenchQueryService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
-        DirectLendingOperationsReadService? directLendingOperationsReadService = null)
+        DirectLendingOperationsReadService? directLendingOperationsReadService = null,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _savedViewStore = savedViewStore ?? throw new ArgumentNullException(nameof(savedViewStore));
         _runReadService = runReadService;
@@ -49,6 +52,7 @@ public sealed class FinancialRecordExplorerReadService
         _securityMasterWorkbenchQueryService = securityMasterWorkbenchQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
         _directLendingOperationsReadService = directLendingOperationsReadService;
+        _ledgerJournalStore = ledgerJournalStore;
     }
 
     public static bool IsKnownExplorerId(string explorerId)
@@ -1064,6 +1068,7 @@ public sealed class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Investor", dimensions.InvestorId);
         AddDimensionField(fields, "Capital Account", dimensions.CapitalAccountId);
         AddDimensionField(fields, "Instrument", dimensions.InstrumentId?.ToString("D"));
+        AddDimensionField(fields, "Position", dimensions.PositionId?.ToString("D"));
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
@@ -1230,7 +1235,7 @@ public sealed class FinancialRecordExplorerReadService
         var reportLineUsages = CollectSecurityReportLineUsages(reference, reportRecords);
         if (reference.SecurityId == Guid.Empty)
         {
-            return new(null, null, null, [], reportLineUsages);
+            return new(null, null, null, [], reportLineUsages, []);
         }
 
         InstrumentPassportDto? passport = null;
@@ -1257,11 +1262,15 @@ public sealed class FinancialRecordExplorerReadService
             }
         }
 
+        var journalProofs = operations is null
+            ? []
+            : await BuildInstrumentJournalProofsAsync(operations, ct).ConfigureAwait(false);
+
         var directLendingHealth = directLendingOperations?.LoanHealth
             .Where(health => health.SecurityId == reference.SecurityId)
             .ToArray() ?? [];
 
-        return new(passport, operations, readiness, directLendingHealth, reportLineUsages);
+        return new(passport, operations, readiness, directLendingHealth, reportLineUsages, journalProofs);
     }
 
     private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildSecurityFields(
@@ -1354,6 +1363,8 @@ public sealed class FinancialRecordExplorerReadService
                 BuildReconciliationDetail(enrichment.Operations),
                 ToneFromReconciliationResults(enrichment.Operations)));
         }
+
+        AppendInstrumentJournalProofFields(fields, enrichment);
 
         if (enrichment.ReportLineUsages.Count > 0)
         {
@@ -1583,6 +1594,8 @@ public sealed class FinancialRecordExplorerReadService
                 BuildSecurityJournalHref(enrichment),
                 ToneFromLedgerProjections(enrichment.Operations)));
         }
+
+        AppendInstrumentJournalProofImpacts(impacts, reference, enrichment);
 
         impacts.Add(new(
             "report-line",
@@ -2014,6 +2027,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private static int CountSecurityEvidenceAnchors(SecurityInstrumentEnrichment enrichment)
         => enrichment.ReportLineUsages.Count(static usage => HasText(usage.Line.EvidenceId)) +
+           enrichment.InstrumentJournalProofs.Sum(static proof => proof.Lineage.TriggerEvent.EvidenceLinks.Count) +
            (enrichment.Operations?.ActualActivity.Count(static activity => HasText(activity.EvidenceLink)) ?? 0) +
            (enrichment.Operations?.ReconciliationResults.Count(static result => HasText(result.EvidenceLink)) ?? 0) +
            (enrichment.Operations?.TermsHistory.Count(static terms => HasText(terms.TermsHash)) ?? 0);
@@ -2021,6 +2035,7 @@ public sealed class FinancialRecordExplorerReadService
     private static int CountSecurityAuditEvents(SecurityInstrumentEnrichment enrichment)
         => (enrichment.Operations?.WorkflowAudit.Count ?? 0) +
            (enrichment.Passport?.LifecycleEvents.Count ?? 0) +
+           enrichment.InstrumentJournalProofs.Count(static proof => proof.Journal is not null) +
            enrichment.ReportLineUsages.Count(static usage => HasText(usage.Line.EvidenceId));
 
     private static bool HasSecurityPositionTransaction(
@@ -2039,7 +2054,8 @@ public sealed class FinancialRecordExplorerReadService
                HasText(usage.Line.ReconciliationCaseId));
 
     private static bool HasSecurityJournal(SecurityInstrumentEnrichment enrichment)
-        => enrichment.Operations?.LedgerProjections.Count > 0 ||
+        => enrichment.InstrumentJournalProofs.Any(static proof => proof.Journal is not null) ||
+           enrichment.Operations?.LedgerProjections.Count > 0 ||
            enrichment.ReportLineUsages.Any(static usage =>
                HasText(usage.Line.RunId) ||
                HasText(usage.Line.LedgerEntryId));
@@ -2064,7 +2080,9 @@ public sealed class FinancialRecordExplorerReadService
     }
 
     private static FinancialRecordExplorerTone ToneFromSecurityJournal(SecurityInstrumentEnrichment enrichment)
-        => enrichment.Operations is not null && enrichment.Operations.LedgerProjections.Count > 0
+        => enrichment.InstrumentJournalProofs.Any(static proof => proof.Journal is not null)
+            ? FinancialRecordExplorerTone.Success
+            : enrichment.Operations is not null && enrichment.Operations.LedgerProjections.Count > 0
             ? ToneFromLedgerProjections(enrichment.Operations)
             : FinancialRecordExplorerTone.Info;
 
@@ -2090,26 +2108,6 @@ public sealed class FinancialRecordExplorerReadService
 
         var securityId = enrichment.Operations?.Subject.SecurityId ?? Guid.Empty;
         return securityId == Guid.Empty ? string.Empty : BuildAssetOperationsHref(securityId);
-    }
-
-    private static string BuildSecurityJournalHref(SecurityInstrumentEnrichment enrichment)
-    {
-        var reportLineHref = enrichment.ReportLineUsages
-            .Select(static usage => BuildReportLineJournalHref(usage.Line))
-            .FirstOrDefault(HasText);
-        if (HasText(reportLineHref))
-        {
-            return reportLineHref!;
-        }
-
-        var ledgerReference = enrichment.Operations?.LedgerProjections
-            .Select(static projection => projection.LedgerReferenceId)
-            .FirstOrDefault(HasText);
-        return HasText(ledgerReference)
-            ? UiApiRoutes.WithQuery(
-                UiApiRoutes.LedgerManualJournalEntryWorkbench,
-                $"ledgerEntryId={Uri.EscapeDataString(ledgerReference!)}")
-            : string.Empty;
     }
 
     private static string BuildSecurityReportLineHref(
@@ -2399,9 +2397,6 @@ public sealed class FinancialRecordExplorerReadService
     private static string BuildInstrumentPassportHref(Guid securityId)
         => UiApiRoutes.WithParam(UiApiRoutes.WorkstationSecurityMasterInstrumentPassport, "securityId", securityId.ToString("D"));
 
-    private static string BuildAssetOperationsHref(Guid securityId)
-        => UiApiRoutes.WithParam(UiApiRoutes.WorkstationAssetOperations, "securityId", securityId.ToString("D"));
-
     private static string BuildReportLineProvenanceHref()
         => UiApiRoutes.WithParam(UiApiRoutes.WorkstationFinancialRecordExplorer, "explorerId", ReportLineProvenanceExplorerId);
 
@@ -2649,6 +2644,8 @@ public sealed class FinancialRecordExplorerReadService
                 BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId),
                 ToneFromReconciliationResults(enrichment.Operations)));
         }
+
+        AppendInstrumentJournalProofUsedIn(relationships, reference, enrichment);
 
         if (relationships.Count == 0)
         {
@@ -3230,6 +3227,7 @@ public sealed class FinancialRecordExplorerReadService
             var reportLine = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "report-line");
             var evidence = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence");
             var audit = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "audit-event");
+            AppendInstrumentJournalProofGraph(nodes, edges, row, journal);
 
             var positionTransactionNodeId = AddRelationshipGraphNode(nodes, row.RecordId, positionTransaction, "position-transaction");
             AddGraphEdge(edges, row.RecordId, positionTransactionNodeId, "referenced by", positionTransaction?.Tone ?? FinancialRecordExplorerTone.Info);
@@ -3568,7 +3566,8 @@ public sealed class FinancialRecordExplorerReadService
         AssetOperationsDetailDto? Operations,
         AssetOperationsReadinessDto? Readiness,
         IReadOnlyList<DirectLendingOperationsLoanHealthDto> DirectLendingHealth,
-        IReadOnlyList<SecurityReportLineUsage> ReportLineUsages);
+        IReadOnlyList<SecurityReportLineUsage> ReportLineUsages,
+        IReadOnlyList<InstrumentJournalProof> InstrumentJournalProofs);
 
     private sealed record SecurityReportLineUsage(
         ReportPackWorkflowRecordDto Record,

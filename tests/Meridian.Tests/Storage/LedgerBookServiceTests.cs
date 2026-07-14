@@ -1525,6 +1525,7 @@ public sealed class LedgerBookServiceTests
             if (!query.LedgerBookId.HasValue &&
                 !query.PeriodId.HasValue &&
                 !query.AggregateId.HasValue &&
+                !query.SourceEventId.HasValue &&
                 query.LineDimensions is null &&
                 string.IsNullOrWhiteSpace(query.AccountName) &&
                 !query.OccurredFrom.HasValue &&
@@ -1549,6 +1550,11 @@ public sealed class LedgerBookServiceTests
             if (query.AggregateId.HasValue)
             {
                 records = records.Where(entry => entry.AggregateId == query.AggregateId.Value);
+            }
+
+            if (query.SourceEventId.HasValue)
+            {
+                records = records.Where(entry => entry.SourceEventId == query.SourceEventId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(query.AccountName))

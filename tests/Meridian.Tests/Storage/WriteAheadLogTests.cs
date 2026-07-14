@@ -120,6 +120,34 @@ public sealed class WriteAheadLogTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task GetUncommittedRecordsAsync_WhenCancelled_ThrowsInsteadOfReturningPartialScan()
+    {
+        // A silently-ended scan is indistinguishable from a complete one, which lets
+        // recovery replay lose records and TruncateAsync delete files that still hold
+        // uncommitted data. Cancellation must surface as an exception.
+        await using (var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        {
+            await wal.InitializeAsync();
+            await wal.AppendAsync(new { Symbol = "SPY", Price = 450.0 }, "trade");
+            await wal.FlushAsync();
+        }
+
+        await using var wal2 = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () =>
+        {
+            await foreach (var _ in wal2.GetUncommittedRecordsAsync(cts.Token))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>(
+            "a cancelled WAL scan must throw rather than masquerade as an empty log");
+    }
+
+    [Fact]
     public async Task FlushAsync_WithNoWriter_DoesNotThrow()
     {
         await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });

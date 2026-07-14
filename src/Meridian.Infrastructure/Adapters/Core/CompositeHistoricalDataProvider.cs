@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
@@ -369,45 +370,47 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         => _rotation.OrderByAvailability(_providers);
 
     /// <summary>
-    /// Check if an exception indicates a rate limit error (HTTP 429).
-    /// Supports both the strongly-typed RateLimitException and legacy string-based detection.
+    /// Check if an exception indicates a rate limit error from structured provider metadata.
+    /// Adapters should map HTTP 429 responses to <see cref="RateLimitException"/>; raw
+    /// <see cref="HttpRequestException.StatusCode"/> is accepted as a fallback for transport
+    /// seams that preserve the status code without wrapping it.
     /// </summary>
     private static bool IsRateLimitException(Exception ex) =>
-        ex is RateLimitException ||
-        ex.InnerException is RateLimitException ||
-        ex.Message.Contains("429") ||
-        ex.Message.Contains("rate limit", StringComparison.OrdinalIgnoreCase) ||
-        ex.Message.Contains("too many requests", StringComparison.OrdinalIgnoreCase);
+        FindRateLimitException(ex) is not null || HasHttpTooManyRequestsStatus(ex);
 
     /// <summary>
-    /// Extract Retry-After duration from an exception if available.
-    /// Supports both RateLimitException with structured data and legacy string parsing.
+    /// Extract Retry-After duration from a structured <see cref="RateLimitException"/>, if available.
     /// </summary>
     private static TimeSpan? ExtractRetryAfter(Exception ex)
+        => FindRateLimitException(ex)?.RetryAfter;
+
+    private static RateLimitException? FindRateLimitException(Exception ex)
     {
-        // Check for strongly-typed RateLimitException first
-        if (ex is RateLimitException rle && rle.RetryAfter.HasValue)
-            return rle.RetryAfter;
+        if (ex is RateLimitException rateLimit)
+            return rateLimit;
 
-        // Check inner exception
-        if (ex.InnerException is RateLimitException innerRle && innerRle.RetryAfter.HasValue)
-            return innerRle.RetryAfter;
-
-        // Fall back to string-based parsing for backwards compatibility
-        // Try to parse Retry-After from exception message
-        // Format: "Retry-After: 60" or similar
-        var message = ex.Message;
-        var retryAfterIdx = message.IndexOf("retry-after", StringComparison.OrdinalIgnoreCase);
-        if (retryAfterIdx >= 0)
+        if (ex is AggregateException aggregate)
         {
-            var remaining = message[(retryAfterIdx + 12)..];
-            var match = System.Text.RegularExpressions.Regex.Match(remaining, @"(\d+)");
-            if (match.Success && int.TryParse(match.Groups[1].Value, out var seconds))
+            foreach (var inner in aggregate.Flatten().InnerExceptions)
             {
-                return TimeSpan.FromSeconds(seconds);
+                var match = FindRateLimitException(inner);
+                if (match is not null)
+                    return match;
             }
         }
-        return null;
+
+        return ex.InnerException is null ? null : FindRateLimitException(ex.InnerException);
+    }
+
+    private static bool HasHttpTooManyRequestsStatus(Exception ex)
+    {
+        if (ex is HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests })
+            return true;
+
+        if (ex is AggregateException aggregate)
+            return aggregate.Flatten().InnerExceptions.Any(HasHttpTooManyRequestsStatus);
+
+        return ex.InnerException is not null && HasHttpTooManyRequestsStatus(ex.InnerException);
     }
 
     public async Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)

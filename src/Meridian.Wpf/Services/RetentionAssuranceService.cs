@@ -97,8 +97,13 @@ public sealed class RetentionAssuranceService
                 _config.Guardrails = GetDefaultGuardrails();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Missing/corrupt settings fall back to defaults; startup must not fail.
+            LoggingService.Instance.LogDebug(
+                "Failed to load retention configuration.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -121,8 +126,13 @@ public sealed class RetentionAssuranceService
             var json = JsonSerializer.Serialize(settingsData, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(settingsPath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Settings persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist retention settings.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -688,8 +698,13 @@ public sealed class RetentionAssuranceService
             var json = JsonSerializer.Serialize(report, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(filePath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Audit-report persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist retention audit report.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

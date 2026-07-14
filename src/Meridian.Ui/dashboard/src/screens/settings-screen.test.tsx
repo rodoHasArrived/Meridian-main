@@ -536,6 +536,46 @@ describe("SettingsScreen", () => {
     apiMocks.getProviderIntegrationQuarantineReview.mockReset();
     apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockReset();
     apiMocks.getProviderIntegrationStagingReview.mockReset();
+    apiMocks.getProviderIntegrationTemplates.mockReset();
+    apiMocks.getProviderIntegrationTemplate.mockReset();
+    apiMocks.saveProviderIntegrationSetup.mockReset();
+    apiMocks.getProviderIntegrationReadiness.mockReset();
+    apiMocks.runManualCsvProviderIntegrationDryRun.mockReset();
+    apiMocks.runRestProviderIntegrationDryRun.mockReset();
+    apiMocks.checkProviderIntegrationSchemaDrift.mockReset();
+    apiMocks.activateProviderIntegration.mockReset();
+  });
+
+  it("lands the bare /settings route on the Access & profile view", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Access & profile"
+    );
+    expect(screen.getByRole("tab", { name: "Access", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Profile and authentication posture" })).toBeInTheDocument();
+  });
+
+  it("keeps hash deep links winning over the bare-route Access default", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings#alpaca-provider-setup"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Provider connections"
+    );
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -543,8 +583,10 @@ describe("SettingsScreen", () => {
       initialEntries: ["/settings#diagnostic-endpoints"]
     });
 
+    // The route header is route-scoped: the diagnostics hash resolves to the
+    // Diagnostics task view, so the header carries that view's copy.
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Operator control posture"
+      "Diagnostics"
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
@@ -563,12 +605,14 @@ describe("SettingsScreen", () => {
   });
 
   it("renders profile authentication posture with authority handoffs", () => {
+    // The profile/system row is scoped to the Access view.
     renderWithRouter(
       <SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
-      />
+      />,
+      { initialEntries: ["/settings/access"] }
     );
 
     const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
@@ -2005,6 +2049,104 @@ describe("SettingsScreen", () => {
       }));
     });
     expect(await within(workbench).findByText("Provider integration activated.")).toBeInTheDocument();
+  });
+  it("blocks provider integration setup drafts with field-level issues before calling the API", async () => {
+    const user = userEvent.setup();
+    const manifest = {
+      manifestId: "template-polygon-data-v1",
+      manifestVersion: 1,
+      providerId: "polygon",
+      displayName: "Polygon positions REST",
+      integrationType: "OpenApiRest" as const,
+      environment: "paper",
+      auth: { type: "ApiKey" as const, tokenUrl: null, scopes: [], metadata: {} },
+      capabilities: [
+        {
+          capability: "Positions" as const,
+          enabled: true,
+          requiresCertifiedAdapter: false,
+          requiredCanonicalFields: []
+        }
+      ],
+      endpoints: [],
+      fieldMappings: [],
+      sync: { mode: "incremental", frequency: "daily", time: null, timezone: "America/New_York", cursorType: "Timestamp" as const, cursorField: "updatedAt", fullRefreshFrequency: null },
+      validationRules: [],
+      activation: {
+        requiresAuthenticationTest: true,
+        requiresEndpointTest: true,
+        requiresDryRun: true,
+        requiresApproval: true,
+        productionWriteCapabilitiesAllowed: false,
+        requiredIssueCodes: []
+      },
+      state: "Draft" as const,
+      createdBy: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      approvedBy: null,
+      approvedAt: null,
+      changeReason: "Seed Polygon provider integration."
+    };
+    apiMocks.getProviderIntegrationTemplates.mockResolvedValue([
+      {
+        manifestId: manifest.manifestId,
+        providerId: "polygon",
+        displayName: "Polygon positions REST",
+        integrationType: "OpenApiRest",
+        capabilities: ["Positions"],
+        summary: "Read-only position import for reconciliation staging.",
+        requiresCredentials: true
+      }
+    ]);
+    apiMocks.getProviderIntegrationTemplate.mockResolvedValue(manifest);
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />
+    );
+
+    const workbench = screen.getByRole("region", { name: "Polygon.io guided provider integration workbench" });
+    await user.click(within(workbench).getByRole("button", { name: "Load provider integration templates for Polygon.io" }));
+    expect(await within(workbench).findByText("1 provider integration templates loaded.")).toBeInTheDocument();
+    await user.click(within(workbench).getByRole("button", { name: "Use selected provider integration template for Polygon.io" }));
+    expect(await within(workbench).findByText("Template template-polygon-data-v1 loaded into draft setup editor.")).toBeInTheDocument();
+
+    const invalidConnection = {
+      connectionId: "provider-reference",
+      providerId: "polygon",
+      manifestId: "manifest-other",
+      connectionName: "Polygon.io reference",
+      environment: "paper",
+      state: "Draft",
+      credentialSecretRef: "",
+      enabledCapabilities: ["Positions"],
+      ownerUserId: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      updatedAt: "2026-06-16T12:00:00Z",
+      approvalEvidenceId: null
+    };
+    fireEvent.change(within(workbench).getByLabelText("Polygon.io provider integration connection draft JSON"), {
+      target: { value: JSON.stringify(invalidConnection, null, 2) }
+    });
+
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+
+    expect(await within(workbench).findByText(
+      "Provider integration setup draft failed validation. Fix the reported fields and save again."
+    )).toBeInTheDocument();
+    expect(within(workbench).getByText(
+      "Connection credential secret reference: Connection credential secret reference is required."
+    )).toBeInTheDocument();
+    expect(within(workbench).getByText(
+      "Connection manifest id: Provider connection manifest id must match the manifest being saved."
+    )).toBeInTheDocument();
+    expect(apiMocks.saveProviderIntegrationSetup).not.toHaveBeenCalled();
   });
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {
     const user = userEvent.setup();

@@ -1,9 +1,10 @@
 import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
@@ -137,6 +138,25 @@ import {
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
+}
+
+const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
+type SecurityMasterDrillInTabId = (typeof SECURITY_MASTER_DRILL_IN_TAB_IDS)[number];
+
+function isSecurityMasterDrillInTabId(value: string | null): value is SecurityMasterDrillInTabId {
+  return SECURITY_MASTER_DRILL_IN_TAB_IDS.includes(value as SecurityMasterDrillInTabId);
+}
+
+function resolveSecurityMasterDrillInTab(search: string): SecurityMasterDrillInTabId {
+  const requested = new URLSearchParams(search).get("tab");
+  return isSecurityMasterDrillInTabId(requested) ? requested : "identity";
+}
+
+function buildSecurityMasterDrillInSearch(search: string, tabId: SecurityMasterDrillInTabId): string {
+  const params = new URLSearchParams(search);
+  params.set("tab", tabId);
+  const serialized = params.toString();
+  return serialized ? `?${serialized}` : "";
 }
 
 const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
@@ -1310,8 +1330,8 @@ function AccountingCaseWorkbench({
             ) : (
               <div role="list" aria-label="Accounting case queue rows" className="grid gap-2">
                 {breakRows.slice(0, 6).map((row) => (
+                  <div role="listitem" key={row.breakId} className="grid">
                   <button
-                    key={row.breakId}
                     type="button"
                     className={cn(
                       "rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -1325,6 +1345,7 @@ function AccountingCaseWorkbench({
                       {row.strategyName} · {row.varianceLabel} · {row.ownerLabel}
                     </span>
                   </button>
+                  </div>
                 ))}
                 {selectedBlocker ? (
                   <Link
@@ -1447,9 +1468,16 @@ function AccountingCaseWorkbench({
 
 export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
+  const navigate = useNavigate();
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
+  // On the reconciliation route the casework band stays primary; break
+  // actions and history collapse unless they are the route's own workstream
+  // (exceptions) or a hash deep-link targets them.
+  const reconciliationActionsExpanded =
+    workstream === "exceptions" ||
+    ["accounting-actions", "accounting-history", "reconciliation-break-queue"].includes(hash.replace(/^#/, ""));
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
@@ -1489,6 +1517,53 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
     : null;
+  const securityMasterActiveTab = resolveSecurityMasterDrillInTab(search);
+  const securityMasterDrillInTabs = useMemo(() => [
+    {
+      id: "identity",
+      label: "Identity",
+      count: identity ? String(identity.identifiers.length + identity.aliases.length) : undefined,
+      panelId: "security-master-identity-tab-panel"
+    },
+    {
+      id: "reference",
+      label: "Reference data",
+      count: securityMaster.referenceDataWorkbenchView.rows.length > 0 ? String(securityMaster.referenceDataWorkbenchView.rows.length) : undefined,
+      panelId: "security-master-reference-tab-panel"
+    },
+    {
+      id: "schedules",
+      label: "Schedules",
+      count: String(securityMaster.schedulesView.rows.length + securityMaster.corporateActionsView.rows.length),
+      panelId: "security-master-schedules-tab-panel"
+    },
+    {
+      id: "lots",
+      label: "Lots",
+      count: securityMaster.openLotReadModelView.rows.length > 0 ? String(securityMaster.openLotReadModelView.rows.length) : undefined,
+      panelId: "security-master-lots-tab-panel"
+    },
+    {
+      id: "passport",
+      label: "Passport & controls",
+      count: securityMaster.instrumentPassportView.statusLabel,
+      panelId: "security-master-passport-tab-panel"
+    },
+    {
+      id: "evidence",
+      label: "Evidence",
+      count: selectedSecurityEntry ? "Ready" : undefined,
+      panelId: "security-master-evidence-tab-panel"
+    }
+  ], [
+    identity,
+    securityMaster.corporateActionsView.rows.length,
+    securityMaster.instrumentPassportView.statusLabel,
+    securityMaster.openLotReadModelView.rows.length,
+    securityMaster.referenceDataWorkbenchView.rows.length,
+    securityMaster.schedulesView.rows.length,
+    selectedSecurityEntry
+  ]);
   const identifierColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (identifier) => <span className="font-mono">{identifier.kind}</span> },
     { id: "value", label: "Value", render: (identifier) => <span className="font-mono text-foreground">{identifier.value}</span> },
@@ -1925,33 +2000,15 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
   const focus = taskMode;
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
-  const accountingRecoveryFields = [
-    { id: "task-mode", label: "Task mode", value: taskMode.label },
-    { id: "workstream", label: "Workstream", value: workstream },
-    { id: "queue", label: "Queue", value: `${data.reconciliationQueue.length} runs` },
-    { id: "breaks", label: "Breaks", value: `${data.breakQueue.length} open` },
-    { id: "close", label: "Close", value: closeCommandCenter?.statusLabel ?? "Loading" },
-    {
-      id: "external-gl",
-      label: "External GL",
-      value: accountingSystemReconciliation
-        ? `${accountingSystemReconciliation.matchedCount} matched / ${accountingSystemReconciliation.breakCount} breaks`
-        : accountingSystemLoading ? "Loading" : "Not loaded"
-    }
-  ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
+      <StatStrip metrics={data.metrics} label="Accounting headline metrics" />
+
       <AccountingWorkbenchContext
         workspace={workspace}
         workstream={workstream}
         taskMode={taskMode}
-        recoveryFields={accountingRecoveryFields}
-        chips={[
-          { label: "Queue", value: String(data.reconciliationQueue.length) },
-          { label: "Breaks", value: String(data.breakQueue.length) },
-          { label: "Profiles", value: String(data.reporting.profileCount) }
-        ]}
       />
 
       {sectionVisibility.showCloseCockpitLanding ? (
@@ -2112,12 +2169,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           </div>
           <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
         </div>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricSnapshotCard key={metric.id} {...metric} />
-        ))}
-      </section>
 
       {data.controlCenter ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
@@ -2821,6 +2872,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </FinancialRecordExplorerShell>
       ) : null}
 
+      {sectionVisibility.showReporting ? (
       <section id="accounting-reporting" className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
         {workstream !== "reconciliation" ? (
           <ReconciliationQueueSummaryCard view={reconciliation.queuePanelView} />
@@ -2890,7 +2942,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               </div>
             </div>
 
-            <aside
+            <div
+              role="region"
+              aria-label="Selected reporting profile detail"
               id={reporting.detailId}
               aria-live="polite"
               data-testid="reporting-profile-detail"
@@ -2919,10 +2973,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   </dl>
                 </div>
               ) : null}
-            </aside>
+            </div>
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {sectionVisibility.showSecurityMaster && (
@@ -3023,6 +3078,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             </div>
           </section>
 
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.8fr)]">
           {/* Search panel */}
           <Card className="panel-surface">
             <CardHeader>
@@ -3096,83 +3152,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   caption={securityMaster.searchStatusText}
                 />
               )}
-              <div id={identity?.panelId ?? SECURITY_IDENTITY_DETAIL_PANEL_ID} className="space-y-4">
-                {securityMaster.identityLoading && (
-                  <p role="status" className="rounded-md border border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] px-3 py-3 text-sm text-[var(--state-pending-fg)]">
-                    Loading identity drill-in…
-                  </p>
-                )}
-                {securityMaster.identityErrorText && (
-                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                    <div>{securityMaster.identityErrorText}</div>
-                    {securityMaster.identityErrorDetails.length > 0 ? (
-                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                        {securityMaster.identityErrorDetails.map((detail) => (
-                          <li key={detail}>{detail}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
-                )}
-                {identity && (
-                  <>
-                  <EntitySummary
-                    eyebrow="Identity drill-in"
-                    title={identity.title}
-                    subtitle={identity.subtitle}
-                    description={identity.description}
-                    status={<Badge variant={identity.statusBadgeVariant} dot>{identity.statusLabel}</Badge>}
-                    fields={identity.summaryFields}
-                    ariaLabel={identity.ariaLabel}
-                  />
-                  <ToolbarStrip
-                    ariaLabel="Security identity detail context"
-                    items={[
-                      { id: "identifiers", label: "Identifiers", value: String(identity.identifiers.length), active: true },
-                      { id: "aliases", label: "Aliases", value: String(identity.aliases.length) },
-                      { id: "status", label: "Status", value: identity.statusLabel }
-                    ]}
-                  />
-                  <div>
-                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.identifiersTitle}</div>
-                    {identity.identifiers.length === 0 ? (
-                      <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                        {identity.identifierEmptyText}
-                      </p>
-                    ) : (
-                      <DenseDataTable
-                        columns={identifierColumns}
-                        rows={identity.identifiers}
-                        getRowId={(identifier) => identifier.rowId}
-                        getRowAriaLabel={(identifier) => identifier.ariaLabel}
-                        emptyText={identity.identifierEmptyText}
-                        ariaLabel={identity.identifiersTableLabel}
-                        caption={identity.identifiersTableLabel}
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.aliasesTitle}</div>
-                    {identity.aliases.length === 0 ? (
-                      <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                        {identity.aliasEmptyText}
-                      </p>
-                    ) : (
-                      <DenseDataTable
-                        columns={aliasColumns}
-                        rows={identity.aliases}
-                        getRowId={(alias) => alias.rowId}
-                        getRowAriaLabel={(alias) => alias.ariaLabel}
-                        emptyText={identity.aliasEmptyText}
-                        ariaLabel={identity.aliasesTableLabel}
-                        caption={identity.aliasesTableLabel}
-                      />
-                    )}
-                  </div>
-                  </>
-                )}
-              </div>
             </CardContent>
           </Card>
 
@@ -3303,6 +3282,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               )}
             </CardContent>
           </Card>
+          </div>
 
           {securityMaster.selectedSecurityId && (
             <section className="panel-surface-strong space-y-4 p-5" aria-labelledby="security-detail-page-title">
@@ -3327,48 +3307,146 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 ariaLabel={securityMaster.pageView.detailToolbarAriaLabel}
                 items={securityMaster.pageView.detailSections}
               />
+              <Tabs
+                aria-label="Security Master selected record drill-ins"
+                tabs={securityMasterDrillInTabs}
+                value={securityMasterActiveTab}
+                onValueChange={(value) => {
+                  if (!isSecurityMasterDrillInTabId(value)) {
+                    return;
+                  }
+
+                  navigate({
+                    pathname,
+                    search: buildSecurityMasterDrillInSearch(search, value),
+                    hash
+                  }, { replace: true });
+                }}
+              >
+                <TabPanel>
+                  <div id={identity?.panelId ?? SECURITY_IDENTITY_DETAIL_PANEL_ID} className="space-y-4">
+                    {securityMaster.identityLoading && (
+                      <p role="status" className="rounded-md border border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] px-3 py-3 text-sm text-[var(--state-pending-fg)]">
+                        Loading identity drill-in...
+                      </p>
+                    )}
+                    {securityMaster.identityErrorText && (
+                      <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                        <div>{securityMaster.identityErrorText}</div>
+                        {securityMaster.identityErrorDetails.length > 0 ? (
+                          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                            {securityMaster.identityErrorDetails.map((detail) => (
+                              <li key={detail}>{detail}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    )}
+                    {identity && (
+                      <>
+                      <EntitySummary
+                        eyebrow="Identity drill-in"
+                        title={identity.title}
+                        subtitle={identity.subtitle}
+                        description={identity.description}
+                        status={<Badge variant={identity.statusBadgeVariant} dot>{identity.statusLabel}</Badge>}
+                        fields={identity.summaryFields}
+                        ariaLabel={identity.ariaLabel}
+                      />
+                      <ToolbarStrip
+                        ariaLabel="Security identity detail context"
+                        items={[
+                          { id: "identifiers", label: "Identifiers", value: String(identity.identifiers.length), active: true },
+                          { id: "aliases", label: "Aliases", value: String(identity.aliases.length) },
+                          { id: "status", label: "Status", value: identity.statusLabel }
+                        ]}
+                      />
+                      <div>
+                        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.identifiersTitle}</div>
+                        {identity.identifiers.length === 0 ? (
+                          <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                            {identity.identifierEmptyText}
+                          </p>
+                        ) : (
+                          <DenseDataTable
+                            columns={identifierColumns}
+                            rows={identity.identifiers}
+                            getRowId={(identifier) => identifier.rowId}
+                            getRowAriaLabel={(identifier) => identifier.ariaLabel}
+                            emptyText={identity.identifierEmptyText}
+                            ariaLabel={identity.identifiersTableLabel}
+                            caption={identity.identifiersTableLabel}
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.aliasesTitle}</div>
+                        {identity.aliases.length === 0 ? (
+                          <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                            {identity.aliasEmptyText}
+                          </p>
+                        ) : (
+                          <DenseDataTable
+                            columns={aliasColumns}
+                            rows={identity.aliases}
+                            getRowId={(alias) => alias.rowId}
+                            getRowAriaLabel={(alias) => alias.ariaLabel}
+                            emptyText={identity.aliasEmptyText}
+                            ariaLabel={identity.aliasesTableLabel}
+                            caption={identity.aliasesTableLabel}
+                          />
+                        )}
+                      </div>
+                      </>
+                    )}
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <ReferenceDataWorkbenchPanel
+                    view={securityMaster.referenceDataWorkbenchView}
+                    onSelect={securityMaster.selectReferenceDataEndpoint}
+                  />
+                </TabPanel>
+                <TabPanel>
+                  <div className="space-y-4">
+                    <SecuritySchedulesPanel
+                      view={securityMaster.schedulesView}
+                      onSelect={securityMaster.selectScheduleEvent}
+                    />
+                    <CorporateActionsPanel
+                      view={securityMaster.corporateActionsView}
+                      onSelect={securityMaster.selectCorporateAction}
+                    />
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <div className="space-y-4">
+                    <SecurityOpenLotReadModelPanel
+                      view={securityMaster.openLotReadModelView}
+                      onSelect={securityMaster.selectOpenLot}
+                    />
+                    <LotsTrackerPanel
+                      securityId={securityMaster.selectedSecurityId}
+                      currency={selectedSecurityEntry?.economicDefinition.currency ?? null}
+                    />
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    <InstrumentPassportPanel view={securityMaster.instrumentPassportView} />
+                    <TradingParametersPanel view={securityMaster.tradingParametersView} />
+                  </div>
+                </TabPanel>
+                <TabPanel>
+                  <SecurityDetailsPanel
+                    entry={selectedSecurityEntry}
+                    identity={securityMaster.identity}
+                    tradingParameters={securityMaster.tradingParameters}
+                  />
+                </TabPanel>
+              </Tabs>
             </section>
-          )}
-
-          {/* Schedule workbench, corporate actions, and trading controls — shown when a security is selected */}
-          {securityMaster.selectedSecurityId && (
-            <>
-              <ReferenceDataWorkbenchPanel
-                view={securityMaster.referenceDataWorkbenchView}
-                onSelect={securityMaster.selectReferenceDataEndpoint}
-              />
-              <SecuritySchedulesPanel
-                view={securityMaster.schedulesView}
-                onSelect={securityMaster.selectScheduleEvent}
-              />
-              <SecurityOpenLotReadModelPanel
-                view={securityMaster.openLotReadModelView}
-                onSelect={securityMaster.selectOpenLot}
-              />
-              <div className="grid gap-4 xl:grid-cols-2">
-                <CorporateActionsPanel
-                  view={securityMaster.corporateActionsView}
-                  onSelect={securityMaster.selectCorporateAction}
-                />
-                <TradingParametersPanel view={securityMaster.tradingParametersView} />
-                <InstrumentPassportPanel view={securityMaster.instrumentPassportView} />
-              </div>
-            </>
-          )}
-
-          {/* Extended security details & lots tracker — shown when a security is selected */}
-          {securityMaster.selectedSecurityId && (
-            <>
-              <SecurityDetailsPanel
-                entry={selectedSecurityEntry}
-                identity={securityMaster.identity}
-                tradingParameters={securityMaster.tradingParameters}
-              />
-              <LotsTrackerPanel
-                securityId={securityMaster.selectedSecurityId}
-                currency={selectedSecurityEntry?.economicDefinition.currency ?? null}
-              />
-            </>
           )}
         </section>
         </FinancialRecordExplorerShell>
@@ -3384,6 +3462,14 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             </div>
             <a className="workspace-section-jump" href="#accounting-history">History</a>
           </div>
+        <details
+          className="panel-surface rounded-lg border border-border/70 px-4 py-3"
+          open={reconciliationActionsExpanded}
+        >
+          <summary className="cursor-pointer text-sm font-semibold text-foreground">
+            Break resolution actions and history
+          </summary>
+          <div className="mt-3">
         <section
           id={reconciliation.detailActions?.breakChecklistTargetId ?? "reconciliation-break-queue"}
           aria-label="Reconciliation break checklist"
@@ -3535,6 +3621,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
           <CalibrationSummaryPanel view={reconciliation.calibrationView} />
         </section>
+          </div>
+        </details>
         </section>
       )}
         </>
@@ -5363,7 +5451,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
-        <aside className="space-y-4">
+        <div className="space-y-4">
           <section className="accounting-draft-rail" data-appearance="light" aria-label="Manual journal draft queue">
             <div className="accounting-reference-heading">
               <div>
@@ -5396,7 +5484,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
           </section>
 
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
-        </aside>
+        </div>
 
         <div className="space-y-4">
           <section className="accounting-reference-panel accounting-journal-panel" data-appearance="light" aria-label="Manual journal entry - balanced double-entry">
@@ -5457,7 +5545,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                     <th>Debit</th>
                     <th>Credit</th>
                     <th>Support</th>
-                    <th aria-label="Line actions" />
+                    <th><span className="sr-only">Line actions</span></th>
                   </tr>
                 </thead>
                 <tbody>

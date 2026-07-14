@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Schema;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Npgsql;
@@ -27,10 +28,15 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string CertificateOfDepositProjectionTable = "certificate_of_deposit_projection";
 
     private readonly SecurityMasterOptions _options;
+    private readonly ISchemaUpcaster<SecurityAssetSpecificTerms> _assetSpecificTermsUpcaster;
 
-    public PostgresSecurityMasterStore(SecurityMasterOptions options)
+    public PostgresSecurityMasterStore(
+        SecurityMasterOptions options,
+        ISchemaUpcaster<SecurityAssetSpecificTerms>? assetSpecificTermsUpcaster = null)
     {
         _options = options;
+        _assetSpecificTermsUpcaster = assetSpecificTermsUpcaster
+            ?? SecurityAssetSpecificTermsV0ToCurrentUpcaster.Instance;
     }
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
@@ -279,12 +285,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
                     exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
-                    common_terms, asset_specific_terms, provenance, version, effective_from, effective_to)
+                    common_terms, asset_specific_terms, provenance, version, schema_version, effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
                     @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
                     @normalized_primary_identifier_value,
-                    @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version,
+                    @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version, @schema_version,
                     @effective_from, @effective_to)
                 on conflict (security_id) do update set
                     asset_class = excluded.asset_class,
@@ -303,9 +309,17 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                     asset_specific_terms = excluded.asset_specific_terms,
                     provenance = excluded.provenance,
                     version = excluded.version,
+                    schema_version = excluded.schema_version,
                     effective_from = excluded.effective_from,
                     effective_to = excluded.effective_to;
                 """;
+
+            // Promote the asset-specific-terms schema version into the queryable schema_version column.
+            // The upcaster is the single authority that resolves the effective version (a payload with
+            // no explicit schemaVersion resolves to the legacy default). The stored payload itself is
+            // written unchanged so no existing read path observes an altered blob.
+            var schemaVersion = _assetSpecificTermsUpcaster.Upcast(record.AssetSpecificTerms.GetRawText())?.SchemaVersion
+                ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
 
             command.Parameters.AddWithValue("security_id", record.SecurityId);
             command.Parameters.AddWithValue("asset_class", record.AssetClass);
@@ -324,6 +338,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("asset_specific_terms", record.AssetSpecificTerms.GetRawText());
             command.Parameters.AddWithValue("provenance", record.Provenance.GetRawText());
             command.Parameters.AddWithValue("version", record.Version);
+            command.Parameters.AddWithValue("schema_version", schemaVersion);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);

@@ -32,7 +32,9 @@ export interface OnboardingTourController {
 export function useOnboardingTour(): OnboardingTourController {
   const { pathname } = useLocation();
   const [state, setState] = useState<OnboardingState>(readOnboardingState);
-  const [expanded, setExpanded] = useState(true);
+  // Collapsed by default: the coach mark floats over route content, so it only
+  // opens when the operator expands it from the masthead progress ring.
+  const [expanded, setExpanded] = useState(false);
 
   const persist = useCallback((next: OnboardingState) => {
     setState(next);

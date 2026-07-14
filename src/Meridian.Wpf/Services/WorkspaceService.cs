@@ -272,8 +272,13 @@ public sealed class WorkspaceService
                 await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Initialization is resilient: fall through to defaults rather than blocking startup.
+            LoggingService.Instance.LogDebug(
+                "Failed to initialize workspaces.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
         finally
         {
@@ -312,8 +317,13 @@ public sealed class WorkspaceService
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Workspace persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist workspaces.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         return Task.CompletedTask;
@@ -505,8 +515,13 @@ public sealed class WorkspaceService
                 await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
                 await SaveWorkspaceStateTokenCoreAsync(state, normalizedFundProfileId, ct).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Session-state persistence is best-effort; disk failures must not crash the caller.
+                LoggingService.Instance.LogDebug(
+                    "Failed to persist workspace session state.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }, ct);
 
@@ -672,8 +687,13 @@ public sealed class WorkspaceService
                     return workspace;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Workspace creation is best-effort here; failures surface as a null result.
+                LoggingService.Instance.LogDebug(
+                    "Failed to create workspace.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
 
             return null;

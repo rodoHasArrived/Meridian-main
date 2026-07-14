@@ -222,4 +222,21 @@ describe("PortfolioScreen accessibility", () => {
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });
+
+  it.each([
+    ["attribution", "/portfolio/attribution"],
+    ["brokerage-sync", "/portfolio/brokerage-sync"]
+  ])("has no basic accessibility violations on the %s route", async (_view, pathname) => {
+    const { container } = renderWithRouter(
+      <PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />,
+      { initialEntries: [pathname] }
+    );
+    await waitForAsyncEffects();
+
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target)
+    }))).toEqual([]);
+  });
 });

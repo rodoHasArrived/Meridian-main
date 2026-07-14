@@ -241,6 +241,64 @@ public sealed class PaperTradingPortfolioTests
     // Helpers
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    // Short valuation — unrealised P&L and portfolio value
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ShortPosition_ReportsUnrealisedPnl_AndValuesShortAsLiability()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
+
+        // Cash account: $20 000 proceeds credited; at the entry price equity is unchanged.
+        portfolio.Cash.Should().Be(120_000m);
+        portfolio.UnrealisedPnl.Should().Be(0m);
+        portfolio.PortfolioValue.Should().Be(100_000m,
+            because: "the short liability (100 × $200) offsets the credited proceeds");
+
+        portfolio.UpdateMarketPrice("AAPL", 180m);
+        portfolio.UnrealisedPnl.Should().Be(2_000m, because: "shorted at $200, market at $180 → 100 × $20 gain");
+        portfolio.PortfolioValue.Should().Be(102_000m);
+
+        portfolio.UpdateMarketPrice("AAPL", 220m);
+        portfolio.UnrealisedPnl.Should().Be(-2_000m, because: "market moved $20 against the short");
+        portfolio.PortfolioValue.Should().Be(98_000m,
+            because: "a rising price must reduce equity, not inflate it by |qty| × price");
+    }
+
+    // -------------------------------------------------------------------------
+    // Crossing fills — a single fill through zero must not drop the residual
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ApplyFill_BuyThroughZero_CoversShortAndOpensResidualLong()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m)); // short 100
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 150, price: 190m));  // cover 100 + open 50 long
+
+        portfolio.Positions["AAPL"].Quantity.Should().Be(50,
+            because: "the 50-share residual beyond the cover must open a long, not vanish");
+        portfolio.Positions["AAPL"].AverageCostBasis.Should().Be(190m);
+        portfolio.RealisedPnl.Should().Be(1_000m, because: "covered 100 shorted at $200 for $190");
+        portfolio.Cash.Should().Be(91_500m, because: "$100k + $20k proceeds − 150 × $190");
+    }
+
+    [Fact]
+    public void ApplyFill_SellThroughZero_ClosesLongAndOpensResidualShort()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
+        portfolio.ApplyFill(BuildFill("AAPL", OrderSide.Sell, qty: 150, price: 210m)); // close 100 + short 50
+
+        portfolio.Positions["AAPL"].Quantity.Should().Be(-50,
+            because: "the 50-share residual beyond the close must open a short, not vanish");
+        portfolio.Positions["AAPL"].AverageCostBasis.Should().Be(210m);
+        portfolio.RealisedPnl.Should().Be(1_000m, because: "closed 100 bought at $200 for $210");
+        portfolio.Cash.Should().Be(111_500m, because: "$100k − $20k + 150 × $210");
+    }
+
     private static ExecutionReport BuildFill(
         string symbol,
         OrderSide side,
@@ -598,6 +656,22 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.Cash.Should().Be(115_000m,
             because: "cash account: short proceeds ($15 000) credited immediately");
         portfolio.ShortMarginCollateral.Should().Be(0m);
+    }
+
+    [Fact]
+    public void RegTAccount_ShortSell_PortfolioValueCountsCollateralAndLiability()
+    {
+        // Short 100 @ $200 under Reg T: cash $90 000, broker holds $30 000 collateral,
+        // liability = 100 × price. At entry: 90k + 30k − 20k = $100 000 (unchanged).
+        var portfolio = BuildRegTPortfolio(100_000m);
+        portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
+
+        portfolio.PortfolioValue.Should().Be(100_000m,
+            because: "opening a short must not change equity at the entry price");
+
+        portfolio.UpdateMarketPrice("AAPL", 180m);
+        portfolio.PortfolioValue.Should().Be(102_000m,
+            because: "equity gains as the shorted price falls: 90k + 30k − 18k");
     }
 
     // ── Margin-call detection (CheckMarginStatus) ──────────────────────────
