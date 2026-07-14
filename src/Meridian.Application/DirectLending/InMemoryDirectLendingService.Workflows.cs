@@ -391,7 +391,9 @@ public sealed partial class InMemoryDirectLendingService
             var nextDate = currentDate.AddMonths(1);
             if (nextDate > stored.TermsVersions[^1].Terms.MaturityDate)
                 nextDate = stored.TermsVersions[^1].Terms.MaturityDate;
-            var amount = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateDailyAccrualAmount(stored.Servicing.Balances.PrincipalOutstanding, annualRate, (int)stored.TermsVersions[^1].Terms.DayCountBasis) * Math.Max(1, nextDate.DayNumber - currentDate.DayNumber);
+            // Date-aware day count keyed on the period start: Act/Act uses the actual year
+            // length of the accrual period's start date (366 in leap years).
+            var amount = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateDailyAccrualAmountForDate(stored.Servicing.Balances.PrincipalOutstanding, annualRate, (int)stored.TermsVersions[^1].Terms.DayCountBasis, currentDate) * Math.Max(1, nextDate.DayNumber - currentDate.DayNumber);
             flows.Add(new ProjectedCashFlowDto(Guid.NewGuid(), run.ProjectionRunId, stored.LoanId, seq++, "Interest", nextDate, currentDate, nextDate, decimal.Round(amount, 2, MidpointRounding.AwayFromZero), stored.TermsVersions[^1].Terms.BaseCurrency, stored.Servicing.Balances.PrincipalOutstanding, annualRate, JsonSerializer.Serialize(new { type = "interest" }), DateTimeOffset.UtcNow));
             currentDate = nextDate;
         }

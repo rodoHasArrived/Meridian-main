@@ -3370,6 +3370,7 @@ Meridian-main
 │   │   │   ├── Services
 │   │   │   │   ├── AutoResubscribePolicy.cs
 │   │   │   │   ├── BatchOperationsService.cs
+│   │   │   │   ├── CorruptStoreQuarantine.cs
 │   │   │   │   ├── IndexSubscriptionService.cs
 │   │   │   │   ├── MetadataEnrichmentService.cs
 │   │   │   │   ├── PortfolioImportService.cs
@@ -4778,6 +4779,7 @@ Meridian-main
 │   │   │   ├── IAccountManagementService.cs
 │   │   │   └── IAccountQueryService.cs
 │   │   ├── FundAccounts
+│   │   │   ├── AccountReconciliationChecks.cs
 │   │   │   ├── IFundAccountService.cs
 │   │   │   ├── InMemoryFundAccountService.cs
 │   │   │   └── PostgresFundAccountService.cs
@@ -4902,11 +4904,16 @@ Meridian-main
 │   │   ├── AssetOperations
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_asset_operations.sql
-│   │   │   │   └── 002_instrument_position_projections.sql
+│   │   │   │   ├── 002_instrument_position_projections.sql
+│   │   │   │   └── 003_instrument_position_projection_guards.sql
 │   │   │   ├── AssetOperationsMigrationRunner.cs
 │   │   │   ├── IAssetOperationsProjectionStore.cs
+│   │   │   ├── IInstrumentPositionProjectionStore.cs
 │   │   │   ├── InMemoryAssetOperationsProjectionStore.cs
-│   │   │   └── PostgresAssetOperationsProjectionStore.cs
+│   │   │   ├── InMemoryAssetOperationsProjectionStore.InstrumentPositions.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.InstrumentPositions.cs
+│   │   │   └── PostgresAssetOperationsProjectionStore.Locks.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillStatusStore.cs
 │   │   │   └── BackfillStatusStoreJsonContext.cs
@@ -7420,6 +7427,8 @@ Meridian-main
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
+│   │   │   ├── Subscriptions
+│   │   │   │   └── SubscriptionStoreQuarantineTests.cs
 │   │   │   ├── Ui
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
@@ -7443,6 +7452,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
+│   │   │   ├── InMemoryInstrumentPositionProjectionStoreSlice3Tests.cs
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   └── PortfolioCashLadderReadServiceTests.cs
@@ -7582,6 +7592,7 @@ Meridian-main
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
+│   │   │   ├── OrderManagementSystemReportStreamTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
@@ -7988,6 +7999,7 @@ Meridian-main
 │   │   │   ├── DurableAutomatedJournalPosterTests.cs
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
+│   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs
 │   │   │   ├── FundScopedWriteTenantGateTests.cs

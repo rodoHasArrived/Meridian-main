@@ -21,6 +21,7 @@ public interface IFundAccountStore
     Task InsertCustodianStatementBatchAsync(CustodianStatementBatchDto batch, IReadOnlyList<CustodianPositionLineDto> lines, CancellationToken ct = default);
     Task InsertBankStatementBatchAsync(BankStatementBatchDto batch, IReadOnlyList<BankStatementLineDto> lines, CancellationToken ct = default);
     Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default);
+    Task<IReadOnlyList<CustodianStatementBatchDto>> GetCustodianStatementBatchesAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default);
     Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default);
 
     // Reconciliation

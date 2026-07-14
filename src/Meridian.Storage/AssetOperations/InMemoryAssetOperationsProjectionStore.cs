@@ -2,7 +2,9 @@ using Meridian.Contracts.AssetOperations;
 
 namespace Meridian.Storage.AssetOperations;
 
-public sealed class InMemoryAssetOperationsProjectionStore : IAssetOperationsProjectionStore
+public sealed partial class InMemoryAssetOperationsProjectionStore :
+    IAssetOperationsProjectionStore,
+    IInstrumentPositionProjectionStore
 {
     private readonly object _gate = new();
     private readonly Dictionary<Guid, AssetOperationsDetailDto> _details = new();
@@ -12,7 +14,8 @@ public sealed class InMemoryAssetOperationsProjectionStore : IAssetOperationsPro
         ct.ThrowIfCancellationRequested();
         lock (_gate)
         {
-            return Task.FromResult(_details.GetValueOrDefault(securityId));
+            var detail = _details.GetValueOrDefault(securityId);
+            return Task.FromResult(detail is null ? null : ClonePayload(detail));
         }
     }
 
@@ -24,6 +27,8 @@ public sealed class InMemoryAssetOperationsProjectionStore : IAssetOperationsPro
         ArgumentNullException.ThrowIfNull(projection);
         ArgumentNullException.ThrowIfNull(approval);
         ct.ThrowIfCancellationRequested();
+        projection = ClonePayload(projection);
+        approval = ClonePayload(approval);
 
         lock (_gate)
         {
@@ -68,6 +73,15 @@ public sealed class InMemoryAssetOperationsProjectionStore : IAssetOperationsPro
                     existing?.PositionEconomicStates,
                     economicStates),
                 ProjectionLineages = lineages
+            };
+            ApplyLegacyInstrumentPositionProjection(detail, approval);
+            var snapshot = BuildSecuritySnapshot(projection.Subject.SecurityId);
+            detail = detail with
+            {
+                InstrumentRoles = snapshot.InstrumentRoles,
+                BookPositions = snapshot.BookPositions,
+                PositionEconomicStates = snapshot.PositionEconomicStates,
+                ProjectionLineages = snapshot.ProjectionLineages
             };
             _details[projection.Subject.SecurityId] = detail;
         }
