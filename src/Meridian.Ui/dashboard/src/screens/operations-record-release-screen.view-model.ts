@@ -276,7 +276,7 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
         detail: backfillReviewCount > 0
           ? `${backfillReviewCount} backfill job${backfillReviewCount === 1 ? "" : "s"} require review before downstream reporting.`
           : "Backfill queue has no review-state jobs in the loaded payload.",
-        href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+        href: WORKSTATION_ROUTE_CATALOG.dataOperations,
         routeLabel: "Backfill queues",
         tone: backfillReviewCount > 0 ? "review" : "ready",
         badgeVariant: toneToBadgeVariant(backfillReviewCount > 0 ? "review" : "ready"),

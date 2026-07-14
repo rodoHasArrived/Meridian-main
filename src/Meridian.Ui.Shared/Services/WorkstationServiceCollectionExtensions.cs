@@ -149,6 +149,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<DesktopWorkstationLaunchService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
+        services.TryAddSingleton<IngestionOperationsService>();
+        services.TryAddSingleton<StorageAssuranceService>();
         services.TryAddSingleton<SensitiveActionPolicyEngine>();
         services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();

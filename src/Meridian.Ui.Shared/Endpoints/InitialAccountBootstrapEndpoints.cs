@@ -1,5 +1,5 @@
-using Meridian.Ui.Shared.Services;
 using Meridian.Identity;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

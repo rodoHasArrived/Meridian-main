@@ -10,7 +10,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 ## Audience Paths
 
 - **Start first:** [Start](../start/README.md)
-- **Product context:** [Product](../product/README.md), including the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md)
+- **Product context:** [Product](../product/README.md), including the [Meridian Design Document](../product/meridian-design-document.md)
 - **AI policy:** [AI assistant contract](../ai/assistant-workflow-contract.md)
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)

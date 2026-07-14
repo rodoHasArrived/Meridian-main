@@ -317,7 +317,8 @@ describe("workspace nav view model", () => {
       "/data/quotes",
       "/data/alerts",
       "/data/evidence",
-      "/data/backfills",
+      "/data/operations",
+      "/data/assurance",
       "/data/exports",
       "/data/query"
     ]);

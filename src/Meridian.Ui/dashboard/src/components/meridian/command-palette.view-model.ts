@@ -297,7 +297,7 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     id: "data-backfills",
     label: "Backfill queues",
     description: "Preview, trigger, and review historical data backfill jobs.",
-    route: WORKSTATION_ROUTE_CATALOG.dataBackfills
+    route: WORKSTATION_ROUTE_CATALOG.dataOperations
   },
   {
     id: "settings-provider-setup",

@@ -157,6 +157,11 @@ public sealed class CircuitBreaker
     {
         lock (_lock)
         {
+            // Materialize an elapsed break first so StateChanged subscribers observe the full
+            // Open → HalfOpen → Closed sequence even when the caller gated on the non-mutating
+            // Status property instead of TryAcquire.
+            MaterializeElapsedBreak(_clock.GetUtcNow());
+
             _consecutiveFailures = 0;
             _openUntil = null;
             if (_status != CircuitStatus.Closed)
@@ -175,19 +180,20 @@ public sealed class CircuitBreaker
         lock (_lock)
         {
             var now = _clock.GetUtcNow();
+
+            // A probe failure after the break elapsed must re-trip with a fresh break window and
+            // fire the full Open → HalfOpen → Open transition sequence, even when the caller
+            // gated on the non-mutating Status property instead of TryAcquire. A failure while
+            // the break is still running (a call that slipped past the gate) keeps the breaker
+            // open without counting an extra trip.
+            MaterializeElapsedBreak(now);
+
             _consecutiveFailures++;
             _totalFailures++;
             _lastFailureTime = now;
 
-            // A failure while open (e.g. a call that slipped past the gate) keeps the breaker
-            // open without counting an extra trip; the half-open evaluation is done here so a
-            // probe failure after the break elapsed re-trips with a fresh break window.
-            var effective = _status == CircuitStatus.Open && BreakElapsed(now)
-                ? CircuitStatus.HalfOpen
-                : _status;
-
-            if (effective == CircuitStatus.HalfOpen
-                || (effective == CircuitStatus.Closed && _consecutiveFailures >= _options.FailureThreshold))
+            if (_status == CircuitStatus.HalfOpen
+                || (_status == CircuitStatus.Closed && _consecutiveFailures >= _options.FailureThreshold))
             {
                 Trip(now);
             }
@@ -213,6 +219,15 @@ public sealed class CircuitBreaker
         _tripCount++;
         _openUntil = now + _options.BreakDuration;
         Transition(CircuitStatus.Open);
+    }
+
+    /// <summary>Turns a stored Open state whose break has elapsed into a real HalfOpen transition.</summary>
+    private void MaterializeElapsedBreak(DateTimeOffset now)
+    {
+        if (_status == CircuitStatus.Open && BreakElapsed(now))
+        {
+            Transition(CircuitStatus.HalfOpen);
+        }
     }
 
     private bool BreakElapsed(DateTimeOffset now) => _openUntil is { } until && now >= until;

@@ -203,14 +203,37 @@ public sealed class CircuitBreakerTests
     public void RecordFailureAfterElapsedBreakReTripsEvenWithoutTryAcquire()
     {
         var (breaker, clock) = Create(threshold: 1, breakSeconds: 60);
+        var transitions = new List<(CircuitStatus From, CircuitStatus To)>();
         breaker.RecordFailure();
         clock.Advance(TimeSpan.FromSeconds(90));
+        breaker.StateChanged += (from, to) => transitions.Add((from, to));
 
         // The caller gated on Status (non-mutating) rather than TryAcquire, probed, and failed.
         breaker.RecordFailure();
 
         breaker.TripCount.Should().Be(2);
         breaker.OpenUntil.Should().Be(Start + TimeSpan.FromSeconds(90 + 60));
+        transitions.Should().Equal(
+            (CircuitStatus.Open, CircuitStatus.HalfOpen),
+            (CircuitStatus.HalfOpen, CircuitStatus.Open));
+    }
+
+    [Fact]
+    public void RecordSuccessAfterElapsedBreakFiresHalfOpenThenClosed()
+    {
+        var (breaker, clock) = Create(threshold: 1, breakSeconds: 60);
+        var transitions = new List<(CircuitStatus From, CircuitStatus To)>();
+        breaker.RecordFailure();
+        clock.Advance(TimeSpan.FromSeconds(90));
+        breaker.StateChanged += (from, to) => transitions.Add((from, to));
+
+        // The caller gated on Status (non-mutating) rather than TryAcquire, probed, and succeeded.
+        breaker.RecordSuccess();
+
+        breaker.Status.Should().Be(CircuitStatus.Closed);
+        transitions.Should().Equal(
+            (CircuitStatus.Open, CircuitStatus.HalfOpen),
+            (CircuitStatus.HalfOpen, CircuitStatus.Closed));
     }
 
     [Fact]

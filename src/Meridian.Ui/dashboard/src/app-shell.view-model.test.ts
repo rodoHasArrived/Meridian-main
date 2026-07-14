@@ -571,7 +571,7 @@ describe("app shell view model", () => {
     ]);
     expect(state.workflowContinuity.primaryOperatorFlowSteps.map((step) => [step.id, step.label, step.active, step.href])).toEqual([
       ["import", "Import", false, "/data/providers?symbol=AAPL"],
-      ["validate", "Validate", true, "/data/backfills?symbol=AAPL"],
+      ["validate", "Validate", true, "/data/operations?symbol=AAPL"],
       ["reconcile", "Reconcile", false, "/accounting/reconciliation?symbol=AAPL"],
       ["investigate", "Investigate", false, "/portfolio?symbol=AAPL"],
       ["approve", "Approve", false, "/accounting/approvals?symbol=AAPL"],

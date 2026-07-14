@@ -13,4 +13,8 @@ import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/
  * <Badge variant="live" dot>LIVE</Badge>
  */
 export type BadgeProps = DesignSystemBadgeProps;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8facbd635d8f4063eabf809bf413de18c7345b25
 export const Badge = DesignSystemBadge;

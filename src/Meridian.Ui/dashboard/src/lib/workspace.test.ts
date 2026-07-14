@@ -96,7 +96,10 @@ describe("workspace metadata", () => {
 
   it("preserves legacy suffix, query, and hash when building redirects", () => {
     expect(legacyWorkspaceRedirect("/data-operations/backfills", "?provider=alpaca", "#queue")).toBe(
-      "/data/backfills?provider=alpaca#queue"
+      "/data/operations?provider=alpaca#queue"
+    );
+    expect(legacyWorkspaceRedirect("/data/backfills", "?provider=alpaca", "#queue")).toBe(
+      "/data/operations?provider=alpaca#queue"
     );
     expect(legacyWorkspaceRedirect("/data/security-master/identity", "?query=GS", "#conflicts")).toBe(
       "/accounting/security-master/identity?query=GS#conflicts"
