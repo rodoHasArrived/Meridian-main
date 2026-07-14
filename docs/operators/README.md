@@ -35,7 +35,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Need | Start here | Notes |
 | --- | --- | --- |
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
-| Product operating scope | [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) | stakeholder design context for operator posture |
+| Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |

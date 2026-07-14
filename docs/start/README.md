@@ -19,7 +19,7 @@ The active user-facing surfaces are:
 - Built browser assets served by the host: `src/Meridian.Ui/wwwroot/workstation/`
 - Shared workstation API/read-model support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`
 
-For the current product framing and capability thesis, use the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) before planning changes.
+For the current product framing and capability thesis, use the [Meridian Design Document](../product/meridian-design-document.md) before planning changes.
 
 ## Prerequisites
 
