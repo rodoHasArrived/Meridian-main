@@ -292,6 +292,8 @@ describe("FinancialRecordExplorerShell", () => {
     });
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    await user.click(screen.getByRole("button", { name: "Close drawer" }));
+    expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "aapl");
 
     await waitFor(() => {
