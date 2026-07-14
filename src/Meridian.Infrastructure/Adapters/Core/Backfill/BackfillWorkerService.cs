@@ -5,6 +5,7 @@ using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
@@ -362,14 +363,7 @@ public sealed class BackfillWorkerService : IDisposable
     /// Calculates exponential backoff delay with jitter.
     /// </summary>
     private static TimeSpan CalculateBackoff(int attempt, TimeSpan baseDelay, TimeSpan maxDelay)
-    {
-        var baseMs = baseDelay.TotalMilliseconds;
-        var maxMs = maxDelay.TotalMilliseconds;
-        var delay = Math.Min(baseMs * Math.Pow(2, attempt - 1), maxMs);
-        // Add jitter (±25%) to prevent thundering herd
-        var jitter = delay * 0.25 * (Random.Shared.NextDouble() * 2 - 1);
-        return TimeSpan.FromMilliseconds(delay + jitter);
-    }
+        => Backoff.ExponentialDelay(attempt, baseDelay, maxDelay, jitterFraction: 0.25);
 
     /// <summary>
     /// Find a typed <see cref="RateLimitException"/> anywhere in the exception chain,

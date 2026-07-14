@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Reactive.Subjects;
 using System.Threading;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Serilog;
 
 namespace Meridian.Infrastructure.DataSources;
@@ -262,10 +263,10 @@ public abstract class DataSourceBase : IDataSource
     }
 
     private static int CalculateRetryDelay(int attempt, int baseDelay, int maxDelay)
-    {
-        var delay = (int)(baseDelay * Math.Pow(2, attempt));
-        return Math.Min(delay, maxDelay);
-    }
+        => (int)Backoff.ExponentialDelay(
+            attempt + 1,
+            TimeSpan.FromMilliseconds(baseDelay),
+            TimeSpan.FromMilliseconds(maxDelay)).TotalMilliseconds;
 
 
 

@@ -3865,6 +3865,8 @@ Meridian-main
 │   │   │       └── ThreadingUtilities.cs
 │   │   ├── Pipeline
 │   │   │   └── EventPipelinePolicy.cs
+│   │   ├── Resilience
+│   │   │   └── Backoff.cs
 │   │   ├── Scheduling
 │   │   │   └── CronExpressionParser.cs
 │   │   ├── Serialization
@@ -4662,6 +4664,7 @@ Meridian-main
 │   │   ├── LedgerViewKind.cs
 │   │   ├── LockedAccountingPeriod.cs
 │   │   ├── LockedAccountingPeriodBook.cs
+│   │   ├── LotConsumption.cs
 │   │   ├── Meridian.Ledger.csproj
 │   │   ├── MultiCurrencyJournalInput.cs
 │   │   ├── MultiCurrencyJournalLineInput.cs
@@ -5042,6 +5045,9 @@ Meridian-main
 │   │   │   ├── IArchiveMaintenanceService.cs
 │   │   │   ├── IMaintenanceExecutionHistory.cs
 │   │   │   └── ScheduledArchiveMaintenanceService.cs
+│   │   ├── Migrations
+│   │   │   ├── PostgresMigrationRunner.cs
+│   │   │   └── PostgresMigrationRunnerOptions.cs
 │   │   ├── MoneyMarket
 │   │   │   ├── Migrations
 │   │   │   │   └── 001_money_market.sql
@@ -5168,6 +5174,7 @@ Meridian-main
 │   │   │   └── ParquetStorageSink.cs
 │   │   ├── Store
 │   │   │   ├── CompositeMarketDataStore.cs
+│   │   │   ├── JsonFileSnapshotStore.cs
 │   │   │   └── JsonlMarketDataStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Storage.csproj
@@ -7475,15 +7482,16 @@ Meridian-main
 │   │   │   ├── OperationalFinanceContractTests.cs
 │   │   │   └── ProviderIntegrationContractsTests.cs
 │   │   ├── Core
-│   │   │   └── Config
-│   │   │       ├── AppConfigJsonOptionsTests.cs
-│   │   │       ├── ConfigEnvironmentOverrideTests.cs
-│   │   │       ├── ConfigJsonSchemaGeneratorTests.cs
-│   │   │       ├── ConfigValidationPipelineTests.cs
-│   │   │       ├── ConfigValidatorTests.cs
-│   │   │       ├── ConfigWatcherTests.cs
-│   │   │       ├── CredentialPlaceholderDetectorTests.cs
-│   │   │       └── DefaultConfigPathResolverTests.cs
+│   │   │   ├── Config
+│   │   │   │   ├── AppConfigJsonOptionsTests.cs
+│   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
+│   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
+│   │   │   │   ├── ConfigValidationPipelineTests.cs
+│   │   │   │   ├── ConfigValidatorTests.cs
+│   │   │   │   ├── ConfigWatcherTests.cs
+│   │   │   │   ├── CredentialPlaceholderDetectorTests.cs
+│   │   │   │   └── DefaultConfigPathResolverTests.cs
+│   │   │   └── BackoffTests.cs
 │   │   ├── CryptoCurrency
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration
@@ -7768,6 +7776,7 @@ Meridian-main
 │   │   │   │   ├── ConfigDirectLendingAuthorizationTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── DirectLendingEndpointMutationTests.cs
+│   │   │   │   ├── EndpointGuardTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointMetadataTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
@@ -7813,6 +7822,7 @@ Meridian-main
 │   │   │   ├── LedgerAccountIdentityTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
+│   │   │   ├── LotConsumptionTests.cs
 │   │   │   └── PeriodCloseProjectorTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
@@ -8004,6 +8014,7 @@ Meridian-main
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs
 │   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
+│   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
@@ -8020,6 +8031,7 @@ Meridian-main
 │   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── PositionSnapshotStoreTests.cs
+│   │   │   ├── PostgresMigrationRunnerValidationTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs

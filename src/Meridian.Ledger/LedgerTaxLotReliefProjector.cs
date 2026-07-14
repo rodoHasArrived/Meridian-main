@@ -73,26 +73,17 @@ public static class LedgerTaxLotReliefProjector
         decimal quantitySold,
         IReadOnlyList<LedgerTaxLot> orderedLots)
     {
-        var remaining = quantitySold;
-        var selections = new List<LedgerTaxLotReliefSelection>();
+        var consumption = LotConsumption.Consume(orderedLots, quantitySold, static lot => lot.Quantity);
 
-        foreach (var lot in orderedLots)
-        {
-            if (remaining <= 0m)
-                break;
+        if (!consumption.FullyConsumed)
+            throw new InvalidOperationException($"Insufficient open tax-lot quantity to relieve {quantitySold}; remaining shortfall was {consumption.Shortfall}.");
 
-            var relievedQuantity = Math.Min(remaining, lot.Quantity);
-            selections.Add(new LedgerTaxLotReliefSelection(
-                lot,
-                relievedQuantity,
-                RoundCurrency(relievedQuantity * lot.UnitCost)));
-            remaining -= relievedQuantity;
-        }
-
-        if (remaining > 0m)
-            throw new InvalidOperationException($"Insufficient open tax-lot quantity to relieve {quantitySold}; remaining shortfall was {remaining}.");
-
-        return selections;
+        return consumption.Slices
+            .Select(static slice => new LedgerTaxLotReliefSelection(
+                slice.Lot,
+                slice.Quantity,
+                RoundCurrency(slice.Quantity * slice.Lot.UnitCost)))
+            .ToList();
     }
 
     private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> BuildLines(
