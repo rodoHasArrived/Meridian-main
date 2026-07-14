@@ -3260,8 +3260,7 @@ Meridian-main
 │   │   │   ├── IDedupStore.cs
 │   │   │   ├── IEventValidator.cs
 │   │   │   ├── IngestionJobService.cs
-│   │   │   ├── PersistentDedupLedger.cs
-│   │   │   └── SchemaUpcasterRegistry.cs
+│   │   │   └── PersistentDedupLedger.cs
 │   │   ├── ProviderRouting
 │   │   │   ├── BestOfBreedProviderSelector.cs
 │   │   │   ├── KernelObservabilityService.cs
@@ -3866,7 +3865,8 @@ Meridian-main
 │   │   ├── Pipeline
 │   │   │   └── EventPipelinePolicy.cs
 │   │   ├── Resilience
-│   │   │   └── Backoff.cs
+│   │   │   ├── Backoff.cs
+│   │   │   └── CircuitBreaker.cs
 │   │   ├── Scheduling
 │   │   │   └── CronExpressionParser.cs
 │   │   ├── Serialization
@@ -4337,6 +4337,8 @@ Meridian-main
 │   │   │   ├── RolePermissionProfileStore.cs
 │   │   │   ├── ScopedAccessAssignmentStore.cs
 │   │   │   └── UserAccountStore.cs
+│   │   ├── Migrations
+│   │   │   └── 001_user_access_assignment.sql
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Identity.csproj
 │   │   └── README.md
@@ -4902,7 +4904,6 @@ Meridian-main
 │   │   │   ├── ArchivalStorageService.cs
 │   │   │   ├── AtomicFileWriter.cs
 │   │   │   ├── CompressionProfileManager.cs
-│   │   │   ├── SchemaVersionManager.cs
 │   │   │   └── WriteAheadLog.cs
 │   │   ├── AssetOperations
 │   │   │   ├── Migrations
@@ -7491,7 +7492,8 @@ Meridian-main
 │   │   │   │   ├── ConfigWatcherTests.cs
 │   │   │   │   ├── CredentialPlaceholderDetectorTests.cs
 │   │   │   │   └── DefaultConfigPathResolverTests.cs
-│   │   │   └── BackoffTests.cs
+│   │   │   ├── BackoffTests.cs
+│   │   │   └── CircuitBreakerTests.cs
 │   │   ├── CryptoCurrency
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration

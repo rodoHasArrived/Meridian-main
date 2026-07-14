@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Meridian-Setup</AssemblyName>
+    <RootNamespace>Meridian.Setup</RootNamespace>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MeridianPayloadDir)' != ''">
+    <EmbeddedResource Include="$(MeridianPayloadDir)\**\*" LogicalName="payload/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

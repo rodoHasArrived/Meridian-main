@@ -11,6 +11,12 @@ last_reviewed: 2026-07-12
 
 # src/Meridian.Ui.Shared
 
+The shared workstation graph owns first-run state, the curated starter catalog,
+versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
+clients consume these endpoints instead of defining client-only setup policy. Initial
+local-account creation reuses the governed identity store through a loopback-only,
+one-use bootstrap token.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser

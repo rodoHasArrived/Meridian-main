@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Domain.Reconciliation;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -11,6 +12,40 @@ public interface ICanonicalStatementStore
     Task<bool> ImportExistsByDuplicateKeyAsync(string duplicateKey, CancellationToken ct = default);
     Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default);
+}
+
+/// <summary>
+/// Maps record identifiers onto safe file names for the per-record JSON stores. The identifiers
+/// are system-generated today, but they flow through DTOs, so path separators, traversal
+/// sequences, and characters invalid in file names are neutralized before touching the disk.
+/// </summary>
+internal static class ReconciliationRecordFileName
+{
+    // Longer sanitized names fall back to a hash so the result stays within
+    // path-component limits on every supported file system.
+    private const int MaxNameLength = 128;
+
+    private static readonly char[] InvalidChars =
+        [.. Path.GetInvalidFileNameChars(), '/', '\\'];
+
+    public static string For(string? recordId)
+    {
+        if (string.IsNullOrEmpty(recordId))
+        {
+            return Hash(string.Empty);
+        }
+
+        var name = string.Join('_', recordId.Split(InvalidChars))
+            .Replace("..", "_", StringComparison.Ordinal)
+            .Trim('.', ' ');
+
+        return string.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength
+            ? Hash(recordId)
+            : name;
+    }
+
+    private static string Hash(string value)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 }
 
 public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalStatementStore
@@ -34,9 +69,11 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
 
     public async Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default)
     {
-        Directory.CreateDirectory(_folder);
         var payload = JsonSerializer.Serialize(new { import, rows });
-        await File.WriteAllTextAsync(Path.Combine(_folder, $"{import.ImportId}.json"), payload, ct).ConfigureAwait(false);
+        // Atomic write: a crash mid-import must not leave a truncated statement file that the
+        // duplicate-key scan would then fail to parse.
+        var fileName = ReconciliationRecordFileName.For(import.ImportId);
+        await AtomicFileWriter.WriteAsync(Path.Combine(_folder, $"{fileName}.json"), payload, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
@@ -174,11 +211,10 @@ public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliat
 
     public async Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default)
     {
-        Directory.CreateDirectory(_folder);
         foreach (var record in records)
         {
-            var path = Path.Combine(_folder, $"{record.BreakId}.json");
-            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
+            var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(record.BreakId)}.json");
+            await AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
         }
     }
 

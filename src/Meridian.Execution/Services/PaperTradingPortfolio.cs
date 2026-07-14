@@ -526,6 +526,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             {
                 pos.Quantity = adjustment.AdjustedQuantity;
                 pos.CostBasis = adjustment.AdjustedCostBasis;
+
+                // Rescale the lot book by the same factors so lots stay consistent with the
+                // aggregate; otherwise the next lot-consuming fill falls into the shortfall
+                // fallback and mis-states realized P&L (e.g. selling through a post-split
+                // position priced at pre-split lot costs).
+                var quantityFactor = originalQuantity == 0m
+                    ? 1m
+                    : adjustment.AdjustedQuantity / originalQuantity;
+                var priceFactor = originalCostBasis == 0m
+                    ? 1m
+                    : adjustment.AdjustedCostBasis / originalCostBasis;
+                pos.RescaleLots(quantityFactor, priceFactor);
             }
         }
     }
@@ -1022,6 +1034,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         }
 
         _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
+    }
+
+    /// <summary>
+    /// Rescales every open lot by the corporate-action factors applied to the aggregate
+    /// position, preserving lot identity and open time. Keeping the lot book in step with
+    /// <see cref="Quantity"/>/<see cref="CostBasis"/> is required for lot consumption: a
+    /// desynced book would push post-split sells into the shortfall fallback and fabricate
+    /// cost basis at the aggregate average.
+    /// </summary>
+    public void RescaleLots(decimal quantityFactor, decimal priceFactor)
+    {
+        if (quantityFactor == 1m && priceFactor == 1m)
+        {
+            return;
+        }
+
+        var rescaled = _lots
+            .Select(lot => new PositionLot(
+                lot.LotId,
+                lot.OpenQuantity * quantityFactor,
+                lot.EntryPrice * priceFactor,
+                lot.OpenedAt))
+            .Where(static lot => lot.OpenQuantity != 0m)
+            .ToList();
+
+        _lots.Clear();
+        _lots.AddRange(rescaled);
     }
 
     public decimal ConsumeLots(decimal quantity, PositionLotSelectionMethod method, bool isCoveringShort)
